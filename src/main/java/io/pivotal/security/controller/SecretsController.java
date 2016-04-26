@@ -11,8 +11,7 @@ public class SecretsController {
 
     @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
     ResponseEntity<String> add(@PathVariable String secretPath, @RequestBody String input) {
-        return new ResponseEntity<String>(input, null, HttpStatus.CREATED);
+        return new ResponseEntity<String>(input, null, HttpStatus.OK);
     }
-
 
 }

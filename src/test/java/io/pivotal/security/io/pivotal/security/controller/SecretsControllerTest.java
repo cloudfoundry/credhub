@@ -15,11 +15,9 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
         String request = "{ \"values\": { \"key1\": \"value1\" }}";
         mockMvc.perform(put("/api/secret/testid").content(request))
-                .andExpect(status().isCreated())
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().string(request));
     }
 
 }
-
-
