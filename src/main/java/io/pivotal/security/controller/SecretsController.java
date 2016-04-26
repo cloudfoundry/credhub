@@ -1,17 +1,27 @@
 package io.pivotal.security.controller;
 
-import org.springframework.http.HttpStatus;
+import io.pivotal.security.entity.Secret;
+import io.pivotal.security.repository.SecretRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(path = "/api/secret", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class SecretsController {
 
+    @Autowired
+    SecretRepository secretRepository;
+
     @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
-    ResponseEntity<String> add(@PathVariable String secretPath, @RequestBody String input) {
-        return new ResponseEntity<String>(input, null, HttpStatus.OK);
+    Secret add(@PathVariable String secretPath, @RequestBody Secret secret) {
+        secretRepository.set(secretPath, secret);
+        return secret;
+    }
+
+    @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
+    Secret get(@PathVariable String secretPath) {
+        return secretRepository.get(secretPath);
     }
 
 }

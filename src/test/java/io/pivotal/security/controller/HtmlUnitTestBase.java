@@ -1,4 +1,4 @@
-package io.pivotal.security.io.pivotal.security.controller;
+package io.pivotal.security.controller;
 
 import io.pivotal.security.CredentialManagerApp;
 import org.junit.Before;
