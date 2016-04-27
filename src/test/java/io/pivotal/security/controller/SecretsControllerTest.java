@@ -8,14 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.RequestBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,6 +28,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     private SecretRepository secretRepository;
 
     @Test
+    @DirtiesContext
     public void validPutSecret() throws Exception {
         HashMap<String, String> values = new HashMap<>();
         values.put("key1", "value1");
@@ -47,6 +47,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     }
 
     @Test
+    @DirtiesContext
     public void validGetSecret() throws Exception {
         HashMap<String, String> values = new HashMap<>();
         values.put("key1", "value1");
@@ -63,6 +64,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     }
 
     @Test
+    @DirtiesContext
     public void validDeleteSecret() throws Exception {
         HashMap<String, String> values = new HashMap<>();
         values.put("key1", "value1");
@@ -74,6 +76,18 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
                 .andExpect(status().isOk());
 
         Assert.assertNull(secretRepository.get("whatever"));
+    }
+
+    @Test
+    public void getReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
+        mockMvc.perform(get("/api/secret/whatever"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void deleteReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
+        mockMvc.perform(delete("/api/secret/whatever"))
+                .andExpect(status().isNotFound());
     }
 
     @Test

@@ -23,7 +23,7 @@ public class InMemorySecretRepository implements SecretRepository {
         return secrets.get(key);
     }
 
-    public void delete(String key) {
-        secrets.remove(key);
+    public Secret delete(String key) {
+        return secrets.remove(key);
     }
 }

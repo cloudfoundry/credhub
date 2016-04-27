@@ -58,7 +58,7 @@ public class InMemorySecretRepositoryTest {
 
         subject.set("myspecialkey", secret);
 
-        subject.delete("myspecialkey");
+        Assert.assertEquals(subject.delete("myspecialkey"), secret);
 
         Assert.assertNull(subject.get("myspecialkey"));
     }

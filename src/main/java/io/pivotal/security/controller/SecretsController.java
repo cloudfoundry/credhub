@@ -7,6 +7,7 @@ import io.pivotal.security.repository.SecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,13 +29,21 @@ public class SecretsController {
     }
 
     @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
-    void delete(@PathVariable String secretPath) {
-        secretRepository.delete(secretPath);
+    ResponseEntity delete(@PathVariable String secretPath) {
+        Secret secret = secretRepository.delete(secretPath);
+
+        HttpStatus code = (secret == null) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+
+        return new ResponseEntity(code);
     }
 
     @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-    Secret get(@PathVariable String secretPath) {
-        return secretRepository.get(secretPath);
+    ResponseEntity<Secret> get(@PathVariable String secretPath) {
+        Secret secret = secretRepository.get(secretPath);
+
+        HttpStatus code = (secret == null) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
+
+        return new ResponseEntity<>(secret, code);
     }
 
     @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class})
