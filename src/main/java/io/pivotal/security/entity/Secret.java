@@ -1,8 +1,10 @@
 package io.pivotal.security.entity;
 
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 public class Secret {
+    @NotNull
     private Map<String, String> values;
 
     public Secret() {
@@ -27,11 +29,11 @@ public class Secret {
 
         Secret secret = (Secret) obj;
 
-        return values != null ? values.equals(secret.values) : secret.values == null;
+        return values.equals(secret.values);
     }
 
     @Override
     public int hashCode() {
-        return values != null ? values.hashCode() : 0;
+        return values.hashCode();
     }
 }
