@@ -49,4 +49,17 @@ public class InMemorySecretRepositoryTest {
 
         Assert.assertEquals(subject.get("myspecialkey"), secret2);
     }
+
+    @Test
+    public void testRemovesStoredSecret() {
+        Map<String, String> values = new HashMap<>();
+        values.put("doges", "foo");
+        Secret secret = new Secret(values);
+
+        subject.set("myspecialkey", secret);
+
+        subject.delete("myspecialkey");
+
+        Assert.assertNull(subject.get("myspecialkey"));
+    }
 }

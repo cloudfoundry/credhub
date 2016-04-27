@@ -27,6 +27,11 @@ public class SecretsController {
         return secret;
     }
 
+    @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
+    void delete(@PathVariable String secretPath) {
+        secretRepository.delete(secretPath);
+    }
+
     @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
     Secret get(@PathVariable String secretPath) {
         return secretRepository.get(secretPath);

@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import java.io.IOException;
 import java.util.HashMap;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -59,6 +60,20 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    public void validDeleteSecret() throws Exception {
+        HashMap<String, String> values = new HashMap<>();
+        values.put("key1", "value1");
+        Secret secret = new Secret(values);
+
+        secretRepository.set("whatever", secret);
+
+        mockMvc.perform(delete("/api/secret/whatever"))
+                .andExpect(status().isOk());
+
+        Assert.assertNull(secretRepository.get("whatever"));
     }
 
     @Test

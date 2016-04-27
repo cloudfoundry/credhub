@@ -15,13 +15,15 @@ public class InMemorySecretRepository implements SecretRepository {
         this.secrets = new HashMap<>();
     }
 
-    @Override
     public void set(String key, Secret secret) {
         secrets.put(key, secret);
     }
 
-    @Override
     public Secret get(String key) {
         return secrets.get(key);
+    }
+
+    public void delete(String key) {
+        secrets.remove(key);
     }
 }
