@@ -1,5 +1,6 @@
-package io.pivotal.security.controller;
+package io.pivotal.security.controller.v1;
 
+import io.pivotal.security.controller.HtmlUnitTestBase;
 import io.pivotal.security.entity.Secret;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.Assert;
@@ -36,7 +37,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
         String secretJson = json(secret);
 
-        RequestBuilder requestBuilder = putRequestBuilder("/api/secret/testid", secretJson);
+        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/testid", secretJson);
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
@@ -57,10 +58,23 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
         String expectedJson = json(secret);
 
-        mockMvc.perform(get("/api/secret/whatever"))
+        mockMvc.perform(get("/api/v1/secret/whatever"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    @DirtiesContext
+    public void getSecretWithInvalidVersion() throws Exception {
+        HashMap<String, String> values = new HashMap<>();
+        values.put("key1", "value1");
+        Secret secret = new Secret(values);
+
+        secretRepository.set("whatever", secret);
+
+        mockMvc.perform(get("/api/v2/secret/whatever"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -72,7 +86,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
         secretRepository.set("whatever", secret);
 
-        mockMvc.perform(delete("/api/secret/whatever"))
+        mockMvc.perform(delete("/api/v1/secret/whatever"))
                 .andExpect(status().isOk());
 
         Assert.assertNull(secretRepository.get("whatever"));
@@ -80,13 +94,13 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     @Test
     public void getReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
-        mockMvc.perform(get("/api/secret/whatever"))
+        mockMvc.perform(get("/api/v1/secret/whatever"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void deleteReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
-        mockMvc.perform(delete("/api/secret/whatever"))
+        mockMvc.perform(delete("/api/v1/secret/whatever"))
                 .andExpect(status().isNotFound());
     }
 
@@ -94,7 +108,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     public void invalidPutWithEmptyJSONShouldReturnBadRequest() throws Exception {
         String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
-        RequestBuilder requestBuilder = putRequestBuilder("/api/secret/testid", "{}");
+        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/testid", "{}");
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isBadRequest())
@@ -105,7 +119,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     public void invalidPutWithNoBodyShouldReturnBadRequest() throws Exception {
         String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
-        RequestBuilder requestBuilder = putRequestBuilder("/api/secret/testid", "");
+        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/testid", "");
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isBadRequest())

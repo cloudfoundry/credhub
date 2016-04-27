@@ -1,4 +1,4 @@
-package io.pivotal.security.controller;
+package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.entity.ResponseError;
 import io.pivotal.security.entity.ResponseErrorType;
@@ -16,7 +16,7 @@ import javax.validation.ValidationException;
 import java.io.IOException;
 
 @RestController
-@RequestMapping(path = "/api/secret", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = "/api/v1/secret", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class SecretsController {
 
     @Autowired
