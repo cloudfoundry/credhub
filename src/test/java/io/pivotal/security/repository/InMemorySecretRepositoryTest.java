@@ -24,9 +24,7 @@ public class InMemorySecretRepositoryTest {
 
     @Test
     public void testReturnsStoredSecret() {
-        Map<String, String> values = new HashMap<>();
-        values.put("doges", "foo");
-        Secret secret = new Secret(values);
+        Secret secret = new Secret("doge");
 
         subject.set("myspecialkey", secret);
 
@@ -35,15 +33,11 @@ public class InMemorySecretRepositoryTest {
 
     @Test
     public void testOverridesStoredSecret() {
-        Map<String, String> values1 = new HashMap<>();
-        values1.put("doges", "foo");
-        Secret secret1 = new Secret(values1);
+        Secret secret1 = new Secret("doges");
 
         subject.set("myspecialkey", secret1);
 
-        Map<String, String> values2 = new HashMap<>();
-        values2.put("cates", "foo");
-        Secret secret2 = new Secret(values2);
+        Secret secret2 = new Secret("catz");
 
         subject.set("myspecialkey", secret2);
 
@@ -52,9 +46,7 @@ public class InMemorySecretRepositoryTest {
 
     @Test
     public void testRemovesStoredSecret() {
-        Map<String, String> values = new HashMap<>();
-        values.put("doges", "foo");
-        Secret secret = new Secret(values);
+        Secret secret = new Secret("doges");
 
         subject.set("myspecialkey", secret);
 

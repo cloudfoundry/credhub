@@ -5,21 +5,21 @@ import java.util.Map;
 
 public class Secret {
     @NotNull
-    private Map<String, String> values;
+    private String value;
 
     public Secret() {
     }
 
-    public Secret(Map<String, String> values) {
-        this.values = values;
+    public Secret(String value) {
+        this.value = value;
     }
 
-    public Map<String, String> getValues() {
-        return values;
+    public String getValue() {
+        return value;
     }
 
-    public void setValues(Map<String, String> values) {
-        this.values = values;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     @Override
@@ -29,11 +29,11 @@ public class Secret {
 
         Secret secret = (Secret) obj;
 
-        return values.equals(secret.values);
+        return value.equals(secret.value);
     }
 
     @Override
     public int hashCode() {
-        return values.hashCode();
+        return value.hashCode();
     }
 }

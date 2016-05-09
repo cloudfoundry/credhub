@@ -31,28 +31,24 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     @Test
     @DirtiesContext
     public void validPutSecret() throws Exception {
-        HashMap<String, String> values = new HashMap<>();
-        values.put("key1", "value1");
-        Secret secret = new Secret(values);
+        Secret secret = new Secret("secret contents");
 
         String secretJson = json(secret);
 
-        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/testid", secretJson);
+        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/secret-identifier", secretJson);
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(secretJson));
 
-        Assert.assertEquals(secretRepository.get("testid"), secret);
+        Assert.assertEquals(secretRepository.get("secret-identifier"), secret);
     }
 
     @Test
     @DirtiesContext
     public void validGetSecret() throws Exception {
-        HashMap<String, String> values = new HashMap<>();
-        values.put("key1", "value1");
-        Secret secret = new Secret(values);
+        Secret secret = new Secret("secret contents");
 
         secretRepository.set("whatever", secret);
 
@@ -67,9 +63,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     @Test
     @DirtiesContext
     public void getSecretWithInvalidVersion() throws Exception {
-        HashMap<String, String> values = new HashMap<>();
-        values.put("key1", "value1");
-        Secret secret = new Secret(values);
+        Secret secret = new Secret("secret contents");
 
         secretRepository.set("whatever", secret);
 
@@ -80,9 +74,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     @Test
     @DirtiesContext
     public void validDeleteSecret() throws Exception {
-        HashMap<String, String> values = new HashMap<>();
-        values.put("key1", "value1");
-        Secret secret = new Secret(values);
+        Secret secret = new Secret("super secret do not tellr");
 
         secretRepository.set("whatever", secret);
 
@@ -108,7 +100,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     public void invalidPutWithEmptyJSONShouldReturnBadRequest() throws Exception {
         String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
-        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/testid", "{}");
+        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/secret-identifier", "{}");
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isBadRequest())
@@ -119,7 +111,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     public void invalidPutWithNoBodyShouldReturnBadRequest() throws Exception {
         String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
-        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/testid", "");
+        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/secret/secret-identifier", "");
 
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isBadRequest())
