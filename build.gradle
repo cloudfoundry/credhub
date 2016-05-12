@@ -30,6 +30,7 @@ repositories {
 dependencies {
 	compile('org.springframework.boot:spring-boot-starter-hateoas')
 	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-actuator')
 	testCompile('org.springframework.boot:spring-boot-starter-test')
 	testCompile('org.skyscreamer:jsonassert')
 }
@@ -44,4 +45,20 @@ eclipse {
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '2.12'
+}
+
+sourceSets {
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/it/java')
+		}
+		resources.srcDir file('src/it/resources')
+	}
+}
+
+configurations {
+	integrationTestCompile.extendsFrom testCompile
+	integrationTestRuntime.extendsFrom testRuntime
 }
