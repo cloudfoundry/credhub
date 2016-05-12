@@ -1,39 +1,42 @@
 package io.pivotal.security.entity;
 
 import javax.validation.constraints.NotNull;
-import java.util.Map;
 
 public class Secret {
-    @NotNull
-    private String value;
+  @NotNull
+  private String value;
 
-    public Secret() {
+  public Secret() {
+  }
+
+  public Secret(String value) {
+    this.value = value;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null || getClass() != obj.getClass()) {
+      return false;
     }
 
-    public Secret(String value) {
-        this.value = value;
-    }
+    Secret secret = (Secret) obj;
 
-    public String getValue() {
-        return value;
-    }
+    return value.equals(secret.value);
+  }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        Secret secret = (Secret) obj;
-
-        return value.equals(secret.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return value.hashCode();
-    }
+  @Override
+  public int hashCode() {
+    return value.hashCode();
+  }
 }

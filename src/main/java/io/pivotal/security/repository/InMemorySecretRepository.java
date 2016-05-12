@@ -9,21 +9,21 @@ import java.util.Map;
 @Component
 public class InMemorySecretRepository implements SecretRepository {
 
-    private Map<String, Secret> secrets;
+  private Map<String, Secret> secrets;
 
-    public InMemorySecretRepository() {
-        this.secrets = new HashMap<>();
-    }
+  public InMemorySecretRepository() {
+    this.secrets = new HashMap<>();
+  }
 
-    public void set(String key, Secret secret) {
-        secrets.put(key, secret);
-    }
+  public void set(String key, Secret secret) {
+    secrets.put(key, secret);
+  }
 
-    public Secret get(String key) {
-        return secrets.get(key);
-    }
+  public Secret get(String key) {
+    return secrets.get(key);
+  }
 
-    public Secret delete(String key) {
-        return secrets.remove(key);
-    }
+  public Secret delete(String key) {
+    return secrets.remove(key);
+  }
 }

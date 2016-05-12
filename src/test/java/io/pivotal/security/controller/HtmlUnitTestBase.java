@@ -16,14 +16,14 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 @WebAppConfiguration
 public abstract class HtmlUnitTestBase {
 
-    @Autowired
-    protected ConfigurableWebApplicationContext context;
+  @Autowired
+  protected ConfigurableWebApplicationContext context;
 
-    protected MockMvc mockMvc;
+  protected MockMvc mockMvc;
 
-    @Before
-    public void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context)
-                .build();
-    }
+  @Before
+  public void setUp() {
+    mockMvc = MockMvcBuilders.webAppContextSetup(context)
+      .build();
+  }
 }
