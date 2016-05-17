@@ -12,43 +12,33 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Arrays;
-import java.util.List;
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {CredentialManagerApp.class})
 @WebAppConfiguration
 public class ActuatorIT {
-    @Autowired
-    private WebApplicationContext context;
+  @Autowired
+  private WebApplicationContext context;
 
-    private List<String> actuatorEndpoints;
+  private MockMvc mockMvc;
 
-    private MockMvc mockMvc;
+  @Before
+  public void setup() {
+    mockMvc = MockMvcBuilders
+      .webAppContextSetup(context)
+      .build();
+  }
 
-    @Before
-    public void setup() {
-        mockMvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
+  @Test
+  public void info() throws Exception {
+    String expectedJson = "{\"app\":{\"name\":\"Pivotal Credential Manager\",\"version\":\"0.1.0\"}}";
 
-        actuatorEndpoints = Arrays.asList(
-                "/info"
-        );
-    }
-
-    @Test
-    public void actuatorEndpoints() throws Exception {
-        for (String endpoint : actuatorEndpoints) {
-            mockMvc.perform(get(endpoint))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(containsString("Pivotal")))
-                    .andExpect(content().string(containsString("v1")));
-        }
-    }
+    mockMvc.perform(get("/info"))
+      .andExpect(status().isOk())
+      .andExpect(content().json(expectedJson));
+  }
 }
