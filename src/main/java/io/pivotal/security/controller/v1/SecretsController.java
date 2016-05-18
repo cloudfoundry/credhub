@@ -23,7 +23,7 @@ import javax.validation.ValidationException;
 
 
 @RestController
-@RequestMapping(path = "/api/v1/secret", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = "/api/v1/data", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class SecretsController {
 
   @Autowired
