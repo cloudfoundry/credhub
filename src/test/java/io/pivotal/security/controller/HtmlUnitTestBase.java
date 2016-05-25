@@ -26,4 +26,5 @@ public abstract class HtmlUnitTestBase {
     mockMvc = MockMvcBuilders.webAppContextSetup(context)
         .build();
   }
+
 }

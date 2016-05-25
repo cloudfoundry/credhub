@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.entity.ResponseError;
 import io.pivotal.security.entity.ResponseErrorType;
 import io.pivotal.security.entity.Secret;
+import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.repository.SecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,19 @@ public class SecretsController {
 
   @Autowired
   SecretRepository secretRepository;
+
+  @Autowired
+  SecretGenerator secretGenerator;
+
+  @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
+  Secret generate(@PathVariable String secretPath) {
+    String secretValue = secretGenerator.generateSecret();
+    Secret secret = new Secret(secretValue);
+
+    secretRepository.set(secretPath, secret);
+
+    return secret;
+  }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   Secret add(@PathVariable String secretPath, @Valid @RequestBody Secret secret) {

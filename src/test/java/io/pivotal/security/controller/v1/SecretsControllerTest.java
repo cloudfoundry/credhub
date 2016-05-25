@@ -2,9 +2,14 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.controller.HtmlUnitTestBase;
 import io.pivotal.security.entity.Secret;
+import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -14,6 +19,9 @@ import org.springframework.test.web.servlet.RequestBuilder;
 
 import java.io.IOException;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,6 +34,19 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Autowired
   private SecretRepository secretRepository;
+
+  @InjectMocks
+  @Autowired
+  private SecretsController secretsController;
+
+  @Mock
+  private SecretGenerator secretGenerator;
+
+  @Before
+  public void setUp() {
+    super.setUp();
+    MockitoAnnotations.initMocks(this);
+  }
 
   @Test
   @DirtiesContext
@@ -84,6 +105,24 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
+  @DirtiesContext
+  public void validGenerateSecret() throws Exception {
+    when(secretGenerator.generateSecret()).thenReturn("very-secret");
+
+    Secret expectedSecret = new Secret("very-secret");
+    String expectedJson = json(expectedSecret);
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
+
+    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+  }
+
+  @Test
   public void getReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
     mockMvc.perform(get("/api/v1/data/whatever"))
         .andExpect(status().isNotFound());
@@ -119,6 +158,12 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
     return put(path)
+        .content(requestBody)
+        .contentType(MediaType.APPLICATION_JSON_UTF8);
+  }
+
+  private RequestBuilder postRequestBuilder(String path, String requestBody) {
+    return post(path)
         .content(requestBody)
         .contentType(MediaType.APPLICATION_JSON_UTF8);
   }
