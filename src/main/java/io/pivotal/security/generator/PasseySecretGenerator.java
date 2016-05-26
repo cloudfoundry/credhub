@@ -14,6 +14,10 @@ import java.util.List;
 @Component
 public class PasseySecretGenerator implements SecretGenerator {
 
+  public static final int DEFAULT_LENGTH = 20;
+  public static final int MIN_LENGTH = 4;
+  public static final int MAX_LENGTH = 200;
+
   @Autowired
   PasswordGenerator passwordGenerator;
 
@@ -43,13 +47,19 @@ public class PasseySecretGenerator implements SecretGenerator {
 
   @Override
   public String generateSecret(SecretParameters parameters) {
-    int passwordLength = 20;
-
-    if (parameters.getLength() > 0) {
-      passwordLength = parameters.getLength();
-    }
+    int passwordLength = normalizedSecretLength(parameters.getLength());
 
     return passwordGenerator.generatePassword(passwordLength, characterRules);
+  }
+
+  private int normalizedSecretLength(int length) {
+    int passwordLength = DEFAULT_LENGTH;
+
+    if (length >= MIN_LENGTH && length <= MAX_LENGTH) {
+      passwordLength = length;
+    }
+
+    return passwordLength;
   }
 
 }

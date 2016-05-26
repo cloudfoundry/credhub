@@ -40,7 +40,6 @@ public class PasseySecretGeneratorTest {
   @Captor
   private ArgumentCaptor<List<CharacterRule>> captor;
 
-
   @Before
   public void setUp() {
     MockitoAnnotations.initMocks(this);
@@ -71,6 +70,28 @@ public class PasseySecretGeneratorTest {
 
     Mockito.verify(passwordGenerator).generatePassword(eq(42), captor.capture());
     assertThat(captor.getValue().size(), equalTo(4));
+  }
+
+  @Test
+  public void generateSecretWithLessThanMinLength() throws Exception {
+    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+
+    SecretParameters secretParameters = new SecretParameters();
+    secretParameters.setLength(3);
+
+    String secretValue = subject.generateSecret(secretParameters);
+    assertThat(secretValue, equalTo("very-secret"));
+  }
+
+  @Test
+  public void generateSecretWithMoreThanMaxLength() throws Exception {
+    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+
+    SecretParameters secretParameters = new SecretParameters();
+    secretParameters.setLength(201);
+
+    String secretValue = subject.generateSecret(secretParameters);
+    assertThat(secretValue, equalTo("very-secret"));
   }
 
 }
