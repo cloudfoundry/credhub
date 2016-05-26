@@ -3,6 +3,8 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.controller.HtmlUnitTestBase;
 import io.pivotal.security.entity.Secret;
 import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.model.GeneratorRequest;
+import io.pivotal.security.model.SecretParameters;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,7 +24,10 @@ import java.io.IOException;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -106,13 +111,59 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   @DirtiesContext
-  public void validGenerateSecret() throws Exception {
-    when(secretGenerator.generateSecret()).thenReturn("very-secret");
+  public void generateSecretWithEmptyBody() throws Exception {
+    SecretParameters parameters = new SecretParameters();
+    when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
     Secret expectedSecret = new Secret("very-secret");
     String expectedJson = json(expectedSecret);
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
+
+    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+  }
+
+  @Test
+  @DirtiesContext
+  public void generateSecretWithEmptyParameters() throws Exception {
+    SecretParameters parameters = new SecretParameters();
+    when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
+
+    Secret expectedSecret = new Secret("very-secret");
+    String expectedJson = json(expectedSecret);
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"parameters\":{}}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
+
+    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+  }
+
+  @Test
+  @DirtiesContext
+  public void generateSecretWithLength() throws Exception {
+    SecretParameters parameters = new SecretParameters();
+    parameters.setLength(42);
+
+    when(secretGenerator.generateSecret(parameters)).thenReturn("long-secret");
+
+    Secret expectedSecret = new Secret("long-secret");
+    String expectedJson = json(expectedSecret);
+
+    GeneratorRequest generatorRequest = new GeneratorRequest();
+    generatorRequest.setParameters(parameters);
+
+    String requestJson = json(generatorRequest);
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isOk())

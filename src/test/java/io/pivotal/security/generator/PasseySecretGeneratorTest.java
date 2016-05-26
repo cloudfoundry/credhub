@@ -1,10 +1,16 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.model.SecretParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,13 +47,29 @@ public class PasseySecretGeneratorTest {
   }
 
   @Test
-  public void generateSecret() throws Exception {
+  public void generateSecretWithDefaultParameters() throws Exception {
     when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
 
-    String secretValue = subject.generateSecret();
+    SecretParameters secretParameters = new SecretParameters();
+
+    String secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue, equalTo("very-secret"));
 
     Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
+    assertThat(captor.getValue().size(), equalTo(4));
+  }
+
+  @Test
+  public void generateSecretWithSpecificLength() throws Exception {
+    when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-secret");
+
+    SecretParameters secretParameters = new SecretParameters();
+    secretParameters.setLength(42);
+
+    String secretValue = subject.generateSecret(secretParameters);
+    assertThat(secretValue, equalTo("very-secret"));
+
+    Mockito.verify(passwordGenerator).generatePassword(eq(42), captor.capture());
     assertThat(captor.getValue().size(), equalTo(4));
   }
 

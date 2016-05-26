@@ -1,5 +1,6 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.model.SecretParameters;
 import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
@@ -33,16 +34,22 @@ public class PasseySecretGenerator implements SecretGenerator {
     };
 
     characterRules = Arrays.asList(
-        new CharacterRule(EnglishCharacterData.UpperCase),
-        new CharacterRule(EnglishCharacterData.LowerCase),
-        new CharacterRule(EnglishCharacterData.Digit),
-        new CharacterRule(specialCharacters)
+      new CharacterRule(EnglishCharacterData.UpperCase),
+      new CharacterRule(EnglishCharacterData.LowerCase),
+      new CharacterRule(EnglishCharacterData.Digit),
+      new CharacterRule(specialCharacters)
     );
   }
 
   @Override
-  public String generateSecret() {
-    return passwordGenerator.generatePassword(20, characterRules);
+  public String generateSecret(SecretParameters parameters) {
+    int passwordLength = 20;
+
+    if (parameters.getLength() > 0) {
+      passwordLength = parameters.getLength();
+    }
+
+    return passwordGenerator.generatePassword(passwordLength, characterRules);
   }
 
 }
