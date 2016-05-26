@@ -1,9 +1,13 @@
 package io.pivotal.security.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SecretParameters {
 
   private int length;
+
+  @JsonProperty("exclude_upper")
+  private boolean excludeUpper;
 
   public int getLength() {
     return length;
@@ -13,6 +17,14 @@ public class SecretParameters {
     this.length = length;
   }
 
+  public boolean isExcludeUpper() {
+    return excludeUpper;
+  }
+
+  public void setExcludeUpper(boolean excludeUpper) {
+    this.excludeUpper = excludeUpper;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -20,12 +32,15 @@ public class SecretParameters {
 
     SecretParameters that = (SecretParameters) o;
 
-    return length == that.length;
+    if (length != that.length) return false;
+    return excludeUpper == that.excludeUpper;
   }
 
   @Override
   public int hashCode() {
-    return length;
+    int result = length;
+    result = 31 * result + (excludeUpper ? 1 : 0);
+    return result;
   }
 
 }

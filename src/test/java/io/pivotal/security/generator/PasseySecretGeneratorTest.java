@@ -19,7 +19,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
@@ -46,7 +48,7 @@ public class PasseySecretGeneratorTest {
   }
 
   @Test
-  public void generateSecretWithDefaultParameters() throws Exception {
+  public void generateSecretWithDefaultParameters() {
     when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
 
     SecretParameters secretParameters = new SecretParameters();
@@ -59,7 +61,7 @@ public class PasseySecretGeneratorTest {
   }
 
   @Test
-  public void generateSecretWithSpecificLength() throws Exception {
+  public void generateSecretWithSpecificLength() {
     when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-secret");
 
     SecretParameters secretParameters = new SecretParameters();
@@ -73,7 +75,7 @@ public class PasseySecretGeneratorTest {
   }
 
   @Test
-  public void generateSecretWithLessThanMinLength() throws Exception {
+  public void generateSecretWithLessThanMinLength() {
     when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
 
     SecretParameters secretParameters = new SecretParameters();
@@ -84,7 +86,7 @@ public class PasseySecretGeneratorTest {
   }
 
   @Test
-  public void generateSecretWithMoreThanMaxLength() throws Exception {
+  public void generateSecretWithMoreThanMaxLength() {
     when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
 
     SecretParameters secretParameters = new SecretParameters();
@@ -92,6 +94,26 @@ public class PasseySecretGeneratorTest {
 
     String secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue, equalTo("very-secret"));
+  }
+
+  @Test
+  public void generateSecretWithoutUppercase() {
+    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+
+    SecretParameters secretParameters = new SecretParameters();
+    secretParameters.setExcludeUpper(true);
+
+    String secretValue = subject.generateSecret(secretParameters);
+    assertThat(secretValue, equalTo("very-secret"));
+
+    Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
+
+    List<CharacterRule> characterRules = captor.getValue();
+    assertThat(characterRules.size(), equalTo(3));
+
+    for (CharacterRule characterRule : characterRules) {
+      assertThat(characterRule.getValidCharacters(), not(containsString("ABC")));
+    }
   }
 
 }

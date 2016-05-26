@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.controller.HtmlUnitTestBase;
 import io.pivotal.security.entity.Secret;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.model.GeneratorRequest;
 import io.pivotal.security.model.SecretParameters;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.Assert;
@@ -30,7 +29,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 
 public class SecretsControllerTest extends HtmlUnitTestBase {
 
@@ -99,7 +97,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @DirtiesContext
   public void validDeleteSecret() throws Exception {
-    Secret secret = new Secret("super secret do not tellr");
+    Secret secret = new Secret("super secret do not tell");
 
     secretRepository.set("whatever", secret);
 
@@ -149,19 +147,17 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   @DirtiesContext
-  public void generateSecretWithLength() throws Exception {
-    SecretParameters parameters = new SecretParameters();
-    parameters.setLength(42);
+  public void generateSecretWithParameters() throws Exception {
+    SecretParameters expectedParameters = new SecretParameters();
+    expectedParameters.setExcludeUpper(true);
+    expectedParameters.setLength(42);
 
-    when(secretGenerator.generateSecret(parameters)).thenReturn("long-secret");
+    when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
     Secret expectedSecret = new Secret("long-secret");
     String expectedJson = json(expectedSecret);
 
-    GeneratorRequest generatorRequest = new GeneratorRequest();
-    generatorRequest.setParameters(parameters);
-
-    String requestJson = json(generatorRequest);
+    String requestJson = "{\"parameters\":{\"length\":42, \"exclude_upper\": true}}";
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
