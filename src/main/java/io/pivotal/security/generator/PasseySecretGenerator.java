@@ -41,12 +41,15 @@ public class PasseySecretGenerator implements SecretGenerator {
   @Override
   public String generateSecret(SecretParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();
-    characterRules.add(new CharacterRule(EnglishCharacterData.LowerCase));
     characterRules.add(new CharacterRule(EnglishCharacterData.Digit));
     characterRules.add(new CharacterRule(specialCharacters));
 
     if (!parameters.isExcludeUpper()) {
       characterRules.add(new CharacterRule(EnglishCharacterData.UpperCase));
+    }
+
+    if (!parameters.isExcludeLower()) {
+      characterRules.add(new CharacterRule(EnglishCharacterData.LowerCase));
     }
 
     int passwordLength = normalizedSecretLength(parameters.getLength());

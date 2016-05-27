@@ -150,6 +150,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   public void generateSecretWithParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
     expectedParameters.setExcludeUpper(true);
+    expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
@@ -157,7 +158,13 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     Secret expectedSecret = new Secret("long-secret");
     String expectedJson = json(expectedSecret);
 
-    String requestJson = "{\"parameters\":{\"length\":42, \"exclude_upper\": true}}";
+    String requestJson = "{" +
+      "\"parameters\":{" +
+      "\"length\":42, " +
+      "\"exclude_upper\": true," +
+      "\"exclude_lower\": true" +
+      "}" +
+      "}";
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
