@@ -21,7 +21,9 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -152,7 +154,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     expectedParameters.setExcludeSpecial(true);
     expectedParameters.setExcludeNumber(true);
     expectedParameters.setExcludeUpper(true);
-    expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
@@ -165,7 +166,37 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
       "\"length\":42, " +
       "\"exclude_special\": true," +
       "\"exclude_number\": true," +
-      "\"exclude_upper\": true," +
+      "\"exclude_upper\": true" +
+      "}" +
+      "}";
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
+
+    mockMvc.perform(requestBuilder)
+      .andExpect(status().isOk())
+      .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+      .andExpect(content().json(expectedJson));
+
+    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+  }
+
+  @Test
+  @DirtiesContext
+  public void generateSecretWithDifferentParameters() throws Exception {
+    SecretParameters expectedParameters = new SecretParameters();
+    expectedParameters.setExcludeSpecial(true);
+    expectedParameters.setExcludeLower(true);
+    expectedParameters.setLength(42);
+
+    when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
+
+    Secret expectedSecret = new Secret("long-secret");
+    String expectedJson = json(expectedSecret);
+
+    String requestJson = "{" +
+      "\"parameters\":{" +
+      "\"length\":42, " +
+      "\"exclude_special\": true," +
       "\"exclude_lower\": true" +
       "}" +
       "}";
@@ -178,6 +209,25 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
       .andExpect(content().json(expectedJson));
 
     assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+  }
+
+  @Test
+  @DirtiesContext
+  public void generateSecretWithAllExcludeParameters() throws Exception {
+    String requestJson = "{" +
+      "\"parameters\":{" +
+      "\"exclude_special\": true," +
+      "\"exclude_number\": true," +
+      "\"exclude_upper\": true," +
+      "\"exclude_lower\": true" +
+      "}" +
+      "}";
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
+
+    mockMvc.perform(requestBuilder)
+      .andExpect(status().isBadRequest())
+      .andExpect(content().string(not(isEmptyString())));
   }
 
   @Test

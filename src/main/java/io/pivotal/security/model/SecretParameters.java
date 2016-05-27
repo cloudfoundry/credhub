@@ -60,15 +60,27 @@ public class SecretParameters {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     SecretParameters that = (SecretParameters) o;
 
-    if (length != that.length) return false;
-    if (excludeSpecial != that.excludeSpecial) return false;
-    if (excludeNumber != that.excludeNumber) return false;
-    if (excludeUpper != that.excludeUpper) return false;
+    if (length != that.length) {
+      return false;
+    }
+    if (excludeSpecial != that.excludeSpecial) {
+      return false;
+    }
+    if (excludeNumber != that.excludeNumber) {
+      return false;
+    }
+    if (excludeUpper != that.excludeUpper) {
+      return false;
+    }
     return excludeLower == that.excludeLower;
   }
 

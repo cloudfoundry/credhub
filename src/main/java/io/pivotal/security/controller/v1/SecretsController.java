@@ -7,11 +7,15 @@ import io.pivotal.security.model.ResponseError;
 import io.pivotal.security.model.ResponseErrorType;
 import io.pivotal.security.model.SecretParameters;
 import io.pivotal.security.repository.SecretRepository;
+import io.pivotal.security.validator.GeneratorRequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,9 +24,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
-import java.io.IOException;
 
 
 @RestController
@@ -35,12 +40,33 @@ public class SecretsController {
   @Autowired
   SecretGenerator secretGenerator;
 
+  @Autowired
+  GeneratorRequestValidator validator;
+
+  private MessageSourceAccessor messageSourceAccessor;
+
+  @Autowired
+  private MessageSource messageSource;
+
+  @PostConstruct
+  public void init() {
+    messageSourceAccessor = new MessageSourceAccessor(messageSource);
+  }
+
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
-  Secret generate(@PathVariable String secretPath, @RequestBody GeneratorRequest generatorRequest) {
+  ResponseEntity generate(@PathVariable String secretPath, @Valid @RequestBody GeneratorRequest generatorRequest, BindingResult result) {
     SecretParameters secretParameters = generatorRequest.getParameters();
 
     if (secretParameters == null) {
       secretParameters = new SecretParameters();
+    }
+    generatorRequest.setParameters(secretParameters);
+    validator.validate(generatorRequest, result);
+    if (result.hasErrors()) {
+      String code = result.getAllErrors().get(0).getCode();
+      String errorMessage = messageSourceAccessor.getMessage(code);
+      HttpStatus status = HttpStatus.BAD_REQUEST;
+      return new ResponseEntity(errorMessage, status);
     }
 
     String secretValue = secretGenerator.generateSecret(secretParameters);
@@ -48,7 +74,7 @@ public class SecretsController {
 
     secretRepository.set(secretPath, secret);
 
-    return secret;
+    return new ResponseEntity<>(secret, HttpStatus.OK);
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
