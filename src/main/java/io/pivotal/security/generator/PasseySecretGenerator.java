@@ -41,10 +41,13 @@ public class PasseySecretGenerator implements SecretGenerator {
   @Override
   public String generateSecret(SecretParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();
-    characterRules.add(new CharacterRule(EnglishCharacterData.Digit));
 
     if (!parameters.isExcludeSpecial()) {
       characterRules.add(new CharacterRule(specialCharacters));
+    }
+
+    if (!parameters.isExcludeNumber()) {
+      characterRules.add(new CharacterRule(EnglishCharacterData.Digit));
     }
 
     if (!parameters.isExcludeUpper()) {

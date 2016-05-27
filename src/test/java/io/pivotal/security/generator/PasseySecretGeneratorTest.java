@@ -156,4 +156,24 @@ public class PasseySecretGeneratorTest {
     }
   }
 
+  @Test
+  public void generateSecretWithoutNumber() {
+    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+
+    SecretParameters secretParameters = new SecretParameters();
+    secretParameters.setExcludeNumber(true);
+
+    String secretValue = subject.generateSecret(secretParameters);
+    assertThat(secretValue, equalTo("very-secret"));
+
+    Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
+
+    List<CharacterRule> characterRules = captor.getValue();
+    assertThat(characterRules.size(), equalTo(3));
+
+    for (CharacterRule characterRule : characterRules) {
+      assertThat(characterRule.getValidCharacters(), not(containsString("123")));
+    }
+  }
+
 }

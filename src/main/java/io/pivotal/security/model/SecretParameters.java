@@ -6,14 +6,17 @@ public class SecretParameters {
 
   private int length;
 
+  @JsonProperty("exclude_special")
+  private boolean excludeSpecial;
+
+  @JsonProperty("exclude_number")
+  private boolean excludeNumber;
+
   @JsonProperty("exclude_upper")
   private boolean excludeUpper;
 
   @JsonProperty("exclude_lower")
   private boolean excludeLower;
-
-  @JsonProperty("exclude_special")
-  private boolean excludeSpecial;
 
   public int getLength() {
     return length;
@@ -21,6 +24,22 @@ public class SecretParameters {
 
   public void setLength(int length) {
     this.length = length;
+  }
+
+  public boolean isExcludeSpecial() {
+    return excludeSpecial;
+  }
+
+  public void setExcludeSpecial(boolean excludeSpecial) {
+    this.excludeSpecial = excludeSpecial;
+  }
+
+  public boolean isExcludeNumber() {
+    return excludeNumber;
+  }
+
+  public void setExcludeNumber(boolean excludeNumber) {
+    this.excludeNumber = excludeNumber;
   }
 
   public boolean isExcludeUpper() {
@@ -39,14 +58,6 @@ public class SecretParameters {
     this.excludeLower = excludeLower;
   }
 
-  public boolean isExcludeSpecial() {
-    return excludeSpecial;
-  }
-
-  public void setExcludeSpecial(boolean excludeSpecial) {
-    this.excludeSpecial = excludeSpecial;
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -55,17 +66,19 @@ public class SecretParameters {
     SecretParameters that = (SecretParameters) o;
 
     if (length != that.length) return false;
+    if (excludeSpecial != that.excludeSpecial) return false;
+    if (excludeNumber != that.excludeNumber) return false;
     if (excludeUpper != that.excludeUpper) return false;
-    if (excludeLower != that.excludeLower) return false;
-    return excludeSpecial == that.excludeSpecial;
+    return excludeLower == that.excludeLower;
   }
 
   @Override
   public int hashCode() {
     int result = length;
+    result = 31 * result + (excludeSpecial ? 1 : 0);
+    result = 31 * result + (excludeNumber ? 1 : 0);
     result = 31 * result + (excludeUpper ? 1 : 0);
     result = 31 * result + (excludeLower ? 1 : 0);
-    result = 31 * result + (excludeSpecial ? 1 : 0);
     return result;
   }
 

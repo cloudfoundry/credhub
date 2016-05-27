@@ -150,6 +150,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   public void generateSecretWithParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
     expectedParameters.setExcludeSpecial(true);
+    expectedParameters.setExcludeNumber(true);
     expectedParameters.setExcludeUpper(true);
     expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
@@ -163,6 +164,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
       "\"parameters\":{" +
       "\"length\":42, " +
       "\"exclude_special\": true," +
+      "\"exclude_number\": true," +
       "\"exclude_upper\": true," +
       "\"exclude_lower\": true" +
       "}" +
