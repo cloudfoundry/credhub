@@ -9,7 +9,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
@@ -17,14 +16,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.when;
 
 
@@ -35,6 +34,9 @@ public class PasseySecretGeneratorTest {
   @InjectMocks
   @Autowired
   private PasseySecretGenerator subject;
+
+  @Mock
+  private CharacterRuleProvider characterRuleProvider;
 
   @Mock
   private PasswordGenerator passwordGenerator;
@@ -48,16 +50,17 @@ public class PasseySecretGeneratorTest {
   }
 
   @Test
-  public void generateSecretWithDefaultParameters() {
-    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
-
+  public void generateSecret() {
     SecretParameters secretParameters = new SecretParameters();
+
+    List<CharacterRule> characterRules = new ArrayList<>();
+
+    when(characterRuleProvider.getCharacterRules(same(secretParameters))).thenReturn(characterRules);
+
+    when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
 
     String secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue, equalTo("very-secret"));
-
-    Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
-    assertThat(captor.getValue().size(), equalTo(4));
   }
 
   @Test
@@ -69,9 +72,6 @@ public class PasseySecretGeneratorTest {
 
     String secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue, equalTo("very-secret"));
-
-    Mockito.verify(passwordGenerator).generatePassword(eq(42), captor.capture());
-    assertThat(captor.getValue().size(), equalTo(4));
   }
 
   @Test
@@ -94,86 +94,6 @@ public class PasseySecretGeneratorTest {
 
     String secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue, equalTo("very-secret"));
-  }
-
-  @Test
-  public void generateSecretWithoutUppercase() {
-    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
-
-    SecretParameters secretParameters = new SecretParameters();
-    secretParameters.setExcludeUpper(true);
-
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
-
-    Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
-
-    List<CharacterRule> characterRules = captor.getValue();
-    assertThat(characterRules.size(), equalTo(3));
-
-    for (CharacterRule characterRule : characterRules) {
-      assertThat(characterRule.getValidCharacters(), not(containsString("ABC")));
-    }
-  }
-
-  @Test
-  public void generateSecretWithoutLowercase() {
-    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
-
-    SecretParameters secretParameters = new SecretParameters();
-    secretParameters.setExcludeLower(true);
-
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
-
-    Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
-
-    List<CharacterRule> characterRules = captor.getValue();
-    assertThat(characterRules.size(), equalTo(3));
-
-    for (CharacterRule characterRule : characterRules) {
-      assertThat(characterRule.getValidCharacters(), not(containsString("abc")));
-    }
-  }
-
-  @Test
-  public void generateSecretWithoutSpecial() {
-    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
-
-    SecretParameters secretParameters = new SecretParameters();
-    secretParameters.setExcludeSpecial(true);
-
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
-
-    Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
-
-    List<CharacterRule> characterRules = captor.getValue();
-    assertThat(characterRules.size(), equalTo(3));
-
-    for (CharacterRule characterRule : characterRules) {
-      assertThat(characterRule.getValidCharacters(), not(containsString("*")));
-    }
-  }
-
-  @Test
-  public void generateSecretWithoutNumber() {
-    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
-
-    SecretParameters secretParameters = new SecretParameters();
-    secretParameters.setExcludeNumber(true);
-
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
-
-    Mockito.verify(passwordGenerator).generatePassword(eq(20), captor.capture());
-
-    List<CharacterRule> characterRules = captor.getValue();
-    assertThat(characterRules.size(), equalTo(3));
-
-    for (CharacterRule characterRule : characterRules) {
-      assertThat(characterRule.getValidCharacters(), not(containsString("123")));
-    }
   }
 
 }
