@@ -12,6 +12,9 @@ public class SecretParameters {
   @JsonProperty("exclude_lower")
   private boolean excludeLower;
 
+  @JsonProperty("exclude_special")
+  private boolean excludeSpecial;
+
   public int getLength() {
     return length;
   }
@@ -36,6 +39,14 @@ public class SecretParameters {
     this.excludeLower = excludeLower;
   }
 
+  public boolean isExcludeSpecial() {
+    return excludeSpecial;
+  }
+
+  public void setExcludeSpecial(boolean excludeSpecial) {
+    this.excludeSpecial = excludeSpecial;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -45,7 +56,8 @@ public class SecretParameters {
 
     if (length != that.length) return false;
     if (excludeUpper != that.excludeUpper) return false;
-    return excludeLower == that.excludeLower;
+    if (excludeLower != that.excludeLower) return false;
+    return excludeSpecial == that.excludeSpecial;
   }
 
   @Override
@@ -53,6 +65,7 @@ public class SecretParameters {
     int result = length;
     result = 31 * result + (excludeUpper ? 1 : 0);
     result = 31 * result + (excludeLower ? 1 : 0);
+    result = 31 * result + (excludeSpecial ? 1 : 0);
     return result;
   }
 

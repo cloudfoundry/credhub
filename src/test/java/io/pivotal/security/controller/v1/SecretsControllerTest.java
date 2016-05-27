@@ -149,6 +149,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @DirtiesContext
   public void generateSecretWithParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
+    expectedParameters.setExcludeSpecial(true);
     expectedParameters.setExcludeUpper(true);
     expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
@@ -161,6 +162,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     String requestJson = "{" +
       "\"parameters\":{" +
       "\"length\":42, " +
+      "\"exclude_special\": true," +
       "\"exclude_upper\": true," +
       "\"exclude_lower\": true" +
       "}" +
