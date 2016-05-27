@@ -29,8 +29,8 @@ public class ActuatorIT {
   @Before
   public void setup() {
     mockMvc = MockMvcBuilders
-        .webAppContextSetup(context)
-        .build();
+      .webAppContextSetup(context)
+      .build();
   }
 
   @Test
@@ -38,7 +38,7 @@ public class ActuatorIT {
     String expectedJson = "{\"app\":{\"name\":\"Pivotal Credential Manager\",\"version\":\"0.1.0\"}}";
 
     mockMvc.perform(get("/info"))
-        .andExpect(status().isOk())
-        .andExpect(content().json(expectedJson));
+      .andExpect(status().isOk())
+      .andExpect(content().json(expectedJson));
   }
 }
