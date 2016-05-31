@@ -1,5 +1,6 @@
 buildscript {
     ext {
+        kotlin_version = '1.0.2'
         springBootVersion = '1.3.5.RELEASE'
     }
     repositories {
@@ -8,10 +9,12 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("org.owasp:dependency-check-gradle:1.3.6")
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
     }
 }
 
 apply plugin: 'java'
+apply plugin: 'kotlin'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
@@ -34,6 +37,7 @@ repositories {
 
 
 dependencies {
+    compile("org.jetbrains.kotlin:kotlin-stdlib:${kotlin_version}")
     compile('org.springframework.boot:spring-boot-starter-hateoas')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-actuator')
