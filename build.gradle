@@ -88,6 +88,10 @@ jacocoTestReport {
     }
 }
 
+bootRun {
+    addResources = true
+}
+
 test {
     jacoco {
         append = false
