@@ -21,7 +21,7 @@ public class InMemorySecretRepositoryTest {
 
   @Test
   public void testReturnsStoredSecret() {
-    Secret secret = new Secret("doge");
+    Secret secret = new Secret("doge", "value");
 
     subject.set("myspecialkey", secret);
 
@@ -30,11 +30,11 @@ public class InMemorySecretRepositoryTest {
 
   @Test
   public void testOverridesStoredSecret() {
-    Secret secret1 = new Secret("doges");
+    Secret secret1 = new Secret("doges", "value");
 
     subject.set("myspecialkey", secret1);
 
-    Secret secret2 = new Secret("catz");
+    Secret secret2 = new Secret("catz", "value");
 
     subject.set("myspecialkey", secret2);
 
@@ -43,7 +43,7 @@ public class InMemorySecretRepositoryTest {
 
   @Test
   public void testRemovesStoredSecret() {
-    Secret secret = new Secret("doges");
+    Secret secret = new Secret("doges", "value");
 
     subject.set("myspecialkey", secret);
 

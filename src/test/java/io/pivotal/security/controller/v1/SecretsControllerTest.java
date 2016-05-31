@@ -56,74 +56,74 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @DirtiesContext
   public void validPutSecret() throws Exception {
-    Secret secret = new Secret("secret contents");
+    String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
+    Secret expectedSecret = new Secret("secret contents", "value");
+    String expectedJson = json(expectedSecret);
 
-    String secretJson = json(secret);
-
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", secretJson);
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isOk())
-      .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-      .andExpect(content().json(secretJson));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
 
-    Assert.assertEquals(secretRepository.get("secret-identifier"), secret);
+    Assert.assertEquals(secretRepository.get("secret-identifier"), expectedSecret);
   }
 
   @Test
   @DirtiesContext
   public void validGetSecret() throws Exception {
-    Secret secret = new Secret("secret contents");
+    Secret secret = new Secret("secret contents", "value");
 
     secretRepository.set("whatever", secret);
 
     String expectedJson = json(secret);
 
     mockMvc.perform(get("/api/v1/data/whatever"))
-      .andExpect(status().isOk())
-      .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-      .andExpect(content().json(expectedJson));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
   }
 
   @Test
   @DirtiesContext
   public void getSecretWithInvalidVersion() throws Exception {
-    Secret secret = new Secret("secret contents");
+    Secret secret = new Secret("secret contents", "value");
 
     secretRepository.set("whatever", secret);
 
     mockMvc.perform(get("/api/v2/data/whatever"))
-      .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound());
   }
 
   @Test
   @DirtiesContext
   public void validDeleteSecret() throws Exception {
-    Secret secret = new Secret("super secret do not tell");
+    Secret secret = new Secret("super secret do not tell", "value");
 
     secretRepository.set("whatever", secret);
 
     mockMvc.perform(delete("/api/v1/data/whatever"))
-      .andExpect(status().isOk());
+        .andExpect(status().isOk());
 
     Assert.assertNull(secretRepository.get("whatever"));
   }
 
   @Test
   @DirtiesContext
-  public void generateSecretWithEmptyBody() throws Exception {
+  public void generateSecretWithNoParameters() throws Exception {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
-    Secret expectedSecret = new Secret("very-secret");
+    Secret expectedSecret = new Secret("very-secret", "value");
     String expectedJson = json(expectedSecret);
 
-    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{}");
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\"}");
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isOk())
-      .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-      .andExpect(content().json(expectedJson));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
 
     assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
   }
@@ -134,15 +134,15 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
-    Secret expectedSecret = new Secret("very-secret");
+    Secret expectedSecret = new Secret("very-secret", "value");
     String expectedJson = json(expectedSecret);
 
-    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"parameters\":{}}");
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\",\"parameters\":{}}");
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isOk())
-      .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-      .andExpect(content().json(expectedJson));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
 
     assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
   }
@@ -158,24 +158,25 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
-    Secret expectedSecret = new Secret("long-secret");
+    Secret expectedSecret = new Secret("long-secret", "value");
     String expectedJson = json(expectedSecret);
 
     String requestJson = "{" +
-      "\"parameters\":{" +
-      "\"length\":42, " +
-      "\"exclude_special\": true," +
-      "\"exclude_number\": true," +
-      "\"exclude_upper\": true" +
-      "}" +
-      "}";
+        "\"type\":\"value\"," +
+        "\"parameters\":{" +
+        "\"length\":42, " +
+        "\"exclude_special\": true," +
+        "\"exclude_number\": true," +
+        "\"exclude_upper\": true" +
+        "}" +
+        "}";
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isOk())
-      .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-      .andExpect(content().json(expectedJson));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
 
     assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
   }
@@ -190,23 +191,24 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
-    Secret expectedSecret = new Secret("long-secret");
+    Secret expectedSecret = new Secret("long-secret", "value");
     String expectedJson = json(expectedSecret);
 
     String requestJson = "{" +
-      "\"parameters\":{" +
-      "\"length\":42, " +
-      "\"exclude_special\": true," +
-      "\"exclude_lower\": true" +
-      "}" +
-      "}";
+        "\"type\":\"value\"," +
+        "\"parameters\":{" +
+        "\"length\":42, " +
+        "\"exclude_special\": true," +
+        "\"exclude_lower\": true" +
+        "}" +
+        "}";
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isOk())
-      .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-      .andExpect(content().json(expectedJson));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
 
     assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
   }
@@ -215,31 +217,32 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @DirtiesContext
   public void generateSecretWithAllExcludeParameters() throws Exception {
     String requestJson = "{" +
-      "\"parameters\":{" +
-      "\"exclude_special\": true," +
-      "\"exclude_number\": true," +
-      "\"exclude_upper\": true," +
-      "\"exclude_lower\": true" +
-      "}" +
-      "}";
+        "\"type\":\"value\"," +
+        "\"parameters\":{" +
+        "\"exclude_special\": true," +
+        "\"exclude_number\": true," +
+        "\"exclude_upper\": true," +
+        "\"exclude_lower\": true" +
+        "}" +
+        "}";
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isBadRequest())
-      .andExpect(content().string(not(isEmptyString())));
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(not(isEmptyString())));
   }
 
   @Test
   public void getReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
     mockMvc.perform(get("/api/v1/data/whatever"))
-      .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound());
   }
 
   @Test
   public void deleteReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
     mockMvc.perform(delete("/api/v1/data/whatever"))
-      .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -249,8 +252,8 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "{}");
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isBadRequest())
-      .andExpect(content().json(badResponse));
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponse));
   }
 
   @Test
@@ -260,26 +263,46 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "");
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isBadRequest())
-      .andExpect(content().json(badResponse));
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponse));
+  }
+
+  @Test
+  @DirtiesContext
+  public void generateSecretReturnsBadRequestWhenBodyEmpty() throws Exception {
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/secret-identifier", "");
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json("{}"));
+  }
+
+  @Test
+  @DirtiesContext
+  public void putSecretReturnsBadRequestIfTypeIsNotKnown() throws Exception {
+    String requestJson = "{\"type\":\"foo\",\"value\":\"secret contents\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json("{}"));
   }
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
     return put(path)
-      .content(requestBody)
-      .contentType(MediaType.APPLICATION_JSON_UTF8);
+        .content(requestBody)
+        .contentType(MediaType.APPLICATION_JSON_UTF8);
   }
 
   private RequestBuilder postRequestBuilder(String path, String requestBody) {
     return post(path)
-      .content(requestBody)
-      .contentType(MediaType.APPLICATION_JSON_UTF8);
+        .content(requestBody)
+        .contentType(MediaType.APPLICATION_JSON_UTF8);
   }
 
   protected String json(Object o) throws IOException {
     MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
     this.mappingJackson2HttpMessageConverter.write(
-      o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
+        o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
     return mockHttpOutputMessage.getBodyAsString();
   }
 }

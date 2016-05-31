@@ -70,7 +70,7 @@ public class SecretsController {
     }
 
     String secretValue = secretGenerator.generateSecret(secretParameters);
-    Secret secret = new Secret(secretValue);
+    Secret secret = new Secret(secretValue, generatorRequest.getType());
 
     secretRepository.set(secretPath, secret);
 
@@ -78,7 +78,7 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
-  Secret add(@PathVariable String secretPath, @Valid @RequestBody Secret secret) {
+  Secret set(@PathVariable String secretPath, @Valid @RequestBody Secret secret) {
     secretRepository.set(secretPath, secret);
     return secret;
   }
