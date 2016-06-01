@@ -64,10 +64,8 @@ public class SecretsController {
     generatorRequest.setParameters(secretParameters);
     validator.validate(generatorRequest, result);
     if (result.hasErrors()) {
-      String code = result.getAllErrors().get(0).getCode();
-      String errorMessage = messageSourceAccessor.getMessage(code);
-      HttpStatus status = HttpStatus.BAD_REQUEST;
-      return new ResponseEntity<>(Collections.singletonMap("message", errorMessage), status);
+      String key = result.getAllErrors().get(0).getCode();
+      return createErrorResponse(key, HttpStatus.BAD_REQUEST);
     }
 
     String secretValue = secretGenerator.generateSecret(secretParameters);
@@ -88,23 +86,32 @@ public class SecretsController {
   ResponseEntity delete(@PathVariable String secretPath) {
     Secret secret = secretRepository.delete(secretPath);
 
-    HttpStatus code = (secret == null) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
-
-    return new ResponseEntity(code);
+    if (secret == null) {
+      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity(HttpStatus.OK);
+    }
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity<Secret> get(@PathVariable String secretPath) {
     Secret secret = secretRepository.get(secretPath);
 
-    HttpStatus code = (secret == null) ? HttpStatus.NOT_FOUND : HttpStatus.OK;
-
-    return new ResponseEntity<>(secret, code);
+    if (secret == null) {
+      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity(secret, HttpStatus.OK);
+    }
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleHttpMessageNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
+  }
+
+  private ResponseEntity createErrorResponse(String key, HttpStatus status) {
+    String errorMessage = messageSourceAccessor.getMessage(key);
+    return new ResponseEntity<>(Collections.singletonMap("message", errorMessage), status);
   }
 }
