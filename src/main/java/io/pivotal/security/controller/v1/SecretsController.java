@@ -77,9 +77,12 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
-  Secret set(@PathVariable String secretPath, @Valid @RequestBody Secret secret) {
+  ResponseEntity set(@PathVariable String secretPath, @Valid @RequestBody Secret secret, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
+    }
     secretRepository.set(secretPath, secret);
-    return secret;
+    return new ResponseEntity<>(secret, HttpStatus.OK);
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
@@ -94,13 +97,13 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-  ResponseEntity<Secret> get(@PathVariable String secretPath) {
+  ResponseEntity get(@PathVariable String secretPath) {
     Secret secret = secretRepository.get(secretPath);
 
     if (secret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity(secret, HttpStatus.OK);
+      return new ResponseEntity<>(secret, HttpStatus.OK);
     }
   }
 
@@ -112,6 +115,6 @@ public class SecretsController {
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
     String errorMessage = messageSourceAccessor.getMessage(key);
-    return new ResponseEntity<>(Collections.singletonMap("message", errorMessage), status);
+    return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
   }
 }

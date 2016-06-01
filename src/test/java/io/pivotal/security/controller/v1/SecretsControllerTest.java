@@ -216,7 +216,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @DirtiesContext
   public void generateSecretWithAllExcludeParameters() throws Exception {
-    String badResponse = "{ \"message\": \"The combination of parameters in the request is not allowed. Please validate your input and retry your request.\" }";
+    String badResponse = "{ \"error\": \"The combination of parameters in the request is not allowed. Please validate your input and retry your request.\" }";
     String requestJson = "{" +
         "\"type\":\"value\"," +
         "\"parameters\":{" +
@@ -236,7 +236,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void getReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
-    String badResponse = "{\"message\": \"Secret not found. Please validate your input and retry your request.\"}";
+    String badResponse = "{\"error\": \"Secret not found. Please validate your input and retry your request.\"}";
 
     mockMvc.perform(get("/api/v1/data/whatever"))
         .andExpect(status().isNotFound())
@@ -245,7 +245,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void deleteReturnsNotFoundWhenSecretDoesNotExist() throws Exception {
-    String badResponse = "{\"message\": \"Secret not found. Please validate your input and retry your request.\"}";
+    String badResponse = "{\"error\": \"Secret not found. Please validate your input and retry your request.\"}";
 
     mockMvc.perform(delete("/api/v1/data/whatever"))
         .andExpect(status().isNotFound())
@@ -254,7 +254,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void invalidPutWithEmptyJSONShouldReturnBadRequest() throws Exception {
-    // TODO error -> message
     String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "{}");
@@ -266,7 +265,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void invalidPutWithNoBodyShouldReturnBadRequest() throws Exception {
-    // TODO error -> message
     String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "");
@@ -279,21 +277,25 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @DirtiesContext
   public void generateSecretReturnsBadRequestWhenBodyEmpty() throws Exception {
+    String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/secret-identifier", "");
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json("{}"));
+        .andExpect(content().json(badResponse));
   }
 
   @Test
   @DirtiesContext
   public void putSecretReturnsBadRequestIfTypeIsNotKnown() throws Exception {
+    String badResponse = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
+
     String requestJson = "{\"type\":\"foo\",\"value\":\"secret contents\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json("{}"));
+        .andExpect(content().json(badResponse));
   }
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
