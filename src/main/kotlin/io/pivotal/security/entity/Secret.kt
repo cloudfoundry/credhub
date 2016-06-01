@@ -10,5 +10,5 @@ data class Secret @JsonCreator constructor(
 
     @JsonProperty("type")
     @field:Pattern(regexp = "value")
-    var type: String
+    var type: String?
 )

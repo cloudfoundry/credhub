@@ -20,7 +20,12 @@ public class GeneratorRequestValidator implements Validator {
     SecretParameters params = generatorRequest.getParameters();
     boolean isInvalid = params.isExcludeLower() && params.isExcludeUpper() && params.isExcludeSpecial() && params.isExcludeNumber();
     if (isInvalid) {
-      errors.reject("error.excludes_all_charsets", "my custom message");
+      errors.reject("error.excludes_all_charsets", "cannot exclude all types of characters");
+    }
+
+    final String generatorRequestType = generatorRequest.getType();
+    if (!"value".equals(generatorRequestType)) {
+      errors.reject("error.secret_type_invalid", "must specify a valid type");
     }
 
   }

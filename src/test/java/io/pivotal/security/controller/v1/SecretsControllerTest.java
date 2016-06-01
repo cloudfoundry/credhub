@@ -18,12 +18,8 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.RequestBuilder;
 
-import java.io.IOException;
-
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.text.IsEmptyString.isEmptyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -31,6 +27,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.IOException;
 
 public class SecretsControllerTest extends HtmlUnitTestBase {
 
@@ -254,24 +252,62 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void invalidPutWithEmptyJSONShouldReturnBadRequest() throws Exception {
-    String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+    String badResponseJson = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "{}");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json(badResponse));
+        .andExpect(content().json(badResponseJson));
   }
 
   @Test
   public void invalidPutWithNoBodyShouldReturnBadRequest() throws Exception {
-    String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+    String badResponseJson = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
-        .andExpect(content().json(badResponse));
+        .andExpect(content().json(badResponseJson));
+  }
+
+  @Test
+  public void invalidPutWithMissingTypeShouldReturnBadRequest() throws Exception {
+    String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and" +
+        " retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
+        "{\"value\":\"my-secret\"}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponseJson));
+  }
+
+  @Test
+  public void invalidPutWithNoTypeShouldReturnBadRequest() throws Exception {
+    String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and" +
+        " retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
+        "{\"value\":\"my-secret\"}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponseJson));
+  }
+
+  @Test
+  public void invalidPutWithUnsupportedTypeShouldReturnBadRequest() throws Exception {
+    String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
+        "{\"type\":\"foo\", \"value\":\"my-secret\"}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponseJson));
   }
 
   @Test
@@ -283,6 +319,17 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
         .andExpect(content().json(badResponse));
+  }
+
+  @Test
+  @DirtiesContext
+  public void generateSecretReturnsBadRequestWhenJsonEmpty() throws Exception {
+    String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/secret-identifier", "{}");
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponseJson));
   }
 
   @Test

@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.Collections;
+
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
@@ -78,7 +79,7 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, @Valid @RequestBody Secret secret, BindingResult bindingResult) {
-    if (bindingResult.hasErrors()) {
+    if (secret.getType() == null || bindingResult.hasErrors()) {
       return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
     }
     secretRepository.set(secretPath, secret);
