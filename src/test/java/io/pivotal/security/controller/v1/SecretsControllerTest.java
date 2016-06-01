@@ -229,8 +229,8 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
     mockMvc.perform(requestBuilder)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().string(not(isEmptyString())));
+      .andExpect(status().isBadRequest())
+      .andExpect(content().json("{ \"message\": \"The combination of parameters in the request is not allowed. Please validate your input and retry your request.\" }"));
   }
 
   @Test

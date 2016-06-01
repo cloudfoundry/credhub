@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.Collections;
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
@@ -66,7 +67,7 @@ public class SecretsController {
       String code = result.getAllErrors().get(0).getCode();
       String errorMessage = messageSourceAccessor.getMessage(code);
       HttpStatus status = HttpStatus.BAD_REQUEST;
-      return new ResponseEntity(errorMessage, status);
+      return new ResponseEntity<>(Collections.singletonMap("message", errorMessage), status);
     }
 
     String secretValue = secretGenerator.generateSecret(secretParameters);
