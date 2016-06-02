@@ -63,7 +63,7 @@ public class SecretsController {
     }
 
     String secretValue = secretGenerator.generateSecret(secretParameters);
-    Secret secret = new Secret(secretValue, generatorRequest.getType());
+    Secret secret = Secret.make(secretValue, generatorRequest.getType());
 
     secretStore.set(secretPath, secret);
 
@@ -72,7 +72,7 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, @Valid @RequestBody Secret secret, BindingResult bindingResult) {
-    if (secret.getType() == null || bindingResult.hasErrors()) {
+    if (bindingResult.hasErrors()) {
       return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
     }
     secretStore.set(secretPath, secret);

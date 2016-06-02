@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static io.pivotal.security.matcher.SecretMatcher.equalToSecret;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -52,7 +52,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Transactional
   public void validPutSecret() throws Exception {
     String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
-    Secret expectedSecret = new Secret("secret contents", "value");
+    Secret expectedSecret = Secret.make("secret contents", "value");
     String expectedJson = json(expectedSecret);
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
@@ -62,13 +62,13 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    Assert.assertEquals(secretStore.get("secret-identifier"), expectedSecret);
+    Assert.assertThat(secretStore.get("secret-identifier"), equalToSecret(expectedSecret));
   }
 
   @Test
   @Transactional
   public void validGetSecret() throws Exception {
-    Secret secret = new Secret("secret contents", "value");
+    Secret secret = Secret.make("secret contents", "value");
 
     secretStore.set("whatever", secret);
 
@@ -83,7 +83,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @Transactional
   public void getSecretWithInvalidVersion() throws Exception {
-    Secret secret = new Secret("secret contents", "value");
+    Secret secret = Secret.make("secret contents", "value");
 
     secretStore.set("whatever", secret);
 
@@ -94,7 +94,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @Transactional
   public void validDeleteSecret() throws Exception {
-    Secret secret = new Secret("super secret do not tell", "value");
+    Secret secret = Secret.make("super secret do not tell", "value");
 
     secretStore.set("whatever", secret);
 
@@ -110,7 +110,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
-    Secret expectedSecret = new Secret("very-secret", "value");
+    Secret expectedSecret = Secret.make("very-secret", "value");
     String expectedJson = json(expectedSecret);
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\"}");
@@ -120,7 +120,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalToSecret(expectedSecret));
   }
 
   @Test
@@ -129,7 +129,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
-    Secret expectedSecret = new Secret("very-secret", "value");
+    Secret expectedSecret = Secret.make("very-secret", "value");
     String expectedJson = json(expectedSecret);
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\",\"parameters\":{}}");
@@ -139,7 +139,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalToSecret(expectedSecret));
   }
 
   @Test
@@ -153,7 +153,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
-    Secret expectedSecret = new Secret("long-secret", "value");
+    Secret expectedSecret = Secret.make("long-secret", "value");
     String expectedJson = json(expectedSecret);
 
     String requestJson = "{" +
@@ -173,7 +173,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalToSecret(expectedSecret));
   }
 
   @Test
@@ -186,7 +186,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
-    Secret expectedSecret = new Secret("long-secret", "value");
+    Secret expectedSecret = Secret.make("long-secret", "value");
     String expectedJson = json(expectedSecret);
 
     String requestJson = "{" +
@@ -205,7 +205,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalToSecret(expectedSecret));
   }
 
   @Test
