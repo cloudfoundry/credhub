@@ -18,17 +18,14 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.RequestBuilder;
 
+import java.io.IOException;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.IOException;
 
 public class SecretsControllerTest extends HtmlUnitTestBase {
 
@@ -228,8 +225,8 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", requestJson);
 
     mockMvc.perform(requestBuilder)
-      .andExpect(status().isBadRequest())
-      .andExpect(content().json(badResponse));
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponse));
   }
 
   @Test

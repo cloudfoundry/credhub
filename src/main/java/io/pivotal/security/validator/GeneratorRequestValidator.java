@@ -16,7 +16,7 @@ public class GeneratorRequestValidator implements Validator {
 
   @Override
   public void validate(Object target, Errors errors) {
-    GeneratorRequest generatorRequest = (GeneratorRequest)target;
+    GeneratorRequest generatorRequest = (GeneratorRequest) target;
     SecretParameters params = generatorRequest.getParameters();
     boolean isInvalid = params.isExcludeLower() && params.isExcludeUpper() && params.isExcludeSpecial() && params.isExcludeNumber();
     if (isInvalid) {

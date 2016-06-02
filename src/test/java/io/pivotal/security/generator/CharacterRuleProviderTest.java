@@ -41,9 +41,9 @@ public class CharacterRuleProviderTest {
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
     assertThat(characterRules, iterableWithSize(3));
     assertThat(characterRules, containsInAnyOrder(
-      hasCharacters("abc"),
-      hasCharacters("123"),
-      hasCharacters("#$%")
+        hasCharacters("abc"),
+        hasCharacters("123"),
+        hasCharacters("#$%")
     ));
   }
 
@@ -55,9 +55,9 @@ public class CharacterRuleProviderTest {
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
     assertThat(characterRules, iterableWithSize(3));
     assertThat(characterRules, containsInAnyOrder(
-      hasCharacters("ABC"),
-      hasCharacters("123"),
-      hasCharacters("#$%")
+        hasCharacters("ABC"),
+        hasCharacters("123"),
+        hasCharacters("#$%")
     ));
   }
 
@@ -69,9 +69,9 @@ public class CharacterRuleProviderTest {
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
     assertThat(characterRules, iterableWithSize(3));
     assertThat(characterRules, containsInAnyOrder(
-      hasCharacters("ABC"),
-      hasCharacters("abc"),
-      hasCharacters("123")
+        hasCharacters("ABC"),
+        hasCharacters("abc"),
+        hasCharacters("123")
     ));
   }
 
@@ -83,9 +83,9 @@ public class CharacterRuleProviderTest {
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
     assertThat(characterRules, iterableWithSize(3));
     assertThat(characterRules, containsInAnyOrder(
-      hasCharacters("ABC"),
-      hasCharacters("abc"),
-      hasCharacters("#$%")
+        hasCharacters("ABC"),
+        hasCharacters("abc"),
+        hasCharacters("#$%")
     ));
   }
 
