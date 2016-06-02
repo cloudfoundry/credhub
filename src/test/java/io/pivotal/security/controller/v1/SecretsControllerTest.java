@@ -1,10 +1,10 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.controller.HtmlUnitTestBase;
-import io.pivotal.security.entity.Secret;
 import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.model.Secret;
 import io.pivotal.security.model.SecretParameters;
-import io.pivotal.security.repository.SecretRepository;
+import io.pivotal.security.repository.SecretStore;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
   @Autowired
-  private SecretRepository secretRepository;
+  private SecretStore secretStore;
 
   @InjectMocks
   @Autowired
@@ -49,7 +49,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void validPutSecret() throws Exception {
     String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
     Secret expectedSecret = new Secret("secret contents", "value");
@@ -62,15 +62,15 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    Assert.assertEquals(secretRepository.get("secret-identifier"), expectedSecret);
+    Assert.assertEquals(secretStore.get("secret-identifier"), expectedSecret);
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void validGetSecret() throws Exception {
     Secret secret = new Secret("secret contents", "value");
 
-    secretRepository.set("whatever", secret);
+    secretStore.set("whatever", secret);
 
     String expectedJson = json(secret);
 
@@ -81,31 +81,31 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void getSecretWithInvalidVersion() throws Exception {
     Secret secret = new Secret("secret contents", "value");
 
-    secretRepository.set("whatever", secret);
+    secretStore.set("whatever", secret);
 
     mockMvc.perform(get("/api/v2/data/whatever"))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void validDeleteSecret() throws Exception {
     Secret secret = new Secret("super secret do not tell", "value");
 
-    secretRepository.set("whatever", secret);
+    secretStore.set("whatever", secret);
 
     mockMvc.perform(delete("/api/v1/data/whatever"))
         .andExpect(status().isOk());
 
-    Assert.assertNull(secretRepository.get("whatever"));
+    Assert.assertNull(secretStore.get("whatever"));
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void generateSecretWithNoParameters() throws Exception {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
@@ -120,11 +120,11 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void generateSecretWithEmptyParameters() throws Exception {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
@@ -139,11 +139,11 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void generateSecretWithParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
     expectedParameters.setExcludeSpecial(true);
@@ -173,11 +173,11 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void generateSecretWithDifferentParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
     expectedParameters.setExcludeSpecial(true);
@@ -205,11 +205,11 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.get("my-secret"), equalTo(expectedSecret));
+    assertThat(secretStore.get("my-secret"), equalTo(expectedSecret));
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void generateSecretWithAllExcludeParameters() throws Exception {
     String badResponse = "{ \"error\": \"The combination of parameters in the request is not allowed. Please validate your input and retry your request.\" }";
     String requestJson = "{" +
@@ -308,7 +308,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void generateSecretReturnsBadRequestWhenBodyEmpty() throws Exception {
     String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
 
@@ -319,7 +319,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void generateSecretReturnsBadRequestWhenJsonEmpty() throws Exception {
     String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
@@ -330,7 +330,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @DirtiesContext
+  @Transactional
   public void putSecretReturnsBadRequestIfTypeIsNotKnown() throws Exception {
     String badResponse = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 

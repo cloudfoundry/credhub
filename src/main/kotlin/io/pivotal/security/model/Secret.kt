@@ -1,4 +1,4 @@
-package io.pivotal.security.entity
+package io.pivotal.security.model
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty

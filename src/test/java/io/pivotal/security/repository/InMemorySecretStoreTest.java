@@ -1,17 +1,27 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.Secret;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.model.Secret;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-public class InMemorySecretRepositoryTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+public class InMemorySecretStoreTest {
 
-  private InMemorySecretRepository subject;
+  @Autowired
+  InMemorySecretRepository inMemorySecretRepository;
+
+  private InMemorySecretStore subject;
 
   @Before
   public void setup() {
-    this.subject = new InMemorySecretRepository();
+    this.subject = new InMemorySecretStore(inMemorySecretRepository);
   }
 
   @Test

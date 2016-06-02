@@ -1,8 +1,8 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.Secret;
+import io.pivotal.security.model.Secret;
 
-public interface SecretRepository {
+public interface SecretStore {
   void set(String key, Secret secret);
 
   Secret get(String key);
