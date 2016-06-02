@@ -21,20 +21,18 @@ constructor(private val secretRepository: InMemorySecretRepository) : SecretStor
 
   override fun get(key: String): Secret? {
     val namedSecret = secretRepository.findOneByName(key)
-    if (namedSecret != null) {
-      return Secret(namedSecret.value, namedSecret.type)
+    return namedSecret?.let { s ->
+      return Secret(value = s.value, type = s.type)
     }
-    return null
   }
 
   @Transactional
   override fun delete(key: String): Secret? {
     val namedSecret = secretRepository.findOneByName(key)
-    if (namedSecret != null) {
-      secretRepository.delete(namedSecret)
-      return Secret(namedSecret.value, namedSecret.type)
+    return namedSecret?.let { s ->
+      secretRepository.delete(s)
+      return Secret(value = s.value, type = s.type)
     }
-    return null
   }
 
 }
