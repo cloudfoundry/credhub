@@ -1,27 +1,29 @@
 package io.pivotal.security.repository;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import com.greghaskins.spectrum.SpringSpectrum;
 import io.pivotal.security.model.Secret;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.Slinky;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.SpringSpectrum.*;
 import static io.pivotal.security.matcher.SecretMatcher.equalToSecret;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 public class InMemorySecretStoreTest {
 
   @Autowired
   InMemorySecretRepository inMemorySecretRepository;
 
+  InMemorySecretStore subject;
+
   {
-    Slinky.prepareTestInstance(InMemorySecretStoreTest.class, this);
-    InMemorySecretStore subject = new InMemorySecretStore(inMemorySecretRepository);
+    beforeEach(() -> {
+      subject = new InMemorySecretStore(inMemorySecretRepository);
+    });
 
     it("returns null when the store is empty", () -> {
       Assert.assertNull(subject.get("whatever"));
