@@ -30,6 +30,7 @@ checkstyle.toolVersion = '6.17'
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 
@@ -42,6 +43,7 @@ dependencies {
     compile('com.h2database:h2')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.skyscreamer:jsonassert')
+    testCompile('com.greghaskins:spectrum:0.6.1')
 }
 
 

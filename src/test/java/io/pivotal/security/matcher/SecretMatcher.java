@@ -18,6 +18,10 @@ public class SecretMatcher extends BaseMatcher<Secret> {
 
   @Override
   public boolean matches(Object item) {
+    if (item == null) {
+      return expectedValue == null;
+    }
+
     if (item.getClass().isAssignableFrom(Secret.class)) {
       Secret secret = (Secret) item;
       return Objects.equals(secret.type, expectedValue.type)

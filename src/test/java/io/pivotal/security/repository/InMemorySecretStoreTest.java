@@ -1,66 +1,59 @@
 package io.pivotal.security.repository;
 
+import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.model.Secret;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.Slinky;
 
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.matcher.SecretMatcher.equalToSecret;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 public class InMemorySecretStoreTest {
 
   @Autowired
   InMemorySecretRepository inMemorySecretRepository;
 
-  private InMemorySecretStore subject;
+  {
+    Slinky.prepareTestInstance(InMemorySecretStoreTest.class, this);
+    InMemorySecretStore subject = new InMemorySecretStore(inMemorySecretRepository);
 
-  @Before
-  public void setup() {
-    this.subject = new InMemorySecretStore(inMemorySecretRepository);
-  }
+    it("returns null when the store is empty", () -> {
+      Assert.assertNull(subject.get("whatever"));
+    });
 
-  @Test
-  public void testGetReturnsNull() {
-    Assert.assertNull(subject.get("whatever"));
-  }
+    describe("after storing a secret", () -> {
+      Secret secret = Secret.make("doge", "value");
 
-  @Test
-  public void testReturnsStoredSecret() {
-    Secret secret = Secret.make("doge", "value");
+      beforeEach(() -> {
+        subject.set("myspecialkey", secret);
+      });
 
-    subject.set("myspecialkey", secret);
+      it("can be retrieved", () -> {
+        Assert.assertThat(subject.get("myspecialkey"), equalToSecret(secret));
+      });
 
-    Assert.assertThat(subject.get("myspecialkey"), equalToSecret(secret));
-  }
+      it("can be deleted", () -> {
+        Assert.assertThat(subject.delete("myspecialkey"), equalToSecret(secret));
+        Assert.assertNull(subject.get("myspecialkey"));
+      });
 
-  @Test
-  public void testOverridesStoredSecret() {
-    Secret secret1 = Secret.make("doges", "value");
+      describe("setting a secret with the same name", () -> {
+        Secret secret2 = Secret.make("catz", "value");
 
-    subject.set("myspecialkey", secret1);
+        beforeEach(() -> {
+          subject.set("myspecialkey", secret2);
+        });
 
-    Secret secret2 = Secret.make("catz", "value");
-
-    subject.set("myspecialkey", secret2);
-
-    Assert.assertThat(subject.get("myspecialkey"), equalToSecret(secret2));
-  }
-
-  @Test
-  public void testRemovesStoredSecret() {
-    Secret secret = Secret.make("doges", "value");
-
-    subject.set("myspecialkey", secret);
-
-    Assert.assertThat(subject.delete("myspecialkey"), equalToSecret(secret));
-
-    Assert.assertNull(subject.get("myspecialkey"));
+        it("overrides the stored secret", () -> {
+          Assert.assertThat(subject.get("myspecialkey"), equalToSecret(secret2));
+        });
+      });
+    });
   }
 }
