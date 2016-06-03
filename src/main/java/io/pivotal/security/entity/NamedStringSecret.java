@@ -6,7 +6,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
-public class NamedSecret {
+public class NamedStringSecret {
 
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
@@ -14,9 +14,6 @@ public class NamedSecret {
 
   @Column(unique = true, nullable = false)
   public String name;
-
-  @Column(nullable = false)
-  public String type = "value";
 
   @Column(nullable = false)
   public String value;

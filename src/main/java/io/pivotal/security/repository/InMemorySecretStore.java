@@ -1,6 +1,6 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.model.Secret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,21 +19,20 @@ public class InMemorySecretStore implements SecretStore {
   @Transactional
   @Override
   public void set(String key, Secret secret) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret == null) {
-      namedSecret = new NamedSecret();
-      namedSecret.name = key;
+    NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
+    if (namedStringSecret == null) {
+      namedStringSecret = new NamedStringSecret();
+      namedStringSecret.name = key;
     }
-    namedSecret.type = secret.type;
-    namedSecret.value = secret.value;
-    secretRepository.save(namedSecret);
+    namedStringSecret.value = secret.value;
+    secretRepository.save(namedStringSecret);
   }
 
   @Override
   public Secret get(String key) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret != null) {
-      return Secret.make(namedSecret.value, namedSecret.type);
+    NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
+    if (namedStringSecret != null) {
+      return Secret.make(namedStringSecret.value, "value");
     }
     return null;
   }
@@ -41,10 +40,10 @@ public class InMemorySecretStore implements SecretStore {
   @Transactional
   @Override
   public Secret delete(String key) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret != null) {
-      secretRepository.delete(namedSecret);
-      return Secret.make(namedSecret.value, namedSecret.type);
+    NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
+    if (namedStringSecret != null) {
+      secretRepository.delete(namedStringSecret);
+      return Secret.make(namedStringSecret.value, "value");
     }
     return null;
   }
