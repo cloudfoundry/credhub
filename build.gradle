@@ -41,6 +41,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.passay:passay:1.1.0')
     compile('com.h2database:h2')
+    compile('com.jayway.jsonpath:json-path:2.2.0')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.skyscreamer:jsonassert')
     testCompile('com.greghaskins:spectrum:0.6.1')

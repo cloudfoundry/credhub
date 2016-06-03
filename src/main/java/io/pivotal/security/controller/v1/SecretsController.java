@@ -1,13 +1,15 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.model.Secret;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.model.GeneratorRequest;
+import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
 import io.pivotal.security.model.ResponseError;
 import io.pivotal.security.model.ResponseErrorType;
-import io.pivotal.security.model.SecretParameters;
+import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.StringGeneratorRequest;
 import io.pivotal.security.repository.SecretStore;
-import io.pivotal.security.validator.GeneratorRequestValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -22,6 +24,7 @@ import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 
 
@@ -36,7 +39,10 @@ public class SecretsController {
   SecretGenerator secretGenerator;
 
   @Autowired
-  GeneratorRequestValidator validator;
+  StringGeneratorRequestTranslator stringGeneratorRequestTranslator;
+
+  @Autowired
+  Configuration jsonPathConfiguration;
 
   private MessageSourceAccessor messageSourceAccessor;
 
@@ -49,25 +55,25 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
-  ResponseEntity generate(@PathVariable String secretPath, @Valid @RequestBody GeneratorRequest generatorRequest, BindingResult result) {
-    SecretParameters secretParameters = generatorRequest.getParameters();
-
-    if (secretParameters == null) {
-      secretParameters = new SecretParameters();
-    }
-    generatorRequest.setParameters(secretParameters);
-    validator.validate(generatorRequest, result);
-    if (result.hasErrors()) {
-      String key = result.getAllErrors().get(0).getCode();
-      return createErrorResponse(key, HttpStatus.BAD_REQUEST);
+  ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
+    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
+    String type = parsed.read("$.type");
+    if (!"value".equals(type)) {
+      return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
     }
 
-    String secretValue = secretGenerator.generateSecret(secretParameters);
-    Secret secret = Secret.make(secretValue, generatorRequest.getType());
+    try {
+      StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
 
-    secretStore.set(secretPath, secret);
+      String secretValue = secretGenerator.generateSecret(generatorRequest.getParameters());
+      Secret secret = Secret.make(secretValue, generatorRequest.getType());
 
-    return new ResponseEntity<>(secret, HttpStatus.OK);
+      secretStore.set(secretPath, secret);
+
+      return new ResponseEntity<>(secret, HttpStatus.OK);
+    } catch (ValidationException ve) {
+      return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
+    }
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)

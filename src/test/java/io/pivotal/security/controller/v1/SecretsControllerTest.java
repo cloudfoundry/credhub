@@ -310,7 +310,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @Transactional
   public void generateSecretReturnsBadRequestWhenBodyEmpty() throws Exception {
-    String badResponse = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+    String badResponse = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/secret-identifier", "");
     mockMvc.perform(requestBuilder)

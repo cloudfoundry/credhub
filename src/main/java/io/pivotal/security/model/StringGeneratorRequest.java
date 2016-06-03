@@ -1,7 +1,7 @@
 package io.pivotal.security.model;
 
 
-public class GeneratorRequest {
+public class StringGeneratorRequest {
 
   private SecretParameters parameters;
   private String type;
