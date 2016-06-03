@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 
 import static com.greghaskins.spectrum.SpringSpectrum.*;
-import static io.pivotal.security.matcher.SecretMatcher.equalToSecret;
+import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -37,11 +37,11 @@ public class InMemorySecretStoreTest {
       });
 
       it("can be retrieved", () -> {
-        Assert.assertThat(subject.get("myspecialkey"), equalToSecret(secret));
+        Assert.assertThat(subject.get("myspecialkey"), reflectiveEqualTo(secret));
       });
 
       it("can be deleted", () -> {
-        Assert.assertThat(subject.delete("myspecialkey"), equalToSecret(secret));
+        Assert.assertThat(subject.delete("myspecialkey"), reflectiveEqualTo(secret));
         Assert.assertNull(subject.get("myspecialkey"));
       });
 
@@ -53,7 +53,7 @@ public class InMemorySecretStoreTest {
         });
 
         it("overrides the stored secret", () -> {
-          Assert.assertThat(subject.get("myspecialkey"), equalToSecret(secret2));
+          Assert.assertThat(subject.get("myspecialkey"), reflectiveEqualTo(secret2));
         });
       });
     });
