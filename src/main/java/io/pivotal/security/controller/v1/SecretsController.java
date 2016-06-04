@@ -17,11 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.validation.BindingResult;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
-import javax.validation.Valid;
 import javax.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,10 +76,18 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
-  ResponseEntity set(@PathVariable String secretPath, @Valid @RequestBody Secret secret, BindingResult bindingResult) {
-    if (bindingResult.hasErrors()) {
+  ResponseEntity set(@PathVariable String secretPath, InputStream requestBody) {
+    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
+    String type = parsed.read("$.type");
+    if (!"value".equals(type)) {
       return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
     }
+
+    String value = parsed.read("$.value");
+    if (StringUtils.isEmpty(value)) {
+      throw new ValidationException(); // spring shows generic invalid message
+    }
+    Secret secret = Secret.make(value, type);
     secretStore.set(secretPath, secret);
     return new ResponseEntity<>(secret, HttpStatus.OK);
   }

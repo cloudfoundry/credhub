@@ -249,7 +249,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void invalidPutWithEmptyJSONShouldReturnBadRequest() throws Exception {
-    String badResponseJson = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+    String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "{}");
 
@@ -260,7 +260,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void invalidPutWithNoBodyShouldReturnBadRequest() throws Exception {
-    String badResponseJson = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+    String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", "");
 
@@ -276,6 +276,18 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
         "{\"value\":\"my-secret\"}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponseJson));
+  }
+
+  @Test
+  public void invalidPutWithMissingValueShouldReturnBadRequest() throws Exception {
+    String badResponseJson = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
+        "{\"type\":\"value\"}");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
