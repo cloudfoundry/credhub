@@ -7,7 +7,7 @@ import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
 import io.pivotal.security.model.ResponseError;
 import io.pivotal.security.model.ResponseErrorType;
-import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.StringSecret;
 import io.pivotal.security.model.StringGeneratorRequest;
 import io.pivotal.security.repository.SecretStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,11 +65,11 @@ public class SecretsController {
       StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
 
       String secretValue = secretGenerator.generateSecret(generatorRequest.getParameters());
-      Secret secret = Secret.make(generatorRequest.getType(), secretValue);
+      StringSecret stringSecret = StringSecret.make(secretValue);
 
-      secretStore.set(secretPath, secret);
+      secretStore.set(secretPath, stringSecret);
 
-      return new ResponseEntity<>(secret, HttpStatus.OK);
+      return new ResponseEntity<>(stringSecret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -87,16 +87,16 @@ public class SecretsController {
     if (StringUtils.isEmpty(value)) {
       throw new ValidationException(); // spring shows generic invalid message
     }
-    Secret secret = Secret.make(type, value);
-    secretStore.set(secretPath, secret);
-    return new ResponseEntity<>(secret, HttpStatus.OK);
+    StringSecret stringSecret = StringSecret.make(value);
+    secretStore.set(secretPath, stringSecret);
+    return new ResponseEntity<>(stringSecret, HttpStatus.OK);
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath) {
-    Secret secret = secretStore.delete(secretPath);
+    StringSecret stringSecret = secretStore.delete(secretPath);
 
-    if (secret == null) {
+    if (stringSecret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     } else {
       return new ResponseEntity(HttpStatus.OK);
@@ -105,12 +105,12 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath) {
-    Secret secret = secretStore.get(secretPath);
+    StringSecret stringSecret = secretStore.get(secretPath);
 
-    if (secret == null) {
+    if (stringSecret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(secret, HttpStatus.OK);
+      return new ResponseEntity<>(stringSecret, HttpStatus.OK);
     }
   }
 

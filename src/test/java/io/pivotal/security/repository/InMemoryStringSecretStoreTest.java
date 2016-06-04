@@ -2,7 +2,7 @@ package io.pivotal.security.repository;
 
 import io.pivotal.security.CredentialManagerApp;
 import com.greghaskins.spectrum.SpringSpectrum;
-import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.StringSecret;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqua
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-public class InMemorySecretStoreTest {
+public class InMemoryStringSecretStoreTest {
 
   @Autowired
   InMemorySecretRepository inMemorySecretRepository;
@@ -30,30 +30,30 @@ public class InMemorySecretStoreTest {
     });
 
     describe("after storing a secret", () -> {
-      Secret secret = Secret.make("value", "doge");
+      StringSecret stringSecret = StringSecret.make("doge");
 
       beforeEach(() -> {
-        subject.set("myspecialkey", secret);
+        subject.set("myspecialkey", stringSecret);
       });
 
       it("can be retrieved", () -> {
-        Assert.assertThat(subject.get("myspecialkey"), reflectiveEqualTo(secret));
+        Assert.assertThat(subject.get("myspecialkey"), reflectiveEqualTo(stringSecret));
       });
 
       it("can be deleted", () -> {
-        Assert.assertThat(subject.delete("myspecialkey"), reflectiveEqualTo(secret));
+        Assert.assertThat(subject.delete("myspecialkey"), reflectiveEqualTo(stringSecret));
         Assert.assertNull(subject.get("myspecialkey"));
       });
 
-      describe("setting a secret with the same name", () -> {
-        Secret secret2 = Secret.make("value", "catz");
+      describe("setting a stringSecret with the same name", () -> {
+        StringSecret stringSecret2 = StringSecret.make("catz");
 
         beforeEach(() -> {
-          subject.set("myspecialkey", secret2);
+          subject.set("myspecialkey", stringSecret2);
         });
 
-        it("overrides the stored secret", () -> {
-          Assert.assertThat(subject.get("myspecialkey"), reflectiveEqualTo(secret2));
+        it("overrides the stored stringSecret", () -> {
+          Assert.assertThat(subject.get("myspecialkey"), reflectiveEqualTo(stringSecret2));
         });
       });
     });

@@ -1,11 +1,11 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.StringSecret;
 
 public interface SecretStore {
-  void set(String key, Secret secret);
+  void set(String key, StringSecret stringSecret);
 
-  Secret get(String key);
+  StringSecret get(String key);
 
-  Secret delete(String key);
+  StringSecret delete(String key);
 }

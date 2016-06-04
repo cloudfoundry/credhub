@@ -1,7 +1,7 @@
 package io.pivotal.security.matcher;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.StringSecret;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -15,25 +15,17 @@ public class ReflectiveEqualsMatcherTest {
   {
     describe("a test for the matcher, which if fails, probably means the matcher is wrong, and not the setup", () -> {
       it("matches reflectively", () -> {
-        Secret secret = new Secret();
-        secret.type = "value";
-        secret.value = "something";
+        StringSecret stringSecret = new StringSecret();
+        stringSecret.value = "something";
 
-        assertThat(secret, reflectiveEqualTo(secret));
+        assertThat(stringSecret, reflectiveEqualTo(stringSecret));
 
-        Secret otherSecret = new Secret();
-        otherSecret.type = "value";
-        otherSecret.value = "something";
-        assertThat(secret, reflectiveEqualTo(otherSecret));
+        StringSecret otherStringSecret = new StringSecret();
+        otherStringSecret.value = "something";
+        assertThat(stringSecret, reflectiveEqualTo(otherStringSecret));
 
-        otherSecret.value = "something-else";
-        assertThat(secret, not(reflectiveEqualTo(otherSecret)));
-
-        otherSecret.type = "ticket";
-        assertThat(secret, not(reflectiveEqualTo(otherSecret)));
-
-        otherSecret.value = "something";
-        assertThat(secret, not(reflectiveEqualTo(otherSecret)));
+        otherStringSecret.value = "something-else";
+        assertThat(stringSecret, not(reflectiveEqualTo(otherStringSecret)));
       });
     });
   }

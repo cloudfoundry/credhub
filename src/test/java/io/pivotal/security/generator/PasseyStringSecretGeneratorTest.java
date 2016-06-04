@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-public class PasseySecretGeneratorTest {
+public class PasseyStringSecretGeneratorTest {
 
   @InjectMocks
   @Autowired

@@ -1,7 +1,7 @@
 package io.pivotal.security.repository;
 
 import io.pivotal.security.entity.NamedStringSecret;
-import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,32 +18,32 @@ public class InMemorySecretStore implements SecretStore {
 
   @Transactional
   @Override
-  public void set(String key, Secret secret) {
+  public void set(String key, StringSecret stringSecret) {
     NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
     if (namedStringSecret == null) {
       namedStringSecret = new NamedStringSecret();
       namedStringSecret.name = key;
     }
-    namedStringSecret.value = secret.value;
+    namedStringSecret.value = stringSecret.value;
     secretRepository.save(namedStringSecret);
   }
 
   @Override
-  public Secret get(String key) {
+  public StringSecret get(String key) {
     NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
     if (namedStringSecret != null) {
-      return Secret.make("value", namedStringSecret.value);
+      return StringSecret.make(namedStringSecret.value);
     }
     return null;
   }
 
   @Transactional
   @Override
-  public Secret delete(String key) {
+  public StringSecret delete(String key) {
     NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
     if (namedStringSecret != null) {
       secretRepository.delete(namedStringSecret);
-      return Secret.make("value", namedStringSecret.value);
+      return StringSecret.make(namedStringSecret.value);
     }
     return null;
   }
