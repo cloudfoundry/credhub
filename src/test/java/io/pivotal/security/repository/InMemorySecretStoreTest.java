@@ -30,7 +30,7 @@ public class InMemorySecretStoreTest {
     });
 
     describe("after storing a secret", () -> {
-      Secret secret = Secret.make("doge", "value");
+      Secret secret = Secret.make("value", "doge");
 
       beforeEach(() -> {
         subject.set("myspecialkey", secret);
@@ -46,7 +46,7 @@ public class InMemorySecretStoreTest {
       });
 
       describe("setting a secret with the same name", () -> {
-        Secret secret2 = Secret.make("catz", "value");
+        Secret secret2 = Secret.make("value", "catz");
 
         beforeEach(() -> {
           subject.set("myspecialkey", secret2);

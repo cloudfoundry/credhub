@@ -32,7 +32,7 @@ public class InMemorySecretStore implements SecretStore {
   public Secret get(String key) {
     NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
     if (namedStringSecret != null) {
-      return Secret.make(namedStringSecret.value, "value");
+      return Secret.make("value", namedStringSecret.value);
     }
     return null;
   }
@@ -43,7 +43,7 @@ public class InMemorySecretStore implements SecretStore {
     NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
     if (namedStringSecret != null) {
       secretRepository.delete(namedStringSecret);
-      return Secret.make(namedStringSecret.value, "value");
+      return Secret.make("value", namedStringSecret.value);
     }
     return null;
   }

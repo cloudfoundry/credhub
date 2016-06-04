@@ -65,7 +65,7 @@ public class SecretsController {
       StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
 
       String secretValue = secretGenerator.generateSecret(generatorRequest.getParameters());
-      Secret secret = Secret.make(secretValue, generatorRequest.getType());
+      Secret secret = Secret.make(generatorRequest.getType(), secretValue);
 
       secretStore.set(secretPath, secret);
 
@@ -87,7 +87,7 @@ public class SecretsController {
     if (StringUtils.isEmpty(value)) {
       throw new ValidationException(); // spring shows generic invalid message
     }
-    Secret secret = Secret.make(value, type);
+    Secret secret = Secret.make(type, value);
     secretStore.set(secretPath, secret);
     return new ResponseEntity<>(secret, HttpStatus.OK);
   }

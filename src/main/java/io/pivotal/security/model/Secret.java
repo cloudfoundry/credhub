@@ -16,7 +16,7 @@ public class Secret {
   public String type;
 
   @JsonCreator
-  public static Secret make(@JsonProperty("value") String value, @JsonProperty("type") String type) {
+  public static Secret make(@JsonProperty("type") String type, @JsonProperty("value") String value) {
     if (value == null) throw new java.lang.IllegalArgumentException("Parameter specified as non-null is null: method io.pivotal.security.model.Secret.make, parameter value");
     Secret secret = new Secret();
     secret.value = value;
