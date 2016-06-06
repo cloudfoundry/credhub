@@ -52,17 +52,15 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Transactional
   public void validPutSecret() throws Exception {
     String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
-    StringSecret expectedStringSecret = StringSecret.make("secret contents");
-    String expectedJson = json(expectedStringSecret);
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(expectedJson));
+        .andExpect(content().json(requestJson));
 
-    Assert.assertThat(secretStore.get("secret-identifier"), reflectiveEqualTo(expectedStringSecret));
+    Assert.assertThat(secretStore.get("secret-identifier"), reflectiveEqualTo(StringSecret.make("secret contents")));
   }
 
   @Test
