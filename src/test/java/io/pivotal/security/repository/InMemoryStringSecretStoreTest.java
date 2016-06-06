@@ -10,6 +10,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 
 import static com.greghaskins.spectrum.SpringSpectrum.*;
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
+import static org.hamcrest.core.Is.is;
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -41,8 +42,9 @@ public class InMemoryStringSecretStoreTest {
       });
 
       it("can be deleted", () -> {
-        Assert.assertThat(subject.delete("myspecialkey"), reflectiveEqualTo(stringSecret));
+        Assert.assertThat(subject.delete("myspecialkey"), is(true));
         Assert.assertNull(subject.get("myspecialkey"));
+        Assert.assertThat(subject.delete("myspecialkey"), is(false));
       });
 
       describe("setting a stringSecret with the same name", () -> {

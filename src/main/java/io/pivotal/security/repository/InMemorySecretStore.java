@@ -39,12 +39,12 @@ public class InMemorySecretStore implements SecretStore {
 
   @Transactional
   @Override
-  public StringSecret delete(String key) {
+  public boolean delete(String key) {
     NamedStringSecret namedStringSecret = secretRepository.findOneByName(key);
     if (namedStringSecret != null) {
       secretRepository.delete(namedStringSecret);
-      return StringSecret.make(namedStringSecret.value);
+      return true;
     }
-    return null;
+    return false;
   }
 }

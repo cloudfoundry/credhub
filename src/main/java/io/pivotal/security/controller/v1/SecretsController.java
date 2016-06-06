@@ -94,12 +94,12 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath) {
-    StringSecret stringSecret = secretStore.delete(secretPath);
+    boolean wasDeleted = secretStore.delete(secretPath);
 
-    if (stringSecret == null) {
-      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
-    } else {
+    if (wasDeleted) {
       return new ResponseEntity(HttpStatus.OK);
+    } else {
+      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     }
   }
 

@@ -7,5 +7,5 @@ public interface SecretStore {
 
   StringSecret get(String key);
 
-  StringSecret delete(String key);
+  boolean delete(String key);
 }
