@@ -1,9 +1,8 @@
 package io.pivotal.security.repository;
 
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedStringSecret;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-interface InMemorySecretRepository extends CrudRepository<NamedSecret, Long> {
+interface InMemorySecretRepository extends JpaRepository<NamedSecret, Long> {
   NamedSecret findOneByName(String name);
 }

@@ -9,7 +9,7 @@ import javax.persistence.*;
 @DiscriminatorValue("string_value")
 public class NamedStringSecret extends NamedSecret {
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 7000)
   private String value;
 
   public NamedStringSecret() {
