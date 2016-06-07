@@ -53,7 +53,7 @@ public class NamedCertificateSecret extends NamedSecret {
   }
 
   @Override
-  public Object convertToModel() {
+  public CertificateSecret convertToModel() {
     return new CertificateSecret(ca, pub, priv);
   }
 }

@@ -92,6 +92,12 @@ public class SecretsController {
       String ca = parsed.read("$.certificate.ca");
       String pub = parsed.read("$.certificate.public");
       String priv = parsed.read("$.certificate.private");
+      ca = StringUtils.isEmpty(ca) ? null : ca;
+      pub = StringUtils.isEmpty(pub) ? null : pub;
+      priv = StringUtils.isEmpty(priv) ? null : priv;
+      if (ca == null && pub == null && priv == null) {
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+      }
       CertificateSecret secret = new CertificateSecret(ca, pub, priv);
       secretStore.set(secretPath, secret);
       return new ResponseEntity<>(secret, HttpStatus.OK);

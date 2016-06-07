@@ -2,9 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.controller.HtmlUnitTestBase;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.model.CertificateSecret;
-import io.pivotal.security.model.StringSecret;
-import io.pivotal.security.model.SecretParameters;
+import io.pivotal.security.model.*;
 import io.pivotal.security.repository.SecretStore;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,11 +15,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
+import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -105,6 +106,18 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
     Assert.assertThat(secretStore.getSecret("secret-identifier"), reflectiveEqualTo(certificateSecret));
+  }
+
+  @Test
+  public void validPutCertificate_showsNullsInReturnedJson() throws Exception {
+    String requestJson = "{\"type\":\"certificate\",\"certificate\":{\"ca\":null,\"public\":\"my-pub\",\"private\":\"my-priv\"}}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(requestJson));
   }
 
   @Test
@@ -370,6 +383,77 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(status().isBadRequest())
         .andExpect(content().json(badResponse));
   }
+
+  @Test
+  public void canStoreNullsInCertificateSecret() throws Exception {
+    doTwoEmptiesTest(null);
+  }
+
+  @Test
+  public void canStoreEmptyStringsAsNullsInCertificateSecret() throws Exception {
+    doTwoEmptiesTest("");
+  }
+
+  private void doTwoEmptiesTest(String emptyValue) throws Exception {
+    doTest((body) -> {
+      body.setCa(emptyValue);
+      body.setPub(emptyValue);
+    }, (body) -> {
+      body.setCa(null);
+      body.setPub(null);
+    }, status().isOk(), true);
+    doTest((body) -> {
+      body.setPub(emptyValue);
+      body.setPriv(emptyValue);
+    }, (body) -> {
+      body.setPub(null);
+      body.setPriv(null);
+    }, status().isOk(), true);
+    doTest((body) -> {
+      body.setCa(emptyValue);
+      body.setPriv(emptyValue);
+    }, (body) -> {
+      body.setCa(null);
+      body.setPriv(null);
+    }, status().isOk(), true);
+  }
+
+  @Test
+  public void invalidPutWithAllThreeCertificateFieldsSetToNull() throws Exception {
+    doTest((body) -> {
+      body.setCa(null);
+      body.setPub(null);
+      body.setPriv(null);
+    }, (body) -> {}, status().isBadRequest(), false);
+  }
+
+  @Test
+  public void invalidPutWithAllThreeCertificateFieldsSetToEmptyString() throws Exception {
+    doTest((body) -> {
+      body.setCa("");
+      body.setPub("");
+      body.setPriv("");
+    }, (body) -> {}, status().isBadRequest(), false);
+  }
+
+  public void doTest(Consumer<CertificateBody> requestMutator, Consumer<CertificateBody> responseMutator, ResultMatcher expectedStatus, boolean checkResult) throws Exception {
+    CertificateSecret certificateSecretForRequest = new CertificateSecret("get-ca", "get-pub", "get-priv");
+    CertificateSecret certificateSecretForResponse = new CertificateSecret("get-ca", "get-pub", "get-priv");
+    requestMutator.accept(certificateSecretForRequest.getCertificateBody());
+    responseMutator.accept(certificateSecretForResponse.getCertificateBody());
+
+    String requestJson = json(certificateSecretForRequest);
+
+    mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson)).andExpect(expectedStatus);
+    Secret certificateFromDb = secretStore.getSecret("whatever");
+    if (checkResult) {
+      assertThat(certificateFromDb, reflectiveEqualTo(certificateSecretForResponse));
+    } else {
+      assertNull(certificateFromDb);
+    }
+  }
+
+  // TODO when all three certificate components are null, that's a 400. Output suitable error message as well.
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
     return put(path)

@@ -1,5 +1,7 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.model.Secret;
+
 import javax.persistence.*;
 
 @Entity
@@ -36,5 +38,5 @@ abstract public class NamedSecret {
     this.name = name;
   }
 
-  public abstract Object convertToModel();
+  public abstract Secret convertToModel();
 }

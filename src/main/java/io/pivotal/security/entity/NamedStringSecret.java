@@ -29,7 +29,7 @@ public class NamedStringSecret extends NamedSecret {
   }
 
   @Override
-  public Object convertToModel() {
+  public StringSecret convertToModel() {
     return new StringSecret(value);
   }
 }

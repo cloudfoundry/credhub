@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
-public class CertificateSecret {
+public class CertificateSecret implements Secret {
 
   @NotNull
   private final String type = "certificate";
@@ -16,6 +16,7 @@ public class CertificateSecret {
     setCertificateBody(new CertificateBody(ca, pub, priv));
   }
 
+  @Override
   public String getType() {
     return type;
   }

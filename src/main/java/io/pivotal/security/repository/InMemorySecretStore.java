@@ -4,6 +4,7 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.model.Secret;
 import io.pivotal.security.model.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -44,10 +45,10 @@ public class InMemorySecretStore implements SecretStore {
   }
 
   @Override
-  public Object getSecret(String key) {
-    NamedSecret namedStringSecret = secretRepository.findOneByName(key);
-    if (namedStringSecret != null) {
-      return namedStringSecret.convertToModel();
+  public Secret getSecret(String key) {
+    NamedSecret namedSecret = secretRepository.findOneByName(key);
+    if (namedSecret != null) {
+      return namedSecret.convertToModel();
     }
     return null;
   }

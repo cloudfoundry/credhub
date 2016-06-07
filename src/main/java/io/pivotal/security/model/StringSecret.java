@@ -2,7 +2,7 @@ package io.pivotal.security.model;
 
 import javax.validation.constraints.NotNull;
 
-public class StringSecret {
+public class StringSecret implements Secret {
 
   @NotNull
   public String value;
@@ -15,5 +15,10 @@ public class StringSecret {
 
   public void setValue(String value) {
     this.value = value;
+  }
+
+  @Override
+  public String getType() {
+    return type;
   }
 }
