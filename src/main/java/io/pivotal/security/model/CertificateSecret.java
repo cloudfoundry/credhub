@@ -1,7 +1,8 @@
 package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.internal.NotNull;
+
+import javax.validation.constraints.NotNull;
 
 public class CertificateSecret {
 
