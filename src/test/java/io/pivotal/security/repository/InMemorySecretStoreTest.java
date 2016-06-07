@@ -33,7 +33,7 @@ public class InMemorySecretStoreTest {
       });
 
       it("returns null when the store is empty", () -> {
-        Assert.assertNull(subject.getStringSecret("whatever"));
+        Assert.assertNull(subject.getSecret("whatever"));
       });
 
       describe("string secrets", () -> {
@@ -45,7 +45,7 @@ public class InMemorySecretStoreTest {
         });
 
         it("can be retrieved", () -> {
-          assertThat(subject.getStringSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret));
+          assertThat(subject.getSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret));
         });
 
         it("can be retrieved polymorphically", () -> {
@@ -55,7 +55,7 @@ public class InMemorySecretStoreTest {
 
         it("can be deleted", () -> {
           assertThat(subject.delete("myspecialstringkey"), is(true));
-          Assert.assertNull(subject.getStringSecret("myspecialstringkey"));
+          Assert.assertNull(subject.getSecret("myspecialstringkey"));
           assertThat(subject.delete("myspecialstringkey"), is(false));
         });
 
@@ -63,7 +63,7 @@ public class InMemorySecretStoreTest {
           StringSecret stringSecret2 = new StringSecret("catz");
           subject.set("myspecialstringkey", stringSecret2);
 
-          assertThat(subject.getStringSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret2));
+          assertThat(subject.getSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret2));
         });
       });
 
@@ -75,7 +75,7 @@ public class InMemorySecretStoreTest {
         });
 
         it("can be retrieved", () -> {
-          assertThat(subject.getCertificateSecret("myspecialcertkey"), reflectiveEqualTo(certificateSecret));
+          assertThat(subject.getSecret("myspecialcertkey"), reflectiveEqualTo(certificateSecret));
         });
 
         it("can be retrieved polymorphically", () -> {
@@ -84,7 +84,7 @@ public class InMemorySecretStoreTest {
 
         it("can be deleted", () -> {
           assertThat(subject.delete("myspecialcertkey"), is(true));
-          Assert.assertNull(subject.getCertificateSecret("myspecialcertkey"));
+          Assert.assertNull(subject.getSecret("myspecialcertkey"));
           assertThat(subject.delete("myspecialcertkey"), is(false));
         });
 
@@ -92,7 +92,7 @@ public class InMemorySecretStoreTest {
           CertificateSecret certificateSecret1 = new CertificateSecret("your ca", "your pub", "your priv");
           subject.set("myspecialcertkey", certificateSecret1);
 
-          assertThat(subject.getCertificateSecret("myspecialcertkey"), reflectiveEqualTo(certificateSecret1));
+          assertThat(subject.getSecret("myspecialcertkey"), reflectiveEqualTo(certificateSecret1));
         });
       });
     });

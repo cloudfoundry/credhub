@@ -61,7 +61,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    Assert.assertThat(secretStore.getStringSecret("secret-identifier"), reflectiveEqualTo(new StringSecret("secret contents")));
+    Assert.assertThat(secretStore.getSecret("secret-identifier"), reflectiveEqualTo(new StringSecret("secret contents")));
   }
 
   @Test
@@ -104,7 +104,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().json(requestJson));
 
     CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
-    Assert.assertThat(secretStore.getCertificateSecret("secret-identifier"), reflectiveEqualTo(certificateSecret));
+    Assert.assertThat(secretStore.getSecret("secret-identifier"), reflectiveEqualTo(certificateSecret));
   }
 
   @Test
@@ -126,7 +126,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     mockMvc.perform(delete("/api/v1/data/whatever"))
         .andExpect(status().isOk());
 
-    Assert.assertNull(secretStore.getStringSecret("whatever"));
+    Assert.assertNull(secretStore.getSecret("whatever"));
   }
 
   @Test
@@ -144,7 +144,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getStringSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretStore.getSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test
@@ -162,7 +162,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getStringSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretStore.getSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test
@@ -195,7 +195,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getStringSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretStore.getSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test
@@ -226,7 +226,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getStringSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretStore.getSecret("my-secret"), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test

@@ -8,8 +8,6 @@ public interface SecretStore {
   void set(String key, CertificateSecret certificateSecret);
 
   Object getSecret(String key);
-  StringSecret getStringSecret(String key);
-  CertificateSecret getCertificateSecret(String key);
 
   boolean delete(String key);
 }

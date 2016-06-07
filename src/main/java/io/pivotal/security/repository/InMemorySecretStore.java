@@ -52,26 +52,6 @@ public class InMemorySecretStore implements SecretStore {
     return null;
   }
 
-  @Override
-  public StringSecret getStringSecret(String key) {
-    NamedSecret namedStringSecret = secretRepository.findOneByName(key);
-    if (namedStringSecret != null) {
-      // todo validate current type
-      return new StringSecret(((NamedStringSecret) namedStringSecret).getValue());
-    }
-    return null;
-  }
-
-  @Override
-  public CertificateSecret getCertificateSecret(String key) {
-    NamedCertificateSecret namedSecret = (NamedCertificateSecret) secretRepository.findOneByName(key);
-    if (namedSecret != null) {
-      // todo validate type
-      return new CertificateSecret(namedSecret.getCa(), namedSecret.getPub(), namedSecret.getPriv());
-    }
-    return null;
-  }
-
   @Transactional
   @Override
   public boolean delete(String key) {
