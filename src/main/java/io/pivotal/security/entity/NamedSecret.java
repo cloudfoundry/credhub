@@ -6,17 +6,33 @@ import javax.persistence.*;
 @Table(name = "NamedSecret")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name="type", discriminatorType = DiscriminatorType.STRING)
-public class NamedSecret {
+abstract public class NamedSecret {
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
-  public long id;
+  private long id;
   @Column(unique = true, nullable = false)
-  public String name;
+  private String name;
 
   public NamedSecret() {
   }
 
   public NamedSecret(String name) {
+    this.setName(name);
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
     this.name = name;
   }
 }

@@ -61,13 +61,13 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    Assert.assertThat(secretStore.getStringSecret("secret-identifier"), reflectiveEqualTo(StringSecret.make("secret contents")));
+    Assert.assertThat(secretStore.getStringSecret("secret-identifier"), reflectiveEqualTo(new StringSecret("secret contents")));
   }
 
   @Test
   @Transactional
   public void validGetSecret() throws Exception {
-    StringSecret stringSecret = StringSecret.make("stringSecret contents");
+    StringSecret stringSecret = new StringSecret("stringSecret contents");
 
     secretStore.set("whatever", stringSecret);
 
@@ -98,7 +98,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @Transactional
   public void getSecretWithInvalidVersion() throws Exception {
-    StringSecret stringSecret = StringSecret.make("stringSecret contents");
+    StringSecret stringSecret = new StringSecret("stringSecret contents");
 
     secretStore.set("whatever", stringSecret);
 
@@ -109,7 +109,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   @Transactional
   public void validDeleteSecret() throws Exception {
-    StringSecret stringSecret = StringSecret.make("super stringSecret do not tell");
+    StringSecret stringSecret = new StringSecret("super stringSecret do not tell");
 
     secretStore.set("whatever", stringSecret);
 
@@ -125,7 +125,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
-    StringSecret expectedStringSecret = StringSecret.make("very-secret");
+    StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\"}");
@@ -144,7 +144,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
-    StringSecret expectedStringSecret = StringSecret.make("very-secret");
+    StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\",\"parameters\":{}}");
@@ -168,7 +168,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
-    StringSecret expectedStringSecret = StringSecret.make("long-secret");
+    StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);
 
     String requestJson = "{" +
@@ -201,7 +201,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
-    StringSecret expectedStringSecret = StringSecret.make("long-secret");
+    StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);
 
     String requestJson = "{" +

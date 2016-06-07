@@ -15,16 +15,14 @@ public class ReflectiveEqualsMatcherTest {
   {
     describe("a test for the matcher, which if fails, probably means the matcher is wrong, and not the setup", () -> {
       it("matches reflectively", () -> {
-        StringSecret stringSecret = new StringSecret();
-        stringSecret.value = "something";
+        StringSecret stringSecret = new StringSecret("something");
 
         assertThat(stringSecret, reflectiveEqualTo(stringSecret));
 
-        StringSecret otherStringSecret = new StringSecret();
-        otherStringSecret.value = "something";
+        StringSecret otherStringSecret = new StringSecret("something");
         assertThat(stringSecret, reflectiveEqualTo(otherStringSecret));
 
-        otherStringSecret.value = "something-else";
+        otherStringSecret.setValue("something-else");
         assertThat(stringSecret, not(reflectiveEqualTo(otherStringSecret)));
       });
     });

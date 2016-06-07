@@ -37,7 +37,7 @@ public class InMemorySecretStoreTest {
 
       describe("string secrets", () -> {
 
-        StringSecret stringSecret = StringSecret.make("doge");
+        StringSecret stringSecret = new StringSecret("doge");
 
         beforeEach(() -> {
           subject.set("myspecialstringkey", stringSecret);
@@ -54,7 +54,7 @@ public class InMemorySecretStoreTest {
         });
 
         it("setting a stringSecret with the same name overrides the stored stringSecret", () -> {
-          StringSecret stringSecret2 = StringSecret.make("catz");
+          StringSecret stringSecret2 = new StringSecret("catz");
           subject.set("myspecialstringkey", stringSecret2);
 
           assertThat(subject.getStringSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret2));

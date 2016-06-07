@@ -8,13 +8,21 @@ import javax.persistence.*;
 public class NamedStringSecret extends NamedSecret {
 
   @Column(nullable = false)
-  public String value;
+  private String value;
 
   public NamedStringSecret() {
   }
 
   public NamedStringSecret(String name, String value) {
     super(name);
+    this.setValue(value);
+  }
+
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue(String value) {
     this.value = value;
   }
 }

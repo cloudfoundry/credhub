@@ -28,7 +28,7 @@ public class InMemorySecretStore implements SecretStore {
       namedSecret = namedStringSecret;
     } else {
       // todo validate current type is string
-      ((NamedStringSecret)namedSecret).value = stringSecret.value;
+      ((NamedStringSecret) namedSecret).setValue(stringSecret.value);
     }
     secretRepository.save(namedSecret);
   }
@@ -47,9 +47,9 @@ public class InMemorySecretStore implements SecretStore {
     } else {
       // todo validate current type
       NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) namedSecret;
-      namedCertificateSecret.ca = certificateSecret.certificateBody.ca;
-      namedCertificateSecret.pub = certificateSecret.certificateBody.pub;
-      namedCertificateSecret.priv = certificateSecret.certificateBody.priv;
+      namedCertificateSecret.setCa(certificateSecret.certificateBody.ca);
+      namedCertificateSecret.setPub(certificateSecret.certificateBody.pub);
+      namedCertificateSecret.setPriv(certificateSecret.certificateBody.priv);
     }
     secretRepository.save(namedSecret);
   }
@@ -59,7 +59,7 @@ public class InMemorySecretStore implements SecretStore {
     NamedSecret namedSecret = secretRepository.findOneByName(key);
     if (namedSecret != null) {
       // todo validate current type
-        return StringSecret.make(((NamedStringSecret)namedSecret).value);
+        return new StringSecret(((NamedStringSecret) namedSecret).getValue());
     }
     return null;
   }
@@ -70,7 +70,7 @@ public class InMemorySecretStore implements SecretStore {
     if (namedSecret != null) {
       // todo validate type
       NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) namedSecret;
-      CertificateSecret secret = new CertificateSecret(namedCertificateSecret.ca, namedCertificateSecret.pub, namedCertificateSecret.priv);
+      CertificateSecret secret = new CertificateSecret(namedCertificateSecret.getCa(), namedCertificateSecret.getPub(), namedCertificateSecret.getPriv());
       return secret;
     }
     return null;

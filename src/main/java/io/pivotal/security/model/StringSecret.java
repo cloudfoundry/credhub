@@ -9,12 +9,11 @@ public class StringSecret {
 
   public final String type = "value";
 
-  public static StringSecret make(String value) {
-    if (value == null) {
-      throw new java.lang.IllegalArgumentException("Parameter specified as non-null is null: method io.pivotal.security.model.Secret.make, parameter value");
-    }
-    StringSecret stringSecret = new StringSecret();
-    stringSecret.value = value;
-    return stringSecret;
+  public StringSecret(String secretValue) {
+    value = secretValue;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
   }
 }

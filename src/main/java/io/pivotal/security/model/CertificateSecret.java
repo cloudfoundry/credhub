@@ -14,12 +14,4 @@ public class CertificateSecret {
   public CertificateSecret(String ca, String pub, String priv) {
     certificateBody = new CertificateBody(ca, pub, priv);
   }
-
-//  public static CertificateSecret make(String ca, String pub, String priv) {
-//    CertificateSecret certificateSecret = new CertificateSecret();
-//    certificateSecret.ca = ca;
-//    certificateSecret.pub = pub;
-//    certificateSecret.priv = priv;
-//    return certificateSecret;
-//  }
 }
