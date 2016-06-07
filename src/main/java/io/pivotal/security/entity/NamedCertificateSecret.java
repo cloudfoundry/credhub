@@ -19,12 +19,8 @@ public class NamedCertificateSecret extends NamedSecret {
   public NamedCertificateSecret() {
   }
 
-  public NamedCertificateSecret(String name, String ca, String pub, String priv) {
+  public NamedCertificateSecret(String name) {
     super(name);
-
-    this.setCa(ca);
-    this.setPub(pub);
-    this.setPriv(priv);
   }
 
   public String getCa() {

@@ -13,9 +13,8 @@ public class NamedStringSecret extends NamedSecret {
   public NamedStringSecret() {
   }
 
-  public NamedStringSecret(String name, String value) {
+  public NamedStringSecret(String name) {
     super(name);
-    this.setValue(value);
   }
 
   public String getValue() {

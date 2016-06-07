@@ -6,12 +6,24 @@ import com.sun.istack.internal.NotNull;
 public class CertificateSecret {
 
   @NotNull
-  public final String type = "certificate";
+  private final String type = "certificate";
 
   @JsonProperty("certificate")
-  public CertificateBody certificateBody;
+  private CertificateBody certificateBody;
 
   public CertificateSecret(String ca, String pub, String priv) {
-    certificateBody = new CertificateBody(ca, pub, priv);
+    setCertificateBody(new CertificateBody(ca, pub, priv));
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public CertificateBody getCertificateBody() {
+    return certificateBody;
+  }
+
+  public void setCertificateBody(CertificateBody certificateBody) {
+    this.certificateBody = certificateBody;
   }
 }

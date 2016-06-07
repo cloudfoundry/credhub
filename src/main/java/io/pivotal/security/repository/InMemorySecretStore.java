@@ -22,56 +22,43 @@ public class InMemorySecretStore implements SecretStore {
   @Transactional
   @Override
   public void set(String key, StringSecret stringSecret) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
+    NamedStringSecret namedSecret = (NamedStringSecret) secretRepository.findOneByName(key);
     if (namedSecret == null) {
-      NamedStringSecret namedStringSecret = new NamedStringSecret(key, stringSecret.value);
-      namedSecret = namedStringSecret;
-    } else {
-      // todo validate current type is string
-      ((NamedStringSecret) namedSecret).setValue(stringSecret.value);
+      namedSecret = new NamedStringSecret(key);
     }
+    namedSecret.setValue(stringSecret.value);
     secretRepository.save(namedSecret);
   }
 
   @Transactional
   @Override
   public void set(String key, CertificateSecret certificateSecret) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret == null) {
-      NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret(
-          key,
-          certificateSecret.certificateBody.ca,
-          certificateSecret.certificateBody.pub,
-          certificateSecret.certificateBody.priv);
-      namedSecret = namedCertificateSecret;
-    } else {
-      // todo validate current type
-      NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) namedSecret;
-      namedCertificateSecret.setCa(certificateSecret.certificateBody.ca);
-      namedCertificateSecret.setPub(certificateSecret.certificateBody.pub);
-      namedCertificateSecret.setPriv(certificateSecret.certificateBody.priv);
+    NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) secretRepository.findOneByName(key);
+    if (namedCertificateSecret == null) {
+      namedCertificateSecret = new NamedCertificateSecret(key);
     }
-    secretRepository.save(namedSecret);
+    namedCertificateSecret.setCa(certificateSecret.getCertificateBody().getCa());
+    namedCertificateSecret.setPub(certificateSecret.getCertificateBody().getPub());
+    namedCertificateSecret.setPriv(certificateSecret.getCertificateBody().getPriv());
+    secretRepository.save(namedCertificateSecret);
   }
 
   @Override
   public StringSecret getStringSecret(String key) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret != null) {
+    NamedSecret namedStringSecret = secretRepository.findOneByName(key);
+    if (namedStringSecret != null) {
       // todo validate current type
-        return new StringSecret(((NamedStringSecret) namedSecret).getValue());
+      return new StringSecret(((NamedStringSecret) namedStringSecret).getValue());
     }
     return null;
   }
 
   @Override
   public CertificateSecret getCertificateSecret(String key) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
+    NamedCertificateSecret namedSecret = (NamedCertificateSecret) secretRepository.findOneByName(key);
     if (namedSecret != null) {
       // todo validate type
-      NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) namedSecret;
-      CertificateSecret secret = new CertificateSecret(namedCertificateSecret.getCa(), namedCertificateSecret.getPub(), namedCertificateSecret.getPriv());
-      return secret;
+      return new CertificateSecret(namedSecret.getCa(), namedSecret.getPub(), namedSecret.getPriv());
     }
     return null;
   }
