@@ -5,10 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
-import io.pivotal.security.model.ResponseError;
-import io.pivotal.security.model.ResponseErrorType;
-import io.pivotal.security.model.StringSecret;
-import io.pivotal.security.model.StringGeneratorRequest;
+import io.pivotal.security.model.*;
 import io.pivotal.security.repository.SecretStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -79,17 +76,26 @@ public class SecretsController {
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
-    if (!"value".equals(type)) {
+    if (!"value".equals(type) && !"certificate".equals(type)) {
       return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
     }
 
-    String value = parsed.read("$.value");
-    if (StringUtils.isEmpty(value)) {
-      throw new ValidationException(); // spring shows generic invalid message
+    if ("value".equals(type)) {
+      String value = parsed.read("$.value");
+      if (StringUtils.isEmpty(value)) {
+        throw new ValidationException(); // spring shows generic invalid message
+      }
+      StringSecret stringSecret = StringSecret.make(value);
+      secretStore.set(secretPath, stringSecret);
+      return new ResponseEntity<>(stringSecret, HttpStatus.OK);
+    } else {
+      String ca = parsed.read("$.certificate.ca");
+      String pub = parsed.read("$.certificate.public");
+      String priv = parsed.read("$.certificate.private");
+      CertificateSecret secret = new CertificateSecret(ca, pub, priv);
+      secretStore.set(secretPath, secret);
+      return new ResponseEntity<>(secret, HttpStatus.OK);
     }
-    StringSecret stringSecret = StringSecret.make(value);
-    secretStore.set(secretPath, stringSecret);
-    return new ResponseEntity<>(stringSecret, HttpStatus.OK);
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
@@ -105,7 +111,7 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath) {
-    StringSecret stringSecret = secretStore.get(secretPath);
+    StringSecret stringSecret = secretStore.getStringSecret(secretPath);
 
     if (stringSecret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);

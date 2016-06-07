@@ -1,20 +1,20 @@
 package io.pivotal.security.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
-public class NamedStringSecret {
-
-  @Id
-  @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
-  public long id;
-
-  @Column(unique = true, nullable = false)
-  public String name;
+@Table(name = "StringSecret")
+@DiscriminatorValue("string_value")
+public class NamedStringSecret extends NamedSecret {
 
   @Column(nullable = false)
   public String value;
+
+  public NamedStringSecret() {
+  }
+
+  public NamedStringSecret(String name, String value) {
+    super(name);
+    this.value = value;
+  }
 }
