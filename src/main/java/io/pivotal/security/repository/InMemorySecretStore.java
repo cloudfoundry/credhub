@@ -44,6 +44,15 @@ public class InMemorySecretStore implements SecretStore {
   }
 
   @Override
+  public Object getSecret(String key) {
+    NamedSecret namedStringSecret = secretRepository.findOneByName(key);
+    if (namedStringSecret != null) {
+      return namedStringSecret.convertToModel();
+    }
+    return null;
+  }
+
+  @Override
   public StringSecret getStringSecret(String key) {
     NamedSecret namedStringSecret = secretRepository.findOneByName(key);
     if (namedStringSecret != null) {

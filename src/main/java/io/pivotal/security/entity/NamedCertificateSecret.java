@@ -1,5 +1,7 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.model.CertificateSecret;
+
 import javax.persistence.*;
 
 @Entity
@@ -27,23 +29,31 @@ public class NamedCertificateSecret extends NamedSecret {
     return ca;
   }
 
-  public void setCa(String ca) {
+  public NamedCertificateSecret setCa(String ca) {
     this.ca = ca;
+    return this;
   }
 
   public String getPub() {
     return pub;
   }
 
-  public void setPub(String pub) {
+  public NamedCertificateSecret setPub(String pub) {
     this.pub = pub;
+    return this;
   }
 
   public String getPriv() {
     return priv;
   }
 
-  public void setPriv(String priv) {
+  public NamedCertificateSecret setPriv(String priv) {
     this.priv = priv;
+    return this;
+  }
+
+  @Override
+  public Object convertToModel() {
+    return new CertificateSecret(ca, pub, priv);
   }
 }

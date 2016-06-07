@@ -111,12 +111,12 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath) {
-    StringSecret stringSecret = secretStore.getStringSecret(secretPath);
+    Object secret = secretStore.getSecret(secretPath);
 
-    if (stringSecret == null) {
+    if (secret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(stringSecret, HttpStatus.OK);
+      return new ResponseEntity<>(secret, HttpStatus.OK);
     }
   }
 

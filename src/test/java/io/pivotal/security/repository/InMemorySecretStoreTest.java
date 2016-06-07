@@ -2,6 +2,7 @@ package io.pivotal.security.repository;
 
 import com.greghaskins.spectrum.SpringSpectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.model.CertificateSecret;
 import io.pivotal.security.model.StringSecret;
 import org.junit.Assert;
@@ -47,6 +48,11 @@ public class InMemorySecretStoreTest {
           assertThat(subject.getStringSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret));
         });
 
+        it("can be retrieved polymorphically", () -> {
+          assertThat(subject.getSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret));
+        });
+
+
         it("can be deleted", () -> {
           assertThat(subject.delete("myspecialstringkey"), is(true));
           Assert.assertNull(subject.getStringSecret("myspecialstringkey"));
@@ -70,6 +76,10 @@ public class InMemorySecretStoreTest {
 
         it("can be retrieved", () -> {
           assertThat(subject.getCertificateSecret("myspecialcertkey"), reflectiveEqualTo(certificateSecret));
+        });
+
+        it("can be retrieved polymorphically", () -> {
+          assertThat(subject.getSecret("myspecialcertkey"), reflectiveEqualTo(certificateSecret));
         });
 
         it("can be deleted", () -> {

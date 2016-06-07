@@ -28,6 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Transactional
 public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Autowired
@@ -50,7 +51,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void validPutSecret() throws Exception {
     String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
 
@@ -65,8 +65,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
-  public void validGetSecret() throws Exception {
+  public void validGetStringSecret() throws Exception {
     StringSecret stringSecret = new StringSecret("stringSecret contents");
 
     secretStore.set("whatever", stringSecret);
@@ -80,7 +79,20 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
+  public void validGetCertificateSecret() throws Exception {
+    CertificateSecret certificateSecret = new CertificateSecret("get-ca", "get-pub", "get-priv");
+
+    secretStore.set("whatever", certificateSecret);
+
+    String expectedJson = json(certificateSecret);
+
+    mockMvc.perform(get("/api/v1/data/whatever"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
+  }
+
+  @Test
   public void validPutCertificate() throws Exception {
     String requestJson = "{\"type\":\"certificate\",\"certificate\":{\"ca\":\"my-ca\",\"public\":\"my-pub\",\"private\":\"my-priv\"}}";
 
@@ -96,7 +108,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void getSecretWithInvalidVersion() throws Exception {
     StringSecret stringSecret = new StringSecret("stringSecret contents");
 
@@ -107,7 +118,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void validDeleteSecret() throws Exception {
     StringSecret stringSecret = new StringSecret("super stringSecret do not tell");
 
@@ -120,7 +130,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void generateSecretWithNoParameters() throws Exception {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
@@ -139,7 +148,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void generateSecretWithEmptyParameters() throws Exception {
     SecretParameters parameters = new SecretParameters();
     when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
@@ -158,7 +166,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void generateSecretWithParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
     expectedParameters.setExcludeSpecial(true);
@@ -192,7 +199,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void generateSecretWithDifferentParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
     expectedParameters.setExcludeSpecial(true);
@@ -224,7 +230,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void generateSecretWithAllExcludeParameters() throws Exception {
     String badResponse = "{ \"error\": \"The combination of parameters in the request is not allowed. Please validate your input and retry your request.\" }";
     String requestJson = "{" +
@@ -335,7 +340,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void generateSecretReturnsBadRequestWhenBodyEmpty() throws Exception {
     String badResponse = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
@@ -346,7 +350,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void generateSecretReturnsBadRequestWhenJsonEmpty() throws Exception {
     String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
@@ -357,7 +360,6 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  @Transactional
   public void putSecretReturnsBadRequestIfTypeIsNotKnown() throws Exception {
     String badResponse = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 

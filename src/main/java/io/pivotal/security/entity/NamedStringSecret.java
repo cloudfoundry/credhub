@@ -1,5 +1,7 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.model.StringSecret;
+
 import javax.persistence.*;
 
 @Entity
@@ -21,7 +23,13 @@ public class NamedStringSecret extends NamedSecret {
     return value;
   }
 
-  public void setValue(String value) {
+  public NamedStringSecret setValue(String value) {
     this.value = value;
+    return this;
+  }
+
+  @Override
+  public Object convertToModel() {
+    return new StringSecret(value);
   }
 }

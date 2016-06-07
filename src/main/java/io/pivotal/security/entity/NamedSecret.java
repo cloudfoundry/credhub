@@ -35,4 +35,6 @@ abstract public class NamedSecret {
   public void setName(String name) {
     this.name = name;
   }
+
+  public abstract Object convertToModel();
 }
