@@ -83,7 +83,7 @@ public class SecretsController {
     if ("value".equals(type)) {
       String value = parsed.read("$.value");
       if (StringUtils.isEmpty(value)) {
-        throw new ValidationException(); // spring shows generic invalid message
+        return createErrorResponse("error.missing_string_secret_value", HttpStatus.BAD_REQUEST);
       }
       StringSecret stringSecret = new StringSecret(value);
       secretStore.set(secretPath, stringSecret);

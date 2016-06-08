@@ -317,7 +317,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void invalidPutWithMissingValueShouldReturnBadRequest() throws Exception {
-    String badResponseJson = "{\"error\": \"The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.\"}";
+    String badResponseJson = "{\"error\": \"A non-empty value must be specified for the credential. Please validate and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
         "{\"type\":\"value\"}");
