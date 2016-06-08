@@ -9,13 +9,13 @@ import javax.persistence.*;
 @DiscriminatorValue("cert")
 public class NamedCertificateSecret extends NamedSecret {
 
-  @Column(nullable = true)
+  @Column(nullable = true, length = 7000)
   private String ca;
 
-  @Column(nullable = true)
+  @Column(nullable = true, length = 7000)
   private String pub;
 
-  @Column(nullable = true)
+  @Column(nullable = true, length = 7000)
   private String priv;
 
   public NamedCertificateSecret() {
