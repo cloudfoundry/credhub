@@ -29,7 +29,7 @@ public class RootCertificateProvider {
     certGen.setSubjectDN(dnName);
 
     KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
-    generator.initialize(2048);  // TODO find a way to test for length
+    generator.initialize(2048);
     KeyPair caKeyPair = generator.generateKeyPair();
     certGen.setPublicKey(caKeyPair.getPublic());
     certGen.setSignatureAlgorithm("SHA256withRSA");

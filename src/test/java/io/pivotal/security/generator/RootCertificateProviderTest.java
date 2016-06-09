@@ -1,6 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class RootCertificateProviderTest {
   private RootCertificateProvider rootCertificateProvider;
 
   @Test
-  public void get() throws Exception {
+  public void getSucceeds() throws Exception {
     X500Principal expectedPrincipal = new X500Principal("O=Organization,ST=CA,C=US");
     X509Certificate actualCert = rootCertificateProvider.get();
 
@@ -38,5 +39,11 @@ public class RootCertificateProviderTest {
     assertThat(durationMillis, equalTo(Instant.EPOCH.plus(365, ChronoUnit.DAYS).toEpochMilli()));
 
     actualCert.checkValidity();
+  }
+
+  @Test
+  @Ignore
+  public void certificateHasSpecifiedStrength() throws Exception {
+    // TODO find a way to test for length
   }
 }

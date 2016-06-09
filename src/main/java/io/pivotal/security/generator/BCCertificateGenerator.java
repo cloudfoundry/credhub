@@ -1,10 +1,11 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.model.CertificateSecret;
-import org.bouncycastle.cert.X509CertificateHolder;
+import io.pivotal.security.util.CertificateFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -19,12 +20,12 @@ public class BCCertificateGenerator implements CertificateGenerator {
   RootCertificateProvider rootCertificateProvider;
 
   @Override
-  public CertificateSecret generateCertificate() throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+  public CertificateSecret generateCertificate() throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException, IOException {
     KeyPair keyPair = keyGenerator.generateKeyPair();
-    X509Certificate caCert = rootCertificateProvider.get();
-
-    return new CertificateSecret(new X509CertificateHolder(caCert), keyPair.getPublic().getEncoded().toString(), keyPair.getPrivate().getEncoded().toString());
+    X509Certificate cert = rootCertificateProvider.get();
+    String caPem = CertificateFormatter.pemOf(cert);
+    String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
+    String publicPem = CertificateFormatter.pemOf(keyPair.getPublic());
+    return new CertificateSecret(caPem, publicPem, privatePem);
   }
-
-
 }

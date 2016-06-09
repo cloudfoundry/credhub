@@ -2,8 +2,10 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.util.CertificateFormatter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +25,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.*;
@@ -57,12 +58,16 @@ public class BCCertificateGeneratorTest {
     X509Certificate caCert = generateX509Certificate(expectedKeyPair);
     when(rootCertificateProvider.get()).thenReturn(caCert);
 
+    String expectedPem = CertificateFormatter.pemOf(caCert);
+    String expectedPrivate = CertificateFormatter.pemOf(expectedKeyPair.getPrivate());
+    String expectedPublic = CertificateFormatter.pemOf(expectedKeyPair.getPublic());
+
     CertificateSecret certificateSecret = subject.generateCertificate();
 
     assertThat(certificateSecret, notNullValue());
-    assertThat(certificateSecret.getCertificateBody().getCa(), equalTo(caCert.getTBSCertificate().toString()));
-//    assertThat(certificateSecret.getCertificateBody().getPub(), equalTo(expectedKeyPair.getPublic().getEncoded().toString()));
-//    assertThat(certificateSecret.getCertificateBody().getPriv(), equalTo(expectedKeyPair.getPrivate().getEncoded().toString()));
+    assertThat(certificateSecret.getCertificateBody().getCa(), equalTo(expectedPem));
+    assertThat(certificateSecret.getCertificateBody().getPriv(), equalTo(expectedPrivate));
+    assertThat(certificateSecret.getCertificateBody().getPub(), equalTo(expectedPublic));
   }
 
   private KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
@@ -74,7 +79,7 @@ public class BCCertificateGeneratorTest {
   private X509Certificate generateX509Certificate(KeyPair expectedKeyPair) throws CertificateEncodingException, NoSuchProviderException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
     final X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
     final X500Principal dnName = new X500Principal("O=foo,ST=bar,C=mars");
-    certGen.setSerialNumber(BigInteger.valueOf(1)); // TODO: create meaningful serial numbers
+    certGen.setSerialNumber(BigInteger.valueOf(1));
     Instant instant = Instant.now();
     final Date now = Date.from(instant);
     final Date later = Date.from(instant.plus(365, ChronoUnit.DAYS));

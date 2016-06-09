@@ -75,8 +75,7 @@ public class SecretsController {
 
         return new ResponseEntity<>(stringSecret, HttpStatus.OK);
       } else {
-
-        CertificateSecret cert = null;
+        CertificateSecret cert;
         try {
           cert = certificateGenerator.generateCertificate();
         } catch (Exception e) {
