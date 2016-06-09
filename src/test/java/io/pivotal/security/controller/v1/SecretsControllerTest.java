@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static junit.framework.TestCase.assertNull;
@@ -387,89 +386,43 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void canStoreNullsInCertificateSecret() throws Exception {
-    doTwoEmptiesTest(null);
+    permutateTwoEmptiesTest(null);
   }
 
   @Test
   public void canStoreEmptyStringsAsNullsInCertificateSecret() throws Exception {
-    doTwoEmptiesTest("");
+    permutateTwoEmptiesTest("");
   }
 
-  private void doTwoEmptiesTest(String emptyValue) throws Exception {
-    doTest((body) -> {
-      body.setCa(emptyValue);
-      body.setPub(emptyValue);
-    }, (body) -> {
-      body.setCa(null);
-      body.setPub(null);
-    }, status().isOk(), true);
-    doTest((body) -> {
-      body.setPub(emptyValue);
-      body.setPriv(emptyValue);
-    }, (body) -> {
-      body.setPub(null);
-      body.setPriv(null);
-    }, status().isOk(), true);
-    doTest((body) -> {
-      body.setCa(emptyValue);
-      body.setPriv(emptyValue);
-    }, (body) -> {
-      body.setCa(null);
-      body.setPriv(null);
-    }, status().isOk(), true);
+  private void permutateTwoEmptiesTest(String emptyValue) throws Exception {
+    new PutCertificateSimulator(emptyValue, emptyValue, "my-priv")
+        .setExpectation(200)
+        .execute();
+
+    new PutCertificateSimulator("my-ca", emptyValue, emptyValue)
+        .setExpectation(200)
+        .execute();
+
+    new PutCertificateSimulator(emptyValue, "my-pub", emptyValue)
+        .setExpectation(200)
+        .execute();
   }
 
   @Test
   public void invalidPutWithAllThreeCertificateFieldsSetToNull() throws Exception {
     String badResponseJson = "{\"error\": \"A non-empty value must be specified for any of CA, Public, or Private. Please validate and retry your request.\"}";
-    doTest((body) -> {
-      body.setCa(null);
-      body.setPub(null);
-      body.setPriv(null);
-    }, (body) -> {}, status().isBadRequest(), false, badResponseJson);
+    new PutCertificateSimulator(null, null, null)
+        .setExpectation(400, badResponseJson)
+        .execute();
   }
 
   @Test
   public void invalidPutWithAllThreeCertificateFieldsSetToEmptyString() throws Exception {
     String badResponseJson = "{\"error\": \"A non-empty value must be specified for any of CA, Public, or Private. Please validate and retry your request.\"}";
-    doTest((body) -> {
-      body.setCa("");
-      body.setPub("");
-      body.setPriv("");
-    }, (body) -> {}, status().isBadRequest(), false, badResponseJson);
+    new PutCertificateSimulator("", "", "")
+        .setExpectation(400, badResponseJson)
+        .execute();
   }
-
-  public void doTest(Consumer<CertificateBody> requestMutator,
-                     Consumer<CertificateBody> responseMutator,
-                     ResultMatcher expectedStatus,
-                     boolean checkResult) throws Exception {
-    doTest(requestMutator, responseMutator, expectedStatus, checkResult, "");
-  }
-
-  public void doTest(Consumer<CertificateBody> requestMutator,
-                     Consumer<CertificateBody> responseMutator,
-                     ResultMatcher expectedStatus,
-                     boolean checkResult,
-                     String badResponse) throws Exception {
-    CertificateSecret certificateSecretForRequest = new CertificateSecret("get-ca", "get-pub", "get-priv");
-    CertificateSecret certificateSecretForResponse = new CertificateSecret("get-ca", "get-pub", "get-priv");
-    requestMutator.accept(certificateSecretForRequest.getCertificateBody());
-    responseMutator.accept(certificateSecretForResponse.getCertificateBody());
-
-    String requestJson = json(certificateSecretForRequest);
-
-    ResultActions foo = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson)).andExpect(expectedStatus);
-    Secret certificateFromDb = secretStore.getSecret("whatever");
-
-    if (checkResult) {
-      assertThat(certificateFromDb, reflectiveEqualTo(certificateSecretForResponse));
-    } else {
-      assertNull(certificateFromDb);
-      foo.andExpect(content().json(badResponse));
-    }
-  }
-
-  // TODO when all three certificate components are null, that's a 400. Output suitable error message as well.
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
     return put(path)
@@ -483,10 +436,60 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
         .contentType(MediaType.APPLICATION_JSON_UTF8);
   }
 
-  protected String json(Object o) throws IOException {
+  private String json(Object o) throws IOException {
     MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
     this.mappingJackson2HttpMessageConverter.write(
         o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
     return mockHttpOutputMessage.getBodyAsString();
+  }
+
+  class PutCertificateSimulator {
+    private final String ca;
+    private final String pub;
+    private final String priv;
+    private int statusCode;
+    private String badResponseJson;
+
+    public PutCertificateSimulator(String ca, String pub, String priv) {
+      this.ca = ca;
+      this.pub = pub;
+      this.priv = priv;
+    }
+
+    public void execute() throws Exception {
+      CertificateSecret certificateSecretForRequest = new CertificateSecret(ca, pub, priv);
+      CertificateSecret certificateSecretForResponse = new CertificateSecret(
+          transformEmptyToNull(ca),
+          transformEmptyToNull(pub),
+          transformEmptyToNull(priv));
+
+      String requestJson = json(certificateSecretForRequest);
+
+      boolean isHttpOk = statusCode == 200;
+      ResultMatcher expectedStatus = isHttpOk ? status().isOk() : status().isBadRequest();
+      ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson)).andExpect(expectedStatus);
+      Secret certificateFromDb = secretStore.getSecret("whatever");
+
+      if (isHttpOk) {
+        assertThat(certificateFromDb, reflectiveEqualTo(certificateSecretForResponse));
+      } else {
+        assertNull(certificateFromDb);
+        result.andExpect(content().json(badResponseJson));
+      }
+    }
+
+    private String transformEmptyToNull(String param) {
+      return "".equals(param) ? null : param;
+    }
+
+    public PutCertificateSimulator setExpectation(int statusCode) {
+      return setExpectation(statusCode, null);
+    }
+
+    public PutCertificateSimulator setExpectation(int statusCode, String badResponseJson) {
+      this.statusCode = statusCode;
+      this.badResponseJson = badResponseJson;
+      return this;
+    }
   }
 }
