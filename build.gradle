@@ -60,22 +60,6 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.12'
 }
 
-sourceSets {
-    integrationTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/it/java')
-        }
-        resources.srcDir file('src/it/resources')
-    }
-}
-
-configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
-}
-
 jacoco {
     toolVersion = "0.7.6.201602180812"
 }
