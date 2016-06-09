@@ -27,7 +27,7 @@ public class PasseyStringSecretGeneratorTest {
 
   @InjectMocks
   @Autowired
-  private PasseySecretGenerator subject;
+  private PasseyStringSecretGenerator subject;
 
   @Mock
   private CharacterRuleProvider characterRuleProvider;

@@ -3,7 +3,8 @@ package io.pivotal.security.controller.v1;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.generator.CertificateGenerator;
+import io.pivotal.security.generator.StringSecretGenerator;
 import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
 import io.pivotal.security.model.*;
 import io.pivotal.security.repository.SecretStore;
@@ -21,6 +22,8 @@ import javax.annotation.PostConstruct;
 import javax.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Collections;
 
 
@@ -32,7 +35,10 @@ public class SecretsController {
   SecretStore secretStore;
 
   @Autowired
-  SecretGenerator secretGenerator;
+  StringSecretGenerator stringSecretGenerator;
+
+  @Autowired
+  CertificateGenerator certificateGenerator;
 
   @Autowired
   StringGeneratorRequestTranslator stringGeneratorRequestTranslator;
@@ -54,19 +60,33 @@ public class SecretsController {
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
-    if (!"value".equals(type)) {
+    if (!"value".equals(type) && !"certificate".equals(type)) {
       return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
     }
 
     try {
-      StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
+      if (type.equals("value")) {
+        StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
 
-      String secretValue = secretGenerator.generateSecret(generatorRequest.getParameters());
-      StringSecret stringSecret = new StringSecret(secretValue);
+        String secretValue = stringSecretGenerator.generateSecret(generatorRequest.getParameters());
+        StringSecret stringSecret = new StringSecret(secretValue);
 
-      secretStore.set(secretPath, stringSecret);
+        secretStore.set(secretPath, stringSecret);
 
-      return new ResponseEntity<>(stringSecret, HttpStatus.OK);
+        return new ResponseEntity<>(stringSecret, HttpStatus.OK);
+      } else {
+
+        CertificateSecret cert = null;
+        try {
+          cert = certificateGenerator.generateCertificate();
+        } catch (Exception e) {
+          throw new ValidationException(e); // todo
+        }
+
+        secretStore.set(secretPath, cert);
+
+        return new ResponseEntity<>(cert, HttpStatus.OK);
+      }
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }

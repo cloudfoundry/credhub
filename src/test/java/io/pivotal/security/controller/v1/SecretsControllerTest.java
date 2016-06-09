@@ -1,7 +1,8 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.controller.HtmlUnitTestBase;
-import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.generator.CertificateGenerator;
+import io.pivotal.security.generator.StringSecretGenerator;
 import io.pivotal.security.model.*;
 import io.pivotal.security.repository.SecretStore;
 import org.junit.Assert;
@@ -43,7 +44,10 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   private SecretsController secretsController;
 
   @Mock
-  private SecretGenerator secretGenerator;
+  private StringSecretGenerator stringSecretGenerator;
+
+  @Mock
+  private CertificateGenerator certificateGenerator;
 
   @Before
   public void setUp() {
@@ -145,7 +149,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Test
   public void generateSecretWithNoParameters() throws Exception {
     SecretParameters parameters = new SecretParameters();
-    when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
+    when(stringSecretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
     StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
@@ -161,9 +165,9 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
-  public void generateSecretWithEmptyParameters() throws Exception {
+  public void generateStringSecretWithEmptyParameters() throws Exception {
     SecretParameters parameters = new SecretParameters();
-    when(secretGenerator.generateSecret(parameters)).thenReturn("very-secret");
+    when(stringSecretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
     StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
@@ -179,6 +183,23 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   }
 
   @Test
+  public void generateCertificateWithNoParametersSucceeds() throws Exception {
+    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
+    when(certificateGenerator.generateCertificate()).thenReturn(certificateSecret);
+
+    String expectedJson = json(certificateSecret);
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-cert", "{\"type\":\"certificate\"}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
+
+    assertThat(secretStore.getSecret("my-cert"), reflectiveEqualTo(certificateSecret));
+  }
+
+  @Test
   public void generateSecretWithParameters() throws Exception {
     SecretParameters expectedParameters = new SecretParameters();
     expectedParameters.setExcludeSpecial(true);
@@ -186,7 +207,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     expectedParameters.setExcludeUpper(true);
     expectedParameters.setLength(42);
 
-    when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
+    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
     StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);
@@ -218,7 +239,7 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
 
-    when(secretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
+    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
 
     StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);

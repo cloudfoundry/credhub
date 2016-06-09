@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PasseySecretGenerator implements SecretGenerator {
+public class PasseyStringSecretGenerator implements StringSecretGenerator {
 
   public static final int DEFAULT_LENGTH = 20;
   public static final int MIN_LENGTH = 4;
