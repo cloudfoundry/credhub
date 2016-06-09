@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -420,23 +421,36 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
   @Test
   public void invalidPutWithAllThreeCertificateFieldsSetToNull() throws Exception {
+    String badResponseJson = "{\"error\": \"A non-empty value must be specified for any of CA, Public, or Private. Please validate and retry your request.\"}";
     doTest((body) -> {
       body.setCa(null);
       body.setPub(null);
       body.setPriv(null);
-    }, (body) -> {}, status().isBadRequest(), false);
+    }, (body) -> {}, status().isBadRequest(), false, badResponseJson);
   }
 
   @Test
   public void invalidPutWithAllThreeCertificateFieldsSetToEmptyString() throws Exception {
+    String badResponseJson = "{\"error\": \"A non-empty value must be specified for any of CA, Public, or Private. Please validate and retry your request.\"}";
     doTest((body) -> {
       body.setCa("");
       body.setPub("");
       body.setPriv("");
-    }, (body) -> {}, status().isBadRequest(), false);
+    }, (body) -> {}, status().isBadRequest(), false, badResponseJson);
   }
 
-  public void doTest(Consumer<CertificateBody> requestMutator, Consumer<CertificateBody> responseMutator, ResultMatcher expectedStatus, boolean checkResult) throws Exception {
+  public void doTest(Consumer<CertificateBody> requestMutator,
+                     Consumer<CertificateBody> responseMutator,
+                     ResultMatcher expectedStatus,
+                     boolean checkResult) throws Exception {
+    doTest(requestMutator, responseMutator, expectedStatus, checkResult, "");
+  }
+
+  public void doTest(Consumer<CertificateBody> requestMutator,
+                     Consumer<CertificateBody> responseMutator,
+                     ResultMatcher expectedStatus,
+                     boolean checkResult,
+                     String badResponse) throws Exception {
     CertificateSecret certificateSecretForRequest = new CertificateSecret("get-ca", "get-pub", "get-priv");
     CertificateSecret certificateSecretForResponse = new CertificateSecret("get-ca", "get-pub", "get-priv");
     requestMutator.accept(certificateSecretForRequest.getCertificateBody());
@@ -444,12 +458,14 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
 
     String requestJson = json(certificateSecretForRequest);
 
-    mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson)).andExpect(expectedStatus);
+    ResultActions foo = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson)).andExpect(expectedStatus);
     Secret certificateFromDb = secretStore.getSecret("whatever");
+
     if (checkResult) {
       assertThat(certificateFromDb, reflectiveEqualTo(certificateSecretForResponse));
     } else {
       assertNull(certificateFromDb);
+      foo.andExpect(content().json(badResponse));
     }
   }
 

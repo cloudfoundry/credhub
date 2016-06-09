@@ -96,7 +96,7 @@ public class SecretsController {
       pub = StringUtils.isEmpty(pub) ? null : pub;
       priv = StringUtils.isEmpty(priv) ? null : priv;
       if (ca == null && pub == null && priv == null) {
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        return createErrorResponse("error.missing_string_secret_certificate_credentials", HttpStatus.BAD_REQUEST);
       }
       CertificateSecret secret = new CertificateSecret(ca, pub, priv);
       secretStore.set(secretPath, secret);
