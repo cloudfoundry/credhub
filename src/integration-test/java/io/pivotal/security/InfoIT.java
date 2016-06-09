@@ -14,6 +14,8 @@ import static com.greghaskins.spectrum.Spectrum.value;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Optional;
+
 @RunWith(Spectrum.class)
 public class InfoIT {
 
@@ -32,15 +34,17 @@ public class InfoIT {
     });
 
     describe("the info endpoint", () -> {
-      it("respondns with the app version", () -> {
+      it("responds with the app version", () -> {
         final ResponseEntity<String> response = restTemplate.getForEntity(APP_URL + "/info", String
             .class);
+
+        final String buildNumber = Optional.ofNullable(System.getenv("BUILD_NUMBER")).orElse("DEV");
 
         assertThat(response.getStatusCode(), equalTo(HttpStatus.OK));
         assertThat(response.getBody(), equalTo("{" +
             "\"app\":{" +
             "\"name\":\"Pivotal Credential Manager\"," +
-            "\"version\":\"0.1.0\"" +
+            "\"version\":\"0.1.0 build " + buildNumber + "\"" +
             "}" +
             "}"));
       });

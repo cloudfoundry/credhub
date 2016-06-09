@@ -21,7 +21,7 @@ apply plugin: 'checkstyle'
 
 jar {
     baseName = 'sec-eng-credential-manager'
-    version = '0.0.1-SNAPSHOT'
+    version = '0.1.0'
 }
 
 sourceCompatibility = 1.8
@@ -75,6 +75,14 @@ task wrapper(type: Wrapper) {
 task integrationTest(type: Test) {
     testClassesDir = sourceSets.integrationTest.output.classesDir
     classpath = sourceSets.integrationTest.runtimeClasspath
+    outputs.upToDateWhen { false }
+}
+
+processResources {
+    filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [
+        "build.version": jar.version,
+        "build.number": System.getenv("BUILD_NUMBER") ?: "DEV"
+    ]
     outputs.upToDateWhen { false }
 }
 
