@@ -10,6 +10,8 @@ import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
 import io.pivotal.security.model.CertificateSecret;
 import io.pivotal.security.model.ResponseError;
 import io.pivotal.security.model.ResponseErrorType;
+import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.SecretType;
 import io.pivotal.security.model.StringGeneratorRequest;
 import io.pivotal.security.model.StringSecret;
 import io.pivotal.security.repository.SecretStore;
@@ -31,6 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ValidationException;
@@ -70,59 +74,62 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
-    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    String type = parsed.read("$.type");
-    if (!"value".equals(type) && !"certificate".equals(type)) {
-      return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
-    }
+    return dispatchOnSecretType(requestBody, (parsed) -> {
+      StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
 
-    try {
-      if (type.equals("value")) {
-        StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
+      String secretValue = stringSecretGenerator.generateSecret(generatorRequest.getParameters());
+      StringSecret stringSecret = new StringSecret(secretValue);
 
-        String secretValue = stringSecretGenerator.generateSecret(generatorRequest.getParameters());
-        StringSecret stringSecret = new StringSecret(secretValue);
+      secretStore.set(secretPath, stringSecret);
 
-        secretStore.set(secretPath, stringSecret);
-
-        return new ResponseEntity<>(stringSecret, HttpStatus.OK);
-      } else {
-        CertificateSecret cert;
-        try {
-          cert = certificateGenerator.generateCertificate();
-        } catch (Exception e) {
-          throw new ValidationException(e); // todo
-        }
-
-        secretStore.set(secretPath, cert);
-
-        return new ResponseEntity<>(cert, HttpStatus.OK);
+      return stringSecret;
+    }, (parsed) -> {
+      CertificateSecret cert;
+      try {
+        cert = certificateGenerator.generateCertificate();
+      } catch (Exception e) {
+        throw new ValidationException(e); // todo
       }
-    } catch (ValidationException ve) {
-      return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
-    }
+
+      secretStore.set(secretPath, cert);
+
+      return cert;
+    });
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody) {
+    return dispatchOnSecretType(requestBody, (parsed) -> {
+      String value = parsed.read("$.value");
+      if (StringUtils.isEmpty(value)) {
+        throw new ValidationException("error.missing_string_secret_value");
+      }
+      StringSecret stringSecret = new StringSecret(value);
+      secretStore.set(secretPath, stringSecret);
+      return stringSecret;
+    }, (parsed) -> {
+      CertificateSecret secret = certificateSetRequestTranslator.validCertificateSecret(parsed);
+      secretStore.set(secretPath, secret);
+      return secret;
+    });
+  }
+
+  private ResponseEntity dispatchOnSecretType(InputStream requestBody,
+                                              Function<DocumentContext, Secret> ifValueType,
+                                              Function<DocumentContext, Secret> ifCertificateType) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
-
     try {
-      if ("value".equals(type)) {
-        String value = parsed.read("$.value");
-        if (StringUtils.isEmpty(value)) {
-          throw new ValidationException("error.missing_string_secret_value");
-        }
-        StringSecret stringSecret = new StringSecret(value);
-        secretStore.set(secretPath, stringSecret);
-        return new ResponseEntity<>(stringSecret, HttpStatus.OK);
-      } else if ("certificate".equals(type)) {
-        CertificateSecret secret = certificateSetRequestTranslator.validCertificateSecret(parsed);
-        secretStore.set(secretPath, secret);
+      if (type == null) {
+        throw new ValidationException("error.secret_type_invalid");
+      }
+      try {
+        Supplier<Secret> ifValue = () -> ifValueType.apply(parsed);
+        Supplier<Secret> ifCertificate = () -> ifCertificateType.apply(parsed);
+        final Secret secret = SecretType.valueOf(type).enumerate(ifValue, ifCertificate);
         return new ResponseEntity<>(secret, HttpStatus.OK);
-      } else {
-        return createErrorResponse("error.secret_type_invalid", HttpStatus.BAD_REQUEST);
+      } catch (IllegalArgumentException e) {
+        throw new ValidationException("error.secret_type_invalid");
       }
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
