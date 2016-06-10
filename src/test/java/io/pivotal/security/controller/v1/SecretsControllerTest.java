@@ -3,7 +3,10 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.controller.HtmlUnitTestBase;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.StringSecretGenerator;
-import io.pivotal.security.model.*;
+import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.model.Secret;
+import io.pivotal.security.model.SecretParameters;
+import io.pivotal.security.model.StringSecret;
 import io.pivotal.security.repository.SecretStore;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,15 +23,18 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.io.IOException;
 
 @Transactional
 public class SecretsControllerTest extends HtmlUnitTestBase {
@@ -443,6 +449,24 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
     new PutCertificateSimulator("", "", "")
         .setExpectation(400, badResponseJson)
         .execute();
+  }
+
+  @Test
+  public void contentNegotiationAndPathMatchingAreDisabled() throws Exception{
+    doPutValue("test", "abc");
+    doPutValue("test.foo", "def");
+    mockMvc.perform(get("/api/v1/data/test"))
+        .andExpect(status().isOk())
+        .andExpect(content().json("{\"type\":\"value\",\"value\":\"abc\"}"));
+
+  }
+
+  private void doPutValue(String secretName, String secretValue) throws Exception {
+    String requestJson = "{\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/" + secretName, requestJson);
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk());
   }
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
