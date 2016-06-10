@@ -1,6 +1,6 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.controller.HtmlUnitTestBase;
+import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.StringSecretGenerator;
 import io.pivotal.security.model.CertificateSecret;
@@ -11,17 +11,24 @@ import io.pivotal.security.repository.SecretStore;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.mock.http.MockHttpOutputMessage;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static junit.framework.TestCase.assertNull;
@@ -37,7 +44,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.io.IOException;
 
 @Transactional
-public class SecretsControllerTest extends HtmlUnitTestBase {
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@WebAppConfiguration
+public class SecretsControllerTest {
+
+  @Autowired
+  protected ConfigurableWebApplicationContext context;
 
   @Autowired
   private HttpMessageConverter mappingJackson2HttpMessageConverter;
@@ -55,9 +68,12 @@ public class SecretsControllerTest extends HtmlUnitTestBase {
   @Mock
   private CertificateGenerator certificateGenerator;
 
+  private MockMvc mockMvc;
+
   @Before
   public void setUp() {
-    super.setUp();
+    mockMvc = MockMvcBuilders.webAppContextSetup(context)
+        .build();
     MockitoAnnotations.initMocks(this);
   }
 
