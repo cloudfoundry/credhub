@@ -6,18 +6,17 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.model.StringGeneratorRequest;
-import io.pivotal.security.validator.GeneratorRequestValidator;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-
-import javax.validation.ValidationException;
 
 import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
 import static com.greghaskins.spectrum.SpringSpectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import javax.validation.ValidationException;
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -30,8 +29,7 @@ public class StringGeneratorRequestTranslatorTest {
 
   {
     beforeEach(() -> {
-      GeneratorRequestValidator validator = new GeneratorRequestValidator();
-      subject = new StringGeneratorRequestTranslator(validator);
+      subject = new StringGeneratorRequestTranslator();
     });
 
     it("returns a StringGeneratorRequest for valid json", () -> {
@@ -56,26 +54,6 @@ public class StringGeneratorRequestTranslatorTest {
         fail();
       } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.excludes_all_charsets"));
-      }
-    });
-
-    it("rejects an unknown type", () -> {
-      String json = "{\"type\":\"foo\"}";
-      try {
-        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-        fail();
-      } catch (ValidationException ve) {
-        assertThat(ve.getMessage(), equalTo("error.secret_type_invalid"));
-      }
-    });
-
-    it("rejects empty json", () -> {
-      String json = "{}";
-      try {
-        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-        fail();
-      } catch (ValidationException ve) {
-        assertThat(ve.getMessage(), equalTo("error.secret_type_invalid"));
       }
     });
   }
