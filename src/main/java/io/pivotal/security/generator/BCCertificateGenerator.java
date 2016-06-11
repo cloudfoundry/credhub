@@ -22,10 +22,9 @@ public class BCCertificateGenerator implements CertificateGenerator {
   @Override
   public CertificateSecret generateCertificate() throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException, IOException {
     KeyPair keyPair = keyGenerator.generateKeyPair();
-    X509Certificate cert = rootCertificateProvider.get();
+    X509Certificate cert = rootCertificateProvider.get(keyPair);
     String caPem = CertificateFormatter.pemOf(cert);
     String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-    String publicPem = CertificateFormatter.pemOf(keyPair.getPublic());
-    return new CertificateSecret(caPem, publicPem, privatePem);
+    return new CertificateSecret(caPem, privatePem);
   }
 }

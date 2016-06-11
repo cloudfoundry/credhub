@@ -16,6 +16,10 @@ public class CertificateSecret implements Secret {
     setCertificateBody(new CertificateBody(ca, pub, priv));
   }
 
+  public CertificateSecret(String ca, String priv) {
+    setCertificateBody(new CertificateBody(null, ca, priv));
+  }
+
   @Override
   public String getType() {
     return type;

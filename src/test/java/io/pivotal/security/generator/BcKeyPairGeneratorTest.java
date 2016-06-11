@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
@@ -23,6 +26,14 @@ public class BcKeyPairGeneratorTest {
   public void canGenerateKeyPair() throws Exception {
     KeyPair keyPair = subject.generateKeyPair();
 
+    KeyFactory keyFac = KeyFactory.getInstance("RSA");
+    RSAPrivateKeySpec privateKeySpec = keyFac.getKeySpec(keyPair.getPrivate(),
+        RSAPrivateKeySpec.class);
+    RSAPublicKeySpec publicKeySpec = keyFac.getKeySpec(keyPair.getPublic(),
+        RSAPublicKeySpec.class);
+
+    assertThat(privateKeySpec.getModulus().bitLength(), equalTo(2048));
+    assertThat(publicKeySpec.getModulus().bitLength(), equalTo(2048));
     assertThat(keyPair.getPublic().getAlgorithm(), equalTo("RSA"));
     assertThat(keyPair.getPrivate().getAlgorithm(), equalTo("RSA"));
     assertThat(keyPair.getPublic().getFormat(), equalTo("X.509"));

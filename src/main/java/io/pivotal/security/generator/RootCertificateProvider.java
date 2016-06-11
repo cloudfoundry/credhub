@@ -14,7 +14,7 @@ import java.util.Date;
 
 @Component
 public class RootCertificateProvider {
-  public X509Certificate get() throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
+  public X509Certificate get(KeyPair caKeyPair) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
     final X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
     final X500Principal dnName = new X500Principal("O=Organization,ST=CA,C=US");
 
@@ -28,9 +28,6 @@ public class RootCertificateProvider {
     certGen.setNotAfter(later);
     certGen.setSubjectDN(dnName);
 
-    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
-    generator.initialize(2048);
-    KeyPair caKeyPair = generator.generateKeyPair();
     certGen.setPublicKey(caKeyPair.getPublic());
     certGen.setSignatureAlgorithm("SHA256withRSA");
     X509Certificate caCert = certGen.generate(caKeyPair.getPrivate(), "BC");

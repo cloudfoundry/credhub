@@ -83,16 +83,15 @@ public class SecretsController {
       secretStore.set(secretPath, stringSecret);
 
       return stringSecret;
+
     }, (parsed) -> {
-      CertificateSecret cert;
+        CertificateSecret cert;
       try {
         cert = certificateGenerator.generateCertificate();
       } catch (Exception e) {
-        throw new ValidationException(e); // todo
+        throw new RuntimeException(e);
       }
-
       secretStore.set(secretPath, cert);
-
       return cert;
     });
   }

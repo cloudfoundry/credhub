@@ -27,6 +27,7 @@ import java.util.Date;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
@@ -56,18 +57,17 @@ public class BCCertificateGeneratorTest {
     when(keyGenerator.generateKeyPair()).thenReturn(expectedKeyPair);
 
     X509Certificate caCert = generateX509Certificate(expectedKeyPair);
-    when(rootCertificateProvider.get()).thenReturn(caCert);
+    when(rootCertificateProvider.get(expectedKeyPair)).thenReturn(caCert);
 
-    String expectedPem = CertificateFormatter.pemOf(caCert);
+    String expectedCert = CertificateFormatter.pemOf(caCert);
     String expectedPrivate = CertificateFormatter.pemOf(expectedKeyPair.getPrivate());
-    String expectedPublic = CertificateFormatter.pemOf(expectedKeyPair.getPublic());
 
     CertificateSecret certificateSecret = subject.generateCertificate();
 
     assertThat(certificateSecret, notNullValue());
-    assertThat(certificateSecret.getCertificateBody().getCa(), equalTo(expectedPem));
+    assertThat(certificateSecret.getCertificateBody().getCa(), nullValue());
     assertThat(certificateSecret.getCertificateBody().getPriv(), equalTo(expectedPrivate));
-    assertThat(certificateSecret.getCertificateBody().getPub(), equalTo(expectedPublic));
+    assertThat(certificateSecret.getCertificateBody().getPub(), equalTo(expectedCert));
   }
 
   private KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {

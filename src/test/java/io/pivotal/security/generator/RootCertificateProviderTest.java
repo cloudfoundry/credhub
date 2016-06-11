@@ -1,7 +1,6 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +9,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.security.auth.x500.X500Principal;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -28,8 +31,9 @@ public class RootCertificateProviderTest {
 
   @Test
   public void getSucceeds() throws Exception {
+    KeyPair keyPair = generateKeyPair();
     X500Principal expectedPrincipal = new X500Principal("O=Organization,ST=CA,C=US");
-    X509Certificate actualCert = rootCertificateProvider.get();
+    X509Certificate actualCert = rootCertificateProvider.get(keyPair);
 
     assertThat(actualCert, notNullValue());
     assertThat(actualCert.getSubjectX500Principal(), reflectiveEqualTo(expectedPrincipal));
@@ -41,9 +45,9 @@ public class RootCertificateProviderTest {
     actualCert.checkValidity();
   }
 
-  @Test
-  @Ignore
-  public void certificateHasSpecifiedStrength() throws Exception {
-    // TODO find a way to test for length
+  private KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
+    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
+    generator.initialize(1024);
+    return generator.generateKeyPair();
   }
 }

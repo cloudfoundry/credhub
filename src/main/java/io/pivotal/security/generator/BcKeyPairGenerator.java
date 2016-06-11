@@ -15,17 +15,12 @@ public class BcKeyPairGenerator extends KeyPairGenerator {
     Security.addProvider(new BouncyCastleProvider());
     try {
       myGenerator = KeyPairGenerator.getInstance("RSA", "BC");
-      myGenerator.initialize(3072);
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-    } catch (NoSuchProviderException e) {
+      myGenerator.initialize(2048);
+    } catch (Exception e) {
+      // todo perhaps throw any time we are asked for a new key?
       e.printStackTrace();
     }
   }
-
-//  protected BcKeyPairGenerator(String algorithm) {
-//    super(algorithm);
-//  }
 
   @Override
   public KeyPair generateKeyPair() {
