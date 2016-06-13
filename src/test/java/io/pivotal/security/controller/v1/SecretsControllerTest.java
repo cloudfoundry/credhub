@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.MockitoSpringTest;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.StringSecretGenerator;
 import io.pivotal.security.model.CertificateSecret;
@@ -14,7 +15,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
@@ -47,7 +47,7 @@ import java.io.IOException;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
-public class SecretsControllerTest {
+public class SecretsControllerTest extends MockitoSpringTest {
 
   @Autowired
   protected ConfigurableWebApplicationContext context;
@@ -72,9 +72,7 @@ public class SecretsControllerTest {
 
   @Before
   public void setUp() {
-    mockMvc = MockMvcBuilders.webAppContextSetup(context)
-        .build();
-    MockitoAnnotations.initMocks(this);
+    mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
   }
 
   @Test
