@@ -451,7 +451,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void invalidPutWithAllThreeCertificateFieldsSetToNull() throws Exception {
-    String badResponseJson = "{\"error\": \"A non-empty value must be specified for any of CA, Public, or Private. Please validate and retry your request.\"}";
+    String badResponseJson = "{\"error\": \"At least one certificate type must be set. Please validate your input and retry your request.\"}";
     new PutCertificateSimulator(null, null, null)
         .setExpectation(400, badResponseJson)
         .execute();
@@ -459,7 +459,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void invalidPutWithAllThreeCertificateFieldsSetToEmptyString() throws Exception {
-    String badResponseJson = "{\"error\": \"A non-empty value must be specified for any of CA, Public, or Private. Please validate and retry your request.\"}";
+    String badResponseJson = "{\"error\": \"At least one certificate type must be set. Please validate your input and retry your request.\"}";
     new PutCertificateSimulator("", "", "")
         .setExpectation(400, badResponseJson)
         .execute();
