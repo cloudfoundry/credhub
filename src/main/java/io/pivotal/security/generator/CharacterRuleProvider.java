@@ -1,6 +1,6 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.model.SecretParameters;
+import io.pivotal.security.model.StringSecretParameters;
 import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
@@ -29,7 +29,7 @@ public class CharacterRuleProvider {
     };
   }
 
-  public List<CharacterRule> getCharacterRules(SecretParameters parameters) {
+  public List<CharacterRule> getCharacterRules(StringSecretParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();
 
     if (!parameters.isExcludeSpecial()) {

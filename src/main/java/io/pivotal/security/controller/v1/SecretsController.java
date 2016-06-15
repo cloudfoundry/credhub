@@ -5,9 +5,11 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.StringSecretGenerator;
+import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
 import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.model.CertificateGeneratorRequest;
 import io.pivotal.security.model.ResponseError;
 import io.pivotal.security.model.ResponseErrorType;
 import io.pivotal.security.model.Secret;
@@ -57,6 +59,9 @@ public class SecretsController {
   StringGeneratorRequestTranslator stringGeneratorRequestTranslator;
 
   @Autowired
+  CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
+
+  @Autowired
   CertificateSetRequestTranslator certificateSetRequestTranslator;
 
   @Autowired
@@ -85,9 +90,11 @@ public class SecretsController {
       return stringSecret;
 
     }, (parsed) -> {
-        CertificateSecret cert;
+      CertificateSecret cert;
+      CertificateGeneratorRequest generatorRequest = certificateGeneratorRequestTranslator.validGeneratorRequest(parsed);
+
       try {
-        cert = certificateGenerator.generateCertificate();
+        cert = certificateGenerator.generateCertificate(generatorRequest.getParameters());
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

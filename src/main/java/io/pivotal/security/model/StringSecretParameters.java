@@ -2,10 +2,11 @@ package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SecretParameters {
+public class StringSecretParameters {
 
   private int length;
 
+  // Value Parameters
   @JsonProperty("exclude_special")
   private boolean excludeSpecial;
 
@@ -67,7 +68,7 @@ public class SecretParameters {
       return false;
     }
 
-    SecretParameters that = (SecretParameters) o;
+    StringSecretParameters that = (StringSecretParameters) o;
 
     if (length != that.length) {
       return false;
@@ -93,5 +94,4 @@ public class SecretParameters {
     result = 31 * result + (excludeLower ? 1 : 0);
     return result;
   }
-
 }

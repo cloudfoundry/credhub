@@ -2,7 +2,7 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
-import io.pivotal.security.model.SecretParameters;
+import io.pivotal.security.model.StringSecretParameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -45,7 +45,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
 
   @Test
   public void generateSecret() {
-    SecretParameters secretParameters = new SecretParameters();
+    StringSecretParameters secretParameters = new StringSecretParameters();
 
     List<CharacterRule> characterRules = new ArrayList<>();
 
@@ -61,7 +61,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
   public void generateSecretWithSpecificLength() {
     when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-secret");
 
-    SecretParameters secretParameters = new SecretParameters();
+    StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(42);
 
     String secretValue = subject.generateSecret(secretParameters);
@@ -72,7 +72,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
   public void generateSecretWithLessThanMinLength() {
     when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
 
-    SecretParameters secretParameters = new SecretParameters();
+    StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(3);
 
     String secretValue = subject.generateSecret(secretParameters);
@@ -83,7 +83,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
   public void generateSecretWithMoreThanMaxLength() {
     when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
 
-    SecretParameters secretParameters = new SecretParameters();
+    StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(201);
 
     String secretValue = subject.generateSecret(secretParameters);

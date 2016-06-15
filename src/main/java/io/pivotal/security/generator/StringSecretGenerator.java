@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.model.SecretParameters;
+import io.pivotal.security.model.StringSecretParameters;
 
 public interface StringSecretGenerator {
-  String generateSecret(SecretParameters parameters);
+  String generateSecret(StringSecretParameters parameters);
 }

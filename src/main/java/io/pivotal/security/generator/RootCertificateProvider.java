@@ -1,5 +1,6 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.model.CertificateSecretParameters;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +15,18 @@ import java.util.Date;
 
 @Component
 public class RootCertificateProvider {
-  public X509Certificate get(KeyPair caKeyPair) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
+  public X509Certificate get(KeyPair caKeyPair, CertificateSecretParameters params) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
     final X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
-    final X500Principal dnName = new X500Principal("O=Organization,ST=CA,C=US");
+    final StringBuilder strb = new StringBuilder();
+
+    strb.append("CN=").append(params.getCommonName())
+        .append(",O=").append(params.getOrganization())
+        .append(",OU=").append(params.getOrganizationUnit())
+        .append(",L=").append(params.getLocality())
+        .append(",ST=").append(params.getState())
+        .append(",C=").append(params.getCountry());
+
+    final X500Principal dnName = new X500Principal(strb.toString());
 
     Instant instant = Instant.now();
     final Date now = Date.from(instant);

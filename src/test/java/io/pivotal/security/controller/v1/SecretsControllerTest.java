@@ -5,8 +5,9 @@ import io.pivotal.security.MockitoSpringTest;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.StringSecretGenerator;
 import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.model.CertificateSecretParameters;
 import io.pivotal.security.model.Secret;
-import io.pivotal.security.model.SecretParameters;
+import io.pivotal.security.model.StringSecretParameters;
 import io.pivotal.security.model.StringSecret;
 import io.pivotal.security.repository.SecretStore;
 import org.junit.Assert;
@@ -168,7 +169,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void generateSecretWithNoParameters() throws Exception {
-    SecretParameters parameters = new SecretParameters();
+    StringSecretParameters parameters = new StringSecretParameters();
     when(stringSecretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
     StringSecret expectedStringSecret = new StringSecret("very-secret");
@@ -186,7 +187,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void generateStringSecretWithEmptyParameters() throws Exception {
-    SecretParameters parameters = new SecretParameters();
+    StringSecretParameters parameters = new StringSecretParameters();
     when(stringSecretGenerator.generateSecret(parameters)).thenReturn("very-secret");
 
     StringSecret expectedStringSecret = new StringSecret("very-secret");
@@ -203,25 +204,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void generateCertificateWithNoParametersSucceeds() throws Exception {
-    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
-    when(certificateGenerator.generateCertificate()).thenReturn(certificateSecret);
-
-    String expectedJson = json(certificateSecret);
-
-    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-cert", "{\"type\":\"certificate\"}");
-
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(expectedJson));
-
-    assertThat(secretStore.getSecret("my-cert"), reflectiveEqualTo(certificateSecret));
-  }
-
-  @Test
-  public void generateSecretWithParameters() throws Exception {
-    SecretParameters expectedParameters = new SecretParameters();
+  public void generateStringSecretWithParameters() throws Exception {
+    StringSecretParameters expectedParameters = new StringSecretParameters();
     expectedParameters.setExcludeSpecial(true);
     expectedParameters.setExcludeNumber(true);
     expectedParameters.setExcludeUpper(true);
@@ -253,8 +237,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void generateSecretWithDifferentParameters() throws Exception {
-    SecretParameters expectedParameters = new SecretParameters();
+  public void generateStringSecretWithDifferentParameters() throws Exception {
+    StringSecretParameters expectedParameters = new StringSecretParameters();
     expectedParameters.setExcludeSpecial(true);
     expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
@@ -284,7 +268,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void generateSecretWithAllExcludeParameters() throws Exception {
+  public void generateStringSecretWithAllExcludeParameters() throws Exception {
     String badResponse = "{ \"error\": \"The combination of parameters in the request is not allowed. Please validate your input and retry your request.\" }";
     String requestJson = "{" +
         "\"type\":\"value\"," +
@@ -302,6 +286,45 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().json(badResponse));
   }
+
+
+  @Test
+  public void generateCertificateWithAllParametersSucceeds() throws Exception {
+    CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
+    expectedParameters.setCommonName("My Common Name");
+    expectedParameters.setOrganization("organization.io");
+    expectedParameters.setOrganizationUnit("My Unit");
+    expectedParameters.setLocality("My Locality");
+    expectedParameters.setState("My State");
+    expectedParameters.setCountry("My Country");
+
+    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
+    when(certificateGenerator.generateCertificate(expectedParameters)).thenReturn(certificateSecret);
+
+    String requestJson = "{" +
+            "\"type\":\"certificate\"," +
+            "\"parameters\":{" +
+            "\"common_name\":\"My Common Name\", " +
+            "\"organization\": \"organization.io\"," +
+            "\"organization_unit\": \"My Unit\"," +
+            "\"locality\": \"My Locality\"," +
+            "\"state\": \"My State\"," +
+            "\"country\": \"My Country\"" +
+            "}" +
+            "}";
+
+    String expectedJson = json(certificateSecret);
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-cert", requestJson);
+
+    mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().json(expectedJson));
+
+    assertThat(secretStore.getSecret("my-cert"), reflectiveEqualTo(certificateSecret));
+  }
+
 
   @Test
   public void getReturnsNotFoundWhenSecretDoesNotExist() throws Exception {

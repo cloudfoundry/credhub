@@ -3,6 +3,7 @@ package io.pivotal.security.generator;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
 import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.model.CertificateSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
@@ -15,11 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
-
+import javax.security.auth.x500.X500Principal;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -34,8 +31,11 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-import javax.security.auth.x500.X500Principal;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -61,13 +61,14 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     KeyPair expectedKeyPair = generateKeyPair();
     when(keyGenerator.generateKeyPair()).thenReturn(expectedKeyPair);
 
+    CertificateSecretParameters inputParameters = new CertificateSecretParameters();
     X509Certificate caCert = generateX509Certificate(expectedKeyPair);
-    when(rootCertificateProvider.get(expectedKeyPair)).thenReturn(caCert);
+    when(rootCertificateProvider.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
 
     String expectedCert = CertificateFormatter.pemOf(caCert);
     String expectedPrivate = CertificateFormatter.pemOf(expectedKeyPair.getPrivate());
 
-    CertificateSecret certificateSecret = subject.generateCertificate();
+    CertificateSecret certificateSecret = subject.generateCertificate(inputParameters);
 
     assertThat(certificateSecret, notNullValue());
     assertThat(certificateSecret.getCertificateBody().getCa(), nullValue());
