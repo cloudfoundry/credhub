@@ -43,10 +43,10 @@ public class SecretsController {
   SecretStore secretStore;
 
   @Autowired
-  SecretGenerator<StringSecretParameters> stringSecretGenerator;
+  SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
   @Autowired
-  SecretGenerator<CertificateSecretParameters> certificateSecretGenerator;
+  SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateSecretGenerator;
 
   @Autowired
   StringGeneratorRequestTranslator stringGeneratorRequestTranslator;

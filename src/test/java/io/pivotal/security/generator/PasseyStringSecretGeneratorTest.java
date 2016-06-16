@@ -54,7 +54,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
 
     when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
 
-    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    StringSecret secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 
@@ -65,7 +65,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
     StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(42);
 
-    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    StringSecret secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 
@@ -76,7 +76,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
     StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(3);
 
-    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    StringSecret secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 
@@ -87,7 +87,7 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
     StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(201);
 
-    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    StringSecret secretValue = subject.generateSecret(secretParameters);
     assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 

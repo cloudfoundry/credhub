@@ -12,7 +12,7 @@ import java.security.*;
 import java.security.cert.X509Certificate;
 
 @Component
-public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters> {
+public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateSecret> {
 
   @Autowired(required = true)
   KeyPairGenerator keyGenerator;
@@ -21,7 +21,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   RootCertificateProvider rootCertificateProvider;
 
   @Override
-  public Secret generateSecret(CertificateSecretParameters params) {
+  public CertificateSecret generateSecret(CertificateSecretParameters params) {
     KeyPair keyPair = keyGenerator.generateKeyPair();
     try {
       X509Certificate cert = rootCertificateProvider.get(keyPair, params);

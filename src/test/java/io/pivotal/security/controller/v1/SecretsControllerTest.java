@@ -63,10 +63,10 @@ public class SecretsControllerTest extends MockitoSpringTest {
   private SecretsController secretsController;
 
   @Mock
-  private SecretGenerator<StringSecretParameters> stringSecretGenerator;
+  private SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
   @Mock
-  private SecretGenerator<CertificateSecretParameters> certificateGenerator;
+  private SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateGenerator;
 
   private MockMvc mockMvc;
 

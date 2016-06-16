@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PasseyStringSecretGenerator implements SecretGenerator<StringSecretParameters> {
+public class PasseyStringSecretGenerator implements SecretGenerator<StringSecretParameters, StringSecret> {
 
   public static final int DEFAULT_LENGTH = 20;
   public static final int MIN_LENGTH = 4;
@@ -24,7 +24,7 @@ public class PasseyStringSecretGenerator implements SecretGenerator<StringSecret
   PasswordGenerator passwordGenerator;
 
   @Override
-  public Secret generateSecret(StringSecretParameters parameters) {
+  public StringSecret generateSecret(StringSecretParameters parameters) {
     int passwordLength = normalizedSecretLength(parameters.getLength());
 
     List<CharacterRule> characterRules = characterRuleProvider.getCharacterRules(parameters);
