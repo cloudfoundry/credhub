@@ -68,7 +68,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     String expectedCert = CertificateFormatter.pemOf(caCert);
     String expectedPrivate = CertificateFormatter.pemOf(expectedKeyPair.getPrivate());
 
-    CertificateSecret certificateSecret = subject.generateCertificate(inputParameters);
+    CertificateSecret certificateSecret = (CertificateSecret) subject.generateSecret(inputParameters);
 
     assertThat(certificateSecret, notNullValue());
     assertThat(certificateSecret.getCertificateBody().getCa(), nullValue());

@@ -1,17 +1,17 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.model.CertificateGeneratorRequest;
 import io.pivotal.security.model.CertificateSecretParameters;
+import io.pivotal.security.model.GeneratorRequest;
 import org.springframework.stereotype.Component;
 
 import javax.validation.ValidationException;
 import java.util.Optional;
 
 @Component
-public class CertificateGeneratorRequestTranslator {
-  public CertificateGeneratorRequest validGeneratorRequest(DocumentContext parsed) throws ValidationException {
-    CertificateGeneratorRequest generatorRequest = new CertificateGeneratorRequest();
+public class CertificateGeneratorRequestTranslator implements SecretGeneratorRequestTranslator {
+  public GeneratorRequest<CertificateSecretParameters> validGeneratorRequest(DocumentContext parsed) throws ValidationException {
+    GeneratorRequest<CertificateSecretParameters> generatorRequest = new GeneratorRequest<>();
     CertificateSecretParameters secretParameters = new CertificateSecretParameters();
     Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
         .ifPresent(secretParameters::setCommonName);

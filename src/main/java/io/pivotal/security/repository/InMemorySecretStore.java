@@ -22,7 +22,17 @@ public class InMemorySecretStore implements SecretStore {
 
   @Transactional
   @Override
-  public void set(String key, StringSecret stringSecret) {
+  public void set(String key, Secret secret) { // TODO GROT
+    if (secret instanceof StringSecret) {
+      set(key, (StringSecret)secret);
+    } else if (secret instanceof CertificateSecret) {
+      set(key, (CertificateSecret)secret);
+    } else {
+      throw new RuntimeException("fubar");
+    }
+  }
+
+  private void set(String key, StringSecret stringSecret) {
     NamedStringSecret namedSecret = (NamedStringSecret) secretRepository.findOneByName(key);
     if (namedSecret == null) {
       namedSecret = new NamedStringSecret(key);
@@ -31,9 +41,7 @@ public class InMemorySecretStore implements SecretStore {
     secretRepository.save(namedSecret);
   }
 
-  @Transactional
-  @Override
-  public void set(String key, CertificateSecret certificateSecret) {
+  private void set(String key, CertificateSecret certificateSecret) {
     NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) secretRepository.findOneByName(key);
     if (namedCertificateSecret == null) {
       namedCertificateSecret = new NamedCertificateSecret(key);

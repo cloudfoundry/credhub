@@ -1,15 +1,14 @@
 package io.pivotal.security.model;
 
-
-public class CertificateGeneratorRequest {
-  private CertificateSecretParameters parameters;
+public class GeneratorRequest<T> {
+  private T parameters;
   private String type;
 
-  public CertificateSecretParameters getParameters() {
+  public T getParameters() {
     return parameters;
   }
 
-  public void setParameters(CertificateSecretParameters parameters) {
+  public void setParameters(T parameters) {
     this.parameters = parameters;
   }
 

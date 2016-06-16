@@ -5,18 +5,19 @@ import com.greghaskins.spectrum.SpringSpectrum;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.StringGeneratorRequest;
+import io.pivotal.security.model.GeneratorRequest;
+import io.pivotal.security.model.StringSecretParameters;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+
+import javax.validation.ValidationException;
 
 import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
 import static com.greghaskins.spectrum.SpringSpectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-
-import javax.validation.ValidationException;
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -34,7 +35,7 @@ public class StringGeneratorRequestTranslatorTest {
 
     it("returns a StringGeneratorRequest for valid json", () -> {
       String json = "{\"type\":\"value\"}";
-      StringGeneratorRequest generatorRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+      GeneratorRequest<StringSecretParameters> generatorRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
       assertThat(generatorRequest.getType(), equalTo("value"));
     });
 

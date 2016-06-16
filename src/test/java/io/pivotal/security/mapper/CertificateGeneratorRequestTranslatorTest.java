@@ -4,8 +4,8 @@ import com.greghaskins.spectrum.SpringSpectrum;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.CertificateGeneratorRequest;
 import io.pivotal.security.model.CertificateSecretParameters;
+import io.pivotal.security.model.GeneratorRequest;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -53,7 +53,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
 
-      CertificateGeneratorRequest cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
       assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
     });
 
@@ -71,7 +71,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
 
-      CertificateGeneratorRequest cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
       assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
     });
 

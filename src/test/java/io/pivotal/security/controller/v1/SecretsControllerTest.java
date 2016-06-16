@@ -2,8 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
-import io.pivotal.security.generator.CertificateGenerator;
-import io.pivotal.security.generator.StringSecretGenerator;
+import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.model.CertificateSecret;
 import io.pivotal.security.model.CertificateSecretParameters;
 import io.pivotal.security.model.Secret;
@@ -64,10 +63,10 @@ public class SecretsControllerTest extends MockitoSpringTest {
   private SecretsController secretsController;
 
   @Mock
-  private StringSecretGenerator stringSecretGenerator;
+  private SecretGenerator<StringSecretParameters> stringSecretGenerator;
 
   @Mock
-  private CertificateGenerator certificateGenerator;
+  private SecretGenerator<CertificateSecretParameters> certificateGenerator;
 
   private MockMvc mockMvc;
 
@@ -170,7 +169,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void generateSecretWithNoParameters() throws Exception {
     StringSecretParameters parameters = new StringSecretParameters();
-    when(stringSecretGenerator.generateSecret(parameters)).thenReturn("very-secret");
+    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(new StringSecret("very-secret"));
 
     StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
@@ -188,7 +187,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void generateStringSecretWithEmptyParameters() throws Exception {
     StringSecretParameters parameters = new StringSecretParameters();
-    when(stringSecretGenerator.generateSecret(parameters)).thenReturn("very-secret");
+    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(new StringSecret("very-secret"));
 
     StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
@@ -211,7 +210,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
     expectedParameters.setExcludeUpper(true);
     expectedParameters.setLength(42);
 
-    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
+    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(new StringSecret("long-secret"));
 
     StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);
@@ -243,7 +242,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
     expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
 
-    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn("long-secret");
+    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(new StringSecret("long-secret"));
 
     StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);
@@ -299,7 +298,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
     expectedParameters.setCountry("My Country");
 
     CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
-    when(certificateGenerator.generateCertificate(expectedParameters)).thenReturn(certificateSecret);
+    when(certificateGenerator.generateSecret(expectedParameters)).thenReturn(certificateSecret);
 
     String requestJson = "{" +
             "\"type\":\"certificate\"," +

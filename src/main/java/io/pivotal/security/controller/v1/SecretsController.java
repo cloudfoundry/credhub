@@ -3,19 +3,12 @@ package io.pivotal.security.controller.v1;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import io.pivotal.security.generator.CertificateGenerator;
-import io.pivotal.security.generator.StringSecretGenerator;
+import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
+import io.pivotal.security.mapper.SecretGeneratorRequestTranslator;
 import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
-import io.pivotal.security.model.CertificateSecret;
-import io.pivotal.security.model.CertificateGeneratorRequest;
-import io.pivotal.security.model.ResponseError;
-import io.pivotal.security.model.ResponseErrorType;
-import io.pivotal.security.model.Secret;
-import io.pivotal.security.model.SecretType;
-import io.pivotal.security.model.StringGeneratorRequest;
-import io.pivotal.security.model.StringSecret;
+import io.pivotal.security.model.*;
 import io.pivotal.security.repository.SecretStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -50,10 +43,10 @@ public class SecretsController {
   SecretStore secretStore;
 
   @Autowired
-  StringSecretGenerator stringSecretGenerator;
+  SecretGenerator<StringSecretParameters> stringSecretGenerator;
 
   @Autowired
-  CertificateGenerator certificateGenerator;
+  SecretGenerator<CertificateSecretParameters> certificateSecretGenerator;
 
   @Autowired
   StringGeneratorRequestTranslator stringGeneratorRequestTranslator;
@@ -80,27 +73,22 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
     return dispatchOnSecretType(requestBody, (parsed) -> {
-      StringGeneratorRequest generatorRequest = stringGeneratorRequestTranslator.validGeneratorRequest(parsed);
-
-      String secretValue = stringSecretGenerator.generateSecret(generatorRequest.getParameters());
-      StringSecret stringSecret = new StringSecret(secretValue);
-
-      secretStore.set(secretPath, stringSecret);
-
-      return stringSecret;
+      return createAndStoreSecret(secretPath, parsed, stringGeneratorRequestTranslator, stringSecretGenerator);
 
     }, (parsed) -> {
-      CertificateSecret cert;
-      CertificateGeneratorRequest generatorRequest = certificateGeneratorRequestTranslator.validGeneratorRequest(parsed);
-
-      try {
-        cert = certificateGenerator.generateCertificate(generatorRequest.getParameters());
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-      secretStore.set(secretPath, cert);
-      return cert;
+      return createAndStoreSecret(secretPath, parsed, certificateGeneratorRequestTranslator, certificateSecretGenerator);
     });
+  }
+
+  // TODO combine this with dispatchOnSecretType()
+  private Secret createAndStoreSecret(@PathVariable String secretPath, DocumentContext parsed, SecretGeneratorRequestTranslator generatorRequestTranslator, SecretGenerator secretGenerator) {
+    GeneratorRequest generatorRequest = generatorRequestTranslator.validGeneratorRequest(parsed);
+
+    Secret secretValue = secretGenerator.generateSecret(generatorRequest.getParameters());
+
+    secretStore.set(secretPath, secretValue);
+
+    return secretValue;
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)

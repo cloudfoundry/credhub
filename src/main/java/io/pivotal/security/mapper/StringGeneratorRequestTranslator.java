@@ -1,8 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.model.GeneratorRequest;
 import io.pivotal.security.model.StringSecretParameters;
-import io.pivotal.security.model.StringGeneratorRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -10,8 +10,9 @@ import java.util.Optional;
 import javax.validation.ValidationException;
 
 @Component
-public class StringGeneratorRequestTranslator {
-  public StringGeneratorRequest validGeneratorRequest(DocumentContext parsed) throws ValidationException {
+public class StringGeneratorRequestTranslator implements SecretGeneratorRequestTranslator {
+  @Override
+  public GeneratorRequest<StringSecretParameters> validGeneratorRequest(DocumentContext parsed) throws ValidationException {
     StringSecretParameters secretParameters = new StringSecretParameters();
     Optional.ofNullable(parsed.read("$.parameters.length", Integer.class))
         .ifPresent(secretParameters::setLength);
@@ -24,7 +25,7 @@ public class StringGeneratorRequestTranslator {
     Optional.ofNullable(parsed.read("$.parameters.exclude_special", Boolean.class))
         .ifPresent(secretParameters::setExcludeSpecial);
 
-    StringGeneratorRequest generatorRequest = new StringGeneratorRequest();
+    GeneratorRequest<StringSecretParameters> generatorRequest = new GeneratorRequest<>();
     generatorRequest.setParameters(secretParameters);
     generatorRequest.setType(parsed.read("$.type"));
 

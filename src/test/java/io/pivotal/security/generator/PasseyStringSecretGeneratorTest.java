@@ -2,6 +2,7 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
+import io.pivotal.security.model.StringSecret;
 import io.pivotal.security.model.StringSecretParameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,8 +54,8 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
 
     when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
 
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
+    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 
   @Test
@@ -64,8 +65,8 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
     StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(42);
 
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
+    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 
   @Test
@@ -75,8 +76,8 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
     StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(3);
 
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
+    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 
   @Test
@@ -86,8 +87,8 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
     StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setLength(201);
 
-    String secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue, equalTo("very-secret"));
+    StringSecret secretValue = (StringSecret) subject.generateSecret(secretParameters);
+    assertThat(secretValue.getValue(), equalTo("very-secret"));
   }
 
 }

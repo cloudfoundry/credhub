@@ -21,4 +21,8 @@ public class StringSecret implements Secret {
   public String getType() {
     return type;
   }
+
+  public String getValue() {
+    return value;
+  }
 }
