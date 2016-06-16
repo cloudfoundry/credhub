@@ -40,7 +40,7 @@ public class RootCertificateProviderTest {
     inputParameters.setState("My State");
     inputParameters.setCountry("My Country");
 
-    X500Principal expectedPrincipal = new X500Principal("CN=My Common Name,O=organization.io,OU=My Unit,L=My Locality,ST=My State,C=My Country");
+    X500Principal expectedPrincipal = new X500Principal("O=organization.io,ST=My State,C=My Country,CN=My Common Name,OU=My Unit,L=My Locality");
     X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
 
     assertThat(actualCert, notNullValue());

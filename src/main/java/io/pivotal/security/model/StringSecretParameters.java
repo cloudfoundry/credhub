@@ -23,40 +23,45 @@ public class StringSecretParameters {
     return length;
   }
 
-  public void setLength(int length) {
+  public StringSecretParameters setLength(int length) {
     this.length = length;
+    return this;
   }
 
   public boolean isExcludeSpecial() {
     return excludeSpecial;
   }
 
-  public void setExcludeSpecial(boolean excludeSpecial) {
+  public StringSecretParameters setExcludeSpecial(boolean excludeSpecial) {
     this.excludeSpecial = excludeSpecial;
+    return this;
   }
 
   public boolean isExcludeNumber() {
     return excludeNumber;
   }
 
-  public void setExcludeNumber(boolean excludeNumber) {
+  public StringSecretParameters setExcludeNumber(boolean excludeNumber) {
     this.excludeNumber = excludeNumber;
+    return this;
   }
 
   public boolean isExcludeUpper() {
     return excludeUpper;
   }
 
-  public void setExcludeUpper(boolean excludeUpper) {
+  public StringSecretParameters setExcludeUpper(boolean excludeUpper) {
     this.excludeUpper = excludeUpper;
+    return this;
   }
 
   public boolean isExcludeLower() {
     return excludeLower;
   }
 
-  public void setExcludeLower(boolean excludeLower) {
+  public StringSecretParameters setExcludeLower(boolean excludeLower) {
     this.excludeLower = excludeLower;
+    return this;
   }
 
   @Override

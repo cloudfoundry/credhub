@@ -24,28 +24,34 @@ public class CertificateSecretParameters {
   @JsonProperty("locality")
   private String locality;
 
-  public void setCommonName(String commonName) {
+  public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
+    return this;
   }
 
-  public void setOrganization(String organization) {
+  public CertificateSecretParameters setOrganization(String organization) {
     this.organization = organization;
+    return this;
   }
 
-  public void setOrganizationUnit(String organizationUnit) {
+  public CertificateSecretParameters setOrganizationUnit(String organizationUnit) {
     this.organizationUnit = organizationUnit;
+    return this;
   }
 
-  public void setLocality(String locality) {
+  public CertificateSecretParameters setLocality(String locality) {
     this.locality = locality;
+    return this;
   }
 
-  public void setState(String state) {
+  public CertificateSecretParameters setState(String state) {
     this.state = state;
+    return this;
   }
 
-  public void setCountry(String country) {
+  public CertificateSecretParameters setCountry(String country) {
     this.country = country;
+    return this;
   }
 
   @Override
@@ -80,12 +86,19 @@ public class CertificateSecretParameters {
   public String getDNString() {
     final StringBuilder strb = new StringBuilder();
 
-    strb.append("CN=").append(commonName)
-        .append(",O=").append(organization)
-        .append(",OU=").append(organizationUnit)
-        .append(",L=").append(locality)
+    strb.append("O=").append(organization)
         .append(",ST=").append(state)
         .append(",C=").append(country);
+
+    if(!StringUtils.isEmpty(commonName)) {
+      strb.append(",CN=").append(commonName);
+    }
+    if(!StringUtils.isEmpty(organizationUnit)) {
+      strb.append(",OU=").append(organizationUnit);
+    }
+    if(!StringUtils.isEmpty(locality)) {
+      strb.append(",L=").append(locality);
+    }
     return strb.toString();
   }
 }
