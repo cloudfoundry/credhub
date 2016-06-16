@@ -29,12 +29,7 @@ public class StringGeneratorRequestTranslator {
     generatorRequest.setType(parsed.read("$.type"));
 
     StringSecretParameters params = generatorRequest.getParameters();
-    boolean isInvalid = params.isExcludeLower()
-        && params.isExcludeUpper()
-        && params.isExcludeSpecial()
-        && params.isExcludeNumber();
-
-    if (isInvalid) {
+    if (!params.isValid()) {
       throw new ValidationException("error.excludes_all_charsets");
     }
     return generatorRequest;

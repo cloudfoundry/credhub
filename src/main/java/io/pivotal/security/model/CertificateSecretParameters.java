@@ -1,6 +1,7 @@
 package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.util.StringUtils;
 
 public class CertificateSecretParameters {
   // Required Certificate Parameters
@@ -23,48 +24,24 @@ public class CertificateSecretParameters {
   @JsonProperty("locality")
   private String locality;
 
-  public String getCommonName() {
-    return commonName;
-  }
-
   public void setCommonName(String commonName) {
     this.commonName = commonName;
-  }
-
-  public String getOrganization() {
-    return organization;
   }
 
   public void setOrganization(String organization) {
     this.organization = organization;
   }
 
-  public String getOrganizationUnit() {
-    return organizationUnit;
-  }
-
   public void setOrganizationUnit(String organizationUnit) {
     this.organizationUnit = organizationUnit;
-  }
-
-  public String getLocality() {
-    return locality;
   }
 
   public void setLocality(String locality) {
     this.locality = locality;
   }
 
-  public String getState() {
-    return state;
-  }
-
   public void setState(String state) {
     this.state = state;
-  }
-
-  public String getCountry() {
-    return country;
   }
 
   public void setCountry(String country) {
@@ -90,7 +67,25 @@ public class CertificateSecretParameters {
         && areStringsEqual(country, that.country);
   }
 
+  public boolean isValid() {
+    return !StringUtils.isEmpty(organization)
+        && !StringUtils.isEmpty(state)
+        && !StringUtils.isEmpty(country);
+  }
   private boolean areStringsEqual(String s1, String s2) {
     return s1 != null ? s1.equals(s2) : s2 == null;
+  }
+
+
+  public String getDNString() {
+    final StringBuilder strb = new StringBuilder();
+
+    strb.append("CN=").append(commonName)
+        .append(",O=").append(organization)
+        .append(",OU=").append(organizationUnit)
+        .append(",L=").append(locality)
+        .append(",ST=").append(state)
+        .append(",C=").append(country);
+    return strb.toString();
   }
 }

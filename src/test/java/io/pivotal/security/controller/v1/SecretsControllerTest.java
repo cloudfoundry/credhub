@@ -427,6 +427,24 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
+  public void generateSecretReturnsBadRequestWhenMissingRequiredCertificateParameter() throws Exception {
+    String badResponse = "{\"error\": \"Organization, state and country are required to generate a certificate. Please add these parameters and retry your request.\"}";
+
+    String requestJson = "{" +
+        "\"type\":\"certificate\"," +
+        "\"parameters\":{" +
+        "\"organization\": \"organization.io\"," +
+        "\"country\": \"My Country\"" +
+        "}" +
+        "}";
+
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/secret-identifier", requestJson);
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json(badResponse));
+  }
+
+  @Test
   public void generateSecretReturnsBadRequestWhenJsonEmpty() throws Exception {
     String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 

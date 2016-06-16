@@ -17,16 +17,8 @@ import java.util.Date;
 public class RootCertificateProvider {
   public X509Certificate get(KeyPair caKeyPair, CertificateSecretParameters params) throws NoSuchAlgorithmException, CertificateException, NoSuchProviderException, InvalidKeyException, SignatureException {
     final X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
-    final StringBuilder strb = new StringBuilder();
 
-    strb.append("CN=").append(params.getCommonName())
-        .append(",O=").append(params.getOrganization())
-        .append(",OU=").append(params.getOrganizationUnit())
-        .append(",L=").append(params.getLocality())
-        .append(",ST=").append(params.getState())
-        .append(",C=").append(params.getCountry());
-
-    final X500Principal dnName = new X500Principal(strb.toString());
+    final X500Principal dnName = new X500Principal(params.getDNString());
 
     Instant instant = Instant.now();
     final Date now = Date.from(instant);

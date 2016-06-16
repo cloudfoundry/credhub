@@ -94,4 +94,11 @@ public class StringSecretParameters {
     result = 31 * result + (excludeLower ? 1 : 0);
     return result;
   }
+
+  public boolean isValid() {
+    return !(excludeSpecial
+        && excludeNumber
+        && excludeUpper
+        && excludeLower);
+  }
 }

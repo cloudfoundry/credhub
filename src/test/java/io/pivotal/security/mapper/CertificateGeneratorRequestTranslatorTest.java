@@ -10,11 +10,14 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 
+import javax.validation.ValidationException;
+
 import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
 import static com.greghaskins.spectrum.SpringSpectrum.it;
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -30,13 +33,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       subject = new CertificateGeneratorRequestTranslator();
     });
 
-    it("returns a CertificateGeneratorRequest for valid json", () -> {
-      String json = "{\"type\":\"certificate\"}";
-      CertificateGeneratorRequest generatorRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-      assertThat(generatorRequest.getType(), equalTo("certificate"));
-    });
-
-    it("ensures that all of the necessary parameters have been provided", () -> {
+    it("ensures that all of the allowable parameters have been provided", () -> {
       String json = "{" +
           "\"type\":\"certificate\"," +
           "\"parameters\":{" +
@@ -58,6 +55,76 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       CertificateGeneratorRequest cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
       assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+    });
+
+    it("ensures that all of the necessary parameters have been provided", () -> {
+      String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"state\": \"My State\"," +
+          "\"country\": \"My Country\"" +
+          "}" +
+          "}";
+      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
+      expectedParameters.setOrganization("organization.io");
+      expectedParameters.setState("My State");
+      expectedParameters.setCountry("My Country");
+
+      CertificateGeneratorRequest cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+      assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+    });
+
+    it("ensures failure when organization is omitted", () -> {
+      String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"state\": \"My State\"," +
+          "\"country\": \"My Country\"" +
+          "}" +
+          "}";
+
+      try {
+        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+        fail();
+      }
+      catch (ValidationException ve) {
+        assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
+      }
+    });
+
+    it("ensures failure when state is omitted", () -> {
+      String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"country\": \"My Country\"" +
+          "}" +
+          "}";
+      try {
+        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+        fail();
+      }
+      catch (ValidationException ve) {
+        assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
+      }
+    });
+
+    it("ensures failure when country is omitted", () -> {
+      String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"state\": \"My State\"," +
+          "}" +
+          "}";
+      try {
+        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+        fail();
+      }
+      catch (ValidationException ve) {
+        assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
+      }
     });
   }
 }

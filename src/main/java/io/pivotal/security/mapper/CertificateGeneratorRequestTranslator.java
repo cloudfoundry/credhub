@@ -27,6 +27,9 @@ public class CertificateGeneratorRequestTranslator {
         .ifPresent(secretParameters::setCountry);
     generatorRequest.setType(parsed.read("$.type"));
     generatorRequest.setParameters(secretParameters);
+    if (!secretParameters.isValid()) {
+      throw new ValidationException("error.missing_certificate_parameters");
+    }
 
     return generatorRequest;
   }
