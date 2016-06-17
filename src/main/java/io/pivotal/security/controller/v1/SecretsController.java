@@ -4,10 +4,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
-import io.pivotal.security.mapper.CertificateSetRequestTranslator;
-import io.pivotal.security.mapper.SecretGeneratorRequestTranslator;
-import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
+import io.pivotal.security.mapper.*;
 import io.pivotal.security.model.*;
 import io.pivotal.security.repository.SecretStore;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,6 +61,9 @@ public class SecretsController {
   @Autowired
   private MessageSource messageSource;
 
+  @Autowired
+  private StringSetRequestTranslator stringSetRequestTranslator;
+
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -74,7 +73,6 @@ public class SecretsController {
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
     return dispatchOnSecretType(requestBody, (parsed) -> {
       return createAndStoreSecret(secretPath, parsed, stringGeneratorRequestTranslator, stringSecretGenerator);
-
     }, (parsed) -> {
       return createAndStoreSecret(secretPath, parsed, certificateGeneratorRequestTranslator, certificateSecretGenerator);
     });
@@ -94,11 +92,7 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody) {
     return dispatchOnSecretType(requestBody, (parsed) -> {
-      String value = parsed.read("$.value");
-      if (StringUtils.isEmpty(value)) {
-        throw new ValidationException("error.missing_string_secret_value");
-      }
-      StringSecret stringSecret = new StringSecret(value);
+      StringSecret stringSecret = stringSetRequestTranslator.validStringSecret(parsed);
       secretStore.set(secretPath, stringSecret);
       return stringSecret;
     }, (parsed) -> {

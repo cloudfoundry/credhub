@@ -17,7 +17,7 @@ public class CertificateSetRequestTranslator {
     pub = StringUtils.isEmpty(pub) ? null : pub;
     priv = StringUtils.isEmpty(priv) ? null : priv;
     if (ca == null && pub == null && priv == null) {
-      throw new ValidationException("error.missing_string_secret_certificate_credentials");
+      throw new ValidationException("error.missing_certificate_credentials");
     }
     return new CertificateSecret(ca, pub, priv);
   }
