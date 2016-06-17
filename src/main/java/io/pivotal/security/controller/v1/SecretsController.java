@@ -1,5 +1,7 @@
 package io.pivotal.security.controller.v1;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -24,12 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.validation.ValidationException;
-
 
 @RestController
 @RequestMapping(path = "/api/v1/data", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -71,47 +70,30 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
-    return dispatchOnSecretType(requestBody, (parsed) -> {
-      return setAndStoreSecret(secretPath, parsed, new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator));
-    }, (parsed) -> {
-      return setAndStoreSecret(secretPath, parsed, new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator));
-    });
+    RequestTranslatorWithGeneration stringRequestTranslator = new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator);
+    RequestTranslatorWithGeneration certificateRequestTranslator = new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator);
+
+    return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator);
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody) {
-    return dispatchOnSecretType(requestBody, (parsed) -> {
-      return setAndStoreSecret(secretPath, parsed, stringSetRequestTranslator);
-    }, (parsed) -> {
-      return setAndStoreSecret(secretPath, parsed, certificateSetRequestTranslator);
-    });
+    return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator);
   }
 
-  private Secret setAndStoreSecret(@PathVariable String secretPath, DocumentContext parsed, SecretSetterRequestTranslator setterRequestTranslator) {
-    Secret secretValue = setterRequestTranslator.createSecretFromJson(parsed);
-
-    secretStore.set(secretPath, secretValue);
-
-    return secretValue;
-  }
-
-  private ResponseEntity dispatchOnSecretType(InputStream requestBody,
-                                              Function<DocumentContext, Secret> ifValueType,
-                                              Function<DocumentContext, Secret> ifCertificateType) {
+  private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretSetterRequestTranslator stringRequestTranslator, SecretSetterRequestTranslator certificateRequestTranslator) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
+    ImmutableMap<String, SecretSetterRequestTranslator> translators = ImmutableMap.of("value", stringRequestTranslator, "certificate", certificateRequestTranslator);
+    SecretSetterRequestTranslator requestTranslator = translators.get(type);
+
     try {
-      if (type == null) {
+      if (requestTranslator == null) {
         throw new ValidationException("error.secret_type_invalid");
       }
-      try {
-        Supplier<Secret> ifValue = () -> ifValueType.apply(parsed);
-        Supplier<Secret> ifCertificate = () -> ifCertificateType.apply(parsed);
-        final Secret secret = SecretType.valueOf(type).enumerate(ifValue, ifCertificate);
-        return new ResponseEntity<>(secret, HttpStatus.OK);
-      } catch (IllegalArgumentException e) {
-        throw new ValidationException("error.secret_type_invalid");
-      }
+      Secret secret = requestTranslator.createSecretFromJson(parsed);
+      secretStore.set(secretPath, secret);
+      return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
