@@ -8,8 +8,10 @@ import org.springframework.util.StringUtils;
 import javax.validation.ValidationException;
 
 @Component
-public class CertificateSetRequestTranslator {
-  public CertificateSecret validCertificateSecret(DocumentContext parsed) throws ValidationException {
+public class CertificateSetRequestTranslator implements SecretSetterRequestTranslator {
+
+  @Override
+  public CertificateSecret createSecretFromJson(DocumentContext parsed) throws ValidationException {
     String ca = parsed.read("$.certificate.ca");
     String pub = parsed.read("$.certificate.public");
     String priv = parsed.read("$.certificate.private");

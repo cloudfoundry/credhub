@@ -72,14 +72,13 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
     return dispatchOnSecretType(requestBody, (parsed) -> {
-      return createAndStoreSecret(secretPath, parsed, stringGeneratorRequestTranslator, stringSecretGenerator);
+      return generateAndStoreSecret(secretPath, parsed, stringGeneratorRequestTranslator, stringSecretGenerator);
     }, (parsed) -> {
-      return createAndStoreSecret(secretPath, parsed, certificateGeneratorRequestTranslator, certificateSecretGenerator);
+      return generateAndStoreSecret(secretPath, parsed, certificateGeneratorRequestTranslator, certificateSecretGenerator);
     });
   }
 
-  // TODO combine this with dispatchOnSecretType()
-  private Secret createAndStoreSecret(@PathVariable String secretPath, DocumentContext parsed, SecretGeneratorRequestTranslator generatorRequestTranslator, SecretGenerator secretGenerator) {
+  private Secret generateAndStoreSecret(@PathVariable String secretPath, DocumentContext parsed, SecretGeneratorRequestTranslator generatorRequestTranslator, SecretGenerator secretGenerator) {
     GeneratorRequest generatorRequest = generatorRequestTranslator.validGeneratorRequest(parsed);
 
     Secret secretValue = secretGenerator.generateSecret(generatorRequest.getParameters());
@@ -92,14 +91,18 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody) {
     return dispatchOnSecretType(requestBody, (parsed) -> {
-      StringSecret stringSecret = stringSetRequestTranslator.validStringSecret(parsed);
-      secretStore.set(secretPath, stringSecret);
-      return stringSecret;
+      return setAndStoreSecret(secretPath, parsed, stringSetRequestTranslator);
     }, (parsed) -> {
-      CertificateSecret secret = certificateSetRequestTranslator.validCertificateSecret(parsed);
-      secretStore.set(secretPath, secret);
-      return secret;
+      return setAndStoreSecret(secretPath, parsed, certificateSetRequestTranslator);
     });
+  }
+
+  private Secret setAndStoreSecret(@PathVariable String secretPath, DocumentContext parsed, SecretSetterRequestTranslator setterRequestTranslator) {
+    Secret secretValue = setterRequestTranslator.createSecretFromJson(parsed);
+
+    secretStore.set(secretPath, secretValue);
+
+    return secretValue;
   }
 
   private ResponseEntity dispatchOnSecretType(InputStream requestBody,

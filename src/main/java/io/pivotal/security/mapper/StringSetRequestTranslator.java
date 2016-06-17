@@ -9,8 +9,10 @@ import org.springframework.util.StringUtils;
 import javax.validation.ValidationException;
 
 @Component
-public class StringSetRequestTranslator {
-  public StringSecret validStringSecret(DocumentContext parsed) throws ValidationException {
+public class StringSetRequestTranslator implements SecretSetterRequestTranslator{
+
+  @Override
+  public StringSecret createSecretFromJson(DocumentContext parsed) throws ValidationException {
     String value = parsed.read("$.value");
     if(StringUtils.isEmpty(value)){
       throw new ValidationException("error.missing_string_secret_value");

@@ -57,7 +57,7 @@ public class StringSetRequestTranslatorTest {
 
   private void doTest(StringSecret expected, String requestJson) {
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
-    StringSecret actual = new StringSetRequestTranslator().validStringSecret(parsed);
+    StringSecret actual = new StringSetRequestTranslator().createSecretFromJson(parsed);
     assertThat(actual, reflectiveEqualTo(expected));
   }
 }
