@@ -7,7 +7,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "StringSecret")
 @DiscriminatorValue("string_value")
-public class NamedStringSecret extends NamedSecret {
+public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
 
   @Column(nullable = false, length = 7000)
   private String value;

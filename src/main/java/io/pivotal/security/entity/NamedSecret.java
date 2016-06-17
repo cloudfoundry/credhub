@@ -8,7 +8,7 @@ import javax.persistence.*;
 @Table(name = "NamedSecret")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(name="type", discriminatorType = DiscriminatorType.STRING)
-abstract public class NamedSecret {
+abstract public class NamedSecret<T> {
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
@@ -26,16 +26,18 @@ abstract public class NamedSecret {
     return id;
   }
 
-  public void setId(long id) {
+  public T setId(long id) {
     this.id = id;
+    return (T) this;
   }
 
   public String getName() {
     return name;
   }
 
-  public void setName(String name) {
+  public T setName(String name) {
     this.name = name;
+    return (T) this;
   }
 
   public abstract Secret convertToModel();

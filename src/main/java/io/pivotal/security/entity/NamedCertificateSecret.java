@@ -7,7 +7,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
-public class NamedCertificateSecret extends NamedSecret {
+public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
 
   @Column(nullable = true, length = 7000)
   private String ca;
