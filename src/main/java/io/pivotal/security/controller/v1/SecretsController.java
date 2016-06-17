@@ -72,20 +72,10 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
     return dispatchOnSecretType(requestBody, (parsed) -> {
-      return generateAndStoreSecret(secretPath, parsed, stringGeneratorRequestTranslator, stringSecretGenerator);
+      return setAndStoreSecret(secretPath, parsed, new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator));
     }, (parsed) -> {
-      return generateAndStoreSecret(secretPath, parsed, certificateGeneratorRequestTranslator, certificateSecretGenerator);
+      return setAndStoreSecret(secretPath, parsed, new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator));
     });
-  }
-
-  private Secret generateAndStoreSecret(@PathVariable String secretPath, DocumentContext parsed, SecretGeneratorRequestTranslator generatorRequestTranslator, SecretGenerator secretGenerator) {
-    GeneratorRequest generatorRequest = generatorRequestTranslator.validGeneratorRequest(parsed);
-
-    Secret secretValue = secretGenerator.generateSecret(generatorRequest.getParameters());
-
-    secretStore.set(secretPath, secretValue);
-
-    return secretValue;
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
