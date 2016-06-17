@@ -126,6 +126,5 @@ tasks.withType(Test) {
 
 tasks.check.dependsOn tasks.jacocoTestReport
 tasks.check.dependsOn tasks.dependencyCheck
-tasks.check.dependsOn tasks.integrationTest
 tasks.integrationTest.dependsOn tasks.assemble
 tasks.integrationTest.mustRunAfter tasks.test
