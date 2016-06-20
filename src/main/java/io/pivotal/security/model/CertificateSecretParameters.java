@@ -3,6 +3,10 @@ package io.pivotal.security.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class CertificateSecretParameters {
   // Required Certificate Parameters
   @JsonProperty("organization")
@@ -23,6 +27,10 @@ public class CertificateSecretParameters {
 
   @JsonProperty("locality")
   private String locality;
+
+  @JsonProperty("alternative_name")
+  private String[] alternateNames = new String[0];
+
 
   public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
@@ -70,7 +78,9 @@ public class CertificateSecretParameters {
         && areStringsEqual(organizationUnit, that.organizationUnit)
         && areStringsEqual(locality, that.locality)
         && areStringsEqual(state, that.state)
-        && areStringsEqual(country, that.country);
+        && areStringsEqual(country, that.country)
+        && getAlternateNames().equals(that.getAlternateNames())
+        ;
   }
 
   public boolean isValid() {
@@ -78,6 +88,7 @@ public class CertificateSecretParameters {
         && !StringUtils.isEmpty(state)
         && !StringUtils.isEmpty(country);
   }
+
   private boolean areStringsEqual(String s1, String s2) {
     return s1 != null ? s1.equals(s2) : s2 == null;
   }
@@ -90,15 +101,31 @@ public class CertificateSecretParameters {
         .append(",ST=").append(state)
         .append(",C=").append(country);
 
-    if(!StringUtils.isEmpty(commonName)) {
+    if (!StringUtils.isEmpty(commonName)) {
       strb.append(",CN=").append(commonName);
     }
-    if(!StringUtils.isEmpty(organizationUnit)) {
+    if (!StringUtils.isEmpty(organizationUnit)) {
       strb.append(",OU=").append(organizationUnit);
     }
-    if(!StringUtils.isEmpty(locality)) {
+    if (!StringUtils.isEmpty(locality)) {
       strb.append(",L=").append(locality);
     }
     return strb.toString();
+  }
+
+  public void addAlternateName(String alternateName) {
+    List<String> tmp = new ArrayList<>(Arrays.asList(alternateNames));
+    tmp.add(alternateName);
+    alternateNames = tmp.toArray(new String[tmp.size()]);
+  }
+
+  public void addAlternateNames(String[] alternateNames) {
+    for (String a : alternateNames) {
+      addAlternateName(a);
+    }
+  }
+
+  public List<String> getAlternateNames() {
+    return Arrays.asList(alternateNames);
   }
 }

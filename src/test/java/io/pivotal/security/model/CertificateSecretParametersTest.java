@@ -1,12 +1,18 @@
 package io.pivotal.security.model;
 
 import io.pivotal.security.CredentialManagerApp;
+import org.hamcrest.Matchers;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -34,6 +40,37 @@ public class CertificateSecretParametersTest {
     params.setOrganization("My Organization");
 
     assertThat(params.getDNString(), equalTo("O=My Organization,ST=My State,C=My Country"));
+  }
+
+  @Test
+  public void canAddAlternativeNames() {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    params.addAlternateName("Alternate Name 1");
+    params.addAlternateName("Alternate Name 2");
+
+    assertThat(params.getAlternateNames(), contains("Alternate Name 1", "Alternate Name 2"));
+  }
+
+  @Test
+  public void alternativeNamesConsideredForEquality() {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    params.addAlternateName("Alternate Name 1");
+    params.addAlternateName("Alternate Name 2");
+
+    CertificateSecretParameters params2 = new CertificateSecretParameters();
+    params2.setCountry("My Country");
+    params2.setState("My State");
+    params2.setOrganization("My Organization");
+    params2.addAlternateName("Alternate Name 1");
+    params2.addAlternateName("Alternate Name 2");
+
+    assertThat(params.equals(params2), is(true));
   }
 
   @Test

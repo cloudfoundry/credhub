@@ -126,5 +126,28 @@ public class CertificateGeneratorRequestTranslatorTest {
         assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
       }
     });
+
+    it("ensures that alternative names are added as necessary", () -> {
+      String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"state\": \"My State\"," +
+          "\"country\": \"My Country\"," +
+          "\"alternate_name\": [\"foo\", \"boo pivotal.io\"]" +
+          "}" +
+          "}";
+
+      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
+      expectedParameters.setOrganization("organization.io");
+      expectedParameters.setState("My State");
+      expectedParameters.setCountry("My Country");
+      expectedParameters.addAlternateName("foo");
+      expectedParameters.addAlternateName("boo pivotal.io");
+
+      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+
+      assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+    });
   }
 }

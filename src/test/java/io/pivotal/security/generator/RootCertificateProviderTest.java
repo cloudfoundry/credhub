@@ -16,10 +16,13 @@ import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -49,6 +52,45 @@ public class RootCertificateProviderTest {
 
     long durationMillis = actualCert.getNotAfter().getTime() - actualCert.getNotBefore().getTime();
     assertThat(durationMillis, equalTo(Instant.EPOCH.plus(365, ChronoUnit.DAYS).toEpochMilli()));
+
+    actualCert.checkValidity();
+  }
+
+  @Test
+  public void canGenerateCertificateWithAlternateNames() throws Exception {
+
+    KeyPair keyPair = generateKeyPair();
+    CertificateSecretParameters inputParameters = new CertificateSecretParameters();
+    inputParameters.setOrganization("organization.io");
+    inputParameters.setState("My State");
+    inputParameters.setCountry("My Country");
+    inputParameters.addAlternateName("1.1.1.1!@#$%^&*()_-+=");
+    inputParameters.addAlternateName("foo pivotal.io");
+
+    // not clear if non-ascii characters are supported; Dan said to ignore for now.
+//    inputParameters.addAlternateName("朝日新聞デジタル速報全ジャンル");
+
+    X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
+
+    Collection<List<?>> subjectAlternativeNames = actualCert.getSubjectAlternativeNames();
+    ArrayList<String> alternateNames = subjectAlternativeNames.stream().map(generalName ->
+        generalName.get(1).toString()).collect(Collectors.toCollection(ArrayList::new));
+    assertThat(alternateNames, containsInAnyOrder("1.1.1.1!@#$%^&*()_-+=", "foo pivotal.io"));
+
+    actualCert.checkValidity();
+  }
+
+  @Test
+  public void zeroAlternateNamesYieldsEmptyArrayOfNames() throws Exception {
+    KeyPair keyPair = generateKeyPair();
+    CertificateSecretParameters inputParameters = new CertificateSecretParameters();
+    inputParameters.setOrganization("organization.io");
+    inputParameters.setState("My State");
+    inputParameters.setCountry("My Country");
+
+    X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
+
+    assertThat(actualCert.getSubjectAlternativeNames(), nullValue());
 
     actualCert.checkValidity();
   }
