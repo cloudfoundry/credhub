@@ -1,12 +1,14 @@
 package io.pivotal.security.model;
 
 import io.pivotal.security.CredentialManagerApp;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -40,5 +42,20 @@ public class StringSecretParametersTest {
         .setExcludeNumber(excludeNumber)
         .setExcludeSpecial(excludeSpecial);
     assertThat(stringSecretParameters.isValid(), equalTo(expected));
+  }
+
+  @Test
+  public void checkEqualityReturnsFalseIfParamsNotEqual() {
+    StringSecretParameters params = new StringSecretParameters();
+    params.setExcludeLower(true);
+    params.setExcludeUpper(true);
+    params.setExcludeNumber(true);
+
+    StringSecretParameters params2 = new StringSecretParameters();
+    params2.setExcludeLower(true);
+    params2.setExcludeUpper(true);
+    params2.setExcludeNumber(false);
+
+    Assert.assertThat(params.equals(params2), is(false));
   }
 }

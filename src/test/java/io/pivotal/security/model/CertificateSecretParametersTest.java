@@ -51,7 +51,7 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
-  public void alternativeNamesConsideredForEquality() {
+  public void alternativeNamesConsideredForInequality() {
     CertificateSecretParameters params = new CertificateSecretParameters();
     params.setCountry("My Country");
     params.setState("My State");
@@ -63,10 +63,10 @@ public class CertificateSecretParametersTest {
     params2.setCountry("My Country");
     params2.setState("My State");
     params2.setOrganization("My Organization");
-    params2.addAlternateName("Alternate Name 1");
+    params2.addAlternateName("Alternate Name 1dif");
     params2.addAlternateName("Alternate Name 2");
 
-    assertThat(params.equals(params2), is(true));
+    assertThat(params.equals(params2), is(false));
   }
 
   @Test

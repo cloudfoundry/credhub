@@ -1,6 +1,8 @@
 package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class StringSecretParameters {
 
@@ -66,38 +68,12 @@ public class StringSecretParameters {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-
-    StringSecretParameters that = (StringSecretParameters) o;
-
-    if (length != that.length) {
-      return false;
-    }
-    if (excludeSpecial != that.excludeSpecial) {
-      return false;
-    }
-    if (excludeNumber != that.excludeNumber) {
-      return false;
-    }
-    if (excludeUpper != that.excludeUpper) {
-      return false;
-    }
-    return excludeLower == that.excludeLower;
+    return EqualsBuilder.reflectionEquals(this, o);
   }
 
   @Override
   public int hashCode() {
-    int result = length;
-    result = 31 * result + (excludeSpecial ? 1 : 0);
-    result = 31 * result + (excludeNumber ? 1 : 0);
-    result = 31 * result + (excludeUpper ? 1 : 0);
-    result = 31 * result + (excludeLower ? 1 : 0);
-    return result;
+    return HashCodeBuilder.reflectionHashCode(this);
   }
 
   public boolean isValid() {

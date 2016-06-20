@@ -1,6 +1,8 @@
 package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -63,32 +65,18 @@ public class CertificateSecretParameters {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+    return EqualsBuilder.reflectionEquals(this, o);
+  }
 
-    CertificateSecretParameters that = (CertificateSecretParameters) o;
-
-    return areStringsEqual(commonName, that.commonName)
-        && areStringsEqual(organization, that.organization)
-        && areStringsEqual(organizationUnit, that.organizationUnit)
-        && areStringsEqual(locality, that.locality)
-        && areStringsEqual(state, that.state)
-        && areStringsEqual(country, that.country)
-        && getAlternateNames().equals(that.getAlternateNames());
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
   }
 
   public boolean isValid() {
     return !StringUtils.isEmpty(organization)
         && !StringUtils.isEmpty(state)
         && !StringUtils.isEmpty(country);
-  }
-
-  private boolean areStringsEqual(String s1, String s2) {
-    return s1 != null ? s1.equals(s2) : s2 == null;
   }
 
   public String getDNString() {
