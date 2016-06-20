@@ -31,7 +31,6 @@ public class CertificateSecretParameters {
   @JsonProperty("alternative_name")
   private String[] alternateNames = new String[0];
 
-
   public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
     return this;
@@ -79,8 +78,7 @@ public class CertificateSecretParameters {
         && areStringsEqual(locality, that.locality)
         && areStringsEqual(state, that.state)
         && areStringsEqual(country, that.country)
-        && getAlternateNames().equals(that.getAlternateNames())
-        ;
+        && getAlternateNames().equals(that.getAlternateNames());
   }
 
   public boolean isValid() {
@@ -92,7 +90,6 @@ public class CertificateSecretParameters {
   private boolean areStringsEqual(String s1, String s2) {
     return s1 != null ? s1.equals(s2) : s2 == null;
   }
-
 
   public String getDNString() {
     final StringBuilder strb = new StringBuilder();

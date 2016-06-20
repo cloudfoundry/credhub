@@ -1,18 +1,14 @@
 package io.pivotal.security.model;
 
 import io.pivotal.security.CredentialManagerApp;
-import org.hamcrest.Matchers;
-import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)

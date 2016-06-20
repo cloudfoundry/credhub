@@ -4,8 +4,6 @@ import io.pivotal.security.model.CertificateSecretParameters;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.x509.X509V1CertificateGenerator;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.springframework.stereotype.Component;
 

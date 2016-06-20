@@ -58,7 +58,6 @@ public class RootCertificateProviderTest {
 
   @Test
   public void canGenerateCertificateWithAlternateNames() throws Exception {
-
     KeyPair keyPair = generateKeyPair();
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
     inputParameters.setOrganization("organization.io");
@@ -68,7 +67,7 @@ public class RootCertificateProviderTest {
     inputParameters.addAlternateName("foo pivotal.io");
 
     // not clear if non-ascii characters are supported; Dan said to ignore for now.
-//    inputParameters.addAlternateName("朝日新聞デジタル速報全ジャンル");
+    // inputParameters.addAlternateName("朝日新聞デジタル速報全ジャンル");
 
     X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
 
