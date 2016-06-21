@@ -10,7 +10,7 @@ import io.pivotal.security.model.CertificateSecret;
 import io.pivotal.security.model.CertificateSecretParameters;
 import io.pivotal.security.model.StringSecretParameters;
 import io.pivotal.security.model.StringSecret;
-import io.pivotal.security.repository.InMemorySecretStore;
+import io.pivotal.security.repository.InMemorySecretRepository;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +34,6 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -59,7 +58,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   private HttpMessageConverter mappingJackson2HttpMessageConverter;
 
   @Autowired
-  private InMemorySecretStore secretStore;
+  private InMemorySecretRepository secretRepository;
 
   @InjectMocks
   @Autowired
@@ -89,14 +88,14 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    Assert.assertThat(secretStore.getSecret("secret-identifier").convertToModel(), reflectiveEqualTo(new StringSecret("secret contents")));
+    Assert.assertThat(secretRepository.findOneByName("secret-identifier").convertToModel(), reflectiveEqualTo(new StringSecret("secret contents")));
   }
 
   @Test
   public void validGetStringSecret() throws Exception {
     NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
 
-    secretStore.set(stringSecret);
+    secretRepository.save(stringSecret);
 
     String expectedJson = json(stringSecret.convertToModel());
 
@@ -113,7 +112,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .setPub("get-pub")
         .setPriv("get-priv");
 
-    secretStore.set(certificateSecret);
+    secretRepository.save(certificateSecret);
 
     String expectedJson = json(certificateSecret.convertToModel());
 
@@ -135,7 +134,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().json(requestJson));
 
     CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
-    Assert.assertThat(secretStore.getSecret("secret-identifier").convertToModel(), reflectiveEqualTo(certificateSecret));
+    Assert.assertThat(secretRepository.findOneByName("secret-identifier").convertToModel(), reflectiveEqualTo(certificateSecret));
   }
 
   @Test
@@ -151,10 +150,10 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void getSecretWithInvalidVersion() throws Exception {
+  public void findOneByNameWithInvalidVersion() throws Exception {
     NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
 
-    secretStore.set(stringSecret);
+    secretRepository.save(stringSecret);
 
     mockMvc.perform(get("/api/v2/data/whatever"))
         .andExpect(status().isNotFound());
@@ -164,12 +163,12 @@ public class SecretsControllerTest extends MockitoSpringTest {
   public void validDeleteSecret() throws Exception {
     NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("super stringSecret do not tell");
 
-    secretStore.set(stringSecret);
+    secretRepository.save(stringSecret);
 
     mockMvc.perform(delete("/api/v1/data/whatever"))
         .andExpect(status().isOk());
 
-    Assert.assertNull(secretStore.getSecret("whatever"));
+    Assert.assertNull(secretRepository.findOneByName("whatever"));
   }
 
   @Test
@@ -187,7 +186,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getSecret("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test
@@ -205,7 +204,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getSecret("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test
@@ -238,7 +237,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getSecret("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test
@@ -269,7 +268,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getSecret("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
   }
 
   @Test
@@ -330,7 +329,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(content().json(expectedJson));
 
-    assertThat(secretStore.getSecret("my-cert").convertToModel(), reflectiveEqualTo(certificateSecret));
+    assertThat(secretRepository.findOneByName("my-cert").convertToModel(), reflectiveEqualTo(certificateSecret));
   }
 
 
@@ -575,7 +574,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
       boolean isHttpOk = statusCode == 200;
       ResultMatcher expectedStatus = isHttpOk ? status().isOk() : status().isBadRequest();
       ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson)).andExpect(expectedStatus);
-      NamedSecret certificateFromDb = secretStore.getSecret("whatever");
+      NamedSecret certificateFromDb = secretRepository.findOneByName("whatever");
 
       if (isHttpOk) {
         assertThat(certificateFromDb.convertToModel(), reflectiveEqualTo(certificateSecretForResponse));

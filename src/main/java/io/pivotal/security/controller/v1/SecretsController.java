@@ -4,13 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.*;
 import io.pivotal.security.model.*;
-import io.pivotal.security.repository.InMemorySecretStore;
+import io.pivotal.security.repository.InMemorySecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -37,7 +35,7 @@ import javax.validation.ValidationException;
 public class SecretsController {
 
   @Autowired
-  InMemorySecretStore secretStore;
+  InMemorySecretRepository secretRepository;
 
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
@@ -88,7 +86,7 @@ public class SecretsController {
     String type = parsed.read("$.type");
     ImmutableMap<String, SecretSetterRequestTranslator> translators = ImmutableMap.of("value", stringRequestTranslator, "certificate", certificateRequestTranslator);
     SecretSetterRequestTranslator requestTranslator = translators.get(type);
-    NamedSecret secretFromDatabase = secretStore.getSecret(secretPath);
+    NamedSecret secretFromDatabase = secretRepository.findOneByName(secretPath);
 
     try {
       if (requestTranslator == null) {
@@ -99,7 +97,7 @@ public class SecretsController {
         secretFromDatabase = requestTranslator.makeEntity(secretPath);
       }
       secret.populateEntity(secretFromDatabase);
-      secretStore.set(secretFromDatabase);
+      secretRepository.save(secretFromDatabase);
       return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
@@ -108,9 +106,10 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath) {
-    boolean wasDeleted = secretStore.delete(secretPath);
+    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
 
-    if (wasDeleted) {
+    if (namedSecret != null) {
+      secretRepository.delete(namedSecret);
       return new ResponseEntity(HttpStatus.OK);
     } else {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
@@ -119,7 +118,7 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath) {
-    NamedSecret namedSecret = secretStore.getSecret(secretPath);
+    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
 
     if (namedSecret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
