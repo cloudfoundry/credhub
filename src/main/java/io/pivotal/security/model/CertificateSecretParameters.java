@@ -33,6 +33,9 @@ public class CertificateSecretParameters {
   @JsonProperty("alternative_name")
   private String[] alternateNames = new String[0];
 
+  @JsonProperty("key_length")
+  private int keyLength = 2048;
+
   public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
     return this;
@@ -112,5 +115,13 @@ public class CertificateSecretParameters {
 
   public List<String> getAlternateNames() {
     return Arrays.asList(alternateNames);
+  }
+
+  public void setKeyLength(int keyLength) {
+    this.keyLength = keyLength;
+  }
+
+  public int getKeyLength() {
+    return keyLength;
   }
 }

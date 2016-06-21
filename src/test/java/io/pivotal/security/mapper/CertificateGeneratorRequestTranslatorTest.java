@@ -149,5 +149,27 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
     });
+
+    it("ensures that key length is added", () -> {
+      String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"state\": \"My State\"," +
+          "\"country\": \"My Country\"," +
+          "\"key_length\": 1024" +
+          "}" +
+          "}";
+
+      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
+      expectedParameters.setOrganization("organization.io");
+      expectedParameters.setState("My State");
+      expectedParameters.setCountry("My Country");
+      expectedParameters.setKeyLength(1024);
+
+      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+
+      assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+    });
   }
 }

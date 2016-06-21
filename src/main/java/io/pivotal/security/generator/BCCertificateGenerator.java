@@ -21,12 +21,13 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
   @Override
   public CertificateSecret generateSecret(CertificateSecretParameters params) {
+//    keyGenerator.initialize(params.getKeyLength());
     KeyPair keyPair = keyGenerator.generateKeyPair();
     try {
       X509Certificate cert = rootCertificateProvider.get(keyPair, params);
-      String caPem = CertificateFormatter.pemOf(cert);
+      String certPem = CertificateFormatter.pemOf(cert);
       String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-      return new CertificateSecret(caPem, privatePem);
+      return new CertificateSecret(certPem, privatePem);
     } catch (GeneralSecurityException | IOException e) {
       throw new RuntimeException(e);
     }
