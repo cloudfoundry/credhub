@@ -51,10 +51,10 @@ public class CertificateSecretParametersTest {
     params.setCountry("My Country");
     params.setState("My State");
     params.setOrganization("My Organization");
-    params.addAlternateName("Alternate Name 1");
-    params.addAlternateName("Alternate Name 2");
+    params.addAlternativeName("Alternative Name 1");
+    params.addAlternativeName("Alternative Name 2");
 
-    assertThat(params.getAlternateNames(), contains("Alternate Name 1", "Alternate Name 2"));
+    assertThat(params.getAlternativeNames(), contains("Alternative Name 1", "Alternative Name 2"));
   }
 
   @Test
@@ -63,15 +63,15 @@ public class CertificateSecretParametersTest {
     params.setCountry("My Country");
     params.setState("My State");
     params.setOrganization("My Organization");
-    params.addAlternateName("Alternate Name 1");
-    params.addAlternateName("Alternate Name 2");
+    params.addAlternativeName("Alternative Name 1");
+    params.addAlternativeName("Alternative Name 2");
 
     CertificateSecretParameters params2 = new CertificateSecretParameters();
     params2.setCountry("My Country");
     params2.setState("My State");
     params2.setOrganization("My Organization");
-    params2.addAlternateName("Alternate Name 1dif");
-    params2.addAlternateName("Alternate Name 2");
+    params2.addAlternativeName("Alternative Name 1dif");
+    params2.addAlternativeName("Alternative Name 2");
 
     assertThat(params.equals(params2), is(false));
   }

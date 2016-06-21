@@ -301,8 +301,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
     expectedParameters.setLocality("My Locality");
     expectedParameters.setState("My State");
     expectedParameters.setCountry("My Country");
-    expectedParameters.addAlternateName("My Alternate Name 1");
-    expectedParameters.addAlternateName("My Alternate Name 2");
+    expectedParameters.addAlternativeName("My Alternative Name 1");
+    expectedParameters.addAlternativeName("My Alternative Name 2");
 
     CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
     when(certificateGenerator.generateSecret(expectedParameters)).thenReturn(certificateSecret);
@@ -316,7 +316,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
             "\"locality\": \"My Locality\"," +
             "\"state\": \"My State\"," +
             "\"country\": \"My Country\"," +
-            "\"alternate_name\": [\"My Alternate Name 1\", \"My Alternate Name 2\"]"+
+            "\"alternative_name\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]"+
             "}" +
             "}";
 

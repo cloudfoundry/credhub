@@ -37,7 +37,7 @@ public class RootCertificateProvider {
     certGen.setPublicKey(caKeyPair.getPublic());
     certGen.setSignatureAlgorithm("SHA256withRSA");
 
-    addAlternateNames(params, certGen);
+    addAlternativeNames(params, certGen);
 
     X509Certificate caCert = certGen.generate(caKeyPair.getPrivate(), "BC");
 
@@ -46,11 +46,11 @@ public class RootCertificateProvider {
     return caCert;
   }
 
-  private void addAlternateNames(CertificateSecretParameters params, X509V3CertificateGenerator certGen) {
-    List<String> alternateNames = params.getAlternateNames();
-    GeneralName[] genNames = new GeneralName[alternateNames.size()];
-    for (int i = 0; i < alternateNames.size(); i++) {
-      genNames[i] = new GeneralName(GeneralName.rfc822Name, alternateNames.get(i));
+  private void addAlternativeNames(CertificateSecretParameters params, X509V3CertificateGenerator certGen) {
+    List<String> alternativeNames = params.getAlternativeNames();
+    GeneralName[] genNames = new GeneralName[alternativeNames.size()];
+    for (int i = 0; i < alternativeNames.size(); i++) {
+      genNames[i] = new GeneralName(GeneralName.rfc822Name, alternativeNames.get(i));
     }
     certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(genNames));
   }

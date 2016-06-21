@@ -134,7 +134,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"organization\": \"organization.io\"," +
           "\"state\": \"My State\"," +
           "\"country\": \"My Country\"," +
-          "\"alternate_name\": [\"foo\", \"boo pivotal.io\"]" +
+          "\"alternative_name\": [\"foo\", \"boo pivotal.io\"]" +
           "}" +
           "}";
 
@@ -142,8 +142,8 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setOrganization("organization.io");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
-      expectedParameters.addAlternateName("foo");
-      expectedParameters.addAlternateName("boo pivotal.io");
+      expectedParameters.addAlternativeName("foo");
+      expectedParameters.addAlternativeName("boo pivotal.io");
 
       GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
 

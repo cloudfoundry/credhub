@@ -32,7 +32,7 @@ public class CertificateSecretParameters {
   private String locality;
 
   @JsonProperty("alternative_name")
-  private String[] alternateNames = new String[0];
+  private String[] alternativeNames = new String[0];
 
   @JsonProperty("key_length")
   private int keyLength = 2048;
@@ -113,20 +113,20 @@ public class CertificateSecretParameters {
     return strb.toString();
   }
 
-  public void addAlternateName(String alternateName) {
-    List<String> tmp = new ArrayList<>(Arrays.asList(alternateNames));
-    tmp.add(alternateName);
-    alternateNames = tmp.toArray(new String[tmp.size()]);
+  public void addAlternativeName(String alternativeName) {
+    List<String> tmp = new ArrayList<>(Arrays.asList(alternativeNames));
+    tmp.add(alternativeName);
+    alternativeNames = tmp.toArray(new String[tmp.size()]);
   }
 
-  public void addAlternateNames(String[] alternateNames) {
-    for (String a : alternateNames) {
-      addAlternateName(a);
+  public void addAlternativeNames(String[] alternativeNames) {
+    for (String a : alternativeNames) {
+      addAlternativeName(a);
     }
   }
 
-  public List<String> getAlternateNames() {
-    return Arrays.asList(alternateNames);
+  public List<String> getAlternativeNames() {
+    return Arrays.asList(alternativeNames);
   }
 
   public void setKeyLength(int keyLength) {

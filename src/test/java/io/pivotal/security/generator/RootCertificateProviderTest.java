@@ -57,30 +57,30 @@ public class RootCertificateProviderTest {
   }
 
   @Test
-  public void canGenerateCertificateWithAlternateNames() throws Exception {
+  public void canGenerateCertificateWithAlternativeNames() throws Exception {
     KeyPair keyPair = generateKeyPair();
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
     inputParameters.setOrganization("organization.io");
     inputParameters.setState("My State");
     inputParameters.setCountry("My Country");
-    inputParameters.addAlternateName("1.1.1.1!@#$%^&*()_-+=");
-    inputParameters.addAlternateName("foo pivotal.io");
+    inputParameters.addAlternativeName("1.1.1.1!@#$%^&*()_-+=");
+    inputParameters.addAlternativeName("foo pivotal.io");
 
     // not clear if non-ascii characters are supported; Dan said to ignore for now.
-    // inputParameters.addAlternateName("朝日新聞デジタル速報全ジャンル");
+    // inputParameters.addAlternativeName("朝日新聞デジタル速報全ジャンル");
 
     X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
 
     Collection<List<?>> subjectAlternativeNames = actualCert.getSubjectAlternativeNames();
-    ArrayList<String> alternateNames = subjectAlternativeNames.stream().map(generalName ->
+    ArrayList<String> alternativeNames = subjectAlternativeNames.stream().map(generalName ->
         generalName.get(1).toString()).collect(Collectors.toCollection(ArrayList::new));
-    assertThat(alternateNames, containsInAnyOrder("1.1.1.1!@#$%^&*()_-+=", "foo pivotal.io"));
+    assertThat(alternativeNames, containsInAnyOrder("1.1.1.1!@#$%^&*()_-+=", "foo pivotal.io"));
 
     actualCert.checkValidity();
   }
 
   @Test
-  public void zeroAlternateNamesYieldsEmptyArrayOfNames() throws Exception {
+  public void zeroAlternativeNamesYieldsEmptyArrayOfNames() throws Exception {
     KeyPair keyPair = generateKeyPair();
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
     inputParameters.setOrganization("organization.io");
