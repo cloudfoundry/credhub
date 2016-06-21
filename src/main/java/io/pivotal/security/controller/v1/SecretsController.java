@@ -1,14 +1,16 @@
 package io.pivotal.security.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.*;
 import io.pivotal.security.model.*;
-import io.pivotal.security.repository.SecretStore;
+import io.pivotal.security.repository.InMemorySecretStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -35,7 +37,7 @@ import javax.validation.ValidationException;
 public class SecretsController {
 
   @Autowired
-  SecretStore secretStore;
+  InMemorySecretStore secretStore;
 
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
@@ -86,13 +88,18 @@ public class SecretsController {
     String type = parsed.read("$.type");
     ImmutableMap<String, SecretSetterRequestTranslator> translators = ImmutableMap.of("value", stringRequestTranslator, "certificate", certificateRequestTranslator);
     SecretSetterRequestTranslator requestTranslator = translators.get(type);
+    NamedSecret secretFromDatabase = secretStore.getSecret(secretPath);
 
     try {
       if (requestTranslator == null) {
         throw new ValidationException("error.secret_type_invalid");
       }
       Secret secret = requestTranslator.createSecretFromJson(parsed);
-      secretStore.set(secretPath, secret);
+      if (secretFromDatabase == null) {
+        secretFromDatabase = requestTranslator.makeEntity(secretPath);
+      }
+      secret.populateEntity(secretFromDatabase);
+      secretStore.set(secretFromDatabase);
       return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
@@ -112,12 +119,12 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath) {
-    Object secret = secretStore.getSecret(secretPath);
+    NamedSecret namedSecret = secretStore.getSecret(secretPath);
 
-    if (secret == null) {
+    if (namedSecret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(secret, HttpStatus.OK);
+      return new ResponseEntity<>(namedSecret.convertToModel(), HttpStatus.OK);
     }
   }
 

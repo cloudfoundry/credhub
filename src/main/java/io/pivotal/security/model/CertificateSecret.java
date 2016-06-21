@@ -2,7 +2,6 @@ package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedSecret;
 
 import javax.validation.constraints.NotNull;
 
@@ -25,11 +24,6 @@ public class CertificateSecret implements Secret<NamedCertificateSecret> {
   @Override
   public String getType() {
     return type;
-  }
-
-  @Override
-  public NamedSecret makeEntity(String name) {
-    return new NamedCertificateSecret(name);
   }
 
   @Override

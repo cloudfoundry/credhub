@@ -1,11 +1,8 @@
 package io.pivotal.security.model;
 
-import io.pivotal.security.entity.NamedSecret;
-
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public interface Secret<T> {
-  String getType();
-  @NotNull NamedSecret makeEntity(String name);
+  @JsonProperty String getType();
   void populateEntity(T entity);
 }

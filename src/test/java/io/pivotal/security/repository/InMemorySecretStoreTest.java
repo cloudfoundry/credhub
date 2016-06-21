@@ -2,12 +2,14 @@ package io.pivotal.security.repository;
 
 import com.greghaskins.spectrum.SpringSpectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.CertificateSecret;
-import io.pivotal.security.model.StringSecret;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedStringSecret;
+import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.transaction.annotation.Transactional;
 
 import static com.greghaskins.spectrum.SpringSpectrum.*;
@@ -38,10 +40,10 @@ public class InMemorySecretStoreTest {
 
       describe("existing string secrets", () -> {
 
-        StringSecret stringSecret = new StringSecret("doge");
+        NamedStringSecret stringSecret = new NamedStringSecret("myspecialstringkey").setValue("doge");
 
         beforeEach(() -> {
-          subject.set("myspecialstringkey", stringSecret);
+          subject.set(stringSecret);
         });
 
         it("can be retrieved", () -> {
@@ -53,30 +55,26 @@ public class InMemorySecretStoreTest {
           Assert.assertNull(subject.getSecret("myspecialstringkey"));
           assertThat(subject.delete("myspecialstringkey"), is(false));
         });
-
-        it("setting a stringSecret with the same name overrides the stored stringSecret", () -> {
-          StringSecret stringSecret2 = new StringSecret("catz");
-          subject.set("myspecialstringkey", stringSecret2);
-
-          assertThat(subject.getSecret("myspecialstringkey"), reflectiveEqualTo(stringSecret2));
-        });
       });
 
       describe("new string secrets", () ->{
-        StringSecret stringSecret = new StringSecret("doge");
+        NamedStringSecret stringSecret = new NamedStringSecret("newstringkey").setValue("doge");
 
         it("can be stored for first time, then retrieved", () -> {
-          subject.set("newstringkey", stringSecret);
+          subject.set(stringSecret);
           assertThat(subject.getSecret("newstringkey"), reflectiveEqualTo(stringSecret));
         });
 
       });
 
       describe("existing certificate secrets", () -> {
-        CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
+        NamedCertificateSecret certificateSecret = new NamedCertificateSecret("myspecialcertkey")
+            .setCa("my-ca")
+            .setPub("my-pub")
+            .setPriv("my-priv");
 
         beforeEach(() -> {
-          subject.set("myspecialcertkey", certificateSecret);
+          subject.set(certificateSecret);
         });
 
         it("can be retrieved", () -> {
@@ -92,33 +90,32 @@ public class InMemorySecretStoreTest {
           Assert.assertNull(subject.getSecret("myspecialcertkey"));
           assertThat(subject.delete("myspecialcertkey"), is(false));
         });
-
-        it("setting a stringSecret with the same name overrides the stored stringSecret", () -> {
-          CertificateSecret certificateSecret1 = new CertificateSecret("your ca", "your pub", "your priv");
-          subject.set("myspecialcertkey", certificateSecret1);
-
-          assertThat(subject.getSecret("myspecialcertkey"), reflectiveEqualTo(certificateSecret1));
-        });
       });
 
-      describe("new certificate secrets", () ->{
-        CertificateSecret certificateSecret = new CertificateSecret("ca", "pub", "priv");
+      describe("new certificate secrets", () -> {
+        NamedCertificateSecret certificateSecret = new NamedCertificateSecret("newcertkey")
+            .setCa("ca")
+            .setPub("pub")
+            .setPriv("priv");
 
         it("can be stored for first time, then retrieved", () -> {
-          subject.set("newcertkey", certificateSecret);
+          subject.set(certificateSecret);
           assertThat(subject.getSecret("newcertkey"), reflectiveEqualTo(certificateSecret));
         });
 
       });
 
       it("changing certificate types", () -> {
-        CertificateSecret certificateSecret = new CertificateSecret("ca", "pub", "priv");
-        StringSecret stringSecret = new StringSecret("doge");
+        NamedCertificateSecret certificateSecret = new NamedCertificateSecret("stringkey")
+            .setCa("ca")
+            .setPub("pub")
+            .setPriv("priv");
+        NamedStringSecret stringSecret = new NamedStringSecret("stringkey").setValue("doge");
 
-        subject.set("stringkey", certificateSecret);
+        subject.set(certificateSecret);
         try {
-          subject.set("stringkey", stringSecret);
-        } catch (ClassCastException e) {
+          subject.set(stringSecret);
+        } catch (DataIntegrityViolationException e) {
           return;
         }
         fail();

@@ -1,6 +1,7 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.model.GeneratorRequest;
 import io.pivotal.security.model.Secret;
@@ -19,5 +20,10 @@ public class RequestTranslatorWithGeneration implements SecretSetterRequestTrans
     GeneratorRequest generatorRequest = generatorRequestTranslator.validGeneratorRequest(documentContext);
 
     return secretGenerator.generateSecret(generatorRequest.getParameters());
+  }
+
+  @Override
+  public NamedSecret makeEntity(String name) {
+    return generatorRequestTranslator.makeEntity(name);
   }
 }

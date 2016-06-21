@@ -1,6 +1,5 @@
 package io.pivotal.security.model;
 
-import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 
 import javax.validation.constraints.NotNull;
@@ -23,11 +22,6 @@ public class StringSecret implements Secret<NamedStringSecret> {
   @Override
   public String getType() {
     return type;
-  }
-
-  @Override
-  public NamedSecret makeEntity(String name) {
-    return new NamedStringSecret(name);
   }
 
   @Override

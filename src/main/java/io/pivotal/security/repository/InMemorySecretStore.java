@@ -1,12 +1,12 @@
 package io.pivotal.security.repository;
 
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.model.Secret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+// TODO this is no longer necessary
 @Component
-public class InMemorySecretStore implements SecretStore {
+public class InMemorySecretStore {
 
   private final InMemorySecretRepository secretRepository;
 
@@ -15,30 +15,18 @@ public class InMemorySecretStore implements SecretStore {
     this.secretRepository = secretRepository;
   }
 
-  @Override
-  public void set(String key, Secret secret) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret == null) {
-      namedSecret = secret.makeEntity(key);
-    }
-    secret.populateEntity(namedSecret);
-    secretRepository.save(namedSecret);
+  public void set(NamedSecret secret) {
+    secretRepository.save(secret);
   }
 
-  @Override
-  public Secret getSecret(String key) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret != null) {
-      return namedSecret.convertToModel();
-    }
-    return null;
+  public NamedSecret getSecret(String key) {
+    return secretRepository.findOneByName(key);
   }
 
-  @Override
   public boolean delete(String key) {
-    NamedSecret namedSecret = secretRepository.findOneByName(key);
-    if (namedSecret != null) {
-      secretRepository.delete(namedSecret);
+    NamedSecret entity = secretRepository.findOneByName(key);
+    if (entity != null) {
+      secretRepository.delete(entity);
       return true;
     }
     return false;

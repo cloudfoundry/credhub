@@ -18,11 +18,6 @@ public class CertificateSecretTest {
   }
 
   @Test
-  public void makeEntityCreatesNewEntity() throws Exception {
-    assertThat(model.makeEntity("myName"), instanceOf(NamedCertificateSecret.class));
-  }
-
-  @Test
   public void populateEntityEnsuresModelValuesAreInEntity() throws Exception {
     NamedCertificateSecret entity = new NamedCertificateSecret();
     model.populateEntity(entity);

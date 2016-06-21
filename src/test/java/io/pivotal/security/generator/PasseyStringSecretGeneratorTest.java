@@ -2,6 +2,7 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
+import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.model.StringSecret;
 import io.pivotal.security.model.StringSecretParameters;
 import org.junit.Test;

@@ -2,7 +2,6 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.model.CertificateSecret;
 import io.pivotal.security.model.CertificateSecretParameters;
-import io.pivotal.security.model.Secret;
 import io.pivotal.security.util.CertificateFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

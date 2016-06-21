@@ -1,6 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.model.GeneratorRequest;
 import io.pivotal.security.model.StringSecretParameters;
 import org.springframework.stereotype.Component;
@@ -34,5 +36,10 @@ public class StringGeneratorRequestTranslator implements SecretGeneratorRequestT
       throw new ValidationException("error.excludes_all_charsets");
     }
     return generatorRequest;
+  }
+
+  @Override
+  public NamedSecret makeEntity(String name) {
+    return new NamedStringSecret(name);
   }
 }

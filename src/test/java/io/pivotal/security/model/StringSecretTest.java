@@ -21,11 +21,6 @@ public class StringSecretTest {
   }
 
   @Test
-  public void makeEntityCreatesNewEntity() throws Exception {
-    assertThat(model.makeEntity("myName"), instanceOf(NamedStringSecret.class));
-  }
-
-  @Test
   public void populateEntityEnsuresModelValuesAreInEntity() throws Exception {
     NamedStringSecret entity = new NamedStringSecret();
     model.populateEntity(entity);

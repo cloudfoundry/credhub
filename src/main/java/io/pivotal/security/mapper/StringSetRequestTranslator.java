@@ -1,7 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.model.StringSecret;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -18,5 +19,10 @@ public class StringSetRequestTranslator implements SecretSetterRequestTranslator
       throw new ValidationException("error.missing_string_secret_value");
     }
     return new StringSecret(value);
+  }
+
+  @Override
+  public NamedSecret makeEntity(String name) {
+    return new NamedStringSecret(name);
   }
 }

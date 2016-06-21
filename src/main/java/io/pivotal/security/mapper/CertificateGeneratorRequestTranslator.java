@@ -1,6 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.model.CertificateSecretParameters;
 import io.pivotal.security.model.GeneratorRequest;
 import org.springframework.stereotype.Component;
@@ -34,5 +36,10 @@ public class CertificateGeneratorRequestTranslator implements SecretGeneratorReq
     }
 
     return generatorRequest;
+  }
+
+  @Override
+  public NamedSecret makeEntity(String name) {
+    return new NamedCertificateSecret(name);
   }
 }

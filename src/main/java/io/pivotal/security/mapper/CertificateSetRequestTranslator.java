@@ -1,6 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.model.CertificateSecret;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -22,5 +24,10 @@ public class CertificateSetRequestTranslator implements SecretSetterRequestTrans
       throw new ValidationException("error.missing_certificate_credentials");
     }
     return new CertificateSecret(ca, pub, priv);
+  }
+
+  @Override
+  public NamedSecret makeEntity(String name) {
+    return new NamedCertificateSecret(name);
   }
 }

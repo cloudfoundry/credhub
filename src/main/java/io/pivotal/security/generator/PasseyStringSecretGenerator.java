@@ -1,6 +1,5 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.model.Secret;
 import io.pivotal.security.model.StringSecret;
 import io.pivotal.security.model.StringSecretParameters;
 import org.passay.CharacterRule;
