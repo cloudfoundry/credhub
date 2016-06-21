@@ -144,7 +144,37 @@ public class CertificateSecretParametersTest {
     doTest(true, "f", "e", "d", "c", "b", "a");
   }
 
-  private void doTest(boolean isValid, String organization, String state, String country, String commonName, String organizationUnit, String locality) {
+  @Test
+  public void keyLengthsAreValidated() {
+    CertificateSecretParameters params = new CertificateSecretParameters()
+        .setOrganization("foo")
+        .setState("bar")
+        .setCountry("baz");
+
+    params.validate();
+
+    params.setKeyLength(2048);
+    params.validate();
+
+    params.setKeyLength(3072);
+    params.validate();
+
+    params.setKeyLength(4096);
+    params.validate();
+
+    thrown.expect(ValidationException.class);
+    thrown.expectMessage("error.invalid_key_length");
+    params.setKeyLength(1024);
+    params.validate();
+
+    params.setKeyLength(5000);
+    params.validate();
+
+    params.setKeyLength(2222);
+    params.validate();
+  }
+
+  private void doTest(boolean isExpectedValid, String organization, String state, String country, String commonName, String organizationUnit, String locality) {
     CertificateSecretParameters params = new CertificateSecretParameters()
         .setOrganization(organization)
         .setState(state)
@@ -153,8 +183,9 @@ public class CertificateSecretParametersTest {
         .setOrganizationUnit(organizationUnit)
         .setLocality(locality);
 
-    if (!isValid) {
+    if (!isExpectedValid) {
       thrown.expect(ValidationException.class);
+      thrown.expectMessage("error.missing_certificate_parameters");
     }
     params.validate();
   }

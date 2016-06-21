@@ -157,7 +157,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"organization\": \"organization.io\"," +
           "\"state\": \"My State\"," +
           "\"country\": \"My Country\"," +
-          "\"key_length\": 1024" +
+          "\"key_length\": 2048" +
           "}" +
           "}";
 
@@ -165,7 +165,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setOrganization("organization.io");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
-      expectedParameters.setKeyLength(1024);
+      expectedParameters.setKeyLength(2048);
 
       GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
 

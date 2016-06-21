@@ -83,6 +83,15 @@ public class CertificateSecretParameters {
         || StringUtils.isEmpty(country)) {
       throw new ValidationException("error.missing_certificate_parameters");
     }
+
+    switch (keyLength) {
+      case 2048:
+      case 3072:
+      case 4096:
+        break;
+      default:
+        throw new ValidationException("error.invalid_key_length");
+    }
   }
 
   public String getDNString() {
