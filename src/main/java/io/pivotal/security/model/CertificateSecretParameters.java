@@ -5,6 +5,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.util.StringUtils;
 
+import javax.validation.ValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,10 +77,12 @@ public class CertificateSecretParameters {
     return HashCodeBuilder.reflectionHashCode(this);
   }
 
-  public boolean isValid() {
-    return !StringUtils.isEmpty(organization)
-        && !StringUtils.isEmpty(state)
-        && !StringUtils.isEmpty(country);
+  public void validate() throws ValidationException {
+    if (StringUtils.isEmpty(organization)
+        || StringUtils.isEmpty(state)
+        || StringUtils.isEmpty(country)) {
+      throw new ValidationException("error.missing_certificate_parameters");
+    }
   }
 
   public String getDNString() {

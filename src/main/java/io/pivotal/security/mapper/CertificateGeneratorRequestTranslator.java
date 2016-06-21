@@ -33,9 +33,8 @@ public class CertificateGeneratorRequestTranslator implements SecretGeneratorReq
         .ifPresent(secretParameters::setKeyLength);
     generatorRequest.setType(parsed.read("$.type"));
     generatorRequest.setParameters(secretParameters);
-    if (!secretParameters.isValid()) {
-      throw new ValidationException("error.missing_certificate_parameters");
-    }
+
+    secretParameters.validate();
 
     return generatorRequest;
   }

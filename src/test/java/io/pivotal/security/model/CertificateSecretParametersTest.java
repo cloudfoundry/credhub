@@ -1,10 +1,14 @@
 package io.pivotal.security.model;
 
 import io.pivotal.security.CredentialManagerApp;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import javax.validation.ValidationException;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -14,6 +18,9 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 public class CertificateSecretParametersTest {
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void constructsDNStringWhenAllParamsArePresent() throws Exception {
@@ -137,7 +144,7 @@ public class CertificateSecretParametersTest {
     doTest(true, "f", "e", "d", "c", "b", "a");
   }
 
-  private void doTest(boolean expected, String organization, String state, String country, String commonName, String organizationUnit, String locality) {
+  private void doTest(boolean isValid, String organization, String state, String country, String commonName, String organizationUnit, String locality) {
     CertificateSecretParameters params = new CertificateSecretParameters()
         .setOrganization(organization)
         .setState(state)
@@ -145,6 +152,10 @@ public class CertificateSecretParametersTest {
         .setCommonName(commonName)
         .setOrganizationUnit(organizationUnit)
         .setLocality(locality);
-    assertThat(params.isValid(), equalTo(expected));
+
+    if (!isValid) {
+      thrown.expect(ValidationException.class);
+    }
+    params.validate();
   }
 }
