@@ -24,6 +24,7 @@ public class BcKeyPairGeneratorTest {
 
   @Test
   public void canGenerateKeyPair() throws Exception {
+    subject.initialize(2048); // simulate default param setting of 2048
     KeyPair keyPair = subject.generateKeyPair();
 
     KeyFactory keyFac = KeyFactory.getInstance("RSA");
@@ -38,5 +39,21 @@ public class BcKeyPairGeneratorTest {
     assertThat(keyPair.getPrivate().getAlgorithm(), equalTo("RSA"));
     assertThat(keyPair.getPublic().getFormat(), equalTo("X.509"));
     assertThat(keyPair.getPrivate().getFormat(), equalTo("PKCS#8"));
+  }
+
+  @Test
+  public void canReinitializeLength() throws Exception {
+    subject.initialize(2048);
+    subject.initialize(1024); // simulate previous component initialization state being overwritten
+    KeyPair keyPair = subject.generateKeyPair();
+
+    KeyFactory keyFac = KeyFactory.getInstance("RSA");
+    RSAPrivateKeySpec privateKeySpec = keyFac.getKeySpec(keyPair.getPrivate(),
+        RSAPrivateKeySpec.class);
+    RSAPublicKeySpec publicKeySpec = keyFac.getKeySpec(keyPair.getPublic(),
+        RSAPublicKeySpec.class);
+
+    assertThat(privateKeySpec.getModulus().bitLength(), equalTo(1024));
+    assertThat(publicKeySpec.getModulus().bitLength(), equalTo(1024));
   }
 }

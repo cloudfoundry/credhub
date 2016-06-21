@@ -26,4 +26,9 @@ public class BcKeyPairGenerator extends KeyPairGenerator {
   public KeyPair generateKeyPair() {
     return myGenerator.generateKeyPair();
   }
+
+  @Override
+  public void initialize(int keysize) {
+    myGenerator.initialize(keysize);
+  }
 }

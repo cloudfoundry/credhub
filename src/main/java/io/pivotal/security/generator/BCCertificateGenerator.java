@@ -21,7 +21,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
   @Override
   public CertificateSecret generateSecret(CertificateSecretParameters params) {
-//    keyGenerator.initialize(params.getKeyLength());
+    keyGenerator.initialize(params.getKeyLength());
     KeyPair keyPair = keyGenerator.generateKeyPair();
     try {
       X509Certificate cert = rootCertificateProvider.get(keyPair, params);

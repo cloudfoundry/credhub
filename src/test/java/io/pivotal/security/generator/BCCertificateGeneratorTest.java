@@ -6,7 +6,6 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.model.CertificateSecret;
 import io.pivotal.security.model.CertificateSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
-import org.apache.tomcat.util.codec.binary.Base64;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
 import org.junit.Before;
@@ -14,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -23,9 +23,6 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -57,7 +54,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
 
   @Test
   public void generateCertificateWithDefaultKeyLengthSucceeds() throws Exception {
-    KeyPair expectedKeyPair = generateKeyPair(2048);
+    KeyPair expectedKeyPair = generateKeyPair();
     when(keyGenerator.generateKeyPair()).thenReturn(expectedKeyPair);
 
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
@@ -73,48 +70,27 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     assertThat(certificateSecret.getCertificateBody().getCa(), nullValue());
     assertThat(certificateSecret.getCertificateBody().getPriv(), equalTo(expectedPrivate));
     assertThat(certificateSecret.getCertificateBody().getPub(), equalTo(expectedCert));
+    Mockito.verify(keyGenerator).initialize(2048);
   }
 
   @Test
   public void generateCertSetsCustomKeyLength() throws Exception {
-
-    int keyLength = 1024;
-    KeyPair expectedKeyPair = generateKeyPair(keyLength);
+    KeyPair expectedKeyPair = generateKeyPair();
     when(keyGenerator.generateKeyPair()).thenReturn(expectedKeyPair);
 
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
-    inputParameters.setKeyLength(keyLength);
+    inputParameters.setKeyLength(1024);
     X509Certificate caCert = generateX509Certificate(expectedKeyPair);
     when(rootCertificateProvider.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
 
-//    String expectedPrivate = CertificateFormatter.pemOf(expectedKeyPair.getPrivate());
+    subject.generateSecret(inputParameters);
 
-    CertificateSecret certificateSecret = subject.generateSecret(inputParameters);
-
-    String priv = certificateSecret.getCertificateBody().getPriv();
-    PrivateKey privKey = translateFromPem(priv);
-    KeyFactory keyFac = KeyFactory.getInstance("RSA", "BC");
-    RSAPrivateKeySpec privateKeySpec = keyFac.getKeySpec(privKey, RSAPrivateKeySpec.class);
-//    RSAPublicKeySpec publicKeySpec = keyFac.getKeySpec(keyPair.getPublic(),
-//        RSAPublicKeySpec.class);
-//
-    assertThat(privateKeySpec.getModulus().bitLength(), equalTo(inputParameters.getKeyLength()));
-    //assertThat(publicKeySpec.getModulus().bitLength(), equalTo(2048));
-
+    Mockito.verify(keyGenerator).initialize(1024);
   }
 
-  private PrivateKey translateFromPem(String privateKeyPEM) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-    privateKeyPEM = privateKeyPEM.replace("-----BEGIN PRIVATE KEY-----\n", "");
-    privateKeyPEM = privateKeyPEM.replace("-----END PRIVATE KEY-----", "");
-    byte[] encoded = Base64.decodeBase64(privateKeyPEM);
-    KeyFactory kf = KeyFactory.getInstance("RSA", "BC");
-    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(encoded);
-    return kf.generatePrivate(keySpec);
-  }
-
-  private KeyPair generateKeyPair(int keyLength) throws NoSuchAlgorithmException, NoSuchProviderException {
+  private KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
     KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
-    generator.initialize(keyLength);
+    generator.initialize(1024); // doesn't matter for testing
     return generator.generateKeyPair();
   }
 
