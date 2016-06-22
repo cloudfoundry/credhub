@@ -1,6 +1,7 @@
-package io.pivotal.security.model;
+package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

@@ -2,7 +2,7 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.model.Secret;
+import io.pivotal.security.view.Secret;
 
 public interface SecretSetterRequestTranslator {
   Secret createSecretFromJson(DocumentContext documentContext);

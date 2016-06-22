@@ -4,7 +4,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.StringSecret;
+import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;

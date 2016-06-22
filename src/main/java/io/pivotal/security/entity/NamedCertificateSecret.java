@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.view.CertificateSecret;
 
 import javax.persistence.*;
 
@@ -60,7 +60,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   }
 
   @Override
-  public CertificateSecret convertToModel() {
+  public CertificateSecret generateView() {
     return new CertificateSecret(ca, pub, priv).setUpdatedAt(getUpdatedAt());
   }
 }

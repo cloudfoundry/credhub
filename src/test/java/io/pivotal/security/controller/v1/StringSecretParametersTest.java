@@ -1,6 +1,7 @@
-package io.pivotal.security.model;
+package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.controller.v1.StringSecretParameters;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

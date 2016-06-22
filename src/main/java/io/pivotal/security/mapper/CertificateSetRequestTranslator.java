@@ -3,7 +3,7 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.model.CertificateSecret;
+import io.pivotal.security.view.CertificateSecret;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 

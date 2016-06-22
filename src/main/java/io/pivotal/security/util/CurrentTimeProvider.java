@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.util;
 
 import org.springframework.data.auditing.DateTimeProvider;
 

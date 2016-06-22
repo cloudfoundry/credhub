@@ -1,7 +1,7 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.CurrentTimeProvider;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import org.junit.After;
 import org.junit.Before;

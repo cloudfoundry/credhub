@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;

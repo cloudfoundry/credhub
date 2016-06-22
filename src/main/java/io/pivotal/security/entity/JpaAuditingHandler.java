@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.model.CurrentTimeProvider;
+import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mapping.PersistentEntity;
 import org.springframework.data.mapping.PersistentProperty;

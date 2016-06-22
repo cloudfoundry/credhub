@@ -2,7 +2,7 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.StringSecret;
+import io.pivotal.security.view.StringSecret;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class NamedStringSecretTest {
     NamedStringSecret subject = new NamedStringSecret("Foo")
         .setValue("my-value");
 
-    Object actual = subject.convertToModel();
+    Object actual = subject.generateView();
 
     assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"value\":\"my-value\",\"type\":\"value\",\"updated_at\":null}"));
   }
@@ -37,7 +37,7 @@ public class NamedStringSecretTest {
     LocalDateTime now = LocalDateTime.now();
     subject.setUpdatedAt(now);
 
-    StringSecret actual = subject.convertToModel();
+    StringSecret actual = subject.generateView();
 
     assertThat(actual.getUpdatedAt(), equalTo(now));
   }

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;
 import io.pivotal.security.entity.JpaAuditingHandlerRegistrar;
-import io.pivotal.security.model.CurrentTimeProvider;
+import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;

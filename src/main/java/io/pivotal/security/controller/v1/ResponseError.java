@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.controller.v1;
 
 public class ResponseError {
   public String error;

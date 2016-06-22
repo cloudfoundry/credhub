@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.model.StringSecret;
+import io.pivotal.security.view.StringSecret;
 
 import javax.persistence.*;
 
@@ -29,7 +29,7 @@ public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
   }
 
   @Override
-  public StringSecret convertToModel() {
+  public StringSecret generateView() {
     return new StringSecret(value).setUpdatedAt(getUpdatedAt());
   }
 }

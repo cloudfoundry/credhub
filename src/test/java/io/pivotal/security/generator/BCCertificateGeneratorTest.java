@@ -2,9 +2,8 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.model.CertificateSecret;
-import io.pivotal.security.model.CertificateSecretParameters;
+import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.x509.X509V1CertificateGenerator;

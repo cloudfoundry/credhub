@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.CertificateSecretParameters;
+import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.exparity.hamcrest.BeanMatchers;

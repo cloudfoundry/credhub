@@ -1,6 +1,6 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.model.CertificateSecretParameters;
+import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;

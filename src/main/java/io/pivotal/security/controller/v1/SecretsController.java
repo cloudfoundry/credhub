@@ -7,8 +7,10 @@ import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.*;
-import io.pivotal.security.model.*;
 import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.Secret;
+import io.pivotal.security.view.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -124,7 +126,7 @@ public class SecretsController {
     if (namedSecret == null) {
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     } else {
-      return new ResponseEntity<>(namedSecret.convertToModel(), HttpStatus.OK);
+      return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
     }
   }
 

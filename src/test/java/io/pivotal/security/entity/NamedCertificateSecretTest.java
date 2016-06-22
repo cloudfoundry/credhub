@@ -2,8 +2,7 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.CertificateSecret;
-import org.junit.Ignore;
+import io.pivotal.security.view.CertificateSecret;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class NamedCertificateSecretTest {
   @Test
   public void canCreateModelFromEntity() throws Exception {
     NamedCertificateSecret subject = NamedCertificateSecret.make("Foo", "my-ca", "my-pub", "my-priv");
-    Object actual = subject.convertToModel();
+    Object actual = subject.generateView();
     assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"type\":\"certificate\",\"updated_at\":null,\"certificate\":{\"ca\":\"my-ca\",\"public\":\"my-pub\",\"private\":\"my-priv\"}}"));
   }
 
@@ -35,7 +34,7 @@ public class NamedCertificateSecretTest {
     LocalDateTime now = LocalDateTime.now();
     NamedCertificateSecret subject = new NamedCertificateSecret("Foo")
         .setUpdatedAt(now);
-    CertificateSecret actual = subject.convertToModel();
+    CertificateSecret actual = subject.generateView();
     assertThat(actual.getUpdatedAt(), equalTo(now));
   }
 }

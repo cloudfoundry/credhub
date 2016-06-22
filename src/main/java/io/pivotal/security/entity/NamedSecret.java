@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.model.Secret;
+import io.pivotal.security.view.Secret;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -51,7 +51,7 @@ abstract public class NamedSecret<T> {
     return (T) this;
   }
 
-  public abstract Secret convertToModel();
+  public abstract Secret generateView();
 
   public LocalDateTime getUpdatedAt() {
     return updatedAt;

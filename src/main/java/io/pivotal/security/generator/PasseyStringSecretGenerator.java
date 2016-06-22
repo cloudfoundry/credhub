@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.model.StringSecret;
-import io.pivotal.security.model.StringSecretParameters;
+import io.pivotal.security.view.StringSecret;
+import io.pivotal.security.controller.v1.StringSecretParameters;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;

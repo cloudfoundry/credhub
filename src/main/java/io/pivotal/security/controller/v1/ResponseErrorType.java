@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.controller.v1;
 
 public enum ResponseErrorType {
   BAD_REQUEST("The request could not be fulfilled because the request path or "

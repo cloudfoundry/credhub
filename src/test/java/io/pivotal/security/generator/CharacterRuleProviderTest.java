@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.model.StringSecretParameters;
+import io.pivotal.security.controller.v1.StringSecretParameters;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

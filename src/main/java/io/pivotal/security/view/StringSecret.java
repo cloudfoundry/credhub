@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.view;
 
 import io.pivotal.security.entity.NamedStringSecret;
 

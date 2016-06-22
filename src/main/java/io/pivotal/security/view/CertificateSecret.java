@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateSecret;
