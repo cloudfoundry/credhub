@@ -37,6 +37,9 @@ public class CertificateSecretParameters {
   @JsonProperty("key_length")
   private int keyLength = 2048;
 
+  @JsonProperty("durationDays")
+  private int durationDays = 365;
+
   public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
     return this;
@@ -135,5 +138,13 @@ public class CertificateSecretParameters {
 
   public int getKeyLength() {
     return keyLength;
+  }
+
+  public void setDurationDays(int durationDays) {
+    this.durationDays = durationDays;
+  }
+
+  public int getDurationDays() {
+    return durationDays;
   }
 }

@@ -54,8 +54,7 @@ public class RootCertificateProviderTest {
     assertThat(actualCert.getSubjectX500Principal(), BeanMatchers.theSameAs(expectedPrincipal));
     assertThat(actualCert.getSigAlgName(), equalTo("SHA256WITHRSA"));
 
-    long durationMillis = actualCert.getNotAfter().getTime() - actualCert.getNotBefore().getTime();
-    assertThat(durationMillis, equalTo(Instant.EPOCH.plus(365, ChronoUnit.DAYS).toEpochMilli()));
+    checkDuration(actualCert, 365);
   }
 
   @Test
@@ -81,6 +80,14 @@ public class RootCertificateProviderTest {
         "*.pivotal.io"
         // "2.2.2.0/24"
     ));
+  }
+
+  @Test
+  public void canGenerateCertificateWithArbitraryDuration() throws Exception {
+    CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
+    inputParameters.setDurationDays(555);
+    X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
+    checkDuration(actualCert, 555);
   }
 
   @Test
@@ -147,5 +154,10 @@ public class RootCertificateProviderTest {
     KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
     generator.initialize(1024); // for testing only; strength not important
     return generator.generateKeyPair();
+  }
+
+  private void checkDuration(X509Certificate actualCert, int durationDays) {
+    long durationMillis = actualCert.getNotAfter().getTime() - actualCert.getNotBefore().getTime();
+    assertThat(durationMillis, equalTo(Instant.EPOCH.plus(durationDays, ChronoUnit.DAYS).toEpochMilli()));
   }
 }

@@ -78,6 +78,18 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
+  public void durationIs365DaysByDefault() {
+    assertThat(new CertificateSecretParameters().getDurationDays(), equalTo(365));
+  }
+
+  @Test
+  public void canSetDuration() {
+    CertificateSecretParameters subject = new CertificateSecretParameters();
+    subject.setDurationDays(789);
+    assertThat(subject.getDurationDays(), equalTo(789));
+  }
+
+  @Test
   public void needAtLeastStateAndOrganizationAndCountry() {
     doTest(false, "", "", "", "", "", "");
     doTest(false, "", "", "", "", "", "a");

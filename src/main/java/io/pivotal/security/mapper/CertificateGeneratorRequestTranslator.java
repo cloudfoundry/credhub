@@ -31,6 +31,8 @@ public class CertificateGeneratorRequestTranslator implements SecretGeneratorReq
         .ifPresent(secretParameters::addAlternativeNames);
     Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
         .ifPresent(secretParameters::setKeyLength);
+    Optional.ofNullable(parsed.read("$.parameters.duration", Integer.class))
+        .ifPresent(secretParameters::setDurationDays);
     generatorRequest.setType(parsed.read("$.type"));
     generatorRequest.setParameters(secretParameters);
 

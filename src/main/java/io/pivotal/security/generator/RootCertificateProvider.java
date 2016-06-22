@@ -37,7 +37,7 @@ public class RootCertificateProvider {
 
     Instant instant = Instant.now();
     final Date now = Date.from(instant);
-    final Date later = Date.from(instant.plus(365, ChronoUnit.DAYS));
+    final Date later = Date.from(instant.plus(params.getDurationDays(), ChronoUnit.DAYS));
     certGen.setNotBefore(now);
     certGen.setNotAfter(later);
 

@@ -42,7 +42,8 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"organization_unit\": \"My Unit\"," +
           "\"locality\": \"My Locality\"," +
           "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"" +
+          "\"country\": \"My Country\"," +
+          "\"duration\": 1000" +
           "}" +
           "}";
       CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
@@ -52,6 +53,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setLocality("My Locality");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
+      expectedParameters.setDurationDays(1000);
 
       GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
       assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
