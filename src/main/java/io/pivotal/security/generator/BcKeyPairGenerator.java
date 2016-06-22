@@ -17,8 +17,7 @@ public class BcKeyPairGenerator extends KeyPairGenerator {
       myGenerator = KeyPairGenerator.getInstance("RSA", "BC");
       myGenerator.initialize(2048);
     } catch (Exception e) {
-      // todo perhaps throw any time we are asked for a new key?
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 
