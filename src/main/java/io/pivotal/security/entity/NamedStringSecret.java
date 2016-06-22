@@ -30,6 +30,6 @@ public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
 
   @Override
   public StringSecret convertToModel() {
-    return new StringSecret(value);
+    return new StringSecret(value).setUpdatedAt(getUpdatedAt());
   }
 }

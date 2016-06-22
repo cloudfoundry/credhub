@@ -5,7 +5,7 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 
 import javax.validation.constraints.NotNull;
 
-public class CertificateSecret implements Secret<NamedCertificateSecret> {
+public class CertificateSecret extends Secret<NamedCertificateSecret, CertificateSecret> {
 
   @NotNull
   private final String type = "certificate";
@@ -31,7 +31,6 @@ public class CertificateSecret implements Secret<NamedCertificateSecret> {
     entity.setCa(getCertificateBody().getCa())
         .setPub(getCertificateBody().getPub())
         .setPriv(getCertificateBody().getPriv());
-
   }
 
   public CertificateBody getCertificateBody() {

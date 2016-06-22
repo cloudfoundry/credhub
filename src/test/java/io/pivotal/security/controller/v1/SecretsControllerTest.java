@@ -1,16 +1,16 @@
 package io.pivotal.security.controller.v1;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.model.CertificateSecret;
-import io.pivotal.security.model.CertificateSecretParameters;
-import io.pivotal.security.model.StringSecretParameters;
-import io.pivotal.security.model.StringSecret;
+import io.pivotal.security.model.*;
 import io.pivotal.security.repository.InMemorySecretRepository;
+import org.exparity.hamcrest.BeanMatchers;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,10 +18,9 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.mock.http.MockHttpOutputMessage;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +31,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
-import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
@@ -44,6 +43,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -55,7 +56,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   protected ConfigurableWebApplicationContext context;
 
   @Autowired
-  private HttpMessageConverter mappingJackson2HttpMessageConverter;
+  private ObjectMapper objectMapper;
 
   @Autowired
   private InMemorySecretRepository secretRepository;
@@ -63,6 +64,9 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @InjectMocks
   @Autowired
   private SecretsController secretsController;
+
+  @Autowired @Qualifier("currentTimeProvider")
+  CurrentTimeProvider currentTimeProvider;
 
   @Mock
   private SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
@@ -72,14 +76,23 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   private MockMvc mockMvc;
 
+  private final ZoneId utc = ZoneId.of("UTC");
+  private LocalDateTime frozenTime;
+
   @Before
   public void setUp() {
+    freeze();
     mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+  }
+
+  @After
+  public void tearDown() {
+    currentTimeProvider.reset();
   }
 
   @Test
   public void validPutSecret() throws Exception {
-    String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
@@ -88,7 +101,13 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    Assert.assertThat(secretRepository.findOneByName("secret-identifier").convertToModel(), reflectiveEqualTo(new StringSecret("secret contents")));
+    StringSecret expected = new StringSecret("secret contents");
+    expected.setUpdatedAt(frozenTime);
+    Assert.assertThat(secretRepository.findOneByName("secret-identifier").convertToModel(), BeanMatchers.theSameAs(expected));
+  }
+
+  private String getUpdatedAtJson() {
+    return "\"updated_at\":\"" + frozenTime.format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
   }
 
   @Test
@@ -124,7 +143,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutCertificate() throws Exception {
-    String requestJson = "{\"type\":\"certificate\",\"certificate\":{\"ca\":\"my-ca\",\"public\":\"my-pub\",\"private\":\"my-priv\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"certificate\":{\"ca\":\"my-ca\",\"public\":\"my-pub\",\"private\":\"my-priv\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
@@ -133,8 +152,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
-    Assert.assertThat(secretRepository.findOneByName("secret-identifier").convertToModel(), reflectiveEqualTo(certificateSecret));
+    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv").setUpdatedAt(frozenTime);
+    Assert.assertThat(secretRepository.findOneByName("secret-identifier").convertToModel(), BeanMatchers.theSameAs(certificateSecret));
   }
 
   @Test
@@ -174,9 +193,9 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void generateSecretWithNoParameters() throws Exception {
     StringSecretParameters parameters = new StringSecretParameters();
-    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(new StringSecret("very-secret"));
+    StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
+    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(expectedStringSecret);
 
-    StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\"}");
@@ -186,38 +205,38 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), BeanMatchers.theSameAs(expectedStringSecret));
   }
 
   @Test
   public void generateStringSecretWithEmptyParameters() throws Exception {
     StringSecretParameters parameters = new StringSecretParameters();
-    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(new StringSecret("very-secret"));
+    StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
+    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(expectedStringSecret);
 
-    StringSecret expectedStringSecret = new StringSecret("very-secret");
     String expectedJson = json(expectedStringSecret);
 
-    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\",\"parameters\":{}}");
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{" +  getUpdatedAtJson() + ",\"type\":\"value\",\"parameters\":{}}");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), BeanMatchers.theSameAs(expectedStringSecret));
   }
 
   @Test
   public void generateStringSecretWithParameters() throws Exception {
+    StringSecret expectedStringSecret = new StringSecret("long-secret").setUpdatedAt(frozenTime);
     StringSecretParameters expectedParameters = new StringSecretParameters();
     expectedParameters.setExcludeSpecial(true);
     expectedParameters.setExcludeNumber(true);
     expectedParameters.setExcludeUpper(true);
     expectedParameters.setLength(42);
 
-    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(new StringSecret("long-secret"));
+    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(expectedStringSecret);
 
-    StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);
 
     String requestJson = "{" +
@@ -237,19 +256,19 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), BeanMatchers.theSameAs(expectedStringSecret));
   }
 
   @Test
   public void generateStringSecretWithDifferentParameters() throws Exception {
+    StringSecret expectedStringSecret = new StringSecret("long-secret").setUpdatedAt(frozenTime);
     StringSecretParameters expectedParameters = new StringSecretParameters();
     expectedParameters.setExcludeSpecial(true);
     expectedParameters.setExcludeLower(true);
     expectedParameters.setLength(42);
 
-    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(new StringSecret("long-secret"));
+    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(expectedStringSecret);
 
-    StringSecret expectedStringSecret = new StringSecret("long-secret");
     String expectedJson = json(expectedStringSecret);
 
     String requestJson = "{" +
@@ -268,7 +287,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), reflectiveEqualTo(expectedStringSecret));
+    assertThat(secretRepository.findOneByName("my-secret").convertToModel(), BeanMatchers.theSameAs(expectedStringSecret));
   }
 
   @Test
@@ -304,7 +323,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
     expectedParameters.addAlternativeName("My Alternative Name 1");
     expectedParameters.addAlternativeName("My Alternative Name 2");
 
-    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv");
+    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv").setUpdatedAt(frozenTime);
     when(certificateGenerator.generateSecret(expectedParameters)).thenReturn(certificateSecret);
 
     String requestJson = "{" +
@@ -329,7 +348,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(content().json(expectedJson));
 
-    assertThat(secretRepository.findOneByName("my-cert").convertToModel(), reflectiveEqualTo(certificateSecret));
+    assertThat(secretRepository.findOneByName("my-cert").convertToModel(), BeanMatchers.theSameAs(certificateSecret));
   }
 
 
@@ -543,10 +562,12 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   private String json(Object o) throws IOException {
-    MockHttpOutputMessage mockHttpOutputMessage = new MockHttpOutputMessage();
-    this.mappingJackson2HttpMessageConverter.write(
-        o, MediaType.APPLICATION_JSON, mockHttpOutputMessage);
-    return mockHttpOutputMessage.getBodyAsString();
+    return objectMapper.writeValueAsString(o);
+  }
+
+  private void freeze() {
+    frozenTime = LocalDateTime.now(utc);
+    currentTimeProvider.setOverrideTime(frozenTime);
   }
 
   class PutCertificateSimulator {
@@ -567,7 +588,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
       CertificateSecret certificateSecretForResponse = new CertificateSecret(
           transformEmptyToNull(ca),
           transformEmptyToNull(pub),
-          transformEmptyToNull(priv));
+          transformEmptyToNull(priv))
+          .setUpdatedAt(frozenTime);
 
       String requestJson = json(certificateSecretForRequest);
 
@@ -577,7 +599,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
       NamedSecret certificateFromDb = secretRepository.findOneByName("whatever");
 
       if (isHttpOk) {
-        assertThat(certificateFromDb.convertToModel(), reflectiveEqualTo(certificateSecretForResponse));
+        assertThat(certificateFromDb.convertToModel(), BeanMatchers.theSameAs(certificateSecretForResponse));
       } else {
         assertNull(certificateFromDb);
         result.andExpect(content().json(badResponseJson));

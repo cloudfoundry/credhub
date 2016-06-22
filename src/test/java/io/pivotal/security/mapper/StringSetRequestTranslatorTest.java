@@ -5,6 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.model.StringSecret;
+import org.exparity.hamcrest.BeanMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.validation.ValidationException;
 
-import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -58,6 +58,6 @@ public class StringSetRequestTranslatorTest {
   private void doTest(StringSecret expected, String requestJson) {
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     StringSecret actual = new StringSetRequestTranslator().createSecretFromJson(parsed);
-    assertThat(actual, reflectiveEqualTo(expected));
+    assertThat(actual, BeanMatchers.theSameAs(expected));
   }
 }

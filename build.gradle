@@ -57,6 +57,8 @@ dependencies {
     compile('org.bouncycastle:bcpkix-jdk15on:1.52')
     compile(group: 'com.google.guava', name: 'guava', version: '19.0')
     compile('org.apache.commons:commons-lang3:3.4')
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.5'
+    compile 'org.exparity:hamcrest-bean:1.0.11'
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.skyscreamer:jsonassert')
     testCompile('com.greghaskins:spectrum:0.6.1')

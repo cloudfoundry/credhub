@@ -4,7 +4,7 @@ import io.pivotal.security.entity.NamedStringSecret;
 
 import javax.validation.constraints.NotNull;
 
-public class StringSecret implements Secret<NamedStringSecret> {
+public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
 
   @NotNull
   public String value;
@@ -15,8 +15,9 @@ public class StringSecret implements Secret<NamedStringSecret> {
     value = secretValue;
   }
 
-  public void setValue(String value) {
+  public StringSecret setValue(String value) {
     this.value = value;
+    return this;
   }
 
   @Override

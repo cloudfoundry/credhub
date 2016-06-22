@@ -6,6 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.model.CertificateSecretParameters;
 import io.pivotal.security.model.GeneratorRequest;
+import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -14,7 +15,6 @@ import javax.validation.ValidationException;
 
 import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
 import static com.greghaskins.spectrum.SpringSpectrum.it;
-import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -54,7 +54,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setCountry("My Country");
 
       GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-      assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("ensures that all of the necessary parameters have been provided", () -> {
@@ -72,7 +72,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setCountry("My Country");
 
       GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-      assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("ensures failure when organization is omitted", () -> {
@@ -147,7 +147,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
 
-      assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("ensures that key length is added", () -> {
@@ -169,7 +169,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
 
-      assertThat(cgRequest.getParameters(), reflectiveEqualTo(expectedParameters));
+      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
     });
   }
 }

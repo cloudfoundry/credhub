@@ -18,6 +18,13 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   @Column(nullable = true, length = 7000)
   private String priv;
 
+  public static NamedCertificateSecret make(String name, String ca, String pub, String priv) {
+    return new NamedCertificateSecret(name)
+        .setCa(ca)
+        .setPub(pub)
+        .setPriv(priv);
+  }
+
   public NamedCertificateSecret() {
   }
 
@@ -54,6 +61,6 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
 
   @Override
   public CertificateSecret convertToModel() {
-    return new CertificateSecret(ca, pub, priv);
+    return new CertificateSecret(ca, pub, priv).setUpdatedAt(getUpdatedAt());
   }
 }

@@ -4,6 +4,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.model.CertificateSecretParameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
+import org.exparity.hamcrest.BeanMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static io.pivotal.security.matcher.ReflectiveEqualsMatcher.reflectiveEqualTo;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -51,7 +51,7 @@ public class RootCertificateProviderTest {
 
     actualCert.checkValidity();
     assertThat(actualCert, notNullValue());
-    assertThat(actualCert.getSubjectX500Principal(), reflectiveEqualTo(expectedPrincipal));
+    assertThat(actualCert.getSubjectX500Principal(), BeanMatchers.theSameAs(expectedPrincipal));
     assertThat(actualCert.getSigAlgName(), equalTo("SHA256WITHRSA"));
 
     long durationMillis = actualCert.getNotAfter().getTime() - actualCert.getNotBefore().getTime();

@@ -97,7 +97,8 @@ public class SecretsController {
         secretFromDatabase = requestTranslator.makeEntity(secretPath);
       }
       secret.populateEntity(secretFromDatabase);
-      secretRepository.save(secretFromDatabase);
+      NamedSecret saved = secretRepository.save(secretFromDatabase);
+      secret.setUpdatedAt(saved.getUpdatedAt());
       return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
