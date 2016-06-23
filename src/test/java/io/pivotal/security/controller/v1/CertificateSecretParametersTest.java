@@ -90,6 +90,30 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
+  public void tooSmallDuration() {
+    testDuration(0, false);
+  }
+
+  @Test
+  public void tooLargeDuration() {
+    testDuration(3651, false);
+  }
+
+  private void testDuration(int duration, boolean pass) {
+    CertificateSecretParameters params = new CertificateSecretParameters()
+        .setOrganization("foo")
+        .setState("bar")
+        .setCountry("baz");
+
+    if (!pass) {
+      thrown.expectMessage("error.invalid_duration");
+    }
+
+    params.setDurationDays(duration);
+    params.validate();
+  }
+
+  @Test
   public void needAtLeastStateAndOrganizationAndCountry() {
     doTest(false, "", "", "", "", "", "");
     doTest(false, "", "", "", "", "", "a");

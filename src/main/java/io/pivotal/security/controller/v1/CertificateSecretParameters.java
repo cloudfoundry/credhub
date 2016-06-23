@@ -37,7 +37,7 @@ public class CertificateSecretParameters {
   @JsonProperty("key_length")
   private int keyLength = 2048;
 
-  @JsonProperty("durationDays")
+  @JsonProperty("duration")
   private int durationDays = 365;
 
   public CertificateSecretParameters setCommonName(String commonName) {
@@ -94,6 +94,10 @@ public class CertificateSecretParameters {
         break;
       default:
         throw new ValidationException("error.invalid_key_length");
+    }
+
+    if (durationDays < 1 || durationDays > 3650) {
+      throw new ValidationException("error.invalid_duration");
     }
   }
 
