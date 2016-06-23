@@ -383,6 +383,15 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
+  public void unparseableInputShouldReturnBadRequest() throws Exception {
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
+        "{asdfasdfas}");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   public void invalidPutWithMissingValueShouldReturnBadRequest() throws Exception {
     String badResponseJson = "{\"error\": \"A non-empty value must be specified for the credential. Please validate and retry your request.\"}";
 

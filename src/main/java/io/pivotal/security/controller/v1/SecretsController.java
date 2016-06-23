@@ -130,9 +130,9 @@ public class SecretsController {
     }
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class})
+  @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleHttpMessageNotReadableException() throws IOException {
+  public ResponseError handleInputNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
   }
 
