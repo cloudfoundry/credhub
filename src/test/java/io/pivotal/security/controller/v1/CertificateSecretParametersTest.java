@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -74,7 +74,7 @@ public class CertificateSecretParametersTest {
     params2.addAlternativeName("Alternative Name 1dif");
     params2.addAlternativeName("Alternative Name 2");
 
-    assertThat(params.equals(params2), is(false));
+    assertThat(isEqual(params, params2), is(false));
   }
 
   @Test
@@ -231,5 +231,9 @@ public class CertificateSecretParametersTest {
       thrown.expectMessage("error.missing_certificate_parameters");
     }
     params.validate();
+  }
+
+  public boolean isEqual(CertificateSecretParameters params, CertificateSecretParameters params2) {
+    return EqualsBuilder.reflectionEquals(params, params2);
   }
 }

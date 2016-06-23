@@ -56,16 +56,6 @@ public class StringSecretParameters {
     return this;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    return EqualsBuilder.reflectionEquals(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this);
-  }
-
   public boolean isValid() {
     return !(excludeSpecial
         && excludeNumber

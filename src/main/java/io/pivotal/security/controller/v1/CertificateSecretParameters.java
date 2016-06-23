@@ -53,16 +53,6 @@ public class CertificateSecretParameters {
     return this;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    return EqualsBuilder.reflectionEquals(this, o);
-  }
-
-  @Override
-  public int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this);
-  }
-
   public void validate() throws ValidationException {
     if (StringUtils.isEmpty(organization)
         || StringUtils.isEmpty(state)

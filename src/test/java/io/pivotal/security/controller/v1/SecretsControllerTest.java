@@ -33,20 +33,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
-import static java.time.format.DateTimeFormatter.ofPattern;
-import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static junit.framework.TestCase.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Transactional
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -194,9 +192,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void generateSecretWithNoParameters() throws Exception {
-    StringSecretParameters parameters = new StringSecretParameters();
     StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
-    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(expectedStringSecret);
+    when(stringSecretGenerator.generateSecret(any(StringSecretParameters.class))).thenReturn(expectedStringSecret);
 
     String expectedJson = json(expectedStringSecret);
 
@@ -212,9 +209,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void generateStringSecretWithEmptyParameters() throws Exception {
-    StringSecretParameters parameters = new StringSecretParameters();
     StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
-    when(stringSecretGenerator.generateSecret(parameters)).thenReturn(expectedStringSecret);
+    when(stringSecretGenerator.generateSecret(any(StringSecretParameters.class))).thenReturn(expectedStringSecret);
 
     String expectedJson = json(expectedStringSecret);
 
@@ -231,13 +227,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void generateStringSecretWithParameters() throws Exception {
     StringSecret expectedStringSecret = new StringSecret("long-secret").setUpdatedAt(frozenTime);
-    StringSecretParameters expectedParameters = new StringSecretParameters();
-    expectedParameters.setExcludeSpecial(true);
-    expectedParameters.setExcludeNumber(true);
-    expectedParameters.setExcludeUpper(true);
-    expectedParameters.setLength(42);
-
-    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(expectedStringSecret);
+    when(stringSecretGenerator.generateSecret(any(StringSecretParameters.class))).thenReturn(expectedStringSecret);
 
     String expectedJson = json(expectedStringSecret);
 
@@ -264,12 +254,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void generateStringSecretWithDifferentParameters() throws Exception {
     StringSecret expectedStringSecret = new StringSecret("long-secret").setUpdatedAt(frozenTime);
-    StringSecretParameters expectedParameters = new StringSecretParameters();
-    expectedParameters.setExcludeSpecial(true);
-    expectedParameters.setExcludeLower(true);
-    expectedParameters.setLength(42);
-
-    when(stringSecretGenerator.generateSecret(expectedParameters)).thenReturn(expectedStringSecret);
+    when(stringSecretGenerator.generateSecret(any(StringSecretParameters.class))).thenReturn(expectedStringSecret);
 
     String expectedJson = json(expectedStringSecret);
 
@@ -315,18 +300,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void generateCertificateWithAllParametersSucceeds() throws Exception {
-    CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
-    expectedParameters.setCommonName("My Common Name");
-    expectedParameters.setOrganization("organization.io");
-    expectedParameters.setOrganizationUnit("My Unit");
-    expectedParameters.setLocality("My Locality");
-    expectedParameters.setState("My State");
-    expectedParameters.setCountry("My Country");
-    expectedParameters.addAlternativeName("My Alternative Name 1");
-    expectedParameters.addAlternativeName("My Alternative Name 2");
-
     CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv").setUpdatedAt(frozenTime);
-    when(certificateGenerator.generateSecret(expectedParameters)).thenReturn(certificateSecret);
+    when(certificateGenerator.generateSecret(any(CertificateSecretParameters.class))).thenReturn(certificateSecret);
 
     String requestJson = "{" +
             "\"type\":\"certificate\"," +

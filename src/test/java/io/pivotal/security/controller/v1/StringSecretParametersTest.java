@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.StringSecretParameters;
+import org.apache.commons.lang.builder.EqualsBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,6 +57,10 @@ public class StringSecretParametersTest {
     params2.setExcludeUpper(true);
     params2.setExcludeNumber(false);
 
-    Assert.assertThat(params.equals(params2), is(false));
+    Assert.assertThat(isEqual(params, params2), is(false));
+  }
+
+  private boolean isEqual(StringSecretParameters params, StringSecretParameters params2) {
+    return EqualsBuilder.reflectionEquals(params, params2);
   }
 }
