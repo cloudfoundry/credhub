@@ -3,12 +3,7 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateSecret;
 
-import javax.validation.constraints.NotNull;
-
 public class CertificateSecret extends Secret<NamedCertificateSecret, CertificateSecret> {
-
-  @NotNull
-  private final String type = "certificate";
 
   @JsonProperty("certificate")
   private CertificateBody certificateBody;
@@ -23,7 +18,7 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
 
   @Override
   public String getType() {
-    return type;
+    return "certificate";
   }
 
   @Override

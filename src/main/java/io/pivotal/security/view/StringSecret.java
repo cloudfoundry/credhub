@@ -9,8 +9,6 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
   @NotNull
   public String value;
 
-  public final String type = "value";
-
   public StringSecret(String secretValue) {
     value = secretValue;
   }
@@ -22,7 +20,7 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
 
   @Override
   public String getType() {
-    return type;
+    return "value";
   }
 
   @Override
