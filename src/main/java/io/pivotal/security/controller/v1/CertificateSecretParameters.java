@@ -1,6 +1,5 @@
 package io.pivotal.security.controller.v1;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.util.StringUtils;
@@ -12,32 +11,16 @@ import java.util.List;
 
 public class CertificateSecretParameters {
   // Required Certificate Parameters
-  @JsonProperty("organization")
   private String organization;
-
-  @JsonProperty("state")
   private String state;
-
-  @JsonProperty("country")
   private String country;
 
   // Optional Certificate Parameters
-  @JsonProperty("common_name")
   private String commonName;
-
-  @JsonProperty("organization_unit")
   private String organizationUnit;
-
-  @JsonProperty("locality")
   private String locality;
-
-  @JsonProperty("alternative_name")
   private String[] alternativeNames = new String[0];
-
-  @JsonProperty("key_length")
   private int keyLength = 2048;
-
-  @JsonProperty("duration")
   private int durationDays = 365;
 
   public CertificateSecretParameters setCommonName(String commonName) {

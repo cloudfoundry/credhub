@@ -1,24 +1,14 @@
 package io.pivotal.security.controller.v1;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class StringSecretParameters {
-
-  private int length;
-
   // Value Parameters
-  @JsonProperty("exclude_special")
+  private int length;
   private boolean excludeSpecial;
-
-  @JsonProperty("exclude_number")
   private boolean excludeNumber;
-
-  @JsonProperty("exclude_upper")
   private boolean excludeUpper;
-
-  @JsonProperty("exclude_lower")
   private boolean excludeLower;
 
   public int getLength() {
