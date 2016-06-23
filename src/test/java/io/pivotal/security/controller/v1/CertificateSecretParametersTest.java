@@ -158,32 +158,38 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
-  public void keyLengthsAreValidated() {
+  public void validKeyLengthsPassValidation() {
+    testKeyLength(2048, true);
+    testKeyLength(3072, true);
+    testKeyLength(4096, true);
+  }
+
+  @Test
+  public void tooShortKeyLengthFailsValidation() {
+    testKeyLength(1024, false);
+  }
+
+  @Test
+  public void tooLongKeyLengthFailsValidation() {
+    testKeyLength(9192, false);
+  }
+
+  @Test
+  public void invalidKeyLengthFailsValidation() {
+    testKeyLength(2222, false);
+  }
+
+  private void testKeyLength(int length, boolean pass) {
     CertificateSecretParameters params = new CertificateSecretParameters()
         .setOrganization("foo")
         .setState("bar")
         .setCountry("baz");
 
-    params.validate();
+    if (!pass) {
+      thrown.expectMessage("error.invalid_key_length");
+    }
 
-    params.setKeyLength(2048);
-    params.validate();
-
-    params.setKeyLength(3072);
-    params.validate();
-
-    params.setKeyLength(4096);
-    params.validate();
-
-    thrown.expect(ValidationException.class);
-    thrown.expectMessage("error.invalid_key_length");
-    params.setKeyLength(1024);
-    params.validate();
-
-    params.setKeyLength(5000);
-    params.validate();
-
-    params.setKeyLength(2222);
+    params.setKeyLength(length);
     params.validate();
   }
 
