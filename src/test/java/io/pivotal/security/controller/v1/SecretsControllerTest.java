@@ -91,7 +91,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void validPutSecret() throws Exception {
+  public void validPutStringSecret() throws Exception {
     String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
@@ -127,9 +127,10 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void validGetCertificateSecret() throws Exception {
     NamedCertificateSecret certificateSecret = new NamedCertificateSecret("whatever")
-        .setCa("get-ca")
-        .setPub("get-pub")
-        .setPriv("get-priv");
+        .setCa("get-ca");
+
+    certificateSecret.setPub("get-pub");
+    certificateSecret.setPriv("get-priv");
 
     secretRepository.save(certificateSecret);
 
