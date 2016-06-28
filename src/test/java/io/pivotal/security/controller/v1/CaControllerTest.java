@@ -2,10 +2,11 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
-import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.view.RootCertificateSecret;
+import io.pivotal.security.view.CertificateAuthority;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -39,7 +40,10 @@ public class CaControllerTest extends MockitoSpringTest {
   protected ConfigurableWebApplicationContext context;
 
   @Autowired
-  private InMemorySecretRepository caSecretRepository;
+  private InMemorySecretRepository secretRepository;
+
+  @Autowired
+  private InMemoryAuthorityRepository caAuthorityRepository;
 
   @InjectMocks
   @Autowired
@@ -71,9 +75,10 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    RootCertificateSecret expected = new RootCertificateSecret("public_key", "private_key");
-    NamedCertificateSecret saved = (NamedCertificateSecret)caSecretRepository.findOneByName("ca-identifier");
-    Assert.assertThat(new RootCertificateSecret(saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
+    CertificateAuthority expected = new CertificateAuthority("public_key", "private_key");
+    NamedCertificateAuthority saved = (NamedCertificateAuthority) caAuthorityRepository.findOneByName("ca-identifier");
+    Assert.assertThat(new CertificateAuthority(saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
+    Assert.assertNull(secretRepository.findOneByName("ca-identifier"));
   }
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {

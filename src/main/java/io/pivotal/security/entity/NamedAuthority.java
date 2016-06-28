@@ -9,13 +9,13 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "NamedSecret")
+@Table(name = "NamedAuthority")
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name="type", discriminatorType = DiscriminatorType.STRING)
-abstract public class NamedSecret<T> {
+abstract public class NamedAuthority<T> {
   @Id
-  @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
+  @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
 
   @Column(unique = true, nullable = false)
@@ -26,10 +26,10 @@ abstract public class NamedSecret<T> {
   @LastModifiedDate
   private LocalDateTime updatedAt;
 
-  public NamedSecret() {
+  public NamedAuthority() {
   }
 
-  public NamedSecret(String name) {
+  public NamedAuthority(String name) {
     this.setName(name);
   }
 

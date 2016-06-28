@@ -2,14 +2,13 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RootCertificateBody {
-
+public class CertificateAuthorityBody {
   @JsonProperty("public")
   private String pub;
   @JsonProperty("private")
   private String priv;
 
-  public RootCertificateBody(String pub, String priv) {
+  public CertificateAuthorityBody(String pub, String priv) {
     this.setPub(pub);
     this.setPriv(priv);
   }

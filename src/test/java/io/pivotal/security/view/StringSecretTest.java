@@ -1,7 +1,6 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.entity.NamedStringSecret;
-import io.pivotal.security.view.StringSecret;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -61,8 +61,6 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
 
   @Override
   public CertificateSecret generateView() {
-    CertificateSecret certificateSecret = new CertificateSecret(ca, pub, priv);
-    certificateSecret.setUpdatedAt(getUpdatedAt());
-    return certificateSecret;
+    return new CertificateSecret(ca, pub, priv).setUpdatedAt(getUpdatedAt());
   }
 }

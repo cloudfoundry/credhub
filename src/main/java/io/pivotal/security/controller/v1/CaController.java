@@ -3,9 +3,9 @@ package io.pivotal.security.controller.v1;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.repository.InMemorySecretRepository;
-import io.pivotal.security.view.RootCertificateSecret;
+import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.repository.InMemoryAuthorityRepository;
+import io.pivotal.security.view.CertificateAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +25,7 @@ public class CaController {
   Configuration jsonPathConfiguration;
 
   @Autowired
-  InMemorySecretRepository caRepository;
+  InMemoryAuthorityRepository caRepository;
 
   @PostConstruct
   public void init() {
@@ -35,16 +35,16 @@ public class CaController {
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     // make view
-    RootCertificateSecret rootCertificateSecret = new RootCertificateSecret(parsed.read("$.root.public"), parsed.read("$.root.private"));
+    CertificateAuthority certificateAuthority = new CertificateAuthority(parsed.read("$.root.public"), parsed.read("$.root.private"));
 
     // make entity from view
-    NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret(caPath);
-    rootCertificateSecret.populateEntity(namedCertificateSecret);
+    NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
+    certificateAuthority.populateEntity(namedCertificateAuthority);
 
     // store entity
-    caRepository.save(namedCertificateSecret);
+    caRepository.save(namedCertificateAuthority);
     // return view
-    return new ResponseEntity<>(rootCertificateSecret, HttpStatus.OK);
+    return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class})

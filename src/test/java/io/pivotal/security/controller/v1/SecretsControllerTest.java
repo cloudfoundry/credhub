@@ -7,6 +7,7 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
@@ -60,6 +61,9 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Autowired
   private InMemorySecretRepository secretRepository;
+
+  @Autowired
+  private InMemoryAuthorityRepository caAuthorityRepository;
 
   @InjectMocks
   @Autowired
@@ -127,10 +131,9 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void validGetCertificateSecret() throws Exception {
     NamedCertificateSecret certificateSecret = new NamedCertificateSecret("whatever")
-        .setCa("get-ca");
-
-    certificateSecret.setPub("get-pub");
-    certificateSecret.setPriv("get-priv");
+        .setCa("get-ca")
+        .setPub("get-pub")
+        .setPriv("get-priv");
 
     secretRepository.save(certificateSecret);
 
@@ -155,6 +158,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
     CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv").setUpdatedAt(frozenTime);
     Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
+    Assert.assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
   }
 
   @Test

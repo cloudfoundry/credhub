@@ -34,7 +34,7 @@ public class NamedSecretTest {
   @Before
   public void setUp() throws Exception {
     freeze();
-    secret = NamedCertificateSecret.make("foo", "ca", "pub", "priv");
+    secret = io.pivotal.security.entity.NamedCertificateSecret.make("foo", "ca", "pub", "priv");
   }
 
   private void freeze() {
