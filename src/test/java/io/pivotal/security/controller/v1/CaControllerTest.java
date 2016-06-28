@@ -2,11 +2,10 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
+import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.view.RootCertificateBody;
 import io.pivotal.security.view.RootCertificateSecret;
-import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.After;
 import org.junit.Assert;
@@ -26,7 +25,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
-import static org.junit.Assert.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -74,7 +72,8 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().json(requestJson));
 
     RootCertificateSecret expected = new RootCertificateSecret("public_key", "private_key");
-    Assert.assertThat(caSecretRepository.findOneByName("ca-identifier").generateView(), BeanMatchers.theSameAs(expected));
+    NamedCertificateSecret saved = (NamedCertificateSecret)caSecretRepository.findOneByName("ca-identifier");
+    Assert.assertThat(new RootCertificateSecret(saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
   }
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {

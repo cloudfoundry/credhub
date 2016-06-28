@@ -2,9 +2,8 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedRootCertificateSecret;
 
-public class RootCertificateSecret extends Secret<NamedRootCertificateSecret, RootCertificateSecret> {
+public class RootCertificateSecret extends Secret<NamedCertificateSecret, RootCertificateSecret> {
 
   @JsonProperty("root")
   private RootCertificateBody rootCertificateBody;
@@ -21,7 +20,7 @@ public class RootCertificateSecret extends Secret<NamedRootCertificateSecret, Ro
   }
 
   @Override
-  public void populateEntity(NamedRootCertificateSecret entity) {
+  public void populateEntity(NamedCertificateSecret entity) {
     entity.setPub(getRootCertificateBody().getPub())
         .setPriv(getRootCertificateBody().getPriv());
   }

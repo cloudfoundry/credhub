@@ -4,7 +4,6 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedRootCertificateSecret;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import io.pivotal.security.view.RootCertificateSecret;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +38,11 @@ public class CaController {
     RootCertificateSecret rootCertificateSecret = new RootCertificateSecret(parsed.read("$.root.public"), parsed.read("$.root.private"));
 
     // make entity from view
-    NamedRootCertificateSecret namedRootCertificateSecret = new NamedRootCertificateSecret(caPath);
-    rootCertificateSecret.populateEntity(namedRootCertificateSecret);
+    NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret(caPath);
+    rootCertificateSecret.populateEntity(namedCertificateSecret);
 
     // store entity
-    caRepository.save(namedRootCertificateSecret);
+    caRepository.save(namedCertificateSecret);
     // return view
     return new ResponseEntity<>(rootCertificateSecret, HttpStatus.OK);
   }

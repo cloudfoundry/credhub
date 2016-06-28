@@ -31,8 +31,7 @@ public class NamedCertificateSecretTest {
   @Test
   public void convertToModel_setsUpdatedAtFromEntity() {
     LocalDateTime now = LocalDateTime.now();
-    NamedCertificateSecret subject = new NamedCertificateSecret("Foo")
-        .setUpdatedAt(now);
+    NamedCertificateSecret subject = new NamedCertificateSecret("Foo").setUpdatedAt(now);
     CertificateSecret actual = subject.generateView();
     assertThat(actual.getUpdatedAt(), equalTo(now));
   }
