@@ -33,18 +33,22 @@ public class CaController {
 
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
-    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    // make view
-    CertificateAuthority certificateAuthority = new CertificateAuthority(parsed.read("$.root.public"), parsed.read("$.root.private"));
+    CertificateAuthority certificateAuthority = createCertificateAuthorityViewFromJson(requestBody);
+    NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
 
-    // make entity from view
+    caRepository.save(namedCertificateAuthority);
+    return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
+  }
+
+  private NamedCertificateAuthority createEntityFromView(@PathVariable String caPath, CertificateAuthority certificateAuthority) {
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     certificateAuthority.populateEntity(namedCertificateAuthority);
+    return namedCertificateAuthority;
+  }
 
-    // store entity
-    caRepository.save(namedCertificateAuthority);
-    // return view
-    return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
+  private CertificateAuthority createCertificateAuthorityViewFromJson(InputStream requestBody) {
+    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
+    return new CertificateAuthority(parsed.read("$.root.public"), parsed.read("$.root.private"));
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class})
