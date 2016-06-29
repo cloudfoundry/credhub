@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -79,6 +80,39 @@ public class CaControllerTest extends MockitoSpringTest {
     NamedCertificateAuthority saved = (NamedCertificateAuthority) caAuthorityRepository.findOneByName("ca-identifier");
     Assert.assertThat(new CertificateAuthority(saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
     Assert.assertNull(secretRepository.findOneByName("ca-identifier"));
+  }
+
+  @Test
+  public void validGetReturnsCertificateAuthority() throws Exception {
+    String requestJson = "{\"root\":{\"public\":\"my_public_key\",\"private\":\"my_private_key\"}}";
+    NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
+    namedCertificateAuthority.setPub("my_public_key");
+    namedCertificateAuthority.setPriv("my_private_key");
+    caAuthorityRepository.save(namedCertificateAuthority);
+
+    RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(requestJson));
+  }
+
+  @Test
+  public void getCertificateAuthority_whenNotFound_returns404() throws Exception {
+    String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(notFoundJson));
+  }
+
+  private RequestBuilder getRequestBuilder(String path) {
+    return get(path)
+        .contentType(MediaType.APPLICATION_JSON_UTF8);
   }
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {

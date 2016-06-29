@@ -23,6 +23,7 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
         .setPriv(priv);
   }
 
+  @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
   }
 
