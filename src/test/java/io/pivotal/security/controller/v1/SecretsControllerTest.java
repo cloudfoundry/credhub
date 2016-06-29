@@ -110,6 +110,28 @@ public class SecretsControllerTest extends MockitoSpringTest {
     Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(expected));
   }
 
+  @Test
+  public void validPutStringSecret_twice() throws Exception {
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
+    String requestJson2 = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents 2\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(requestJson));
+
+    RequestBuilder requestBuilder2 = putRequestBuilder("/api/v1/data/secret-identifier", requestJson2);
+    mockMvc.perform(requestBuilder2)
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(requestJson2));
+
+    StringSecret expected = new StringSecret("secret contents 2");
+    expected.setUpdatedAt(frozenTime);
+    Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(expected));
+  }
+
   private String getUpdatedAtJson() {
     return "\"updated_at\":\"" + frozenTime.format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
   }

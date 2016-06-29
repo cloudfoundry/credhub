@@ -1,7 +1,5 @@
 package io.pivotal.security.controller.v1;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.util.StringUtils;
 
 import javax.validation.ValidationException;

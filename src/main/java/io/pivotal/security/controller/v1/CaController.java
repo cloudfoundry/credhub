@@ -5,6 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.mapper.CertificateAuthorityRequestTranslator;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class CaController {
   @Autowired
   private MessageSource messageSource;
 
+  @Autowired
+  CertificateAuthorityRequestTranslator certificateAuthorityRequestTranslator;
+
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -43,7 +47,8 @@ public class CaController {
 
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
-    CertificateAuthority certificateAuthority = createCertificateAuthorityViewFromJson(requestBody);
+    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
+    CertificateAuthority certificateAuthority = certificateAuthorityRequestTranslator.createAuthorityFromJson(parsed);
     NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
 
     caRepository.save(namedCertificateAuthority);
@@ -61,14 +66,12 @@ public class CaController {
   }
 
   private NamedCertificateAuthority createEntityFromView(@PathVariable String caPath, CertificateAuthority certificateAuthority) {
-    NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
+    NamedCertificateAuthority namedCertificateAuthority = (NamedCertificateAuthority) caRepository.findOneByName(caPath);
+    if (namedCertificateAuthority == null) {
+      namedCertificateAuthority = certificateAuthorityRequestTranslator.makeEntity(caPath);
+    }
     certificateAuthority.populateEntity(namedCertificateAuthority);
     return namedCertificateAuthority;
-  }
-
-  private CertificateAuthority createCertificateAuthorityViewFromJson(InputStream requestBody) {
-    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    return new CertificateAuthority(parsed.read("$.root.public"), parsed.read("$.root.private"));
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class})
