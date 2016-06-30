@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -80,7 +81,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutWithTypeRootCa() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"public_key\",\"private\":\"private_key\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"public\":\"public_key\",\"private\":\"private_key\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
@@ -89,9 +90,9 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    CertificateAuthority expected = new CertificateAuthority("root","public_key", "private_key");
-    NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
-    Assert.assertThat(new CertificateAuthority(saved.getType(), saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
+    CertificateAuthority expected = new CertificateAuthority("root", "public_key", "private_key");
+    expected.setUpdatedAt(frozenTime);
+    Assert.assertThat(caRepository.findOneByName("ca-identifier").generateView(), BeanMatchers.theSameAs(expected));
     Assert.assertNull(secretRepository.findOneByName("ca-identifier"));
   }
 
@@ -111,7 +112,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validGetReturnsCertificateAuthority() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"my_public_key\",\"private\":\"my_private_key\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"public\":\"my_public_key\",\"private\":\"my_private_key\"}}";
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
     namedCertificateAuthority.setType("root");
     namedCertificateAuthority.setPub("my_public_key");
@@ -125,6 +126,7 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().json(requestJson));
   }
 
+  @Test
   public void validPutCertificateAuthority_twice() throws Exception {
     String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"pub\",\"private\":\"priv\"}}";
     String requestJson2 = "{\"type\":\"root\",\"root\":{\"public\":\"pub 2\",\"private\":\"priv 2\"}}";
@@ -232,6 +234,10 @@ public class CaControllerTest extends MockitoSpringTest {
 
   private String json(Object o) throws IOException {
     return objectMapper.writeValueAsString(o);
+  }
+
+  private String getUpdatedAtJson() {
+    return "\"updated_at\":\"" + frozenTime.format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
   }
 
   private void freeze() {

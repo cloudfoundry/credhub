@@ -54,6 +54,7 @@ public class CaController {
       certificateAuthority = certificateAuthorityRequestTranslator.createAuthorityFromJson(parsed);
       NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
       caRepository.save(namedCertificateAuthority);
+      certificateAuthority.setUpdatedAt(namedCertificateAuthority.getUpdatedAt());
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
