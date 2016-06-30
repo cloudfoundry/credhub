@@ -2,6 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.InvalidJsonException;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
@@ -47,18 +48,22 @@ public class CaController {
 
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
-    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    CertificateAuthority certificateAuthority = certificateAuthorityRequestTranslator.createAuthorityFromJson(parsed);
-    NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
+    CertificateAuthority certificateAuthority;
+    try {
+      certificateAuthority = createCertificateAuthorityViewFromJson(requestBody);
+      NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
+      caRepository.save(namedCertificateAuthority);
+    } catch (ValidationException ve) {
+      return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 
-    caRepository.save(namedCertificateAuthority);
     return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
   }
 
   @RequestMapping(path = "/{caPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String caPath) {
     NamedAuthority namedAuthority = caRepository.findOneByName(caPath);
-    if(namedAuthority == null){
+    if (namedAuthority == null) {
       return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
     }
     CertificateAuthority certificateAuthority = (CertificateAuthority) namedAuthority.generateView();
@@ -74,7 +79,17 @@ public class CaController {
     return namedCertificateAuthority;
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class})
+  private CertificateAuthority createCertificateAuthorityViewFromJson(InputStream requestBody) throws ValidationException {
+    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
+    String pub = parsed.read("$.root.public");
+    String priv = parsed.read("$.root.private");
+    if (pub == null || priv == null) {
+      throw new ValidationException("error.missing_ca_credentials");
+    }
+    return new CertificateAuthority(pub, priv);
+  }
+
+  @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleHttpMessageNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);

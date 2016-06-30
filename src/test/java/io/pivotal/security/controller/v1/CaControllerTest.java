@@ -146,21 +146,73 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().json(notFoundJson));
   }
 
+  @Test
+  public void putCert_withOnlyPublic_returnsError() throws Exception {
+    String requestJson = "{\"root\":{\"public\":\"my_public_key\"}}";
+    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(notFoundJson));
+  }
+
+  @Test
+  public void putCert_withOnlyPrivate_returnsError() throws Exception {
+    String requestJson = "{\"root\":{\"private\":\"my_private_key\"}}";
+    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(notFoundJson));
+  }
+
+  @Test
+  public void putCert_withoutKeys_returnsError() throws Exception {
+    String requestJson = "{\"root\":{}}";
+    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(notFoundJson));
+  }
+
+  @Test
+  public void putCert_withEmptyRequest_returnsError() throws Exception {
+    String requestJson = "{}";
+    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(notFoundJson));
+  }
+
+  @Test
+  public void putCert_withGarbageRequest_returnsError() throws Exception {
+    String requestJson = "{\"root\": }";
+
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest());
+  }
+
   private RequestBuilder getRequestBuilder(String path) {
     return get(path)
         .contentType(MediaType.APPLICATION_JSON_UTF8);
   }
-
-  @Test
-  public void canStoreNullsInCertificateAuthority() throws Exception {
-    permutateTwoEmptiesTest(null);
-  }
-
-  @Test
-  public void canStoreEmptyStringsAsNullsInCertificateAuthority() throws Exception {
-    permutateTwoEmptiesTest("");
-  }
-
+  
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
     return put(path)
         .content(requestBody)
@@ -174,63 +226,5 @@ public class CaControllerTest extends MockitoSpringTest {
   private void freeze() {
     frozenTime = LocalDateTime.now(utc);
     currentTimeProvider.setOverrideTime(frozenTime);
-  }
-
-  private void permutateTwoEmptiesTest(String emptyValue) throws Exception {
-    new PutCaSimulator(emptyValue, "my-priv")
-        .setExpectation(200)
-        .execute();
-
-    new PutCaSimulator("my-pub", emptyValue)
-        .setExpectation(200)
-        .execute();
-  }
-
-  class PutCaSimulator {
-    private final String pub;
-    private final String priv;
-    private int statusCode;
-    private String badResponseJson;
-
-    public PutCaSimulator(String pub, String priv) {
-      this.pub = pub;
-      this.priv = priv;
-    }
-
-    public void execute() throws Exception {
-      CertificateAuthority certificateAuthorityForRequest = new CertificateAuthority(pub, priv);
-      CertificateAuthority certificateAuthorityForResponse = new CertificateAuthority(
-          transformEmptyToNull(pub),
-          transformEmptyToNull(priv))
-          .setUpdatedAt(frozenTime);
-
-      String requestJson = json(certificateAuthorityForRequest);
-
-      boolean isHttpOk = statusCode == 200;
-      ResultMatcher expectedStatus = isHttpOk ? status().isOk() : status().isBadRequest();
-      ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/ca/whatever", requestJson)).andExpect(expectedStatus);
-      NamedAuthority certificateFromDb = caRepository.findOneByName("whatever");
-
-      if (isHttpOk) {
-        assertThat(certificateFromDb.generateView(), BeanMatchers.theSameAs(certificateAuthorityForResponse));
-      } else {
-        assertNull(certificateFromDb);
-        result.andExpect(content().json(badResponseJson));
-      }
-    }
-
-    private String transformEmptyToNull(String param) {
-      return "".equals(param) ? null : param;
-    }
-
-    public PutCaSimulator setExpectation(int statusCode) {
-      return setExpectation(statusCode, null);
-    }
-
-    public PutCaSimulator setExpectation(int statusCode, String badResponseJson) {
-      this.statusCode = statusCode;
-      this.badResponseJson = badResponseJson;
-      return this;
-    }
   }
 }
