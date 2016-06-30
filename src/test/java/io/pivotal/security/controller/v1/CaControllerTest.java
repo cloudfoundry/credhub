@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
-import io.pivotal.security.entity.NamedAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.InMemorySecretRepository;
@@ -24,8 +23,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
@@ -33,11 +30,10 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.UUID;
 
-import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -83,8 +79,8 @@ public class CaControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void validPutRootCa() throws Exception {
-    String requestJson = "{\"root\":{\"public\":\"public_key\",\"private\":\"private_key\"}}";
+  public void validPutWithTypeRootCa() throws Exception {
+    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"public_key\",\"private\":\"private_key\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
@@ -93,16 +89,31 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    CertificateAuthority expected = new CertificateAuthority("public_key", "private_key");
+    CertificateAuthority expected = new CertificateAuthority("root","public_key", "private_key");
     NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
-    Assert.assertThat(new CertificateAuthority(saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
+    Assert.assertThat(new CertificateAuthority(saved.getType(), saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
     Assert.assertNull(secretRepository.findOneByName("ca-identifier"));
   }
 
   @Test
+  public void putWithInvalidTypeRootCaShouldThrowError() throws Exception {
+    String uuid = UUID.randomUUID().toString();
+    String requestJson = "{\"type\":" + uuid + ",\"root\":{\"public\":\"public_key\",\"private\":\"private_key\"}}";
+
+    String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(invalidTypeJson));
+  }
+
+  @Test
   public void validGetReturnsCertificateAuthority() throws Exception {
-    String requestJson = "{\"root\":{\"public\":\"my_public_key\",\"private\":\"my_private_key\"}}";
+    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"my_public_key\",\"private\":\"my_private_key\"}}";
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
+    namedCertificateAuthority.setType("root");
     namedCertificateAuthority.setPub("my_public_key");
     namedCertificateAuthority.setPriv("my_private_key");
     caRepository.save(namedCertificateAuthority);
@@ -115,8 +126,8 @@ public class CaControllerTest extends MockitoSpringTest {
   }
 
   public void validPutCertificateAuthority_twice() throws Exception {
-    String requestJson = "{\"root\":{\"public\":\"pub\",\"private\":\"priv\"}}";
-    String requestJson2 = "{\"root\":{\"public\":\"pub 2\",\"private\":\"priv 2\"}}";
+    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"pub\",\"private\":\"priv\"}}";
+    String requestJson2 = "{\"type\":\"root\",\"root\":{\"public\":\"pub 2\",\"private\":\"priv 2\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
     mockMvc.perform(requestBuilder)
@@ -129,9 +140,9 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson2));
 
-    CertificateAuthority expected = new CertificateAuthority("pub 2", "priv 2");
+    CertificateAuthority expected = new CertificateAuthority("root", "pub 2", "priv 2");
     NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
-    Assert.assertThat(new CertificateAuthority(saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
+    Assert.assertThat(new CertificateAuthority(saved.getType(), saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
   }
 
   @Test
@@ -148,7 +159,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void putCert_withOnlyPublic_returnsError() throws Exception {
-    String requestJson = "{\"root\":{\"public\":\"my_public_key\"}}";
+    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"my_public_key\"}}";
     String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
@@ -161,7 +172,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void putCert_withOnlyPrivate_returnsError() throws Exception {
-    String requestJson = "{\"root\":{\"private\":\"my_private_key\"}}";
+    String requestJson = "{\"type\":\"root\",\"root\":{\"private\":\"my_private_key\"}}";
     String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
@@ -174,7 +185,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void putCert_withoutKeys_returnsError() throws Exception {
-    String requestJson = "{\"root\":{}}";
+    String requestJson = "{\"type\":\"root\",\"root\":{}}";
     String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
@@ -187,7 +198,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void putCert_withEmptyRequest_returnsError() throws Exception {
-    String requestJson = "{}";
+    String requestJson = "{\"type\":\"root\"}";
     String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
@@ -212,7 +223,7 @@ public class CaControllerTest extends MockitoSpringTest {
     return get(path)
         .contentType(MediaType.APPLICATION_JSON_UTF8);
   }
-  
+
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
     return put(path)
         .content(requestBody)

@@ -92,7 +92,7 @@ public class SecretsController {
 
     try {
       if (requestTranslator == null) {
-        throw new ValidationException("error.secret_type_invalid");
+        throw new ValidationException("error.type_invalid");
       }
       Secret secret = requestTranslator.createSecretFromJson(parsed);
       if (secretFromDatabase == null) {

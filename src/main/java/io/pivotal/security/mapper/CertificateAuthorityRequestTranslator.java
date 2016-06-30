@@ -13,11 +13,18 @@ public class CertificateAuthorityRequestTranslator implements AuthoritySetterReq
 
   @Override
   public CertificateAuthority createAuthorityFromJson(DocumentContext parsed) throws ValidationException {
+    String type = parsed.read("$.type");
+    if (!"root".equals(type)) {
+      throw new ValidationException("error.type_invalid");
+    }
     String pub = parsed.read("$.root.public");
     String priv = parsed.read("$.root.private");
     pub = StringUtils.isEmpty(pub) ? null : pub;
     priv = StringUtils.isEmpty(priv) ? null : priv;
-    return new CertificateAuthority(pub, priv);
+    if (pub == null || priv == null) {
+      throw new ValidationException("error.missing_ca_credentials");
+    }
+    return new CertificateAuthority(type, pub, priv);
   }
 
   @Override

@@ -12,16 +12,13 @@ import javax.persistence.Table;
 @DiscriminatorValue("ca")
 public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAuthority> {
   @Column(nullable = true, length = 7000)
+  private String type;
+
+  @Column(nullable = true, length = 7000)
   private String pub;
 
   @Column(nullable = true, length = 7000)
   private String priv;
-
-  public static NamedCertificateAuthority make(String name, String ca, String pub, String priv) {
-    return new NamedCertificateAuthority(name)
-        .setPub(pub)
-        .setPriv(priv);
-  }
 
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
@@ -49,8 +46,17 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
     return this;
   }
 
+  public String getType() {
+    return type;
+  }
+
+  public NamedCertificateAuthority setType(String type){
+    this.type = type;
+    return this;
+  }
+
   @Override
   public CertificateAuthority generateView() {
-    return new CertificateAuthority(pub, priv).setUpdatedAt(getUpdatedAt());
+    return new CertificateAuthority(type, pub, priv).setUpdatedAt(getUpdatedAt());
   }
 }

@@ -4,10 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 
 public class CertificateAuthority extends Authority<NamedCertificateAuthority, CertificateAuthority> {
+
+  @JsonProperty("type")
+  private String type;
+
   @JsonProperty("root")
   private CertificateAuthorityBody certificateAuthorityBody;
 
-  public CertificateAuthority(String pub, String priv) {
+  public CertificateAuthority(String type, String pub, String priv) {
+    setType(type);
     setCertificateBody(new CertificateAuthorityBody(pub, priv));
   }
 
@@ -15,7 +20,8 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
 
   @Override
   public void populateEntity(NamedCertificateAuthority entity) {
-    entity.setPub(getCertificateAuthorityBody().getPub())
+    entity.setType(getType())
+        .setPub(getCertificateAuthorityBody().getPub())
         .setPriv(getCertificateAuthorityBody().getPriv());
   }
 
@@ -25,5 +31,12 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
 
   public void setCertificateBody(CertificateAuthorityBody certificateAuthorityBody) {
     this.certificateAuthorityBody = certificateAuthorityBody;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+  public String getType() {
+    return type;
   }
 }

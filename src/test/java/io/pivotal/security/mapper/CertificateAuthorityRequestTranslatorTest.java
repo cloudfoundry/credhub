@@ -12,7 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.validation.ValidationException;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -22,18 +26,37 @@ public class CertificateAuthorityRequestTranslatorTest {
 
   @Test
   public void doValidScenarios() {
-    doTest(new CertificateAuthority(null, "a"), "", "a");
-    doTest(new CertificateAuthority("b", null), "b", "");
-    doTest(new CertificateAuthority(null, null), "", "");
-    doTest(new CertificateAuthority(null, "a"),  "", "a");
-    doTest(new CertificateAuthority("b", null),  "b", "");
+    doTestValid(new CertificateAuthority("root", "a", "b"), "a", "b");
   }
 
-  private void doTest(CertificateAuthority expected, String pub, String priv) {
-    String requestJson = "{\"root\":{\"public\":\"" + pub + "\",\"private\":\"" + priv + "\"}}";
+  @Test
+  public void doInvalidScenarios() throws ValidationException {
+    doTestInvalid("root", "", "a", "error.missing_ca_credentials");
+    doTestInvalid("root", "b", "", "error.missing_ca_credentials");
+    doTestInvalid("root", "", "", "error.missing_ca_credentials");
+    doTestInvalid("root",  "", "a", "error.missing_ca_credentials");
+    doTestInvalid("root",  "b", "", "error.missing_ca_credentials");
+    doTestInvalid("invalid_ca_type",  "b", "a", "error.type_invalid");
+  }
+
+  private void doTestValid(CertificateAuthority expected, String pub, String priv) {
+    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"" + pub + "\",\"private\":\"" + priv + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     CertificateAuthority actual = new CertificateAuthorityRequestTranslator().createAuthorityFromJson(parsed);
     assertThat(actual, BeanMatchers.theSameAs(expected));
+  }
+
+  private void doTestInvalid(String type, String pub, String priv, String expectedErrorMessage) throws ValidationException {
+    String requestJson = "{\"type\":" + type + ",\"root\":{\"public\":\"" + pub + "\",\"private\":\"" + priv + "\"}}";
+
+    DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+    try {
+      new CertificateAuthorityRequestTranslator().createAuthorityFromJson(parsed);
+      fail();
+    }
+    catch (ValidationException ve) {
+      assertThat(ve.getMessage(), equalTo(expectedErrorMessage));
+    }
   }
 }

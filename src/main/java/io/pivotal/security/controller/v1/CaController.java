@@ -48,9 +48,10 @@ public class CaController {
 
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
+    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     CertificateAuthority certificateAuthority;
     try {
-      certificateAuthority = createCertificateAuthorityViewFromJson(requestBody);
+      certificateAuthority = certificateAuthorityRequestTranslator.createAuthorityFromJson(parsed);
       NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
       caRepository.save(namedCertificateAuthority);
     } catch (ValidationException ve) {
@@ -77,16 +78,6 @@ public class CaController {
     }
     certificateAuthority.populateEntity(namedCertificateAuthority);
     return namedCertificateAuthority;
-  }
-
-  private CertificateAuthority createCertificateAuthorityViewFromJson(InputStream requestBody) throws ValidationException {
-    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    String pub = parsed.read("$.root.public");
-    String priv = parsed.read("$.root.private");
-    if (pub == null || priv == null) {
-      throw new ValidationException("error.missing_ca_credentials");
-    }
-    return new CertificateAuthority(pub, priv);
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
