@@ -1,11 +1,45 @@
 # PCF Credential Manager
 =========================
-This server helps manage secrets like passwords, certs etc., offering rest apis for access.
+This "credhub" server helps manage secrets like passwords and certificates, 
+offering rest apis for access to get/set/generate such secrets.
+ 
+Credhub is intended to live within a Bosh Director, typically, providing
+ real credentials to the Bosh Director that it can substitute for 
+ variable references.  This preserves security by obviating the need to check into git such credentials,
+ within a Bosh manifest.
 
 See additional repos for more info:
 
-* cm-cli :     command line interface in golang
+* cm-cli :     command line interface for credhub, coded in golang
 * cm-release : provides wrapper around credhub server so that bosh director can use it as a release within the director itself
-* sec-eng-deployment-credential-manager : cloud formation and bosh-init manifest
+* sec-eng-deployment-credential-manager : cloud formation and bosh-init manifest template
 * sec-eng-ci : concourse pipelines, including credential-manager.yml
+
+In order to init a Bosh Director that will contain the latest Credhub, the following 
+steps assume that the above repos are cloned as siblings in a ~/workspace/ directory:
+
+* create cm release
+    - cd cm-release
+    - rm -rf dev_releases/credhub/*
+    - ./scripts/update
+    - export SEC_ENG_CI_REPO=$HOME/workspace/sec-eng-ci
+    - export RELEASE_DIR=$HOME/workspace/cm-release
+    - bosh create release --with-tarball --name credhub --force --timestamp-version
+* tell bosh about this new release
+    - cd sec-eng-deployment-credential-manager/deployments/bosh
+    - export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.<something>.tgz
+    - erb bosh.yml.erb > bosh.yml
+    - (edit that bosh.yml to add cert & private key, using strings like:
+
+
+    jobs:
+        properties:
+            credhub:
+                ssl:
+                    certificate: |
+                              -----BEGIN CERTIFICATE----- 
+                              ...
+                    private_key: |
+                              ----- START PRIVATE KEY ----- 
+                              ...
 
