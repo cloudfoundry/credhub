@@ -54,6 +54,7 @@ public class SignedCertificateGeneratorTest {
       Spectrum.Value<X509Certificate> generatedCert = Spectrum.value(X509Certificate.class);
       Spectrum.Value<KeyPair> issuerKeyPair = Spectrum.value(KeyPair.class);
       Spectrum.Value<X500Principal> caDn = Spectrum.value(X500Principal.class);
+      Spectrum.Value<KeyPair> certKeyPair = Spectrum.value(KeyPair.class);
 
       beforeEach(() -> {
         caDn.value = new X500Principal("O=foo,ST=bar,C=mars");
@@ -63,7 +64,7 @@ public class SignedCertificateGeneratorTest {
         issuerKeyPair.value = generator.generateKeyPair();
         PrivateKey issuerPrivateKey = issuerKeyPair.value.getPrivate();
 
-        KeyPair certKeyPair = generator.generateKeyPair();
+        certKeyPair.value = generator.generateKeyPair();
         CertificateSecretParameters inputParameters = new CertificateSecretParameters();
         inputParameters.setCommonName("my test cert");
         inputParameters.setCountry("US");
@@ -71,7 +72,7 @@ public class SignedCertificateGeneratorTest {
         inputParameters.setOrganization("credhub");
         inputParameters.setDurationDays(10);
 
-        generatedCert.value = subject.get(caDn.value, issuerPrivateKey, certKeyPair, inputParameters);
+        generatedCert.value = subject.get(caDn.value, issuerPrivateKey, certKeyPair.value, inputParameters);
       });
 
       it("is not null", () -> {
@@ -94,6 +95,10 @@ public class SignedCertificateGeneratorTest {
 
       it("has a serial number of 1", () -> {
         assertThat(generatedCert.value.getSerialNumber(), equalTo(BigInteger.ONE));
+      });
+
+      it("contains the public key", () -> {
+        assertThat(generatedCert.value.getPublicKey(), equalTo(certKeyPair.value.getPublic()));
       });
 
       it("is part of a trust chain with the ca", () -> {
