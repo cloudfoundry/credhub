@@ -14,6 +14,7 @@ See additional repos for more info:
 * cm-release : provides wrapper around credhub server so that bosh director can use it as a release within the director itself
 * sec-eng-deployment-credential-manager : cloud formation and bosh-init manifest template
 * sec-eng-ci : concourse pipelines, including credential-manager.yml
+* cred-hub-acceptance-tests : integration tests written in golang.
 
 In order to init a Bosh Director that will contain the latest Credhub, the following 
 steps assume that the above repos are cloned as siblings in a ~/workspace/ directory:
