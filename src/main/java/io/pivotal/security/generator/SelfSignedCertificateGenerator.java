@@ -1,9 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +29,7 @@ public class SelfSignedCertificateGenerator {
     certGen.setSignatureAlgorithm("SHA256withRSA");
     certGen.setSerialNumber(BigInteger.valueOf(1));
 
-    final X500Principal dnName = new X500Principal(params.getDNString());
+    final X500Principal dnName = new X500Principal(params.getDN().toString());
     certGen.setIssuerDN(dnName);
     certGen.setSubjectDN(dnName);
 
@@ -40,6 +38,8 @@ public class SelfSignedCertificateGenerator {
     final Date later = Date.from(instant.plus(params.getDurationDays(), ChronoUnit.DAYS));
     certGen.setNotBefore(now);
     certGen.setNotAfter(later);
+
+    certGen.addExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(true));
 
     addAlternativeNames(params, certGen);
 
@@ -65,6 +65,7 @@ public class SelfSignedCertificateGenerator {
         throw new ValidationException("error.invalid_alternate_name");
       }
     }
+    //TODO: don't add the extension if there are no alternative names
     certGen.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(genNames));
   }
 }

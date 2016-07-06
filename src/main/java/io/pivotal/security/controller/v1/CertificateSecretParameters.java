@@ -1,5 +1,8 @@
 package io.pivotal.security.controller.v1;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.util.StringUtils;
 
 import javax.validation.ValidationException;
@@ -73,23 +76,23 @@ public class CertificateSecretParameters {
     }
   }
 
-  public String getDNString() {
-    final StringBuilder strb = new StringBuilder();
+  public X500Name getDN() {
+    X500NameBuilder builder = new X500NameBuilder();
 
-    strb.append("O=").append(organization)
-        .append(",ST=").append(state)
-        .append(",C=").append(country);
-
+    builder.addRDN(BCStyle.O, organization);
+    builder.addRDN(BCStyle.ST, state);
+    builder.addRDN(BCStyle.C, country);
     if (!StringUtils.isEmpty(commonName)) {
-      strb.append(",CN=").append(commonName);
+      builder.addRDN(BCStyle.CN, commonName);
     }
     if (!StringUtils.isEmpty(organizationUnit)) {
-      strb.append(",OU=").append(organizationUnit);
+      builder.addRDN(BCStyle.OU, organizationUnit);
     }
     if (!StringUtils.isEmpty(locality)) {
-      strb.append(",L=").append(locality);
+      builder.addRDN(BCStyle.L, locality);
     }
-    return strb.toString();
+
+    return builder.build();
   }
 
   public void addAlternativeName(String alternativeName) {

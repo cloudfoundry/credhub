@@ -33,7 +33,7 @@ public class CertificateSecretParametersTest {
     params.setCommonName("My Common Name");
     params.setLocality("My Locality");
 
-    assertThat(params.getDNString(), equalTo("O=My Organization,ST=My State,C=My Country,CN=My Common Name,OU=My Organization Unit,L=My Locality"));
+    assertThat(params.getDN().toString(), equalTo("O=My Organization,ST=My State,C=My Country,CN=My Common Name,OU=My Organization Unit,L=My Locality"));
   }
 
   @Test
@@ -43,7 +43,7 @@ public class CertificateSecretParametersTest {
     params.setState("My State");
     params.setOrganization("My Organization");
 
-    assertThat(params.getDNString(), equalTo("O=My Organization,ST=My State,C=My Country"));
+    assertThat(params.getDN().toString(), equalTo("O=My Organization,ST=My State,C=My Country"));
   }
 
   @Test

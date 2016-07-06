@@ -19,7 +19,10 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class SignedCertificateGenerator {
@@ -34,17 +37,23 @@ public class SignedCertificateGenerator {
   public X509Certificate get(X500Principal issuerDn, PrivateKey issuerKey, KeyPair keyPair, CertificateSecretParameters params) throws Exception {
     Instant now = timeProvider.getObject();
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
-    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(issuerKey);
+    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(issuerKey);
 
     X509CertificateHolder holder = new X509v3CertificateBuilder(
-        new X500Name(issuerDn.getName()),
+        asX500Name(issuerDn),
         BigInteger.valueOf(1),
         Date.from(now),
         Date.from(now.plus(Duration.ofDays(params.getDurationDays()))),
-        new X500Name(params.getDNString()),
+        params.getDN(),
         publicKeyInfo
     ).build(contentSigner);
 
     return new JcaX509CertificateConverter().setProvider("BC").getCertificate(holder);
+  }
+
+  private X500Name asX500Name(X500Principal x500Principal) {
+    List<String> rdns = Arrays.asList(x500Principal.getName().split(","));
+    Collections.reverse(rdns);
+    return new X500Name(String.join(",", rdns));
   }
 }

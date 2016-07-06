@@ -84,7 +84,7 @@ public class SignedCertificateGeneratorTest {
       });
 
       it("has the correct metadata", () -> {
-        assertThat(generatedCert.value.getIssuerX500Principal().getName(), equalTo("C=mars,ST=bar,O=foo"));
+        assertThat(generatedCert.value.getIssuerX500Principal(), equalTo(caDn.value));
         assertThat(generatedCert.value.getSubjectX500Principal().getName(), equalTo("CN=my test cert,C=US,ST=CA,O=credhub"));
       });
 
