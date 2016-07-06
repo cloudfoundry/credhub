@@ -20,6 +20,7 @@ public class CertificateSecretParameters {
   private String[] alternativeNames = new String[0];
   private int keyLength = 2048;
   private int durationDays = 365;
+  private String ca;
 
   public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
@@ -121,5 +122,13 @@ public class CertificateSecretParameters {
 
   public int getDurationDays() {
     return durationDays;
+  }
+
+  public String getCa() {
+    return ca;
+  }
+
+  public void setCa(String ca) {
+    this.ca = ca;
   }
 }

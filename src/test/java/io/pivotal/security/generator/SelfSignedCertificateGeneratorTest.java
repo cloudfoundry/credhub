@@ -27,10 +27,10 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-public class RootCertificateProviderTest {
+public class SelfSignedCertificateGeneratorTest {
 
-  @Autowired(required = true)
-  private RootCertificateProvider rootCertificateProvider;
+  @Autowired
+  private SelfSignedCertificateGenerator selfSignedCertificateGenerator;
   private static KeyPair keyPair;
 
   @BeforeClass
@@ -47,7 +47,7 @@ public class RootCertificateProviderTest {
     inputParameters.setCommonName("My Common Name");
 
     X500Principal expectedPrincipal = new X500Principal("O=my-org,ST=NY,C=USA,CN=My Common Name,OU=My Unit,L=My Locality");
-    X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
+    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
 
     actualCert.checkValidity();
     assertThat(actualCert, notNullValue());
@@ -66,7 +66,7 @@ public class RootCertificateProviderTest {
     inputParameters.addAlternativeName("foo.pivotal.io");
     inputParameters.addAlternativeName("*.pivotal.io");
 
-    X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
+    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
 
     actualCert.checkValidity();
     Collection<List<?>> subjectAlternativeNames = actualCert.getSubjectAlternativeNames();
@@ -86,7 +86,7 @@ public class RootCertificateProviderTest {
   public void canGenerateCertificateWithArbitraryDuration() throws Exception {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.setDurationDays(555);
-    X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
+    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
     checkDuration(actualCert, 555);
   }
 
@@ -94,7 +94,7 @@ public class RootCertificateProviderTest {
   public void zeroAlternateNamesYieldsEmptyArrayOfNames() throws Exception {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
 
-    X509Certificate actualCert = rootCertificateProvider.get(keyPair, inputParameters);
+    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
 
     actualCert.checkValidity();
     assertThat(actualCert.getSubjectAlternativeNames(), nullValue());
@@ -105,7 +105,7 @@ public class RootCertificateProviderTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("foo!@#$%^&*()_-+=.com");
 
-    rootCertificateProvider.get(keyPair, inputParameters);
+    selfSignedCertificateGenerator.get(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -113,7 +113,7 @@ public class RootCertificateProviderTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("foo pivotal.io");
 
-    rootCertificateProvider.get(keyPair, inputParameters);
+    selfSignedCertificateGenerator.get(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -121,7 +121,7 @@ public class RootCertificateProviderTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("1.2.3.999");
 
-    rootCertificateProvider.get(keyPair, inputParameters);
+    selfSignedCertificateGenerator.get(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -130,7 +130,7 @@ public class RootCertificateProviderTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("x@y.com");
 
-    rootCertificateProvider.get(keyPair, inputParameters);
+    selfSignedCertificateGenerator.get(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -139,7 +139,7 @@ public class RootCertificateProviderTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("https://foo.com");
 
-    rootCertificateProvider.get(keyPair, inputParameters);
+    selfSignedCertificateGenerator.get(keyPair, inputParameters);
   }
 
   private CertificateSecretParameters getMinimumCertificateSecretParameters() {

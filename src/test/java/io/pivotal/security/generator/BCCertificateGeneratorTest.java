@@ -2,10 +2,21 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
+import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v1CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,6 +33,7 @@ import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -29,6 +41,7 @@ import java.util.Date;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -44,7 +57,13 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
   KeyPairGenerator keyGenerator;
 
   @Mock
-  RootCertificateProvider rootCertificateProvider;
+  SelfSignedCertificateGenerator selfSignedCertificateGenerator;
+
+  @Mock
+  SignedCertificateGenerator signedCertificateGenerator;
+
+  @Mock
+  InMemoryAuthorityRepository authorityRepository;
 
   @Before
   public void setUp() {
@@ -58,7 +77,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
 
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
     X509Certificate caCert = generateX509Certificate(expectedKeyPair);
-    when(rootCertificateProvider.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
+    when(selfSignedCertificateGenerator.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
 
     String expectedCert = CertificateFormatter.pemOf(caCert);
     String expectedPrivate = CertificateFormatter.pemOf(expectedKeyPair.getPrivate());
@@ -80,11 +99,50 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
     inputParameters.setKeyLength(1024);
     X509Certificate caCert = generateX509Certificate(expectedKeyPair);
-    when(rootCertificateProvider.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
+    when(selfSignedCertificateGenerator.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
 
     subject.generateSecret(inputParameters);
 
     Mockito.verify(keyGenerator).initialize(1024);
+  }
+
+  @Test
+  public void generateCertificateWithACaReturnsSignedChildCertificate() throws Exception {
+    KeyPair certificateKeyPair = generateKeyPair();
+    when(keyGenerator.generateKeyPair()).thenReturn(certificateKeyPair);
+
+    KeyPair caKeyPair = generateKeyPair();
+    NamedCertificateAuthority myCa = new NamedCertificateAuthority("my-ca");
+    myCa.setPub(CertificateFormatter.pemOf(generateX509Certificate(caKeyPair)));
+    myCa.setPriv(CertificateFormatter.pemOf(caKeyPair.getPrivate()));
+    when(authorityRepository.findOneByName("my-ca")).thenReturn(myCa);
+
+    CertificateSecretParameters parameters = new CertificateSecretParameters();
+    parameters.setCa("my-ca");
+
+    X500Principal caDn = new X500Principal("O=foo,ST=bar,C=mars");
+
+    AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA1withRSA");
+    SubjectPublicKeyInfo publicKeyInfo = new SubjectPublicKeyInfo(sigAlgId, certificateKeyPair.getPublic().getEncoded());
+    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKeyPair.getPrivate());
+
+    Instant now = Instant.now();
+    X509CertificateHolder certificateHolder = new X509v1CertificateBuilder(
+        new X500Name(caDn.getName()),
+        BigInteger.valueOf(2),
+        Date.from(now),
+        Date.from(now.plus(Duration.ofDays(365))),
+        new X500Name("C=US,CN=Subject"),
+        publicKeyInfo
+    ).build(contentSigner);
+
+    when(signedCertificateGenerator.get(caDn, caKeyPair.getPrivate(), certificateKeyPair, parameters))
+        .thenReturn(new JcaX509CertificateConverter().setProvider("BC").getCertificate(certificateHolder));
+
+    CertificateSecret certificateSecret = subject.generateSecret(parameters);
+    assertThat(certificateSecret.getCertificateBody().getCa(), nullValue());
+    assertThat(certificateSecret.getCertificateBody().getPub(), startsWith("-----BEGIN CERTIFICATE-----"));
+    assertThat(certificateSecret.getCertificateBody().getPriv(), startsWith("-----BEGIN RSA PRIVATE KEY-----"));
   }
 
   private KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
