@@ -43,9 +43,8 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     keyGenerator.initialize(params.getKeyLength());
     KeyPair keyPair = keyGenerator.generateKeyPair();
 
-    if (!StringUtils.isEmpty(params.getCa())) {
-      NamedCertificateAuthority ca = (NamedCertificateAuthority) authorityRepository.findOneByName(params.getCa());
-
+    NamedCertificateAuthority ca = findCa(params.getCa());
+    if (ca != null) {
       try {
         X500Principal issuerDn = getIssuer(ca);
         PrivateKey issuerKey = getPrivateKey(ca);
@@ -68,6 +67,15 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         throw new RuntimeException(e);
       }
     }
+  }
+
+  private NamedCertificateAuthority findCa(String caName) {
+    boolean hasCaName = !StringUtils.isEmpty(caName);
+    if (!hasCaName) {
+      caName = "default";
+    }
+
+    return (NamedCertificateAuthority) authorityRepository.findOneByName(caName);
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {

@@ -16,6 +16,7 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
 import org.junit.Before;
@@ -76,7 +77,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     when(keyGenerator.generateKeyPair()).thenReturn(expectedKeyPair);
 
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
-    X509Certificate caCert = generateX509Certificate(expectedKeyPair);
+    X509Certificate caCert = generateX509Certificate(expectedKeyPair, "O=foo,ST=bar,C=mars");
     when(selfSignedCertificateGenerator.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
 
     String expectedCert = CertificateFormatter.pemOf(caCert);
@@ -98,7 +99,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
 
     CertificateSecretParameters inputParameters = new CertificateSecretParameters();
     inputParameters.setKeyLength(1024);
-    X509Certificate caCert = generateX509Certificate(expectedKeyPair);
+    X509Certificate caCert = generateX509Certificate(expectedKeyPair, "O=foo,ST=bar,C=mars");
     when(selfSignedCertificateGenerator.get(expectedKeyPair, inputParameters)).thenReturn(caCert);
 
     subject.generateSecret(inputParameters);
@@ -111,32 +112,46 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     KeyPair certificateKeyPair = generateKeyPair();
     when(keyGenerator.generateKeyPair()).thenReturn(certificateKeyPair);
 
+    String principle = "O=foo,ST=bar,C=mars";
+    X500Principal caDn = new X500Principal(principle);
     KeyPair caKeyPair = generateKeyPair();
     NamedCertificateAuthority myCa = new NamedCertificateAuthority("my-ca");
-    myCa.setPub(CertificateFormatter.pemOf(generateX509Certificate(caKeyPair)));
+    myCa.setPub(CertificateFormatter.pemOf(generateX509Certificate(caKeyPair, principle)));
     myCa.setPriv(CertificateFormatter.pemOf(caKeyPair.getPrivate()));
     when(authorityRepository.findOneByName("my-ca")).thenReturn(myCa);
 
     CertificateSecretParameters parameters = new CertificateSecretParameters();
     parameters.setCa("my-ca");
 
-    X500Principal caDn = new X500Principal("O=foo,ST=bar,C=mars");
-
-    AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA1withRSA");
-    SubjectPublicKeyInfo publicKeyInfo = new SubjectPublicKeyInfo(sigAlgId, certificateKeyPair.getPublic().getEncoded());
-    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caKeyPair.getPrivate());
-
-    Instant now = Instant.now();
-    X509CertificateHolder certificateHolder = new X509v1CertificateBuilder(
-        new X500Name(caDn.getName()),
-        BigInteger.valueOf(2),
-        Date.from(now),
-        Date.from(now.plus(Duration.ofDays(365))),
-        new X500Name("C=US,CN=Subject"),
-        publicKeyInfo
-    ).build(contentSigner);
+    X509CertificateHolder certificateHolder = getCertSignedByCa(certificateKeyPair, caKeyPair.getPrivate(), caDn);
 
     when(signedCertificateGenerator.get(caDn, caKeyPair.getPrivate(), certificateKeyPair, parameters))
+        .thenReturn(new JcaX509CertificateConverter().setProvider("BC").getCertificate(certificateHolder));
+
+    CertificateSecret certificateSecret = subject.generateSecret(parameters);
+    assertThat(certificateSecret.getCertificateBody().getCa(), nullValue());
+    assertThat(certificateSecret.getCertificateBody().getPub(), startsWith("-----BEGIN CERTIFICATE-----"));
+    assertThat(certificateSecret.getCertificateBody().getPriv(), startsWith("-----BEGIN RSA PRIVATE KEY-----"));
+  }
+
+  @Test
+  public void generateCertificateWhenNoCaUsesDefaultCa() throws Exception {
+    KeyPair certificateKeyPair = generateKeyPair();
+    when(keyGenerator.generateKeyPair()).thenReturn(certificateKeyPair);
+    String principle = "O=default,ST=default,C=default";
+    KeyPair defaultCaKeyPair = generateKeyPair();
+    NamedCertificateAuthority myCa = new NamedCertificateAuthority("default");
+
+    myCa.setPub(CertificateFormatter.pemOf(generateX509Certificate(defaultCaKeyPair, principle)));
+    myCa.setPriv(CertificateFormatter.pemOf(defaultCaKeyPair.getPrivate()));
+    when(authorityRepository.findOneByName("default")).thenReturn(myCa);
+
+    CertificateSecretParameters parameters = new CertificateSecretParameters();
+
+    X500Principal caDn = new X500Principal(principle);
+    X509CertificateHolder certificateHolder = getCertSignedByCa(certificateKeyPair, defaultCaKeyPair.getPrivate(), caDn);
+
+    when(signedCertificateGenerator.get(caDn, defaultCaKeyPair.getPrivate(), certificateKeyPair, parameters))
         .thenReturn(new JcaX509CertificateConverter().setProvider("BC").getCertificate(certificateHolder));
 
     CertificateSecret certificateSecret = subject.generateSecret(parameters);
@@ -151,9 +166,9 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     return generator.generateKeyPair();
   }
 
-  private X509Certificate generateX509Certificate(KeyPair expectedKeyPair) throws CertificateEncodingException, NoSuchProviderException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+  private X509Certificate generateX509Certificate(KeyPair expectedKeyPair, String principle) throws CertificateEncodingException, NoSuchProviderException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
     final X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
-    final X500Principal dnName = new X500Principal("O=foo,ST=bar,C=mars");
+    final X500Principal dnName = new X500Principal(principle);
     certGen.setSerialNumber(BigInteger.valueOf(1));
     Instant instant = Instant.now();
     final Date now = Date.from(instant);
@@ -167,4 +182,19 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     return certGen.generate(expectedKeyPair.getPrivate(), "BC");
   }
 
+  private X509CertificateHolder getCertSignedByCa(KeyPair certificateKeyPair, PrivateKey caPrivateKey, X500Principal caDn) throws OperatorCreationException {
+    AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA1withRSA");
+    SubjectPublicKeyInfo publicKeyInfo = new SubjectPublicKeyInfo(sigAlgId, certificateKeyPair.getPublic().getEncoded());
+    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caPrivateKey);
+
+    Instant now = Instant.now();
+    return new X509v1CertificateBuilder(
+        new X500Name(caDn.getName()),
+        BigInteger.valueOf(2),
+        Date.from(now),
+        Date.from(now.plus(Duration.ofDays(365))),
+        new X500Name("C=US,CN=Subject"),
+        publicKeyInfo
+    ).build(contentSigner);
+  }
 }
