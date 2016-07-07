@@ -57,7 +57,7 @@ public class SignedCertificateGeneratorTest {
       Spectrum.Value<KeyPair> certKeyPair = Spectrum.value(KeyPair.class);
 
       beforeEach(() -> {
-        caDn.value = new X500Principal("O=foo,ST=bar,C=mars");
+        caDn.value = new X500Principal("O=foo\\,inc.,ST=\'my fav state\', C=\"adsf asdf\",OU=cool org, EMAILADDRESS=x@y.com");
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
         generator.initialize(1024); // doesn't matter for testing

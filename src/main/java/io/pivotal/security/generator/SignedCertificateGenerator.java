@@ -19,7 +19,7 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -52,8 +52,40 @@ public class SignedCertificateGenerator {
   }
 
   private X500Name asX500Name(X500Principal x500Principal) {
-    List<String> rdns = Arrays.asList(x500Principal.getName().split(","));
+    String name = x500Principal.getName();
+    List<String> rdns = splitOnCommaCheckingForEscapedCommas(name);
     Collections.reverse(rdns);
     return new X500Name(String.join(",", rdns));
+  }
+
+  private List<String> splitOnCommaCheckingForEscapedCommas(String name) {
+    List<String> result = new ArrayList<>();
+
+    int i = 0;
+    StringBuilder sb = new StringBuilder();
+    while (i < name.length()) {
+      char c = name.charAt(i);
+      int peek = i+1;
+      if (c == '\\' && peek < name.length() && name.charAt(peek) == ',') {
+        sb.append(c);
+        sb.append(",");
+        i++;
+      } else if (c == ',') {
+        if (sb.length() > 0) {
+          result.add(sb.toString());
+        }
+        sb.setLength(0);
+      } else {
+        sb.append(c);
+      }
+
+      i++;
+    }
+
+    if (sb.length() > 0) {
+      result.add(sb.toString());
+    }
+
+    return result;
   }
 }
