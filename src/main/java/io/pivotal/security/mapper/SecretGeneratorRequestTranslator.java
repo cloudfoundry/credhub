@@ -8,5 +8,6 @@ import javax.validation.ValidationException;
 
 public interface SecretGeneratorRequestTranslator {
   GeneratorRequest validGeneratorRequest(DocumentContext parsed) throws ValidationException;
+
   NamedSecret makeEntity(String name);
 }

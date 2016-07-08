@@ -9,15 +9,15 @@ import org.springframework.data.mapping.context.MappingContext;
 import javax.annotation.PostConstruct;
 
 public class JpaAuditingHandler extends org.springframework.data.auditing.AuditingHandler {
-    @Autowired
-    private CurrentTimeProvider currentTimeProvider;
+  @Autowired
+  private CurrentTimeProvider currentTimeProvider;
 
-    public JpaAuditingHandler(MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
-        super(mappingContext);
-    }
+  public JpaAuditingHandler(MappingContext<? extends PersistentEntity<?, ?>, ? extends PersistentProperty<?>> mappingContext) {
+    super(mappingContext);
+  }
 
-    @PostConstruct
-    public void init() {
-        setDateTimeProvider(currentTimeProvider);
-    }
+  @PostConstruct
+  public void init() {
+    setDateTimeProvider(currentTimeProvider);
+  }
 }

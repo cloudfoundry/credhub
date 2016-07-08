@@ -11,7 +11,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 public class MockitoSpringTest {
-  @Autowired private AutowireCapableBeanFactory beanFactory;
+  @Autowired
+  private AutowireCapableBeanFactory beanFactory;
 
   @Before
   public void setUpMockito() {

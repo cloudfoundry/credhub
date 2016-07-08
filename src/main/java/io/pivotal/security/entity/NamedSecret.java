@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "NamedSecret")
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
-@DiscriminatorColumn(name="type", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 abstract public class NamedSecret<T> {
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)

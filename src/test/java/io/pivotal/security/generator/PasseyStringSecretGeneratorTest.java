@@ -2,8 +2,8 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.MockitoSpringTest;
-import io.pivotal.security.view.StringSecret;
 import io.pivotal.security.controller.v1.StringSecretParameters;
+import io.pivotal.security.view.StringSecret;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -16,15 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyList;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.when;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.when;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)

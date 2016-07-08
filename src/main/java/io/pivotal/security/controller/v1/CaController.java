@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.InvalidJsonException;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;

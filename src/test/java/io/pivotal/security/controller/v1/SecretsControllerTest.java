@@ -69,7 +69,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Autowired
   private SecretsController secretsController;
 
-  @Autowired @Qualifier("currentTimeProvider")
+  @Autowired
+  @Qualifier("currentTimeProvider")
   CurrentTimeProvider currentTimeProvider;
 
   @Mock
@@ -241,7 +242,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
     String expectedJson = json(expectedStringSecret);
 
-    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{" +  getUpdatedAtJson() + ",\"type\":\"value\",\"parameters\":{}}");
+    RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-secret", "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"parameters\":{}}");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isOk())
@@ -331,26 +332,26 @@ public class SecretsControllerTest extends MockitoSpringTest {
     when(certificateGenerator.generateSecret(any(CertificateSecretParameters.class))).thenReturn(certificateSecret);
 
     String requestJson = "{" +
-            "\"type\":\"certificate\"," +
-            "\"parameters\":{" +
-            "\"common_name\":\"My Common Name\", " +
-            "\"organization\": \"organization.io\"," +
-            "\"organization_unit\": \"My Unit\"," +
-            "\"locality\": \"My Locality\"," +
-            "\"state\": \"My State\"," +
-            "\"country\": \"My Country\"," +
-            "\"alternative_name\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]"+
-            "}" +
-            "}";
+        "\"type\":\"certificate\"," +
+        "\"parameters\":{" +
+        "\"common_name\":\"My Common Name\", " +
+        "\"organization\": \"organization.io\"," +
+        "\"organization_unit\": \"My Unit\"," +
+        "\"locality\": \"My Locality\"," +
+        "\"state\": \"My State\"," +
+        "\"country\": \"My Country\"," +
+        "\"alternative_name\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]" +
+        "}" +
+        "}";
 
     String expectedJson = json(certificateSecret);
 
     RequestBuilder requestBuilder = postRequestBuilder("/api/v1/data/my-cert", requestJson);
 
     mockMvc.perform(requestBuilder)
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(content().json(expectedJson));
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(expectedJson));
 
     assertThat(secretRepository.findOneByName("my-cert").generateView(), BeanMatchers.theSameAs(certificateSecret));
   }
@@ -546,7 +547,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void contentNegotiationAndPathMatchingAreDisabled() throws Exception{
+  public void contentNegotiationAndPathMatchingAreDisabled() throws Exception {
     doPutValue("test", "abc");
     doPutValue("test.foo", "def");
     mockMvc.perform(get("/api/v1/data/test"))

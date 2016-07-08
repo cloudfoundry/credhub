@@ -89,8 +89,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       try {
         subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
         fail();
-      }
-      catch (ValidationException ve) {
+      } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
       }
     });
@@ -106,8 +105,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       try {
         subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
         fail();
-      }
-      catch (ValidationException ve) {
+      } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
       }
     });
@@ -123,8 +121,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       try {
         subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
         fail();
-      }
-      catch (ValidationException ve) {
+      } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
       }
     });

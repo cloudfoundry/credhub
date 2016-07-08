@@ -3,7 +3,9 @@ package io.pivotal.security.generator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.stereotype.Component;
 
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.Security;
 
 @Component
 public class BcKeyPairGenerator extends KeyPairGenerator {

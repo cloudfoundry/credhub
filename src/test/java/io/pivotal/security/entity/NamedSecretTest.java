@@ -1,8 +1,8 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.util.CurrentTimeProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 public class NamedSecretTest {
-  @Autowired @Qualifier("currentTimeProvider")
+  @Autowired
+  @Qualifier("currentTimeProvider")
   CurrentTimeProvider currentTimeProvider;
   @Autowired
   InMemorySecretRepository repository;

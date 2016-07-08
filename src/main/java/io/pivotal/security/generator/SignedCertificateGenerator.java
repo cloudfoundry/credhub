@@ -65,7 +65,7 @@ public class SignedCertificateGenerator {
     StringBuilder sb = new StringBuilder();
     while (i < name.length()) {
       char c = name.charAt(i);
-      int peek = i+1;
+      int peek = i + 1;
       if (c == '\\' && peek < name.length() && name.charAt(peek) == ',') {
         sb.append(c);
         sb.append(",");

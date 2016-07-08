@@ -110,8 +110,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     try {
       subject.generateSecret(parameters);
       fail();
-    }
-    catch (ValidationException ve) {
+    } catch (ValidationException ve) {
       assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
     }
   }

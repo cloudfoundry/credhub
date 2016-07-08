@@ -16,7 +16,8 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
     setCertificateBody(new CertificateAuthorityBody(certificate, privateKey));
   }
 
-  public CertificateAuthority() {}
+  public CertificateAuthority() {
+  }
 
   @Override
   public void populateEntity(NamedCertificateAuthority entity) {
@@ -36,6 +37,7 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
   public void setType(String type) {
     this.type = type;
   }
+
   public String getType() {
     return type;
   }

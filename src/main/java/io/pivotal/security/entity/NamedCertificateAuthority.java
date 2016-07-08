@@ -50,7 +50,7 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
     return type;
   }
 
-  public NamedCertificateAuthority setType(String type){
+  public NamedCertificateAuthority setType(String type) {
     this.type = type;
     return this;
   }

@@ -60,7 +60,8 @@ public class CaControllerTest extends MockitoSpringTest {
   @Autowired
   private CaController caController;
 
-  @Autowired @Qualifier("currentTimeProvider")
+  @Autowired
+  @Qualifier("currentTimeProvider")
   CurrentTimeProvider currentTimeProvider;
 
   private MockMvc mockMvc;

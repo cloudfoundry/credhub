@@ -34,9 +34,9 @@ public class CertificateAuthorityRequestTranslatorTest {
     doTestInvalid("root", "", "a", "error.missing_ca_credentials");
     doTestInvalid("root", "b", "", "error.missing_ca_credentials");
     doTestInvalid("root", "", "", "error.missing_ca_credentials");
-    doTestInvalid("root",  "", "a", "error.missing_ca_credentials");
-    doTestInvalid("root",  "b", "", "error.missing_ca_credentials");
-    doTestInvalid("invalid_ca_type",  "b", "a", "error.type_invalid");
+    doTestInvalid("root", "", "a", "error.missing_ca_credentials");
+    doTestInvalid("root", "b", "", "error.missing_ca_credentials");
+    doTestInvalid("invalid_ca_type", "b", "a", "error.type_invalid");
   }
 
   private void doTestValid(CertificateAuthority expected, String pub, String priv) {
@@ -54,8 +54,7 @@ public class CertificateAuthorityRequestTranslatorTest {
     try {
       new CertificateAuthorityRequestTranslator().createAuthorityFromJson(parsed);
       fail();
-    }
-    catch (ValidationException ve) {
+    } catch (ValidationException ve) {
       assertThat(ve.getMessage(), equalTo(expectedErrorMessage));
     }
   }

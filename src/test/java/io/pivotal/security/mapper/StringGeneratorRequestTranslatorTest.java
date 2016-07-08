@@ -43,12 +43,12 @@ public class StringGeneratorRequestTranslatorTest {
       String json = "{" +
           "\"type\":\"value\"," +
           "\"parameters\": {" +
-            "\"exclude_special\": true," +
-            "\"exclude_number\": true," +
-            "\"exclude_upper\": true," +
-            "\"exclude_lower\": true," +
-            "\"length\": 42" +
-            "}" +
+          "\"exclude_special\": true," +
+          "\"exclude_number\": true," +
+          "\"exclude_upper\": true," +
+          "\"exclude_lower\": true," +
+          "\"length\": 42" +
+          "}" +
           "}";
       try {
         subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
