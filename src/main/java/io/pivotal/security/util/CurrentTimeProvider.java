@@ -1,6 +1,7 @@
 package io.pivotal.security.util;
 
 import org.springframework.data.auditing.DateTimeProvider;
+import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -8,6 +9,7 @@ import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+@Component
 public class CurrentTimeProvider implements DateTimeProvider {
 
   private LocalDateTime overrideTime;

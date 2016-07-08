@@ -8,9 +8,12 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.data.auditing.DateTimeProvider;
 
 import javax.security.auth.x500.X500Principal;
 import java.math.BigInteger;
@@ -22,6 +25,7 @@ import java.security.cert.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
@@ -29,6 +33,7 @@ import static com.greghaskins.spectrum.SpringSpectrum.*;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringSpectrum.class)
@@ -36,6 +41,7 @@ import static org.mockito.Mockito.when;
 public class SignedCertificateGeneratorTest {
 
   final Instant now = Instant.now();
+  final Calendar nowCalendar = Calendar.getInstance();
 
   SignedCertificateGenerator subject;
 
@@ -45,8 +51,9 @@ public class SignedCertificateGeneratorTest {
     });
 
     beforeEach(() -> {
-      FactoryBean<Instant> timeProvider = Mockito.mock(FactoryBean.class);
-      when(timeProvider.getObject()).thenReturn(now);
+      DateTimeProvider timeProvider = Mockito.mock(DateTimeProvider.class);
+      nowCalendar.setTime(Date.from(now));
+      when(timeProvider.getNow()).thenReturn(nowCalendar);
       subject = new SignedCertificateGenerator(timeProvider);
     });
 

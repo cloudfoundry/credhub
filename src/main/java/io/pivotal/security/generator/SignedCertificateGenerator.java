@@ -10,6 +10,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
 import javax.security.auth.x500.X500Principal;
@@ -27,15 +28,16 @@ import java.util.List;
 @Component
 public class SignedCertificateGenerator {
 
-  final FactoryBean<Instant> timeProvider;
+  @Autowired
+  final DateTimeProvider timeProvider;
 
   @Autowired
-  public SignedCertificateGenerator(FactoryBean<Instant> timeProvider) {
+  public SignedCertificateGenerator(DateTimeProvider timeProvider) {
     this.timeProvider = timeProvider;
   }
 
   public X509Certificate get(X500Principal issuerDn, PrivateKey issuerKey, KeyPair keyPair, CertificateSecretParameters params) throws Exception {
-    Instant now = timeProvider.getObject();
+    Instant now = timeProvider.getNow().toInstant();
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
     ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(issuerKey);
 
