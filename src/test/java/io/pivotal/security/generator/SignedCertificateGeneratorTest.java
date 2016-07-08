@@ -8,10 +8,8 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.auditing.DateTimeProvider;
 
@@ -43,6 +41,10 @@ public class SignedCertificateGeneratorTest {
   final Instant now = Instant.now();
   final Calendar nowCalendar = Calendar.getInstance();
 
+  DateTimeProvider timeProvider;
+  RandomSerialNumberGenerator serialNumberGenerator;
+
+  @Autowired
   SignedCertificateGenerator subject;
 
   {
@@ -51,10 +53,10 @@ public class SignedCertificateGeneratorTest {
     });
 
     beforeEach(() -> {
-      DateTimeProvider timeProvider = Mockito.mock(DateTimeProvider.class);
+      createAndInjectMocks();
       nowCalendar.setTime(Date.from(now));
       when(timeProvider.getNow()).thenReturn(nowCalendar);
-      subject = new SignedCertificateGenerator(timeProvider);
+      when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(12));
     });
 
     describe("a generated certificate", () -> {
@@ -100,8 +102,9 @@ public class SignedCertificateGeneratorTest {
         assertThat(generatedCert.value.getNotAfter(), equalTo(Date.from(now.plus(Duration.ofDays(10)).truncatedTo(ChronoUnit.SECONDS))));
       });
 
-      it("has a serial number of 1", () -> {
-        assertThat(generatedCert.value.getSerialNumber(), equalTo(BigInteger.ONE));
+      it("has a random serial number", () -> {
+        verify(serialNumberGenerator).generate();
+        assertThat(generatedCert.value.getSerialNumber(), equalTo(BigInteger.valueOf(12)));
       });
 
       it("contains the public key", () -> {
@@ -127,5 +130,13 @@ public class SignedCertificateGeneratorTest {
         builderResult.getCertPath();
       });
     });
+  }
+
+  private void createAndInjectMocks() {
+    // @Mock annotation doesn't seem to work, so do it manually
+    timeProvider = Mockito.mock(DateTimeProvider.class);
+    subject.timeProvider = timeProvider;
+    serialNumberGenerator = Mockito.mock(RandomSerialNumberGenerator.class);
+    subject.serialNumberGenerator = serialNumberGenerator;
   }
 }

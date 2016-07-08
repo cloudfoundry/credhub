@@ -8,7 +8,6 @@ import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
@@ -29,12 +28,10 @@ import java.util.List;
 public class SignedCertificateGenerator {
 
   @Autowired
-  final DateTimeProvider timeProvider;
+  DateTimeProvider timeProvider;
 
   @Autowired
-  public SignedCertificateGenerator(DateTimeProvider timeProvider) {
-    this.timeProvider = timeProvider;
-  }
+  RandomSerialNumberGenerator serialNumberGenerator;
 
   public X509Certificate get(X500Principal issuerDn, PrivateKey issuerKey, KeyPair keyPair, CertificateSecretParameters params) throws Exception {
     Instant now = timeProvider.getNow().toInstant();
@@ -43,7 +40,7 @@ public class SignedCertificateGenerator {
 
     X509CertificateHolder holder = new X509v3CertificateBuilder(
         asX500Name(issuerDn),
-        BigInteger.valueOf(1),
+        serialNumberGenerator.generate(),
         Date.from(now),
         Date.from(now.plus(Duration.ofDays(params.getDurationDays()))),
         params.getDN(),
