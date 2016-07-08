@@ -17,6 +17,7 @@ apply plugin: 'idea'
 apply plugin: 'spring-boot'
 apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'jacoco'
+apply plugin: 'checkstyle'
 
 jar {
     baseName = 'sec-eng-credential-manager'
@@ -25,6 +26,7 @@ jar {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+checkstyle.toolVersion = '6.17'
 
 repositories {
     mavenCentral()
@@ -112,6 +114,13 @@ test {
         append = false
         destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
         classDumpFile = file("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled false
+        html.enabled true
     }
 }
 
