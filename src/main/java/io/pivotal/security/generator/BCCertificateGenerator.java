@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.security.auth.x500.X500Principal;
+import javax.validation.ValidationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -28,9 +29,6 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
   @Autowired
   KeyPairGenerator keyGenerator;
-
-  @Autowired
-  SelfSignedCertificateGenerator selfSignedCertificateGenerator;
 
   @Autowired
   SignedCertificateGenerator signedCertificateGenerator;
@@ -58,14 +56,9 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         throw new RuntimeException(e);
       }
     } else {
-      try {
-        X509Certificate cert = selfSignedCertificateGenerator.get(keyPair, params);
-        String certPem = CertificateFormatter.pemOf(cert);
-        String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new CertificateSecret(certPem, privatePem);
-      } catch (GeneralSecurityException | IOException e) {
-        throw new RuntimeException(e);
-      }
+      throw new ValidationException("error.default_ca_required");
+      // Dan says we are going to reinstate functionality for self-signed certificates soon.
+      // See git history at SHA 5595fc9
     }
   }
 

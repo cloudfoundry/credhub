@@ -8,6 +8,7 @@ import java.security.*;
 @Component
 public class BcKeyPairGenerator extends KeyPairGenerator {
 
+  static final int DEFAULT_KEY_LENGTH = 2048;
   private KeyPairGenerator myGenerator;
 
   public BcKeyPairGenerator() {
@@ -15,7 +16,7 @@ public class BcKeyPairGenerator extends KeyPairGenerator {
     Security.addProvider(new BouncyCastleProvider());
     try {
       myGenerator = KeyPairGenerator.getInstance("RSA", "BC");
-      myGenerator.initialize(2048);
+      myGenerator.initialize(DEFAULT_KEY_LENGTH);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
