@@ -41,13 +41,13 @@ public class InMemorySecretRepositoryTest {
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
     NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
     entity.setCa(stringBuilder.toString());
-    entity.setPub(stringBuilder.toString());
-    entity.setPriv(stringBuilder.toString());
+    entity.setCertificate(stringBuilder.toString());
+    entity.setPrivateKey(stringBuilder.toString());
 
     subject.save(entity);
     NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findOneByName("my-secret");
     assertThat(certificateSecret.getCa().length(), equalTo(7000));
-    assertThat(certificateSecret.getPub().length(), equalTo(7000));
-    assertThat(certificateSecret.getPriv().length(), equalTo(7000));
+    assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
+    assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
   }
 }

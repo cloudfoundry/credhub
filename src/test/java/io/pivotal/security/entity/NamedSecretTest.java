@@ -57,7 +57,7 @@ public class NamedSecretTest {
   public void returnsDateUpdated() {
     secret = repository.save(secret);
     freeze();
-    secret.setPriv("new-priv");  // Change object so that Hibernate will update the database
+    secret.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
     secret = repository.save(secret);
     assertThat(repository.findOneByName("foo").getUpdatedAt(), equalTo(frozenTime));
   }

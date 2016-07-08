@@ -154,8 +154,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
   public void validGetCertificateSecret() throws Exception {
     NamedCertificateSecret certificateSecret = new NamedCertificateSecret("whatever")
         .setCa("get-ca")
-        .setPub("get-pub")
-        .setPriv("get-priv");
+        .setCertificate("get-pub")
+        .setPrivateKey("get-priv");
 
     secretRepository.save(certificateSecret);
 

@@ -27,12 +27,12 @@ public class InMemoryAuthorityRepositoryTest {
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
     NamedCertificateAuthority entity = new NamedCertificateAuthority("my-ca");
-    entity.setPub(stringBuilder.toString());
-    entity.setPriv(stringBuilder.toString());
+    entity.setCertificate(stringBuilder.toString());
+    entity.setPrivateKey(stringBuilder.toString());
 
     subject.save(entity);
     NamedCertificateAuthority certificateSecret = (NamedCertificateAuthority) subject.findOneByName("my-ca");
-    assertThat(certificateSecret.getPub().length(), equalTo(7000));
-    assertThat(certificateSecret.getPriv().length(), equalTo(7000));
+    assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
+    assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
   }
 }

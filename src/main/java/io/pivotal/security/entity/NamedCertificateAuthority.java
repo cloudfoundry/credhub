@@ -15,10 +15,10 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
   private String type;
 
   @Column(nullable = true, length = 7000)
-  private String pub;
+  private String certificate;
 
   @Column(nullable = true, length = 7000)
-  private String priv;
+  private String privateKey;
 
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
@@ -28,21 +28,21 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
     super(name);
   }
 
-  public String getPub() {
-    return pub;
+  public String getCertificate() {
+    return certificate;
   }
 
-  public NamedCertificateAuthority setPub(String pub) {
-    this.pub = pub;
+  public NamedCertificateAuthority setCertificate(String certificate) {
+    this.certificate = certificate;
     return this;
   }
 
-  public String getPriv() {
-    return priv;
+  public String getPrivateKey() {
+    return privateKey;
   }
 
-  public NamedCertificateAuthority setPriv(String priv) {
-    this.priv = priv;
+  public NamedCertificateAuthority setPrivateKey(String privateKey) {
+    this.privateKey = privateKey;
     return this;
   }
 
@@ -57,6 +57,6 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
 
   @Override
   public CertificateAuthority generateView() {
-    return new CertificateAuthority(type, pub, priv).setUpdatedAt(getUpdatedAt());
+    return new CertificateAuthority(type, certificate, privateKey).setUpdatedAt(getUpdatedAt());
   }
 }

@@ -115,8 +115,8 @@ public class CaControllerTest extends MockitoSpringTest {
     String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"public\":\"my_public_key\",\"private\":\"my_private_key\"}}";
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
     namedCertificateAuthority.setType("root");
-    namedCertificateAuthority.setPub("my_public_key");
-    namedCertificateAuthority.setPriv("my_private_key");
+    namedCertificateAuthority.setCertificate("my_public_key");
+    namedCertificateAuthority.setPrivateKey("my_private_key");
     caRepository.save(namedCertificateAuthority);
 
     RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
@@ -144,7 +144,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
     CertificateAuthority expected = new CertificateAuthority("root", "pub 2", "priv 2");
     NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
-    Assert.assertThat(new CertificateAuthority(saved.getType(), saved.getPub(), saved.getPriv()), BeanMatchers.theSameAs(expected));
+    Assert.assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), BeanMatchers.theSameAs(expected));
   }
 
   @Test

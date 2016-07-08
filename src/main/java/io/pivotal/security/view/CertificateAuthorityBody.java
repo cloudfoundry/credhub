@@ -4,28 +4,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CertificateAuthorityBody {
   @JsonProperty("public")
-  private String pub;
+  private String certificate;
   @JsonProperty("private")
-  private String priv;
+  private String privateKey;
 
-  public CertificateAuthorityBody(String pub, String priv) {
-    this.setPub(pub);
-    this.setPriv(priv);
+  public CertificateAuthorityBody(String certificate, String privateKey) {
+    this.setCertificate(certificate);
+    this.setPrivateKey(privateKey);
   }
 
-  public String getPub() {
-    return pub;
+  public String getCertificate() {
+    return certificate;
   }
 
-  public void setPub(String pub) {
-    this.pub = pub;
+  public void setCertificate(String certificate) {
+    this.certificate = certificate;
   }
 
-  public String getPriv() {
-    return priv;
+  public String getPrivateKey() {
+    return privateKey;
   }
 
-  public void setPriv(String priv) {
-    this.priv = priv;
+  public void setPrivateKey(String privateKey) {
+    this.privateKey = privateKey;
   }
 }

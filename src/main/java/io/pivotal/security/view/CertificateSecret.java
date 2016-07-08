@@ -8,12 +8,12 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
   @JsonProperty("certificate")
   private CertificateBody certificateBody;
 
-  public CertificateSecret(String ca, String pub, String priv) {
-    setCertificateBody(new CertificateBody(ca, pub, priv));
+  public CertificateSecret(String ca, String certificate, String privateKey) {
+    setCertificateBody(new CertificateBody(ca, certificate, privateKey));
   }
 
-  public CertificateSecret(String ca, String priv) {
-    setCertificateBody(new CertificateBody(null, ca, priv));
+  public CertificateSecret(String ca, String privateKey) {
+    setCertificateBody(new CertificateBody(null, ca, privateKey));
   }
 
   @Override
@@ -24,8 +24,8 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
   @Override
   public void populateEntity(NamedCertificateSecret entity) {
     entity.setCa(getCertificateBody().getCa())
-        .setPub(getCertificateBody().getPub())
-        .setPriv(getCertificateBody().getPriv());
+        .setCertificate(getCertificateBody().getCertificate())
+        .setPrivateKey(getCertificateBody().getPrivateKey());
   }
 
   public CertificateBody getCertificateBody() {

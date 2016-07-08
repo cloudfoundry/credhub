@@ -20,8 +20,7 @@ public class CertificateSecretTest {
     NamedCertificateSecret entity = new NamedCertificateSecret();
     model.populateEntity(entity);
     assertThat(entity.getCa(), equalTo("ca"));
-    assertThat(entity.getPub(), equalTo("pub"));
-    assertThat(entity.getPriv(), equalTo("priv"));
+    assertThat(entity.getCertificate(), equalTo("pub"));
+    assertThat(entity.getPrivateKey(), equalTo("priv"));
   }
-
 }

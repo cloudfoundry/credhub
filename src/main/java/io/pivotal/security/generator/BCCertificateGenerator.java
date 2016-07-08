@@ -72,7 +72,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
-    PEMParser pemParser = new PEMParser(new StringReader(ca.getPriv()));
+    PEMParser pemParser = new PEMParser(new StringReader(ca.getPrivateKey()));
     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
@@ -80,7 +80,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
   private X500Principal getIssuer(NamedCertificateAuthority ca) throws IOException, CertificateException, NoSuchProviderException {
     X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
-        .generateCertificate(new ByteArrayInputStream(ca.getPub().getBytes()));
+        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
     return certificate.getIssuerX500Principal();
   }
 }

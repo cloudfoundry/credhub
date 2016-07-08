@@ -88,8 +88,8 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     caX509Cert = generateX509Certificate(caKeyPair, caPrinciple);
 
     defaultNamedCA = new NamedCertificateAuthority("default");
-    defaultNamedCA.setPub(CertificateFormatter.pemOf(caX509Cert));
-    defaultNamedCA.setPriv(CertificateFormatter.pemOf(caKeyPair.getPrivate()));
+    defaultNamedCA.setCertificate(CertificateFormatter.pemOf(caX509Cert));
+    defaultNamedCA.setPrivateKey(CertificateFormatter.pemOf(caKeyPair.getPrivate()));
   }
 
   @Test
@@ -170,9 +170,9 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
 
     assertThat(certificateSecret, notNullValue());
     assertThat(certificateSecret.getCertificateBody().getCa(), nullValue());
-    assertThat(certificateSecret.getCertificateBody().getPriv(),
+    assertThat(certificateSecret.getCertificateBody().getPrivateKey(),
         equalTo(CertificateFormatter.pemOf(certificateKeyPair.getPrivate())));
-    assertThat(certificateSecret.getCertificateBody().getPub(),
+    assertThat(certificateSecret.getCertificateBody().getCertificate(),
         equalTo(CertificateFormatter.pemOf(new JcaX509CertificateConverter()
             .setProvider("BC").getCertificate(certSignedByCa))));
   }

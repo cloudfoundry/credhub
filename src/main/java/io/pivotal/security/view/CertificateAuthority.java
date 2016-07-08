@@ -11,9 +11,9 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
   @JsonProperty("root")
   private CertificateAuthorityBody certificateAuthorityBody;
 
-  public CertificateAuthority(String type, String pub, String priv) {
+  public CertificateAuthority(String type, String certificate, String privateKey) {
     setType(type);
-    setCertificateBody(new CertificateAuthorityBody(pub, priv));
+    setCertificateBody(new CertificateAuthorityBody(certificate, privateKey));
   }
 
   public CertificateAuthority() {}
@@ -21,8 +21,8 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
   @Override
   public void populateEntity(NamedCertificateAuthority entity) {
     entity.setType(getType())
-        .setPub(getCertificateAuthorityBody().getPub())
-        .setPriv(getCertificateAuthorityBody().getPriv());
+        .setCertificate(getCertificateAuthorityBody().getCertificate())
+        .setPrivateKey(getCertificateAuthorityBody().getPrivateKey());
   }
 
   public CertificateAuthorityBody getCertificateAuthorityBody() {

@@ -13,16 +13,16 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   private String ca;
 
   @Column(nullable = true, length = 7000)
-  private String pub;
+  private String certificate;
 
   @Column(nullable = true, length = 7000)
-  private String priv;
+  private String privateKey;
 
-  public static NamedCertificateSecret make(String name, String ca, String pub, String priv) {
+  public static NamedCertificateSecret make(String name, String ca, String certificate, String privateKey) {
     return new NamedCertificateSecret(name)
         .setCa(ca)
-        .setPub(pub)
-        .setPriv(priv);
+        .setCertificate(certificate)
+        .setPrivateKey(privateKey);
   }
 
   public NamedCertificateSecret() {
@@ -41,26 +41,26 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return this;
   }
 
-  public String getPub() {
-    return pub;
+  public String getCertificate() {
+    return certificate;
   }
 
-  public NamedCertificateSecret setPub(String pub) {
-    this.pub = pub;
+  public NamedCertificateSecret setCertificate(String certificate) {
+    this.certificate = certificate;
     return this;
   }
 
-  public String getPriv() {
-    return priv;
+  public String getPrivateKey() {
+    return privateKey;
   }
 
-  public NamedCertificateSecret setPriv(String priv) {
-    this.priv = priv;
+  public NamedCertificateSecret setPrivateKey(String privateKey) {
+    this.privateKey = privateKey;
     return this;
   }
 
   @Override
   public CertificateSecret generateView() {
-    return new CertificateSecret(ca, pub, priv).setUpdatedAt(getUpdatedAt());
+    return new CertificateSecret(ca, certificate, privateKey).setUpdatedAt(getUpdatedAt());
   }
 }
