@@ -97,7 +97,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutStringSecret() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
@@ -113,8 +113,8 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutStringSecret_twice() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
-    String requestJson2 = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents 2\"}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents\"}";
+    String requestJson2 = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents 2\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
     mockMvc.perform(requestBuilder)
@@ -155,7 +155,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   public void validGetCertificateSecret() throws Exception {
     NamedCertificateSecret certificateSecret = new NamedCertificateSecret("whatever")
         .setCa("get-ca")
-        .setCertificate("get-pub")
+        .setCertificate("get-certificate")
         .setPrivateKey("get-priv");
 
     secretRepository.save(certificateSecret);
@@ -170,7 +170,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutCertificate() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"certificate\":{\"ca\":\"my-ca\",\"public\":\"my-pub\",\"private\":\"my-priv\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"ca\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
@@ -179,14 +179,14 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv").setUpdatedAt(frozenTime);
+    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
     Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
     Assert.assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
   }
 
   @Test
   public void validPutCertificate_showsNullsInReturnedJson() throws Exception {
-    String requestJson = "{\"type\":\"certificate\",\"certificate\":{\"ca\":null,\"public\":\"my-pub\",\"private\":\"my-priv\"}}";
+    String requestJson = "{\"type\":\"certificate\",\"credential\":{\"ca\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
@@ -328,7 +328,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void generateCertificateWithAllParametersSucceeds() throws Exception {
-    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-pub", "my-priv").setUpdatedAt(frozenTime);
+    CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
     when(certificateGenerator.generateSecret(any(CertificateSecretParameters.class))).thenReturn(certificateSecret);
 
     String requestJson = "{" +
@@ -403,7 +403,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         " retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
-        "{\"value\":\"my-secret\"}");
+        "{\"credential\":\"my-secret\"}");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
@@ -437,7 +437,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         " retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
-        "{\"value\":\"my-secret\"}");
+        "{\"credential\":\"my-secret\"}");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
@@ -449,7 +449,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
     String badResponseJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier",
-        "{\"type\":\"foo\", \"value\":\"my-secret\"}");
+        "{\"type\":\"foo\", \"credential\":\"my-secret\"}");
 
     mockMvc.perform(requestBuilder)
         .andExpect(status().isBadRequest())
@@ -498,7 +498,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   public void putSecretReturnsBadRequestIfTypeIsNotKnown() throws Exception {
     String badResponse = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 
-    String requestJson = "{\"type\":\"foo\",\"value\":\"secret contents\"}";
+    String requestJson = "{\"type\":\"foo\",\"credential\":\"secret contents\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
     mockMvc.perform(requestBuilder)
@@ -525,7 +525,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
         .setExpectation(200)
         .execute();
 
-    new PutCertificateSimulator(emptyValue, "my-pub", emptyValue)
+    new PutCertificateSimulator(emptyValue, "my-certificate", emptyValue)
         .setExpectation(200)
         .execute();
   }
@@ -552,11 +552,11 @@ public class SecretsControllerTest extends MockitoSpringTest {
     doPutValue("test.foo", "def");
     mockMvc.perform(get("/api/v1/data/test"))
         .andExpect(status().isOk())
-        .andExpect(content().json("{\"type\":\"value\",\"value\":\"abc\"}"));
+        .andExpect(content().json("{\"type\":\"value\",\"credential\":\"abc\"}"));
   }
 
   private void doPutValue(String secretName, String secretValue) throws Exception {
-    String requestJson = "{\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
+    String requestJson = "{\"type\":\"value\",\"credential\":\"" + secretValue + "\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/" + secretName, requestJson);
     mockMvc.perform(requestBuilder)
@@ -586,30 +586,31 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   class PutCertificateSimulator {
     private final String ca;
-    private final String pub;
-    private final String priv;
+    private final String certificate;
+    private final String privateKey;
     private int statusCode;
     private String badResponseJson;
 
-    public PutCertificateSimulator(String ca, String pub, String priv) {
+    public PutCertificateSimulator(String ca, String certificate, String privateKey) {
       this.ca = ca;
-      this.pub = pub;
-      this.priv = priv;
+      this.certificate = certificate;
+      this.privateKey = privateKey;
     }
 
     public void execute() throws Exception {
-      CertificateSecret certificateSecretForRequest = new CertificateSecret(ca, pub, priv);
+      CertificateSecret certificateSecretForRequest = new CertificateSecret(ca, certificate, privateKey);
       CertificateSecret certificateSecretForResponse = new CertificateSecret(
           transformEmptyToNull(ca),
-          transformEmptyToNull(pub),
-          transformEmptyToNull(priv))
+          transformEmptyToNull(certificate),
+          transformEmptyToNull(privateKey))
           .setUpdatedAt(frozenTime);
 
       String requestJson = json(certificateSecretForRequest);
 
       boolean isHttpOk = statusCode == 200;
       ResultMatcher expectedStatus = isHttpOk ? status().isOk() : status().isBadRequest();
-      ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson)).andExpect(expectedStatus);
+      ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson))
+          .andExpect(expectedStatus);
       NamedSecret certificateFromDb = secretRepository.findOneByName("whatever");
 
       if (isHttpOk) {

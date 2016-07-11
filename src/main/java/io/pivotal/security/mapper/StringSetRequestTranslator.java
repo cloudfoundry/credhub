@@ -14,7 +14,7 @@ public class StringSetRequestTranslator implements SecretSetterRequestTranslator
 
   @Override
   public StringSecret createSecretFromJson(DocumentContext parsed) throws ValidationException {
-    String value = parsed.read("$.value");
+    String value = parsed.read("$.credential");
     if (StringUtils.isEmpty(value)) {
       throw new ValidationException("error.missing_string_secret_value");
     }

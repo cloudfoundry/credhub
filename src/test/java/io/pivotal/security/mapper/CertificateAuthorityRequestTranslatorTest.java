@@ -39,16 +39,16 @@ public class CertificateAuthorityRequestTranslatorTest {
     doTestInvalid("invalid_ca_type", "b", "a", "error.type_invalid");
   }
 
-  private void doTestValid(CertificateAuthority expected, String pub, String priv) {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"" + pub + "\",\"private\":\"" + priv + "\"}}";
+  private void doTestValid(CertificateAuthority expected, String certificate, String privateKey) {
+    String requestJson = "{\"type\":\"root\",\"root\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     CertificateAuthority actual = new CertificateAuthorityRequestTranslator().createAuthorityFromJson(parsed);
     assertThat(actual, BeanMatchers.theSameAs(expected));
   }
 
-  private void doTestInvalid(String type, String pub, String priv, String expectedErrorMessage) throws ValidationException {
-    String requestJson = "{\"type\":" + type + ",\"root\":{\"public\":\"" + pub + "\",\"private\":\"" + priv + "\"}}";
+  private void doTestInvalid(String type, String certificate, String privateKey, String expectedErrorMessage) throws ValidationException {
+    String requestJson = "{\"type\":" + type + ",\"root\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     try {

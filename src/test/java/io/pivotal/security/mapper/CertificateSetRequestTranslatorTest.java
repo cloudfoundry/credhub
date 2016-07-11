@@ -47,8 +47,8 @@ public class CertificateSetRequestTranslatorTest {
     fail();
   }
 
-  private void doTest(CertificateSecret expected, String ca, String pub, String priv) {
-    String requestJson = "{\"type\":\"certificate\",\"certificate\":{\"ca\":\"" + ca + "\",\"public\":\"" + pub + "\",\"private\":\"" + priv + "\"}}";
+  private void doTest(CertificateSecret expected, String ca, String certificate, String privateKey) {
+    String requestJson = "{\"type\":\"certificate\",\"credential\":{\"ca\":\"" + ca + "\",\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     CertificateSecret actual = new CertificateSetRequestTranslator().createSecretFromJson(parsed);

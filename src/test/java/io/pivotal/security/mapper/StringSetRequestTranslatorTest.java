@@ -27,14 +27,14 @@ public class StringSetRequestTranslatorTest {
 
   @Test
   public void ensureStringSecretIsSetWhenValidValueGiven() {
-    String requestJson = "{\"type\":\"value\",\"value\":\"myValue\"}";
+    String requestJson = "{\"type\":\"value\",\"credential\":\"myValue\"}";
 
     doTest(new StringSecret("myValue"), requestJson);
   }
 
   @Test
   public void ensureStringSecretIsSetWhenEmptyValueGiven() {
-    String requestJson = "{\"type\":\"value\",\"value\":\"\"}";
+    String requestJson = "{\"type\":\"value\",\"credential\":\"\"}";
     try {
       doTest(null, requestJson);
     } catch (ValidationException e) {

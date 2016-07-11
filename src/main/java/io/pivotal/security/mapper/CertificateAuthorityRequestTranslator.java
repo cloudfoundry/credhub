@@ -17,14 +17,14 @@ public class CertificateAuthorityRequestTranslator implements AuthoritySetterReq
     if (!"root".equals(type)) {
       throw new ValidationException("error.type_invalid");
     }
-    String pub = parsed.read("$.root.public");
-    String priv = parsed.read("$.root.private");
-    pub = StringUtils.isEmpty(pub) ? null : pub;
-    priv = StringUtils.isEmpty(priv) ? null : priv;
-    if (pub == null || priv == null) {
+    String certificate = parsed.read("$.root.certificate");
+    String privateKey = parsed.read("$.root.private");
+    certificate = StringUtils.isEmpty(certificate) ? null : certificate;
+    privateKey = StringUtils.isEmpty(privateKey) ? null : privateKey;
+    if (certificate == null || privateKey == null) {
       throw new ValidationException("error.missing_ca_credentials");
     }
-    return new CertificateAuthority(type, pub, priv);
+    return new CertificateAuthority(type, certificate, privateKey);
   }
 
   @Override

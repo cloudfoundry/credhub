@@ -28,7 +28,7 @@ public class NamedStringSecretTest {
 
     Object actual = subject.generateView();
 
-    assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"value\":\"my-value\",\"type\":\"value\",\"updated_at\":null}"));
+    assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"type\":\"value\",\"updated_at\":null,\"credential\":\"my-value\"}"));
   }
 
   @Test

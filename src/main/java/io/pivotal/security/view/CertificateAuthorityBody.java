@@ -3,7 +3,7 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CertificateAuthorityBody {
-  @JsonProperty("public")
+  @JsonProperty("certificate")
   private String certificate;
   @JsonProperty("private")
   private String privateKey;

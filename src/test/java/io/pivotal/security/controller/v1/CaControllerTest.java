@@ -82,7 +82,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutWithTypeRootCa() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"public\":\"public_key\",\"private\":\"private_key\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
@@ -91,7 +91,7 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson));
 
-    CertificateAuthority expected = new CertificateAuthority("root", "public_key", "private_key");
+    CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
     expected.setUpdatedAt(frozenTime);
     Assert.assertThat(caRepository.findOneByName("ca-identifier").generateView(), BeanMatchers.theSameAs(expected));
     Assert.assertNull(secretRepository.findOneByName("ca-identifier"));
@@ -100,7 +100,7 @@ public class CaControllerTest extends MockitoSpringTest {
   @Test
   public void putWithInvalidTypeRootCaShouldThrowError() throws Exception {
     String uuid = UUID.randomUUID().toString();
-    String requestJson = "{\"type\":" + uuid + ",\"root\":{\"public\":\"public_key\",\"private\":\"private_key\"}}";
+    String requestJson = "{\"type\":" + uuid + ",\"root\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
     String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
@@ -113,10 +113,10 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validGetReturnsCertificateAuthority() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"public\":\"my_public_key\",\"private\":\"my_private_key\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\",\"private\":\"my_private_key\"}}";
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
     namedCertificateAuthority.setType("root");
-    namedCertificateAuthority.setCertificate("my_public_key");
+    namedCertificateAuthority.setCertificate("my_certificate");
     namedCertificateAuthority.setPrivateKey("my_private_key");
     caRepository.save(namedCertificateAuthority);
 
@@ -129,8 +129,8 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutCertificateAuthority_twice() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"pub\",\"private\":\"priv\"}}";
-    String requestJson2 = "{\"type\":\"root\",\"root\":{\"public\":\"pub 2\",\"private\":\"priv 2\"}}";
+    String requestJson = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\",\"private\":\"priv\"}}";
+    String requestJson2 = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate_2\",\"private\":\"priv_2\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
     mockMvc.perform(requestBuilder)
@@ -143,7 +143,7 @@ public class CaControllerTest extends MockitoSpringTest {
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(requestJson2));
 
-    CertificateAuthority expected = new CertificateAuthority("root", "pub 2", "priv 2");
+    CertificateAuthority expected = new CertificateAuthority("root", "my_certificate_2", "priv_2");
     NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
     Assert.assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), BeanMatchers.theSameAs(expected));
   }
@@ -161,8 +161,8 @@ public class CaControllerTest extends MockitoSpringTest {
   }
 
   @Test
-  public void putCert_withOnlyPublic_returnsError() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"public\":\"my_public_key\"}}";
+  public void putCert_withOnlyCertificate_returnsError() throws Exception {
+    String requestJson = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\"}}";
     String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
