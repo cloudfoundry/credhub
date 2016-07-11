@@ -23,6 +23,10 @@ jar {
     version = '0.1.0'
 }
 
+ext {
+    buildVersion = "${jar.version} build ${System.getenv("BUILD_NUMBER") ?: "DEV"}"
+}
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -82,10 +86,7 @@ task integrationTest(type: Test) {
 }
 
 processResources {
-    filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [
-        "build.version": jar.version,
-        "build.number": System.getenv("BUILD_NUMBER") ?: "DEV"
-    ]
+    expand(project.properties)
     outputs.upToDateWhen { false }
 }
 
