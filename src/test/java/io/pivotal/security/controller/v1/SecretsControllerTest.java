@@ -457,6 +457,22 @@ public class SecretsControllerTest extends MockitoSpringTest {
   }
 
   @Test
+  public void clobberingSecretNameWithDifferentType_shouldReturnBadRequest() throws Exception {
+    NamedStringSecret stringSecret = new NamedStringSecret("secret").setValue("password");
+    secretRepository.save(stringSecret);
+
+    String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret", requestJson);
+
+    String badResponse = "{ \"error\": \"The credential type cannot be modified. Please delete the credential if you wish to create it with a different type.\" }";
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(badResponse));
+  }
+
+  @Test
   public void generateSecretReturnsBadRequestWhenBodyEmpty() throws Exception {
     String badResponse = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
 

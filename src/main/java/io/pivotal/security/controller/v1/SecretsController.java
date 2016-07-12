@@ -80,20 +80,20 @@ public class SecretsController {
   private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretSetterRequestTranslator stringRequestTranslator, SecretSetterRequestTranslator certificateRequestTranslator) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
-    ImmutableMap<String, SecretSetterRequestTranslator> translators = ImmutableMap.of("value", stringRequestTranslator, "certificate", certificateRequestTranslator);
-    SecretSetterRequestTranslator requestTranslator = translators.get(type);
-    NamedSecret secretFromDatabase = secretRepository.findOneByName(secretPath);
+    SecretSetterRequestTranslator requestTranslator = getTranslator(type, stringRequestTranslator, certificateRequestTranslator); //
+    NamedSecret foundNamedSecret = secretRepository.findOneByName(secretPath);
 
+    NamedSecret toStore;
     try {
-      if (requestTranslator == null) {
-        throw new ValidationException("error.type_invalid");
-      }
       Secret secret = requestTranslator.createSecretFromJson(parsed);
-      if (secretFromDatabase == null) {
-        secretFromDatabase = requestTranslator.makeEntity(secretPath);
+      if (foundNamedSecret == null) {
+        toStore = requestTranslator.makeEntity(secretPath);
+      } else {
+        toStore = foundNamedSecret;
+        validateTypeMatch(foundNamedSecret, secret);
       }
-      secret.populateEntity(secretFromDatabase);
-      NamedSecret saved = secretRepository.save(secretFromDatabase);
+      secret.populateEntity(toStore);
+      NamedSecret saved = secretRepository.save(toStore);
       secret.setUpdatedAt(saved.getUpdatedAt());
       return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ValidationException ve) {
@@ -133,5 +133,33 @@ public class SecretsController {
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
     String errorMessage = messageSourceAccessor.getMessage(key);
     return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
+  }
+
+  private void validateTypeMatch(NamedSecret foundNamedSecret, Secret secret) {
+    Secret foundSecret = (Secret) (foundNamedSecret.generateView());
+    if (!secret.getType().equals(foundSecret.getType())) {
+      throw new ValidationException("error.type_mismatch");
+    }
+  }
+
+  private SecretSetterRequestTranslator getTranslator(String type, SecretSetterRequestTranslator stringRequestTranslator, SecretSetterRequestTranslator certificateRequestTranslator) {
+    SecretSetterRequestTranslator map = ImmutableMap.of("value", stringRequestTranslator, "certificate", certificateRequestTranslator).get(type);
+    if (map == null) {
+      map = new InvalidTranslator();
+    }
+
+    return map;
+  }
+
+  private class InvalidTranslator implements SecretSetterRequestTranslator {
+    @Override
+    public Secret createSecretFromJson(DocumentContext documentContext) {
+      throw new ValidationException("error.type_invalid");
+    }
+
+    @Override
+    public NamedSecret makeEntity(String name) {
+      return null;
+    }
   }
 }
