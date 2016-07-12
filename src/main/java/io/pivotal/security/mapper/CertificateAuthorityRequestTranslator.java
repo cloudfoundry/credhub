@@ -17,8 +17,8 @@ public class CertificateAuthorityRequestTranslator implements AuthoritySetterReq
     if (!"root".equals(type)) {
       throw new ValidationException("error.type_invalid");
     }
-    String certificate = parsed.read("$.root.certificate");
-    String privateKey = parsed.read("$.root.private");
+    String certificate = parsed.read("$.ca.certificate");
+    String privateKey = parsed.read("$.ca.private");
     certificate = StringUtils.isEmpty(certificate) ? null : certificate;
     privateKey = StringUtils.isEmpty(privateKey) ? null : privateKey;
     if (certificate == null || privateKey == null) {

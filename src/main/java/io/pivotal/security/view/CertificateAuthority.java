@@ -8,7 +8,7 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
   @JsonProperty("type")
   private String type;
 
-  @JsonProperty("root")
+  @JsonProperty("ca")
   private CertificateAuthorityBody certificateAuthorityBody;
 
   public CertificateAuthority(String type, String certificate, String privateKey) {

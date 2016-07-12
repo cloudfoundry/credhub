@@ -82,7 +82,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutWithTypeRootCa() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
@@ -100,7 +100,7 @@ public class CaControllerTest extends MockitoSpringTest {
   @Test
   public void putWithInvalidTypeRootCaShouldThrowError() throws Exception {
     String uuid = UUID.randomUUID().toString();
-    String requestJson = "{\"type\":" + uuid + ",\"root\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+    String requestJson = "{\"type\":" + uuid + ",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
     String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
@@ -113,7 +113,7 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validGetReturnsCertificateAuthority() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\",\"private\":\"my_private_key\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"my_private_key\"}}";
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
     namedCertificateAuthority.setType("root");
     namedCertificateAuthority.setCertificate("my_certificate");
@@ -129,8 +129,8 @@ public class CaControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutCertificateAuthority_twice() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\",\"private\":\"priv\"}}";
-    String requestJson2 = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate_2\",\"private\":\"priv_2\"}}";
+    String requestJson = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"priv\"}}";
+    String requestJson2 = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate_2\",\"private\":\"priv_2\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
     mockMvc.perform(requestBuilder)
