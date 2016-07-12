@@ -13,16 +13,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.security.auth.x500.X500Principal;
-import javax.validation.ValidationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+
+import javax.security.auth.x500.X500Principal;
+import javax.validation.ValidationException;
 
 @Component
 public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateSecret> {
@@ -51,7 +56,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new CertificateSecret(certPem, privatePem);
+        return new CertificateSecret(ca.getCertificate(), certPem, privatePem);
       } catch (Exception e) {
         throw new RuntimeException(e);
       }

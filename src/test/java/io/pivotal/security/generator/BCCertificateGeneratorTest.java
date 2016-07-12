@@ -19,7 +19,8 @@ import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.x509.X509V1CertificateGenerator;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,11 +30,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.security.auth.x500.X500Principal;
-import javax.validation.ValidationException;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -41,13 +54,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import javax.security.auth.x500.X500Principal;
+import javax.validation.ValidationException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -71,14 +79,16 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
 
   @Mock
   InMemoryAuthorityRepository authorityRepository;
-  private static KeyPair certificateKeyPair;
-  private static X500Principal caDn;
-  private static KeyPair caKeyPair;
-  private static String caPrinciple;
-  private static NamedCertificateAuthority defaultNamedCA;
 
-  @BeforeClass
-  public static void beforeClass() throws NoSuchProviderException, NoSuchAlgorithmException, CertificateEncodingException, SignatureException, InvalidKeyException, IOException {
+  private KeyPair certificateKeyPair;
+  private X500Principal caDn;
+  private KeyPair caKeyPair;
+  private String caPrinciple;
+  private NamedCertificateAuthority defaultNamedCA;
+
+  @Before
+  public void setUpCertificateAuthority() throws NoSuchProviderException, NoSuchAlgorithmException,
+      CertificateEncodingException, SignatureException, InvalidKeyException, IOException {
     Security.addProvider(new BouncyCastleProvider());
     certificateKeyPair = generateKeyPair();
 
@@ -90,6 +100,11 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     defaultNamedCA = new NamedCertificateAuthority("default");
     defaultNamedCA.setCertificate(CertificateFormatter.pemOf(caX509Cert));
     defaultNamedCA.setPrivateKey(CertificateFormatter.pemOf(caKeyPair.getPrivate()));
+  }
+
+  @After
+  public void removeCertificateAuthority() {
+    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
   }
 
   @Test
@@ -168,7 +183,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
     CertificateSecret certificateSecret = subject.generateSecret(inputParameters);
 
     assertThat(certificateSecret, notNullValue());
-    assertThat(certificateSecret.getCertificateBody().getRoot(), nullValue());
+    assertThat(certificateSecret.getCertificateBody().getRoot(), equalTo(defaultNamedCA.getCertificate()));
     assertThat(certificateSecret.getCertificateBody().getPrivateKey(),
         equalTo(CertificateFormatter.pemOf(certificateKeyPair.getPrivate())));
     assertThat(certificateSecret.getCertificateBody().getCertificate(),
