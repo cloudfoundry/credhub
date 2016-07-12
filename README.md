@@ -32,3 +32,4 @@ steps assume that the above repos are cloned as siblings in a ~/workspace/ direc
     - erb bosh.yml.erb > bosh.yml
     - edit any changes you like in bosh.yml, like adding an ssl certificate
 * bosh-init deploy bosh.yml
+
