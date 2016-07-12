@@ -21,7 +21,7 @@ steps assume that the above repos are cloned as siblings in a ~/workspace/ direc
 
 * create cm release
     - cd cm-release
-    - rm -rf dev_releases/credhub/*
+    - rm -rf dev_releases/credhub/*  # This step can be skipped if you've never run "bosh create release"
     - ./scripts/update
     - export SEC_ENG_CI_REPO=$HOME/workspace/sec-eng-ci
     - export RELEASE_DIR=$HOME/workspace/cm-release
@@ -30,16 +30,5 @@ steps assume that the above repos are cloned as siblings in a ~/workspace/ direc
     - cd sec-eng-deployment-credential-manager/deployments/bosh
     - export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.<something>.tgz
     - erb bosh.yml.erb > bosh.yml
-    - (edit that bosh.yml to add cert & private key, using strings like:
-
-
-    jobs:
-        properties:
-            credhub:
-                ssl:
-                    certificate: |
-                              -----BEGIN CERTIFICATE----- 
-                              ...
-                    private_key: |
-                              ----- START PRIVATE KEY ----- 
-                              ...
+    - edit any changes you like in bosh.yml, like adding an ssl certificate
+* bosh-init deploy bosh.yml
