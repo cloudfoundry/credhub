@@ -7,10 +7,12 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.Option;
+import io.pivotal.security.config.AuthServerProperties;
 import io.pivotal.security.entity.JpaAuditingHandlerRegistrar;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
@@ -23,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import static java.time.format.DateTimeFormatter.ofPattern;
 
 @SpringBootApplication
+@EnableConfigurationProperties(AuthServerProperties.class)
 @EnableJpaAuditing(dateTimeProviderRef = "currentTimeProvider")
 @Import(JpaAuditingHandlerRegistrar.class)
 public class CredentialManagerApp {

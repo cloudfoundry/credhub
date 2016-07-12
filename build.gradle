@@ -35,19 +35,6 @@ repositories {
     jcenter()
 }
 
-sourceSets {
-    integrationTest {
-        java {
-            srcDir file('src/integration-test/java')
-        }
-        resources.srcDir file('src/integration-test/resources')
-    }
-}
-
-configurations {
-    integrationTestCompile.extendsFrom testCompile
-}
-
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-hateoas')
     compile('org.springframework.boot:spring-boot-starter-web')
@@ -79,12 +66,6 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.12'
 }
 
-task integrationTest(type: Test) {
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    outputs.upToDateWhen { false }
-}
-
 processResources {
     expand(project.properties)
     outputs.upToDateWhen { false }
@@ -106,6 +87,7 @@ jacocoTestReport {
 
 bootRun {
     addResources = true
+    systemProperties["auth-server.url"] = System.getProperty("auth-server.url", "https://uaa.run.pivotal.io")
 }
 
 test {
@@ -114,6 +96,7 @@ test {
         destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
         classDumpFile = file("$buildDir/jacoco/classpathdumps")
     }
+    systemProperties["auth-server.url"] = "https://uaa.run.pivotal.io"
 }
 
 tasks.withType(Test) {
@@ -122,6 +105,3 @@ tasks.withType(Test) {
 
 tasks.check.dependsOn tasks.jacocoTestReport
 tasks.check.dependsOn tasks.dependencyCheck
-tasks.check.dependsOn tasks.integrationTest
-tasks.integrationTest.dependsOn tasks.assemble
-tasks.integrationTest.mustRunAfter tasks.test
