@@ -19,7 +19,7 @@ public class CertificateSecretTest {
   public void populateEntityEnsuresModelValuesAreInEntity() throws Exception {
     NamedCertificateSecret entity = new NamedCertificateSecret();
     model.populateEntity(entity);
-    assertThat(entity.getCa(), equalTo("ca"));
+    assertThat(entity.getRoot(), equalTo("ca"));
     assertThat(entity.getCertificate(), equalTo("pub"));
     assertThat(entity.getPrivateKey(), equalTo("priv"));
   }

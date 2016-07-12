@@ -13,7 +13,7 @@ import javax.persistence.Table;
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
 
   @Column(nullable = true, length = 7000)
-  private String ca;
+  private String root;
 
   @Column(nullable = true, length = 7000)
   private String certificate;
@@ -21,9 +21,9 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   @Column(nullable = true, length = 7000)
   private String privateKey;
 
-  public static NamedCertificateSecret make(String name, String ca, String certificate, String privateKey) {
+  public static NamedCertificateSecret make(String name, String root, String certificate, String privateKey) {
     return new NamedCertificateSecret(name)
-        .setCa(ca)
+        .setRoot(root)
         .setCertificate(certificate)
         .setPrivateKey(privateKey);
   }
@@ -35,12 +35,12 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     super(name);
   }
 
-  public String getCa() {
-    return ca;
+  public String getRoot() {
+    return root;
   }
 
-  public NamedCertificateSecret setCa(String ca) {
-    this.ca = ca;
+  public NamedCertificateSecret setRoot(String root) {
+    this.root = root;
     return this;
   }
 
@@ -64,6 +64,6 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
 
   @Override
   public CertificateSecret generateView() {
-    return new CertificateSecret(ca, certificate, privateKey).setUpdatedAt(getUpdatedAt());
+    return new CertificateSecret(root, certificate, privateKey).setUpdatedAt(getUpdatedAt());
   }
 }

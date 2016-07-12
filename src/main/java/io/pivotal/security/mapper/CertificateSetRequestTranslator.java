@@ -14,16 +14,16 @@ public class CertificateSetRequestTranslator implements SecretSetterRequestTrans
 
   @Override
   public CertificateSecret createSecretFromJson(DocumentContext parsed) throws ValidationException {
-    String ca = parsed.read("$.credential.ca");
+    String root = parsed.read("$.credential.root");
     String certificate = parsed.read("$.credential.certificate");
     String privateKey = parsed.read("$.credential.private");
-    ca = StringUtils.isEmpty(ca) ? null : ca;
+    root = StringUtils.isEmpty(root) ? null : root;
     certificate = StringUtils.isEmpty(certificate) ? null : certificate;
     privateKey = StringUtils.isEmpty(privateKey) ? null : privateKey;
-    if (ca == null && certificate == null && privateKey == null) {
+    if (root == null && certificate == null && privateKey == null) {
       throw new ValidationException("error.missing_certificate_credentials");
     }
-    return new CertificateSecret(ca, certificate, privateKey);
+    return new CertificateSecret(root, certificate, privateKey);
   }
 
   @Override

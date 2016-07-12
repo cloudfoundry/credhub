@@ -3,25 +3,25 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CertificateBody {
-  @JsonProperty("ca")
-  private String ca;
+  @JsonProperty("root")
+  private String root;
   @JsonProperty("certificate")
   private String certificate;
   @JsonProperty("private")
   private String privateKey;
 
-  public CertificateBody(String ca, String certificate, String privateKey) {
-    this.setCa(ca);
+  public CertificateBody(String root, String certificate, String privateKey) {
+    this.setRoot(root);
     this.setCertificate(certificate);
     this.setPrivateKey(privateKey);
   }
 
-  public String getCa() {
-    return ca;
+  public String getRoot() {
+    return root;
   }
 
-  public void setCa(String ca) {
-    this.ca = ca;
+  public void setRoot(String root) {
+    this.root = root;
   }
 
   public String getCertificate() {

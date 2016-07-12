@@ -25,7 +25,7 @@ public class NamedCertificateSecretTest {
   public void canCreateModelFromEntity() throws Exception {
     NamedCertificateSecret subject = io.pivotal.security.entity.NamedCertificateSecret.make("Foo", "my-ca", "my-cert", "my-priv");
     Object actual = subject.generateView();
-    assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"type\":\"certificate\",\"updated_at\":null,\"credential\":{\"ca\":\"my-ca\",\"certificate\":\"my-cert\",\"private\":\"my-priv\"}}"));
+    assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"type\":\"certificate\",\"updated_at\":null,\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-cert\",\"private\":\"my-priv\"}}"));
   }
 
   @Test

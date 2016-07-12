@@ -154,7 +154,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
   @Test
   public void validGetCertificateSecret() throws Exception {
     NamedCertificateSecret certificateSecret = new NamedCertificateSecret("whatever")
-        .setCa("get-ca")
+        .setRoot("get-ca")
         .setCertificate("get-certificate")
         .setPrivateKey("get-priv");
 
@@ -170,7 +170,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutCertificate() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"ca\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
@@ -186,7 +186,7 @@ public class SecretsControllerTest extends MockitoSpringTest {
 
   @Test
   public void validPutCertificate_showsNullsInReturnedJson() throws Exception {
-    String requestJson = "{\"type\":\"certificate\",\"credential\":{\"ca\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+    String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
     RequestBuilder requestBuilder = putRequestBuilder("/api/v1/data/secret-identifier", requestJson);
 
