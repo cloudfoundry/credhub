@@ -65,7 +65,10 @@ public class SignedCertificateGenerator {
         params.getDN(),
         publicKeyInfo
     );
-    certificateBuilder.addExtension(Extension.subjectAlternativeName, false, getAlternativeNames(params));
+
+    if (params.getAlternativeNames().size() > 0) {
+      certificateBuilder.addExtension(Extension.subjectAlternativeName, false, getAlternativeNames(params));
+    }
 
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 
@@ -125,7 +128,6 @@ public class SignedCertificateGenerator {
         throw new ValidationException("error.invalid_alternate_name");
       }
     }
-    //TODO: don't add the extension if there are no alternative names
     return new GeneralNames(genNames);
   }
 }

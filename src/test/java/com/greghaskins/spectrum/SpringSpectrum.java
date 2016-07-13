@@ -4,6 +4,8 @@ import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 
+import static org.junit.Assert.fail;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -12,17 +14,30 @@ public class SpringSpectrum extends Runner {
 
   public static void describe(final String context, final Spectrum.Block block) {
     final Suite suite = getCurrentSuite().addSuite(context);
-    beginDefintion(suite, block);
+    beginDefinition(suite, block);
   }
 
   public static void fdescribe(final String context, final Spectrum.Block block) {
     final Suite suite = getCurrentSuite().addSuite(context);
     suite.focus();
-    beginDefintion(suite, block);
+    beginDefinition(suite, block);
   }
 
   public static void it(final String behavior, final Spectrum.Block block) {
     getCurrentSuite().addSpec(behavior, block);
+  }
+
+  public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
+    it(behavior, () -> {
+      try {
+        block.run();
+        fail("Expected " + throwableClass.getSimpleName() + " to be thrown, but it wasn't");
+      } catch (Throwable t) {
+        if (!throwableClass.equals(t.getClass())) {
+          fail("Expected " + throwableClass.getSimpleName() + " to be thrown, but got " + t.getClass().getSimpleName());
+        }
+      }
+    });
   }
 
   public static void fit(final String behavior, final Spectrum.Block block) {
@@ -52,7 +67,7 @@ public class SpringSpectrum extends Runner {
   public SpringSpectrum(Class<?> testClass) {
     final Description description = Description.createSuiteDescription(testClass);
     this.rootSuite = Suite.rootSuite(description);
-    beginDefintion(this.rootSuite, new SpringConstructorBlock(testClass));
+    beginDefinition(this.rootSuite, new SpringConstructorBlock(testClass));
   }
 
   @Override
@@ -65,7 +80,7 @@ public class SpringSpectrum extends Runner {
     rootSuite.run(notifier);
   }
 
-  synchronized private static void beginDefintion(final Suite suite, final Spectrum.Block definitionBlock) {
+  synchronized private static void beginDefinition(final Suite suite, final Spectrum.Block definitionBlock) {
     suiteStack.push(suite);
     try {
       definitionBlock.run();

@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.greghaskins.spectrum.SpringSpectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -17,6 +18,10 @@ import static com.greghaskins.spectrum.SpringSpectrum.beforeAll;
 import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
 import static com.greghaskins.spectrum.SpringSpectrum.describe;
 import static com.greghaskins.spectrum.SpringSpectrum.it;
+import static com.greghaskins.spectrum.SpringSpectrum.itThrows;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -43,6 +48,7 @@ import java.util.Collections;
 import java.util.Date;
 
 import javax.security.auth.x500.X500Principal;
+import javax.validation.ValidationException;
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -53,6 +59,12 @@ public class SignedCertificateGeneratorTest {
 
   DateTimeProvider timeProvider;
   RandomSerialNumberGenerator serialNumberGenerator;
+  X509Certificate generatedCert;
+  KeyPair issuerKeyPair;
+  X500Principal caDn;
+  KeyPair certKeyPair;
+  PrivateKey issuerPrivateKey;
+  CertificateSecretParameters inputParameters;
 
   @Autowired
   SignedCertificateGenerator subject;
@@ -69,67 +81,137 @@ public class SignedCertificateGeneratorTest {
       when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(12));
     });
 
-    describe("a generated certificate", () -> {
-      Spectrum.Value<X509Certificate> generatedCert = Spectrum.value(X509Certificate.class);
-      Spectrum.Value<KeyPair> issuerKeyPair = Spectrum.value(KeyPair.class);
-      Spectrum.Value<X500Principal> caDn = Spectrum.value(X500Principal.class);
-      Spectrum.Value<KeyPair> certKeyPair = Spectrum.value(KeyPair.class);
+    final SuiteBuilder validCertificateSuite = (makeCert) -> () -> {
+      
+      describe("with or without alternative names", () -> {
+
+        beforeEach(makeCert::run);
+
+        it("is not null", () -> {
+          assertNotNull(generatedCert);
+        });
+
+        it("the signature is valid", () -> {
+          generatedCert.verify(issuerKeyPair.getPublic());
+        });
+
+        it("has the correct metadata", () -> {
+          assertThat(generatedCert.getIssuerX500Principal(), equalTo(caDn));
+          assertThat(generatedCert.getSubjectX500Principal().getName(), equalTo("CN=my test cert,C=US,ST=CA," +
+              "O=credhub"));
+        });
+
+        it("is valid for the appropriate time range", () -> {
+          assertThat(generatedCert.getNotBefore(), equalTo(Date.from(now.truncatedTo(ChronoUnit.SECONDS))));
+          assertThat(generatedCert.getNotAfter(), equalTo(Date.from(now.plus(Duration.ofDays(10)).truncatedTo
+              (ChronoUnit.SECONDS))));
+        });
+
+        it("has a random serial number", () -> {
+          verify(serialNumberGenerator).generate();
+          assertThat(generatedCert.getSerialNumber(), equalTo(BigInteger.valueOf(12)));
+        });
+
+        it("contains the public key", () -> {
+          assertThat(generatedCert.getPublicKey(), equalTo(certKeyPair.getPublic()));
+        });
+
+        it("has no alterative names", () -> {
+          assertThat(generatedCert.getExtensionValue(Extension.subjectAlternativeName.getId()), nullValue());
+        });
+      });
+
+      describe("with alternate names", () -> {
+
+        beforeEach(() -> {
+          inputParameters = new CertificateSecretParameters();
+          inputParameters.setOrganization("my-org");
+          inputParameters.setState("NY");
+          inputParameters.setCountry("USA");
+        });
+
+        it("are supported", () -> {
+          inputParameters.addAlternativeName("1.1.1.1");
+          inputParameters.addAlternativeName("example.com");
+          inputParameters.addAlternativeName("foo.pivotal.io");
+          inputParameters.addAlternativeName("*.pivotal.io");
+
+          makeCert.run();
+
+          assertThat(generatedCert.getSubjectAlternativeNames(), containsInAnyOrder(
+              contains(7, "1.1.1.1"),
+              contains(2, "example.com"),
+              contains(2, "foo.pivotal.io"),
+              contains(2, "*.pivotal.io")
+          ));
+        });
+
+        itThrows("with invalid special DNS characters throws a validation exception", ValidationException.class, () -> {
+          inputParameters.addAlternativeName("foo!@#$%^&*()_-+=.com");
+          makeCert.run();
+        });
+
+        itThrows("with space character throws a validation exception", ValidationException.class, () -> {
+          inputParameters.addAlternativeName("foo pivotal.io");
+          makeCert.run();
+        });
+
+        itThrows("with invalid IP address throws a validation exception", ValidationException.class, () -> {
+          inputParameters.addAlternativeName("1.2.3.999");
+          makeCert.run();
+        });
+
+        // email addresses are allowed in certificate spec, but we do not allow them per PM requirements
+        itThrows("with email address throws a validation exception", ValidationException.class, () -> {
+          inputParameters.addAlternativeName("x@y.com");
+          makeCert.run();
+        });
+
+        itThrows("with URL throws a validation exception", ValidationException.class, () -> {
+          inputParameters.addAlternativeName("https://foo.com");
+          makeCert.run();
+        });
+      });
+    };
+
+    describe("a generated issuer-signed certificate", () -> {
 
       beforeEach(() -> {
-        caDn.value = new X500Principal("O=foo\\,inc.,ST=\'my fav state\', C=\"adsf asdf\",OU=cool org, EMAILADDRESS=x@y.com");
+        caDn = new X500Principal("O=foo\\,inc.,ST=\'my fav state\', C=\"adsf asdf\",OU=cool org, " +
+            "EMAILADDRESS=x@y.com");
 
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
         generator.initialize(1024); // doesn't matter for testing
-        issuerKeyPair.value = generator.generateKeyPair();
-        PrivateKey issuerPrivateKey = issuerKeyPair.value.getPrivate();
+        issuerKeyPair = generator.generateKeyPair();
+        issuerPrivateKey = issuerKeyPair.getPrivate();
 
-        certKeyPair.value = generator.generateKeyPair();
-        CertificateSecretParameters inputParameters = new CertificateSecretParameters();
+        certKeyPair = generator.generateKeyPair();
+        inputParameters = new CertificateSecretParameters();
         inputParameters.setCommonName("my test cert");
         inputParameters.setCountry("US");
         inputParameters.setState("CA");
         inputParameters.setOrganization("credhub");
         inputParameters.setDurationDays(10);
-
-        generatedCert.value = subject.getSignedByIssuer(caDn.value, issuerPrivateKey, certKeyPair.value, inputParameters);
       });
 
-      it("is not null", () -> {
-        assertNotNull(generatedCert);
-      });
+      final ThrowingRunnable makeCert = () -> {
+        generatedCert = subject.getSignedByIssuer(caDn, issuerPrivateKey, certKeyPair,
+            inputParameters);
+      };
 
-      it("the signature is valid", () -> {
-        generatedCert.value.verify(issuerKeyPair.value.getPublic());
-      });
-
-      it("has the correct metadata", () -> {
-        assertThat(generatedCert.value.getIssuerX500Principal(), equalTo(caDn.value));
-        assertThat(generatedCert.value.getSubjectX500Principal().getName(), equalTo("CN=my test cert,C=US,ST=CA,O=credhub"));
-      });
-
-      it("is valid for the appropriate time range", () -> {
-        assertThat(generatedCert.value.getNotBefore(), equalTo(Date.from(now.truncatedTo(ChronoUnit.SECONDS))));
-        assertThat(generatedCert.value.getNotAfter(), equalTo(Date.from(now.plus(Duration.ofDays(10)).truncatedTo(ChronoUnit.SECONDS))));
-      });
-
-      it("has a random serial number", () -> {
-        verify(serialNumberGenerator).generate();
-        assertThat(generatedCert.value.getSerialNumber(), equalTo(BigInteger.valueOf(12)));
-      });
-
-      it("contains the public key", () -> {
-        assertThat(generatedCert.value.getPublicKey(), equalTo(certKeyPair.value.getPublic()));
-      });
+      describe("must behave like", validCertificateSuite.build(makeCert));
 
       it("is part of a trust chain with the ca", () -> {
+        makeCert.run();
         final X509CertSelector target = new X509CertSelector();
-        target.setCertificate(generatedCert.value);
+        target.setCertificate(generatedCert);
 
-        final TrustAnchor trustAnchor = new TrustAnchor(caDn.value, issuerKeyPair.value.getPublic(), null);
-        final PKIXBuilderParameters builderParameters = new PKIXBuilderParameters(Collections.singleton(trustAnchor), target);
+        final TrustAnchor trustAnchor = new TrustAnchor(caDn, issuerKeyPair.getPublic(), null);
+        final PKIXBuilderParameters builderParameters = new PKIXBuilderParameters(Collections.singleton
+            (trustAnchor), target);
 
         final CertStore certStore = new JcaCertStoreBuilder()
-            .addCertificate(new X509CertificateHolder(generatedCert.value.getEncoded()))
+            .addCertificate(new X509CertificateHolder(generatedCert.getEncoded()))
             .build();
 
         builderParameters.addCertStore(certStore);
@@ -140,6 +222,31 @@ public class SignedCertificateGeneratorTest {
         builderResult.getCertPath();
       });
     });
+
+    describe("a generated self-signed certificate", () -> {
+
+      ThrowingRunnable makeCert = () -> {
+        generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
+      };
+
+      beforeEach(() -> {
+        caDn = new X500Principal("CN=my test cert,C=\"US\",ST=CA, O=credhub");
+
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
+        generator.initialize(1024); // doesn't matter for testing
+        issuerKeyPair = generator.generateKeyPair();
+
+        certKeyPair = issuerKeyPair;
+        inputParameters = new CertificateSecretParameters();
+        inputParameters.setCommonName("my test cert");
+        inputParameters.setCountry("US");
+        inputParameters.setState("CA");
+        inputParameters.setOrganization("credhub");
+        inputParameters.setDurationDays(10);
+      });
+
+      describe("must behave like", validCertificateSuite.build(makeCert));
+    });
   }
 
   private void createAndInjectMocks() {
@@ -148,5 +255,13 @@ public class SignedCertificateGeneratorTest {
     subject.timeProvider = timeProvider;
     serialNumberGenerator = Mockito.mock(RandomSerialNumberGenerator.class);
     subject.serialNumberGenerator = serialNumberGenerator;
+  }
+
+  interface ThrowingRunnable {
+    void run() throws Exception;
+  }
+
+  interface SuiteBuilder {
+    Spectrum.Block build(ThrowingRunnable makeCert);
   }
 }
