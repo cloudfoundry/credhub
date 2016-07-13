@@ -1,7 +1,7 @@
 package io.pivotal.security.mapper;
 
 
-import com.greghaskins.spectrum.SpringSpectrum;
+import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
@@ -11,15 +11,16 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 
-import javax.validation.ValidationException;
-
-import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
-import static com.greghaskins.spectrum.SpringSpectrum.it;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-@RunWith(SpringSpectrum.class)
+import javax.validation.ValidationException;
+
+@RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 public class StringGeneratorRequestTranslatorTest {
 
@@ -29,6 +30,8 @@ public class StringGeneratorRequestTranslatorTest {
   private StringGeneratorRequestTranslator subject;
 
   {
+    wireAndUnwire(this);
+
     beforeEach(() -> {
       subject = new StringGeneratorRequestTranslator();
     });

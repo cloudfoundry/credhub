@@ -1,10 +1,9 @@
 package io.pivotal.security.generator;
 
+import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.MockitoSpringTest;
 import io.pivotal.security.controller.v1.StringSecretParameters;
 import io.pivotal.security.view.StringSecret;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -14,20 +13,23 @@ import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.when;
 
-
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
+public class PasseyStringSecretGeneratorTest {
 
   @InjectMocks
   @Autowired
@@ -42,51 +44,50 @@ public class PasseyStringSecretGeneratorTest extends MockitoSpringTest {
   @Captor
   private ArgumentCaptor<List<CharacterRule>> captor;
 
-  @Test
-  public void generateSecret() {
-    StringSecretParameters secretParameters = new StringSecretParameters();
+  {
+    wireAndUnwire(this);
 
-    List<CharacterRule> characterRules = new ArrayList<>();
+    it("can generate secret", () -> {
+      StringSecretParameters secretParameters = new StringSecretParameters();
 
-    when(characterRuleProvider.getCharacterRules(same(secretParameters))).thenReturn(characterRules);
+      List<CharacterRule> characterRules = new ArrayList<>();
 
-    when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
+      when(characterRuleProvider.getCharacterRules(same(secretParameters))).thenReturn(characterRules);
 
-    StringSecret secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue.getValue(), equalTo("very-secret"));
+      when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
+
+      StringSecret secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getValue(), equalTo("very-secret"));
+    });
+
+    it("can generate secret iwth specific length", () -> {
+      when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-secret");
+
+      StringSecretParameters secretParameters = new StringSecretParameters();
+      secretParameters.setLength(42);
+
+      StringSecret secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getValue(), equalTo("very-secret"));
+    });
+
+    it("ignores too-small length values", () -> {
+      when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+
+      StringSecretParameters secretParameters = new StringSecretParameters();
+      secretParameters.setLength(3);
+
+      StringSecret secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getValue(), equalTo("very-secret"));
+    });
+
+    it("ignores too-large length values", () -> {
+      when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+
+      StringSecretParameters secretParameters = new StringSecretParameters();
+      secretParameters.setLength(201);
+
+      StringSecret secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getValue(), equalTo("very-secret"));
+    });
   }
-
-  @Test
-  public void generateSecretWithSpecificLength() {
-    when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-secret");
-
-    StringSecretParameters secretParameters = new StringSecretParameters();
-    secretParameters.setLength(42);
-
-    StringSecret secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue.getValue(), equalTo("very-secret"));
-  }
-
-  @Test
-  public void generateSecretWithLessThanMinLength() {
-    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
-
-    StringSecretParameters secretParameters = new StringSecretParameters();
-    secretParameters.setLength(3);
-
-    StringSecret secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue.getValue(), equalTo("very-secret"));
-  }
-
-  @Test
-  public void generateSecretWithMoreThanMaxLength() {
-    when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
-
-    StringSecretParameters secretParameters = new StringSecretParameters();
-    secretParameters.setLength(201);
-
-    StringSecret secretValue = subject.generateSecret(secretParameters);
-    assertThat(secretValue.getValue(), equalTo("very-secret"));
-  }
-
 }

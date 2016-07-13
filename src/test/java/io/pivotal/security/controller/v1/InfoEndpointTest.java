@@ -1,6 +1,6 @@
 package io.pivotal.security.controller.v1;
 
-import com.greghaskins.spectrum.SpringSpectrum;
+import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +11,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
-import static com.greghaskins.spectrum.SpringSpectrum.it;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringSpectrum.class)
+@RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
 public class InfoEndpointTest {
@@ -29,6 +30,8 @@ public class InfoEndpointTest {
   private MockMvc mockMvc;
 
   {
+    wireAndUnwire(this);
+
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     });
