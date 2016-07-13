@@ -1,54 +1,49 @@
 package io.pivotal.security.controller.v1;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.MockitoSpringTest;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateAuthority;
 import org.exparity.hamcrest.BeanMatchers;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.ConfigurableWebApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.UUID;
-
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Transactional
-@RunWith(SpringJUnit4ClassRunner.class)
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
+
+@RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
-public class CaControllerTest extends MockitoSpringTest {
+public class CaControllerTest {
 
   @Autowired
-  protected ConfigurableWebApplicationContext context;
-
-  @Autowired
-  private ObjectMapper objectMapper;
+  protected WebApplicationContext context;
 
   @Autowired
   private InMemorySecretRepository secretRepository;
@@ -69,157 +64,151 @@ public class CaControllerTest extends MockitoSpringTest {
   private final ZoneId utc = ZoneId.of("UTC");
   private LocalDateTime frozenTime;
 
-  @Before
-  public void setUp() {
-    freeze();
-    mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-  }
+  {
+    wireAndUnwire(this);
+    autoTransactional(this);
 
-  @After
-  public void tearDown() {
-    currentTimeProvider.reset();
-  }
+    beforeEach(() -> {
+      freeze();
+      mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+    });
 
-  @Test
-  public void validPutWithTypeRootCa() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+    afterEach(() -> {
+      currentTimeProvider.reset();
+    });
 
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+    it("can set a root ca", () -> {
+      String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(requestJson));
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
-    CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
-    expected.setUpdatedAt(frozenTime);
-    Assert.assertThat(caRepository.findOneByName("ca-identifier").generateView(), BeanMatchers.theSameAs(expected));
-    Assert.assertNull(secretRepository.findOneByName("ca-identifier"));
-  }
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(requestJson));
 
-  @Test
-  public void putWithInvalidTypeRootCaShouldThrowError() throws Exception {
-    String uuid = UUID.randomUUID().toString();
-    String requestJson = "{\"type\":" + uuid + ",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+      CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
+      expected.setUpdatedAt(frozenTime);
+      assertThat(caRepository.findOneByName("ca-identifier").generateView(), BeanMatchers.theSameAs(expected));
+      assertThat(secretRepository.findOneByName("ca-identifier"), nullValue());
+    });
 
-    String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+    it("returns bad request for invalid type", () -> {
+      String uuid = UUID.randomUUID().toString();
+      String requestJson = "{\"type\":" + uuid + ",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(invalidTypeJson));
-  }
+      String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
-  @Test
-  public void validGetReturnsCertificateAuthority() throws Exception {
-    String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"my_private_key\"}}";
-    NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
-    namedCertificateAuthority.setType("root");
-    namedCertificateAuthority.setCertificate("my_certificate");
-    namedCertificateAuthority.setPrivateKey("my_private_key");
-    caRepository.save(namedCertificateAuthority);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(invalidTypeJson));
+    });
 
-    RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(requestJson));
-  }
+    it("can get a certificate authority", () -> {
+      String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"my_private_key\"}}";
+      NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
+      namedCertificateAuthority.setType("root");
+      namedCertificateAuthority.setCertificate("my_certificate");
+      namedCertificateAuthority.setPrivateKey("my_private_key");
+      caRepository.save(namedCertificateAuthority);
 
-  @Test
-  public void validPutCertificateAuthority_twice() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"priv\"}}";
-    String requestJson2 = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate_2\",\"private\":\"priv_2\"}}";
+      RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(requestJson));
+    });
 
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(requestJson));
-    RequestBuilder requestBuilder2 = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson2);
-    mockMvc.perform(requestBuilder2)
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(requestJson2));
+    it("can put a certificate authority twice", () -> {
+      String requestJson = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"priv\"}}";
+      String requestJson2 = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate_2\",\"private\":\"priv_2\"}}";
 
-    CertificateAuthority expected = new CertificateAuthority("root", "my_certificate_2", "priv_2");
-    NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
-    Assert.assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), BeanMatchers.theSameAs(expected));
-  }
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(requestJson));
 
-  @Test
-  public void getCertificateAuthority_whenNotFound_returns404() throws Exception {
-    String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
+      RequestBuilder requestBuilder2 = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson2);
+      mockMvc.perform(requestBuilder2)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(requestJson2));
 
-    RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
+      CertificateAuthority expected = new CertificateAuthority("root", "my_certificate_2", "priv_2");
+      NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
+      assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), BeanMatchers.theSameAs(expected));
+    });
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isNotFound())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(notFoundJson));
-  }
+    it("get returns 404 when not found", () -> {
+      String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
 
-  @Test
-  public void putCert_withOnlyCertificate_returnsError() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\"}}";
-    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+      RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
 
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isNotFound())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(notFoundJson));
+    });
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(notFoundJson));
-  }
+    it("put with only a certificate returns an error", () -> {
+      String requestJson = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\"}}";
+      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
-  @Test
-  public void putCert_withOnlyPrivate_returnsError() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{\"private\":\"my_private_key\"}}";
-    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(notFoundJson));
+    });
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(notFoundJson));
-  }
+    it("put with only private returns an error", () -> {
+      String requestJson = "{\"type\":\"root\",\"root\":{\"private\":\"my_private_key\"}}";
+      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
-  @Test
-  public void putCert_withoutKeys_returnsError() throws Exception {
-    String requestJson = "{\"type\":\"root\",\"root\":{}}";
-    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(notFoundJson));
+    });
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(notFoundJson));
-  }
+    it("put without keys returns an error", () -> {
+      String requestJson = "{\"type\":\"root\",\"root\":{}}";
+      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
-  @Test
-  public void putCert_withEmptyRequest_returnsError() throws Exception {
-    String requestJson = "{\"type\":\"root\"}";
-    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(notFoundJson));
+    });
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isBadRequest())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(notFoundJson));
-  }
+    it("put with empty request returns an error", () -> {
+      String requestJson = "{\"type\":\"root\"}";
+      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
-  @Test
-  public void putCert_withGarbageRequest_returnsError() throws Exception {
-    String requestJson = "{\"root\": }";
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
-    RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(notFoundJson));
+    });
 
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isBadRequest());
+    it("put cert with garbage returns an error", () -> {
+      String requestJson = "{\"root\": }";
+
+      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest());
+    });
   }
 
   private RequestBuilder getRequestBuilder(String path) {
@@ -231,10 +220,6 @@ public class CaControllerTest extends MockitoSpringTest {
     return put(path)
         .content(requestBody)
         .contentType(MediaType.APPLICATION_JSON_UTF8);
-  }
-
-  private String json(Object o) throws IOException {
-    return objectMapper.writeValueAsString(o);
   }
 
   private String getUpdatedAtJson() {

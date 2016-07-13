@@ -607,13 +607,13 @@ public class SecretsControllerTest extends MockitoSpringTest {
     private int statusCode;
     private String badResponseJson;
 
-    public PutCertificateSimulator(String ca, String certificate, String privateKey) {
+    PutCertificateSimulator(String ca, String certificate, String privateKey) {
       this.ca = ca;
       this.certificate = certificate;
       this.privateKey = privateKey;
     }
 
-    public void execute() throws Exception {
+    void execute() throws Exception {
       CertificateSecret certificateSecretForRequest = new CertificateSecret(ca, certificate, privateKey);
       CertificateSecret certificateSecretForResponse = new CertificateSecret(
           transformEmptyToNull(ca),
@@ -641,11 +641,11 @@ public class SecretsControllerTest extends MockitoSpringTest {
       return "".equals(param) ? null : param;
     }
 
-    public PutCertificateSimulator setExpectation(int statusCode) {
+    PutCertificateSimulator setExpectation(int statusCode) {
       return setExpectation(statusCode, null);
     }
 
-    public PutCertificateSimulator setExpectation(int statusCode, String badResponseJson) {
+    PutCertificateSimulator setExpectation(int statusCode, String badResponseJson) {
       this.statusCode = statusCode;
       this.badResponseJson = badResponseJson;
       return this;

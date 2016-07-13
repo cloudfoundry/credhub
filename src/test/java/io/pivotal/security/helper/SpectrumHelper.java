@@ -3,7 +3,11 @@ package io.pivotal.security.helper;
 import com.greghaskins.spectrum.Spectrum;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.TestContextManager;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -11,6 +15,7 @@ import static org.junit.Assert.fail;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SpectrumHelper {
   public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
@@ -30,6 +35,16 @@ public class SpectrumHelper {
     final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
     beforeEach(injectMocksAndBeans(testInstance, testContextManager));
     afterEach(cleanInjectedBeans(testInstance, testContextManager));
+  }
+
+  public static void autoTransactional(Object testInstance) {
+    final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
+    final PlatformTransactionManager transactionManager = testContextManager.getApplicationContext().getBean(PlatformTransactionManager.class);
+    final AtomicReference<TransactionStatus> transaction = new AtomicReference<>();
+
+    beforeEach(() -> transaction.set(transactionManager.getTransaction(new DefaultTransactionDefinition())));
+
+    afterEach(() -> transactionManager.rollback(transaction.get()));
   }
 
   private static Spectrum.Block injectMocksAndBeans(Object testInstance, MyTestContextManager testContextManager) {
@@ -62,8 +77,12 @@ public class SpectrumHelper {
       super(testClass);
     }
 
+    ApplicationContext getApplicationContext() {
+      return getTestContext().getApplicationContext();
+    }
+
     void autowireBean(Object existingBean) {
-      getTestContext().getApplicationContext().getAutowireCapableBeanFactory().autowireBean(existingBean);
+      getApplicationContext().getAutowireCapableBeanFactory().autowireBean(existingBean);
     }
   }
 }
