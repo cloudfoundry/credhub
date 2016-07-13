@@ -4,8 +4,6 @@ import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 
-import static org.junit.Assert.fail;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -25,19 +23,6 @@ public class SpringSpectrum extends Runner {
 
   public static void it(final String behavior, final Spectrum.Block block) {
     getCurrentSuite().addSpec(behavior, block);
-  }
-
-  public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
-    it(behavior, () -> {
-      try {
-        block.run();
-        fail("Expected " + throwableClass.getSimpleName() + " to be thrown, but it wasn't");
-      } catch (Throwable t) {
-        if (!throwableClass.equals(t.getClass())) {
-          fail("Expected " + throwableClass.getSimpleName() + " to be thrown, but got " + t.getClass().getSimpleName());
-        }
-      }
-    });
   }
 
   public static void fit(final String behavior, final Spectrum.Block block) {

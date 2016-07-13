@@ -1,24 +1,22 @@
 package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.SpringSpectrum;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.data.auditing.DateTimeProvider;
 
-import static com.greghaskins.spectrum.SpringSpectrum.beforeAll;
-import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
-import static com.greghaskins.spectrum.SpringSpectrum.describe;
-import static com.greghaskins.spectrum.SpringSpectrum.it;
-import static com.greghaskins.spectrum.SpringSpectrum.itThrows;
+import static com.greghaskins.spectrum.Spectrum.beforeAll;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -50,15 +48,18 @@ import java.util.Date;
 import javax.security.auth.x500.X500Principal;
 import javax.validation.ValidationException;
 
-@RunWith(SpringSpectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@RunWith(Spectrum.class)
 public class SignedCertificateGeneratorTest {
 
   final Instant now = Instant.now();
   final Calendar nowCalendar = Calendar.getInstance();
 
+  @Mock
   DateTimeProvider timeProvider;
+
+  @Mock
   RandomSerialNumberGenerator serialNumberGenerator;
+
   X509Certificate generatedCert;
   KeyPair issuerKeyPair;
   X500Principal caDn;
@@ -66,7 +67,7 @@ public class SignedCertificateGeneratorTest {
   PrivateKey issuerPrivateKey;
   CertificateSecretParameters inputParameters;
 
-  @Autowired
+  @InjectMocks
   SignedCertificateGenerator subject;
 
   {
@@ -74,15 +75,16 @@ public class SignedCertificateGeneratorTest {
       Security.addProvider(new BouncyCastleProvider());
     });
 
+    beforeEach(injectMocks(this));
+
     beforeEach(() -> {
-      createAndInjectMocks();
       nowCalendar.setTime(Date.from(now));
       when(timeProvider.getNow()).thenReturn(nowCalendar);
       when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(12));
     });
 
     final SuiteBuilder validCertificateSuite = (makeCert) -> () -> {
-      
+
       describe("with or without alternative names", () -> {
 
         beforeEach(makeCert::run);
@@ -247,14 +249,6 @@ public class SignedCertificateGeneratorTest {
 
       describe("must behave like", validCertificateSuite.build(makeCert));
     });
-  }
-
-  private void createAndInjectMocks() {
-    // @Mock annotation doesn't seem to work, so do it manually
-    timeProvider = Mockito.mock(DateTimeProvider.class);
-    subject.timeProvider = timeProvider;
-    serialNumberGenerator = Mockito.mock(RandomSerialNumberGenerator.class);
-    subject.serialNumberGenerator = serialNumberGenerator;
   }
 
   interface ThrowingRunnable {
