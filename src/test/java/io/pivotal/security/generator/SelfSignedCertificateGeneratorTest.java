@@ -11,9 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.security.auth.x500.X500Principal;
-import javax.validation.ValidationException;
-import java.security.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,15 +30,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import javax.security.auth.x500.X500Principal;
+import javax.validation.ValidationException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 public class SelfSignedCertificateGeneratorTest {
 
   @Autowired
-  private SelfSignedCertificateGenerator selfSignedCertificateGenerator;
+  private SignedCertificateGenerator signedCertificateGenerator;
   private static KeyPair keyPair;
 
   @BeforeClass
@@ -46,12 +54,12 @@ public class SelfSignedCertificateGeneratorTest {
     inputParameters.setLocality("My Locality");
     inputParameters.setCommonName("My Common Name");
 
-    X500Principal expectedPrincipal = new X500Principal("O=my-org,ST=NY,C=USA,CN=My Common Name,OU=My Unit,L=My Locality");
-    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    X500Principal expectedPrincipal = new X500Principal("L=My Locality,OU=My Unit,CN=My Common Name,C=USA,ST=NY,O=my-org");
+    X509Certificate actualCert = signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
 
     actualCert.checkValidity();
     assertThat(actualCert, notNullValue());
-    assertThat(actualCert.getSubjectX500Principal(), BeanMatchers.theSameAs(expectedPrincipal));
+    assertThat(actualCert.getSubjectX500Principal(), equalTo(expectedPrincipal));
     assertThat(actualCert.getSigAlgName(), equalTo("SHA256WITHRSA"));
 
     checkDuration(actualCert, 365);
@@ -66,7 +74,7 @@ public class SelfSignedCertificateGeneratorTest {
     inputParameters.addAlternativeName("foo.pivotal.io");
     inputParameters.addAlternativeName("*.pivotal.io");
 
-    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    X509Certificate actualCert = signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
 
     actualCert.checkValidity();
     Collection<List<?>> subjectAlternativeNames = actualCert.getSubjectAlternativeNames();
@@ -86,7 +94,7 @@ public class SelfSignedCertificateGeneratorTest {
   public void canGenerateCertificateWithArbitraryDuration() throws Exception {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.setDurationDays(555);
-    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    X509Certificate actualCert = signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
     checkDuration(actualCert, 555);
   }
 
@@ -94,7 +102,7 @@ public class SelfSignedCertificateGeneratorTest {
   public void zeroAlternateNamesYieldsEmptyArrayOfNames() throws Exception {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
 
-    X509Certificate actualCert = selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    X509Certificate actualCert = signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
 
     actualCert.checkValidity();
     assertThat(actualCert.getSubjectAlternativeNames(), nullValue());
@@ -105,7 +113,7 @@ public class SelfSignedCertificateGeneratorTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("foo!@#$%^&*()_-+=.com");
 
-    selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -113,7 +121,7 @@ public class SelfSignedCertificateGeneratorTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("foo pivotal.io");
 
-    selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -121,7 +129,7 @@ public class SelfSignedCertificateGeneratorTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("1.2.3.999");
 
-    selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -130,7 +138,7 @@ public class SelfSignedCertificateGeneratorTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("x@y.com");
 
-    selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
   }
 
   @Test(expected = ValidationException.class)
@@ -139,7 +147,7 @@ public class SelfSignedCertificateGeneratorTest {
     CertificateSecretParameters inputParameters = getMinimumCertificateSecretParameters();
     inputParameters.addAlternativeName("https://foo.com");
 
-    selfSignedCertificateGenerator.get(keyPair, inputParameters);
+    signedCertificateGenerator.getSelfSigned(keyPair, inputParameters);
   }
 
   private CertificateSecretParameters getMinimumCertificateSecretParameters() {

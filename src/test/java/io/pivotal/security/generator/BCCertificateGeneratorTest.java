@@ -69,11 +69,6 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
   @Mock
   KeyPairGenerator keyGenerator;
 
-  // Dan says we are going to reinstate functionality for self-signed certificates soon.
-  // See git history at SHA 5595fc9
-//  @Mock
-//  SelfSignedCertificateGenerator selfSignedCertificateGenerator;
-
   @Mock
   SignedCertificateGenerator signedCertificateGenerator;
 
@@ -177,7 +172,7 @@ public class BCCertificateGeneratorTest extends MockitoSpringTest {
       inputParameters.setKeyLength(keylength);
     }
     X509CertificateHolder certSignedByCa = getCertSignedByCa(certificateKeyPair, caKeyPair.getPrivate(), caDn);
-    when(signedCertificateGenerator.get(caDn, caKeyPair.getPrivate(), certificateKeyPair, inputParameters))
+    when(signedCertificateGenerator.getSignedByIssuer(caDn, caKeyPair.getPrivate(), certificateKeyPair, inputParameters))
         .thenReturn(new JcaX509CertificateConverter().setProvider("BC").getCertificate(certSignedByCa));
 
     CertificateSecret certificateSecret = subject.generateSecret(inputParameters);

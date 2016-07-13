@@ -13,13 +13,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.auditing.DateTimeProvider;
 
-import javax.security.auth.x500.X500Principal;
+import static com.greghaskins.spectrum.SpringSpectrum.beforeAll;
+import static com.greghaskins.spectrum.SpringSpectrum.beforeEach;
+import static com.greghaskins.spectrum.SpringSpectrum.describe;
+import static com.greghaskins.spectrum.SpringSpectrum.it;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.Security;
-import java.security.cert.*;
+import java.security.cert.CertPathBuilder;
+import java.security.cert.CertPathBuilderResult;
+import java.security.cert.CertStore;
+import java.security.cert.PKIXBuilderParameters;
+import java.security.cert.TrustAnchor;
+import java.security.cert.X509CertSelector;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -27,12 +42,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
-import static com.greghaskins.spectrum.SpringSpectrum.*;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import javax.security.auth.x500.X500Principal;
 
 @RunWith(SpringSpectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -81,7 +91,7 @@ public class SignedCertificateGeneratorTest {
         inputParameters.setOrganization("credhub");
         inputParameters.setDurationDays(10);
 
-        generatedCert.value = subject.get(caDn.value, issuerPrivateKey, certKeyPair.value, inputParameters);
+        generatedCert.value = subject.getSignedByIssuer(caDn.value, issuerPrivateKey, certKeyPair.value, inputParameters);
       });
 
       it("is not null", () -> {

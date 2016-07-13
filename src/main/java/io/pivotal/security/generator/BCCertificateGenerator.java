@@ -52,7 +52,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         X500Principal issuerDn = getIssuer(ca);
         PrivateKey issuerKey = getPrivateKey(ca);
 
-        X509Certificate cert = signedCertificateGenerator.get(issuerDn, issuerKey, keyPair, params);
+        X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
