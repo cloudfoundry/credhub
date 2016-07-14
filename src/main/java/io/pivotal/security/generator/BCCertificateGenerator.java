@@ -4,6 +4,7 @@ import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.util.CertificateFormatter;
+import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -62,9 +63,11 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
       }
     } else {
       throw new ValidationException("error.default_ca_required");
-      // Dan says we are going to reinstate functionality for self-signed certificates soon.
-      // See git history at SHA 5595fc9
     }
+  }
+
+  public CertificateAuthority generateCertificateAuthority(CertificateSecretParameters params) {
+    return null;
   }
 
   private NamedCertificateAuthority findCa(String caName) {

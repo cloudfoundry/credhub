@@ -95,32 +95,36 @@ public class CertificateSecretParameters {
     return builder.build();
   }
 
-  public void addAlternativeName(String alternativeName) {
+  public CertificateSecretParameters addAlternativeName(String alternativeName) {
     List<String> tmp = new ArrayList<>(Arrays.asList(alternativeNames));
     tmp.add(alternativeName);
     alternativeNames = tmp.toArray(new String[tmp.size()]);
+    return this;
   }
 
-  public void addAlternativeNames(String[] alternativeNames) {
+  public CertificateSecretParameters addAlternativeNames(String[] alternativeNames) {
     for (String a : alternativeNames) {
       addAlternativeName(a);
     }
+    return this;
   }
 
   public List<String> getAlternativeNames() {
     return Arrays.asList(alternativeNames);
   }
 
-  public void setKeyLength(int keyLength) {
+  public CertificateSecretParameters setKeyLength(int keyLength) {
     this.keyLength = keyLength;
+    return this;
   }
 
   public int getKeyLength() {
     return keyLength;
   }
 
-  public void setDurationDays(int durationDays) {
+  public CertificateSecretParameters setDurationDays(int durationDays) {
     this.durationDays = durationDays;
+    return this;
   }
 
   public int getDurationDays() {
@@ -131,7 +135,8 @@ public class CertificateSecretParameters {
     return ca;
   }
 
-  public void setCa(String ca) {
+  public CertificateSecretParameters setCa(String ca) {
     this.ca = ca;
+    return this;
   }
 }

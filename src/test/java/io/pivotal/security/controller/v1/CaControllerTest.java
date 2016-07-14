@@ -25,7 +25,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import sun.security.validator.ValidatorException;
 import sun.security.x509.X509CertImpl;
+
+import javax.validation.ValidationException;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -126,12 +129,26 @@ public class CaControllerTest {
       assertThat(secretRepository.findOneByName("ca-identifier"), nullValue());
     });
 
-    it("returns bad request for invalid type", () -> {
+    it("returns bad request for PUT with invalid type", () -> {
       String uuid = UUID.randomUUID().toString();
       String requestJson = "{\"type\":" + uuid + ",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
       RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(invalidTypeJson));
+    });
+
+    it("returns bad request for POST with invalid type", () -> {
+      when(requestTranslatorWithGeneration.createAuthorityFromJson(any(DocumentContext.class))).thenThrow(new ValidationException("error.bad_authority_type"));
+      String uuid = UUID.randomUUID().toString();
+      String requestJson = "{\"type\":" + uuid + "}";
+
+      String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
+      RequestBuilder requestBuilder = postRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isBadRequest())
