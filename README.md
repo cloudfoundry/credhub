@@ -28,8 +28,8 @@ steps assume that the above repos are cloned as siblings in a ~/workspace/ direc
     - bosh create release --with-tarball --name credhub --force --timestamp-version
 * tell bosh about this new release
     - cd sec-eng-deployment-credential-manager/deployments/bosh
-    - export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.<something>.tgz
-    - erb bosh.yml.erb > bosh.yml
+    - export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.something.tgz
+    - erb bosh-dev.yml.erb > bosh.yml # use bosh.yml.erb to release a 'real' director
     - edit any changes you like in bosh.yml, like adding an ssl certificate
 * bosh-init deploy bosh.yml
 
