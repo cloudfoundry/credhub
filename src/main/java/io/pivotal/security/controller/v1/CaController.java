@@ -5,6 +5,8 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.mapper.AuthoritySetterRequestTranslator;
+import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
 import io.pivotal.security.mapper.CertificateAuthoritySetterRequestTranslator;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.view.CertificateAuthority;
@@ -40,6 +42,9 @@ public class CaController {
   @Autowired
   CertificateAuthoritySetterRequestTranslator certificateAuthoritySetterRequestTranslator;
 
+  @Autowired
+  CertificateAuthorityRequestTranslatorWithGeneration certificateAuthorityRequestTranslatorWithGeneration;
+
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -47,10 +52,19 @@ public class CaController {
 
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
+    return storeAuthority(caPath, requestBody, certificateAuthoritySetterRequestTranslator);
+  }
+
+  @RequestMapping(path = "/{caPath}", method = RequestMethod.POST)
+  ResponseEntity generate(@PathVariable String caPath, InputStream requestBody) {
+    return storeAuthority(caPath, requestBody, certificateAuthorityRequestTranslatorWithGeneration);
+  }
+
+  private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, AuthoritySetterRequestTranslator requestTranslator) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     CertificateAuthority certificateAuthority;
     try {
-      certificateAuthority = certificateAuthoritySetterRequestTranslator.createAuthorityFromJson(parsed);
+      certificateAuthority = requestTranslator.createAuthorityFromJson(parsed);
       NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
       caRepository.save(namedCertificateAuthority);
       certificateAuthority.setUpdatedAt(namedCertificateAuthority.getUpdatedAt());
