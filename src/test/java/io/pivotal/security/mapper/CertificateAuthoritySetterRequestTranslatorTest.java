@@ -20,7 +20,7 @@ import static org.junit.Assert.fail;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-public class CertificateAuthorityRequestTranslatorTest {
+public class CertificateAuthoritySetterRequestTranslatorTest {
   @Autowired
   private Configuration jsonConfiguration;
 

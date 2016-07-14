@@ -88,7 +88,7 @@ public class CaController {
   private NamedCertificateAuthority createEntityFromView(@PathVariable String caPath, CertificateAuthority certificateAuthority) {
     NamedCertificateAuthority namedCertificateAuthority = (NamedCertificateAuthority) caRepository.findOneByName(caPath);
     if (namedCertificateAuthority == null) {
-      namedCertificateAuthority = certificateAuthoritySetterRequestTranslator.makeEntity(caPath);
+      namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     }
     certificateAuthority.populateEntity(namedCertificateAuthority);
     return namedCertificateAuthority;

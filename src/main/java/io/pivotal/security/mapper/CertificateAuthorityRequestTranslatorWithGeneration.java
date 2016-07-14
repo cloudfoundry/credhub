@@ -11,9 +11,4 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
   public CertificateAuthority createAuthorityFromJson(DocumentContext documentContext) {
     return null;
   }
-
-  @Override
-  public NamedAuthority makeEntity(String name) {
-    return null;
-  }
 }

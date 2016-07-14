@@ -26,9 +26,4 @@ public class CertificateAuthoritySetterRequestTranslator implements AuthoritySet
     }
     return new CertificateAuthority(type, certificate, privateKey);
   }
-
-  @Override
-  public NamedCertificateAuthority makeEntity(String name) {
-    return new NamedCertificateAuthority(name);
-  }
 }
