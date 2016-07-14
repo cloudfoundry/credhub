@@ -3,7 +3,7 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 
-public class CertificateAuthority extends Authority<NamedCertificateAuthority, CertificateAuthority> {
+public class CertificateAuthority extends BaseView<NamedCertificateAuthority, CertificateAuthority> {
 
   @JsonProperty("type")
   private String type;
@@ -19,7 +19,6 @@ public class CertificateAuthority extends Authority<NamedCertificateAuthority, C
   public CertificateAuthority() {
   }
 
-  @Override
   public void populateEntity(NamedCertificateAuthority entity) {
     entity.setType(getType())
         .setCertificate(getCertificateAuthorityBody().getCertificate())
