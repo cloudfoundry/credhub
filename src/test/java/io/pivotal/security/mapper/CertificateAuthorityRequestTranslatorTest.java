@@ -43,7 +43,7 @@ public class CertificateAuthorityRequestTranslatorTest {
     String requestJson = "{\"type\":\"root\",\"ca\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
-    CertificateAuthority actual = new CertificateAuthorityRequestTranslator().createAuthorityFromJson(parsed);
+    CertificateAuthority actual = new CertificateAuthoritySetterRequestTranslator().createAuthorityFromJson(parsed);
     assertThat(actual, BeanMatchers.theSameAs(expected));
   }
 
@@ -52,7 +52,7 @@ public class CertificateAuthorityRequestTranslatorTest {
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     try {
-      new CertificateAuthorityRequestTranslator().createAuthorityFromJson(parsed);
+      new CertificateAuthoritySetterRequestTranslator().createAuthorityFromJson(parsed);
       fail();
     } catch (ValidationException ve) {
       assertThat(ve.getMessage(), equalTo(expectedErrorMessage));

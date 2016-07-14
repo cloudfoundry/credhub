@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 import javax.validation.ValidationException;
 
 @Component
-public class CertificateAuthorityRequestTranslator implements AuthoritySetterRequestTranslator {
+public class CertificateAuthoritySetterRequestTranslator implements AuthoritySetterRequestTranslator {
 
   @Override
   public CertificateAuthority createAuthorityFromJson(DocumentContext parsed) throws ValidationException {

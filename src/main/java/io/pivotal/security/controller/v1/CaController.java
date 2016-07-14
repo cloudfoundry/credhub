@@ -5,7 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.mapper.CertificateAuthorityRequestTranslator;
+import io.pivotal.security.mapper.CertificateAuthoritySetterRequestTranslator;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ public class CaController {
   private MessageSource messageSource;
 
   @Autowired
-  CertificateAuthorityRequestTranslator certificateAuthorityRequestTranslator;
+  CertificateAuthoritySetterRequestTranslator certificateAuthoritySetterRequestTranslator;
 
   @PostConstruct
   public void init() {
@@ -50,7 +50,7 @@ public class CaController {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     CertificateAuthority certificateAuthority;
     try {
-      certificateAuthority = certificateAuthorityRequestTranslator.createAuthorityFromJson(parsed);
+      certificateAuthority = certificateAuthoritySetterRequestTranslator.createAuthorityFromJson(parsed);
       NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
       caRepository.save(namedCertificateAuthority);
       certificateAuthority.setUpdatedAt(namedCertificateAuthority.getUpdatedAt());
@@ -74,7 +74,7 @@ public class CaController {
   private NamedCertificateAuthority createEntityFromView(@PathVariable String caPath, CertificateAuthority certificateAuthority) {
     NamedCertificateAuthority namedCertificateAuthority = (NamedCertificateAuthority) caRepository.findOneByName(caPath);
     if (namedCertificateAuthority == null) {
-      namedCertificateAuthority = certificateAuthorityRequestTranslator.makeEntity(caPath);
+      namedCertificateAuthority = certificateAuthoritySetterRequestTranslator.makeEntity(caPath);
     }
     certificateAuthority.populateEntity(namedCertificateAuthority);
     return namedCertificateAuthority;
