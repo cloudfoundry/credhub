@@ -4,15 +4,11 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.generator.SignedCertificateGenerator;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateAuthority;
-import io.pivotal.security.view.CertificateSecret;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -25,8 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-import sun.security.validator.ValidatorException;
-import sun.security.x509.X509CertImpl;
 
 import javax.validation.ValidationException;
 
@@ -47,8 +41,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;

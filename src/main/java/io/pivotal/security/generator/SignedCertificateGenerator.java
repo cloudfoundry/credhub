@@ -15,19 +15,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
-import static java.util.Collections.reverse;
-
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import javax.security.auth.x500.X500Principal;
 import javax.validation.ValidationException;
 
 @Component
@@ -42,9 +38,9 @@ public class SignedCertificateGenerator {
   @Autowired
   RandomSerialNumberGenerator serialNumberGenerator;
 
-  public X509Certificate getSignedByIssuer(X500Principal issuerDn, PrivateKey issuerKey, KeyPair keyPair,
+  public X509Certificate getSignedByIssuer(X500Name issuerDn, PrivateKey issuerKey, KeyPair keyPair,
                               CertificateSecretParameters params) throws Exception {
-    return get(asX500Name(issuerDn), issuerKey, keyPair, params);
+    return get(issuerDn, issuerKey, keyPair, params);
   }
 
   public X509Certificate getSelfSigned(KeyPair keyPair, CertificateSecretParameters params) throws Exception {
@@ -73,44 +69,6 @@ public class SignedCertificateGenerator {
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 
     return new JcaX509CertificateConverter().setProvider("BC").getCertificate(holder);
-  }
-
-  private X500Name asX500Name(X500Principal x500Principal) {
-    String name = x500Principal.getName();
-    List<String> rdns = splitOnCommaCheckingForEscapedCommas(name);
-    reverse(rdns);
-    return new X500Name(String.join(",", rdns));
-  }
-
-  private List<String> splitOnCommaCheckingForEscapedCommas(String name) {
-    List<String> result = new ArrayList<>();
-
-    int i = 0;
-    StringBuilder sb = new StringBuilder();
-    while (i < name.length()) {
-      char c = name.charAt(i);
-      int peek = i + 1;
-      if (c == '\\' && peek < name.length() && name.charAt(peek) == ',') {
-        sb.append(c);
-        sb.append(",");
-        i++;
-      } else if (c == ',') {
-        if (sb.length() > 0) {
-          result.add(sb.toString());
-        }
-        sb.setLength(0);
-      } else {
-        sb.append(c);
-      }
-
-      i++;
-    }
-
-    if (sb.length() > 0) {
-      result.add(sb.toString());
-    }
-
-    return result;
   }
 
   private GeneralNames getAlternativeNames(CertificateSecretParameters params) {

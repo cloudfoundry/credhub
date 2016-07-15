@@ -2,6 +2,7 @@ package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
@@ -45,14 +46,14 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
-import javax.security.auth.x500.X500Principal;
 import javax.validation.ValidationException;
 
 @RunWith(Spectrum.class)
 public class SignedCertificateGeneratorTest {
+  private static final String SEPARATE_ISSUER_PRINCIPAL_STRING = "OU=cool org,C=\"adsf asdf\",ST=\'my fav state\',O=foo\\,inc.";
 
-  final Instant now = Instant.now();
-  final Calendar nowCalendar = Calendar.getInstance();
+  private final Instant now = Instant.now();
+  private final Calendar nowCalendar = Calendar.getInstance();
 
   @Mock
   DateTimeProvider timeProvider;
@@ -60,12 +61,13 @@ public class SignedCertificateGeneratorTest {
   @Mock
   RandomSerialNumberGenerator serialNumberGenerator;
 
-  X509Certificate generatedCert;
-  KeyPair issuerKeyPair;
-  X500Principal caDn;
-  KeyPair certKeyPair;
-  PrivateKey issuerPrivateKey;
-  CertificateSecretParameters inputParameters;
+  private X509Certificate generatedCert;
+  private KeyPair issuerKeyPair;
+  private X500Name issuerDistinguishedName;
+  private X500Name subjectDistinguishedName;
+  private KeyPair certKeyPair;
+  private PrivateKey issuerPrivateKey;
+  private CertificateSecretParameters inputParameters;
 
   @InjectMocks
   SignedCertificateGenerator subject;
@@ -98,9 +100,8 @@ public class SignedCertificateGeneratorTest {
         });
 
         it("has the correct metadata", () -> {
-          assertThat(generatedCert.getIssuerX500Principal(), equalTo(caDn));
-          assertThat(generatedCert.getSubjectX500Principal().getName(), equalTo("CN=my test cert,C=US,ST=CA," +
-              "O=credhub"));
+          assertThat(new X500Name(generatedCert.getIssuerX500Principal().getName()),  equalTo(issuerDistinguishedName));
+          assertThat(new X500Name(generatedCert.getSubjectX500Principal().getName()), equalTo(subjectDistinguishedName));
         });
 
         it("is valid for the appropriate time range", () -> {
@@ -179,9 +180,6 @@ public class SignedCertificateGeneratorTest {
     describe("a generated issuer-signed certificate", () -> {
 
       beforeEach(() -> {
-        caDn = new X500Principal("O=foo\\,inc.,ST=\'my fav state\', C=\"adsf asdf\",OU=cool org, " +
-            "EMAILADDRESS=x@y.com");
-
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
         generator.initialize(1024); // doesn't matter for testing
         issuerKeyPair = generator.generateKeyPair();
@@ -194,11 +192,12 @@ public class SignedCertificateGeneratorTest {
         inputParameters.setState("CA");
         inputParameters.setOrganization("credhub");
         inputParameters.setDurationDays(10);
+        subjectDistinguishedName = inputParameters.getDN();
+        issuerDistinguishedName = new X500Name(SEPARATE_ISSUER_PRINCIPAL_STRING);
       });
 
       final ThrowingRunnable makeCert = () -> {
-        generatedCert = subject.getSignedByIssuer(caDn, issuerPrivateKey, certKeyPair,
-            inputParameters);
+        generatedCert = subject.getSignedByIssuer(issuerDistinguishedName, issuerPrivateKey, certKeyPair, inputParameters);
       };
 
       describe("must behave like", validCertificateSuite.build(makeCert));
@@ -208,7 +207,7 @@ public class SignedCertificateGeneratorTest {
         final X509CertSelector target = new X509CertSelector();
         target.setCertificate(generatedCert);
 
-        final TrustAnchor trustAnchor = new TrustAnchor(caDn, issuerKeyPair.getPublic(), null);
+        final TrustAnchor trustAnchor = new TrustAnchor(SEPARATE_ISSUER_PRINCIPAL_STRING, issuerKeyPair.getPublic(), null);
         final PKIXBuilderParameters builderParameters = new PKIXBuilderParameters(Collections.singleton
             (trustAnchor), target);
 
@@ -232,8 +231,6 @@ public class SignedCertificateGeneratorTest {
       };
 
       beforeEach(() -> {
-        caDn = new X500Principal("CN=my test cert,C=\"US\",ST=CA, O=credhub");
-
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
         generator.initialize(1024); // doesn't matter for testing
         issuerKeyPair = generator.generateKeyPair();
@@ -245,6 +242,8 @@ public class SignedCertificateGeneratorTest {
         inputParameters.setState("CA");
         inputParameters.setOrganization("credhub");
         inputParameters.setDurationDays(10);
+        subjectDistinguishedName = inputParameters.getDN();
+        issuerDistinguishedName = subjectDistinguishedName;
       });
 
       describe("must behave like", validCertificateSuite.build(makeCert));

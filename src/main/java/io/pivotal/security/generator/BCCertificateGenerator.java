@@ -7,6 +7,7 @@ import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -50,8 +51,9 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     NamedCertificateAuthority ca = findCa(params.getCa());
     if (ca != null) {
       try {
-        X500Principal issuerDn = getIssuer(ca);
+        X500Name issuerDn = getIssuer(ca);
         PrivateKey issuerKey = getPrivateKey(ca);
+
 
         X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
@@ -86,9 +88,9 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 
-  private X500Principal getIssuer(NamedCertificateAuthority ca) throws IOException, CertificateException, NoSuchProviderException {
+  private X500Name getIssuer(NamedCertificateAuthority ca) throws IOException, CertificateException, NoSuchProviderException {
     X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
         .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
-    return certificate.getIssuerX500Principal();
+    return new X500Name(certificate.getIssuerX500Principal().getName());
   }
 }

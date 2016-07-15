@@ -79,7 +79,7 @@ public class BCCertificateGeneratorTest {
   RandomSerialNumberGenerator randomSerialNumberGenerator;
 
   private KeyPair certificateKeyPair;
-  private X500Principal caDn;
+  private X500Name caDn;
   private KeyPair caKeyPair;
   private String caPrincipal;
   private NamedCertificateAuthority defaultNamedCA;
@@ -96,7 +96,7 @@ public class BCCertificateGeneratorTest {
       certificateKeyPair = generateKeyPair();
 
       caPrincipal = "O=foo,ST=bar,C=mars";
-      caDn = new X500Principal(caPrincipal);
+      caDn = new X500Name(caPrincipal);
       caKeyPair = generateKeyPair();
 
       X509Certificate caX509Cert = generateX509Certificate(caKeyPair, caPrincipal);
@@ -184,13 +184,13 @@ public class BCCertificateGeneratorTest {
     return certGen.generate(expectedKeyPair.getPrivate(), "BC");
   }
 
-  private X509CertificateHolder getCertSignedByCa(KeyPair certificateKeyPair, PrivateKey caPrivateKey, X500Principal caDn) throws Exception {
+  private X509CertificateHolder getCertSignedByCa(KeyPair certificateKeyPair, PrivateKey caPrivateKey, X500Name caDn) throws Exception {
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());
     ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(caPrivateKey);
 
     Instant now = dateTimeProvider.getNow().toInstant();
     return new X509v3CertificateBuilder(
-        new X500Name("C=mars,ST=bar,O=foo"),
+        new X500Name("O=foo,ST=bar,C=mars"),
         randomSerialNumberGenerator.generate(),
         Date.from(now),
         Date.from(now.plus(Duration.ofDays(365))),
