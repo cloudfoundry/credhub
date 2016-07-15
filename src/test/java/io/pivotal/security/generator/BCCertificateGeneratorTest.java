@@ -12,6 +12,7 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v1CertificateBuilder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
@@ -25,11 +26,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.data.auditing.DateTimeProvider;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -49,6 +48,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.security.auth.x500.X500Principal;
@@ -62,19 +62,26 @@ public class BCCertificateGeneratorTest {
   @Autowired
   private BCCertificateGenerator subject;
 
+  @InjectMocks
+  @Autowired
+  private SignedCertificateGenerator signedCertificateGenerator;
+
   @Mock
   KeyPairGenerator keyGenerator;
 
   @Mock
-  SignedCertificateGenerator signedCertificateGenerator;
+  InMemoryAuthorityRepository authorityRepository;
 
   @Mock
-  InMemoryAuthorityRepository authorityRepository;
+  DateTimeProvider dateTimeProvider;
+
+  @Mock
+  RandomSerialNumberGenerator randomSerialNumberGenerator;
 
   private KeyPair certificateKeyPair;
   private X500Principal caDn;
   private KeyPair caKeyPair;
-  private String caPrinciple;
+  private String caPrincipal;
   private NamedCertificateAuthority defaultNamedCA;
   private CertificateSecretParameters inputParameters;
   private X509CertificateHolder certSignedByCa;
@@ -83,14 +90,16 @@ public class BCCertificateGeneratorTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
+      when(dateTimeProvider.getNow()).thenReturn(new Calendar.Builder().setInstant(22233333L).build());
+      when(randomSerialNumberGenerator.generate()).thenReturn(BigInteger.TEN);
       Security.addProvider(new BouncyCastleProvider());
       certificateKeyPair = generateKeyPair();
 
-      caPrinciple = "O=foo,ST=bar,C=mars";
-      caDn = new X500Principal(caPrinciple);
+      caPrincipal = "O=foo,ST=bar,C=mars";
+      caDn = new X500Principal(caPrincipal);
       caKeyPair = generateKeyPair();
 
-      X509Certificate caX509Cert = generateX509Certificate(caKeyPair, caPrinciple);
+      X509Certificate caX509Cert = generateX509Certificate(caKeyPair, caPrincipal);
 
       defaultNamedCA = new NamedCertificateAuthority("default");
       defaultNamedCA.setCertificate(CertificateFormatter.pemOf(caX509Cert));
@@ -98,7 +107,11 @@ public class BCCertificateGeneratorTest {
 
       when(keyGenerator.generateKeyPair()).thenReturn(certificateKeyPair);
 
-      inputParameters = new CertificateSecretParameters();
+      inputParameters = new CertificateSecretParameters()
+        .setOrganization("foo")
+        .setState("bar")
+        .setCountry("mars")
+        .setDurationDays(365);
     });
 
     afterEach(() -> {
@@ -120,8 +133,6 @@ public class BCCertificateGeneratorTest {
         when(authorityRepository.findOneByName("default")).thenReturn(defaultNamedCA);
 
         certSignedByCa = getCertSignedByCa(certificateKeyPair, caKeyPair.getPrivate(), caDn);
-        when(signedCertificateGenerator.getSignedByIssuer(caDn, caKeyPair.getPrivate(), certificateKeyPair, inputParameters))
-            .thenReturn(new JcaX509CertificateConverter().setProvider("BC").getCertificate(certSignedByCa));
       });
 
       it("generates a valid certificate", () -> {
@@ -161,7 +172,7 @@ public class BCCertificateGeneratorTest {
     final X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
     final X500Principal dnName = new X500Principal(principle);
     certGen.setSerialNumber(BigInteger.valueOf(1));
-    Instant instant = Instant.now();
+    Instant instant = dateTimeProvider.getNow().toInstant();
     final Date now = Date.from(instant);
     final Date later = Date.from(instant.plus(365, ChronoUnit.DAYS));
     certGen.setIssuerDN(dnName);
@@ -173,18 +184,17 @@ public class BCCertificateGeneratorTest {
     return certGen.generate(expectedKeyPair.getPrivate(), "BC");
   }
 
-  private X509CertificateHolder getCertSignedByCa(KeyPair certificateKeyPair, PrivateKey caPrivateKey, X500Principal caDn) throws OperatorCreationException {
-    AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA1withRSA");
-    SubjectPublicKeyInfo publicKeyInfo = new SubjectPublicKeyInfo(sigAlgId, certificateKeyPair.getPublic().getEncoded());
-    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA1withRSA").setProvider("BC").build(caPrivateKey);
+  private X509CertificateHolder getCertSignedByCa(KeyPair certificateKeyPair, PrivateKey caPrivateKey, X500Principal caDn) throws Exception {
+    SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());
+    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(caPrivateKey);
 
-    Instant now = Instant.now();
-    return new X509v1CertificateBuilder(
-        new X500Name(caDn.getName()),
-        BigInteger.valueOf(2),
+    Instant now = dateTimeProvider.getNow().toInstant();
+    return new X509v3CertificateBuilder(
+        new X500Name("C=mars,ST=bar,O=foo"),
+        randomSerialNumberGenerator.generate(),
         Date.from(now),
         Date.from(now.plus(Duration.ofDays(365))),
-        new X500Name("C=US,CN=Subject"),
+        new X500Name("O=foo,ST=bar,C=mars"),
         publicKeyInfo
     ).build(contentSigner);
   }
