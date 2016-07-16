@@ -28,7 +28,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.security.auth.x500.X500Principal;
 import javax.validation.ValidationException;
 
 @Component
@@ -91,6 +90,6 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   private X500Name getIssuer(NamedCertificateAuthority ca) throws IOException, CertificateException, NoSuchProviderException {
     X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
         .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
-    return new X500Name(certificate.getIssuerX500Principal().getName());
+    return new X500Name(certificate.getIssuerDN().getName());
   }
 }

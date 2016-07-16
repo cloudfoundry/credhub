@@ -8,18 +8,14 @@ import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.CertificateSecret;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v1CertificateBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.x509.X509V1CertificateGenerator;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -47,11 +43,9 @@ import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.security.auth.x500.X500Principal;
 import javax.validation.ValidationException;
 
 @RunWith(Spectrum.class)
@@ -81,7 +75,6 @@ public class BCCertificateGeneratorTest {
   private KeyPair certificateKeyPair;
   private X500Name caDn;
   private KeyPair caKeyPair;
-  private String caPrincipal;
   private NamedCertificateAuthority defaultNamedCA;
   private CertificateSecretParameters inputParameters;
   private X509CertificateHolder certSignedByCa;
@@ -95,12 +88,10 @@ public class BCCertificateGeneratorTest {
       Security.addProvider(new BouncyCastleProvider());
       certificateKeyPair = generateKeyPair();
 
-      caPrincipal = "O=foo,ST=bar,C=mars";
-      caDn = new X500Name(caPrincipal);
+      caDn = new X500Name("C=mars,ST=bar,O=foo");
       caKeyPair = generateKeyPair();
-
-      X509Certificate caX509Cert = generateX509Certificate(caKeyPair, caPrincipal);
-
+      X509CertificateHolder caX509CertHolder = generateX509Certificate(caKeyPair);
+      X509Certificate caX509Cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
       defaultNamedCA = new NamedCertificateAuthority("default");
       defaultNamedCA.setCertificate(CertificateFormatter.pemOf(caX509Cert));
       defaultNamedCA.setPrivateKey(CertificateFormatter.pemOf(caKeyPair.getPrivate()));
@@ -168,33 +159,26 @@ public class BCCertificateGeneratorTest {
     return generator.generateKeyPair();
   }
 
-  private X509Certificate generateX509Certificate(KeyPair expectedKeyPair, String principle) throws Exception {
-    final X509V1CertificateGenerator certGen = new X509V1CertificateGenerator();
-    final X500Principal dnName = new X500Principal(principle);
-    certGen.setSerialNumber(BigInteger.valueOf(1));
-    Instant instant = dateTimeProvider.getNow().toInstant();
-    final Date now = Date.from(instant);
-    final Date later = Date.from(instant.plus(365, ChronoUnit.DAYS));
-    certGen.setIssuerDN(dnName);
-    certGen.setNotBefore(now);
-    certGen.setNotAfter(later);
-    certGen.setSubjectDN(dnName);
-    certGen.setPublicKey(expectedKeyPair.getPublic());
-    certGen.setSignatureAlgorithm("SHA256withRSA");
-    return certGen.generate(expectedKeyPair.getPrivate(), "BC");
+  private X509CertificateHolder generateX509Certificate(KeyPair expectedKeyPair) throws Exception {
+    return makeCert(certificateKeyPair, expectedKeyPair.getPrivate(), caDn, caDn);
   }
 
   private X509CertificateHolder getCertSignedByCa(KeyPair certificateKeyPair, PrivateKey caPrivateKey, X500Name caDn) throws Exception {
+    return makeCert(certificateKeyPair, caPrivateKey, caDn, inputParameters.getDN());
+  }
+
+  private X509CertificateHolder makeCert(KeyPair certificateKeyPair, PrivateKey caPrivateKey, X500Name caDn, X500Name subjectDN) throws OperatorCreationException, NoSuchAlgorithmException {
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());
     ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC").build(caPrivateKey);
 
     Instant now = dateTimeProvider.getNow().toInstant();
+
     return new X509v3CertificateBuilder(
-        new X500Name("O=foo,ST=bar,C=mars"),
+        caDn,
         randomSerialNumberGenerator.generate(),
         Date.from(now),
         Date.from(now.plus(Duration.ofDays(365))),
-        new X500Name("O=foo,ST=bar,C=mars"),
+        subjectDN,
         publicKeyInfo
     ).build(contentSigner);
   }
