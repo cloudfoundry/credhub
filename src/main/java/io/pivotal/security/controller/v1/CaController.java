@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import io.pivotal.security.entity.NamedAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.AuthoritySetterRequestTranslator;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
@@ -77,7 +76,7 @@ public class CaController {
 
   @RequestMapping(path = "/{caPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String caPath) {
-    NamedAuthority namedAuthority = caRepository.findOneByName(caPath);
+    NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath);
     if (namedAuthority == null) {
       return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
     }

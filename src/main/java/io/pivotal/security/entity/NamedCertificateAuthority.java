@@ -1,16 +1,29 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.view.CertificateAuthority;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "CertificateAuthority")
-@DiscriminatorValue("ca")
-public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAuthority> {
+@Table(name = "NamedCertificateAuthority")
+@EntityListeners(AuditingEntityListener.class)
+public class NamedCertificateAuthority {
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private long id;
+
+  @Column(unique = true, nullable = false)
+  private String name;
+
+  @Column(nullable = false)
+  @CreatedDate
+  @LastModifiedDate
+  private LocalDateTime updatedAt;
+
   @Column(nullable = true, length = 7000)
   private String type;
 
@@ -25,7 +38,7 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
   }
 
   public NamedCertificateAuthority(String name) {
-    super(name);
+    this.name = name;
   }
 
   public String getCertificate() {
@@ -34,6 +47,33 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
 
   public NamedCertificateAuthority setCertificate(String certificate) {
     this.certificate = certificate;
+    return this;
+  }
+
+  public long getId() {
+    return id;
+  }
+
+  public NamedCertificateAuthority setId(long id) {
+    this.id = id;
+    return this;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public NamedCertificateAuthority setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  public LocalDateTime getUpdatedAt() {
+    return updatedAt;
+  }
+
+  public NamedCertificateAuthority setUpdatedAt(LocalDateTime updatedAt) {
+    this.updatedAt = updatedAt;
     return this;
   }
 
@@ -55,7 +95,6 @@ public class NamedCertificateAuthority extends NamedAuthority<NamedCertificateAu
     return this;
   }
 
-  @Override
   public CertificateAuthority generateView() {
     return new CertificateAuthority(type, certificate, privateKey).setUpdatedAt(getUpdatedAt());
   }
