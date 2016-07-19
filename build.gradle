@@ -87,8 +87,7 @@ jacocoTestReport {
 
 bootRun {
     addResources = true
-    systemProperties["auth-server.url"] = System.getProperty("auth-server.url", "https://uaa.run.pivotal.io")
-    systemProperties["auth-server.client"] = System.getProperty("auth-server.client", "credhub")
+    systemProperties["auth-server.url"] = System.getProperty("auth-server.url", "http://localhost:8080/uaa")
 }
 
 test {
@@ -98,7 +97,6 @@ test {
         classDumpFile = file("$buildDir/jacoco/classpathdumps")
     }
     systemProperties["auth-server.url"] = "https://uaa.run.pivotal.io"
-    systemProperties["auth-server.client"] = "credhub"
 }
 
 tasks.withType(Test) {
