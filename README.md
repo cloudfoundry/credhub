@@ -20,16 +20,21 @@ In order to init a Bosh Director that will contain the latest Credhub, the follo
 steps assume that the above repos are cloned as siblings in a ~/workspace/ directory:
 
 * create cm release
-    - cd cm-release
-    - rm -rf dev_releases/credhub/*  # This step can be skipped if you've never run "bosh create release"
-    - ./scripts/update
-    - export SEC_ENG_CI_REPO=$HOME/workspace/sec-eng-ci
-    - export RELEASE_DIR=$HOME/workspace/cm-release
-    - bosh create release --with-tarball --name credhub --force --timestamp-version
+```
+cd cm-release
+rm -rf dev_releases/credhub/*  # This step can be skipped if you've never run "bosh create release"
+./scripts/update
+export SEC_ENG_CI_REPO=$HOME/workspace/sec-eng-ci
+export RELEASE_DIR=$HOME/workspace/cm-release
+bosh create release --with-tarball --name credhub --force --timestamp-version
+```
 * tell bosh about this new release
-    - cd sec-eng-deployment-credential-manager/deployments/bosh
-    - export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.something.tgz
-    - erb bosh-dev.yml.erb > bosh.yml # use bosh.yml.erb to release a 'real' director
-    - edit any changes you like in bosh.yml, like adding an ssl certificate
+```
+cd sec-eng-deployment-credential-manager/deployments/bosh
+export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.something.tgz
+export DEV_MODE=true  # assuming you want to try this locally; remove this env setting for the real pipeline Director
+erb bosh.yml.erb > bosh.yml
+```
+* edit any changes you like in bosh.yml, like adding an ssl certificate
 * bosh-init deploy bosh.yml
 
