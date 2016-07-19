@@ -21,7 +21,7 @@ steps assume that the above repos are cloned as siblings in a ~/workspace/ direc
 
 * create cm release
 ```
-cd cm-release
+cd $HOME/workspace/cm-release
 rm -rf dev_releases/credhub/*  # This step can be skipped if you've never run "bosh create release"
 ./scripts/update
 export SEC_ENG_CI_REPO=$HOME/workspace/sec-eng-ci
@@ -30,7 +30,7 @@ bosh create release --with-tarball --name credhub --force --timestamp-version
 ```
 * tell bosh about this new release
 ```
-cd sec-eng-deployment-credential-manager/deployments/bosh
+cd $HOME/workspace/sec-eng-deployment-credential-manager/deployments/bosh
 export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.something.tgz
 # the following assumes you want a dev release, not the real pipeline director typically named bosh.yml
 export DEV_MODE=true  
