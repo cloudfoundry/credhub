@@ -37,5 +37,5 @@ erb bosh.yml.erb > bosh-dev.yml # important to for dev to use a different bosh m
 ```
 * edit any changes you like in bosh.yml, like adding an ssl certificate
 ```
-bosh-init deploy bosh.yml
+bosh-init deploy bosh-dev.yml
 ```
