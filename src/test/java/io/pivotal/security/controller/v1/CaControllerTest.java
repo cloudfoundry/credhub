@@ -84,14 +84,11 @@ public class CaControllerTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     });
 
-    afterEach(() -> {
-      currentTimeProvider.reset();
-    });
+    afterEach(() -> currentTimeProvider.reset());
 
-    // TODO updated-at JSON
     it("can generate a ca", () -> {
       String requestJson = "{\"type\":\"root\"}";
-      String responseJson = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
       CertificateAuthority certificateAuthority = new CertificateAuthority("root", "my_cert", "private_key");
       when(requestTranslatorWithGeneration.createAuthorityFromJson(any(DocumentContext.class))).thenReturn(certificateAuthority);
@@ -180,7 +177,7 @@ public class CaControllerTest {
           .andExpect(content().json(requestJson2));
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_certificate_2", "priv_2");
-      NamedCertificateAuthority saved = (NamedCertificateAuthority) caRepository.findOneByName("ca-identifier");
+      NamedCertificateAuthority saved = caRepository.findOneByName("ca-identifier");
       assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), theSameAs(expected));
     });
 

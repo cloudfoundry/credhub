@@ -53,7 +53,6 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         X500Name issuerDn = getIssuer(ca);
         PrivateKey issuerKey = getPrivateKey(ca);
 
-
         X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
         String certPem = CertificateFormatter.pemOf(cert);
@@ -67,17 +66,12 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     }
   }
 
-  public CertificateAuthority generateCertificateAuthority(CertificateSecretParameters params) {
-    return null;
-  }
-
   private NamedCertificateAuthority findCa(String caName) {
     boolean hasCaName = !StringUtils.isEmpty(caName);
     if (!hasCaName) {
       caName = "default";
     }
-
-    return (NamedCertificateAuthority) authorityRepository.findOneByName(caName);
+    return authorityRepository.findOneByName(caName);
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
@@ -91,5 +85,14 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
         .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
     return new X500Name(certificate.getIssuerDN().getName());
+  }
+
+  public CertificateAuthority generateCertificateAuthority(CertificateSecretParameters params) throws Exception {
+    keyGenerator.initialize(params.getKeyLength());
+    KeyPair keyPair = keyGenerator.generateKeyPair();
+    X509Certificate ca = signedCertificateGenerator.getSelfSigned(keyPair, params);
+    String certPem = CertificateFormatter.pemOf(ca);
+    String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
+    return new CertificateAuthority("root", certPem, privatePem);
   }
 }

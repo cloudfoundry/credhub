@@ -73,9 +73,7 @@ public class SignedCertificateGeneratorTest {
   SignedCertificateGenerator subject;
 
   {
-    beforeAll(() -> {
-      Security.addProvider(new BouncyCastleProvider());
-    });
+    beforeAll(() -> Security.addProvider(new BouncyCastleProvider()));
 
     beforeEach(injectMocks(this));
 
@@ -177,7 +175,7 @@ public class SignedCertificateGeneratorTest {
       });
     };
 
-    describe("a generated issuer-signed certificate", () -> {
+    describe("a generated issuer-signed childCertificate", () -> {
 
       beforeEach(() -> {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");

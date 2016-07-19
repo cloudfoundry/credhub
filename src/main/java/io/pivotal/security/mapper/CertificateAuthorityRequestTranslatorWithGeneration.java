@@ -25,6 +25,10 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
         .setCountry("US")
         .setKeyLength(2048)
         .setDurationDays(365);
-    return certificateGenerator.generateCertificateAuthority(hardwiredParams);
+    try {
+      return certificateGenerator.generateCertificateAuthority(hardwiredParams);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

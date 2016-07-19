@@ -4,6 +4,8 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.AuthoritySetterRequestTranslator;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
 import io.pivotal.security.mapper.CertificateAuthoritySetterRequestTranslator;
@@ -44,16 +46,24 @@ public class CaController {
   @Autowired
   CertificateAuthorityRequestTranslatorWithGeneration certificateAuthorityRequestTranslatorWithGeneration;
 
+  @Autowired
+  CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
+
+  @Autowired
+  BCCertificateGenerator certificateGenerator;
+
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
+  @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
     return storeAuthority(caPath, requestBody, certificateAuthoritySetterRequestTranslator);
   }
 
+  @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String caPath, InputStream requestBody) {
     return storeAuthority(caPath, requestBody, certificateAuthorityRequestTranslatorWithGeneration);
@@ -74,6 +84,7 @@ public class CaController {
     return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
   }
 
+  @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String caPath) {
     NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath);
@@ -85,7 +96,7 @@ public class CaController {
   }
 
   private NamedCertificateAuthority createEntityFromView(@PathVariable String caPath, CertificateAuthority certificateAuthority) {
-    NamedCertificateAuthority namedCertificateAuthority = (NamedCertificateAuthority) caRepository.findOneByName(caPath);
+    NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByName(caPath);
     if (namedCertificateAuthority == null) {
       namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     }
