@@ -36,5 +36,6 @@ export DEV_MODE=true  # assuming you want to try this locally; remove this env s
 erb bosh.yml.erb > bosh.yml
 ```
 * edit any changes you like in bosh.yml, like adding an ssl certificate
-* bosh-init deploy bosh.yml
-
+```
+bosh-init deploy bosh.yml
+```
