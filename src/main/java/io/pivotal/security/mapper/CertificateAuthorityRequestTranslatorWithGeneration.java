@@ -26,7 +26,8 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
         .setOrganizationUnit(parsed.read("$.parameters.organization_unit"))
         .setLocality(parsed.read("$.parameters.locality"))
         .setState(parsed.read("$.parameters.state"))
-        .setCountry(parsed.read("$.parameters.country"));
+        .setCountry(parsed.read("$.parameters.country"))
+        .setKeyLength(parsed.read("$.parameters.key_length"));
 
     try {
       return certificateGenerator.generateCertificateAuthority(params);

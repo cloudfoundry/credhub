@@ -47,7 +47,8 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
           .setOrganizationUnit("My Unit")
           .setLocality("My Locality")
           .setState("My State")
-          .setCountry("My Country");
+          .setCountry("My Country")
+          .setKeyLength(512);
       String json = "{" +
           "\"type\":\"root\"," +
           "\"parameters\":{" +
@@ -56,7 +57,8 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
           "\"organization_unit\": \"My Unit\"," +
           "\"locality\": \"My Locality\"," +
           "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"" +
+          "\"country\": \"My Country\"," +
+          "\"key_length\": 512" +
           "}" +
           "}";
       when(certificateGenerator.generateCertificateAuthority(refEq(expectedParams)))
