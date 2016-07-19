@@ -32,10 +32,11 @@ bosh create release --with-tarball --name credhub --force --timestamp-version
 ```
 cd sec-eng-deployment-credential-manager/deployments/bosh
 export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.something.tgz
-export DEV_MODE=true  # assuming you want to try this locally; remove this env setting for the real pipeline Director
+# the following assumes you want a dev release, not the real pipeline director typically named bosh.yml
+export DEV_MODE=true  
 erb bosh.yml.erb > bosh-dev.yml # important to for dev to use a different bosh manifest file name than "bosh"
 ```
-* edit any changes you like in bosh.yml, like adding an ssl certificate
+* edit any changes you like in bosh-dev.yml, like adding an ssl certificate
 ```
 bosh-init deploy bosh-dev.yml
 ```
