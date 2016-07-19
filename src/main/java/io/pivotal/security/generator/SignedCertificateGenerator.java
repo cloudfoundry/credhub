@@ -6,29 +6,24 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
+import javax.validation.ValidationException;
 import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import javax.validation.ValidationException;
 
 @Component
 public class SignedCertificateGenerator {
@@ -69,6 +64,10 @@ public class SignedCertificateGenerator {
     if (params.getAlternativeNames().size() > 0) {
       certificateBuilder.addExtension(Extension.subjectAlternativeName, false, getAlternativeNames(params));
     }
+
+    /* We need the below line of code to generate intermediate CAs
+    certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(true);
+    */
 
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 

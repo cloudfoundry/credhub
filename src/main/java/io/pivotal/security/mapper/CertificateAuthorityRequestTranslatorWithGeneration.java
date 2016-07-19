@@ -19,14 +19,17 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
     if (!parsed.read("$.type").equals("root")) {
       throw new ValidationException("error.bad_authority_type");
     }
-    CertificateSecretParameters hardwiredParams = new CertificateSecretParameters()
-        .setOrganization("Organization")
-        .setState("CA")
-        .setCountry("US")
-        .setKeyLength(2048)
-        .setDurationDays(365);
+
+    CertificateSecretParameters params = new CertificateSecretParameters()
+        .setCommonName(parsed.read("$.parameters.common_name"))
+        .setOrganization(parsed.read("$.parameters.organization"))
+        .setOrganizationUnit(parsed.read("$.parameters.organization_unit"))
+        .setLocality(parsed.read("$.parameters.locality"))
+        .setState(parsed.read("$.parameters.state"))
+        .setCountry(parsed.read("$.parameters.country"));
+
     try {
-      return certificateGenerator.generateCertificateAuthority(hardwiredParams);
+      return certificateGenerator.generateCertificateAuthority(params);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

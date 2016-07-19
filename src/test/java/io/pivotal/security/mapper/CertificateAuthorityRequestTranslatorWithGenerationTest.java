@@ -40,16 +40,28 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
   {
     wireAndUnwire(this);
 
-    it("creates view class with hardwired parameters", () -> {
-      CertificateSecretParameters hardwiredParams = new CertificateSecretParameters()
+    it("creates view with specified parameters", () -> {
+      CertificateSecretParameters expectedParams = new CertificateSecretParameters()
+          .setCommonName("My Common Name")
           .setOrganization("Organization")
-          .setState("CA")
-          .setCountry("US")
-          .setKeyLength(2048)
-          .setDurationDays(365);
-
-      when(certificateGenerator.generateCertificateAuthority(refEq(hardwiredParams))).thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));
-      DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{\"type\":\"root\"}");
+          .setOrganizationUnit("My Unit")
+          .setLocality("My Locality")
+          .setState("My State")
+          .setCountry("My Country");
+      String json = "{" +
+          "\"type\":\"root\"," +
+          "\"parameters\":{" +
+          "\"common_name\":\"My Common Name\", " +
+          "\"organization\": \"Organization\"," +
+          "\"organization_unit\": \"My Unit\"," +
+          "\"locality\": \"My Locality\"," +
+          "\"state\": \"My State\"," +
+          "\"country\": \"My Country\"" +
+          "}" +
+          "}";
+      when(certificateGenerator.generateCertificateAuthority(refEq(expectedParams)))
+          .thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));
+      DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(json);
       CertificateAuthority certificateAuthority = subject.createAuthorityFromJson(parsed);
       assertThat(certificateAuthority.getType(), equalTo("root"));
       assertThat(certificateAuthority.getCertificateAuthorityBody().getCertificate(), equalTo("theCert"));
