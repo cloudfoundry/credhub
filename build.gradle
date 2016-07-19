@@ -88,6 +88,7 @@ jacocoTestReport {
 bootRun {
     addResources = true
     systemProperties["auth-server.url"] = System.getProperty("auth-server.url", "http://localhost:8080/uaa")
+    systemProperties["data-storage.type"] = System.getProperty("data-storage.type", "in-memory")
 }
 
 test {
@@ -97,6 +98,7 @@ test {
         classDumpFile = file("$buildDir/jacoco/classpathdumps")
     }
     systemProperties["auth-server.url"] = "https://uaa.run.pivotal.io"
+    systemProperties["data-storage.type"] = "in-memory"
 }
 
 tasks.withType(Test) {
