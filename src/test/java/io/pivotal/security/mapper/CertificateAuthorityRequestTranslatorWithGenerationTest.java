@@ -19,6 +19,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import javax.validation.ValidationException;
 
 import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -92,24 +93,14 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
         Mockito.verify(certificateSecretParameters, times(1)).validate();
       });
 
-      it("returns error when type is not 'root'", () -> {
+      itThrows("returns error when type is not 'root'", ValidationException.class, () -> {
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{\"type\":\"notRoot\"}");
-        try {
-          subject.createAuthorityFromJson(parsed);
-          fail();
-        } catch (ValidationException e) {
-          assertThat(e.getMessage(), equalTo("error.bad_authority_type"));
-        }
+        subject.createAuthorityFromJson(parsed);
       });
 
-      it("returns error when type is not provided", () -> {
+      itThrows("returns error when type is not provided", ValidationException.class, () -> {
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{}");
-        try {
-          subject.createAuthorityFromJson(parsed);
-          fail();
-        } catch (ValidationException e) {
-          assertThat(e.getMessage(), equalTo("error.bad_authority_type"));
-        }
+        subject.createAuthorityFromJson(parsed);
       });
     });
   }
