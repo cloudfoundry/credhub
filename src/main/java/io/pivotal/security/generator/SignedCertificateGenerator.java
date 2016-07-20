@@ -2,10 +2,7 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -65,9 +62,8 @@ public class SignedCertificateGenerator {
       certificateBuilder.addExtension(Extension.subjectAlternativeName, false, getAlternativeNames(params));
     }
 
-    /* We need the below line of code to generate intermediate CAs
-    certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(true);
-    */
+    certificateBuilder.addExtension(Extension.basicConstraints, true,
+        new BasicConstraints(!"certificate".equals(params.getType())));
 
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 

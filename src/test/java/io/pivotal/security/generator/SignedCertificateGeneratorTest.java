@@ -2,6 +2,9 @@ package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -22,11 +25,14 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -68,6 +74,7 @@ public class SignedCertificateGeneratorTest {
   private KeyPair certKeyPair;
   private PrivateKey issuerPrivateKey;
   private CertificateSecretParameters inputParameters;
+  private String isCA;
 
   @InjectMocks
   SignedCertificateGenerator subject;
@@ -84,9 +91,7 @@ public class SignedCertificateGeneratorTest {
     });
 
     final SuiteBuilder validCertificateSuite = (makeCert) -> () -> {
-
       describe("with or without alternative names", () -> {
-
         beforeEach(makeCert::run);
 
         it("is not null", () -> {
@@ -120,10 +125,13 @@ public class SignedCertificateGeneratorTest {
         it("has no alterative names", () -> {
           assertThat(generatedCert.getExtensionValue(Extension.subjectAlternativeName.getId()), nullValue());
         });
+
+        it("sets the correct basic constraints based on type parameter", () -> {
+          assertEquals(convertDerBytesToString(generatedCert.getExtensionValue(Extension.basicConstraints.getId())), isCA);
+        });
       });
 
       describe("with alternate names", () -> {
-
         beforeEach(() -> {
           inputParameters = new CertificateSecretParameters();
           inputParameters.setOrganization("my-org");
@@ -176,7 +184,6 @@ public class SignedCertificateGeneratorTest {
     };
 
     describe("a generated issuer-signed childCertificate", () -> {
-
       beforeEach(() -> {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
         generator.initialize(1024); // doesn't matter for testing
@@ -184,12 +191,14 @@ public class SignedCertificateGeneratorTest {
         issuerPrivateKey = issuerKeyPair.getPrivate();
 
         certKeyPair = generator.generateKeyPair();
-        inputParameters = new CertificateSecretParameters();
-        inputParameters.setCommonName("my test cert");
-        inputParameters.setCountry("US");
-        inputParameters.setState("CA");
-        inputParameters.setOrganization("credhub");
-        inputParameters.setDurationDays(10);
+        inputParameters = new CertificateSecretParameters()
+            .setCommonName("my test cert")
+            .setCountry("US")
+            .setState("CA")
+            .setOrganization("credhub")
+            .setDurationDays(10)
+            .setType("certificate");
+        isCA = "[]";
         subjectDistinguishedName = inputParameters.getDN();
         issuerDistinguishedName = new X500Name(SEPARATE_ISSUER_PRINCIPAL_STRING);
       });
@@ -223,7 +232,6 @@ public class SignedCertificateGeneratorTest {
     });
 
     describe("a generated self-signed certificate", () -> {
-
       ThrowingRunnable makeCert = () -> {
         generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
       };
@@ -234,12 +242,14 @@ public class SignedCertificateGeneratorTest {
         issuerKeyPair = generator.generateKeyPair();
 
         certKeyPair = issuerKeyPair;
-        inputParameters = new CertificateSecretParameters();
-        inputParameters.setCommonName("my test cert");
-        inputParameters.setCountry("US");
-        inputParameters.setState("CA");
-        inputParameters.setOrganization("credhub");
-        inputParameters.setDurationDays(10);
+        inputParameters = new CertificateSecretParameters()
+            .setCommonName("my test cert")
+            .setCountry("US")
+            .setState("CA")
+            .setOrganization("credhub")
+            .setDurationDays(10)
+            .setType("root");
+        isCA = "[TRUE]";
         subjectDistinguishedName = inputParameters.getDN();
         issuerDistinguishedName = subjectDistinguishedName;
       });
@@ -254,5 +264,18 @@ public class SignedCertificateGeneratorTest {
 
   interface SuiteBuilder {
     Spectrum.Block build(ThrowingRunnable makeCert);
+  }
+
+  private String convertDerBytesToString(byte [] data) {
+    try {
+      DEROctetString derOctetString = (DEROctetString) bytesToDerConversion(data);
+      return bytesToDerConversion(derOctetString.getOctets()).toString();
+    } catch(Exception e) {
+      return "";
+    }
+  }
+
+  private ASN1Primitive bytesToDerConversion(byte[] data) throws IOException {
+    return data == null ? null : new ASN1InputStream(new ByteArrayInputStream(data)).readObject();
   }
 }
