@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import javax.validation.ValidationException;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+@Component
 public class CertificateSecretParameters {
   // Required Certificate Parameters
   private String organization;
