@@ -109,14 +109,39 @@ public class BCCertificateGeneratorTest {
 
     afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
 
-    it("throws a validation exception when there is no default ca", () -> {
-      CertificateSecretParameters inputParameters = new CertificateSecretParameters();
-      try {
-        subject.generateSecret(inputParameters);
-        fail();
-      } catch (ValidationException ve) {
-        assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
-      }
+    describe("when there is no default ca", () -> {
+      it("throws a validation exception", () -> {
+        CertificateSecretParameters inputParameters = new CertificateSecretParameters();
+        try {
+          subject.generateSecret(inputParameters);
+          fail();
+        } catch (ValidationException ve) {
+          assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
+        }
+      });
+
+      it("throws the correct validation exception when default is explicitly requested", () -> {
+        CertificateSecretParameters inputParameters = new CertificateSecretParameters();
+        try {
+          inputParameters.setCa("default");
+          subject.generateSecret(inputParameters);
+          fail();
+        } catch (ValidationException ve) {
+          assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
+        }
+      });
+    });
+
+    describe("when a CA does not exist", () -> {
+      it("throws a validation exception when attempting to sign a certificate with that CA", () -> {
+        inputParameters.setCa("nonexistentCA");
+        try {
+          subject.generateSecret(inputParameters);
+          fail();
+        } catch (ValidationException ve) {
+          assertThat(ve.getMessage(), equalTo("error.ca_not_found_for_certificate_generation"));
+        }
+      });
     });
 
     describe("when a default CA exists", () -> {

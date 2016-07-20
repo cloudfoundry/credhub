@@ -48,30 +48,34 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     KeyPair keyPair = keyGenerator.generateKeyPair();
 
     NamedCertificateAuthority ca = findCa(params.getCa());
-    if (ca != null) {
-      try {
-        X500Name issuerDn = getIssuer(ca);
-        PrivateKey issuerKey = getPrivateKey(ca);
+    try {
+      X500Name issuerDn = getIssuer(ca);
+      PrivateKey issuerKey = getPrivateKey(ca);
 
-        X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
+      X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
-        String certPem = CertificateFormatter.pemOf(cert);
-        String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new CertificateSecret(ca.getCertificate(), certPem, privatePem);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    } else {
-      throw new ValidationException("error.default_ca_required");
+      String certPem = CertificateFormatter.pemOf(cert);
+      String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
+      return new CertificateSecret(ca.getCertificate(), certPem, privatePem);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
   private NamedCertificateAuthority findCa(String caName) {
     boolean hasCaName = !StringUtils.isEmpty(caName);
-    if (!hasCaName) {
+    String missingCaErrorMessageKey;
+    if (hasCaName && !"default".equals(caName)) {
+      missingCaErrorMessageKey = "error.ca_not_found_for_certificate_generation";
+    } else {
+      missingCaErrorMessageKey = "error.default_ca_required";
       caName = "default";
     }
-    return authorityRepository.findOneByName(caName);
+    NamedCertificateAuthority ca = authorityRepository.findOneByName(caName);
+    if (ca == null) {
+      throw new ValidationException(missingCaErrorMessageKey);
+    }
+    return ca;
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
