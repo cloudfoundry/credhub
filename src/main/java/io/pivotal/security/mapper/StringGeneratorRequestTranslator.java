@@ -14,8 +14,7 @@ public class StringGeneratorRequestTranslator implements SecretGeneratorRequestT
   @Override
   public StringSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
     StringSecretParameters secretParameters = new StringSecretParameters();
-    String secretType = parsed.read("$.type", String.class);
-    Optional.ofNullable(secretType).ifPresent(secretParameters::setType);
+    secretParameters.setType(parsed.read("$.type", String.class));
     Optional.ofNullable(parsed.read("$.parameters.length", Integer.class))
         .ifPresent(secretParameters::setLength);
     Optional.ofNullable(parsed.read("$.parameters.exclude_lower", Boolean.class))

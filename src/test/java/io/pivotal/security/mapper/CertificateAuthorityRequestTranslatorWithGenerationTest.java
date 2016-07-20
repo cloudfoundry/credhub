@@ -23,7 +23,6 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
@@ -42,9 +41,19 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
   BCCertificateGenerator certificateGenerator;
 
   @Spy
-  CertificateSecretParameters certificateSecretParameters;
+  CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
   private DocumentContext parsed;
+  private CertificateSecretParameters fullParams = new CertificateSecretParameters()
+      .setCommonName("My Common Name")
+      .setOrganization("Organization")
+      .setOrganizationUnit("My Unit")
+      .setLocality("My Locality")
+      .setState("My State")
+      .setCountry("My Country")
+      .setKeyLength(2048)
+      .setDurationDays(365)
+      .setType("root");
 
   {
     wireAndUnwire(this);
@@ -61,37 +70,31 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
             "\"state\": \"My State\"," +
             "\"country\": \"My Country\"," +
             "\"key_length\": 2048," +
-            "\"duration\": 364" +
+            "\"duration\": 365" +
             "}" +
             "}";
         parsed = JsonPath.using(jsonConfiguration).parse(json);
       });
 
       it("creates view with specified parameters", () -> {
-        CertificateSecretParameters expectedParams = new CertificateSecretParameters()
-            .setCommonName("My Common Name")
-            .setOrganization("Organization")
-            .setOrganizationUnit("My Unit")
-            .setLocality("My Locality")
-            .setState("My State")
-            .setCountry("My Country")
-            .setKeyLength(2048)
-            .setDurationDays(364)
-            .setType("root");
-
-        when(certificateGenerator.generateCertificateAuthority(refEq(expectedParams)))
+        when(certificateGenerator.generateCertificateAuthority(refEq(fullParams)))
             .thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));
+
         CertificateAuthority certificateAuthority = subject.createAuthorityFromJson(parsed);
+
         assertThat(certificateAuthority.getType(), equalTo("root"));
         assertThat(certificateAuthority.getCertificateAuthorityBody().getCertificate(), equalTo("theCert"));
         assertThat(certificateAuthority.getCertificateAuthorityBody().getPrivateKey(), equalTo("thePrivateKey"));
       });
 
       it("validates parameters", () -> {
-        when(certificateGenerator.generateCertificateAuthority(refEq(certificateSecretParameters)))
+        CertificateSecretParameters parameters = new CertificateGeneratorRequestTranslator().validRequestParameters(parsed);
+        when(certificateGenerator.generateCertificateAuthority(refEq(parameters)))
             .thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));
+
         subject.createAuthorityFromJson(parsed);
-        Mockito.verify(certificateSecretParameters, times(1)).validate();
+
+        Mockito.verify(certificateGeneratorRequestTranslator, times(1)).validRequestParameters(parsed);
       });
 
       itThrows("returns error when type is not 'root'", ValidationException.class, () -> {
@@ -105,4 +108,5 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
       });
     });
   }
+
 }

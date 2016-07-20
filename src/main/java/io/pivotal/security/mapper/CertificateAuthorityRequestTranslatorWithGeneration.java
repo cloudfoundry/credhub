@@ -15,29 +15,19 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
   BCCertificateGenerator certificateGenerator;
 
   @Autowired
-  CertificateSecretParameters certificateSecretParameters;
+  CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
   @Override
   public CertificateAuthority createAuthorityFromJson(DocumentContext parsed) {
-    String certType = parsed.read("$.type");
-    if (!"root".equals(certType)) {
+    if (!"root".equals(parsed.read("$.type"))) {
       throw new ValidationException("error.bad_authority_type");
     }
 
-    certificateSecretParameters.setCommonName(parsed.read("$.parameters.common_name"))
-        .setOrganization(parsed.read("$.parameters.organization"))
-        .setOrganizationUnit(parsed.read("$.parameters.organization_unit"))
-        .setLocality(parsed.read("$.parameters.locality"))
-        .setState(parsed.read("$.parameters.state"))
-        .setCountry(parsed.read("$.parameters.country"))
-        .setKeyLength(parsed.read("$.parameters.key_length"))
-        .setDurationDays(parsed.read("$.parameters.duration"))
-        .setType(certType);
-
-    certificateSecretParameters.validate();
+    CertificateSecretParameters parameters =
+        certificateGeneratorRequestTranslator.validRequestParameters(parsed);
 
     try {
-      return certificateGenerator.generateCertificateAuthority(certificateSecretParameters);
+      return certificateGenerator.generateCertificateAuthority(parameters);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
