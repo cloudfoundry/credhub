@@ -1,12 +1,13 @@
 package io.pivotal.security.controller.v1;
 
-public class StringSecretParameters {
+public class StringSecretParameters implements RequestParameters {
   // Value Parameters
   private int length;
   private boolean excludeSpecial;
   private boolean excludeNumber;
   private boolean excludeUpper;
   private boolean excludeLower;
+  private String type;
 
   public int getLength() {
     return length;
@@ -58,5 +59,14 @@ public class StringSecretParameters {
         && excludeNumber
         && excludeUpper
         && excludeLower);
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public StringSecretParameters setType(String type) {
+    this.type = type;
+    return this;
   }
 }

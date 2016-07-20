@@ -2,7 +2,6 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.controller.v1.GeneratorRequest;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import org.springframework.stereotype.Component;
@@ -11,9 +10,8 @@ import javax.validation.ValidationException;
 import java.util.Optional;
 
 @Component
-public class CertificateGeneratorRequestTranslator implements SecretGeneratorRequestTranslator {
-  public GeneratorRequest<CertificateSecretParameters> validGeneratorRequest(DocumentContext parsed) throws ValidationException {
-    GeneratorRequest<CertificateSecretParameters> generatorRequest = new GeneratorRequest<>();
+public class CertificateGeneratorRequestTranslator implements SecretGeneratorRequestTranslator<CertificateSecretParameters> {
+  public CertificateSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
     CertificateSecretParameters secretParameters = new CertificateSecretParameters();
     Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
         .ifPresent(secretParameters::setCommonName);
@@ -35,12 +33,12 @@ public class CertificateGeneratorRequestTranslator implements SecretGeneratorReq
         .ifPresent(secretParameters::setDurationDays);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
         .ifPresent(secretParameters::setCa);
-    generatorRequest.setType(parsed.read("$.type"));
-    generatorRequest.setParameters(secretParameters);
+    String certType = parsed.read("$.type", String.class);
+    Optional.ofNullable(certType).ifPresent(secretParameters::setType);
 
     secretParameters.validate();
 
-    return generatorRequest;
+    return secretParameters;
   }
 
   @Override

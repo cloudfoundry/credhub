@@ -19,7 +19,8 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
 
   @Override
   public CertificateAuthority createAuthorityFromJson(DocumentContext parsed) {
-    if (!"root".equals(parsed.read("$.type"))) {
+    String certType = parsed.read("$.type");
+    if (!"root".equals(certType)) {
       throw new ValidationException("error.bad_authority_type");
     }
 
@@ -30,7 +31,8 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
         .setState(parsed.read("$.parameters.state"))
         .setCountry(parsed.read("$.parameters.country"))
         .setKeyLength(parsed.read("$.parameters.key_length"))
-        .setDurationDays(parsed.read("$.parameters.duration"));
+        .setDurationDays(parsed.read("$.parameters.duration"))
+        .setType(certType);
 
     certificateSecretParameters.validate();
 

@@ -1,7 +1,7 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.controller.v1.GeneratorRequest;
+import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.Secret;
 import org.junit.Before;
@@ -21,9 +21,9 @@ public class RequestTranslatorWithGenerationTest {
   @Mock
   DocumentContext documentContext;
   @Mock
-  GeneratorRequest generatorRequest;
-  @Mock
   Secret secret;
+  @Mock
+  RequestParameters requestParameters;
 
   @Before
   public void setUp() throws Exception {
@@ -32,12 +32,10 @@ public class RequestTranslatorWithGenerationTest {
 
   @Test
   public void generatesRequestAndThenGeneratesSecret() {
-    Object generatorRequestParameters = new Object();
     RequestTranslatorWithGeneration subject = new RequestTranslatorWithGeneration(secretGenerator, requestTranslator);
 
-    when(generatorRequest.getParameters()).thenReturn(generatorRequestParameters);
-    when(requestTranslator.validGeneratorRequest(documentContext)).thenReturn(generatorRequest);
-    when(secretGenerator.generateSecret(generatorRequestParameters)).thenReturn(secret);
+    when(requestTranslator.validRequestParameters(documentContext)).thenReturn(requestParameters);
+    when(secretGenerator.generateSecret(requestParameters)).thenReturn(secret);
 
     assertThat(subject.createSecretFromJson(documentContext), sameInstance(secret));
   }

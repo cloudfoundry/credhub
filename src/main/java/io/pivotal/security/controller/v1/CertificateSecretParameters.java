@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-public class CertificateSecretParameters {
+public class CertificateSecretParameters implements RequestParameters {
   // Required Certificate Parameters
   private String organization;
   private String state;
@@ -26,6 +26,7 @@ public class CertificateSecretParameters {
   private int keyLength = 2048;
   private int durationDays = 365;
   private String ca;
+  private String type;
 
   public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
@@ -139,6 +140,15 @@ public class CertificateSecretParameters {
 
   public CertificateSecretParameters setCa(String ca) {
     this.ca = ca;
+    return this;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public CertificateSecretParameters setType(String type) {
+    this.type = type;
     return this;
   }
 }

@@ -76,7 +76,8 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
             .setState("My State")
             .setCountry("My Country")
             .setKeyLength(2048)
-            .setDurationDays(364);
+            .setDurationDays(364)
+            .setType("root");
 
         when(certificateGenerator.generateCertificateAuthority(refEq(expectedParams)))
             .thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));

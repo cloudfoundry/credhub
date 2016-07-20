@@ -5,7 +5,6 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.controller.v1.GeneratorRequest;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,10 +55,11 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setLocality("My Locality");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
+      expectedParameters.setType("certificate");
       expectedParameters.setDurationDays(1000);
 
-      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
+      CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("ensures that all of the necessary parameters have been provided", () -> {
@@ -75,9 +75,10 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setOrganization("organization.io");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
+      expectedParameters.setType("certificate");
 
-      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
+      CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("ensures failure when organization is omitted", () -> {
@@ -90,7 +91,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "}";
 
       try {
-        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+        subject.validRequestParameters(JsonPath.using(configuration).parse(json));
         fail();
       } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
@@ -106,7 +107,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "}" +
           "}";
       try {
-        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+        subject.validRequestParameters(JsonPath.using(configuration).parse(json));
         fail();
       } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
@@ -122,7 +123,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "}" +
           "}";
       try {
-        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+        subject.validRequestParameters(JsonPath.using(configuration).parse(json));
         fail();
       } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
@@ -144,12 +145,12 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setOrganization("organization.io");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
+      expectedParameters.setType("certificate");
       expectedParameters.addAlternativeName("foo");
       expectedParameters.addAlternativeName("boo pivotal.io");
 
-      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-
-      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
+      CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("ensures that key length is added", () -> {
@@ -167,11 +168,11 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setOrganization("organization.io");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
+      expectedParameters.setType("certificate");
       expectedParameters.setKeyLength(2048);
 
-      GeneratorRequest<CertificateSecretParameters> cgRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-
-      assertThat(cgRequest.getParameters(), BeanMatchers.theSameAs(expectedParameters));
+      CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
   }
 }

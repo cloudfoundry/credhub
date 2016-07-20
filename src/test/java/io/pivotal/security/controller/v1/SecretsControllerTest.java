@@ -160,7 +160,8 @@ public class SecretsControllerTest {
             .setLength(42)
             .setExcludeSpecial(true)
             .setExcludeNumber(true)
-            .setExcludeUpper(true);
+            .setExcludeUpper(true)
+            .setType("value");
         when(stringSecretGenerator.generateSecret(refEq(expectedParameters))).thenReturn(expectedStringSecret);
 
         String expectedJson = json(expectedStringSecret);

@@ -5,8 +5,8 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.GeneratorRequest;
 import io.pivotal.security.controller.v1.StringSecretParameters;
+import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -38,8 +38,10 @@ public class StringGeneratorRequestTranslatorTest {
 
     it("returns a StringGeneratorRequest for valid json", () -> {
       String json = "{\"type\":\"value\"}";
-      GeneratorRequest<StringSecretParameters> generatorRequest = subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
-      assertThat(generatorRequest.getType(), equalTo("value"));
+      StringSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      StringSecretParameters expectedParameters = new StringSecretParameters();
+      expectedParameters.setType("value");
+      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("rejects excluding all possible character sets as an invalid case", () -> {
@@ -54,7 +56,7 @@ public class StringGeneratorRequestTranslatorTest {
           "}" +
           "}";
       try {
-        subject.validGeneratorRequest(JsonPath.using(configuration).parse(json));
+        subject.validRequestParameters(JsonPath.using(configuration).parse(json));
         fail();
       } catch (ValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.excludes_all_charsets"));
