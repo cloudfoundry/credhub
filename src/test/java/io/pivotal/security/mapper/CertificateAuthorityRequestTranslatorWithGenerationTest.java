@@ -101,6 +101,16 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
           assertThat(e.getMessage(), equalTo("error.bad_authority_type"));
         }
       });
+
+      it("returns error when type is not provided", () -> {
+        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{}");
+        try {
+          subject.createAuthorityFromJson(parsed);
+          fail();
+        } catch (ValidationException e) {
+          assertThat(e.getMessage(), equalTo("error.bad_authority_type"));
+        }
+      });
     });
   }
 }

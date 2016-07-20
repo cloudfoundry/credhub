@@ -19,7 +19,7 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
 
   @Override
   public CertificateAuthority createAuthorityFromJson(DocumentContext parsed) {
-    if (!parsed.read("$.type").equals("root")) {
+    if (!"root".equals(parsed.read("$.type"))) {
       throw new ValidationException("error.bad_authority_type");
     }
 
