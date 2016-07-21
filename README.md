@@ -1,9 +1,9 @@
 # PCF Credential Manager
 =========================
-This "credhub" server helps manage secrets like passwords and certificates, 
-offering rest apis for access to get/set/generate such secrets.
+This "credhub" server helps manage secrets like passwords, certificates, and CAs,
+offering a REST API for access to get/set/generate such secrets.
  
-Credhub is intended to live within a Bosh Director, typically, providing
+Credhub is intended to live within a Bosh Director, providing
  real credentials to the Bosh Director that it can substitute for 
  variable references.  This preserves security by obviating the need to check into git such credentials,
  within a Bosh manifest.
