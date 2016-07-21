@@ -21,6 +21,7 @@ public class AuthServerProperties {
   private String url;
 
   private final String client = "credhub";
+  private final String clientSecret = "";
 
   public String getUrl() {
     return url;
@@ -32,6 +33,10 @@ public class AuthServerProperties {
 
   public String getClient() {
     return client;
+  }
+
+  public String getClientSecret() {
+    return clientSecret;
   }
 
   @PostConstruct

@@ -5,9 +5,11 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
+import java.util.Collections;
+
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
-import java.util.Collections;
+import javax.validation.constraints.Pattern;
 
 @ConfigurationProperties("data-storage")
 public class DataStorageProperties {
@@ -15,6 +17,7 @@ public class DataStorageProperties {
   ConfigurableEnvironment environment;
 
   @NotNull(message = "The data-storage.type configuration property is required.")
+  @Pattern(regexp = "in-memory", message = "The data-storage.type configuration property must be \"in-memory\".")
   private String type;
 
   public String getType() {
@@ -27,9 +30,6 @@ public class DataStorageProperties {
 
   @PostConstruct
   public void init() {
-    if(!"in-memory".equals(type)) {
-      throw new RuntimeException("'in-memory' is the only legal storage type");
-    }
     MapPropertySource propertySource = new MapPropertySource("data-storage", Collections.singletonMap("data-storage.type", getType()));
     environment.getPropertySources().addFirst(propertySource);
   }
