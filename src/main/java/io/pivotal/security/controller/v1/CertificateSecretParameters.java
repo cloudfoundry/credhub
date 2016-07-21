@@ -60,8 +60,11 @@ public class CertificateSecretParameters implements RequestParameters {
 
   public void validate() throws ValidationException {
     if (StringUtils.isEmpty(organization)
-        || StringUtils.isEmpty(state)
-        || StringUtils.isEmpty(country)) {
+        && StringUtils.isEmpty(state)
+        && StringUtils.isEmpty(locality)
+        && StringUtils.isEmpty(organizationUnit)
+        && StringUtils.isEmpty(commonName)
+        && StringUtils.isEmpty(country)) {
       throw new ValidationException("error.missing_certificate_parameters");
     }
 
@@ -82,9 +85,15 @@ public class CertificateSecretParameters implements RequestParameters {
   public X500Name getDN() {
     X500NameBuilder builder = new X500NameBuilder();
 
-    builder.addRDN(BCStyle.O, organization);
-    builder.addRDN(BCStyle.ST, state);
-    builder.addRDN(BCStyle.C, country);
+    if (!StringUtils.isEmpty(organization)) {
+      builder.addRDN(BCStyle.O, organization);
+    }
+    if (!StringUtils.isEmpty(state)) {
+      builder.addRDN(BCStyle.ST, state);
+    }
+    if (!StringUtils.isEmpty(country)) {
+      builder.addRDN(BCStyle.C, country);
+    }
     if (!StringUtils.isEmpty(commonName)) {
       builder.addRDN(BCStyle.CN, commonName);
     }

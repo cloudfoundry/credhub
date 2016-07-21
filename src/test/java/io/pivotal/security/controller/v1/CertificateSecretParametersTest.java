@@ -37,13 +37,11 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
-  public void constructsDNStringWhenOnlyRequiredParamsArePresent() throws Exception {
+  public void constructsDNStringWhenOnlyOneParamIsPresent() throws Exception {
     CertificateSecretParameters params = new CertificateSecretParameters();
     params.setCountry("My Country");
-    params.setState("My State");
-    params.setOrganization("My Organization");
 
-    assertThat(params.getDN().toString(), equalTo("O=My Organization,ST=My State,C=My Country"));
+    assertThat(params.getDN().toString(), equalTo("C=My Country"));
   }
 
   @Test
@@ -114,63 +112,67 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
-  public void needAtLeastStateAndOrganizationAndCountry() {
+  public void failWhenAllAreEmpty() {
     doValidateTest(false, "", "", "", "", "", "");
-    doValidateTest(false, "", "", "", "", "", "a");
-    doValidateTest(false, "", "", "", "", "b", "");
-    doValidateTest(false, "", "", "", "", "b", "a");
-    doValidateTest(false, "", "", "", "c", "", "");
-    doValidateTest(false, "", "", "", "c", "", "a");
-    doValidateTest(false, "", "", "", "c", "b", "");
-    doValidateTest(false, "", "", "", "c", "b", "a");
-    doValidateTest(false, "", "", "d", "", "", "");
-    doValidateTest(false, "", "", "d", "", "", "a");
-    doValidateTest(false, "", "", "d", "", "b", "");
-    doValidateTest(false, "", "", "d", "", "b", "a");
-    doValidateTest(false, "", "", "d", "c", "", "");
-    doValidateTest(false, "", "", "d", "c", "", "a");
-    doValidateTest(false, "", "", "d", "c", "b", "");
-    doValidateTest(false, "", "", "d", "c", "b", "a");
-    doValidateTest(false, "", "e", "", "", "", "");
-    doValidateTest(false, "", "e", "", "", "", "a");
-    doValidateTest(false, "", "e", "", "", "b", "");
-    doValidateTest(false, "", "e", "", "", "b", "a");
-    doValidateTest(false, "", "e", "", "c", "", "");
-    doValidateTest(false, "", "e", "", "c", "", "a");
-    doValidateTest(false, "", "e", "", "c", "b", "");
-    doValidateTest(false, "", "e", "", "c", "b", "a");
-    doValidateTest(false, "", "e", "d", "", "", "");
-    doValidateTest(false, "", "e", "d", "", "", "a");
-    doValidateTest(false, "", "e", "d", "", "b", "");
-    doValidateTest(false, "", "e", "d", "", "b", "a");
-    doValidateTest(false, "", "e", "d", "c", "", "");
-    doValidateTest(false, "", "e", "d", "c", "", "a");
-    doValidateTest(false, "", "e", "d", "c", "b", "");
-    doValidateTest(false, "", "e", "d", "c", "b", "a");
-    doValidateTest(false, "f", "", "", "", "", "");
-    doValidateTest(false, "f", "", "", "", "", "a");
-    doValidateTest(false, "f", "", "", "", "b", "");
-    doValidateTest(false, "f", "", "", "", "b", "a");
-    doValidateTest(false, "f", "", "", "c", "", "");
-    doValidateTest(false, "f", "", "", "c", "", "a");
-    doValidateTest(false, "f", "", "", "c", "b", "");
-    doValidateTest(false, "f", "", "", "c", "b", "a");
-    doValidateTest(false, "f", "", "d", "", "", "");
-    doValidateTest(false, "f", "", "d", "", "", "a");
-    doValidateTest(false, "f", "", "d", "", "b", "");
-    doValidateTest(false, "f", "", "d", "", "b", "a");
-    doValidateTest(false, "f", "", "d", "c", "", "");
-    doValidateTest(false, "f", "", "d", "c", "", "a");
-    doValidateTest(false, "f", "", "d", "c", "b", "");
-    doValidateTest(false, "f", "", "d", "c", "b", "a");
-    doValidateTest(false, "f", "e", "", "", "", "");
-    doValidateTest(false, "f", "e", "", "", "", "a");
-    doValidateTest(false, "f", "e", "", "", "b", "");
-    doValidateTest(false, "f", "e", "", "", "b", "a");
-    doValidateTest(false, "f", "e", "", "c", "", "");
-    doValidateTest(false, "f", "e", "", "c", "", "a");
-    doValidateTest(false, "f", "e", "", "c", "b", "");
-    doValidateTest(false, "f", "e", "", "c", "b", "a");
+  }
+
+  @Test
+  public void atLeastOneIsNonEmpty() {
+    doValidateTest(true, "", "", "", "", "", "a");
+    doValidateTest(true, "", "", "", "", "b", "");
+    doValidateTest(true, "", "", "", "", "b", "a");
+    doValidateTest(true, "", "", "", "c", "", "");
+    doValidateTest(true, "", "", "", "c", "", "a");
+    doValidateTest(true, "", "", "", "c", "b", "");
+    doValidateTest(true, "", "", "", "c", "b", "a");
+    doValidateTest(true, "", "", "d", "", "", "");
+    doValidateTest(true, "", "", "d", "", "", "a");
+    doValidateTest(true, "", "", "d", "", "b", "");
+    doValidateTest(true, "", "", "d", "", "b", "a");
+    doValidateTest(true, "", "", "d", "c", "", "");
+    doValidateTest(true, "", "", "d", "c", "", "a");
+    doValidateTest(true, "", "", "d", "c", "b", "");
+    doValidateTest(true, "", "", "d", "c", "b", "a");
+    doValidateTest(true, "", "e", "", "", "", "");
+    doValidateTest(true, "", "e", "", "", "", "a");
+    doValidateTest(true, "", "e", "", "", "b", "");
+    doValidateTest(true, "", "e", "", "", "b", "a");
+    doValidateTest(true, "", "e", "", "c", "", "");
+    doValidateTest(true, "", "e", "", "c", "", "a");
+    doValidateTest(true, "", "e", "", "c", "b", "");
+    doValidateTest(true, "", "e", "", "c", "b", "a");
+    doValidateTest(true, "", "e", "d", "", "", "");
+    doValidateTest(true, "", "e", "d", "", "", "a");
+    doValidateTest(true, "", "e", "d", "", "b", "");
+    doValidateTest(true, "", "e", "d", "", "b", "a");
+    doValidateTest(true, "", "e", "d", "c", "", "");
+    doValidateTest(true, "", "e", "d", "c", "", "a");
+    doValidateTest(true, "", "e", "d", "c", "b", "");
+    doValidateTest(true, "", "e", "d", "c", "b", "a");
+    doValidateTest(true, "f", "", "", "", "", "");
+    doValidateTest(true, "f", "", "", "", "", "a");
+    doValidateTest(true, "f", "", "", "", "b", "");
+    doValidateTest(true, "f", "", "", "", "b", "a");
+    doValidateTest(true, "f", "", "", "c", "", "");
+    doValidateTest(true, "f", "", "", "c", "", "a");
+    doValidateTest(true, "f", "", "", "c", "b", "");
+    doValidateTest(true, "f", "", "", "c", "b", "a");
+    doValidateTest(true, "f", "", "d", "", "", "");
+    doValidateTest(true, "f", "", "d", "", "", "a");
+    doValidateTest(true, "f", "", "d", "", "b", "");
+    doValidateTest(true, "f", "", "d", "", "b", "a");
+    doValidateTest(true, "f", "", "d", "c", "", "");
+    doValidateTest(true, "f", "", "d", "c", "", "a");
+    doValidateTest(true, "f", "", "d", "c", "b", "");
+    doValidateTest(true, "f", "", "d", "c", "b", "a");
+    doValidateTest(true, "f", "e", "", "", "", "");
+    doValidateTest(true, "f", "e", "", "", "", "a");
+    doValidateTest(true, "f", "e", "", "", "b", "");
+    doValidateTest(true, "f", "e", "", "", "b", "a");
+    doValidateTest(true, "f", "e", "", "c", "", "");
+    doValidateTest(true, "f", "e", "", "c", "", "a");
+    doValidateTest(true, "f", "e", "", "c", "b", "");
+    doValidateTest(true, "f", "e", "", "c", "b", "a");
     doValidateTest(true, "f", "e", "d", "", "", "");
     doValidateTest(true, "f", "e", "d", "", "", "a");
     doValidateTest(true, "f", "e", "d", "", "b", "");

@@ -243,17 +243,6 @@ public class SecretsControllerTest {
         assertThat(secretRepository.findOneByName("my-cert").generateView(), BeanMatchers.theSameAs(certificateSecret));
       });
 
-      it("returns bad request (400) if certificate parameters are incomplete", () -> {
-        String requestJson = "{" +
-            "\"type\":\"certificate\"," +
-            "\"parameters\":{" +
-            "\"organization\": \"organization.io\"," +
-            "\"country\": \"My Country\"" +
-            "}" +
-            "}";
-        expectErrorKey(postRequestBuilder("/api/v1/data/secret-identifier", requestJson), HttpStatus.BAD_REQUEST, "error.missing_certificate_parameters");
-      });
-
       it("can store nulls in client-supplied certificate secret", () -> {
         permuteTwoEmptiesTest(null);
       });
@@ -262,13 +251,7 @@ public class SecretsControllerTest {
         permuteTwoEmptiesTest("");
       });
 
-      it("returns bad request (400) if all three certificate fields are null", () -> {
-        new PutCertificateSimulator(null, null, null)
-            .setExpectation(400, "error.missing_certificate_credentials")
-            .execute();
-      });
-
-      it("returns bad request (400) if all three certificate fields are empty", () -> {
+      it("returns bad request (400) if all certificate fields are empty", () -> {
         new PutCertificateSimulator("", "", "")
             .setExpectation(400, "error.missing_certificate_credentials")
             .execute();

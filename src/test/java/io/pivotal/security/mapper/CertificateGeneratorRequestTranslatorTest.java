@@ -96,30 +96,11 @@ public class CertificateGeneratorRequestTranslatorTest {
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
-    it("ensures failure when organization is omitted", () -> {
-      String json = "{" +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"" +
-          "}" +
-          "}";
-
-      try {
-        subject.validCertificateGeneratorRequest(JsonPath.using(configuration).parse(json));
-        fail();
-      } catch (ValidationException ve) {
-        assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
-      }
-    });
-
-    describe("when a required parameter is omitted", () -> {
+    describe("when all parameters are omitted", () -> {
       beforeEach(() -> {
         String json = "{" +
             "\"type\":\"certificate\"," +
             "\"parameters\":{" +
-            "\"organization\": \"organization.io\"," +
-            "\"country\": \"My Country\"" +
             "}" +
             "}";
         parsed = JsonPath.using(configuration).parse(json);
@@ -161,22 +142,6 @@ public class CertificateGeneratorRequestTranslatorTest {
         subject.validRequestParameters(parsed);
         verify(mockParams, times(1)).validate();
       });
-    });
-
-    it("ensures failure when country is omitted", () -> {
-      String json = "{" +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"state\": \"My State\"," +
-          "}" +
-          "}";
-      try {
-        subject.validCertificateGeneratorRequest(JsonPath.using(configuration).parse(json));
-        fail();
-      } catch (ValidationException ve) {
-        assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
-      }
     });
 
     it("ensures that alternative names are added as necessary", () -> {
