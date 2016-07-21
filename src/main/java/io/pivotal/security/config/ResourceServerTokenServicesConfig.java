@@ -35,7 +35,7 @@ public class ResourceServerTokenServicesConfig {
     final RemoteTokenServices remoteTokenServices = new RemoteTokenServices();
     remoteTokenServices.setClientId(authServerProperties.getClient());
     remoteTokenServices.setClientSecret(authServerProperties.getClientSecret());
-    remoteTokenServices.setCheckTokenEndpointUrl(authServerProperties.getUrl() + "/check_token");
+    remoteTokenServices.setCheckTokenEndpointUrl("https://localhost:8443/check_token");
     remoteTokenServices.setRestTemplate(remoteTokenServicesRestTemplate);
     return remoteTokenServices;
   }
