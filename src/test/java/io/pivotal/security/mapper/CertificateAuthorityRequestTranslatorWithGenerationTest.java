@@ -94,7 +94,7 @@ public class CertificateAuthorityRequestTranslatorWithGenerationTest {
 
         subject.createAuthorityFromJson(parsed);
 
-        Mockito.verify(certificateGeneratorRequestTranslator, times(1)).validRequestParameters(parsed);
+        Mockito.verify(certificateGeneratorRequestTranslator, times(1)).validCertificateAuthorityParameters(parsed);
       });
 
       itThrows("returns error when type is not 'root'", ValidationException.class, () -> {

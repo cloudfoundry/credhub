@@ -24,7 +24,7 @@ public class CertificateAuthorityRequestTranslatorWithGeneration implements Auth
     }
 
     CertificateSecretParameters parameters =
-        certificateGeneratorRequestTranslator.validRequestParameters(parsed);
+        certificateGeneratorRequestTranslator.validCertificateAuthorityParameters(parsed);
 
     try {
       return certificateGenerator.generateCertificateAuthority(parameters);

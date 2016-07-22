@@ -14,8 +14,8 @@ import java.util.function.Supplier;
 public class CertificateGeneratorRequestTranslator implements SecretGeneratorRequestTranslator<CertificateSecretParameters> {
   Supplier<CertificateSecretParameters> parametersSupplier = () -> new CertificateSecretParameters();
 
-  public CertificateSecretParameters validCertificateGeneratorRequest(DocumentContext parsed) throws ValidationException {
-    CertificateSecretParameters secretParameters = validRequestParameters(parsed);
+  public CertificateSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
+    CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
 
     Optional.ofNullable(parsed.read("$.parameters.alternative_name", String[].class))
         .ifPresent(secretParameters::addAlternativeNames);
@@ -27,7 +27,7 @@ public class CertificateGeneratorRequestTranslator implements SecretGeneratorReq
     return secretParameters;
   }
 
-  public CertificateSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
+  public CertificateSecretParameters validCertificateAuthorityParameters(DocumentContext parsed) throws ValidationException {
     CertificateSecretParameters secretParameters = parametersSupplier.get();
     Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
         .ifPresent(secretParameters::setCommonName);
