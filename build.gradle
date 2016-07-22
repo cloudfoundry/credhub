@@ -100,8 +100,7 @@ test {
         destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
         classDumpFile = file("$buildDir/jacoco/classpathdumps")
     }
-    systemProperties["auth-server.url"] = "https://uaa.run.pivotal.io"
-    systemProperties["data-storage.type"] = "in-memory"
+    systemProperties["spring.profiles.active"] = "dev"
 }
 
 tasks.withType(Test) {
