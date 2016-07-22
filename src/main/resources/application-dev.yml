@@ -1,0 +1,22 @@
+auth-server:
+  url: https://50.17.59.67:8443
+
+data-storage:
+  type: in-memory
+
+security:
+  oauth2:
+    resource:
+      jwt:
+        key-value: |
+          -----BEGIN PUBLIC KEY-----
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKxPDE3VJx5yTU6TMEad
+          KYxXCeRDdc2ctc0Ke0FxMkcKNG4CPwF39+lAOd+jwNlDFcH7vxeyYrtANNd/gFAU
+          W7yqESfhdkB0whcStSRuevll6/3xy54bg1+cHicEl4dbvMaF+mx3MJoImn8rLOJy
+          heYyftATUxfyf3Uoo5minTCAh2SppnmYGpWz8OltKuTFP809vxOO4Ah4dgMcx8Yk
+          ePrU0sQoP+C3sdiyBYZSf+G01eeFaawr1NUtRpT/htS/tgFReYIFrox4CSZx7SsX
+          KIlFvmT8XstT2JndP0iiZdod9V+h6FgowfExdWlNyUl/aWVGtmVftOQLZsSMtrHR
+          xwIDAQAB
+          -----END PUBLIC KEY-----
+server:
+  port: 9000

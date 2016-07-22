@@ -40,7 +40,7 @@ public class InfoEndpointTest {
       mockMvc.perform(get("/info"))
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-          .andExpect(jsonPath("$.auth-server.url").value("https://uaa.run.pivotal.io"))
+          .andExpect(jsonPath("$.auth-server.url").isNotEmpty())
           .andExpect(jsonPath("$.app.version").isNotEmpty())
           .andExpect(jsonPath("$.app.name").value("Pivotal Credential Manager"));
     });

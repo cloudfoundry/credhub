@@ -1,0 +1,35 @@
+info:
+  app:
+    name: Pivotal Credential Manager
+    version: ${buildVersion}
+endpoints:
+  info:
+    enabled: true
+  health:
+    enabled: true
+  autoconfig:
+    enabled: false
+  beans:
+    enabled: false
+  configprops:
+    enabled: false
+  dump:
+    enabled: false
+  env:
+    enabled: false
+  metrics:
+    enabled: false
+  trace:
+    enabled: false
+  mappings:
+    enabled: false
+  flyway:
+    enabled: false
+  liquibase:
+    enabled: false
+  actuator:
+    enabled: false
+security:
+  oauth2:
+    resource:
+      id: credhub

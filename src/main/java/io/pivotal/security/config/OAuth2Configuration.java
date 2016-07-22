@@ -1,13 +1,16 @@
 package io.pivotal.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.util.Assert;
+
+import javax.annotation.PostConstruct;
 
 @Configuration
 @EnableResourceServer
@@ -15,11 +18,16 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
 
   @Autowired
-  ResourceServerTokenServices tokenServices;
+  ResourceServerProperties resourceServerProperties;
+
+  @PostConstruct
+  public void init() {
+    Assert.notNull(resourceServerProperties.getJwt().getKeyValue(), "Configuration property security.oauth2.resource.jwt.key-value must be set.");
+  }
 
   @Override
   public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-    resources.resourceId("credhub").tokenServices(tokenServices);
+    resources.resourceId(resourceServerProperties.getResourceId());
   }
 
   @Override
