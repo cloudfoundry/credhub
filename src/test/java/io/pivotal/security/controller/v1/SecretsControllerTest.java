@@ -6,7 +6,9 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.repository.InMemoryAuditRecordRepository;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.InMemorySecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -21,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.MessageSource;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -31,20 +34,19 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Locale;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.refEq;
@@ -73,6 +75,9 @@ public class SecretsControllerTest {
   @Autowired
   private InMemoryAuthorityRepository caAuthorityRepository;
 
+  @Autowired
+  private InMemoryAuditRecordRepository auditRepository;
+
   @InjectMocks
   @Autowired
   private SecretsController secretsController;
@@ -81,16 +86,24 @@ public class SecretsControllerTest {
   @Qualifier("currentTimeProvider")
   CurrentTimeProvider currentTimeProvider;
 
+  @Autowired
+  ConfigurableEnvironment environment;
+
   @Mock
   private SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
   @Mock
   private SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateGenerator;
 
+  @Mock
+  private HttpServletRequest request;
+
   private MockMvc mockMvc;
 
   private final ZoneId utc = ZoneId.of("UTC");
   private LocalDateTime frozenTime;
+
+  private OperationAuditRecord expectedAuditRecord;
 
   {
     wireAndUnwire(this);
@@ -99,11 +112,32 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       freeze();
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+      when(request.getPathInfo()).thenReturn("/my/path/from/request/id_from_request");
+      when(request.getServerName()).thenReturn("myFancyName.com");
+      expectedAuditRecord = new OperationAuditRecord(
+          currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
+          "credential_update", // todo factory translation
+          "my user id",
+          "my username",
+          environment.getProperty("auth-server.url"),
+          1406568935, // "my token issue timestamp"
+          1406568935, // token expiration
+          "myFancyName.com",
+          "/my/path/from/request/id_from_request"
+      );
+      auditRepository.deleteAll();
     });
 
     afterEach(() -> {
       currentTimeProvider.reset();
     });
+
+    final SuiteBuilder validCertificateSuite = (arg) -> () -> {
+      describe("foo", () -> {
+
+        int i = arg + 1;
+      });
+    };
 
     describe("string secrets", () -> {
       it("can save a client-provided string secret", () -> {
@@ -131,9 +165,20 @@ public class SecretsControllerTest {
       it("can fetch a string secret", () -> {
         NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
         secretRepository.save(stringSecret);
-
         String expectedJson = json(stringSecret.generateView());
+
         expectSuccess(get("/api/v1/data/whatever"), expectedJson);
+      });
+
+      it("fetching will record an audit record", () -> {
+        NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
+        secretRepository.save(stringSecret);
+        String expectedJson = json(stringSecret.generateView());
+        expectedAuditRecord.setOperation("credential_access");
+
+        expectSuccess(get("/api/v1/data/whatever"), expectedJson);
+
+        checkAuditRecord();
       });
 
       it("can generate string secret", () -> {
@@ -190,6 +235,9 @@ public class SecretsControllerTest {
             "}";
 
         expectErrorKey(postRequestBuilder("/api/v1/data/my-secret", requestJson), HttpStatus.BAD_REQUEST, "error.excludes_all_charsets");
+
+        expectedAuditRecord.setFailed();
+        checkAuditRecord();
       });
     });
 
@@ -212,8 +260,16 @@ public class SecretsControllerTest {
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
 
         CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
-        Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
-        Assert.assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
+        assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
+        assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
+      });
+
+      it("writes an audit record of the operation to database", () -> {
+        String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+
+        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
+
+        checkAuditRecord();
       });
 
       it("storing a client-provided certificate returns JSON that contains nulls in fields the client did not provide", () -> {
@@ -252,30 +308,63 @@ public class SecretsControllerTest {
       });
 
       it("returns bad request (400) if all certificate fields are empty", () -> {
+        expectedAuditRecord.setFailed();
+
         new PutCertificateSimulator("", "", "")
             .setExpectation(400, "error.missing_certificate_credentials")
             .execute();
+
+        checkAuditRecord();
       });
     });
 
-    it("can delete a secret", () -> {
-      NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("super stringSecret do not tell");
+    describe("deleting a secret", () -> {
+      beforeEach(() -> {
+        NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("super stringSecret do not tell");
 
-      secretRepository.save(stringSecret);
+        secretRepository.save(stringSecret);
 
-      mockMvc.perform(delete("/api/v1/data/whatever"))
-          .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/v1/data/whatever"))
+            .andExpect(status().isOk());
+      });
 
-      assertThat(secretRepository.findOneByName("whatever"), nullValue());
+      it("succeeds", () -> {
+      });
+
+      it("it adds an audit record", () -> {
+        expectedAuditRecord.setOperation("credential_delete");
+        checkAuditRecord();
+      });
     });
 
+    describe("returns not found (404) when getting missing secrets", () -> {
+      beforeEach(() -> {
+        expectErrorKey(get("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+      });
 
-    it("returns not found (404) when getting missing secrets", () -> {
-      expectErrorKey(get("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+      it("fails as expected", () -> {
+      });
+
+      it("adds an audit record", () -> {
+        expectedAuditRecord.setOperation("credential_access");
+        expectedAuditRecord.setFailed();
+        checkAuditRecord();
+      });
     });
 
-    it("returns not found (404) when deleting missing secrets", () -> {
-      expectErrorKey(delete("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+    describe("returns not found (404) when deleting missing secrets", () -> {
+      beforeEach(() -> {
+        expectErrorKey(delete("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+      });
+
+      it("fails as expected", () -> {
+      });
+
+      it("adds an audit record", () -> {
+        expectedAuditRecord.setOperation("credential_delete");
+        expectedAuditRecord.setFailed();
+        checkAuditRecord();
+      });
     });
 
     it("returns bad request (400) for PUT with empty JSON", () -> {
@@ -329,6 +418,13 @@ public class SecretsControllerTest {
 
       expectSuccess(get("/api/v1/data/test"), "{\"type\":\"value\",\"credential\":\"abc\"}");
     });
+  }
+
+  private void checkAuditRecord() {
+    List<OperationAuditRecord> list = auditRepository.findAll();
+    OperationAuditRecord first = list.get(0);
+    first.setId(expectedAuditRecord.getId()); // we don't compare on the DB-provided PK/ID value.
+    assertThat(first, BeanMatchers.theSameAs(expectedAuditRecord));
   }
 
   private void expectSuccess(RequestBuilder requestBuilder, String returnedJson) throws Exception {
@@ -448,4 +544,9 @@ public class SecretsControllerTest {
       return this;
     }
   }
+
+interface SuiteBuilder {
+  Spectrum.Block build(int arg);
+}
+
 }
