@@ -5,15 +5,20 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.*;
+import io.pivotal.security.repository.InMemoryAuditRecordRepository;
 import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.Secret;
 import io.pivotal.security.view.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +26,11 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZoneOffset;
 import java.util.Collections;
 
 @RestController
@@ -32,6 +39,9 @@ public class SecretsController {
 
   @Autowired
   InMemorySecretRepository secretRepository;
+
+  @Autowired
+  private InMemoryAuditRecordRepository auditRepository;
 
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
@@ -51,6 +61,9 @@ public class SecretsController {
   @Autowired
   Configuration jsonPathConfiguration;
 
+  @Autowired
+  private HttpServletRequest request;
+
   private MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
@@ -58,6 +71,13 @@ public class SecretsController {
 
   @Autowired
   private StringSetRequestTranslator stringSetRequestTranslator;
+
+  @Autowired
+  @Qualifier("currentTimeProvider")
+  CurrentTimeProvider currentTimeProvider;
+
+  @Autowired
+  ConfigurableEnvironment environment;
 
   @PostConstruct
   public void init() {
@@ -84,6 +104,7 @@ public class SecretsController {
     NamedSecret foundNamedSecret = secretRepository.findOneByName(secretPath);
 
     NamedSecret toStore;
+    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_update");
     try {
       Secret secret = requestTranslator.createSecretFromJson(parsed);
       if (foundNamedSecret == null) {
@@ -95,8 +116,11 @@ public class SecretsController {
       secret.populateEntity(toStore);
       NamedSecret saved = secretRepository.save(toStore);
       secret.setUpdatedAt(saved.getUpdatedAt());
+      auditRepository.save(auditRecord);
       return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ValidationException ve) {
+      auditRecord.setFailed();
+      auditRepository.save(auditRecord);
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
@@ -104,11 +128,15 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_delete");
 
     if (namedSecret != null) {
       secretRepository.delete(namedSecret);
+      auditRepository.save(auditRecord);
       return new ResponseEntity(HttpStatus.OK);
     } else {
+      auditRecord.setFailed();
+      auditRepository.save(auditRecord);
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     }
   }
@@ -116,12 +144,30 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_access");
 
     if (namedSecret == null) {
+      auditRecord.setFailed();
+      auditRepository.save(auditRecord);
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     } else {
+      auditRepository.save(auditRecord);
       return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
     }
+  }
+
+  private OperationAuditRecord getOperationAuditRecord(String operation) {
+    return new OperationAuditRecord(
+            currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
+            operation, // todo factory translation
+            "my user id",
+            "my username",
+            environment.getProperty("auth-server.url"),
+            1406568935, // "my token issue timestamp"
+            1406568935, // token expiration
+            request.getServerName(),
+            request.getPathInfo() // include item name per PM
+        );
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
