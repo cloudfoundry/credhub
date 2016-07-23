@@ -23,6 +23,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
@@ -32,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/v1/data", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -62,7 +67,7 @@ public class SecretsController {
   Configuration jsonPathConfiguration;
 
   @Autowired
-  private HttpServletRequest request;
+  ResourceServerTokenServices tokenServices;
 
   private MessageSourceAccessor messageSourceAccessor;
 
@@ -85,26 +90,26 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
-  ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody) {
+  ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request) {
     RequestTranslatorWithGeneration stringRequestTranslator = new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator);
     RequestTranslatorWithGeneration certificateRequestTranslator = new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator);
 
-    return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator);
+    return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator, request);
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
-  ResponseEntity set(@PathVariable String secretPath, InputStream requestBody) {
-    return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator);
+  ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request) {
+    return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator, request);
   }
 
-  private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretSetterRequestTranslator stringRequestTranslator, SecretSetterRequestTranslator certificateRequestTranslator) {
+  private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretSetterRequestTranslator stringRequestTranslator, SecretSetterRequestTranslator certificateRequestTranslator, HttpServletRequest request) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
     SecretSetterRequestTranslator requestTranslator = getTranslator(type, stringRequestTranslator, certificateRequestTranslator); //
     NamedSecret foundNamedSecret = secretRepository.findOneByName(secretPath);
 
     NamedSecret toStore;
-    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_update");
+    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_update", request);
     try {
       Secret secret = requestTranslator.createSecretFromJson(parsed);
       if (foundNamedSecret == null) {
@@ -126,9 +131,9 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
-  ResponseEntity delete(@PathVariable String secretPath) {
+  ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_delete");
+    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_delete", request);
 
     if (namedSecret != null) {
       secretRepository.delete(namedSecret);
@@ -142,9 +147,13 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-  ResponseEntity get(@PathVariable String secretPath) {
+  ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request) {
+    try {
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_access");
+    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_access", request);
 
     if (namedSecret == null) {
       auditRecord.setFailed();
@@ -156,18 +165,21 @@ public class SecretsController {
     }
   }
 
-  private OperationAuditRecord getOperationAuditRecord(String operation) {
+  private OperationAuditRecord getOperationAuditRecord(String operation, HttpServletRequest request) {
+    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+    OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
+    Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
     return new OperationAuditRecord(
-            currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
-            operation, // todo factory translation
-            "my user id",
-            "my username",
-            environment.getProperty("auth-server.url"),
-            1406568935, // "my token issue timestamp"
-            1406568935, // token expiration
-            request.getServerName(),
-            request.getPathInfo() // include item name per PM
-        );
+        currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
+        operation, // todo factory translation
+        (String) additionalInformation.get("user_id"),
+        (String) additionalInformation.get("user_name"),
+        (String) additionalInformation.get("iss"),
+        (Long) additionalInformation.get("iat"),
+          (Long) additionalInformation.get("exp"),
+        request.getServerName(),
+        request.getPathInfo() // include item name per PM
+    );
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})

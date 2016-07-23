@@ -92,6 +92,7 @@ bootRun {
     addResources = true
     systemProperties["auth-server.url"] = System.getProperty("auth-server.url", "http://localhost:8080/uaa")
     systemProperties["data-storage.type"] = System.getProperty("data-storage.type", "in-memory")
+    systemProperties["spring.profiles.active"]  = System.getProperty("spring.properties.active", "dev")
 }
 
 test {

@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
@@ -26,6 +27,12 @@ import org.springframework.context.MessageSource;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -50,6 +57,7 @@ import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -96,7 +104,7 @@ public class SecretsControllerTest {
   private SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateGenerator;
 
   @Mock
-  private HttpServletRequest request;
+  private ResourceServerTokenServices tokenServices;
 
   private MockMvc mockMvc;
 
@@ -105,6 +113,8 @@ public class SecretsControllerTest {
 
   private OperationAuditRecord expectedAuditRecord;
 
+  private SecurityContext oldContext;
+
   {
     wireAndUnwire(this);
     autoTransactional(this);
@@ -112,20 +122,43 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       freeze();
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-      when(request.getPathInfo()).thenReturn("/my/path/from/request/id_from_request");
-      when(request.getServerName()).thenReturn("myFancyName.com");
       expectedAuditRecord = new OperationAuditRecord(
           currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
           "credential_update", // todo factory translation
-          "my user id",
-          "my username",
+          "12345-6789a",
+          "marissa",
           environment.getProperty("auth-server.url"),
           1406568935, // "my token issue timestamp"
-          1406568935, // token expiration
-          "myFancyName.com",
-          "/my/path/from/request/id_from_request"
+          1416568935, // token expiration
+          "localhost",
+          "/api/v1/data/secret-identifier"
       );
       auditRepository.deleteAll();
+    });
+
+    beforeEach(() -> {
+      oldContext = SecurityContextHolder.getContext();
+      Authentication authentication = mock(Authentication.class);
+      OAuth2AuthenticationDetails authenticationDetails = mock(OAuth2AuthenticationDetails.class);
+      when(authenticationDetails.getTokenValue()).thenReturn("abcde");
+      when(authentication.getDetails()).thenReturn(authenticationDetails);
+      OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
+      ImmutableMap<String, Object> additionalInfo = ImmutableMap.of(
+          "iat", expectedAuditRecord.getTokenIssued(),
+          "exp", expectedAuditRecord.getTokenExpires(),
+          "user_name", expectedAuditRecord.getUserName(),
+          "user_id", expectedAuditRecord.getUserId(),
+          "iss", expectedAuditRecord.getUaaUrl());
+      when(accessToken.getAdditionalInformation()).thenReturn(additionalInfo);
+      when(tokenServices.readAccessToken("abcde")).thenReturn(accessToken);
+
+      SecurityContext securityContext = mock(SecurityContext.class);
+      when(securityContext.getAuthentication()).thenReturn(authentication);
+      SecurityContextHolder.setContext(securityContext);
+    });
+
+    afterEach(() -> {
+      SecurityContextHolder.setContext(oldContext);
     });
 
     afterEach(() -> {
@@ -175,6 +208,7 @@ public class SecretsControllerTest {
         secretRepository.save(stringSecret);
         String expectedJson = json(stringSecret.generateView());
         expectedAuditRecord.setOperation("credential_access");
+        expectedAuditRecord.setPath("/api/v1/data/whatever");
 
         expectSuccess(get("/api/v1/data/whatever"), expectedJson);
 
@@ -237,6 +271,7 @@ public class SecretsControllerTest {
         expectErrorKey(postRequestBuilder("/api/v1/data/my-secret", requestJson), HttpStatus.BAD_REQUEST, "error.excludes_all_charsets");
 
         expectedAuditRecord.setFailed();
+        expectedAuditRecord.setPath("/api/v1/data/my-secret");
         checkAuditRecord();
       });
     });
@@ -332,6 +367,7 @@ public class SecretsControllerTest {
       });
 
       it("it adds an audit record", () -> {
+        expectedAuditRecord.setPath("/api/v1/data/whatever");
         expectedAuditRecord.setOperation("credential_delete");
         checkAuditRecord();
       });
@@ -346,6 +382,7 @@ public class SecretsControllerTest {
       });
 
       it("adds an audit record", () -> {
+        expectedAuditRecord.setPath("/api/v1/data/whatever");
         expectedAuditRecord.setOperation("credential_access");
         expectedAuditRecord.setFailed();
         checkAuditRecord();
@@ -361,6 +398,7 @@ public class SecretsControllerTest {
       });
 
       it("adds an audit record", () -> {
+        expectedAuditRecord.setPath("/api/v1/data/whatever");
         expectedAuditRecord.setOperation("credential_delete");
         expectedAuditRecord.setFailed();
         checkAuditRecord();
@@ -518,6 +556,7 @@ public class SecretsControllerTest {
       ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson))
           .andExpect(expectedStatus);
       NamedSecret certificateFromDb = secretRepository.findOneByName("whatever");
+      expectedAuditRecord.setPath("/api/v1/data/whatever");
 
       if (isHttpOk) {
         assertThat(certificateFromDb.generateView(), BeanMatchers.theSameAs(certificateSecretForResponse));
