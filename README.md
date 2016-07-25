@@ -16,27 +16,17 @@ See additional repos for more info:
 * sec-eng-ci : concourse pipelines, including credential-manager.yml
 * cred-hub-acceptance-tests : integration tests written in golang.
 
-In order to init a Bosh Director that will contain the latest Credhub, the following 
-steps assume that the above repos are cloned as siblings in a ~/workspace/ directory:
+In order to init a Bosh Director that will contain the latest Credhub, you must have cloned the above repos into your ~/workspace directory.
+The latest code, including any changes you want to test, should be in ~/workspace/sec-eng-credential-manager.
+You must also have installed /usr/local/bin/aws with ```brew install awscli```.
 
-* create cm release
+If you haven't pulled the latest versions of the above repos recently, do it now. You need the latest version of the deploy_credhub.sh
+script, so you need to pull sec-eng-deployment-credential-manager. You need the latest BOSH release config, so you need to pull
+cm-release.
+
+Do the following:
 ```
-cd $HOME/workspace/cm-release
-rm -rf dev_releases/credhub/*  # This step can be skipped if you've never run "bosh create release"
-./scripts/update
-export SEC_ENG_CI_REPO=$HOME/workspace/sec-eng-ci
-export RELEASE_DIR=$HOME/workspace/cm-release
-bosh create release --with-tarball --name credhub --force --timestamp-version
+cd ~/workspace/sec-eng-deployment-credential-manager
+scripts/deploy_credhub.sh --dev
 ```
-* tell bosh about this new release
-```
-cd $HOME/workspace/sec-eng-deployment-credential-manager/deployments/bosh
-export RELEASE_PATH=/Users/pivotal/workspace/cm-release/dev_releases/credhub/credhub-1+dev.something.tgz
-# the following assumes you want a dev release, not the real pipeline director typically named bosh.yml
-export DEV_MODE=true  
-erb bosh.yml.erb > bosh-dev.yml # important to for dev to use a different bosh manifest file name than "bosh"
-```
-* edit any changes you like in bosh-dev.yml, like adding an ssl certificate
-```
-bosh-init deploy bosh-dev.yml
-```
+
