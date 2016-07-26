@@ -2,7 +2,14 @@ auth-server:
   url: https://50.17.59.67:8443
 
 data-storage:
-  type: in-memory
+  type: postgres
+  username: pivotal
+  password:
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
 
 security:
   oauth2:
