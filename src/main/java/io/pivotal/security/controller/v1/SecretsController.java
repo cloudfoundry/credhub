@@ -148,10 +148,6 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request) {
-    try {
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
     OperationAuditRecord auditRecord = getOperationAuditRecord("credential_access", request);
 
@@ -175,11 +171,20 @@ public class SecretsController {
         (String) additionalInformation.get("user_id"),
         (String) additionalInformation.get("user_name"),
         (String) additionalInformation.get("iss"),
-        (Long) additionalInformation.get("iat"),
-          (Long) additionalInformation.get("exp"),
+        claimValueAsLong(additionalInformation, "iat"),
+        accessToken.getExpiration().getTime() / 1000,
         request.getServerName(),
         request.getPathInfo() // include item name per PM
     );
+  }
+
+  /*
+   * The "iat" and "exp" claims are parsed by Jackson as integers. That means we have a
+   * Year-2038 bug. In the hope that Jackson will someday be fixed, this function returns
+   * a numeric value as long.
+   */
+  private long claimValueAsLong(Map<String, Object> additionalInformation, String claimName) {
+    return ((Number) additionalInformation.get(claimName)).longValue();
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})

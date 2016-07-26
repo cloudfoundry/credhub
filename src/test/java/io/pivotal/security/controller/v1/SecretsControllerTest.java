@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -129,7 +130,7 @@ public class SecretsControllerTest {
           "marissa",
           environment.getProperty("auth-server.url"),
           1406568935, // "my token issue timestamp"
-          1416568935, // token expiration
+          3333333333L, // token expiration
           "localhost",
           "/api/v1/data/secret-identifier"
       );
@@ -145,11 +146,11 @@ public class SecretsControllerTest {
       OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
       ImmutableMap<String, Object> additionalInfo = ImmutableMap.of(
           "iat", expectedAuditRecord.getTokenIssued(),
-          "exp", expectedAuditRecord.getTokenExpires(),
           "user_name", expectedAuditRecord.getUserName(),
           "user_id", expectedAuditRecord.getUserId(),
           "iss", expectedAuditRecord.getUaaUrl());
       when(accessToken.getAdditionalInformation()).thenReturn(additionalInfo);
+      when(accessToken.getExpiration()).thenReturn(new Date(3333333333000L));
       when(tokenServices.readAccessToken("abcde")).thenReturn(accessToken);
 
       SecurityContext securityContext = mock(SecurityContext.class);
