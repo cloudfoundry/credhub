@@ -21,10 +21,17 @@ The latest code, including any changes you want to test, should be in ~/workspac
 You must also have installed /usr/local/bin/aws with ```brew install awscli```.
 
 If you haven't pulled the latest versions of the above repos recently, do it now. You need the latest version of the deploy_credhub.sh
-script, so you need to pull sec-eng-deployment-credential-manager. You need the latest BOSH release config, so you need to pull
-cm-release.
+script, so you need to pull sec-eng-deployment-credential-manager. You need the latest BOSH release config, so you need to pull cm-release.
 
-Do the following:
+In order to get the latest Credential Manager code into the release,
+
+```
+cd ~/workspace/cm-release
+rm -rf dev_releases/credhub/*  # This step can be skipped if you've never run "bosh create release"
+./scripts/update
+```
+
+To package and deploy that release, do the following:
 ```
 cd ~/workspace/sec-eng-deployment-credential-manager
 scripts/deploy_credhub.sh --dev
