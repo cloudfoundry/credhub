@@ -55,6 +55,7 @@ public class DataStorageProperties {
       map.put("spring.datasource.username", getUsername());
       map.put("spring.datasource.password", getPassword());
       map.put("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
+      map.put("spring.jpa.hibernate.ddl-auto", "create-drop");
     } else if ("in-memory".equals(getType())) {
       map.put("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect");
     }
