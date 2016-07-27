@@ -26,12 +26,14 @@ public class DataStorageProperties {
   ConfigurableEnvironment environment;
 
   @NotNull(message = "The data-storage.type configuration property is required.")
-  @Pattern(regexp = "in-memory|postgres", message = "The data-storage.type configuration " +
-      "property must be \"in-memory\" or \"postgres\".")
+  @Pattern(regexp = "in-memory|postgres|mysql", message = "The data-storage.type configuration " +
+      "property must be \"mysql\", \"postgres\", or \"in-memory\".")
   private String type;
 
   private String username;
   private String password;
+  private String host;
+  private String port;
 
   public String getType() {
     return type;
@@ -46,18 +48,23 @@ public class DataStorageProperties {
     Map<String, Object> map = new HashMap<>();
     MapPropertySource propertySource = new MapPropertySource("data-storage", map);
 
-    if ("postgres".equals(getType())) {
+    if ("in-memory".equals(getType())) {
+      map.put("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect");
+    } else {
       if (Strings.isNullOrEmpty(getUsername())) {
         MessageSourceAccessor messageSourceAccessor = new MessageSourceAccessor(messageSource());
-        throw new RuntimeException(messageSourceAccessor.getMessage("error.postgres_requires_credentials"));
+        throw new RuntimeException(messageSourceAccessor.getMessage("error.database_requires_credentials"));
       }
-      map.put("spring.datasource.url", "jdbc:postgresql://localhost:5432/credhub");
       map.put("spring.datasource.username", getUsername());
       map.put("spring.datasource.password", getPassword());
-      map.put("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
       map.put("spring.jpa.hibernate.ddl-auto", "create-drop");
-    } else if ("in-memory".equals(getType())) {
-      map.put("spring.jpa.database-platform", "org.hibernate.dialect.H2Dialect");
+      if ("postgres".equals(getType())) {
+        map.put("spring.datasource.url", "jdbc:postgresql://localhost:5432/credhub");
+        map.put("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");
+      } else if ("mysql".equals(getType())) {
+        map.put("spring.datasource.url", "jdbc:mysql://" + getHost() + ":" + getPort() + "/credhub" );
+        map.put("spring.jpa.database-platform", "org.hibernate.dialect.MySQL5InnoDBDialect");
+      }
     }
     environment.getPropertySources().addFirst(propertySource);
   }
@@ -70,12 +77,28 @@ public class DataStorageProperties {
     this.password = password;
   }
 
-  public String getPassword() {
-    return password;
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  public void setPort(String port) {
+    this.port = port;
   }
 
   public String getUsername() {
     return username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public String getPort() {
+    return port;
   }
 
   public MessageSource messageSource() {

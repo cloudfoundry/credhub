@@ -21,6 +21,9 @@ public class DataStoragePropertiesTest {
   ConfigurableEnvironment environment;
 
   private DataStorageProperties subject;
+  private String dbType;
+  private String expectedDbUrl;
+  private String databasePlatform;
 
   {
     wireAndUnwire(this);
@@ -41,43 +44,75 @@ public class DataStoragePropertiesTest {
       });
     });
 
+    final SuiteBuilder nonInMemoryDbSuite = () -> () -> {
+      describe("when using non-in-memory data storage", () -> {
+        beforeEach(() -> {
+          subject.setType(dbType);
+          subject.setUsername("my-username");
+          subject.setPassword("my-password");
+        });
+        it("sets the url to point to the database", () -> {
+          subject.init();
+
+          assertThat(environment.getProperty("spring.datasource.url"), equalTo(expectedDbUrl));
+        });
+        it("sets the username and password", () -> {
+          subject.init();
+
+          assertThat(environment.getProperty("spring.datasource.username"), equalTo("my-username"));
+          assertThat(environment.getProperty("spring.datasource.password"), equalTo("my-password"));
+        });
+        it("sets the dialect to " + dbType, () -> {
+          subject.init();
+
+          assertThat(environment.getProperty("spring.jpa.database-platform"), equalTo(databasePlatform));
+        });
+        it("when a username is missing", () -> {
+          try {
+            subject.setUsername("");
+            subject.init();
+            fail();
+          } catch (RuntimeException r) {
+            assertThat(r.getMessage(), equalTo("Using mysql or postgres requires a username."));
+          }
+        });
+        it("creates a new database on start-up and drops it when tearing-down", () -> {
+          subject.init();
+
+          assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto"), equalTo("create-drop"));
+        });
+      });
+    };
+
     describe("when using postgres data storage", () -> {
       beforeEach(() -> {
-        subject.setType("postgres");
-        subject.setUsername("postgres");
-        subject.setPassword("postgres-password");
+        dbType = "postgres";
+        expectedDbUrl = "jdbc:postgresql://localhost:5432/credhub";
+        databasePlatform = "org.hibernate.dialect.PostgreSQLDialect";
       });
-      it("sets the url to point to the database", () -> {
-        subject.init();
 
-        assertThat(environment.getProperty("spring.datasource.url"), equalTo("jdbc:postgresql://localhost:5432/credhub"));
-      });
-      it("sets the username and password", () -> {
-        subject.init();
+      describe("must behave like", nonInMemoryDbSuite.build());
+    });
 
-        assertThat(environment.getProperty("spring.datasource.username"), equalTo("postgres"));
-        assertThat(environment.getProperty("spring.datasource.password"), equalTo("postgres-password"));
+    describe("when using mysql data storage", () -> {
+      beforeEach(() -> {
+        dbType = "mysql";
+        subject.setHost("localhost");
+        subject.setPort("3306");
+        expectedDbUrl = "jdbc:mysql://localhost:3306/credhub";
+        databasePlatform = "org.hibernate.dialect.MySQL5InnoDBDialect";
       });
-      it("sets the dialect to postgres", () -> {
-        subject.init();
 
-        assertThat(environment.getProperty("spring.jpa.database-platform"), equalTo("org.hibernate.dialect.PostgreSQLDialect"));
-      });
-      it("when a username is missing", () -> {
-        try {
-          subject.setUsername("");
-          subject.init();
-          fail();
-        }
-        catch (RuntimeException r) {
-          assertThat(r.getMessage(), equalTo("Using a postgres database requires a username."));
-        }
-      });
-      it("creates a new database on start-up and drops it when tearing-down", () -> {
-        subject.init();
-
-        assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto"), equalTo("create-drop"));
-      });
+      describe("must behave like", nonInMemoryDbSuite.build());
     });
   }
+
+  interface ThrowingRunnable {
+    void run() throws Exception;
+  }
+
+  interface SuiteBuilder {
+    Spectrum.Block build();
+  }
+
 }
