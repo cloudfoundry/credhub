@@ -76,10 +76,10 @@ public class DataStoragePropertiesTest {
             assertThat(r.getMessage(), equalTo("Using mysql or postgres requires a username."));
           }
         });
-        it("creates a new database on start-up and drops it when tearing-down", () -> {
+        it("does not recreate the database on start-up", () -> {
           subject.init();
 
-          assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto"), equalTo("create-drop"));
+          assertThat(environment.getProperty("spring.jpa.hibernate.ddl-auto"), equalTo("update"));
         });
       });
     };

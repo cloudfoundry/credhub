@@ -57,7 +57,7 @@ public class DataStorageProperties {
       }
       map.put("spring.datasource.username", getUsername());
       map.put("spring.datasource.password", getPassword());
-      map.put("spring.jpa.hibernate.ddl-auto", "create-drop");
+      map.put("spring.jpa.hibernate.ddl-auto", "update");
       if ("postgres".equals(getType())) {
         map.put("spring.datasource.url", "jdbc:postgresql://localhost:5432/credhub");
         map.put("spring.jpa.database-platform", "org.hibernate.dialect.PostgreSQLDialect");

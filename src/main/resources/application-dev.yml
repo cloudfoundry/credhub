@@ -6,11 +6,6 @@ data-storage:
   username: pivotal
   password:
 
-spring:
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-
 security:
   oauth2:
     resource:
