@@ -84,6 +84,9 @@ public class SecretsController {
   @Autowired
   ConfigurableEnvironment environment;
 
+  @Autowired
+  TransactionService transactionService;
+
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -148,17 +151,15 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request) {
-    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_access", request);
+    return transactionService.performWithLogging("credential_access", request, () -> {
+      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
 
-    if (namedSecret == null) {
-      auditRecord.setFailed();
-      auditRepository.save(auditRecord);
-      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
-    } else {
-      auditRepository.save(auditRecord);
-      return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
-    }
+      if (namedSecret == null) {
+        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+      } else {
+        return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
+      }
+    });
   }
 
   private OperationAuditRecord getOperationAuditRecord(String operation, HttpServletRequest request) {
@@ -225,4 +226,5 @@ public class SecretsController {
       return null;
     }
   }
+
 }

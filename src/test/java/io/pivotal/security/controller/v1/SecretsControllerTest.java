@@ -49,6 +49,7 @@ import java.time.ZoneOffset;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
@@ -56,9 +57,9 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.refEq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -76,7 +77,7 @@ public class SecretsControllerTest {
   protected ConfigurableWebApplicationContext context;
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private ObjectMapper serializingObjectMapper;
 
   @Autowired
   private InMemorySecretRepository secretRepository;
@@ -107,6 +108,9 @@ public class SecretsControllerTest {
   @Mock
   private ResourceServerTokenServices tokenServices;
 
+  @Mock
+  private TransactionService transactionService;
+
   private MockMvc mockMvc;
 
   private final ZoneId utc = ZoneId.of("UTC");
@@ -123,6 +127,7 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       freeze();
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+      when(transactionService.performWithLogging(anyString(), any(HttpServletRequest.class), any(Supplier.class))).thenAnswer(invocation -> ((Supplier) invocation.getArguments()[2]).get());
       expectedAuditRecord = new OperationAuditRecord(
           currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
           "credential_update", // todo factory translation
@@ -134,7 +139,6 @@ public class SecretsControllerTest {
           "localhost",
           "/api/v1/data/secret-identifier"
       );
-      auditRepository.deleteAll();
     });
 
     beforeEach(() -> {
@@ -166,13 +170,6 @@ public class SecretsControllerTest {
       currentTimeProvider.reset();
     });
 
-    final SuiteBuilder validCertificateSuite = (arg) -> () -> {
-      describe("foo", () -> {
-
-        int i = arg + 1;
-      });
-    };
-
     describe("string secrets", () -> {
       it("can save a client-provided string secret", () -> {
         String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents\"}";
@@ -196,24 +193,13 @@ public class SecretsControllerTest {
         Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(expected));
       });
 
-      it("can fetch a string secret", () -> {
+      it("can fetch a string secret and record an audit record", () -> {
         NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
         secretRepository.save(stringSecret);
         String expectedJson = json(stringSecret.generateView());
 
         expectSuccess(get("/api/v1/data/whatever"), expectedJson);
-      });
-
-      it("fetching will record an audit record", () -> {
-        NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
-        secretRepository.save(stringSecret);
-        String expectedJson = json(stringSecret.generateView());
-        expectedAuditRecord.setOperation("credential_access");
-        expectedAuditRecord.setPath("/api/v1/data/whatever");
-
-        expectSuccess(get("/api/v1/data/whatever"), expectedJson);
-
-        checkAuditRecord();
+        verify(transactionService).performWithLogging(eq("credential_access"), any(HttpServletRequest.class), any(Supplier.class));
       });
 
       it("can generate string secret", () -> {
@@ -375,18 +361,8 @@ public class SecretsControllerTest {
     });
 
     describe("returns not found (404) when getting missing secrets", () -> {
-      beforeEach(() -> {
-        expectErrorKey(get("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
-      });
-
       it("fails as expected", () -> {
-      });
-
-      it("adds an audit record", () -> {
-        expectedAuditRecord.setPath("/api/v1/data/whatever");
-        expectedAuditRecord.setOperation("credential_access");
-        expectedAuditRecord.setFailed();
-        checkAuditRecord();
+        expectErrorKey(get("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
       });
     });
 
@@ -521,7 +497,7 @@ public class SecretsControllerTest {
   }
 
   private String json(Object o) throws IOException {
-    return objectMapper.writeValueAsString(o);
+    return serializingObjectMapper.writeValueAsString(o);
   }
 
   private void freeze() {
@@ -584,9 +560,4 @@ public class SecretsControllerTest {
       return this;
     }
   }
-
-interface SuiteBuilder {
-  Spectrum.Block build(int arg);
-}
-
 }
