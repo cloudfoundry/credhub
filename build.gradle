@@ -53,7 +53,7 @@ dependencies {
     compile('mysql:mysql-connector-java:5.1.38')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.skyscreamer:jsonassert')
-    testCompile('com.greghaskins:spectrum:0.6.1')
+    testCompile('com.greghaskins:spectrum:0.7.0')
     testCompile('org.apache.commons:commons-lang3:3.4')
 }
 
