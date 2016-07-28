@@ -59,12 +59,6 @@ public class SecurityConfigurationTest {
           .andExpect(jsonPath("$.auth-server.url").isNotEmpty());
     });
 
-    it("/health can be accessed without authentication", () -> {
-      mockMvc.perform(get("/health").accept(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.status").value("UP"));
-    });
-
     it("denies other endpoints", () -> {
       mockMvc.perform(post("/api/v1/data/test"))
           .andExpect(status().isUnauthorized());

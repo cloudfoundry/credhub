@@ -36,9 +36,7 @@ repositories {
 }
 
 dependencies {
-    compile('org.springframework.boot:spring-boot-starter-hateoas')
     compile('org.springframework.boot:spring-boot-starter-web')
-    compile('org.springframework.boot:spring-boot-actuator')
     compile('org.springframework.boot:spring-boot-starter-security')
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
     compile('org.springframework.security.oauth:spring-security-oauth2')
@@ -51,9 +49,11 @@ dependencies {
     compile('org.apache.commons:commons-lang3:3.4')
     compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.7.5')
     compile('org.exparity:hamcrest-bean:1.0.11')
+    compile('org.postgresql:postgresql:9.3-1100-jdbc4')
+    compile('mysql:mysql-connector-java:5.1.38')
     testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile('org.skyscreamer:jsonassert')
-    testCompile('com.greghaskins:spectrum:0.6.1')
+    testCompile('com.greghaskins:spectrum:0.7.0')
     testCompile('org.apache.commons:commons-lang3:3.4')
 }
 
@@ -90,9 +90,7 @@ jacocoTestReport {
 
 bootRun {
     addResources = true
-    systemProperties["auth-server.url"] = System.getProperty("auth-server.url", "http://localhost:8080/uaa")
-    systemProperties["data-storage.type"] = System.getProperty("data-storage.type", "in-memory")
-    systemProperties["spring.profiles.active"]  = System.getProperty("spring.properties.active", "dev")
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev")
 }
 
 test {
