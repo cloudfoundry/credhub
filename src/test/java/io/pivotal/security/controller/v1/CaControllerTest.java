@@ -6,7 +6,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
-import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -54,7 +54,7 @@ public class CaControllerTest {
   protected WebApplicationContext context;
 
   @Autowired
-  private InMemorySecretRepository secretRepository;
+  private SecretRepository secretRepository;
 
   @Autowired
   private InMemoryAuthorityRepository caRepository;

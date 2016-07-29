@@ -1,8 +1,9 @@
 package io.pivotal.security;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jayway.jsonpath.Configuration;
@@ -16,8 +17,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -30,7 +31,8 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 @EnableJpaAuditing(dateTimeProviderRef = "currentTimeProvider")
 @Import(JpaAuditingHandlerRegistrar.class)
 public class CredentialManagerApp {
-  public static final DateTimeFormatter TIMESTAMP_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+  private final DateTimeFormatter TIMESTAMP_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 
   public static void main(String[] args) {
     SpringApplication.run(CredentialManagerApp.class, args);
@@ -49,19 +51,22 @@ public class CredentialManagerApp {
   }
 
   @Bean
-  @Primary
-  public ObjectMapper serializingObjectMapper() {
-    ObjectMapper objectMapper = new ObjectMapper();
+  public Module javaTimeModule() {
     JavaTimeModule javaTimeModule = new JavaTimeModule();
-    javaTimeModule.addSerializer(LocalDateTime.class, new LocalDateSerializer());
-    objectMapper.registerModule(javaTimeModule);
-    return objectMapper;
+    javaTimeModule.addSerializer(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
+
+      @Override
+      public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
+        gen.writeString(value.format(TIMESTAMP_FORMAT));
+      }
+    });
+    return javaTimeModule;
   }
 
-  public static class LocalDateSerializer extends JsonSerializer<LocalDateTime> {
-    @Override
-    public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-      gen.writeString(value.format(TIMESTAMP_FORMAT));
-    }
+  @Bean
+  public Jackson2ObjectMapperBuilder jacksonBuilder(Module javaTimeModule) {
+    Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+    builder.modules(javaTimeModule);
+    return builder;
   }
 }

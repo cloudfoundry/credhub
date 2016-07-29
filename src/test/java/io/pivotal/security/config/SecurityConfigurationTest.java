@@ -6,26 +6,17 @@ import io.pivotal.security.CredentialManagerApp;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import javax.servlet.Filter;
+import java.util.Collections;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,12 +24,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
-
-import javax.servlet.Filter;
-
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = SecurityConfigurationTest.DegenerateSecurityConfiguration.class)
+@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
 public class SecurityConfigurationTest {
 
@@ -98,38 +85,5 @@ public class SecurityConfigurationTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath(expectedJsonSpec).isNotEmpty());
     };
-  }
-
-  @Configuration
-  @Import(CredentialManagerApp.class)
-  public static class DegenerateSecurityConfiguration {
-
-    @Bean
-    ResourceServerTokenServices tokenServices() throws Exception {
-      return new SelfValidatingResourceTokenServices();
-    }
-
-    static class SelfValidatingResourceTokenServices implements ResourceServerTokenServices {
-
-      private final JwtTokenStore jwtTokenStore;
-      private final JwtAccessTokenConverter jwtAccessTokenConverter;
-
-      SelfValidatingResourceTokenServices() throws Exception {
-        jwtAccessTokenConverter = new JwtAccessTokenConverter();
-        jwtAccessTokenConverter.setSigningKey("tokenkey");
-        jwtAccessTokenConverter.afterPropertiesSet();
-        jwtTokenStore = new JwtTokenStore(jwtAccessTokenConverter);
-      }
-
-      @Override
-      public OAuth2Authentication loadAuthentication(String accessToken) throws AuthenticationException, InvalidTokenException {
-        return jwtTokenStore.readAuthentication(accessToken);
-      }
-
-      @Override
-      public OAuth2AccessToken readAccessToken(String accessToken) {
-        return jwtTokenStore.readAccessToken(accessToken);
-      }
-    }
   }
 }

@@ -2,7 +2,7 @@ auth-server:
   url: https://50.17.59.67:8443
 
 data-storage:
-  type: postgres
+  type: in-memory
   username: pivotal
   password:
 

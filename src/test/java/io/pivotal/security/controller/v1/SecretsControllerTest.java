@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
@@ -8,7 +9,7 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
-import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.StringSecret;
@@ -21,8 +22,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.MessageSource;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -34,20 +42,18 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.Locale;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.refEq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -65,10 +71,10 @@ public class SecretsControllerTest {
   protected ConfigurableWebApplicationContext context;
 
   @Autowired
-  private ObjectMapper objectMapper;
+  private ObjectMapper serializingObjectMapper;
 
   @Autowired
-  private InMemorySecretRepository secretRepository;
+  private SecretRepository secretRepository;
 
   @Autowired
   private InMemoryAuthorityRepository caAuthorityRepository;
@@ -81,16 +87,24 @@ public class SecretsControllerTest {
   @Qualifier("currentTimeProvider")
   CurrentTimeProvider currentTimeProvider;
 
+  @Autowired
+  ConfigurableEnvironment environment;
+
   @Mock
   private SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
   @Mock
   private SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateGenerator;
 
+  @Mock
+  private ResourceServerTokenServices tokenServices;
+
   private MockMvc mockMvc;
 
   private final ZoneId utc = ZoneId.of("UTC");
   private LocalDateTime frozenTime;
+
+  private SecurityContext oldContext;
 
   {
     wireAndUnwire(this);
@@ -99,6 +113,31 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       freeze();
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+    });
+
+    beforeEach(() -> {
+      oldContext = SecurityContextHolder.getContext();
+      Authentication authentication = mock(Authentication.class);
+      OAuth2AuthenticationDetails authenticationDetails = mock(OAuth2AuthenticationDetails.class);
+      when(authenticationDetails.getTokenValue()).thenReturn("abcde");
+      when(authentication.getDetails()).thenReturn(authenticationDetails);
+      OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
+      ImmutableMap<String, Object> additionalInfo = ImmutableMap.of(
+          "iat", 1406568935,
+          "user_name", "marissa",
+          "user_id", "12345-6789a",
+          "iss", 3333333333L);
+      when(accessToken.getAdditionalInformation()).thenReturn(additionalInfo);
+      when(accessToken.getExpiration()).thenReturn(new Date(3333333333000L));
+      when(tokenServices.readAccessToken("abcde")).thenReturn(accessToken);
+
+      SecurityContext securityContext = mock(SecurityContext.class);
+      when(securityContext.getAuthentication()).thenReturn(authentication);
+      SecurityContextHolder.setContext(securityContext);
+    });
+
+    afterEach(() -> {
+      SecurityContextHolder.setContext(oldContext);
     });
 
     afterEach(() -> {
@@ -131,8 +170,8 @@ public class SecretsControllerTest {
       it("can fetch a string secret", () -> {
         NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
         secretRepository.save(stringSecret);
-
         String expectedJson = json(stringSecret.generateView());
+
         expectSuccess(get("/api/v1/data/whatever"), expectedJson);
       });
 
@@ -212,8 +251,8 @@ public class SecretsControllerTest {
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
 
         CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
-        Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
-        Assert.assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
+        assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
+        assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
       });
 
       it("storing a client-provided certificate returns JSON that contains nulls in fields the client did not provide", () -> {
@@ -252,30 +291,40 @@ public class SecretsControllerTest {
       });
 
       it("returns bad request (400) if all certificate fields are empty", () -> {
+
         new PutCertificateSimulator("", "", "")
             .setExpectation(400, "error.missing_certificate_credentials")
             .execute();
       });
     });
 
-    it("can delete a secret", () -> {
-      NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("super stringSecret do not tell");
+    describe("deleting a secret", () -> {
+      beforeEach(() -> {
+        NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("super stringSecret do not tell");
 
-      secretRepository.save(stringSecret);
+        secretRepository.save(stringSecret);
 
-      mockMvc.perform(delete("/api/v1/data/whatever"))
-          .andExpect(status().isOk());
+        mockMvc.perform(delete("/api/v1/data/whatever"))
+            .andExpect(status().isOk());
+      });
 
-      assertThat(secretRepository.findOneByName("whatever"), nullValue());
+      it("succeeds", () -> {
+      });
     });
 
-
-    it("returns not found (404) when getting missing secrets", () -> {
-      expectErrorKey(get("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+    describe("returns not found (404) when getting missing secrets", () -> {
+      it("fails as expected", () -> {
+        expectErrorKey(get("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+      });
     });
 
-    it("returns not found (404) when deleting missing secrets", () -> {
-      expectErrorKey(delete("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+    describe("returns not found (404) when deleting missing secrets", () -> {
+      beforeEach(() -> {
+        expectErrorKey(delete("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+      });
+
+      it("fails as expected", () -> {
+      });
     });
 
     it("returns bad request (400) for PUT with empty JSON", () -> {
@@ -386,7 +435,7 @@ public class SecretsControllerTest {
   }
 
   private String json(Object o) throws IOException {
-    return objectMapper.writeValueAsString(o);
+    return serializingObjectMapper.writeValueAsString(o);
   }
 
   private void freeze() {

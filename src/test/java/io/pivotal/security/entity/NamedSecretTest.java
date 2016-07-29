@@ -1,7 +1,7 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.junit.After;
 import org.junit.Before;
@@ -27,7 +27,7 @@ public class NamedSecretTest {
   @Qualifier("currentTimeProvider")
   CurrentTimeProvider currentTimeProvider;
   @Autowired
-  InMemorySecretRepository repository;
+  SecretRepository repository;
   private final ZoneId utc = ZoneId.of("UTC");
   private NamedCertificateSecret secret;
   private LocalDateTime frozenTime;

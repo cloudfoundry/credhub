@@ -17,10 +17,10 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-public class InMemorySecretRepositoryTest {
+public class SecretRepositoryTest {
 
   @Autowired
-  InMemorySecretRepository subject;
+  SecretRepository subject;
 
   @Test
   @Transactional
