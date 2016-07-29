@@ -35,6 +35,7 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
     http
         .authorizeRequests()
         .antMatchers("/info").permitAll()
+        .antMatchers("/health").permitAll()
         .antMatchers("/api/v1/**").access("#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write')");
   }
 }

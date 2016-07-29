@@ -66,11 +66,9 @@ public class SecurityConfigurationTest {
           .build();
     });
 
-    it("/info can be accessed without authentication", () -> {
-      mockMvc.perform(get("/info").accept(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.auth-server.url").isNotEmpty());
-    });
+    it("/info can be accessed without authentication", withoutAuthCheck("/info", "$.auth-server.url"));
+
+    it("/health can be accessed without authentication", withoutAuthCheck("/health", "$.db.status"));
 
     it("denies other endpoints", () -> {
       mockMvc.perform(post("/api/v1/data/test"))
@@ -92,6 +90,14 @@ public class SecurityConfigurationTest {
             .andExpect(jsonPath("$.credential").exists());
       });
     });
+  }
+
+  private Spectrum.Block withoutAuthCheck(String path, String expectedJsonSpec) {
+    return () -> {
+      mockMvc.perform(get(path).accept(MediaType.APPLICATION_JSON))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath(expectedJsonSpec).isNotEmpty());
+    };
   }
 
   @Configuration
