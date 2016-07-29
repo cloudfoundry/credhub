@@ -96,7 +96,7 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
         claimValueAsLong(additionalInformation, "iat"),
         accessToken.getExpiration().getTime() / 1000,
         request.getServerName(),
-        request.getPathInfo() // include item name per PM
+        request.getServletPath()
     );
   }
 
