@@ -7,11 +7,9 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
-import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.repository.InMemoryAuditRecordRepository;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
-import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.StringSecret;
@@ -41,15 +39,11 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
@@ -57,9 +51,9 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -80,13 +74,10 @@ public class SecretsControllerTest {
   private ObjectMapper serializingObjectMapper;
 
   @Autowired
-  private InMemorySecretRepository secretRepository;
+  private SecretRepository secretRepository;
 
   @Autowired
   private InMemoryAuthorityRepository caAuthorityRepository;
-
-  @Autowired
-  private InMemoryAuditRecordRepository auditRepository;
 
   @InjectMocks
   @Autowired
@@ -108,15 +99,10 @@ public class SecretsControllerTest {
   @Mock
   private ResourceServerTokenServices tokenServices;
 
-  @Mock
-  private TransactionService transactionService;
-
   private MockMvc mockMvc;
 
   private final ZoneId utc = ZoneId.of("UTC");
   private LocalDateTime frozenTime;
-
-  private OperationAuditRecord expectedAuditRecord;
 
   private SecurityContext oldContext;
 
@@ -127,18 +113,6 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       freeze();
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-      when(transactionService.performWithLogging(anyString(), any(HttpServletRequest.class), any(Supplier.class))).thenAnswer(invocation -> ((Supplier) invocation.getArguments()[2]).get());
-      expectedAuditRecord = new OperationAuditRecord(
-          currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
-          "credential_update", // todo factory translation
-          "12345-6789a",
-          "marissa",
-          environment.getProperty("auth-server.url"),
-          1406568935, // "my token issue timestamp"
-          3333333333L, // token expiration
-          "localhost",
-          "/api/v1/data/secret-identifier"
-      );
     });
 
     beforeEach(() -> {
@@ -149,10 +123,10 @@ public class SecretsControllerTest {
       when(authentication.getDetails()).thenReturn(authenticationDetails);
       OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
       ImmutableMap<String, Object> additionalInfo = ImmutableMap.of(
-          "iat", expectedAuditRecord.getTokenIssued(),
-          "user_name", expectedAuditRecord.getUserName(),
-          "user_id", expectedAuditRecord.getUserId(),
-          "iss", expectedAuditRecord.getUaaUrl());
+          "iat", 1406568935,
+          "user_name", "marissa",
+          "user_id", "12345-6789a",
+          "iss", 3333333333L);
       when(accessToken.getAdditionalInformation()).thenReturn(additionalInfo);
       when(accessToken.getExpiration()).thenReturn(new Date(3333333333000L));
       when(tokenServices.readAccessToken("abcde")).thenReturn(accessToken);
@@ -193,13 +167,12 @@ public class SecretsControllerTest {
         Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(expected));
       });
 
-      it("can fetch a string secret and record an audit record", () -> {
+      it("can fetch a string secret", () -> {
         NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
         secretRepository.save(stringSecret);
         String expectedJson = json(stringSecret.generateView());
 
         expectSuccess(get("/api/v1/data/whatever"), expectedJson);
-        verify(transactionService).performWithLogging(eq("credential_access"), any(HttpServletRequest.class), any(Supplier.class));
       });
 
       it("can generate string secret", () -> {
@@ -256,10 +229,6 @@ public class SecretsControllerTest {
             "}";
 
         expectErrorKey(postRequestBuilder("/api/v1/data/my-secret", requestJson), HttpStatus.BAD_REQUEST, "error.excludes_all_charsets");
-
-        expectedAuditRecord.setFailed();
-        expectedAuditRecord.setPath("/api/v1/data/my-secret");
-        checkAuditRecord();
       });
     });
 
@@ -284,14 +253,6 @@ public class SecretsControllerTest {
         CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
         assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
         assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
-      });
-
-      it("writes an audit record of the operation to database", () -> {
-        String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
-
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
-
-        checkAuditRecord();
       });
 
       it("storing a client-provided certificate returns JSON that contains nulls in fields the client did not provide", () -> {
@@ -330,13 +291,10 @@ public class SecretsControllerTest {
       });
 
       it("returns bad request (400) if all certificate fields are empty", () -> {
-        expectedAuditRecord.setFailed();
 
         new PutCertificateSimulator("", "", "")
             .setExpectation(400, "error.missing_certificate_credentials")
             .execute();
-
-        checkAuditRecord();
       });
     });
 
@@ -352,12 +310,6 @@ public class SecretsControllerTest {
 
       it("succeeds", () -> {
       });
-
-      it("it adds an audit record", () -> {
-        expectedAuditRecord.setPath("/api/v1/data/whatever");
-        expectedAuditRecord.setOperation("credential_delete");
-        checkAuditRecord();
-      });
     });
 
     describe("returns not found (404) when getting missing secrets", () -> {
@@ -372,13 +324,6 @@ public class SecretsControllerTest {
       });
 
       it("fails as expected", () -> {
-      });
-
-      it("adds an audit record", () -> {
-        expectedAuditRecord.setPath("/api/v1/data/whatever");
-        expectedAuditRecord.setOperation("credential_delete");
-        expectedAuditRecord.setFailed();
-        checkAuditRecord();
       });
     });
 
@@ -433,13 +378,6 @@ public class SecretsControllerTest {
 
       expectSuccess(get("/api/v1/data/test"), "{\"type\":\"value\",\"credential\":\"abc\"}");
     });
-  }
-
-  private void checkAuditRecord() {
-    List<OperationAuditRecord> list = auditRepository.findAll();
-    OperationAuditRecord first = list.get(0);
-    first.setId(expectedAuditRecord.getId()); // we don't compare on the DB-provided PK/ID value.
-    assertThat(first, BeanMatchers.theSameAs(expectedAuditRecord));
   }
 
   private void expectSuccess(RequestBuilder requestBuilder, String returnedJson) throws Exception {
@@ -533,7 +471,6 @@ public class SecretsControllerTest {
       ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson))
           .andExpect(expectedStatus);
       NamedSecret certificateFromDb = secretRepository.findOneByName("whatever");
-      expectedAuditRecord.setPath("/api/v1/data/whatever");
 
       if (isHttpOk) {
         assertThat(certificateFromDb.generateView(), BeanMatchers.theSameAs(certificateSecretForResponse));

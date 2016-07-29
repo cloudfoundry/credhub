@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface InMemoryAuditRecordRepository extends JpaRepository<OperationAuditRecord, Long> {
+public interface AuditRecordRepository extends JpaRepository<OperationAuditRecord, Long> {
   List<OperationAuditRecord> findAll();
 }

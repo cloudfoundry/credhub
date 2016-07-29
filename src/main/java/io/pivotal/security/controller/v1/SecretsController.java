@@ -5,11 +5,10 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.mapper.*;
-import io.pivotal.security.repository.InMemoryAuditRecordRepository;
-import io.pivotal.security.repository.InMemorySecretRepository;
+import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.Secret;
@@ -23,9 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Map;
 
@@ -43,10 +38,7 @@ import java.util.Map;
 public class SecretsController {
 
   @Autowired
-  InMemorySecretRepository secretRepository;
-
-  @Autowired
-  private InMemoryAuditRecordRepository auditRepository;
+  SecretRepository secretRepository;
 
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
@@ -84,9 +76,6 @@ public class SecretsController {
   @Autowired
   ConfigurableEnvironment environment;
 
-  @Autowired
-  TransactionService transactionService;
-
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -112,7 +101,6 @@ public class SecretsController {
     NamedSecret foundNamedSecret = secretRepository.findOneByName(secretPath);
 
     NamedSecret toStore;
-    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_update", request);
     try {
       Secret secret = requestTranslator.createSecretFromJson(parsed);
       if (foundNamedSecret == null) {
@@ -124,11 +112,8 @@ public class SecretsController {
       secret.populateEntity(toStore);
       NamedSecret saved = secretRepository.save(toStore);
       secret.setUpdatedAt(saved.getUpdatedAt());
-      auditRepository.save(auditRecord);
       return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ValidationException ve) {
-      auditRecord.setFailed();
-      auditRepository.save(auditRecord);
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
@@ -136,56 +121,24 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-    OperationAuditRecord auditRecord = getOperationAuditRecord("credential_delete", request);
 
     if (namedSecret != null) {
       secretRepository.delete(namedSecret);
-      auditRepository.save(auditRecord);
       return new ResponseEntity(HttpStatus.OK);
     } else {
-      auditRecord.setFailed();
-      auditRepository.save(auditRecord);
       return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
     }
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-  ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request) {
-    return transactionService.performWithLogging("credential_access", request, () -> {
-      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+  public ResponseEntity get(@PathVariable String secretPath) {
+    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
 
-      if (namedSecret == null) {
-        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
-      } else {
-        return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
-      }
-    });
-  }
-
-  private OperationAuditRecord getOperationAuditRecord(String operation, HttpServletRequest request) {
-    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-    OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
-    Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
-    return new OperationAuditRecord(
-        currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
-        operation, // todo factory translation
-        (String) additionalInformation.get("user_id"),
-        (String) additionalInformation.get("user_name"),
-        (String) additionalInformation.get("iss"),
-        claimValueAsLong(additionalInformation, "iat"),
-        accessToken.getExpiration().getTime() / 1000,
-        request.getServerName(),
-        request.getPathInfo() // include item name per PM
-    );
-  }
-
-  /*
-   * The "iat" and "exp" claims are parsed by Jackson as integers. That means we have a
-   * Year-2038 bug. In the hope that Jackson will someday be fixed, this function returns
-   * a numeric value as long.
-   */
-  private long claimValueAsLong(Map<String, Object> additionalInformation, String claimName) {
-    return ((Number) additionalInformation.get(claimName)).longValue();
+    if (namedSecret == null) {
+      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+    } else {
+      return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
+    }
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
