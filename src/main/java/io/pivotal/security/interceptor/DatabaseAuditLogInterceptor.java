@@ -53,11 +53,6 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
   }
 
   @Override
-  public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-    super.postHandle(request, response, handler, modelAndView);
-  }
-
-  @Override
   public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
     TransactionStatus transactionStatus = (TransactionStatus) request.getAttribute(TX_KEY);
     OperationAuditRecord auditRecord = getOperationAuditRecord(request, handler);
@@ -96,7 +91,7 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
         claimValueAsLong(additionalInformation, "iat"),
         accessToken.getExpiration().getTime() / 1000,
         request.getServerName(),
-        request.getServletPath()
+        request.getRequestURI()
     );
   }
 

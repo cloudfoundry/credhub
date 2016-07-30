@@ -80,7 +80,7 @@ public class DatabaseAuditLogInterceptorTest {
     beforeEach(() -> {
       httpServletRequest = new MockHttpServletRequest();
       httpServletRequest.setServerName("hostName");
-      httpServletRequest.setServletPath("servletPath");
+      httpServletRequest.setRequestURI("requestURI");
 
       httpServletResponse = new MockHttpServletResponse();
       httpServletResponse.setStatus(HttpServletResponse.SC_OK);
@@ -270,7 +270,7 @@ public class DatabaseAuditLogInterceptorTest {
     assertThat(actual.getTokenIssued(), equalTo(1406568935L));
     assertThat(actual.getTokenExpires(), equalTo(3333333333L));
     assertThat(actual.getHostName(), equalTo("hostName"));
-    assertThat(actual.getPath(), equalTo("servletPath"));
+    assertThat(actual.getPath(), equalTo("requestURI"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
   }
 
