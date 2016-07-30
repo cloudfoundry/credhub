@@ -5,6 +5,8 @@ import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.AuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
@@ -16,6 +18,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.ZoneOffset;
@@ -44,6 +47,15 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
   @Autowired
   OperationNameResolver operationNameResolver;
 
+  @Autowired
+  MessageSource messageSource;
+
+  private MessageSourceAccessor messageSourceAccessor;
+
+  @PostConstruct
+  public void init() {
+    messageSourceAccessor = new MessageSourceAccessor(messageSource);
+  }
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -69,7 +81,7 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
       transactionManager.rollback(transactionStatus);
       response.reset();
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      serializingObjectMapper.writeValue(response.getOutputStream(), Collections.singletonMap("error", "Dan's error message"));
+      serializingObjectMapper.writeValue(response.getOutputStream(), Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure")));
     }
     super.afterCompletion(request, response, handler, ex);
   }

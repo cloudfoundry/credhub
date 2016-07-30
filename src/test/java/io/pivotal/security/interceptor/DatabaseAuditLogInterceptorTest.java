@@ -142,7 +142,7 @@ public class DatabaseAuditLogInterceptorTest {
 
           it("returns 500", () -> {
             assertThat(httpServletResponse.getStatus(), equalTo(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
-            assertThat(httpServletResponse.getContentAsString(), hasJsonPath("$.error", equalTo("Dan's error message")));
+            assertThat(httpServletResponse.getContentAsString(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
           });
         });
       });
@@ -183,7 +183,7 @@ public class DatabaseAuditLogInterceptorTest {
 
           it("returns 500 and original error message", () -> {
             assertThat(httpServletResponse.getStatus(), equalTo(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
-            assertThat(httpServletResponse.getContentAsString(), hasJsonPath("$.error", equalTo("Dan's error message")));
+            assertThat(httpServletResponse.getContentAsString(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
           });
         });
       });
@@ -228,7 +228,7 @@ public class DatabaseAuditLogInterceptorTest {
 
           it("returns 500", () -> {
             assertThat(httpServletResponse.getStatus(), equalTo(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
-            assertThat(httpServletResponse.getContentAsString(), hasJsonPath("$.error", equalTo("Dan's error message")));
+            assertThat(httpServletResponse.getContentAsString(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
           });
         });
       });
