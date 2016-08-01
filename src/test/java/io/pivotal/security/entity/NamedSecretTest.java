@@ -50,7 +50,7 @@ public class NamedSecretTest {
 
   @Test
   public void returnsDateCreated() throws Exception {
-    repository.save(secret);
+    secret = repository.save(secret);
     assertThat(repository.findOneByName("foo").getUpdatedAt(), equalTo(frozenTime));
   }
 
