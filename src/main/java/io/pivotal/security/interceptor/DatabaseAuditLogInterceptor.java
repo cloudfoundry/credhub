@@ -83,7 +83,6 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
       response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       serializingObjectMapper.writeValue(response.getOutputStream(), Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure")));
     }
-    super.afterCompletion(request, response, handler, ex);
   }
 
   private boolean is2XX(int status) {
