@@ -1,10 +1,14 @@
 auth-server:
   url: https://50.17.59.67:8443
 
-data-storage:
-  type: in-memory
-  username: pivotal
-  password:
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    username: pivotal
+    password:
+    url: jdbc:postgresql://localhost:5432/credhub
 
 security:
   oauth2:
