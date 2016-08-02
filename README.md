@@ -36,4 +36,3 @@ To package and deploy that release, do the following:
 cd ~/workspace/sec-eng-deployment-credential-manager
 scripts/deploy_credhub.sh --dev
 ```
-
