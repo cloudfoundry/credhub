@@ -13,7 +13,6 @@ public class FakeTransactionManager implements PlatformTransactionManager {
   Tx currentTransaction;
   private boolean shouldThrow;
 
-
   @Override
   public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
     if (currentTransaction != null) {

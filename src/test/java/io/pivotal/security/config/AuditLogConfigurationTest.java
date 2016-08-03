@@ -24,6 +24,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import javax.servlet.Filter;
@@ -53,9 +54,14 @@ public class AuditLogConfigurationTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
+      auditRecordRepository.deleteAll();
     });
 
-    describe("when a request to set secret is served", () -> {
+    afterEach(() -> {
+      auditRecordRepository.deleteAll();
+    });
+
+    describe("when a request to set credential is served", () -> {
       beforeEach(() -> {
         MockHttpServletRequestBuilder put = put("/api/v1/data/foo")
             .accept(MediaType.APPLICATION_JSON)
@@ -67,11 +73,28 @@ public class AuditLogConfigurationTest {
             .andExpect(status().isOk());
       });
 
-      afterEach(() -> {
-        auditRecordRepository.deleteAll();
+      it("logs an audit record for credential update operation", () -> {
+        assertThat(auditRecordRepository.count(), equalTo(1L));
+
+        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getOperation(), equalTo("credential_update"));
+      });
+    });
+
+    describe("when a request to generate a credential is served", () -> {
+      beforeEach(() -> {
+        MockHttpServletRequestBuilder post = post("/api/v1/data/foo")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .content("{\"type\":\"value\"}");
+
+        mockMvc.perform(post)
+            .andExpect(status().isOk());
       });
 
-      it("logs an audit record for credential update operation", () -> {
+      it("logs an audit record for credential_update operation", () -> {
         assertThat(auditRecordRepository.count(), equalTo(1L));
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);

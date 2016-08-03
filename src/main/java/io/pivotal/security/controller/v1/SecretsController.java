@@ -99,12 +99,14 @@ public class SecretsController {
     RequestTranslatorWithGeneration stringRequestTranslator = new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator);
     RequestTranslatorWithGeneration certificateRequestTranslator = new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator);
 
+    return auditLogService.performWithAuditing("credential_update", request.getServerName(), request.getRequestURI(), () -> {
       return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator, request);
+    });
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request) {
-    return auditLogService.performWithAuditing("credential_update", request.getRemoteHost(), request.getRequestURI(), () -> {
+    return auditLogService.performWithAuditing("credential_update", request.getServerName(), request.getRequestURI(), () -> {
       return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator, request);
     });
   }
