@@ -13,6 +13,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(Spectrum.class)
 public class TransactionContractTest {
@@ -41,13 +42,27 @@ public class TransactionContractTest {
         transactionManager.getTransaction(new DefaultTransactionDefinition());
       });
 
-      describe("audit repository in dangerous mode", () -> {
+      describe("audit repository in dangerous mode when saving", () -> {
         beforeEach(() -> {
-          auditRecordRepository.makeDangerous();
+          auditRecordRepository.failOnSave();
         });
 
         itThrows("save audit record", RuntimeException.class, () -> {
           auditRecordRepository.save(new OperationAuditRecord());
+        });
+
+        it("has an open transaction", () -> {
+          assertThat(transactionManager.hasOpenTransaction(), is(true));
+        });
+      });
+
+      describe("transaction manager in dangerous mode when commiting", () -> {
+        beforeEach(() -> {
+          transactionManager.failOnCommit();
+        });
+
+        itThrows("save audit record", RuntimeException.class, () -> {
+          transactionManager.commit(transaction);
         });
       });
 

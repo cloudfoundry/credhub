@@ -114,7 +114,7 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
     return null;
   }
 
-  public void makeDangerous() {
+  public void failOnSave() {
     shouldThrow = true;
   }
 }

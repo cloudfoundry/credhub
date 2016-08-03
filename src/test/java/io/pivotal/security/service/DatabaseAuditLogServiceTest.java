@@ -34,6 +34,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -119,7 +120,7 @@ public class DatabaseAuditLogServiceTest {
 
         describe("when the audit fails", () -> {
           beforeEach(() -> {
-            auditRepository.makeDangerous();
+            auditRepository.failOnSave();
 
             responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
               final NamedStringSecret secret = secretRepository.save(new NamedStringSecret("key").setValue("value"));
@@ -160,7 +161,7 @@ public class DatabaseAuditLogServiceTest {
 
         describe("when the audit fails", () -> {
           beforeEach(() -> {
-            auditRepository.makeDangerous();
+            auditRepository.failOnSave();
 
             responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
               secretRepository.save(new NamedStringSecret("key").setValue("value"));
@@ -201,7 +202,7 @@ public class DatabaseAuditLogServiceTest {
 
         describe("when the audit fails", () -> {
           beforeEach(() -> {
-            auditRepository.makeDangerous();
+            auditRepository.failOnSave();
             responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
               secretRepository.save(new NamedStringSecret("key").setValue("value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
@@ -209,6 +210,28 @@ public class DatabaseAuditLogServiceTest {
           });
 
           it("rolls back both original and audit repository transactions", () -> {
+            assertThat(transactionManager.hasOpenTransaction(), is(false));
+            assertThat(auditRepository.count(), equalTo(0L));
+            assertThat(secretRepository.count(), equalTo(0L));
+          });
+
+          it("returns 500", () -> {
+            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+            assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+          });
+        });
+
+        describe("when audit transaction fails to commit", () -> {
+          beforeEach(() -> {
+            transactionManager.failOnCommit();
+            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+              secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+            });
+          });
+
+          it("doesn't rollback transaction", () -> {
+            assertThat(transactionManager.hasOpenTransaction(), is(false));
             assertThat(auditRepository.count(), equalTo(0L));
             assertThat(secretRepository.count(), equalTo(0L));
           });

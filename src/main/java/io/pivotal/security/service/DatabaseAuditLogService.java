@@ -74,7 +74,7 @@ public class DatabaseAuditLogService implements AuditLogService {
       auditRecordRepository.save(auditRecord);
       transactionManager.commit(transaction);
     } catch (Exception e) {
-      transactionManager.rollback(transaction);
+      if (!transaction.isCompleted()) transactionManager.rollback(transaction);
       final Map<String, String> error = Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure"));
       responseEntity = new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
