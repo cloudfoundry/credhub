@@ -5,26 +5,34 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
-import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.AuthoritySetterRequestTranslator;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
 import io.pivotal.security.mapper.CertificateAuthoritySetterRequestTranslator;
+import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
+import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.view.CertificateAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+
+import javax.annotation.PostConstruct;
+import javax.validation.ValidationException;
 
 @RestController
 @RequestMapping(path = "/api/v1/ca", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

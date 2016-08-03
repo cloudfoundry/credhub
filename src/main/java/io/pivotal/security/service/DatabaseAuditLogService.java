@@ -1,39 +1,31 @@
-package io.pivotal.security.interceptor;
+package io.pivotal.security.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.AuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import java.time.ZoneOffset;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.time.ZoneOffset;
-import java.util.*;
 
-@Component
-public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter implements AuditLogInterceptor {
-
-  public static final String TX_KEY = DatabaseAuditLogInterceptor.class.getName() + "tx";
-
-  @Autowired
-  PlatformTransactionManager transactionManager;
-
-  @Autowired
-  AuditRecordRepository auditRecordRepository;
+@Service
+public class DatabaseAuditLogService implements AuditLogService {
 
   @Autowired
   CurrentTimeProvider currentTimeProvider;
@@ -42,10 +34,10 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
   ResourceServerTokenServices tokenServices;
 
   @Autowired
-  ObjectMapper serializingObjectMapper;
+  AuditRecordRepository auditRecordRepository;
 
   @Autowired
-  OperationNameResolver operationNameResolver;
+  PlatformTransactionManager transactionManager;
 
   @Autowired
   MessageSource messageSource;
@@ -58,51 +50,52 @@ public class DatabaseAuditLogInterceptor extends HandlerInterceptorAdapter imple
   }
 
   @Override
-  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+  public ResponseEntity<?> performWithAuditing(String operation, String hostName, String path, Supplier<ResponseEntity<?>> action) {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-    request.setAttribute(TX_KEY, transaction);
-    return true;
-  }
 
-  @Override
-  public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-    TransactionStatus transactionStatus = (TransactionStatus) request.getAttribute(TX_KEY);
-    OperationAuditRecord auditRecord = getOperationAuditRecord(request, handler);
-    if (ex != null || !is2XX(response.getStatus())) {
+    OperationAuditRecord auditRecord = getOperationAuditRecord(operation, hostName, path);
+
+    ResponseEntity<?> responseEntity;
+    try {
+      responseEntity = action.get();
+      if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+        auditRecord.setFailed();
+        transactionManager.rollback(transaction);
+        transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+      }
+    } catch (RuntimeException e) {
+      responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
       auditRecord.setFailed();
-      transactionManager.rollback(transactionStatus);
-      transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+      transactionManager.rollback(transaction);
+      transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
 
     try {
       auditRecordRepository.save(auditRecord);
-      transactionManager.commit(transactionStatus);
+      transactionManager.commit(transaction);
     } catch (Exception e) {
-      transactionManager.rollback(transactionStatus);
-      response.reset();
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      serializingObjectMapper.writeValue(response.getOutputStream(), Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure")));
+      transactionManager.rollback(transaction);
+      final Map<String, String> error = Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure"));
+      responseEntity = new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    return responseEntity;
   }
 
-  private boolean is2XX(int status) {
-    return status >= 200 && status < 300;
-  }
-
-  private OperationAuditRecord getOperationAuditRecord(HttpServletRequest request, Object handler) {
+  private OperationAuditRecord getOperationAuditRecord(String operation, String hostName, String path) {
     OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
     OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
     Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
     return new OperationAuditRecord(
         currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
-        operationNameResolver.getOperationFromMethod(handler),
+        operation,
         (String) additionalInformation.get("user_id"),
         (String) additionalInformation.get("user_name"),
         (String) additionalInformation.get("iss"),
         claimValueAsLong(additionalInformation, "iat"),
         accessToken.getExpiration().getTime() / 1000,
-        request.getServerName(),
-        request.getRequestURI()
+        hostName,
+        path
     );
   }
 

@@ -6,9 +6,14 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.mapper.*;
-import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
+import io.pivotal.security.mapper.CertificateSetRequestTranslator;
+import io.pivotal.security.mapper.RequestTranslatorWithGeneration;
+import io.pivotal.security.mapper.SecretSetterRequestTranslator;
+import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
+import io.pivotal.security.mapper.StringSetRequestTranslator;
 import io.pivotal.security.repository.SecretRepository;
+import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.Secret;
@@ -23,15 +28,20 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = "/api/v1/data", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -76,6 +86,9 @@ public class SecretsController {
   @Autowired
   ConfigurableEnvironment environment;
 
+  @Autowired
+  AuditLogService auditLogService;
+
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -86,12 +99,14 @@ public class SecretsController {
     RequestTranslatorWithGeneration stringRequestTranslator = new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator);
     RequestTranslatorWithGeneration certificateRequestTranslator = new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator);
 
-    return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator, request);
+      return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator, request);
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request) {
-    return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator, request);
+    return auditLogService.performWithAuditing("credential_update", request.getRemoteHost(), request.getRequestURI(), () -> {
+      return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator, request);
+    });
   }
 
   private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretSetterRequestTranslator stringRequestTranslator, SecretSetterRequestTranslator certificateRequestTranslator, HttpServletRequest request) {
