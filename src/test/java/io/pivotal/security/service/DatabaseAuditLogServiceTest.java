@@ -69,6 +69,8 @@ public class DatabaseAuditLogServiceTest {
   @Autowired
   CaController caController;
 
+  AuditRecordParameters auditRecordParameters;
+
   private SecurityContext oldContext;
   private LocalDateTime now;
 
@@ -78,6 +80,7 @@ public class DatabaseAuditLogServiceTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
+      auditRecordParameters = new AuditRecordParameters("hostName", "requestURI", "127.0.0.1", "1.2.3.4,5.6.7.8");
       transactionManager = new FakeTransactionManager();
       auditRepository = new FakeAuditRecordRepository(transactionManager);
       secretRepository = new FakeSecretRepository(transactionManager);
@@ -102,7 +105,7 @@ public class DatabaseAuditLogServiceTest {
       describe("when the operation succeeds", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
               final NamedStringSecret secret = secretRepository.save(new NamedStringSecret("key").setValue("value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
@@ -122,7 +125,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             auditRepository.failOnSave();
 
-            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
               final NamedStringSecret secret = secretRepository.save(new NamedStringSecret("key").setValue("value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
@@ -143,7 +146,7 @@ public class DatabaseAuditLogServiceTest {
       describe("when the operation fails with an exception", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
               secretRepository.save(new NamedStringSecret("key").setValue("value"));
               throw new RuntimeException("controller method failed");
             });
@@ -163,7 +166,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             auditRepository.failOnSave();
 
-            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
               secretRepository.save(new NamedStringSecret("key").setValue("value"));
               throw new RuntimeException("controller method failed");
             });
@@ -184,7 +187,7 @@ public class DatabaseAuditLogServiceTest {
       describe("when the operation fails with a non 200 status", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
               secretRepository.save(new NamedStringSecret("key").setValue("value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
@@ -203,7 +206,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when the audit fails", () -> {
           beforeEach(() -> {
             auditRepository.failOnSave();
-            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
               secretRepository.save(new NamedStringSecret("key").setValue("value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
@@ -224,7 +227,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when audit transaction fails to commit", () -> {
           beforeEach(() -> {
             transactionManager.failOnCommit();
-            responseEntity = subject.performWithAuditing("credential_access", "hostName", "requestURI", () -> {
+            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
               secretRepository.save(new NamedStringSecret("key").setValue("value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
@@ -282,5 +285,7 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.getHostName(), equalTo("hostName"));
     assertThat(actual.getPath(), equalTo("requestURI"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
+    assertThat(actual.getRequesterIp(), equalTo("127.0.0.1"));
+    assertThat(actual.getXForwardedFor(), equalTo("1.2.3.4,5.6.7.8"));
   }
 }

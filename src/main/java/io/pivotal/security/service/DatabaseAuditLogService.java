@@ -50,10 +50,10 @@ public class DatabaseAuditLogService implements AuditLogService {
   }
 
   @Override
-  public ResponseEntity<?> performWithAuditing(String operation, String hostName, String path, Supplier<ResponseEntity<?>> action) {
+  public ResponseEntity<?> performWithAuditing(String operation, AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
-    OperationAuditRecord auditRecord = getOperationAuditRecord(operation, hostName, path);
+    OperationAuditRecord auditRecord = getOperationAuditRecord(operation, auditRecordParameters);
 
     ResponseEntity<?> responseEntity;
     try {
@@ -82,7 +82,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     return responseEntity;
   }
 
-  private OperationAuditRecord getOperationAuditRecord(String operation, String hostName, String path) {
+  private OperationAuditRecord getOperationAuditRecord(String operation, AuditRecordParameters auditRecordParameters) {
     OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
     OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
     Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
@@ -94,8 +94,10 @@ public class DatabaseAuditLogService implements AuditLogService {
         (String) additionalInformation.get("iss"),
         claimValueAsLong(additionalInformation, "iat"),
         accessToken.getExpiration().getTime() / 1000,
-        hostName,
-        path
+        auditRecordParameters.getHostName(),
+        auditRecordParameters.getPath(),
+        auditRecordParameters.getRequesterIp(),
+        auditRecordParameters.getXForwardedFor()
     );
   }
 

@@ -14,6 +14,7 @@ import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
 import io.pivotal.security.mapper.StringSetRequestTranslator;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.Secret;
@@ -99,14 +100,14 @@ public class SecretsController {
     RequestTranslatorWithGeneration stringRequestTranslator = new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator);
     RequestTranslatorWithGeneration certificateRequestTranslator = new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator);
 
-    return auditLogService.performWithAuditing("credential_update", request.getServerName(), request.getRequestURI(), () -> {
+    return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request), () -> {
       return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator, request);
     });
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request) {
-    return auditLogService.performWithAuditing("credential_update", request.getServerName(), request.getRequestURI(), () -> {
+    return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request), () -> {
       return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator, request);
     });
   }
@@ -138,7 +139,7 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-    return auditLogService.performWithAuditing("credential_delete", request.getServerName(), request.getRequestURI(), () -> {
+    return auditLogService.performWithAuditing("credential_delete", new AuditRecordParameters(request), () -> {
       if (namedSecret != null) {
         secretRepository.delete(namedSecret);
         return new ResponseEntity(HttpStatus.OK);
@@ -151,7 +152,8 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   public ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-    return auditLogService.performWithAuditing("credential_access", request.getServerName(), request.getRequestURI(), () -> {
+
+    return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request), () -> {
       if (namedSecret == null) {
         return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
       } else {

@@ -11,6 +11,7 @@ import io.pivotal.security.mapper.CertificateAuthoritySetterRequestTranslator;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.CertificateAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -71,7 +72,7 @@ public class CaController {
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request) {
-    return auditLogService.performWithAuditing("ca_update", request.getServerName(), request.getRequestURI(), () -> {
+    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request), () -> {
       return storeAuthority(caPath, requestBody, certificateAuthoritySetterRequestTranslator);
     });
   }
@@ -79,7 +80,7 @@ public class CaController {
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request) {
-    return auditLogService.performWithAuditing("ca_update", request.getServerName(), request.getRequestURI(), () -> {
+    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request), () -> {
       return storeAuthority(caPath, requestBody, certificateAuthorityRequestTranslatorWithGeneration);
     });
   }
@@ -103,7 +104,8 @@ public class CaController {
   @RequestMapping(path = "/{caPath}", method = RequestMethod.GET)
   ResponseEntity get(@PathVariable String caPath, HttpServletRequest request) {
     NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath);
-    return auditLogService.performWithAuditing("ca_access", request.getServerName(), request.getRequestURI(), () -> {
+
+    return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request), () -> {
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
       }

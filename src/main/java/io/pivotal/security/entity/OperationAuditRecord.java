@@ -23,11 +23,23 @@ public class OperationAuditRecord {
   private String uaaUrl;
   private String userId;
   private String userName;
+  private String requesterIp;
+  private String xForwardedFor;
 
   public OperationAuditRecord() {
   }
 
-  public OperationAuditRecord(long now, String operation, String userId, String userName, String uaaUrl, long tokenIssued, long tokenExpires, String hostName, String path) {
+  public OperationAuditRecord(long now,
+                              String operation,
+                              String userId,
+                              String userName,
+                              String uaaUrl,
+                              long tokenIssued,
+                              long tokenExpires,
+                              String hostName,
+                              String path,
+                              String requesterIp,
+                              String xForwardedFor) {
     this.now = now;
     this.operation = operation;
     this.userId = userId;
@@ -37,6 +49,8 @@ public class OperationAuditRecord {
     this.tokenExpires = tokenExpires;
     this.hostName = hostName;
     this.path = path;
+    this.requesterIp = requesterIp;
+    this.xForwardedFor = xForwardedFor;
   }
 
   public long getId() {
@@ -83,8 +97,16 @@ public class OperationAuditRecord {
     return userName;
   }
 
-  public void setId(long id) {
-    this.id = id;
+  public String getRequesterIp() {
+    return requesterIp;
+  }
+
+  public String getXForwardedFor() {
+    return xForwardedFor;
+  }
+
+  public void setRequesterIp(String requesterIp) {
+    this.requesterIp = requesterIp;
   }
 
   public void setFailed() {
@@ -97,5 +119,13 @@ public class OperationAuditRecord {
 
   public void setPath(String path) {
     this.path = path;
+  }
+
+  public void setXForwardedFor(String xForwardedFor) {
+    this.xForwardedFor = xForwardedFor;
+  }
+
+  public void setId(long id) {
+    this.id = id;
   }
 }
