@@ -1,0 +1,12 @@
+---
+platform: linux
+image: docker:///pcfseceng/sec-eng-ci
+inputs:
+  - name: sec-eng-credential-manager
+outputs:
+  - name: check-report-output
+run:
+  path: sec-eng-credential-manager/ci/tasks/owasp-check/task.sh
+params:
+  OUTPUT_PATH: check-report-output
+  PROJECT_NAME:

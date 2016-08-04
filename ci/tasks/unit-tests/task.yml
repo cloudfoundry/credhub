@@ -1,0 +1,7 @@
+---
+platform: linux
+image: docker:///pcfseceng/sec-eng-ci
+inputs:
+  - name: sec-eng-credential-manager
+run:
+  path: sec-eng-credential-manager/ci/tasks/unit-tests/task.sh
