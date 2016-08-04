@@ -101,13 +101,15 @@ public class CaController {
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.GET)
-  ResponseEntity get(@PathVariable String caPath) {
+  ResponseEntity get(@PathVariable String caPath, HttpServletRequest request) {
     NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath);
-    if (namedAuthority == null) {
-      return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
-    }
-    CertificateAuthority certificateAuthority = (CertificateAuthority) namedAuthority.generateView();
-    return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
+    return auditLogService.performWithAuditing("ca_access", request.getServerName(), request.getRequestURI(), () -> {
+      if (namedAuthority == null) {
+        return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
+      }
+      CertificateAuthority certificateAuthority = namedAuthority.generateView();
+      return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
+    });
   }
 
   private NamedCertificateAuthority createEntityFromView(@PathVariable String caPath, CertificateAuthority certificateAuthority) {

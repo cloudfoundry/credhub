@@ -131,8 +131,7 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder get = get("/api/v1/data/foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
-            .content("{\"type\":\"value\"}");
+            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT);
 
         mockMvc.perform(get)
             .andExpect(status().is4xxClientError());
@@ -178,6 +177,26 @@ public class AuditLogConfigurationTest {
         OperationAuditRecord auditRecord2 = auditRecordRepository.findAll().get(1);
         assertThat(auditRecord2.getPath(), equalTo("/api/v1/ca/baz"));
         assertThat(auditRecord2.getOperation(), equalTo("ca_update"));
+      });
+    });
+
+    describe("when a request to retrieve a CA is served", () -> {
+      beforeEach(() -> {
+        MockHttpServletRequestBuilder get = get("/api/v1/ca/bar")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT);
+
+        mockMvc.perform(get)
+            .andExpect(status().is4xxClientError());
+      });
+
+      it("logs an audit record for ca_access operation", () -> {
+        assertThat(auditRecordRepository.count(), equalTo(1L));
+
+        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        assertThat(auditRecord.getPath(), equalTo("/api/v1/ca/bar"));
+        assertThat(auditRecord.getOperation(), equalTo("ca_access"));
       });
     });
   }
