@@ -9,4 +9,3 @@ run:
   path: sec-eng-credential-manager/ci/tasks/owasp-check/task.sh
 params:
   OUTPUT_PATH: check-report-output
-  PROJECT_NAME:

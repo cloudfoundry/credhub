@@ -11,7 +11,7 @@ pushd $APP_DIR
 ./gradlew clean dependencyCheck --info
 popd
 
-echo "${PROJECT_NAME} owasp check results" > ${OUTPUT_PATH}/owasp-check-email-subject.txt
+echo "Credential Manager owasp check results" > ${OUTPUT_PATH}/owasp-check-email-subject.txt
 cp $APP_DIR/build/reports/dependency-check-report.html ${OUTPUT_PATH}/owasp-check-email-body.txt
 cat <<-EOF > ${OUTPUT_PATH}/owasp-check-email-headers.txt
 MIME-version: 1.0
