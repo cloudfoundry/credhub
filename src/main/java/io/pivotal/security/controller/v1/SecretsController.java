@@ -114,7 +114,7 @@ public class SecretsController {
   private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretSetterRequestTranslator stringRequestTranslator, SecretSetterRequestTranslator certificateRequestTranslator, HttpServletRequest request) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
-    SecretSetterRequestTranslator requestTranslator = getTranslator(type, stringRequestTranslator, certificateRequestTranslator); //
+    SecretSetterRequestTranslator requestTranslator = getTranslator(type, stringRequestTranslator, certificateRequestTranslator);
     NamedSecret foundNamedSecret = secretRepository.findOneByName(secretPath);
 
     NamedSecret toStore;
@@ -138,13 +138,14 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-
-    if (namedSecret != null) {
-      secretRepository.delete(namedSecret);
-      return new ResponseEntity(HttpStatus.OK);
-    } else {
-      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
-    }
+    return auditLogService.performWithAuditing("credential_delete", request.getServerName(), request.getRequestURI(), () -> {
+      if (namedSecret != null) {
+        secretRepository.delete(namedSecret);
+        return new ResponseEntity(HttpStatus.OK);
+      } else {
+        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+      }
+    });
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)

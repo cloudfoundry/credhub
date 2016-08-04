@@ -23,6 +23,7 @@ import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -100,6 +101,27 @@ public class AuditLogConfigurationTest {
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
+      });
+    });
+
+    describe("when a request to delete a credential is served", () -> {
+      beforeEach(() -> {
+        MockHttpServletRequestBuilder delete = delete("/api/v1/data/foo")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .content("{\"type\":\"value\"}");
+
+        mockMvc.perform(delete)
+            .andExpect(status().is4xxClientError());
+      });
+
+      it("logs an audit record for credential_delete operation", () -> {
+        assertThat(auditRecordRepository.count(), equalTo(1L));
+
+        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getOperation(), equalTo("credential_delete"));
       });
     });
   }
