@@ -26,6 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import javax.servlet.Filter;
@@ -122,6 +123,27 @@ public class AuditLogConfigurationTest {
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
         assertThat(auditRecord.getOperation(), equalTo("credential_delete"));
+      });
+    });
+
+    describe("when a request to retrieve a credential is served", () -> {
+      beforeEach(() -> {
+        MockHttpServletRequestBuilder get = get("/api/v1/data/foo")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .content("{\"type\":\"value\"}");
+
+        mockMvc.perform(get)
+            .andExpect(status().is4xxClientError());
+      });
+
+      it("logs an audit record for credential_access operation", () -> {
+        assertThat(auditRecordRepository.count(), equalTo(1L));
+
+        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
       });
     });
   }

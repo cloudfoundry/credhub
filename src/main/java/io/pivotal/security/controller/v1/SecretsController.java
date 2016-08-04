@@ -149,14 +149,15 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-  public ResponseEntity get(@PathVariable String secretPath) {
+  public ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request) {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-
-    if (namedSecret == null) {
-      return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
-    } else {
-      return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
-    }
+    return auditLogService.performWithAuditing("credential_access", request.getServerName(), request.getRequestURI(), () -> {
+      if (namedSecret == null) {
+        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+      } else {
+        return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
+      }
+    });
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
