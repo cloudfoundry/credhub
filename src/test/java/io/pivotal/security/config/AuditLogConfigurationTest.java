@@ -147,7 +147,7 @@ public class AuditLogConfigurationTest {
       });
     });
 
-    describe("when a request to retrieve a credential is served", () -> {
+    describe("when a request to set or generate a credential is served", () -> {
       beforeEach(() -> {
         MockHttpServletRequestBuilder put = put("/api/v1/ca/bar")
             .accept(MediaType.APPLICATION_JSON)
@@ -157,14 +157,27 @@ public class AuditLogConfigurationTest {
 
         mockMvc.perform(put)
             .andExpect(status().isOk());
+
+        MockHttpServletRequestBuilder generate = post("/api/v1/ca/baz")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .content("{\"type\":\"root\",\"parameters\":{\"common_name\":\"baz.com\"}}");
+
+        mockMvc.perform(generate)
+            .andExpect(status().isOk());
       });
 
       it("logs an audit record for ca_update operation", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
+        assertThat(auditRecordRepository.count(), equalTo(2L));
 
-        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/ca/bar"));
-        assertThat(auditRecord.getOperation(), equalTo("ca_update"));
+        OperationAuditRecord auditRecord1 = auditRecordRepository.findAll().get(0);
+        assertThat(auditRecord1.getPath(), equalTo("/api/v1/ca/bar"));
+        assertThat(auditRecord1.getOperation(), equalTo("ca_update"));
+
+        OperationAuditRecord auditRecord2 = auditRecordRepository.findAll().get(1);
+        assertThat(auditRecord2.getPath(), equalTo("/api/v1/ca/baz"));
+        assertThat(auditRecord2.getOperation(), equalTo("ca_update"));
       });
     });
   }

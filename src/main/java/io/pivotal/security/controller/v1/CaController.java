@@ -78,8 +78,10 @@ public class CaController {
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.POST)
-  ResponseEntity generate(@PathVariable String caPath, InputStream requestBody) {
-    return storeAuthority(caPath, requestBody, certificateAuthorityRequestTranslatorWithGeneration);
+  ResponseEntity generate(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request) {
+    return auditLogService.performWithAuditing("ca_update", request.getServerName(), request.getRequestURI(), () -> {
+      return storeAuthority(caPath, requestBody, certificateAuthorityRequestTranslatorWithGeneration);
+    });
   }
 
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, AuthoritySetterRequestTranslator requestTranslator) {
