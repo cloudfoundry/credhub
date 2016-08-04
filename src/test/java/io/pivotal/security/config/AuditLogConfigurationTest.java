@@ -146,5 +146,26 @@ public class AuditLogConfigurationTest {
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
       });
     });
+
+    describe("when a request to retrieve a credential is served", () -> {
+      beforeEach(() -> {
+        MockHttpServletRequestBuilder put = put("/api/v1/ca/bar")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .content("{\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}");
+
+        mockMvc.perform(put)
+            .andExpect(status().isOk());
+      });
+
+      it("logs an audit record for ca_update operation", () -> {
+        assertThat(auditRecordRepository.count(), equalTo(1L));
+
+        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        assertThat(auditRecord.getPath(), equalTo("/api/v1/ca/bar"));
+        assertThat(auditRecord.getOperation(), equalTo("ca_update"));
+      });
+    });
   }
 }

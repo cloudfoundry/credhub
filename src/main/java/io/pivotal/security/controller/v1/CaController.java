@@ -15,7 +15,6 @@ import io.pivotal.security.view.CertificateAuthority;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +31,7 @@ import java.io.InputStream;
 import java.util.Collections;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 
 @RestController
@@ -60,6 +60,9 @@ public class CaController {
   @Autowired
   BCCertificateGenerator certificateGenerator;
 
+  @Autowired
+  AuditLogService auditLogService;
+
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -67,8 +70,10 @@ public class CaController {
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
-  ResponseEntity set(@PathVariable String caPath, InputStream requestBody) {
-    return storeAuthority(caPath, requestBody, certificateAuthoritySetterRequestTranslator);
+  ResponseEntity set(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request) {
+    return auditLogService.performWithAuditing("ca_update", request.getServerName(), request.getRequestURI(), () -> {
+      return storeAuthority(caPath, requestBody, certificateAuthoritySetterRequestTranslator);
+    });
   }
 
   @SuppressWarnings("unused")
