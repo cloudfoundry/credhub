@@ -44,4 +44,16 @@ public class AuditRecordParameters {
   private String extractXForwardedFor(Enumeration<String> values) {
     return String.join(",", Collections.list(values));
   }
+
+  @Override
+  public boolean equals(Object o) {
+    AuditRecordParameters other = (AuditRecordParameters) o;
+    if (getHostName().equals(other.getHostName()) &&
+        getPath().equals(other.getPath()) &&
+        getRequesterIp().equals(other.getRequesterIp()) &&
+        getXForwardedFor().equals(getXForwardedFor())) {
+      return true;
+    }
+    return false;
+  }
 }

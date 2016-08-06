@@ -20,6 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -112,7 +113,7 @@ public class AuditLogConfigurationTest {
             .andExpect(status().isOk());
       });
 
-      it("logs an audit record for credential_update operation", () -> {
+      fit("logs an audit record for credential_update operation", () -> {
         assertThat(auditRecordRepository.count(), equalTo(1L));
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);

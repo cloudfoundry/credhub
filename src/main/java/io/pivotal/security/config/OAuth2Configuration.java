@@ -1,5 +1,6 @@
 package io.pivotal.security.config;
 
+import io.pivotal.security.oauth.AuditOAuth2AuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
@@ -27,7 +29,9 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
 
   @Override
   public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+    AuthenticationEntryPoint auditOAuth2AuthenticationEntryPoint = new AuditOAuth2AuthenticationEntryPoint();
     resources.resourceId(resourceServerProperties.getResourceId());
+    resources.authenticationEntryPoint(auditOAuth2AuthenticationEntryPoint);
   }
 
   @Override
