@@ -27,7 +27,7 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
     doHandle(request, response, authException);
   }
 
-  public void logAuthFailureToDb(AuthenticationException authException, AuditRecordParameters parameters, String requestMethod) {
+  private void logAuthFailureToDb(AuthenticationException authException, AuditRecordParameters parameters, String requestMethod) {
     RequestToOperationTranslator requestToOperationTranslator = new RequestToOperationTranslator(parameters.getPath()).setMethod(requestMethod);
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
         .setNow(0) //fixme

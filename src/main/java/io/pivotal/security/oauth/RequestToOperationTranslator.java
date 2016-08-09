@@ -31,7 +31,7 @@ public class RequestToOperationTranslator {
       case "DELETE":
         s.append("_delete");
         break;
-    };
+    }
     return s.toString();
   }
 }

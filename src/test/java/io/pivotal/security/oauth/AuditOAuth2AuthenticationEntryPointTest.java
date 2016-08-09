@@ -22,19 +22,16 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import javax.servlet.Filter;
+import java.util.Map;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.config.SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
-import java.util.Map;
-
-import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -50,10 +47,10 @@ public class AuditOAuth2AuthenticationEntryPointTest {
   Filter springSecurityFilterChain;
 
   @Autowired
-  AuthFailureAuditRecordRepository auditRecordRepository;
+  AuditOAuth2AuthenticationEntryPoint subject;
 
   @Autowired
-  AuditOAuth2AuthenticationEntryPoint subject;
+  AuthFailureAuditRecordRepository auditRecordRepository;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
@@ -74,13 +71,17 @@ public class AuditOAuth2AuthenticationEntryPointTest {
   // no token = Full authentication is required to access this resource
   {
     wireAndUnwire(this);
-    autoTransactional(this);
+//    autoTransactional(this);
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
+    });
+
+    afterEach(() -> {
+      auditRecordRepository.deleteAll();
     });
 
     describe("when the token is invalid", () -> {
@@ -128,13 +129,10 @@ public class AuditOAuth2AuthenticationEntryPointTest {
                 return request;
               }});
         mockMvc.perform(get);
-
-
       });
 
       it("logs the 'token_expired' auth exception to the database", () -> {
-        OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
-        OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
+        OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_SYMMETRIC_KEY_JWT);
         Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
         assertThat(auditRecordRepository.count(), equalTo(1L));
@@ -148,9 +146,9 @@ public class AuditOAuth2AuthenticationEntryPointTest {
         assertThat(auditRecord.getFailureDescription(), equalTo("Cannot convert access token to JSON"));
         assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
         assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
-        assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss"));
-        assertThat(auditRecord.getTokenIssued(), equalTo(-1L));
-        assertThat(auditRecord.getTokenExpires(), equalTo(-1L));
+        assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
+        assertThat(auditRecord.getTokenIssued(), equalTo(((Number) additionalInformation.get("iat")).longValue())); // 1469051704L
+        assertThat(auditRecord.getTokenExpires(), equalTo(accessToken.getExpiration().getTime() / 1000)); // 1469051824L
       });
     });
   }
