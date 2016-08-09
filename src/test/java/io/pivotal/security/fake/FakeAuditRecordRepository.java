@@ -2,7 +2,6 @@ package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.AuditRecordRepository;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -117,35 +116,5 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
 
   public void failOnSave() {
     shouldThrow = true;
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example) {
-    return null;
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example, Sort sort) {
-    return null;
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> S findOne(Example<S> example) {
-    return null;
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> Page<S> findAll(Example<S> example, Pageable pageable) {
-    return null;
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> long count(Example<S> example) {
-    return 0;
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> boolean exists(Example<S> example) {
-    return false;
   }
 }

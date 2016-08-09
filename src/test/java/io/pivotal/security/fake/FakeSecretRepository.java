@@ -2,7 +2,6 @@ package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.repository.SecretRepository;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -114,35 +113,5 @@ public class FakeSecretRepository implements SecretRepository {
   @Override
   public <S extends NamedSecret> List<S> save(Iterable<S> entities) {
     return null;
-  }
-
-  @Override
-  public <S extends NamedSecret> List<S> findAll(Example<S> example) {
-    return null;
-  }
-
-  @Override
-  public <S extends NamedSecret> List<S> findAll(Example<S> example, Sort sort) {
-    return null;
-  }
-
-  @Override
-  public <S extends NamedSecret> S findOne(Example<S> example) {
-    return null;
-  }
-
-  @Override
-  public <S extends NamedSecret> Page<S> findAll(Example<S> example, Pageable pageable) {
-    return null;
-  }
-
-  @Override
-  public <S extends NamedSecret> long count(Example<S> example) {
-    return 0;
-  }
-
-  @Override
-  public <S extends NamedSecret> boolean exists(Example<S> example) {
-    return false;
   }
 }
