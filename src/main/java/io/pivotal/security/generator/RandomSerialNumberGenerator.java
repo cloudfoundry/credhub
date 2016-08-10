@@ -16,6 +16,6 @@ public class RandomSerialNumberGenerator {
   private static final int NUM_BITS_IN_CERT_SERIAL_NUM = 159;
 
   public BigInteger generate() throws NoSuchAlgorithmException {
-    return new BigInteger(NUM_BITS_IN_CERT_SERIAL_NUM, SecureRandom.getInstanceStrong());
+    return new BigInteger(NUM_BITS_IN_CERT_SERIAL_NUM, SecureRandom.getInstance("NativePRNGNonBlocking"));
   }
 }

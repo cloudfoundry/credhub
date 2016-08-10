@@ -36,3 +36,17 @@ To package and deploy that release, do the following:
 cd ~/workspace/sec-eng-deployment-credential-manager
 scripts/deploy_credhub.sh --dev
 ```
+
+To debug while running on a VM:
+
+* Make sure that TCP port 49151 allows inbound connections. This probably means changing an AWS security group. 
+* Deploy the code you want to debug
+* ssh into the VM
+* cd /var/vcap/jobs/credhub
+* sudo monit unmonitor credhub
+* If credhub is running, kill the process
+* sudo vi bin/ctl and add these flags: -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=49151
+* sudo bin/ctl start
+
+* In IntelliJ, create a run configuration of type "Remote" with the IP address of your VM and port number 49151
+* Click the "Debug" button.
