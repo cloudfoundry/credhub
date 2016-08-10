@@ -2,12 +2,18 @@ package io.pivotal.security.entity;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
+import java.util.Date;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @SuppressWarnings("unused")
 @Entity
@@ -19,13 +25,19 @@ public class AuthFailureAuditRecord {
   private long id;
 
   private String hostName;
-  private long now;
+
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date now;
+
   private String operation;
   private String path;
   private long tokenIssued;
   private long tokenExpires;
   private String failureReason;
+
+  @Column(length = 1024)
   private String failureDescription;
+
   private String uaaUrl;
   private String userId;
   private String userName;
@@ -35,9 +47,8 @@ public class AuthFailureAuditRecord {
   public AuthFailureAuditRecord() {
   }
 
-  public AuthFailureAuditRecord(long now,
+  public AuthFailureAuditRecord(Instant now,
                                 String operation,
-                                String failureReason,
                                 String failureDescription,
                                 String errorMessage,
                                 String userId,
@@ -49,10 +60,9 @@ public class AuthFailureAuditRecord {
                                 String path,
                                 String requesterIp,
                                 String xForwardedFor) {
-    this.now = now;
+    this.now = Date.from(now);
     this.operation = operation;
     this.failureDescription = failureDescription;
-    this.failureReason = failureReason;
     this.userId = userId;
     this.userName = userName;
     this.uaaUrl = uaaUrl;
@@ -72,16 +82,12 @@ public class AuthFailureAuditRecord {
     return hostName;
   }
 
-  public long getNow() {
-    return now;
+  public Instant getNow() {
+    return now.toInstant();
   }
 
   public String getOperation() {
     return operation;
-  }
-
-  public String getFailureReason() {
-    return failureReason;
   }
 
   public String getFailureDescription() {
@@ -120,18 +126,13 @@ public class AuthFailureAuditRecord {
     return xForwardedFor;
   }
 
-  public AuthFailureAuditRecord setNow(long now) {
-    this.now = now;
+  public AuthFailureAuditRecord setNow(Instant now) {
+    this.now = Date.from(now);
     return this;
   }
 
   public AuthFailureAuditRecord setRequesterIp(String requesterIp) {
     this.requesterIp = requesterIp;
-    return this;
-  }
-
-  public AuthFailureAuditRecord setFailureReason(String failureReason) {
-    this.failureReason = failureReason;
     return this;
   }
 

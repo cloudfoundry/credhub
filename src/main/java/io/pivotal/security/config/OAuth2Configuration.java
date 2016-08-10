@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
@@ -28,6 +27,9 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   @Autowired
   ResourceServerProperties resourceServerProperties;
 
+  @Autowired
+  AuditOAuth2AuthenticationEntryPoint auditOAuth2AuthenticationEntryPoint;
+
   @PostConstruct
   public void init() {
     Assert.notNull(resourceServerProperties.getJwt().getKeyValue(), "Configuration property security.oauth2.resource.jwt.key-value must be set.");
@@ -35,7 +37,6 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
 
   @Override
   public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-    AuthenticationEntryPoint auditOAuth2AuthenticationEntryPoint = new AuditOAuth2AuthenticationEntryPoint();
     resources.resourceId(resourceServerProperties.getResourceId());
     resources.authenticationEntryPoint(auditOAuth2AuthenticationEntryPoint);
   }
