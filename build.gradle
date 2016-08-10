@@ -64,6 +64,7 @@ dependencies {
     testCompile('org.skyscreamer:jsonassert')
     testCompile('com.jayway.jsonpath:json-path-assert:2.2.0')
     testCompile('com.greghaskins:spectrum:0.7.0')
+//    testCompile files('libs/spectrum-0.8.0-SNAPSHOT.jar')
     testCompile('org.apache.commons:commons-lang3:3.4')
     optional "org.springframework.boot:spring-boot-configuration-processor"
 }

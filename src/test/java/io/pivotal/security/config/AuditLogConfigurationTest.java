@@ -8,19 +8,16 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -37,7 +34,7 @@ import javax.servlet.Filter;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
 @WebAppConfiguration
-@ActiveProfiles({"dev", "AuditLogConfigurationTest"})
+@ActiveProfiles({"dev", "AuditLogConfigurationTest", "NoExpirationSymmetricKeySecurityConfiguration"})
 public class AuditLogConfigurationTest {
 
   @Autowired
@@ -71,14 +68,13 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder put = put("/api/v1/data/foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .content("{\"type\":\"value\",\"credential\":\"password\"}")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12346");
-                return request;
-              }});
+            .with(request -> {
+              request.setRemoteAddr("12346");
+              return request;
+            });
 
         mockMvc.perform(put)
             .andExpect(status().isOk());
@@ -100,20 +96,19 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder post = post("/api/v1/data/foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .content("{\"type\":\"value\"}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12345");
-                return request;
-              }});
+            .with(request -> {
+              request.setRemoteAddr("12345");
+              return request;
+            });
 
         mockMvc.perform(post)
             .andExpect(status().isOk());
       });
 
-      fit("logs an audit record for credential_update operation", () -> {
+      it("logs an audit record for credential_update operation", () -> {
         assertThat(auditRecordRepository.count(), equalTo(1L));
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
@@ -129,14 +124,13 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder delete = delete("/api/v1/data/foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .content("{\"type\":\"value\"}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12345");
-                return request;
-              }});
+            .with(request -> {
+              request.setRemoteAddr("12345");
+              return request;
+            });
 
         mockMvc.perform(delete)
             .andExpect(status().is4xxClientError());
@@ -158,13 +152,12 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder get = get("/api/v1/data/foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12345");
-                return request;
-              }});
+            .with(request -> {
+              request.setRemoteAddr("12345");
+              return request;
+            });
 
         mockMvc.perform(get)
             .andExpect(status().is4xxClientError());
@@ -186,14 +179,13 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder put = put("/api/v1/ca/bar")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .content("{\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12345");
-                return request;
-              }});
+            .with(request -> {
+              request.setRemoteAddr("12345");
+              return request;
+            });
 
         mockMvc.perform(put)
             .andExpect(status().isOk());
@@ -201,14 +193,13 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder generate = post("/api/v1/ca/baz")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .content("{\"type\":\"root\",\"parameters\":{\"common_name\":\"baz.com\"}}")
             .header("X-Forwarded-For", "3.3.3.3,4.4.4.4")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12345");
-                return request;
-              }});
+            .with(request -> {
+              request.setRemoteAddr("12345");
+              return request;
+            });
 
         mockMvc.perform(generate)
             .andExpect(status().isOk());
@@ -236,12 +227,11 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder get = get("/api/v1/ca/bar")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT).header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12345");
-                return request;
-              }});
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT).header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+            .with(request -> {
+              request.setRemoteAddr("12345");
+              return request;
+            });
 
         mockMvc.perform(get)
             .andExpect(status().is4xxClientError());
@@ -263,15 +253,14 @@ public class AuditLogConfigurationTest {
         MockHttpServletRequestBuilder put = put("/api/v1/data/foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + SecurityConfigurationTest.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .header("X-Forwarded-For", "3.3.3.3")
             .content("{\"type\":\"value\",\"credential\":\"password\"}")
-            .with(new RequestPostProcessor() {
-              public MockHttpServletRequest postProcessRequest(MockHttpServletRequest request) {
-                request.setRemoteAddr("12346");
-                return request;
-              }});
+            .with(request -> {
+              request.setRemoteAddr("12346");
+              return request;
+            });
 
         mockMvc.perform(put)
             .andExpect(status().isOk());

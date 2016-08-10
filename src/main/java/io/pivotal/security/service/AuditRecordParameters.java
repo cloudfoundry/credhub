@@ -1,28 +1,40 @@
 package io.pivotal.security.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+
 import java.util.Collections;
 import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
 public class AuditRecordParameters {
-  private String hostName;
-  private String path;
-  private String requesterIp;
-  private String xForwardedFor;
+  private final String hostName;
+  private final String path;
+  private final String requesterIp;
+  private final String xForwardedFor;
+  private final Authentication authentication;
 
-  public AuditRecordParameters(HttpServletRequest request) {
-    this.hostName = request.getServerName();
-    this.path = request.getRequestURI();
-    this.requesterIp = request.getRemoteAddr();
-    this.xForwardedFor = extractXForwardedFor(request.getHeaders("X-Forwarded-For"));
+  @Autowired
+  ResourceServerTokenServices tokenServices;
+
+  public AuditRecordParameters(HttpServletRequest request, Authentication authentication) {
+    this(
+        request.getServerName(),
+        request.getRequestURI(),
+        request.getRemoteAddr(),
+        extractXForwardedFor(request.getHeaders("X-Forwarded-For")),
+        authentication
+    );
   }
 
-  public AuditRecordParameters(String hostName, String path, String requesterIp, String xForwardedFor) {
+  AuditRecordParameters(String hostName, String path, String requesterIp, String xForwardedFor, Authentication authentication) {
     this.hostName = hostName;
     this.path = path;
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
+    this.authentication = authentication;
   }
 
   public String getHostName() {
@@ -41,19 +53,11 @@ public class AuditRecordParameters {
     return xForwardedFor;
   }
 
-  private String extractXForwardedFor(Enumeration<String> values) {
-    return String.join(",", Collections.list(values));
+  public Authentication getAuthentication() {
+    return authentication;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    AuditRecordParameters other = (AuditRecordParameters) o;
-    if (getHostName().equals(other.getHostName()) &&
-        getPath().equals(other.getPath()) &&
-        getRequesterIp().equals(other.getRequesterIp()) &&
-        getXForwardedFor().equals(getXForwardedFor())) {
-      return true;
-    }
-    return false;
+  private static String extractXForwardedFor(Enumeration<String> values) {
+    return String.join(",", Collections.list(values));
   }
 }

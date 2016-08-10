@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,16 +72,16 @@ public class CaController {
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
-  ResponseEntity set(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request) {
-    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request), () -> {
+  ResponseEntity set(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
       return storeAuthority(caPath, requestBody, certificateAuthoritySetterRequestTranslator);
     });
   }
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.POST)
-  ResponseEntity generate(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request) {
-    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request), () -> {
+  ResponseEntity generate(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
       return storeAuthority(caPath, requestBody, certificateAuthorityRequestTranslatorWithGeneration);
     });
   }
@@ -102,10 +103,10 @@ public class CaController {
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/{caPath}", method = RequestMethod.GET)
-  ResponseEntity get(@PathVariable String caPath, HttpServletRequest request) {
+  ResponseEntity get(@PathVariable String caPath, HttpServletRequest request, Authentication authentication) throws Exception {
     NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath);
 
-    return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request), () -> {
+    return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request, authentication), () -> {
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
       }

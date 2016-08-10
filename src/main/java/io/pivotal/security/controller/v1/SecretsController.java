@@ -28,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -96,18 +97,18 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
-  ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request) {
+  ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     RequestTranslatorWithGeneration stringRequestTranslator = new RequestTranslatorWithGeneration(stringSecretGenerator, stringGeneratorRequestTranslator);
     RequestTranslatorWithGeneration certificateRequestTranslator = new RequestTranslatorWithGeneration(certificateSecretGenerator, certificateGeneratorRequestTranslator);
 
-    return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request), () -> {
+    return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request, authentication), () -> {
       return storeSecret(requestBody, secretPath, stringRequestTranslator, certificateRequestTranslator, request);
     });
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
-  ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request) {
-    return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request), () -> {
+  ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request, authentication), () -> {
       return storeSecret(requestBody, secretPath, stringSetRequestTranslator, certificateSetRequestTranslator, request);
     });
   }
@@ -137,9 +138,9 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
-  ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request) {
+  ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-    return auditLogService.performWithAuditing("credential_delete", new AuditRecordParameters(request), () -> {
+    return auditLogService.performWithAuditing("credential_delete", new AuditRecordParameters(request, authentication), () -> {
       if (namedSecret != null) {
         secretRepository.delete(namedSecret);
         return new ResponseEntity(HttpStatus.OK);
@@ -150,10 +151,10 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-  public ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request) {
+  public ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
     NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
 
-    return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request), () -> {
+    return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request, authentication), () -> {
       if (namedSecret == null) {
         return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
       } else {

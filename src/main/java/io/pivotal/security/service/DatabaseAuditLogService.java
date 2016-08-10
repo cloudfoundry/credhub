@@ -2,13 +2,12 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.AuditRecordRepository;
-import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
@@ -17,7 +16,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.time.ZoneOffset;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -28,7 +26,7 @@ import javax.annotation.PostConstruct;
 public class DatabaseAuditLogService implements AuditLogService {
 
   @Autowired
-  CurrentTimeProvider currentTimeProvider;
+  InstantFactoryBean instantFactoryBean;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
@@ -50,7 +48,7 @@ public class DatabaseAuditLogService implements AuditLogService {
   }
 
   @Override
-  public ResponseEntity<?> performWithAuditing(String operation, AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) {
+  public ResponseEntity<?> performWithAuditing(String operation, AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws Exception {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
     OperationAuditRecord auditRecord = getOperationAuditRecord(operation, auditRecordParameters);
@@ -82,12 +80,12 @@ public class DatabaseAuditLogService implements AuditLogService {
     return responseEntity;
   }
 
-  private OperationAuditRecord getOperationAuditRecord(String operation, AuditRecordParameters auditRecordParameters) {
-    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) SecurityContextHolder.getContext().getAuthentication().getDetails();
+  private OperationAuditRecord getOperationAuditRecord(String operation, AuditRecordParameters auditRecordParameters) throws Exception {
+    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) auditRecordParameters.getAuthentication().getDetails();
     OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
     Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
     return new OperationAuditRecord(
-        currentTimeProvider.getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli(),
+        instantFactoryBean.getObject().toEpochMilli(),
         operation,
         (String) additionalInformation.get("user_id"),
         (String) additionalInformation.get("user_name"),

@@ -1,16 +1,14 @@
 package io.pivotal.security.service;
 
-import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.CaController;
-import io.pivotal.security.controller.v1.SecretsController;
+import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.fake.FakeAuditRecordRepository;
 import io.pivotal.security.fake.FakeSecretRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
-import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.InstantFactoryBean;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,17 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import java.time.Instant;
+import java.util.List;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -38,13 +35,9 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.List;
-
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles({"dev", "NoExpirationSymmetricKeySecurityConfiguration"})
 public class DatabaseAuditLogServiceTest {
 
   @Autowired
@@ -58,21 +51,17 @@ public class DatabaseAuditLogServiceTest {
   FakeTransactionManager transactionManager;
 
   @Mock
+  InstantFactoryBean instantFactoryBean;
+
+  @Autowired
+  TokenStore tokenStore;
+
+  @Autowired
   ResourceServerTokenServices tokenServices;
-
-  @Mock
-  CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
-  SecretsController secretsController;
-
-  @Autowired
-  CaController caController;
 
   AuditRecordParameters auditRecordParameters;
 
-  private SecurityContext oldContext;
-  private LocalDateTime now;
+  private Instant now;
 
   private ResponseEntity<?> responseEntity;
 
@@ -80,23 +69,23 @@ public class DatabaseAuditLogServiceTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      auditRecordParameters = new AuditRecordParameters("hostName", "requestURI", "127.0.0.1", "1.2.3.4,5.6.7.8");
+      OAuth2Authentication authentication = tokenStore.readAuthentication(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
+      OAuth2AuthenticationDetails mockDetails = mock(OAuth2AuthenticationDetails.class);
+      when(mockDetails.getTokenValue()).thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
+      authentication.setDetails(mockDetails);
+
+      auditRecordParameters = new AuditRecordParameters("hostName", "requestURI", "127.0.0.1", "1.2.3.4,5.6.7.8", authentication);
       transactionManager = new FakeTransactionManager();
       auditRepository = new FakeAuditRecordRepository(transactionManager);
       secretRepository = new FakeSecretRepository(transactionManager);
       subject.auditRecordRepository = auditRepository;
       subject.transactionManager = transactionManager;
 
-      now = LocalDateTime.now();
-      when(currentTimeProvider.getCurrentTime()).thenReturn(now);
-
-      setupSecurityContext();
+      now = Instant.now();
+      when(instantFactoryBean.getObject()).thenReturn(now);
     });
 
     afterEach(() -> {
-      SecurityContextHolder.setContext(oldContext);
-      currentTimeProvider.reset();
-
       auditRepository.deleteAll();
       secretRepository.deleteAll();
     });
@@ -248,40 +237,18 @@ public class DatabaseAuditLogServiceTest {
     });
   }
 
-  private void setupSecurityContext() {
-    oldContext = SecurityContextHolder.getContext();
-
-    Authentication authentication = mock(Authentication.class);
-    OAuth2AuthenticationDetails authenticationDetails = mock(OAuth2AuthenticationDetails.class);
-    when(authenticationDetails.getTokenValue()).thenReturn("abcde");
-    when(authentication.getDetails()).thenReturn(authenticationDetails);
-    OAuth2AccessToken accessToken = mock(OAuth2AccessToken.class);
-    ImmutableMap<String, Object> additionalInfo = ImmutableMap.of(
-        "iat", 1406568935L,
-        "user_name", "marissa",
-        "user_id", "12345-6789a",
-        "iss", "http://localhost/uaa");
-    when(accessToken.getAdditionalInformation()).thenReturn(additionalInfo);
-    when(accessToken.getExpiration()).thenReturn(new Date(3333333333000L));
-    when(tokenServices.readAccessToken("abcde")).thenReturn(accessToken);
-
-    SecurityContext securityContext = mock(SecurityContext.class);
-    when(securityContext.getAuthentication()).thenReturn(authentication);
-    SecurityContextHolder.setContext(securityContext);
-  }
-
   private void checkAuditRecord(boolean successFlag) {
     List<OperationAuditRecord> auditRecords = auditRepository.findAll();
     assertThat(auditRecords, hasSize(1));
 
     OperationAuditRecord actual = auditRecords.get(0);
-    assertThat(actual.getNow(), equalTo(now.toInstant(ZoneOffset.UTC).toEpochMilli()));
+    assertThat(actual.getNow(), equalTo(now.toEpochMilli()));
     assertThat(actual.getOperation(), equalTo("credential_access"));
-    assertThat(actual.getUserId(), equalTo("12345-6789a"));
-    assertThat(actual.getUserName(), equalTo("marissa"));
-    assertThat(actual.getUaaUrl(), equalTo("http://localhost/uaa"));
-    assertThat(actual.getTokenIssued(), equalTo(1406568935L));
-    assertThat(actual.getTokenExpires(), equalTo(3333333333L));
+    assertThat(actual.getUserId(), equalTo("1cc4972f-184c-4581-987b-85b7d97e909c"));
+    assertThat(actual.getUserName(), equalTo("credhub_cli"));
+    assertThat(actual.getUaaUrl(), equalTo("https://52.204.49.107:8443/oauth/token"));
+    assertThat(actual.getTokenIssued(), equalTo(1469051704L));
+    assertThat(actual.getTokenExpires(), equalTo(1469051824L));
     assertThat(actual.getHostName(), equalTo("hostName"));
     assertThat(actual.getPath(), equalTo("requestURI"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
