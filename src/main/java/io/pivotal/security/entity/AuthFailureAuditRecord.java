@@ -33,9 +33,8 @@ public class AuthFailureAuditRecord {
   private String path;
   private long tokenIssued;
   private long tokenExpires;
-  private String failureReason;
 
-  @Column(length = 1024)
+  @Column(length = 2000)
   private String failureDescription;
 
   private String uaaUrl;
