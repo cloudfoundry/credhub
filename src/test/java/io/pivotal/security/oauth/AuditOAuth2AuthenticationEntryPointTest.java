@@ -32,6 +32,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
+import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -77,6 +78,7 @@ public class AuditOAuth2AuthenticationEntryPointTest {
 
   {
     wireAndUnwire(this);
+    autoTransactional(this);
 
     beforeEach(() -> {
       now = Instant.now();
@@ -86,10 +88,6 @@ public class AuditOAuth2AuthenticationEntryPointTest {
           .webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
-    });
-
-    afterEach(() -> {
-      auditRecordRepository.deleteAll();
     });
 
     describe("when the token is invalid", () -> {
