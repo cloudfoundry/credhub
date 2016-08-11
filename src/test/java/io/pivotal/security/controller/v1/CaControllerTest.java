@@ -7,13 +7,11 @@ import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -23,28 +21,24 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ValidationException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.UUID;
+import java.util.function.Consumer;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -64,27 +58,22 @@ public class CaControllerTest {
   @Autowired
   private CaController caController;
 
-  @Autowired
-  @Qualifier("currentTimeProvider")
-  CurrentTimeProvider currentTimeProvider;
-
   @Mock
   CertificateAuthorityRequestTranslatorWithGeneration requestTranslatorWithGeneration;
 
   private MockMvc mockMvc;
-
-  private Instant frozenTime;
+  private Instant frozenTime = Instant.now();
+  private Consumer<Long> fakeTimeSetter;
 
   {
     wireAndUnwire(this);
     autoTransactional(this);
+    fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      freeze();
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+      fakeTimeSetter.accept(frozenTime.toEpochMilli());
     });
-
-    afterEach(() -> currentTimeProvider.reset());
 
     it("can generate a ca", () -> {
       String requestJson = "{\"type\":\"root\"}";
@@ -269,10 +258,5 @@ public class CaControllerTest {
 
   private String getUpdatedAtJson() {
     return "\"updated_at\":\"" + ZonedDateTime.ofInstant(frozenTime, ZoneId.of("Z")).format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
-  }
-
-  private void freeze() {
-    frozenTime = Instant.now();
-    currentTimeProvider.setOverrideTime(frozenTime);
   }
 }

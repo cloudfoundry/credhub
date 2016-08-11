@@ -10,7 +10,6 @@ import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.repository.InMemoryAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
@@ -19,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.MessageSource;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -45,10 +43,10 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Locale;
+import java.util.function.Consumer;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static java.time.format.DateTimeFormatter.ofPattern;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -85,10 +83,6 @@ public class SecretsControllerTest {
   private SecretsController secretsController;
 
   @Autowired
-  @Qualifier("currentTimeProvider")
-  CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
   ConfigurableEnvironment environment;
 
   @Mock
@@ -101,17 +95,17 @@ public class SecretsControllerTest {
   private ResourceServerTokenServices tokenServices;
 
   private MockMvc mockMvc;
-
-  private Instant frozenTime;
-
+  private Instant frozenTime = Instant.now();
   private SecurityContext oldContext;
+  private Consumer<Long> fakeTimeSetter;
 
   {
     wireAndUnwire(this);
     autoTransactional(this);
+    fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      freeze();
+      fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     });
 
@@ -138,10 +132,6 @@ public class SecretsControllerTest {
 
     afterEach(() -> {
       SecurityContextHolder.setContext(oldContext);
-    });
-
-    afterEach(() -> {
-      currentTimeProvider.reset();
     });
 
     describe("string secrets", () -> {
@@ -436,11 +426,6 @@ public class SecretsControllerTest {
 
   private String json(Object o) throws IOException {
     return serializingObjectMapper.writeValueAsString(o);
-  }
-
-  private void freeze() {
-    frozenTime = Instant.now();
-    currentTimeProvider.setOverrideTime(frozenTime);
   }
 
   class PutCertificateSimulator {

@@ -1,6 +1,8 @@
 package io.pivotal.security.helper;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.JpaAuditingHandler;
+import io.pivotal.security.util.CurrentTimeProvider;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
@@ -12,10 +14,15 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class SpectrumHelper {
   public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
@@ -45,6 +52,19 @@ public class SpectrumHelper {
     beforeEach(() -> transaction.set(transactionManager.getTransaction(new DefaultTransactionDefinition())));
 
     afterEach(() -> transactionManager.rollback(transaction.get()));
+  }
+
+  public static Consumer<Long> mockOutCurrentTimeProvider(Object testInstance) {
+    final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
+    final CurrentTimeProvider realCurrentTimeProvider = testContextManager.getApplicationContext().getBean(CurrentTimeProvider.class);
+    final JpaAuditingHandler auditingHandler = testContextManager.getApplicationContext().getBean(JpaAuditingHandler.class);
+    final CurrentTimeProvider mockCurrentTimeProvider = mock(CurrentTimeProvider.class);
+
+    beforeEach(() -> { auditingHandler.setDateTimeProvider(mockCurrentTimeProvider); });
+
+    afterEach(() -> { auditingHandler.setDateTimeProvider(realCurrentTimeProvider); });
+
+    return (epochMillis) -> { when(mockCurrentTimeProvider.getNow()).thenReturn(getNow(epochMillis)); };
   }
 
   private static Spectrum.Block injectMocksAndBeans(Object testInstance, MyTestContextManager testContextManager) {
@@ -85,4 +105,12 @@ public class SpectrumHelper {
       getApplicationContext().getAutowireCapableBeanFactory().autowireBean(existingBean);
     }
   }
+
+  public static Calendar getNow(long epochMillis) {
+    Calendar.Builder builder = new Calendar.Builder();
+    builder.setInstant(epochMillis);
+    builder.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return builder.build();
+  }
+
 }

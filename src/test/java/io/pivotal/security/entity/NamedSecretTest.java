@@ -1,63 +1,50 @@
 package io.pivotal.security.entity;
 
+import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.repository.SecretRepository;
-import io.pivotal.security.util.CurrentTimeProvider;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.util.function.Consumer;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@Transactional
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 public class NamedSecretTest {
   @Autowired
-  @Qualifier("currentTimeProvider")
-  CurrentTimeProvider currentTimeProvider;
-  @Autowired
   SecretRepository repository;
+
+  private Consumer<Long> fakeTimeSetter;
   private NamedCertificateSecret secret;
-  private Instant frozenTime;
 
-  @Before
-  public void setUp() throws Exception {
-    freeze();
-    secret = io.pivotal.security.entity.NamedCertificateSecret.make("foo", "ca", "pub", "priv");
-  }
+  {
+    wireAndUnwire(this);
+    autoTransactional(this);
+    fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
-  private void freeze() {
-    frozenTime = Instant.now();
-    currentTimeProvider.setOverrideTime(frozenTime);
-  }
+    beforeEach(() -> {
+      fakeTimeSetter.accept(345345L);
+      secret = io.pivotal.security.entity.NamedCertificateSecret.make("foo", "ca", "pub", "priv");
+    });
 
-  @After
-  public void tearDown() throws Exception {
-    currentTimeProvider.reset();
-  }
+    it("returns date created", () -> {
+      secret = repository.save(secret);
+      assertThat(repository.findOneByName("foo").getUpdatedAt().toEpochMilli(), equalTo(345345L));
+    });
 
-  @Test
-  public void returnsDateCreated() throws Exception {
-    secret = repository.save(secret);
-    assertThat(repository.findOneByName("foo").getUpdatedAt(), equalTo(frozenTime));
-  }
-
-  @Test
-  public void returnsDateUpdated() {
-    secret = repository.save(secret);
-    freeze();
-    secret.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
-    secret = repository.save(secret);
-    assertThat(repository.findOneByName("foo").getUpdatedAt(), equalTo(frozenTime));
+    it("returns date updated", () -> {
+      secret = repository.save(secret);
+      fakeTimeSetter.accept(444444L);
+      secret.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
+      secret = repository.save(secret);
+      assertThat(repository.findOneByName("foo").getUpdatedAt().toEpochMilli(), equalTo(444444L));
+    });
   }
 }
