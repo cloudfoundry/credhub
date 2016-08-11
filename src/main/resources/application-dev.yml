@@ -8,7 +8,7 @@ spring:
   datasource:
     username: pivotal
     password:
-    url: jdbc:postgresql://localhost:5432/credhub
+    # url: jdbc:postgresql://localhost:5432/credhub
 
 security:
   oauth2:
