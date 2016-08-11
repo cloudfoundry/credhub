@@ -21,7 +21,7 @@ abstract public class NamedSecret<T> {
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Convert(converter = InstantConverter.class)
+  @Convert(converter = InstantSecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
   @LastModifiedDate

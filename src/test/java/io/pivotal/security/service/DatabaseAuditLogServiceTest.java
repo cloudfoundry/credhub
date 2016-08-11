@@ -242,7 +242,7 @@ public class DatabaseAuditLogServiceTest {
     assertThat(auditRecords, hasSize(1));
 
     OperationAuditRecord actual = auditRecords.get(0);
-    assertThat(actual.getNow(), equalTo(now.toEpochMilli()));
+    assertThat(actual.getNow(), equalTo(now));
     assertThat(actual.getOperation(), equalTo("credential_access"));
     assertThat(actual.getUserId(), equalTo("1cc4972f-184c-4581-987b-85b7d97e909c"));
     assertThat(actual.getUserName(), equalTo("credhub_cli"));

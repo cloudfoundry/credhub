@@ -85,7 +85,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
     Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
     return new OperationAuditRecord(
-        instantFactoryBean.getObject().toEpochMilli(),
+        instantFactoryBean.getObject(),
         operation,
         (String) additionalInformation.get("user_id"),
         (String) additionalInformation.get("user_name"),

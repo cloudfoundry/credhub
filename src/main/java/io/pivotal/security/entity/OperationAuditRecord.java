@@ -3,6 +3,7 @@ package io.pivotal.security.entity;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.Instant;
 
 @SuppressWarnings("unused")
 @Entity
@@ -14,7 +15,9 @@ public class OperationAuditRecord {
   private long id;
 
   private String hostName;
-  private long now;
+  @Convert(converter = InstantMillisecondsConverter.class)
+  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
+  private Instant now;
   private String operation;
   private String path;
   private long tokenIssued;
@@ -29,7 +32,7 @@ public class OperationAuditRecord {
   public OperationAuditRecord() {
   }
 
-  public OperationAuditRecord(long now,
+  public OperationAuditRecord(Instant now,
                               String operation,
                               String userId,
                               String userName,
@@ -61,7 +64,7 @@ public class OperationAuditRecord {
     return hostName;
   }
 
-  public long getNow() {
+  public Instant getNow() {
     return now;
   }
 

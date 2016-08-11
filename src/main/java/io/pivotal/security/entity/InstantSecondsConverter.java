@@ -3,7 +3,7 @@ package io.pivotal.security.entity;
 import javax.persistence.AttributeConverter;
 import java.time.Instant;
 
-public class InstantConverter implements AttributeConverter<Instant, Long> {
+public class InstantSecondsConverter implements AttributeConverter<Instant, Long> {
 
   @Override
   public Long convertToDatabaseColumn(Instant attribute) {
