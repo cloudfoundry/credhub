@@ -58,7 +58,7 @@ public class CredentialManagerApp {
 
       @Override
       public void serialize(Instant value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeString(ZonedDateTime.ofInstant(value, ZoneId.of("Z")).format(TIMESTAMP_FORMAT));
+        gen.writeString(ZonedDateTime.ofInstant(value, ZoneId.of("UTC")).format(TIMESTAMP_FORMAT));
       }
     });
     return javaTimeModule;

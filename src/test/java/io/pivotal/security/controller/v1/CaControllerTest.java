@@ -62,7 +62,7 @@ public class CaControllerTest {
   CertificateAuthorityRequestTranslatorWithGeneration requestTranslatorWithGeneration;
 
   private MockMvc mockMvc;
-  private Instant frozenTime = Instant.now();
+  private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
   private Consumer<Long> fakeTimeSetter;
 
   {
@@ -257,6 +257,6 @@ public class CaControllerTest {
   }
 
   private String getUpdatedAtJson() {
-    return "\"updated_at\":\"" + ZonedDateTime.ofInstant(frozenTime, ZoneId.of("Z")).format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
+    return "\"updated_at\":\"2014-05-13T16:53:20Z\"";
   }
 }

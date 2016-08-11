@@ -39,15 +39,12 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Locale;
 import java.util.function.Consumer;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
-import static java.time.format.DateTimeFormatter.ofPattern;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -95,7 +92,7 @@ public class SecretsControllerTest {
   private ResourceServerTokenServices tokenServices;
 
   private MockMvc mockMvc;
-  private Instant frozenTime = Instant.now();
+  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
   private SecurityContext oldContext;
   private Consumer<Long> fakeTimeSetter;
 
@@ -136,9 +133,10 @@ public class SecretsControllerTest {
 
     describe("string secrets", () -> {
       it("can save a client-provided string secret", () -> {
-        String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents\"}";
+        String requestJson = "{\"type\":\"value\",\"credential\":\"secret contents\"}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents\"}";
 
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
+        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
 
         StringSecret expected = new StringSecret("secret contents");
         expected.setUpdatedAt(frozenTime);
@@ -236,9 +234,10 @@ public class SecretsControllerTest {
       });
 
       it("can store a client-provided certificate", () -> {
-        String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
+        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
 
         CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
         assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
@@ -247,8 +246,9 @@ public class SecretsControllerTest {
 
       it("storing a client-provided certificate returns JSON that contains nulls in fields the client did not provide", () -> {
         String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
+        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
       });
 
       it("can generate certificates", () -> {
@@ -366,7 +366,7 @@ public class SecretsControllerTest {
       doPutValue("test", "abc");
       doPutValue("test.foo", "def");
 
-      expectSuccess(get("/api/v1/data/test"), "{\"type\":\"value\",\"credential\":\"abc\"}");
+      expectSuccess(get("/api/v1/data/test"), "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"abc\"}");
     });
   }
 
@@ -374,7 +374,7 @@ public class SecretsControllerTest {
     mockMvc.perform(requestBuilder)
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-        .andExpect(content().json(returnedJson));
+        .andExpect(content().json(returnedJson, true));
   }
 
   private void expectErrorKey(RequestBuilder requestBuilder, HttpStatus httpStatus, String errorKey) throws Exception {
@@ -389,7 +389,7 @@ public class SecretsControllerTest {
   }
 
   private String getUpdatedAtJson() {
-    return "\"updated_at\":\"" + ZonedDateTime.ofInstant(frozenTime, ZoneId.of("Z")).format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
+    return "\"updated_at\":\"2014-05-13T19:56:41Z\"";
   }
 
   private void permuteTwoEmptiesTest(String emptyValue) throws Exception {
@@ -408,8 +408,9 @@ public class SecretsControllerTest {
 
   private void doPutValue(String secretName, String secretValue) throws Exception {
     String requestJson = "{\"type\":\"value\",\"credential\":\"" + secretValue + "\"}";
+    String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"" + secretValue + "\"}";
 
-    expectSuccess(putRequestBuilder("/api/v1/data/" + secretName, requestJson), requestJson);
+    expectSuccess(putRequestBuilder("/api/v1/data/" + secretName, requestJson), resultJson);
   }
 
   private RequestBuilder putRequestBuilder(String path, String requestBody) {
