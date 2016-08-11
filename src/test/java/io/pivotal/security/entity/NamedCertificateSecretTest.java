@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,7 +30,7 @@ public class NamedCertificateSecretTest {
 
   @Test
   public void convertToModel_setsUpdatedAtFromEntity() {
-    LocalDateTime now = LocalDateTime.now();
+    Instant now = Instant.now();
     NamedCertificateSecret subject = new NamedCertificateSecret("Foo").setUpdatedAt(now);
     CertificateSecret actual = subject.generateView();
     assertThat(actual.getUpdatedAt(), equalTo(now));

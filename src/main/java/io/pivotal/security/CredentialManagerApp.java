@@ -20,7 +20,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
@@ -52,11 +54,11 @@ public class CredentialManagerApp {
   @Bean
   public Module javaTimeModule() {
     JavaTimeModule javaTimeModule = new JavaTimeModule();
-    javaTimeModule.addSerializer(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
+    javaTimeModule.addSerializer(Instant.class, new JsonSerializer<Instant>() {
 
       @Override
-      public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
-        gen.writeString(value.format(TIMESTAMP_FORMAT));
+      public void serialize(Instant value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeString(ZonedDateTime.ofInstant(value, ZoneId.of("Z")).format(TIMESTAMP_FORMAT));
       }
     });
     return javaTimeModule;

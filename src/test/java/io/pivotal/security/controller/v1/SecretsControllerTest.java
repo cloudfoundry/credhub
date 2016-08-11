@@ -39,10 +39,14 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.Locale;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.time.format.DateTimeFormatter.ofPattern;
@@ -52,18 +56,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.Locale;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -107,8 +102,7 @@ public class SecretsControllerTest {
 
   private MockMvc mockMvc;
 
-  private final ZoneId utc = ZoneId.of("UTC");
-  private LocalDateTime frozenTime;
+  private Instant frozenTime;
 
   private SecurityContext oldContext;
 
@@ -405,7 +399,7 @@ public class SecretsControllerTest {
   }
 
   private String getUpdatedAtJson() {
-    return "\"updated_at\":\"" + frozenTime.format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
+    return "\"updated_at\":\"" + ZonedDateTime.ofInstant(frozenTime, ZoneId.of("Z")).format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
   }
 
   private void permuteTwoEmptiesTest(String emptyValue) throws Exception {
@@ -445,7 +439,7 @@ public class SecretsControllerTest {
   }
 
   private void freeze() {
-    frozenTime = LocalDateTime.now(utc);
+    frozenTime = Instant.now();
     currentTimeProvider.setOverrideTime(frozenTime);
   }
 

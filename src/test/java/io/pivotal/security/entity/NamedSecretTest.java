@@ -13,8 +13,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.Instant;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,9 +27,8 @@ public class NamedSecretTest {
   CurrentTimeProvider currentTimeProvider;
   @Autowired
   SecretRepository repository;
-  private final ZoneId utc = ZoneId.of("UTC");
   private NamedCertificateSecret secret;
-  private LocalDateTime frozenTime;
+  private Instant frozenTime;
 
   @Before
   public void setUp() throws Exception {
@@ -39,7 +37,7 @@ public class NamedSecretTest {
   }
 
   private void freeze() {
-    frozenTime = LocalDateTime.now(utc);
+    frozenTime = Instant.now();
     currentTimeProvider.setOverrideTime(frozenTime);
   }
 

@@ -70,7 +70,7 @@ public class AuditOAuth2AuthenticationEntryPointTest {
   @Mock
   InstantFactoryBean instantFactoryBean;
 
-  MockHttpServletRequestBuilder get;
+  private MockHttpServletRequestBuilder get;
 
   private MockMvc mockMvc;
 

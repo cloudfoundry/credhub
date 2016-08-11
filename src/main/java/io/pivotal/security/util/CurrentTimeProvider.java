@@ -3,26 +3,24 @@ package io.pivotal.security.util;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.TimeZone;
 
 @Component
 public class CurrentTimeProvider implements DateTimeProvider {
 
-  private LocalDateTime overrideTime;
+  private Instant overrideTime;
 
-  public LocalDateTime getCurrentTime() {
+  public Instant getCurrentTime() {
     if (overrideTime == null) {
-      return LocalDateTime.now(ZoneId.of("UTC"));
+      return Instant.now();
     } else {
       return overrideTime;
     }
   }
 
-  public void setOverrideTime(LocalDateTime override) {
+  public void setOverrideTime(Instant override) {
     overrideTime = override;
   }
 
@@ -33,7 +31,7 @@ public class CurrentTimeProvider implements DateTimeProvider {
   @Override
   public Calendar getNow() {
     Calendar.Builder builder = new Calendar.Builder();
-    builder.setInstant(getCurrentTime().toInstant(ZoneOffset.UTC).toEpochMilli());
+    builder.setInstant(getCurrentTime().toEpochMilli());
     builder.setTimeZone(TimeZone.getTimeZone("UTC"));
     return builder.build();
   }

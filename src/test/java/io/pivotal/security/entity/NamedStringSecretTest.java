@@ -10,7 +10,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,7 +36,7 @@ public class NamedStringSecretTest {
   @Test
   public void convertToModel_setsUpdatedAtFromEntity() {
     NamedStringSecret subject = new NamedStringSecret("Foo");
-    LocalDateTime now = LocalDateTime.now();
+    Instant now = Instant.now();
     subject.setUpdatedAt(now);
 
     StringSecret actual = subject.generateView();

@@ -41,8 +41,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @RunWith(Spectrum.class)
@@ -72,8 +73,7 @@ public class CaControllerTest {
 
   private MockMvc mockMvc;
 
-  private final ZoneId utc = ZoneId.of("UTC");
-  private LocalDateTime frozenTime;
+  private Instant frozenTime;
 
   {
     wireAndUnwire(this);
@@ -268,11 +268,11 @@ public class CaControllerTest {
   }
 
   private String getUpdatedAtJson() {
-    return "\"updated_at\":\"" + frozenTime.format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
+    return "\"updated_at\":\"" + ZonedDateTime.ofInstant(frozenTime, ZoneId.of("Z")).format(ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'")) + "\"";
   }
 
   private void freeze() {
-    frozenTime = LocalDateTime.now(utc);
+    frozenTime = Instant.now();
     currentTimeProvider.setOverrideTime(frozenTime);
   }
 }

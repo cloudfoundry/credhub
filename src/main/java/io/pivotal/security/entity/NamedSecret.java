@@ -6,7 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "NamedSecret")
@@ -21,10 +21,11 @@ abstract public class NamedSecret<T> {
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Column(nullable = false)
+  @Convert(converter = InstantConverter.class)
+  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
   @LastModifiedDate
-  private LocalDateTime updatedAt;
+  private Instant updatedAt;
 
   public NamedSecret() {
   }
@@ -53,11 +54,11 @@ abstract public class NamedSecret<T> {
 
   public abstract BaseView generateView();
 
-  public LocalDateTime getUpdatedAt() {
+  public Instant getUpdatedAt() {
     return updatedAt;
   }
 
-  public T setUpdatedAt(LocalDateTime updatedAt) {
+  public T setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
     return (T) this;
   }

@@ -6,7 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "NamedCertificateAuthority")
@@ -19,10 +19,11 @@ public class NamedCertificateAuthority {
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Column(nullable = false)
+  @Convert(converter = InstantConverter.class)
+  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
   @LastModifiedDate
-  private LocalDateTime updatedAt;
+  private Instant updatedAt;
 
   @Column(nullable = true, length = 7000)
   private String type;
@@ -68,11 +69,11 @@ public class NamedCertificateAuthority {
     return this;
   }
 
-  public LocalDateTime getUpdatedAt() {
+  public Instant getUpdatedAt() {
     return updatedAt;
   }
 
-  public NamedCertificateAuthority setUpdatedAt(LocalDateTime updatedAt) {
+  public NamedCertificateAuthority setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
     return this;
   }
