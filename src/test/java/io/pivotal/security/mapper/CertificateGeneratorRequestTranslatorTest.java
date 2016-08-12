@@ -10,6 +10,7 @@ import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
 import javax.validation.ValidationException;
 
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles("unit-test")
 public class CertificateGeneratorRequestTranslatorTest {
 
   @Autowired

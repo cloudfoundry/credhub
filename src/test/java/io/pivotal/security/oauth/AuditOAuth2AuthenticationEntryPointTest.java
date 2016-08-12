@@ -48,7 +48,7 @@ import javax.servlet.Filter;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration
 @WebAppConfiguration
-@ActiveProfiles({"dev", "AuditOAuth2AuthenticationEntryPointTest"})
+@ActiveProfiles({"unit-test", "AuditOAuth2AuthenticationEntryPointTest"})
 public class AuditOAuth2AuthenticationEntryPointTest {
 
   @Autowired

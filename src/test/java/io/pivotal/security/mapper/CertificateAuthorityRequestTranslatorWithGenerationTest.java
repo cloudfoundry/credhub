@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
 import javax.validation.ValidationException;
 
@@ -29,7 +30,9 @@ import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles("unit-test")
 public class CertificateAuthorityRequestTranslatorWithGenerationTest {
+
   @Autowired
   private Configuration jsonConfiguration;
 

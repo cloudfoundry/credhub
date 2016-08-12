@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@ActiveProfiles({"dev", "NoExpirationSymmetricKeySecurityConfiguration"})
+@ActiveProfiles({"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"})
 public class DatabaseAuditLogServiceTest {
 
   @Autowired

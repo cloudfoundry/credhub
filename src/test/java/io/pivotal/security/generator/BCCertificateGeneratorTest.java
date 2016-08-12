@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.auditing.DateTimeProvider;
+import org.springframework.test.context.ActiveProfiles;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -51,6 +52,7 @@ import javax.validation.ValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles("unit-test")
 public class BCCertificateGeneratorTest {
 
   private static final int KEY_LENGTH_FOR_TESTING = 1024;

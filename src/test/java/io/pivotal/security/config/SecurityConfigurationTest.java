@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
-@ActiveProfiles({"dev", "NoExpirationSymmetricKeySecurityConfiguration"})
+@ActiveProfiles({"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"})
 public class SecurityConfigurationTest {
 
   @Autowired

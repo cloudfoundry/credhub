@@ -34,7 +34,7 @@ import javax.servlet.Filter;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
 @WebAppConfiguration
-@ActiveProfiles({"dev", "AuditLogConfigurationTest", "NoExpirationSymmetricKeySecurityConfiguration"})
+@ActiveProfiles({"unit-test", "AuditLogConfigurationTest", "NoExpirationSymmetricKeySecurityConfiguration"})
 public class AuditLogConfigurationTest {
 
   @Autowired

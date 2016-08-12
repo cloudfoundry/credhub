@@ -6,6 +6,7 @@ import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.function.Consumer;
 
@@ -17,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles("unit-test")
 public class NamedSecretTest {
   @Autowired
   SecretRepository repository;
