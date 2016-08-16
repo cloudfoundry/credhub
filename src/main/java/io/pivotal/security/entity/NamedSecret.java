@@ -21,6 +21,9 @@ abstract public class NamedSecret<T> {
   @Column(unique = true, nullable = false)
   private String name;
 
+  @Column(length = 16)
+  private byte[] nonce;
+
   @Convert(converter = InstantSecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
@@ -50,6 +53,14 @@ abstract public class NamedSecret<T> {
   public T setName(String name) {
     this.name = name;
     return (T) this;
+  }
+
+  protected byte[] getNonce() {
+    return nonce;
+  }
+
+  protected void setNonce(byte[] nonce) {
+    this.nonce = nonce;
   }
 
   public abstract BaseView generateView();

@@ -2,18 +2,19 @@ package io.pivotal.security.entity;
 
 import io.pivotal.security.view.StringSecret;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "StringSecret")
 @DiscriminatorValue("string_value")
+@EntityListeners(NamedSecretEncryptionListener.class)
 public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
 
-  @Column(nullable = false, length = 7000)
+  @Transient
   private String value;
+
+  @Column(nullable = false, length = 7016, name = "encrypted_value")
+  private byte[] encryptedValue;
 
   public NamedStringSecret() {
   }
@@ -29,6 +30,14 @@ public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
   public NamedStringSecret setValue(String value) {
     this.value = value;
     return this;
+  }
+
+  protected byte[] getEncryptedValue() {
+    return encryptedValue;
+  }
+
+  protected void setEncryptedValue(byte[] encryptedValue) {
+    this.encryptedValue = encryptedValue;
   }
 
   @Override

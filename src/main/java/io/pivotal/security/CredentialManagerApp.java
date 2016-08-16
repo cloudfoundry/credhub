@@ -46,8 +46,7 @@ public class CredentialManagerApp {
 
   @Bean(name = "currentTimeProvider")
   public CurrentTimeProvider currentTimeProvider() {
-    CurrentTimeProvider currentTimeProvider = new CurrentTimeProvider();
-    return currentTimeProvider;
+    return new CurrentTimeProvider();
   }
 
   @Bean
