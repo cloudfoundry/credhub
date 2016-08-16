@@ -23,28 +23,24 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
   private KeyStore keyStore;
   private Key key;
 
-  public LunaEncryptionConfiguration() {
-    try {
-      provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
-      Security.addProvider(provider);
+  public LunaEncryptionConfiguration() throws Exception {
+    provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
+    Security.addProvider(provider);
 
-      Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").newInstance();
-      lunaSlotManager.getClass().getMethod("login", String.class).invoke(lunaSlotManager, partitionPassword);
+    Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").newInstance();
+    lunaSlotManager.getClass().getMethod("login", String.class).invoke(lunaSlotManager, partitionPassword);
 
-      keyStore = KeyStore.getInstance("Luna", provider);
-      keyStore.load(null, null);
-      secureRandom = SecureRandom.getInstance("LunaRNG");
-      aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
-      aesKeyGenerator.init(128);
+    keyStore = KeyStore.getInstance("Luna", provider);
+    keyStore.load(null, null);
+    secureRandom = SecureRandom.getInstance("LunaRNG");
+    aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
+    aesKeyGenerator.init(128);
 
-      if (!keyStore.containsAlias(ENCRYPTION_KEY_ALIAS)) {
-        SecretKey aesKey = aesKeyGenerator.generateKey();
-        keyStore.setKeyEntry(ENCRYPTION_KEY_ALIAS, aesKey, null, null);
-      }
-      key = keyStore.getKey(ENCRYPTION_KEY_ALIAS, null);
-    } catch (Exception e) {
-      e.printStackTrace();
+    if (!keyStore.containsAlias(ENCRYPTION_KEY_ALIAS)) {
+      SecretKey aesKey = aesKeyGenerator.generateKey();
+      keyStore.setKeyEntry(ENCRYPTION_KEY_ALIAS, aesKey, null, null);
     }
+    key = keyStore.getKey(ENCRYPTION_KEY_ALIAS, null);
   }
 
   @Override
