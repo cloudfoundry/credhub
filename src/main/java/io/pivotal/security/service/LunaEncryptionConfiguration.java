@@ -27,7 +27,7 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
 
-    Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").newInstance();
+    Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").getDeclaredMethod("getInstance").invoke(null);
     lunaSlotManager.getClass().getMethod("login", String.class).invoke(lunaSlotManager, partitionPassword);
 
     keyStore = KeyStore.getInstance("Luna", provider);
