@@ -1,6 +1,9 @@
 auth-server:
   url: https://50.17.59.67:8443
 
+hsm:
+  disabled: true
+
 spring:
   jpa:
     hibernate:

@@ -1,15 +1,21 @@
 package io.pivotal.security.service;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.*;
 
-//@Component
+@Component
+@ConditionalOnProperty(value = "hsm.disabled", havingValue = "false", matchIfMissing = true)
 public class LunaEncryptionConfiguration implements EncryptionConfiguration {
 
   private static final String ENCRYPTION_KEY_ALIAS = "io.pivotal.security.credhub";
+
+  @Value("hsm.partition-password")
+  String partitionPassword;
 
   private Provider provider;
   private SecureRandom secureRandom;
@@ -23,7 +29,7 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
       Security.addProvider(provider);
 
       Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").newInstance();
-      lunaSlotManager.getClass().getMethod("login", String.class).invoke(lunaSlotManager, "wcbFlgbB4SSN");
+      lunaSlotManager.getClass().getMethod("login", String.class).invoke(lunaSlotManager, partitionPassword);
 
       keyStore = KeyStore.getInstance("Luna", provider);
       keyStore.load(null, null);

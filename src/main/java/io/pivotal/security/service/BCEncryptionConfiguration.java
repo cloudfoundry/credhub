@@ -1,8 +1,8 @@
 package io.pivotal.security.service;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -10,8 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.*;
 
 @Component
-//@Primary
-//@Profile({"dev", "unit-test"})
+@ConditionalOnProperty("hsm.disabled")
 public class BCEncryptionConfiguration implements EncryptionConfiguration {
   private Provider provider;
   private SecureRandom secureRandom;
