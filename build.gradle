@@ -110,7 +110,6 @@ test {
         destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
         classDumpFile = file("$buildDir/jacoco/classpathdumps")
     }
-    systemProperties["spring.profiles.active"] = "dev"
 }
 
 tasks.withType(Test) {

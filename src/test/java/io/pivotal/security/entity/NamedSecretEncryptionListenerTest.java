@@ -17,7 +17,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
-@ActiveProfiles({"dev", "FakeEncryptionService"})
+@ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class NamedSecretEncryptionListenerTest {
 
   NamedSecretEncryptionListener subject;
