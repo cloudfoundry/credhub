@@ -51,7 +51,7 @@ public class HealthControllerTest {
       doAnswer((invocation) -> {
         invocation.getArgumentAt(0, Health.Builder.class).down(new RuntimeException("some error"));
         return null; })
-          .when(dataSourceHealthIndicator).doHealthCheck(any(Health.Builder.class));
+          .when(dataSourceHealthIndicator).checkHealth(any(Health.Builder.class));
 
       mockMvc.perform(get("/health"))
           .andExpect(status().isOk())
@@ -62,7 +62,7 @@ public class HealthControllerTest {
       doAnswer((invocation) -> {
         invocation.getArgumentAt(0, Health.Builder.class).up();
         return null; })
-          .when(dataSourceHealthIndicator).doHealthCheck(any(Health.Builder.class));
+          .when(dataSourceHealthIndicator).checkHealth(any(Health.Builder.class));
 
       mockMvc.perform(get("/health"))
           .andExpect(status().isOk())

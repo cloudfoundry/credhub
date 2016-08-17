@@ -30,7 +30,7 @@ public class HealthController {
   private Health health() {
     Health.Builder builder = new Health.Builder();
     try {
-      dataSourceHealthIndicator.doHealthCheck(builder);
+      dataSourceHealthIndicator.checkHealth(builder);
     }
     catch (Exception ex) {
       builder.down(ex);

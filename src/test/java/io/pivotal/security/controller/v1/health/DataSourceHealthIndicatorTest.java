@@ -1,0 +1,89 @@
+package io.pivotal.security.controller.v1.health;
+
+import io.pivotal.security.CredentialManagerApp;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.autoconfigure.jdbc.EmbeddedDatabaseConnection;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles("unit-test")
+public class DataSourceHealthIndicatorTest {
+
+  private DataSourceHealthIndicator subject;
+
+  private Map<String, DataSource> dataSources = new HashMap<>();
+
+  @Before
+  public void setUp() {
+    this.subject = new DataSourceHealthIndicator();
+    addSingleConnectionSourceToDataSources();
+    subject.setDataSources(dataSources);
+  }
+
+  @After
+  public void tearDown() {
+    SingleConnectionDataSource dataSource = (SingleConnectionDataSource) dataSources.get("dataSource");
+    if (dataSource != null) {
+      dataSource.destroy();
+    }
+  }
+
+  @Test
+  public void healthyDatabaseHasHealthyStatus() throws Exception {
+    Health.Builder builder = new Health.Builder();
+    subject.checkHealth(builder);
+    Health build = builder.build();
+    assertEquals(build.getStatus(), Status.UP);
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void nullDatabaseThrows() throws Exception {
+    dataSources.put("dataSource", null);
+    Health.Builder builder = new Health.Builder();
+    subject.checkHealth(builder);
+    fail("expected exception");
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void unhealthyDatabaseThrows() throws Exception {
+    DataSource dataSource = mock(DataSource.class);
+    Connection connection = mock(Connection.class);
+    given(connection.getMetaData())
+        .willReturn(dataSource.getConnection().getMetaData());
+    given(dataSource.getConnection()).willThrow(RuntimeException.class);
+    dataSources.put("dataSource", null);
+    Health.Builder builder = new Health.Builder();
+    subject.checkHealth(builder);
+    fail("expected exception");
+  }
+
+  private void addSingleConnectionSourceToDataSources() {
+    EmbeddedDatabaseConnection db = EmbeddedDatabaseConnection.H2;
+    SingleConnectionDataSource dataSource = new SingleConnectionDataSource(db.getUrl(),
+        "sa", "", false);
+    dataSource.setDriverClassName(db.getDriverClassName());
+    dataSources.put("dataSource", dataSource);
+  }
+
+  public void setDataSources(Map<String, DataSource> dataSources) {
+    this.dataSources = dataSources;
+  }
+}
