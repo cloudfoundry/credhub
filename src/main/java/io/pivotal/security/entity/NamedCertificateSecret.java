@@ -12,13 +12,13 @@ import javax.persistence.Table;
 @DiscriminatorValue("cert")
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
 
-  @Column(nullable = true, length = 7000)
+  @Column(length = ENCRYPTED_BYTES)
   private String root;
 
-  @Column(nullable = true, length = 7000)
+  @Column(length = ENCRYPTED_BYTES)
   private String certificate;
 
-  @Column(nullable = true, length = 7000)
+  @Column(length = ENCRYPTED_BYTES)
   private String privateKey;
 
   public static NamedCertificateSecret make(String name, String root, String certificate, String privateKey) {

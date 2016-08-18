@@ -2,7 +2,7 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.repository.InMemoryAuthorityRepository;
+import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
@@ -40,7 +40,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   SignedCertificateGenerator signedCertificateGenerator;
 
   @Autowired
-  InMemoryAuthorityRepository authorityRepository;
+  CertificateAuthorityRepository authorityRepository;
 
   @Override
   public CertificateSecret generateSecret(CertificateSecretParameters params) {

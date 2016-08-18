@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.*;
@@ -14,7 +15,7 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
 
   private static final String ENCRYPTION_KEY_ALIAS = "io.pivotal.security.credhub";
 
-  @Value("hsm.partition-password")
+  @Value("${hsm.partition-password}")
   String partitionPassword;
 
   private Provider provider;
@@ -26,7 +27,10 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
   public LunaEncryptionConfiguration() throws Exception {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
+  }
 
+  @PostConstruct
+  public void getEncryptionKey() throws Exception {
     Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").getDeclaredMethod("getInstance").invoke(null);
     lunaSlotManager.getClass().getMethod("login", String.class).invoke(lunaSlotManager, partitionPassword);
 

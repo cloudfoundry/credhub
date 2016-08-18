@@ -26,7 +26,7 @@ public class SecretRepositoryTest {
 
   @Test
   @Transactional
-  public void canStoreStringsOfLength7000() throws Exception {
+  public void canStoreStringsOfLength7000WhichMeans7016ForGCM() throws Exception {
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
     NamedStringSecret entity = new NamedStringSecret("my-secret");
@@ -38,7 +38,7 @@ public class SecretRepositoryTest {
 
   @Test
   @Transactional
-  public void canStoreCertificatesOfLength7000() throws Exception {
+  public void canStoreCertificatesOfLength7000WhichMeans7016ForGCM() throws Exception {
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
     NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");

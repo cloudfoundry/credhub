@@ -7,7 +7,7 @@ hsm:
 spring:
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
   datasource:
     username: pivotal
     password:

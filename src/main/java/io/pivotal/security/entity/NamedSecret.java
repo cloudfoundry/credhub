@@ -14,6 +14,8 @@ import java.time.Instant;
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 abstract public class NamedSecret<T> {
+  public static final int NONCE_BYTES = 16;
+  public static final int ENCRYPTED_BYTES = 7000;
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
@@ -21,7 +23,11 @@ abstract public class NamedSecret<T> {
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Column(length = 16)
+  // todo make nullable false when certificate encryption is implemented
+  @Column(nullable = true, length = ENCRYPTED_BYTES+NONCE_BYTES, name = "encrypted_value")
+  private byte[] encryptedValue;
+
+  @Column(length = NONCE_BYTES)
   private byte[] nonce;
 
   @Convert(converter = InstantSecondsConverter.class)
@@ -53,6 +59,14 @@ abstract public class NamedSecret<T> {
   public T setName(String name) {
     this.name = name;
     return (T) this;
+  }
+
+  protected byte[] getEncryptedValue() {
+    return encryptedValue;
+  }
+
+  protected void setEncryptedValue(byte[] encryptedValue) {
+    this.encryptedValue = encryptedValue;
   }
 
   protected byte[] getNonce() {

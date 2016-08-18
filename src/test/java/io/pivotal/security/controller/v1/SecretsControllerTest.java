@@ -8,7 +8,7 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.repository.InMemoryAuthorityRepository;
+import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.StringSecret;
@@ -75,7 +75,7 @@ public class SecretsControllerTest {
   private SecretRepository secretRepository;
 
   @Autowired
-  private InMemoryAuthorityRepository caAuthorityRepository;
+  private CertificateAuthorityRepository caAuthorityRepository;
 
   @InjectMocks
   @Autowired

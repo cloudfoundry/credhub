@@ -5,7 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
-import io.pivotal.security.repository.InMemoryAuthorityRepository;
+import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -23,15 +23,12 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ValidationException;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.*;
-import static java.time.format.DateTimeFormatter.ofPattern;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
@@ -54,7 +51,7 @@ public class CaControllerTest {
   private SecretRepository secretRepository;
 
   @Autowired
-  private InMemoryAuthorityRepository caRepository;
+  private CertificateAuthorityRepository caRepository;
 
   @InjectMocks
   @Autowired

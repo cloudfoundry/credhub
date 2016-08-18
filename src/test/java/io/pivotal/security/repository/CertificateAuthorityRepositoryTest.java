@@ -18,14 +18,14 @@ import static org.junit.Assert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
-public class InMemoryAuthorityRepositoryTest {
+public class CertificateAuthorityRepositoryTest {
 
   @Autowired
-  InMemoryAuthorityRepository subject;
+  CertificateAuthorityRepository subject;
 
   @Test
   @Transactional
-  public void canStoreCertificateAuthoritiesOfLength7000() throws Exception {
+  public void canStoreCertificateAuthoritiesOfLength7000WhichMeans7016ForGCMEncryption() throws Exception {
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
     NamedCertificateAuthority entity = new NamedCertificateAuthority("my-ca");
@@ -33,7 +33,7 @@ public class InMemoryAuthorityRepositoryTest {
     entity.setPrivateKey(stringBuilder.toString());
 
     subject.save(entity);
-    NamedCertificateAuthority certificateSecret = (NamedCertificateAuthority) subject.findOneByName("my-ca");
+    NamedCertificateAuthority certificateSecret = subject.findOneByName("my-ca");
     assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
     assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
   }

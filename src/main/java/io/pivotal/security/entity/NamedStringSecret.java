@@ -1,20 +1,22 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.service.EncryptionServiceImpl;
 import io.pivotal.security.view.StringSecret;
 
-import javax.persistence.*;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+import java.util.Objects;
 
 @Entity
 @Table(name = "StringSecret")
 @DiscriminatorValue("string_value")
-@EntityListeners(NamedSecretEncryptionListener.class)
 public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
 
   @Transient
   private String value;
-
-  @Column(nullable = false, length = 7016, name = "encrypted_value")
-  private byte[] encryptedValue;
 
   public NamedStringSecret() {
   }
@@ -24,24 +26,34 @@ public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
   }
 
   public String getValue() {
-    return value;
+    try {
+      EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
+      return encryptionService.decrypt(getNonce(), getEncryptedValue());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public NamedStringSecret setValue(String value) {
-    this.value = value;
+    if (value == null) {
+      throw new RuntimeException("value cannot be null");
+    }
+    if (!Objects.equals(this.value, value)) {
+      try {
+        EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
+        EncryptionServiceImpl.Encryption encryption = encryptionService.encrypt(value);
+        setNonce(encryption.nonce);
+        setEncryptedValue(encryption.encryptedValue);
+        this.value = value;
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
     return this;
-  }
-
-  protected byte[] getEncryptedValue() {
-    return encryptedValue;
-  }
-
-  protected void setEncryptedValue(byte[] encryptedValue) {
-    this.encryptedValue = encryptedValue;
   }
 
   @Override
   public StringSecret generateView() {
-    return new StringSecret(value).setUpdatedAt(getUpdatedAt());
+    return new StringSecret(getValue()).setUpdatedAt(getUpdatedAt());
   }
 }

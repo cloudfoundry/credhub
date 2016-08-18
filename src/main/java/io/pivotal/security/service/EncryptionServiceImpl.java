@@ -8,8 +8,10 @@ import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.Charset;
 import java.security.*;
 
+import static io.pivotal.security.entity.NamedSecret.NONCE_BYTES;
+
 @Service
-public class EncryptionServiceImpl extends AbstractEncryptionService {
+public class EncryptionServiceImpl implements EncryptionService {
 
   public static final Charset CHARSET = Charset.defaultCharset();
 
@@ -22,7 +24,7 @@ public class EncryptionServiceImpl extends AbstractEncryptionService {
 
   @Override
   public Encryption encrypt(String value) throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException {
-    byte[] nonce = new byte[16];
+    byte[] nonce = new byte[NONCE_BYTES];
     encryptionConfiguration.getSecureRandom().nextBytes(nonce);
 
     IvParameterSpec ivSpec = new IvParameterSpec(nonce);

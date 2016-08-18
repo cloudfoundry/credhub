@@ -9,7 +9,7 @@ import io.pivotal.security.mapper.AuthoritySetterRequestTranslator;
 import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
 import io.pivotal.security.mapper.CertificateAuthoritySetterRequestTranslator;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
-import io.pivotal.security.repository.InMemoryAuthorityRepository;
+import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.CertificateAuthority;
@@ -43,7 +43,7 @@ public class CaController {
   Configuration jsonPathConfiguration;
 
   @Autowired
-  InMemoryAuthorityRepository caRepository;
+  CertificateAuthorityRepository caRepository;
 
   private MessageSourceAccessor messageSourceAccessor;
 
