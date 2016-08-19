@@ -12,9 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.validation.ValidationException;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -22,6 +22,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+
+import javax.validation.ValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -153,7 +155,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"organization\": \"organization.io\"," +
           "\"state\": \"My State\"," +
           "\"country\": \"My Country\"," +
-          "\"alternative_name\": [\"foo\", \"boo pivotal.io\"]" +
+          "\"alternative_names\": [\"foo\", \"boo pivotal.io\"]" +
           "}" +
           "}";
 
@@ -202,7 +204,7 @@ public class CertificateGeneratorRequestTranslatorTest {
             "\"organization\": \"Organization\"," +
             "\"state\": \"My State\"," +
             "\"country\": \"My Country\"," +
-            "\"alternative_name\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]," +
+            "\"alternative_names\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]," +
             "\"ca\":\"my-ca\"," +
             "\"foo\": \"bar\"," +
             "}" +

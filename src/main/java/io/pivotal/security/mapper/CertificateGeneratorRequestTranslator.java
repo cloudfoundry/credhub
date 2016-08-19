@@ -6,9 +6,10 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ValidationException;
 import java.util.Optional;
 import java.util.function.Supplier;
+
+import javax.validation.ValidationException;
 
 @Component
 public class CertificateGeneratorRequestTranslator implements SecretGeneratorRequestTranslator<CertificateSecretParameters> {
@@ -17,7 +18,7 @@ public class CertificateGeneratorRequestTranslator implements SecretGeneratorReq
   public CertificateSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
 
-    Optional.ofNullable(parsed.read("$.parameters.alternative_name", String[].class))
+    Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
         .ifPresent(secretParameters::addAlternativeNames);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
         .ifPresent(secretParameters::setCa);
