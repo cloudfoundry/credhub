@@ -21,22 +21,27 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.validation.ValidationException;
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import javax.validation.ValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -76,7 +81,7 @@ public class CaControllerTest {
 
     it("can generate a ca", () -> {
       String requestJson = "{\"type\":\"root\"}";
-      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
       CertificateAuthority certificateAuthority = new CertificateAuthority("root", "my_cert", "private_key");
       when(requestTranslatorWithGeneration.createAuthorityFromJson(any(DocumentContext.class))).thenReturn(certificateAuthority);
@@ -91,7 +96,7 @@ public class CaControllerTest {
     });
 
     it("can set a root ca", () -> {
-      String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+      String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
       RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
 
@@ -108,7 +113,7 @@ public class CaControllerTest {
 
     it("returns bad request for PUT with invalid type", () -> {
       String uuid = UUID.randomUUID().toString();
-      String requestJson = "{\"type\":" + uuid + ",\"ca\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
+      String requestJson = "{\"type\":" + uuid + ",\"value\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
       RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
@@ -134,7 +139,7 @@ public class CaControllerTest {
     });
 
     it("can get a certificate authority", () -> {
-      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"my_private_key\"}}";
+      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private\":\"my_private_key\"}}";
       NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
       namedCertificateAuthority.setType("root");
       namedCertificateAuthority.setCertificate("my_certificate");
@@ -149,8 +154,8 @@ public class CaControllerTest {
     });
 
     it("can put a certificate authority twice", () -> {
-      String requestJson = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate\",\"private\":\"priv\"}}";
-      String requestJson2 = "{\"type\":\"root\",\"ca\":{\"certificate\":\"my_certificate_2\",\"private\":\"priv_2\"}}";
+      String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private\":\"priv\"}}";
+      String requestJson2 = "{\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate_2\",\"private\":\"priv_2\"}}";
 
       RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
       mockMvc.perform(requestBuilder)

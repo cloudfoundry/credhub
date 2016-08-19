@@ -13,11 +13,11 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.validation.ValidationException;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import javax.validation.ValidationException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -50,7 +50,7 @@ public class CertificateSetRequestTranslatorTest {
   }
 
   private void doTest(CertificateSecret expected, String root, String certificate, String privateKey) {
-    String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":\"" + root + "\",\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
+    String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"" + root + "\",\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     CertificateSecret actual = new CertificateSetRequestTranslator().createSecretFromJson(parsed);

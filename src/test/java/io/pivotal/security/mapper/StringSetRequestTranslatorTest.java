@@ -13,11 +13,11 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.validation.ValidationException;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import javax.validation.ValidationException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -29,14 +29,14 @@ public class StringSetRequestTranslatorTest {
 
   @Test
   public void ensureStringSecretIsSetWhenValidValueGiven() {
-    String requestJson = "{\"type\":\"value\",\"credential\":\"myValue\"}";
+    String requestJson = "{\"type\":\"value\",\"value\":\"myValue\"}";
 
     doTest(new StringSecret("myValue"), requestJson);
   }
 
   @Test
   public void ensureStringSecretIsSetWhenEmptyValueGiven() {
-    String requestJson = "{\"type\":\"value\",\"credential\":\"\"}";
+    String requestJson = "{\"type\":\"value\",\"value\":\"\"}";
     try {
       doTest(null, requestJson);
     } catch (ValidationException e) {

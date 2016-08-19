@@ -5,7 +5,7 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 
 public class CertificateSecret extends Secret<NamedCertificateSecret, CertificateSecret> {
 
-  @JsonProperty("credential")
+  @JsonProperty("value")
   private CertificateBody certificateBody;
 
   public CertificateSecret(String root, String certificate, String privateKey) {

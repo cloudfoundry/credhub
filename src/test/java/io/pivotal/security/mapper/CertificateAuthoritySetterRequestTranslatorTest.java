@@ -13,11 +13,11 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.validation.ValidationException;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import javax.validation.ValidationException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -43,7 +43,7 @@ public class CertificateAuthoritySetterRequestTranslatorTest {
   }
 
   private void doTestValid(CertificateAuthority expected, String certificate, String privateKey) {
-    String requestJson = "{\"type\":\"root\",\"ca\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
+    String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     CertificateAuthority actual = new CertificateAuthoritySetterRequestTranslator().createAuthorityFromJson(parsed);
@@ -51,7 +51,7 @@ public class CertificateAuthoritySetterRequestTranslatorTest {
   }
 
   private void doTestInvalid(String type, String certificate, String privateKey, String expectedErrorMessage) throws ValidationException {
-    String requestJson = "{\"type\":" + type + ",\"ca\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
+    String requestJson = "{\"type\":" + type + ",\"value\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     try {

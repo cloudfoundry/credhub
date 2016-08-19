@@ -12,16 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.Arrays;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
+
+import java.time.Instant;
+import java.util.Arrays;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -55,7 +57,7 @@ public class NamedStringSecretTest {
       subject.setValue("my-value");
       Object actual = subject.generateView();
 
-      assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"type\":\"value\",\"updated_at\":null,\"credential\":\"my-value\"}"));
+      assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"type\":\"value\",\"updated_at\":null,\"value\":\"my-value\"}"));
     });
 
     it("generated view has updated at", () -> {

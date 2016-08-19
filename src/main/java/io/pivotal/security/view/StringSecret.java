@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
 
   @NotNull
-  @JsonProperty("credential")
+  @JsonProperty("value")
   public String value;
 
   public StringSecret(String secretValue) {

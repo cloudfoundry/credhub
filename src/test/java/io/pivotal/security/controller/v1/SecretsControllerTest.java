@@ -143,8 +143,8 @@ public class SecretsControllerTest {
 
     describe("string secrets", () -> {
       it("can save a client-provided string secret", () -> {
-        String requestJson = "{\"type\":\"value\",\"credential\":\"secret contents\"}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents\"}";
+        String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
 
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
 
@@ -154,8 +154,8 @@ public class SecretsControllerTest {
       });
 
       it("can update a client-provided string secret", () -> {
-        String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents\"}";
-        String requestJson2 = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"secret contents 2\"}";
+        String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
+        String requestJson2 = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents 2\"}";
 
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson2), requestJson2);
@@ -244,8 +244,8 @@ public class SecretsControllerTest {
       });
 
       it("can store a client-provided certificate", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
 
@@ -255,8 +255,8 @@ public class SecretsControllerTest {
       });
 
       it("storing a client-provided certificate returns JSON that contains nulls in fields the client did not provide", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"credential\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
       });
@@ -336,7 +336,7 @@ public class SecretsControllerTest {
     });
 
     it("returns bad request (400) for PUT with missing type", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"credential\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) for PUT with invalid JSON", () -> {
@@ -349,18 +349,18 @@ public class SecretsControllerTest {
     });
 
     it("returns bad request (400) for PUT without a type parameter", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"credential\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) for PUT with unsupported type", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"type\":\"foo\", \"credential\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"type\":\"foo\", \"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) if client tries to change the type of a secret", () -> {
       NamedStringSecret stringSecret = new NamedStringSecret("secret").setValue("password");
       secretRepository.save(stringSecret);
 
-      String requestJson = "{\"type\":\"certificate\",\"credential\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+      String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
       expectErrorKey(putRequestBuilder("/api/v1/data/secret", requestJson), HttpStatus.BAD_REQUEST, "error.type_mismatch");
     });
 
@@ -376,7 +376,7 @@ public class SecretsControllerTest {
       doPutValue("test", "abc");
       doPutValue("test.foo", "def");
 
-      expectSuccess(get("/api/v1/data/test"), "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"abc\"}");
+      expectSuccess(get("/api/v1/data/test"), "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"abc\"}");
     });
   }
 
@@ -417,8 +417,8 @@ public class SecretsControllerTest {
   }
 
   private void doPutValue(String secretName, String secretValue) throws Exception {
-    String requestJson = "{\"type\":\"value\",\"credential\":\"" + secretValue + "\"}";
-    String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"credential\":\"" + secretValue + "\"}";
+    String requestJson = "{\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
+    String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
 
     expectSuccess(putRequestBuilder("/api/v1/data/" + secretName, requestJson), resultJson);
   }

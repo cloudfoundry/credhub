@@ -8,7 +8,7 @@ public class CertificateAuthority extends BaseView<NamedCertificateAuthority, Ce
   @JsonProperty("type")
   private String type;
 
-  @JsonProperty("ca")
+  @JsonProperty("value")
   private CertificateAuthorityBody certificateAuthorityBody;
 
   public CertificateAuthority(String type, String certificate, String privateKey) {
