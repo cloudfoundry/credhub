@@ -13,15 +13,17 @@ import java.security.*;
 @ConditionalOnProperty(value = "hsm.disabled", havingValue = "false", matchIfMissing = true)
 public class LunaEncryptionConfiguration implements EncryptionConfiguration {
 
-  private static final String ENCRYPTION_KEY_ALIAS = "io.pivotal.security.credhub";
+  @Value("${hsm.partition}")
+  String partitionName;
 
   @Value("${hsm.partition-password}")
   String partitionPassword;
 
+  @Value("${hsm.encryption-key-name}")
+  String encryptionKeyAlias;
+
   private Provider provider;
   private SecureRandom secureRandom;
-  private KeyGenerator aesKeyGenerator;
-  private KeyStore keyStore;
   private Key key;
 
   public LunaEncryptionConfiguration() throws Exception {
@@ -32,19 +34,19 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
   @PostConstruct
   public void getEncryptionKey() throws Exception {
     Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").getDeclaredMethod("getInstance").invoke(null);
-    lunaSlotManager.getClass().getMethod("login", String.class).invoke(lunaSlotManager, partitionPassword);
+    lunaSlotManager.getClass().getMethod("login", String.class, String.class).invoke(lunaSlotManager, partitionName, partitionPassword);
 
-    keyStore = KeyStore.getInstance("Luna", provider);
+    KeyStore keyStore = KeyStore.getInstance("Luna", provider);
     keyStore.load(null, null);
     secureRandom = SecureRandom.getInstance("LunaRNG");
-    aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
+    KeyGenerator aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
     aesKeyGenerator.init(128);
 
-    if (!keyStore.containsAlias(ENCRYPTION_KEY_ALIAS)) {
+    if (!keyStore.containsAlias(encryptionKeyAlias)) {
       SecretKey aesKey = aesKeyGenerator.generateKey();
-      keyStore.setKeyEntry(ENCRYPTION_KEY_ALIAS, aesKey, null, null);
+      keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
     }
-    key = keyStore.getKey(ENCRYPTION_KEY_ALIAS, null);
+    key = keyStore.getKey(encryptionKeyAlias, null);
   }
 
   @Override

@@ -12,7 +12,6 @@ import org.springframework.util.Assert;
 public class FakeEncryptionService implements EncryptionService {
 
   private int encryptionCount = 0;
-  private int decryptionCount = 0;
 
   @Override
   public Encryption encrypt(String value) {
@@ -22,7 +21,6 @@ public class FakeEncryptionService implements EncryptionService {
 
   @Override
   public String decrypt(byte[] nonce, byte[] encryptedValue) {
-    decryptionCount++;
     Assert.notNull(nonce, "nonce is required");
     return new String(encryptedValue).substring(6);
   }
@@ -33,13 +31,5 @@ public class FakeEncryptionService implements EncryptionService {
 
   public void setEncryptionCount(int encryptionCount) {
     this.encryptionCount = encryptionCount;
-  }
-
-  public int getDecryptionCount() {
-    return decryptionCount;
-  }
-
-  public void setDecryptionCount(int decryptionCount) {
-    this.decryptionCount = decryptionCount;
   }
 }
