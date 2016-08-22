@@ -1,5 +1,6 @@
 package io.pivotal.security.helper;
 
+import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.JpaAuditingHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -23,6 +24,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class SpectrumHelper {
   public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
@@ -38,50 +40,59 @@ public class SpectrumHelper {
     });
   }
 
-  public static void wireAndUnwire(Object testInstance) {
-    final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
-    beforeEach(injectMocksAndBeans(testInstance, testContextManager));
-    afterEach(cleanInjectedBeans(testInstance, testContextManager));
+  public static void wireAndUnwire(final Object testInstance) {
+    Supplier<MyTestContextManager> myTestContextManagerSupplier = Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
+    beforeEach(injectMocksAndBeans(testInstance, myTestContextManagerSupplier));
+    afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
   }
 
-  public static void autoTransactional(Object testInstance) {
-    final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
-    final PlatformTransactionManager transactionManager = testContextManager.getApplicationContext().getBean(PlatformTransactionManager.class);
+  public static void autoTransactional(final Object testInstance) {
+    final Supplier<PlatformTransactionManager> transactionManagerSupplier = Suppliers.memoize(() -> {
+      final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
+      return testContextManager.getApplicationContext().getBean(PlatformTransactionManager.class);
+    })::get;
+
     final AtomicReference<TransactionStatus> transaction = new AtomicReference<>();
 
-    beforeEach(() -> transaction.set(transactionManager.getTransaction(new DefaultTransactionDefinition())));
+    beforeEach(() -> transaction.set(transactionManagerSupplier.get().getTransaction(new DefaultTransactionDefinition())));
 
-    afterEach(() -> transactionManager.rollback(transaction.get()));
+    afterEach(() -> transactionManagerSupplier.get().rollback(transaction.get()));
   }
 
   public static Consumer<Long> mockOutCurrentTimeProvider(Object testInstance) {
-    final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
-    final CurrentTimeProvider realCurrentTimeProvider = testContextManager.getApplicationContext().getBean(CurrentTimeProvider.class);
-    final JpaAuditingHandler auditingHandler = testContextManager.getApplicationContext().getBean(JpaAuditingHandler.class);
+    final Supplier<MyTestContextManager> testContextManagerSupplier = Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
     final CurrentTimeProvider mockCurrentTimeProvider = mock(CurrentTimeProvider.class);
 
-    beforeEach(() -> { auditingHandler.setDateTimeProvider(mockCurrentTimeProvider); });
+    beforeEach(() -> {
+      final JpaAuditingHandler auditingHandler = testContextManagerSupplier.get().getApplicationContext().getBean(JpaAuditingHandler.class);
+      auditingHandler.setDateTimeProvider(mockCurrentTimeProvider);
+    });
 
-    afterEach(() -> { auditingHandler.setDateTimeProvider(realCurrentTimeProvider); });
+    afterEach(() -> {
+      final ApplicationContext applicationContext = testContextManagerSupplier.get().getApplicationContext();
+      final CurrentTimeProvider realCurrentTimeProvider = applicationContext.getBean(CurrentTimeProvider.class);
+      final JpaAuditingHandler auditingHandler = applicationContext.getBean(JpaAuditingHandler.class);
+      auditingHandler.setDateTimeProvider(realCurrentTimeProvider);
+    });
 
     return (epochMillis) -> { when(mockCurrentTimeProvider.getNow()).thenReturn(getNow(epochMillis)); };
   }
 
-  private static Spectrum.Block injectMocksAndBeans(Object testInstance, MyTestContextManager testContextManager) {
+  private static Spectrum.Block injectMocksAndBeans(Object testInstance, Supplier<MyTestContextManager> testContextManager) {
     return () -> {
-      testContextManager.prepareTestInstance(testInstance);
+      testContextManager.get().prepareTestInstance(testInstance);
       injectMocks(testInstance).run();
     };
   }
 
-  private static Spectrum.Block cleanInjectedBeans(Object testInstance, MyTestContextManager testContextManager) {
+  private static Spectrum.Block cleanInjectedBeans(Object testInstance, Supplier<MyTestContextManager> testContextManager) {
     return () -> {
       Class klazz = testInstance.getClass();
       for (Field field : klazz.getDeclaredFields()) {
         for (Annotation annotation : field.getAnnotations()) {
           if (annotation.annotationType().getSimpleName().equals(InjectMocks.class.getSimpleName())) {
             field.setAccessible(true);
-            testContextManager.autowireBean(field.get(testInstance));
+            testContextManager.get().autowireBean(field.get(testInstance));
           }
         }
       }
