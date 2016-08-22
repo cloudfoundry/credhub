@@ -1,11 +1,20 @@
 ---
 platform: linux
-image: docker:///pcfseceng/sec-eng-ci
+
+image_resource:
+  type: docker-image
+  source:
+    repository: frekele/gradle
+    tag: '2.12-jdk8'
+
 inputs:
   - name: sec-eng-credential-manager
+
 outputs:
   - name: check-report-output
+
 run:
   path: sec-eng-credential-manager/ci/tasks/owasp-check/task.sh
+
 params:
   OUTPUT_PATH: check-report-output
