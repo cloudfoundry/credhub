@@ -23,8 +23,7 @@ abstract public class NamedSecret<T> {
   @Column(unique = true, nullable = false)
   private String name;
 
-  // todo make nullable false when certificate encryption is implemented
-  @Column(nullable = true, length = ENCRYPTED_BYTES+NONCE_BYTES, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES+NONCE_BYTES, name = "encrypted_value")
   private byte[] encryptedValue;
 
   @Column(length = NONCE_BYTES)

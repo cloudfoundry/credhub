@@ -1,24 +1,24 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.service.EncryptionServiceImpl;
 import io.pivotal.security.view.CertificateSecret;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
 
-  @Column(length = ENCRYPTED_BYTES)
+  @Column(length = 7000)
   private String root;
 
-  @Column(length = ENCRYPTED_BYTES)
+  @Column(length = 7000)
   private String certificate;
 
-  @Column(length = ENCRYPTED_BYTES)
+  @Transient
   private String privateKey;
 
   public static NamedCertificateSecret make(String name, String root, String certificate, String privateKey) {
@@ -54,16 +54,42 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   }
 
   public String getPrivateKey() {
-    return privateKey;
+    byte[] encryptedValue = getEncryptedValue();
+    if (encryptedValue == null) {
+      return null;
+    }
+    try {
+      EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
+      return encryptionService.decrypt(getNonce(), encryptedValue);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public NamedCertificateSecret setPrivateKey(String privateKey) {
-    this.privateKey = privateKey;
+    if (Objects.equals(privateKey, this.privateKey)) {
+      return this;
+    }
+    if (privateKey == null) {
+      this.privateKey = null;
+      setEncryptedValue(null);
+      setNonce(null);
+    } else {
+      try {
+        EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
+        EncryptionServiceImpl.Encryption encryption = encryptionService.encrypt(privateKey);
+        this.privateKey = privateKey;
+        setNonce(encryption.nonce);
+        setEncryptedValue(encryption.encryptedValue);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
     return this;
   }
 
   @Override
   public CertificateSecret generateView() {
-    return new CertificateSecret(root, certificate, privateKey).setUpdatedAt(getUpdatedAt());
+    return new CertificateSecret(root, certificate, getPrivateKey()).setUpdatedAt(getUpdatedAt());
   }
 }
