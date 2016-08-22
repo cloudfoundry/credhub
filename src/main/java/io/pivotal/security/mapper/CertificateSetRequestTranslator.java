@@ -16,7 +16,7 @@ public class CertificateSetRequestTranslator implements SecretSetterRequestTrans
   public CertificateSecret createSecretFromJson(DocumentContext parsed) throws ValidationException {
     String root = parsed.read("$.value.root");
     String certificate = parsed.read("$.value.certificate");
-    String privateKey = parsed.read("$.value.private");
+    String privateKey = parsed.read("$.value.private_key");
     root = StringUtils.isEmpty(root) ? null : root;
     certificate = StringUtils.isEmpty(certificate) ? null : certificate;
     privateKey = StringUtils.isEmpty(privateKey) ? null : privateKey;

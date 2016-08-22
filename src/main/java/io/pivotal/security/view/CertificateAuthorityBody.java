@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CertificateAuthorityBody {
   @JsonProperty("certificate")
   private String certificate;
-  @JsonProperty("private")
+  @JsonProperty("private_key")
   private String privateKey;
 
   public CertificateAuthorityBody(String certificate, String privateKey) {

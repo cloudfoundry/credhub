@@ -180,7 +180,7 @@ public class AuditLogConfigurationTest {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
-            .content("{\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private\":\"private_key\"}}")
+            .content("{\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .with(request -> {
               request.setRemoteAddr("12345");

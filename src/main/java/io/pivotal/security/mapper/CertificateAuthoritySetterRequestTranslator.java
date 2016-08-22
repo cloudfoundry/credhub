@@ -17,7 +17,7 @@ public class CertificateAuthoritySetterRequestTranslator implements AuthoritySet
       throw new ValidationException("error.type_invalid");
     }
     String certificate = parsed.read("$.value.certificate");
-    String privateKey = parsed.read("$.value.private");
+    String privateKey = parsed.read("$.value.private_key");
     certificate = StringUtils.isEmpty(certificate) ? null : certificate;
     privateKey = StringUtils.isEmpty(privateKey) ? null : privateKey;
     if (certificate == null || privateKey == null) {

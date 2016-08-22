@@ -7,7 +7,7 @@ public class CertificateBody {
   private String root;
   @JsonProperty("certificate")
   private String certificate;
-  @JsonProperty("private")
+  @JsonProperty("private_key")
   private String privateKey;
 
   public CertificateBody(String root, String certificate, String privateKey) {

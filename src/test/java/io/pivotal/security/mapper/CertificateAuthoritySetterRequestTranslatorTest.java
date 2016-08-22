@@ -43,7 +43,7 @@ public class CertificateAuthoritySetterRequestTranslatorTest {
   }
 
   private void doTestValid(CertificateAuthority expected, String certificate, String privateKey) {
-    String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
+    String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     CertificateAuthority actual = new CertificateAuthoritySetterRequestTranslator().createAuthorityFromJson(parsed);
@@ -51,7 +51,7 @@ public class CertificateAuthoritySetterRequestTranslatorTest {
   }
 
   private void doTestInvalid(String type, String certificate, String privateKey, String expectedErrorMessage) throws ValidationException {
-    String requestJson = "{\"type\":" + type + ",\"value\":{\"certificate\":\"" + certificate + "\",\"private\":\"" + privateKey + "\"}}";
+    String requestJson = "{\"type\":" + type + ",\"value\":{\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     try {

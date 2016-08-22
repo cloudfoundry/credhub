@@ -244,8 +244,8 @@ public class SecretsControllerTest {
       });
 
       it("can store a client-provided certificate", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
 
@@ -255,8 +255,8 @@ public class SecretsControllerTest {
       });
 
       it("storing a client-provided certificate returns JSON that contains nulls in fields the client did not provide", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
       });
@@ -360,7 +360,7 @@ public class SecretsControllerTest {
       NamedStringSecret stringSecret = new NamedStringSecret("secret").setValue("password");
       secretRepository.save(stringSecret);
 
-      String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private\":\"my-priv\"}}";
+      String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
       expectErrorKey(putRequestBuilder("/api/v1/data/secret", requestJson), HttpStatus.BAD_REQUEST, "error.type_mismatch");
     });
 
