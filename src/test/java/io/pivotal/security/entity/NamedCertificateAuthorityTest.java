@@ -63,6 +63,7 @@ public class NamedCertificateAuthorityTest {
     });
 
     it("creates a model from entity", () -> {
+      subject.setCachedItem(null);
       CertificateAuthority certificateAuthority = subject.generateView();
       assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo("{\"updated_at\":null,\"type\":\"root\",\"value\":{\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
     });

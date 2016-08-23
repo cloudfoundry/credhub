@@ -115,7 +115,7 @@ public class NamedCertificateAuthority implements SecretEncryptor {
   }
 
   public CertificateAuthority generateView() {
-    return new CertificateAuthority(type, certificate, privateKey).setUpdatedAt(getUpdatedAt());
+    return new CertificateAuthority(type, certificate, getPrivateKey()).setUpdatedAt(getUpdatedAt());
   }
 
   public byte[] getNonce() {
