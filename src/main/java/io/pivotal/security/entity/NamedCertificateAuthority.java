@@ -13,7 +13,7 @@ import static io.pivotal.security.entity.NamedSecret.NONCE_BYTES;
 @Entity
 @Table(name = "NamedCertificateAuthority")
 @EntityListeners(AuditingEntityListener.class)
-public class NamedCertificateAuthority implements SecretEncryptor {
+public class NamedCertificateAuthority implements EncryptedValueContainer {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
@@ -38,9 +38,6 @@ public class NamedCertificateAuthority implements SecretEncryptor {
   @CreatedDate
   @LastModifiedDate
   private Instant updatedAt;
-
-  @Transient
-  private String privateKey;
 
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
@@ -89,20 +86,12 @@ public class NamedCertificateAuthority implements SecretEncryptor {
   }
 
   public String getPrivateKey() {
-    return new SecretEncryptionHelper<NamedCertificateAuthority>().decryptPrivateKey(this);
+    return new SecretEncryptionHelper().retrieveClearTextValue(this);
   }
 
   public NamedCertificateAuthority setPrivateKey(String privateKey) {
-    return new SecretEncryptionHelper<NamedCertificateAuthority>().encryptPrivateKey(this, privateKey);
-  }
-
-  @Override
-  public String getCachedItem() {
-    return this.privateKey;
-  }
-
-  public void setCachedItem(String key) {
-    this.privateKey = key;
+    new SecretEncryptionHelper().refreshEncryptedValue(this, privateKey);
+    return this;
   }
 
   public String getType() {

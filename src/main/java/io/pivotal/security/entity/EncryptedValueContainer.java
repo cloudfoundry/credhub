@@ -1,8 +1,6 @@
 package io.pivotal.security.entity;
 
-interface SecretEncryptor {
-  String getCachedItem();
-  void setCachedItem(String key);
+interface EncryptedValueContainer {
 
   byte[] getEncryptedValue();
   void setEncryptedValue(byte[] encryptedValue);

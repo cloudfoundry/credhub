@@ -7,16 +7,13 @@ import javax.persistence.*;
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
-public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> implements SecretEncryptor {
+public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> implements EncryptedValueContainer {
 
   @Column(length = 7000)
   private String root;
 
   @Column(length = 7000)
   private String certificate;
-
-  @Transient
-  private String privateKey;
 
   public static NamedCertificateSecret make(String name, String root, String certificate, String privateKey) {
     return new NamedCertificateSecret(name)
@@ -51,23 +48,16 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   }
 
   public String getPrivateKey() {
-    return new SecretEncryptionHelper<NamedCertificateSecret>().decryptPrivateKey(this);
+    return new SecretEncryptionHelper().retrieveClearTextValue(this);
   }
 
   public NamedCertificateSecret setPrivateKey(String privateKey) {
-    return new SecretEncryptionHelper<NamedCertificateSecret>().encryptPrivateKey(this, privateKey);
-  }
-
-  public void setCachedItem(String privateKey) {
-    this.privateKey = privateKey;
+    new SecretEncryptionHelper().refreshEncryptedValue(this, privateKey);
+    return this;
   }
 
   @Override
   public CertificateSecret generateView() {
     return new CertificateSecret(root, certificate, getPrivateKey()).setUpdatedAt(getUpdatedAt());
-  }
-
-  public String getCachedItem() {
-    return privateKey;
   }
 }

@@ -101,7 +101,7 @@ public class NamedStringSecretTest {
       assertThat(subject.getValue(), equalTo("my-value"));
     });
 
-    itThrows("when setting a value that is null", RuntimeException.class, () -> {
+    itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
       subject.setValue(null);
     });
   }

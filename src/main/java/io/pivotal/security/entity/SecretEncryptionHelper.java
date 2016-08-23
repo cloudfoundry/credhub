@@ -1,42 +1,34 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.service.EncryptionService;
-import io.pivotal.security.service.EncryptionServiceImpl;
 
 import java.util.Objects;
 
-class SecretEncryptionHelper <T extends SecretEncryptor> {
+class SecretEncryptionHelper {
 
-  T encryptPrivateKey(T secretEncrypter, String privateKey) {
-    if (Objects.equals(privateKey, secretEncrypter.getCachedItem())) {
-      return secretEncrypter;
+  void refreshEncryptedValue(EncryptedValueContainer encryptedValueContainer, String clearTextValue) {
+    if (clearTextValue == null) {
+      encryptedValueContainer.setNonce(null);
+      encryptedValueContainer.setEncryptedValue(null);
+      return;
     }
-    if (privateKey == null) {
-      secretEncrypter.setCachedItem(null);
-      secretEncrypter.setEncryptedValue(null);
-      secretEncrypter.setNonce(null);
-    } else {
-      try {
-        EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
-        EncryptionServiceImpl.Encryption encryption = encryptionService.encrypt(privateKey);
-        secretEncrypter.setCachedItem(privateKey);
-        secretEncrypter.setNonce(encryption.nonce);
-        secretEncrypter.setEncryptedValue(encryption.encryptedValue);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
+    final EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
+    try {
+      if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null || !Objects.equals(clearTextValue, encryptionService.decrypt(encryptedValueContainer.getNonce(), encryptedValueContainer.getEncryptedValue()))) {
+        final EncryptionService.Encryption encryption = encryptionService.encrypt(clearTextValue);
+        encryptedValueContainer.setNonce(encryption.nonce);
+        encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
       }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    return secretEncrypter;
   }
 
-  String decryptPrivateKey(T secretEncrypter) {
-    byte[] encryptedValue = secretEncrypter.getEncryptedValue();
-    if (encryptedValue == null) {
-      return null;
-    }
+  String retrieveClearTextValue(EncryptedValueContainer encryptedValueContainer) {
+    if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null) {return null;}
+    final EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
     try {
-      EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
-      return encryptionService.decrypt(secretEncrypter.getNonce(), encryptedValue);
+      return encryptionService.decrypt(encryptedValueContainer.getNonce(), encryptedValueContainer.getEncryptedValue());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
