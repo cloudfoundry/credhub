@@ -21,7 +21,7 @@ public class NamedCertificateAuthority implements SecretEncryptor {
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Column(length = 7000)
+  @Column()
   private String type;
 
   @Column(length = 7000)
