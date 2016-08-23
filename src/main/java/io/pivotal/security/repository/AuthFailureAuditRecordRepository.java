@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface AuthFailureAuditRecordRepository extends JpaRepository<AuthFailureAuditRecord, Long> {
   List<AuthFailureAuditRecord> findAll();
+  AuthFailureAuditRecord findFirstByOrderByIdDesc();
 }

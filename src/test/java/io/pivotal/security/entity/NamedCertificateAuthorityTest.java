@@ -120,5 +120,12 @@ public class NamedCertificateAuthorityTest {
       NamedCertificateAuthority secret = repository.findOne(subject.getId());
       assertThat(secret.getPrivateKey(), equalTo(""));
     });
+
+    it("generateView tells HSM to decrypt the private key", () -> {
+      subject.setPrivateKey("abc");
+      repository.saveAndFlush(subject);
+      NamedCertificateAuthority secret = repository.findOne(subject.getId());
+      assertThat(secret.generateView().getCertificateAuthorityBody().getPrivateKey(), equalTo("abc"));
+    });
   }
 }

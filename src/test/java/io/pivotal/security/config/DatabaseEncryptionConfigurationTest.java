@@ -15,7 +15,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
@@ -35,18 +35,20 @@ public class DatabaseEncryptionConfigurationTest {
   @Autowired
   EncryptionService encryptionService;
 
+  private String secretName;
+
   {
     wireAndUnwire(this);
-    autoTransactional(this);
 
     describe("when a value has been written to the database", () -> {
       beforeEach(() -> {
-        NamedStringSecret stringSecret = new NamedStringSecret("test1").setValue("value1");
+        secretName = uniquify("test");
+        NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("value1");
         secretRepository.saveAndFlush(stringSecret);
       });
 
       it("it encrypts the secret value", () -> {
-        Map<String, Object> map = namedParameterJdbcTemplate.queryForMap("SELECT s.encrypted_value, n.nonce FROM named_secret s INNER JOIN named_secret n ON s.id = n.id WHERE n.name = 'test1'", Collections.emptyMap());
+        Map<String, Object> map = namedParameterJdbcTemplate.queryForMap("SELECT s.encrypted_value, n.nonce FROM named_secret s INNER JOIN named_secret n ON s.id = n.id WHERE n.name = '" + secretName + "'", Collections.emptyMap());
         assertThat(map, allOf(
             hasEntry(equalTo("ENCRYPTED_VALUE"), not(equalTo("value1"))),
             hasEntry(equalTo("NONCE"), notNullValue())
@@ -54,7 +56,7 @@ public class DatabaseEncryptionConfigurationTest {
       });
 
       it("it decrypts the secret value when the entity is retrieved", () -> {
-        NamedStringSecret secret = (NamedStringSecret) secretRepository.findOneByName("test1");
+        NamedStringSecret secret = (NamedStringSecret) secretRepository.findOneByName(secretName);
         assertThat(secret.getValue(), equalTo("value1"));
       });
     });

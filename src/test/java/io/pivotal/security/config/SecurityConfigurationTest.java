@@ -17,7 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -45,11 +45,13 @@ public class SecurityConfigurationTest {
 
   private MockMvc mockMvc;
 
+  private String urlPath;
+
   {
     wireAndUnwire(this);
-    autoTransactional(this);
 
     beforeEach(() -> {
+      urlPath = uniquify("/api/v1/data/test");
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
@@ -61,13 +63,13 @@ public class SecurityConfigurationTest {
     it("/health can be accessed without authentication", withoutAuthCheck("/health", "$.db.status"));
 
     it("denies other endpoints", () -> {
-      mockMvc.perform(post("/api/v1/data/test"))
+      mockMvc.perform(post(urlPath))
           .andExpect(status().isUnauthorized());
     });
 
     describe("with a token accepted by our security config", () -> {
       it("allows access", () -> {
-        final MockHttpServletRequestBuilder post = post("/api/v1/data/test")
+        final MockHttpServletRequestBuilder post = post(urlPath)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)

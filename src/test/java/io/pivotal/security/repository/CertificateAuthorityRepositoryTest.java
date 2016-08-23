@@ -8,10 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.stream.Stream;
 
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -24,16 +24,16 @@ public class CertificateAuthorityRepositoryTest {
   CertificateAuthorityRepository subject;
 
   @Test
-  @Transactional
   public void canStoreCertificateAuthoritiesOfLength7000WhichMeans7016ForGCMEncryption() throws Exception {
+    final String secretName = uniquify("my-ca");
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-    NamedCertificateAuthority entity = new NamedCertificateAuthority("my-ca");
+    NamedCertificateAuthority entity = new NamedCertificateAuthority(secretName);
     entity.setCertificate(stringBuilder.toString());
     entity.setPrivateKey(stringBuilder.toString());
 
     subject.save(entity);
-    NamedCertificateAuthority certificateSecret = subject.findOneByName("my-ca");
+    NamedCertificateAuthority certificateSecret = subject.findOneByName(secretName);
     assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
     assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
   }

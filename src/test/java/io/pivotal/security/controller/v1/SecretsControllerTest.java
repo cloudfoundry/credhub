@@ -42,9 +42,7 @@ import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -106,14 +104,18 @@ public class SecretsControllerTest {
   private SecurityContext oldContext;
   private Consumer<Long> fakeTimeSetter;
 
+  private String urlPath;
+  private String secretName;
+
   {
     wireAndUnwire(this);
-    autoTransactional(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+      secretName = uniquify("secret-identifier");
+      urlPath = "/api/v1/data/" + secretName;
     });
 
     beforeEach(() -> {
@@ -146,31 +148,31 @@ public class SecretsControllerTest {
         String requestJson = "{\"type\":\"value\",\"value\":\"secret contents\"}";
         String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
 
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
+        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
         StringSecret expected = new StringSecret("secret contents");
         expected.setUpdatedAt(frozenTime);
-        Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(expected));
+        Assert.assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expected));
       });
 
       it("can update a client-provided string secret", () -> {
         String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents\"}";
         String requestJson2 = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"secret contents 2\"}";
 
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), requestJson);
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson2), requestJson2);
+        expectSuccess(putRequestBuilder(urlPath, requestJson), requestJson);
+        expectSuccess(putRequestBuilder(urlPath, requestJson2), requestJson2);
 
         StringSecret expected = new StringSecret("secret contents 2");
         expected.setUpdatedAt(frozenTime);
-        Assert.assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(expected));
+        Assert.assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expected));
       });
 
       it("can fetch a string secret", () -> {
-        NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("stringSecret contents");
+        NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("stringSecret contents");
         secretRepository.save(stringSecret);
         String expectedJson = json(stringSecret.generateView());
 
-        expectSuccess(get("/api/v1/data/whatever"), expectedJson);
+        expectSuccess(get(urlPath), expectedJson);
       });
 
       it("can generate string secret", () -> {
@@ -178,8 +180,8 @@ public class SecretsControllerTest {
         when(stringSecretGenerator.generateSecret(any(StringSecretParameters.class))).thenReturn(expectedStringSecret);
 
         String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder("/api/v1/data/my-secret", "{\"type\":\"value\"}"), expectedJson);
-        assertThat(secretRepository.findOneByName("my-secret").generateView(), BeanMatchers.theSameAs(expectedStringSecret));
+        expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"value\"}"), expectedJson);
+        assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expectedStringSecret));
       });
 
       it("can generate string secret with empty parameters map", () -> {
@@ -187,8 +189,8 @@ public class SecretsControllerTest {
         when(stringSecretGenerator.generateSecret(any(StringSecretParameters.class))).thenReturn(expectedStringSecret);
 
         String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder("/api/v1/data/my-secret", "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"parameters\":{}}"), expectedJson);
-        assertThat(secretRepository.findOneByName("my-secret").generateView(), BeanMatchers.theSameAs(expectedStringSecret));
+        expectSuccess(postRequestBuilder(urlPath, "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"parameters\":{}}"), expectedJson);
+        assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expectedStringSecret));
       });
 
       it("uses parameters to generate string secret", () -> {
@@ -211,8 +213,8 @@ public class SecretsControllerTest {
             "\"exclude_upper\": true" +
             "}" +
             "}";
-        expectSuccess(postRequestBuilder("/api/v1/data/my-secret", requestJson), expectedJson);
-        assertThat(secretRepository.findOneByName("my-secret").generateView(), BeanMatchers.theSameAs(expectedStringSecret));
+        expectSuccess(postRequestBuilder(urlPath, requestJson), expectedJson);
+        assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expectedStringSecret));
       });
 
       it("rejects requests to generate a string secret when all character types are excluded", () -> {
@@ -226,13 +228,13 @@ public class SecretsControllerTest {
             "}" +
             "}";
 
-        expectErrorKey(postRequestBuilder("/api/v1/data/my-secret", requestJson), HttpStatus.BAD_REQUEST, "error.excludes_all_charsets");
+        expectErrorKey(postRequestBuilder(urlPath, requestJson), HttpStatus.BAD_REQUEST, "error.excludes_all_charsets");
       });
     });
 
     describe("certificate secrets", () -> {
       it("can fetch a certificate secret", () -> {
-        NamedCertificateSecret certificateSecret = new NamedCertificateSecret("whatever")
+        NamedCertificateSecret certificateSecret = new NamedCertificateSecret(secretName)
             .setRoot("get-ca")
             .setCertificate("get-certificate")
             .setPrivateKey("get-priv");
@@ -240,25 +242,25 @@ public class SecretsControllerTest {
 
         String expectedJson = json(certificateSecret.generateView());
 
-        expectSuccess(get("/api/v1/data/whatever"), expectedJson);
+        expectSuccess(get(urlPath), expectedJson);
       });
 
       it("can store a client-provided certificate", () -> {
         String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
         String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
+        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
         CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
-        assertThat(secretRepository.findOneByName("secret-identifier").generateView(), BeanMatchers.theSameAs(certificateSecret));
-        assertNull(caAuthorityRepository.findOneByName("secret-identifier"));
+        assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(certificateSecret));
+        assertNull(caAuthorityRepository.findOneByName(secretName));
       });
 
       it("storing a client-provided certificate returns JSON that contains nulls in fields the client did not provide", () -> {
         String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
         String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
-        expectSuccess(putRequestBuilder("/api/v1/data/secret-identifier", requestJson), resultJson);
+        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
       });
 
       it("can generate certificates", () -> {
@@ -278,8 +280,8 @@ public class SecretsControllerTest {
             "}" +
             "}";
         String expectedJson = json(certificateSecret);
-        expectSuccess(postRequestBuilder("/api/v1/data/my-cert", requestJson), expectedJson);
-        assertThat(secretRepository.findOneByName("my-cert").generateView(), BeanMatchers.theSameAs(certificateSecret));
+        expectSuccess(postRequestBuilder(urlPath, requestJson), expectedJson);
+        assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(certificateSecret));
       });
 
       it("can store nulls in client-supplied certificate secret", () -> {
@@ -300,11 +302,11 @@ public class SecretsControllerTest {
 
     describe("deleting a secret", () -> {
       beforeEach(() -> {
-        NamedStringSecret stringSecret = new NamedStringSecret("whatever").setValue("super stringSecret do not tell");
+        NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("super stringSecret do not tell");
 
         secretRepository.save(stringSecret);
 
-        mockMvc.perform(delete("/api/v1/data/whatever"))
+        mockMvc.perform(delete(urlPath))
             .andExpect(status().isOk());
       });
 
@@ -314,13 +316,13 @@ public class SecretsControllerTest {
 
     describe("returns not found (404) when getting missing secrets", () -> {
       it("fails as expected", () -> {
-        expectErrorKey(get("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+        expectErrorKey(get(urlPath), HttpStatus.NOT_FOUND, "error.secret_not_found");
       });
     });
 
     describe("returns not found (404) when deleting missing secrets", () -> {
       beforeEach(() -> {
-        expectErrorKey(delete("/api/v1/data/whatever"), HttpStatus.NOT_FOUND, "error.secret_not_found");
+        expectErrorKey(delete(urlPath), HttpStatus.NOT_FOUND, "error.secret_not_found");
       });
 
       it("fails as expected", () -> {
@@ -328,55 +330,56 @@ public class SecretsControllerTest {
     });
 
     it("returns bad request (400) for PUT with empty JSON", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder(urlPath, "{}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) for PUT with empty body", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", ""), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder(urlPath, ""), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) for PUT with missing type", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder(urlPath, "{\"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) for PUT with invalid JSON", () -> {
-      expectErrorMessage(putRequestBuilder("/api/v1/data/secret-identifier", "{asdfasdfas}"), HttpStatus.BAD_REQUEST,
+      expectErrorMessage(putRequestBuilder(urlPath, "{asdfasdfas}"), HttpStatus.BAD_REQUEST,
           "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.");
     });
 
     it("returns bad request (400) for PUT when client does not specify a value", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"type\":\"value\"}"), HttpStatus.BAD_REQUEST, "error.missing_string_secret_value");
+      expectErrorKey(putRequestBuilder(urlPath, "{\"type\":\"value\"}"), HttpStatus.BAD_REQUEST, "error.missing_string_secret_value");
     });
 
     it("returns bad request (400) for PUT without a type parameter", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder(urlPath, "{\"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) for PUT with unsupported type", () -> {
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret-identifier", "{\"type\":\"foo\", \"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder(urlPath, "{\"type\":\"foo\", \"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) if client tries to change the type of a secret", () -> {
-      NamedStringSecret stringSecret = new NamedStringSecret("secret").setValue("password");
+      NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("password");
       secretRepository.save(stringSecret);
 
       String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
-      expectErrorKey(putRequestBuilder("/api/v1/data/secret", requestJson), HttpStatus.BAD_REQUEST, "error.type_mismatch");
+      expectErrorKey(putRequestBuilder(urlPath, requestJson), HttpStatus.BAD_REQUEST, "error.type_mismatch");
     });
 
     it("returns bad request (400) if request body is empty", () -> {
-      expectErrorKey(postRequestBuilder("/api/v1/data/secret-identifier", ""), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(postRequestBuilder(urlPath, ""), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) if JSON is empty", () -> {
-      expectErrorKey(postRequestBuilder("/api/v1/data/secret-identifier", "{}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(postRequestBuilder(urlPath, "{}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("content negotiation and path matching are disabled", () -> {
-      doPutValue("test", "abc");
-      doPutValue("test.foo", "def");
+      String testSecretName = uniquify("test");
+      doPutValue(testSecretName, "abc");
+      doPutValue(uniquify("test.foo"), "def");
 
-      expectSuccess(get("/api/v1/data/test"), "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"abc\"}");
+      expectSuccess(get("/api/v1/data/" + testSecretName), "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"abc\"}");
     });
   }
 
@@ -453,6 +456,7 @@ public class SecretsControllerTest {
     }
 
     void execute() throws Exception {
+      String localSecretName = uniquify("whatever");
       CertificateSecret certificateSecretForRequest = new CertificateSecret(ca, certificate, privateKey);
       CertificateSecret certificateSecretForResponse = new CertificateSecret(
           transformEmptyToNull(ca),
@@ -464,9 +468,9 @@ public class SecretsControllerTest {
 
       boolean isHttpOk = statusCode == 200;
       ResultMatcher expectedStatus = isHttpOk ? status().isOk() : status().isBadRequest();
-      ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/whatever", requestJson))
+      ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/" + localSecretName, requestJson))
           .andExpect(expectedStatus);
-      NamedSecret certificateFromDb = secretRepository.findOneByName("whatever");
+      NamedSecret certificateFromDb = secretRepository.findOneByName(localSecretName);
 
       if (isHttpOk) {
         assertThat(certificateFromDb.generateView(), BeanMatchers.theSameAs(certificateSecretForResponse));

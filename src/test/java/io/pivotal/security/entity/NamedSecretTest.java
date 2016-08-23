@@ -25,20 +25,21 @@ public class NamedSecretTest {
 
   private Consumer<Long> fakeTimeSetter;
   private NamedCertificateSecret secret;
+  private String secretName;
 
   {
     wireAndUnwire(this);
-    autoTransactional(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
       fakeTimeSetter.accept(345345L);
-      secret = io.pivotal.security.entity.NamedCertificateSecret.make("foo", "ca", "pub", "priv");
+      secretName = uniquify("foo");
+      secret = io.pivotal.security.entity.NamedCertificateSecret.make(secretName, "ca", "pub", "priv");
     });
 
     it("returns date created", () -> {
       secret = repository.save(secret);
-      assertThat(repository.findOneByName("foo").getUpdatedAt().toEpochMilli(), equalTo(345345L));
+      assertThat(repository.findOneByName(secretName).getUpdatedAt().toEpochMilli(), equalTo(345000L));
     });
 
     it("returns date updated", () -> {
@@ -46,7 +47,7 @@ public class NamedSecretTest {
       fakeTimeSetter.accept(444444L);
       secret.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
       secret = repository.save(secret);
-      assertThat(repository.findOneByName("foo").getUpdatedAt().toEpochMilli(), equalTo(444444L));
+      assertThat(repository.findOneByName(secretName).getUpdatedAt().toEpochMilli(), equalTo(444000L));
     });
   }
 }

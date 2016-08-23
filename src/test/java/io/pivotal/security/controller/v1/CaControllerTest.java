@@ -23,9 +23,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
@@ -69,14 +67,18 @@ public class CaControllerTest {
   private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
   private Consumer<Long> fakeTimeSetter;
 
+  private String uniqueName;
+  private String urlPath;
+
   {
     wireAndUnwire(this);
-    autoTransactional(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
+      uniqueName = uniquify("ca-identifier");
+      urlPath = "/api/v1/ca/" + uniqueName;
     });
 
     it("can generate a ca", () -> {
@@ -85,20 +87,21 @@ public class CaControllerTest {
 
       CertificateAuthority certificateAuthority = new CertificateAuthority("root", "my_cert", "private_key");
       when(requestTranslatorWithGeneration.createAuthorityFromJson(any(DocumentContext.class))).thenReturn(certificateAuthority);
-      RequestBuilder requestBuilder = postRequestBuilder("/api/v1/ca/generated-ca-identifier", requestJson);
+      RequestBuilder requestBuilder = postRequestBuilder(urlPath, requestJson);
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(responseJson));
-      assertThat(caRepository.findOneByName("generated-ca-identifier").generateView(), theSameAs(certificateAuthority));
-      assertThat(secretRepository.findOneByName("generated-ca-identifier"), nullValue());
+      NamedCertificateAuthority oneByName = caRepository.findOneByName(uniqueName);
+      assertThat(oneByName.generateView(), theSameAs(certificateAuthority));
+      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
     it("can set a root ca", () -> {
       String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
 
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isOk())
@@ -107,8 +110,8 @@ public class CaControllerTest {
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
       expected.setUpdatedAt(frozenTime);
-      assertThat(caRepository.findOneByName("ca-identifier").generateView(), theSameAs(expected));
-      assertThat(secretRepository.findOneByName("ca-identifier"), nullValue());
+      assertThat(caRepository.findOneByName(uniqueName).generateView(), theSameAs(expected));
+      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
     it("returns bad request for PUT with invalid type", () -> {
@@ -116,7 +119,7 @@ public class CaControllerTest {
       String requestJson = "{\"type\":" + uuid + ",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isBadRequest())
@@ -130,7 +133,7 @@ public class CaControllerTest {
       String requestJson = "{\"type\":" + uuid + "}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
-      RequestBuilder requestBuilder = postRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      RequestBuilder requestBuilder = postRequestBuilder(urlPath, requestJson);
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isBadRequest())
@@ -157,27 +160,27 @@ public class CaControllerTest {
       String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private_key\":\"priv\"}}";
       String requestJson2 = "{\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate_2\",\"private_key\":\"priv_2\"}}";
 
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
       mockMvc.perform(requestBuilder)
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(requestJson));
 
-      RequestBuilder requestBuilder2 = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson2);
+      RequestBuilder requestBuilder2 = putRequestBuilder(urlPath, requestJson2);
       mockMvc.perform(requestBuilder2)
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(requestJson2));
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_certificate_2", "priv_2");
-      NamedCertificateAuthority saved = caRepository.findOneByName("ca-identifier");
+      NamedCertificateAuthority saved = caRepository.findOneByName(uniqueName);
       assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), theSameAs(expected));
     });
 
     it("get returns 404 when not found", () -> {
       String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
 
-      RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
+      RequestBuilder requestBuilder = getRequestBuilder(urlPath);
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isNotFound())
@@ -186,61 +189,40 @@ public class CaControllerTest {
     });
 
     it("put with only a certificate returns an error", () -> {
-      String requestJson = "{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\"}}";
-      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
-
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
-
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isBadRequest())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(notFoundJson));
+      requestWithError("{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\"}}");
     });
 
     it("put with only private returns an error", () -> {
-      String requestJson = "{\"type\":\"root\",\"root\":{\"private_key\":\"my_private_key\"}}";
-      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
-
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
-
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isBadRequest())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(notFoundJson));
+      requestWithError("{\"type\":\"root\",\"root\":{\"private_key\":\"my_private_key\"}}");
     });
 
     it("put without keys returns an error", () -> {
-      String requestJson = "{\"type\":\"root\",\"root\":{}}";
-      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
-
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
-
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isBadRequest())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(notFoundJson));
+      requestWithError("{\"type\":\"root\",\"root\":{}}");
     });
 
     it("put with empty request returns an error", () -> {
-      String requestJson = "{\"type\":\"root\"}";
-      String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
-
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
-
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isBadRequest())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(notFoundJson));
+      requestWithError("{\"type\":\"root\"}");
     });
 
     it("put cert with garbage returns an error", () -> {
       String requestJson = "{\"root\": }";
 
-      RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/ca-identifier", requestJson);
+      RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isBadRequest());
     });
+  }
+
+  private void requestWithError(String requestJson) throws Exception {
+    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+
+    RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
+
+    mockMvc.perform(requestBuilder)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(content().json(notFoundJson));
   }
 
   private RequestBuilder getRequestBuilder(String path) {

@@ -3,6 +3,8 @@ package io.pivotal.security.config;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.helper.CountMemo;
+import io.pivotal.security.helper.SpectrumHelper;
 import io.pivotal.security.repository.AuditRecordRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,7 @@ import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,16 +49,23 @@ public class AuditLogConfigurationTest {
   Filter springSecurityFilterChain;
 
   private MockMvc mockMvc;
+  private String credentialUrlPath;
+  private String caUrlPath1;
+  private String caUrlPath2;
+  private CountMemo auditRecordCount;
 
   {
     wireAndUnwire(this);
-    autoTransactional(this);
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
       auditRecordRepository.deleteAll();
+      credentialUrlPath = uniquify("/api/v1/data/foo");
+      caUrlPath1 = uniquify("/api/v1/ca/bar");
+      caUrlPath2 = uniquify("/api/v1/ca/baz");
+      auditRecordCount = SpectrumHelper.markRepository(auditRecordRepository);
     });
 
     afterEach(() -> {
@@ -64,8 +73,9 @@ public class AuditLogConfigurationTest {
     });
 
     describe("when a request to set credential is served", () -> {
+
       beforeEach(() -> {
-        MockHttpServletRequestBuilder put = put("/api/v1/data/foo")
+        MockHttpServletRequestBuilder set = put(credentialUrlPath)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -76,15 +86,15 @@ public class AuditLogConfigurationTest {
               return request;
             });
 
-        mockMvc.perform(put)
+        mockMvc.perform(set)
             .andExpect(status().isOk());
       });
 
       it("logs an audit record for credential update operation", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
+        auditRecordCount.expectIncreaseOf(1);
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -93,7 +103,7 @@ public class AuditLogConfigurationTest {
 
     describe("when a request to generate a credential is served", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder post = post("/api/v1/data/foo")
+        MockHttpServletRequestBuilder post = post(credentialUrlPath)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -109,10 +119,10 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for credential_update operation", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
+        auditRecordCount.expectIncreaseOf(1);
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -121,7 +131,7 @@ public class AuditLogConfigurationTest {
 
     describe("when a request to delete a credential is served", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder delete = delete("/api/v1/data/foo")
+        MockHttpServletRequestBuilder delete = delete(credentialUrlPath)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -137,10 +147,10 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for credential_delete operation", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
+        auditRecordCount.expectIncreaseOf(1);
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_delete"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -149,25 +159,14 @@ public class AuditLogConfigurationTest {
 
     describe("when a request to retrieve a credential is served", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder get = get("/api/v1/data/foo")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(request -> {
-              request.setRemoteAddr("12345");
-              return request;
-            });
-
-        mockMvc.perform(get)
-            .andExpect(status().is4xxClientError());
+        doUnsuccessfulFetch(credentialUrlPath);
       });
 
       it("logs an audit record for credential_access operation", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
+        auditRecordCount.expectIncreaseOf(1);
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -176,7 +175,7 @@ public class AuditLogConfigurationTest {
 
     describe("when a request to set or generate a credential is served", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder put = put("/api/v1/ca/bar")
+        MockHttpServletRequestBuilder set = put(caUrlPath1)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -187,10 +186,10 @@ public class AuditLogConfigurationTest {
               return request;
             });
 
-        mockMvc.perform(put)
+        mockMvc.perform(set)
             .andExpect(status().isOk());
 
-        MockHttpServletRequestBuilder generate = post("/api/v1/ca/baz")
+        MockHttpServletRequestBuilder generate = post(caUrlPath2)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -206,16 +205,16 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for ca_update operation", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(2L));
+        auditRecordCount.expectIncreaseOf(2);
 
         OperationAuditRecord auditRecord1 = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord1.getPath(), equalTo("/api/v1/ca/bar"));
+        assertThat(auditRecord1.getPath(), equalTo(caUrlPath1));
         assertThat(auditRecord1.getOperation(), equalTo("ca_update"));
         assertThat(auditRecord1.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord1.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 
         OperationAuditRecord auditRecord2 = auditRecordRepository.findAll().get(1);
-        assertThat(auditRecord2.getPath(), equalTo("/api/v1/ca/baz"));
+        assertThat(auditRecord2.getPath(), equalTo(caUrlPath2));
         assertThat(auditRecord2.getOperation(), equalTo("ca_update"));
         assertThat(auditRecord2.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord2.getXForwardedFor(), equalTo("3.3.3.3,4.4.4.4"));
@@ -224,24 +223,14 @@ public class AuditLogConfigurationTest {
 
     describe("when a request to retrieve a CA is served", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder get = get("/api/v1/ca/bar")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT).header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(request -> {
-              request.setRemoteAddr("12345");
-              return request;
-            });
-
-        mockMvc.perform(get)
-            .andExpect(status().is4xxClientError());
+        doUnsuccessfulFetch(caUrlPath1);
       });
 
       it("logs an audit record for ca_access operation", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
+        auditRecordCount.expectIncreaseOf(1);
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/ca/bar"));
+        assertThat(auditRecord.getPath(), equalTo(caUrlPath1));
         assertThat(auditRecord.getOperation(), equalTo("ca_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -250,7 +239,7 @@ public class AuditLogConfigurationTest {
 
     describe("when a request has multiple X-Forwarded-For headers set", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder put = put("/api/v1/data/foo")
+        MockHttpServletRequestBuilder set = put(credentialUrlPath)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -262,16 +251,31 @@ public class AuditLogConfigurationTest {
               return request;
             });
 
-        mockMvc.perform(put)
+        mockMvc.perform(set)
             .andExpect(status().isOk());
       });
 
       it("logs all X-Forwarded-For values", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
+        auditRecordCount.expectIncreaseOf(1);
 
         OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2,3.3.3.3"));
       });
     });
+  }
+
+  private void doUnsuccessfulFetch(String urlPath) throws Exception {
+    MockHttpServletRequestBuilder get = get(urlPath)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+        .with(request -> {
+          request.setRemoteAddr("12345");
+          return request;
+        });
+
+    mockMvc.perform(get)
+        .andExpect(status().is4xxClientError());
   }
 }

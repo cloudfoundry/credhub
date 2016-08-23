@@ -7,6 +7,7 @@ import io.pivotal.security.util.CurrentTimeProvider;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.TestContextManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -27,6 +28,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class SpectrumHelper {
+  private static long unique = System.currentTimeMillis();
+
   public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
     Spectrum.it(behavior, () -> {
       try {
@@ -46,6 +49,7 @@ public class SpectrumHelper {
     afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
   }
 
+  // Don't use this without talking to Rick
   public static void autoTransactional(final Object testInstance) {
     final Supplier<PlatformTransactionManager> transactionManagerSupplier = Suppliers.memoize(() -> {
       final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
@@ -57,6 +61,10 @@ public class SpectrumHelper {
     beforeEach(() -> transaction.set(transactionManagerSupplier.get().getTransaction(new DefaultTransactionDefinition())));
 
     afterEach(() -> transactionManagerSupplier.get().rollback(transaction.get()));
+  }
+
+  public static String uniquify(String template) {
+    return template + (++unique);
   }
 
   public static Consumer<Long> mockOutCurrentTimeProvider(Object testInstance) {
@@ -103,6 +111,10 @@ public class SpectrumHelper {
     return () -> MockitoAnnotations.initMocks(testInstance);
   }
 
+  public static CountMemo markRepository(CrudRepository crudRepository) {
+    return new CountMemo(crudRepository).mark();
+  }
+
   private static class MyTestContextManager extends TestContextManager {
     MyTestContextManager(Class<?> testClass) {
       super(testClass);
@@ -117,7 +129,7 @@ public class SpectrumHelper {
     }
   }
 
-  public static Calendar getNow(long epochMillis) {
+  private static Calendar getNow(long epochMillis) {
     Calendar.Builder builder = new Calendar.Builder();
     builder.setInstant(epochMillis);
     builder.setTimeZone(TimeZone.getTimeZone("UTC"));

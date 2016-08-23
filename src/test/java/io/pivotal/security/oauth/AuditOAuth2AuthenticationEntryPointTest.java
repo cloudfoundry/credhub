@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.helper.CountMemo;
 import io.pivotal.security.repository.AuthFailureAuditRecordRepository;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.junit.runner.RunWith;
@@ -27,12 +28,12 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
-import static io.pivotal.security.helper.SpectrumHelper.autoTransactional;
+import static io.pivotal.security.helper.SpectrumHelper.markRepository;
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -76,9 +77,11 @@ public class AuditOAuth2AuthenticationEntryPointTest {
 
   private Instant now;
 
+  private final String credentialUrlPath = uniquify("/api/v1/data/foo");
+  private CountMemo auditRecordMemo;
+
   {
     wireAndUnwire(this);
-    autoTransactional(this);
 
     beforeEach(() -> {
       now = Instant.now();
@@ -88,11 +91,12 @@ public class AuditOAuth2AuthenticationEntryPointTest {
           .webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
+      auditRecordMemo = markRepository(auditRecordRepository);
     });
 
     describe("when the token is invalid", () -> {
       beforeEach(() -> {
-        get = get("/api/v1/data/test")
+        get = get(credentialUrlPath)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
@@ -105,9 +109,9 @@ public class AuditOAuth2AuthenticationEntryPointTest {
       });
 
       it("logs the 'token_invalid' auth exception to the database", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
-        AuthFailureAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/test"));
+        auditRecordMemo.expectIncreaseOf(1);
+        AuthFailureAuditRecord auditRecord = auditRecordRepository.findFirstByOrderByIdDesc();
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -122,7 +126,7 @@ public class AuditOAuth2AuthenticationEntryPointTest {
 
     describe("when the token is expired", () -> {
       beforeEach(() -> {
-        get = get("/api/v1/data/foo")
+        get = get(credentialUrlPath)
             .header("Authorization", "Bearer " + EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
@@ -138,11 +142,11 @@ public class AuditOAuth2AuthenticationEntryPointTest {
         OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_SYMMETRIC_KEY_JWT);
         Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
-        assertThat(auditRecordRepository.count(), equalTo(1L));
-        AuthFailureAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        auditRecordMemo.expectIncreaseOf(1);
+        AuthFailureAuditRecord auditRecord = auditRecordRepository.findFirstByOrderByIdDesc();
 
         assertThat(auditRecord.getNow(), equalTo(now));
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -157,7 +161,7 @@ public class AuditOAuth2AuthenticationEntryPointTest {
 
     describe("when there is no token provided", () -> {
       beforeEach(() -> {
-        get = get("/api/v1/data/foo")
+        get = get(credentialUrlPath)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
@@ -169,11 +173,11 @@ public class AuditOAuth2AuthenticationEntryPointTest {
       });
 
       it("logs the 'no_token' auth exception to the database", () -> {
-        assertThat(auditRecordRepository.count(), equalTo(1L));
-        AuthFailureAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        auditRecordMemo.expectIncreaseOf(1);
+        AuthFailureAuditRecord auditRecord = auditRecordRepository.findFirstByOrderByIdDesc();
 
         assertThat(auditRecord.getNow(), equalTo(now));
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/data/foo"));
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -185,7 +189,6 @@ public class AuditOAuth2AuthenticationEntryPointTest {
         assertThat(auditRecord.getTokenExpires(), equalTo(-1L));
       });
     });
-
   }
 
   @Configuration
