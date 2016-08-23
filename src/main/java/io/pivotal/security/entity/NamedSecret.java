@@ -15,7 +15,7 @@ import java.time.Instant;
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 abstract public class NamedSecret<T> {
   public static final int NONCE_BYTES = 16;
-  public static final int ENCRYPTED_BYTES = 7000;
+  static final int ENCRYPTED_BYTES = 7000;
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
@@ -60,19 +60,19 @@ abstract public class NamedSecret<T> {
     return (T) this;
   }
 
-  protected byte[] getEncryptedValue() {
+  public byte[] getEncryptedValue() {
     return encryptedValue;
   }
 
-  protected void setEncryptedValue(byte[] encryptedValue) {
+  public void setEncryptedValue(byte[] encryptedValue) {
     this.encryptedValue = encryptedValue;
   }
 
-  protected byte[] getNonce() {
+  public byte[] getNonce() {
     return nonce;
   }
 
-  protected void setNonce(byte[] nonce) {
+  public void setNonce(byte[] nonce) {
     this.nonce = nonce;
   }
 

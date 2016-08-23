@@ -1,19 +1,16 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.service.EncryptionService;
-import io.pivotal.security.service.EncryptionServiceImpl;
 import io.pivotal.security.view.StringSecret;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.util.Objects;
 
 @Entity
 @Table(name = "StringSecret")
 @DiscriminatorValue("string_value")
-public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
+public class NamedStringSecret extends NamedSecret<NamedStringSecret> implements SecretEncryptor {
 
   @Transient
   private String value;
@@ -26,30 +23,22 @@ public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
   }
 
   public String getValue() {
-    try {
-      EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
-      return encryptionService.decrypt(getNonce(), getEncryptedValue());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return new SecretEncryptionHelper<NamedStringSecret>().decryptPrivateKey(this);
   }
 
   public NamedStringSecret setValue(String value) {
     if (value == null) {
       throw new RuntimeException("value cannot be null");
     }
-    if (!Objects.equals(this.value, value)) {
-      try {
-        EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
-        EncryptionServiceImpl.Encryption encryption = encryptionService.encrypt(value);
-        setNonce(encryption.nonce);
-        setEncryptedValue(encryption.encryptedValue);
-        this.value = value;
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-    return this;
+    return new SecretEncryptionHelper<NamedStringSecret>().encryptPrivateKey(this, value);
+  }
+
+  public void setCachedItem(String value) {
+    this.value = value;
+  }
+
+  public String getCachedItem() {
+    return this.value;
   }
 
   @Override

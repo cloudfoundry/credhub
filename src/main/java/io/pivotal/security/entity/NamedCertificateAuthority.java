@@ -8,10 +8,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.time.Instant;
 
+import static io.pivotal.security.entity.NamedSecret.NONCE_BYTES;
+
 @Entity
 @Table(name = "NamedCertificateAuthority")
 @EntityListeners(AuditingEntityListener.class)
-public class NamedCertificateAuthority {
+public class NamedCertificateAuthority implements SecretEncryptor {
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private long id;
@@ -19,19 +21,25 @@ public class NamedCertificateAuthority {
   @Column(unique = true, nullable = false)
   private String name;
 
+  @Column(length = 7000)
+  private String type;
+
+  @Column(length = 7000)
+  private String certificate;
+
+  @Column(length = NamedSecret.ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
+  private byte[] encryptedValue;
+
+  @Column(length = NONCE_BYTES)
+  private byte[] nonce;
+
   @Convert(converter = InstantSecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
   @LastModifiedDate
   private Instant updatedAt;
 
-  @Column(nullable = true, length = 7000)
-  private String type;
-
-  @Column(nullable = true, length = 7000)
-  private String certificate;
-
-  @Column(nullable = true, length = 7000)
+  @Transient
   private String privateKey;
 
   @SuppressWarnings("unused")
@@ -42,19 +50,12 @@ public class NamedCertificateAuthority {
     this.name = name;
   }
 
-  public String getCertificate() {
-    return certificate;
-  }
-
-  public NamedCertificateAuthority setCertificate(String certificate) {
-    this.certificate = certificate;
-    return this;
-  }
-
+  @SuppressWarnings("unused")
   public long getId() {
     return id;
   }
 
+  @SuppressWarnings("unused")
   public NamedCertificateAuthority setId(long id) {
     this.id = id;
     return this;
@@ -78,13 +79,30 @@ public class NamedCertificateAuthority {
     return this;
   }
 
+  public String getCertificate() {
+    return certificate;
+  }
+
+  public NamedCertificateAuthority setCertificate(String certificate) {
+    this.certificate = certificate;
+    return this;
+  }
+
   public String getPrivateKey() {
-    return privateKey;
+    return new SecretEncryptionHelper<NamedCertificateAuthority>().decryptPrivateKey(this);
   }
 
   public NamedCertificateAuthority setPrivateKey(String privateKey) {
-    this.privateKey = privateKey;
-    return this;
+    return new SecretEncryptionHelper<NamedCertificateAuthority>().encryptPrivateKey(this, privateKey);
+  }
+
+  @Override
+  public String getCachedItem() {
+    return this.privateKey;
+  }
+
+  public void setCachedItem(String key) {
+    this.privateKey = key;
   }
 
   public String getType() {
@@ -98,5 +116,21 @@ public class NamedCertificateAuthority {
 
   public CertificateAuthority generateView() {
     return new CertificateAuthority(type, certificate, privateKey).setUpdatedAt(getUpdatedAt());
+  }
+
+  public byte[] getNonce() {
+    return nonce;
+  }
+
+  public byte[] getEncryptedValue() {
+    return encryptedValue;
+  }
+
+  public void setEncryptedValue(byte[] encryptedValue) {
+    this.encryptedValue = encryptedValue;
+  }
+
+  public void setNonce(byte[] nonce) {
+    this.nonce = nonce;
   }
 }

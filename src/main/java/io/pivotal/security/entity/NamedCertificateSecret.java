@@ -1,16 +1,13 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.service.EncryptionService;
-import io.pivotal.security.service.EncryptionServiceImpl;
 import io.pivotal.security.view.CertificateSecret;
 
 import javax.persistence.*;
-import java.util.Objects;
 
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
-public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
+public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> implements SecretEncryptor {
 
   @Column(length = 7000)
   private String root;
@@ -54,42 +51,23 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   }
 
   public String getPrivateKey() {
-    byte[] encryptedValue = getEncryptedValue();
-    if (encryptedValue == null) {
-      return null;
-    }
-    try {
-      EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
-      return encryptionService.decrypt(getNonce(), encryptedValue);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return new SecretEncryptionHelper<NamedCertificateSecret>().decryptPrivateKey(this);
   }
 
   public NamedCertificateSecret setPrivateKey(String privateKey) {
-    if (Objects.equals(privateKey, this.privateKey)) {
-      return this;
-    }
-    if (privateKey == null) {
-      this.privateKey = null;
-      setEncryptedValue(null);
-      setNonce(null);
-    } else {
-      try {
-        EncryptionService encryptionService = EncryptionServiceProvider.getInstance();
-        EncryptionServiceImpl.Encryption encryption = encryptionService.encrypt(privateKey);
-        this.privateKey = privateKey;
-        setNonce(encryption.nonce);
-        setEncryptedValue(encryption.encryptedValue);
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-    return this;
+    return new SecretEncryptionHelper<NamedCertificateSecret>().encryptPrivateKey(this, privateKey);
+  }
+
+  public void setCachedItem(String privateKey) {
+    this.privateKey = privateKey;
   }
 
   @Override
   public CertificateSecret generateView() {
     return new CertificateSecret(root, certificate, getPrivateKey()).setUpdatedAt(getUpdatedAt());
+  }
+
+  public String getCachedItem() {
+    return privateKey;
   }
 }
