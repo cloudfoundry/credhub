@@ -12,15 +12,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.Arrays;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
+
+import java.time.Instant;
+import java.util.Arrays;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -63,14 +65,14 @@ public class NamedCertificateAuthorityTest {
     });
 
     it("creates a model from entity", () -> {
-      CertificateAuthority certificateAuthority = subject.generateView();
+      CertificateAuthority certificateAuthority = new CertificateAuthority().generateView(subject);
       assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo("{\"updated_at\":null,\"type\":\"root\",\"value\":{\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
     });
 
     it("set updated-at time on generated view", () -> {
       Instant now = Instant.now();
       subject.setUpdatedAt(now);
-      CertificateAuthority actual = subject.generateView();
+      CertificateAuthority actual = new CertificateAuthority().generateView(subject);
       assertThat(actual.getUpdatedAt(), equalTo(now));
     });
 
@@ -125,7 +127,7 @@ public class NamedCertificateAuthorityTest {
       subject.setPrivateKey("abc");
       repository.saveAndFlush(subject);
       NamedCertificateAuthority secret = repository.findOne(subject.getId());
-      assertThat(secret.generateView().getCertificateAuthorityBody().getPrivateKey(), equalTo("abc"));
+      assertThat(secret.getPrivateKey(), equalTo("abc"));
     });
   }
 }

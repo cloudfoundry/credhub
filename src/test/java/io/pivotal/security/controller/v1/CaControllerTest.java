@@ -4,7 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
+import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateAuthority;
@@ -23,7 +23,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
@@ -61,7 +63,7 @@ public class CaControllerTest {
   private CaController caController;
 
   @Mock
-  CertificateAuthorityRequestTranslatorWithGeneration requestTranslatorWithGeneration;
+  CAGeneratorRequestTranslator requestTranslatorWithGeneration;
 
   private MockMvc mockMvc;
   private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
@@ -85,8 +87,12 @@ public class CaControllerTest {
       String requestJson = "{\"type\":\"root\"}";
       String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
 
-      CertificateAuthority certificateAuthority = new CertificateAuthority("root", "my_cert", "private_key");
-      when(requestTranslatorWithGeneration.createAuthorityFromJson(any(DocumentContext.class))).thenReturn(certificateAuthority);
+      NamedCertificateAuthority entity =
+          new NamedCertificateAuthority(uniqueName)
+              .setType("root")
+              .setCertificate("my_cert")
+              .setPrivateKey("private_key");
+      when(requestTranslatorWithGeneration.makeEntity(any(String.class))).thenReturn(entity);
       RequestBuilder requestBuilder = postRequestBuilder(urlPath, requestJson);
 
       mockMvc.perform(requestBuilder)
@@ -94,7 +100,7 @@ public class CaControllerTest {
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(responseJson));
       NamedCertificateAuthority oneByName = caRepository.findOneByName(uniqueName);
-      assertThat(oneByName.generateView(), theSameAs(certificateAuthority));
+      assertThat(oneByName, theSameAs(entity).excludeProperty("Id"));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
@@ -110,7 +116,7 @@ public class CaControllerTest {
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
       expected.setUpdatedAt(frozenTime);
-      assertThat(caRepository.findOneByName(uniqueName).generateView(), theSameAs(expected));
+      assertThat(new CertificateAuthority().generateView(caRepository.findOneByName(uniqueName)), theSameAs(expected));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
@@ -128,7 +134,8 @@ public class CaControllerTest {
     });
 
     it("returns bad request for POST with invalid type", () -> {
-      when(requestTranslatorWithGeneration.createAuthorityFromJson(any(DocumentContext.class))).thenThrow(new ValidationException("error.bad_authority_type"));
+      when(requestTranslatorWithGeneration.makeEntity(any(String.class))).thenReturn(new NamedCertificateAuthority(uniquify("unused")));
+      when(requestTranslatorWithGeneration.populateEntityFromJson(any(NamedCertificateAuthority.class), any(DocumentContext.class))).thenThrow(new ValidationException("error.bad_authority_type"));
       String uuid = UUID.randomUUID().toString();
       String requestJson = "{\"type\":" + uuid + "}";
 

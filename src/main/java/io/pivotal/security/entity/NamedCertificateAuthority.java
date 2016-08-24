@@ -5,10 +5,18 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import static io.pivotal.security.entity.NamedSecret.NONCE_BYTES;
+
 import java.time.Instant;
 
-import static io.pivotal.security.entity.NamedSecret.NONCE_BYTES;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "NamedCertificateAuthority")
@@ -103,10 +111,6 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     return this;
   }
 
-  public CertificateAuthority generateView() {
-    return new CertificateAuthority(type, certificate, getPrivateKey()).setUpdatedAt(getUpdatedAt());
-  }
-
   public byte[] getNonce() {
     return nonce;
   }
@@ -121,5 +125,9 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
 
   public void setNonce(byte[] nonce) {
     this.nonce = nonce;
+  }
+
+  public CertificateAuthority getViewInstance() {
+    return new CertificateAuthority();
   }
 }

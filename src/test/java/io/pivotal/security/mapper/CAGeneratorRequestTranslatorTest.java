@@ -17,9 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.validation.ValidationException;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -28,17 +28,19 @@ import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
+import javax.validation.ValidationException;
+
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
-public class CertificateAuthorityRequestTranslatorWithGenerationTest {
+public class CAGeneratorRequestTranslatorTest {
 
   @Autowired
   private Configuration jsonConfiguration;
 
   @InjectMocks
   @Autowired
-  CertificateAuthorityRequestTranslatorWithGeneration subject;
+  CAGeneratorRequestTranslator subject;
 
   @Mock
   BCCertificateGenerator certificateGenerator;

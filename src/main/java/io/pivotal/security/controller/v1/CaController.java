@@ -5,10 +5,9 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
-import io.pivotal.security.mapper.AuthoritySetterRequestTranslator;
-import io.pivotal.security.mapper.CertificateAuthorityRequestTranslatorWithGeneration;
-import io.pivotal.security.mapper.CertificateAuthoritySetterRequestTranslator;
-import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
+import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
+import io.pivotal.security.mapper.CASetterRequestTranslator;
+import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
@@ -51,13 +50,10 @@ public class CaController {
   private MessageSource messageSource;
 
   @Autowired
-  CertificateAuthoritySetterRequestTranslator certificateAuthoritySetterRequestTranslator;
+  CASetterRequestTranslator caSetterRequestTranslator;
 
   @Autowired
-  CertificateAuthorityRequestTranslatorWithGeneration certificateAuthorityRequestTranslatorWithGeneration;
-
-  @Autowired
-  CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
+  CAGeneratorRequestTranslator caGeneratorRequestTranslator;
 
   @Autowired
   BCCertificateGenerator certificateGenerator;
@@ -74,7 +70,7 @@ public class CaController {
   @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(caPath, requestBody, certificateAuthoritySetterRequestTranslator);
+      return storeAuthority(caPath, requestBody, caSetterRequestTranslator);
     });
   }
 
@@ -82,23 +78,26 @@ public class CaController {
   @RequestMapping(path = "/{caPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(caPath, requestBody, certificateAuthorityRequestTranslatorWithGeneration);
+      return storeAuthority(caPath, requestBody, caGeneratorRequestTranslator);
     });
   }
 
-  private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, AuthoritySetterRequestTranslator requestTranslator) {
+  private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    CertificateAuthority certificateAuthority;
+    NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByName(caPath);
+    if (namedCertificateAuthority == null) {
+      namedCertificateAuthority = requestTranslator.makeEntity(caPath);
+    }
+
     try {
-      certificateAuthority = requestTranslator.createAuthorityFromJson(parsed);
-      NamedCertificateAuthority namedCertificateAuthority = createEntityFromView(caPath, certificateAuthority);
-      caRepository.save(namedCertificateAuthority);
-      certificateAuthority.setUpdatedAt(namedCertificateAuthority.getUpdatedAt());
+      requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsed);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
+    CertificateAuthority certificateAuthority = namedCertificateAuthority.getViewInstance();
+    NamedCertificateAuthority saved = caRepository.save(namedCertificateAuthority);
+    return new ResponseEntity<>(certificateAuthority.generateView(saved), HttpStatus.OK);
   }
 
   @SuppressWarnings("unused")
@@ -110,18 +109,9 @@ public class CaController {
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
       }
-      CertificateAuthority certificateAuthority = namedAuthority.generateView();
-      return new ResponseEntity<>(certificateAuthority, HttpStatus.OK);
+      CertificateAuthority certificateAuthority = namedAuthority.getViewInstance();
+      return new ResponseEntity<>(certificateAuthority.generateView(namedAuthority), HttpStatus.OK);
     });
-  }
-
-  private NamedCertificateAuthority createEntityFromView(@PathVariable String caPath, CertificateAuthority certificateAuthority) {
-    NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByName(caPath);
-    if (namedCertificateAuthority == null) {
-      namedCertificateAuthority = new NamedCertificateAuthority(caPath);
-    }
-    certificateAuthority.populateEntity(namedCertificateAuthority);
-    return namedCertificateAuthority;
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})

@@ -1,6 +1,5 @@
 package io.pivotal.security.controller.v1;
 
-import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -105,19 +104,18 @@ public class SecretsController {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     String type = parsed.read("$.type");
     RequestTranslator requestTranslator = getTranslator(type, stringRequestTranslator, certificateRequestTranslator);
-    NamedSecret foundNamedSecret = secretRepository.findOneByName(secretPath);
+    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
 
-    NamedSecret toStore;
     try {
-      if (foundNamedSecret == null) {
-        toStore = requestTranslator.makeEntity(secretPath);
-      } else {
-        toStore = foundNamedSecret;
+      if (namedSecret == null) {
+        namedSecret = (NamedSecret) requestTranslator.makeEntity(secretPath);
       }
-      Secret secret = toStore.getViewInstance();
+
+      Secret secret = namedSecret.getViewInstance();
+
       validateTypeMatch(secret.getType(), type);
-      requestTranslator.populateEntityFromJson(toStore, parsed);
-      NamedSecret saved = secretRepository.save(toStore);
+      requestTranslator.populateEntityFromJson(namedSecret, parsed);
+      NamedSecret saved = secretRepository.save(namedSecret);
       return new ResponseEntity<>(secret.generateView(saved), HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
@@ -169,12 +167,13 @@ public class SecretsController {
   }
 
   private RequestTranslator getTranslator(String type, RequestTranslator stringRequestTranslator, RequestTranslator certificateRequestTranslator) {
-    RequestTranslator map = ImmutableMap.of("value", stringRequestTranslator, "certificate", certificateRequestTranslator).get(type);
-    if (map == null) {
-      map = new InvalidTranslator();
+    if("value".equals(type)) {
+      return stringRequestTranslator;
+    } else if("certificate".equals(type)) {
+      return certificateRequestTranslator;
     }
 
-    return map;
+    return new InvalidTranslator();
   }
 
   private class InvalidTranslator implements RequestTranslator {
@@ -184,7 +183,7 @@ public class SecretsController {
     }
 
     @Override
-    public NamedSecret populateEntityFromJson(NamedSecret namedSecret, DocumentContext documentContext) {
+    public Object populateEntityFromJson(Object namedSecret, DocumentContext documentContext) {
       throw new ValidationException("error.type_invalid");
     }
   }

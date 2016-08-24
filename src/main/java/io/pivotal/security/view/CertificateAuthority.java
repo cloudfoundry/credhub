@@ -25,16 +25,26 @@ public class CertificateAuthority extends BaseView<NamedCertificateAuthority, Ce
         .setPrivateKey(getCertificateAuthorityBody().getPrivateKey());
   }
 
+  @Override
+  public CertificateAuthority generateView(NamedCertificateAuthority entity) {
+    return this
+        .setType(entity.getType())
+        .setCertificateBody(new CertificateAuthorityBody(entity.getCertificate(), entity.getPrivateKey()))
+        .setUpdatedAt(entity.getUpdatedAt());
+  }
+
   public CertificateAuthorityBody getCertificateAuthorityBody() {
     return certificateAuthorityBody;
   }
 
-  public void setCertificateBody(CertificateAuthorityBody certificateAuthorityBody) {
+  public CertificateAuthority setCertificateBody(CertificateAuthorityBody certificateAuthorityBody) {
     this.certificateAuthorityBody = certificateAuthorityBody;
+    return this;
   }
 
-  public void setType(String type) {
+  public CertificateAuthority setType(String type) {
     this.type = type;
+    return this;
   }
 
   public String getType() {
