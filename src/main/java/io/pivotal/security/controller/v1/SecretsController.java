@@ -118,7 +118,7 @@ public class SecretsController {
       validateTypeMatch(secret.getType(), type);
       requestTranslator.populateEntityFromJson(toStore, parsed);
       NamedSecret saved = secretRepository.save(toStore);
-      return new ResponseEntity<>(secret.generateView(8), HttpStatus.OK);
+      return new ResponseEntity<>(secret.generateView(saved), HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }

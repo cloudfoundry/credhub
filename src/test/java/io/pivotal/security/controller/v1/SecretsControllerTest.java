@@ -43,7 +43,9 @@ import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
@@ -146,7 +148,7 @@ public class SecretsControllerTest {
 
     describe("string secrets", () -> {
       beforeEach(() -> {
-        expectedSecret = new NamedStringSecret("secret-identifier").setValue("very-secret").setUpdatedAt(frozenTime);
+        expectedSecret = new NamedStringSecret(secretName).setValue("very-secret").setUpdatedAt(frozenTime);
         when(stringGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(expectedSecret);
       });
 
@@ -246,7 +248,7 @@ public class SecretsControllerTest {
             .setPrivateKey("my-priv")
             .setUpdatedAt(frozenTime);
         final NamedCertificateSecret storedSecret = (NamedCertificateSecret) secretRepository.findOneByName(secretName);
-        assertThat(storedSecret, BeanMatchers.theSameAs(expectedCertificateSecret).excludeProperty("Id"));
+        assertThat(storedSecret, BeanMatchers.theSameAs(expectedCertificateSecret).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
         assertNull(caAuthorityRepository.findOneByName(secretName));
       });
 
