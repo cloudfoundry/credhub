@@ -6,7 +6,6 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
-import io.pivotal.security.view.StringSecret;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -22,7 +21,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-import java.time.Instant;
 import java.util.Arrays;
 
 @RunWith(Spectrum.class)
@@ -50,23 +48,6 @@ public class NamedStringSecretTest {
 
     afterEach(() -> {
       repository.deleteAll();
-    });
-
-    it("can create model from entity", () -> {
-      subject.setValue("my-value");
-      Object actual = subject.generateView();
-
-      assertThat(objectMapper.writer().writeValueAsString(actual), equalTo("{\"type\":\"value\",\"updated_at\":null,\"value\":\"my-value\"}"));
-    });
-
-    it("generated view has updated at", () -> {
-      Instant now = Instant.now();
-      subject.setValue("my-value")
-          .setUpdatedAt(now);
-
-      StringSecret actual = subject.generateView();
-
-      assertThat(actual.getUpdatedAt(), equalTo(now));
     });
 
     it("updates the secret value with the same name when overwritten", () -> {

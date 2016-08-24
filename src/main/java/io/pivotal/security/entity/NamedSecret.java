@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.BaseView;
 import io.pivotal.security.view.Secret;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -87,8 +86,6 @@ abstract public class NamedSecret<T> implements EncryptedValueContainer {
   public void setNonce(byte[] nonce) {
     this.nonce = nonce;
   }
-
-  public abstract BaseView generateView();
 
   public abstract Secret getViewInstance();
 

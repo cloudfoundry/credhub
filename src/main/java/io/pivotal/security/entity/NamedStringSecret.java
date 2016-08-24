@@ -2,8 +2,6 @@ package io.pivotal.security.entity;
 
 import io.pivotal.security.view.StringSecret;
 
-import java.util.Objects;
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -30,11 +28,6 @@ public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
     }
     new SecretEncryptionHelper().refreshEncryptedValue(this, value);
     return this;
-  }
-
-  @Override
-  public StringSecret generateView() {
-    return new StringSecret(getValue()).setUpdatedAt(getUpdatedAt());
   }
 
   @Override

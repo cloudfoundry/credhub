@@ -145,7 +145,8 @@ public class SecretsController {
       if (namedSecret == null) {
         return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
       } else {
-        return new ResponseEntity<>(namedSecret.generateView(), HttpStatus.OK);
+        Secret secret = namedSecret.getViewInstance();
+        return new ResponseEntity<>(secret.generateView(namedSecret), HttpStatus.OK);
       }
     });
   }

@@ -1,26 +1,25 @@
 package io.pivotal.security.entity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
-import io.pivotal.security.view.CertificateSecret;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.Arrays;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
+
+import java.util.Arrays;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -32,9 +31,6 @@ public class NamedCertificateSecretTest {
 
   @Autowired
   EncryptionService encryptionService;
-
-  @Autowired
-  private ObjectMapper objectMapper;
 
   private NamedCertificateSecret subject;
 
@@ -48,18 +44,6 @@ public class NamedCertificateSecretTest {
 
     afterEach(() -> {
       repository.deleteAll();
-    });
-
-    it("creates a model from entity", () -> {
-      CertificateSecret certificateSecret = subject.generateView();
-      assertThat(objectMapper.writer().writeValueAsString(certificateSecret), equalTo("{\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-cert\",\"private_key\":\"my-priv\"}}"));
-    });
-
-    it("set updated-at time on generated view", () -> {
-      Instant now = Instant.now();
-      subject.setUpdatedAt(now);
-      CertificateSecret actual = subject.generateView();
-      assertThat(actual.getUpdatedAt(), equalTo(now));
     });
 
     it("updates the secret value with the same name when overwritten", () -> {

@@ -1,5 +1,6 @@
 package io.pivotal.security.helper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.JpaAuditingHandler;
@@ -19,6 +20,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Calendar;
@@ -27,6 +29,7 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
 
 public class SpectrumHelper {
   private static long unique = System.currentTimeMillis();
@@ -62,6 +65,10 @@ public class SpectrumHelper {
     Supplier<MyTestContextManager> myTestContextManagerSupplier = Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
     beforeEach(injectMocksAndBeans(testInstance, myTestContextManagerSupplier));
     afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
+  }
+
+  public static String json(Object o) throws IOException {
+    return new ObjectMapper().writeValueAsString(o);
   }
 
   // Don't use this without talking to Rick

@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
@@ -14,7 +13,6 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
-import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -48,6 +46,7 @@ import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -154,31 +153,31 @@ public class SecretsControllerTest {
 
       it("can save a client-provided string secret", () -> {
         String requestJson = "{\"type\":\"value\",\"value\":\"very-secret\"}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"very-secret\"}";
+        String resultJson = "{\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret\"}";
 
         expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
-        StringSecret expected = new StringSecret("very-secret");
-        expected.setUpdatedAt(frozenTime);
-        Assert.assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expected));
+        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+        assertThat(json(new StringSecret().generateView(stored)), equalTo(resultJson));
       });
 
       it("can update a client-provided string secret", () -> {
-        String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"very-secret\"}";
-        String requestJson2 = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"very-secret-2\"}";
+        String requestJson = "{\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret\"}";
+        String requestJson2 = "{\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret-2\"}";
 
         expectSuccess(putRequestBuilder(urlPath, requestJson), requestJson);
         expectSuccess(putRequestBuilder(urlPath, requestJson2), requestJson2);
 
         StringSecret expected = new StringSecret("very-secret-2");
         expected.setUpdatedAt(frozenTime);
-        Assert.assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expected));
+        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+        assertThat(json(new StringSecret().generateView(stored)), equalTo(requestJson2));
       });
 
       it("can fetch a string secret", () -> {
         NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("stringSecret contents");
         secretRepository.save(stringSecret);
-        String expectedJson = json(stringSecret.generateView());
+        String expectedJson = json(new StringSecret().generateView(stringSecret));
 
         expectSuccess(get(urlPath), expectedJson);
       });
@@ -195,19 +194,13 @@ public class SecretsControllerTest {
         StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
 
         String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder(urlPath, "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"parameters\":{}}"), expectedJson);
-        assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expectedStringSecret));
+        expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"value\"," + getUpdatedAtJson() + ",\"parameters\":{}}"), expectedJson);
+        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+        assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
       });
 
       it("uses parameters to generate string secret", () -> {
         StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
-        final StringSecretParameters expectedParameters = new StringSecretParameters()
-            .setLength(42)
-            .setExcludeSpecial(true)
-            .setExcludeNumber(true)
-            .setExcludeUpper(true)
-            .setType("value");
-
         String expectedJson = json(expectedStringSecret);
         String requestJson = "{" +
             "\"type\":\"value\"," +
@@ -219,7 +212,8 @@ public class SecretsControllerTest {
             "}" +
             "}";
         expectSuccess(postRequestBuilder(urlPath, requestJson), expectedJson);
-        assertThat(secretRepository.findOneByName(secretName).generateView(), BeanMatchers.theSameAs(expectedStringSecret));
+        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+        assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
       });
     });
 
@@ -231,14 +225,14 @@ public class SecretsControllerTest {
             .setPrivateKey("get-priv");
         secretRepository.save(certificateSecret);
 
-        String expectedJson = json(certificateSecret.generateView());
+        String expectedJson = json(new CertificateSecret().generateView(certificateSecret));
 
         expectSuccess(get(urlPath), expectedJson);
       });
 
       it("can store a client-provided certificate", () -> {
         String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String resultJson = "{\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
@@ -254,7 +248,7 @@ public class SecretsControllerTest {
 
       it("returns JSON that contains nulls in fields the client did not provide", () -> {
         String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
-        String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String resultJson = "{\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
       });
@@ -371,7 +365,7 @@ public class SecretsControllerTest {
       doPutValue(testSecretName, "abc");
       doPutValue(uniquify("test.foo"), "def");
 
-      expectSuccess(get("/api/v1/data/" + testSecretName), "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"abc\"}");
+      expectSuccess(get("/api/v1/data/" + testSecretName), "{\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"abc\"}");
     });
   }
 
@@ -413,7 +407,7 @@ public class SecretsControllerTest {
 
   private void doPutValue(String secretName, String secretValue) throws Exception {
     String requestJson = "{\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
-    String resultJson = "{" + getUpdatedAtJson() + ",\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
+    String resultJson = "{\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"" + secretValue + "\"}";
 
     expectSuccess(putRequestBuilder("/api/v1/data/" + secretName, requestJson), resultJson);
   }
@@ -462,10 +456,10 @@ public class SecretsControllerTest {
       ResultMatcher expectedStatus = isHttpOk ? status().isOk() : status().isBadRequest();
       ResultActions result = mockMvc.perform(putRequestBuilder("/api/v1/data/" + localSecretName, requestJson))
           .andExpect(expectedStatus);
-      NamedSecret certificateFromDb = secretRepository.findOneByName(localSecretName);
+      NamedCertificateSecret certificateFromDb = (NamedCertificateSecret) secretRepository.findOneByName(localSecretName);
 
       if (isHttpOk) {
-        assertThat(certificateFromDb.generateView(), BeanMatchers.theSameAs(certificateSecretForResponse));
+        assertThat(new CertificateSecret().generateView(certificateFromDb), BeanMatchers.theSameAs(certificateSecretForResponse));
       } else {
         assertNull(certificateFromDb);
         result.andExpect(content().json(badResponseJson));
