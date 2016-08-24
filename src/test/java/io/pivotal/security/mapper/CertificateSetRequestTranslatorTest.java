@@ -1,25 +1,27 @@
 package io.pivotal.security.mapper;
 
+import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.view.CertificateSecret;
-import org.exparity.hamcrest.BeanMatchers;
-import org.junit.Test;
+import io.pivotal.security.entity.NamedCertificateSecret;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 import javax.validation.ValidationException;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
 public class CertificateSetRequestTranslatorTest {
@@ -27,33 +29,46 @@ public class CertificateSetRequestTranslatorTest {
   @Autowired
   private Configuration jsonConfiguration;
 
-  @Test
-  public void doValidScenarios() {
-    doTest(new CertificateSecret(null, null, "a"), "", "", "a");
-    doTest(new CertificateSecret(null, "b", null), "", "b", "");
-    doTest(new CertificateSecret(null, "b", "a"), "", "b", "a");
-    doTest(new CertificateSecret("c", null, null), "c", "", "");
-    doTest(new CertificateSecret("c", null, "a"), "c", "", "a");
-    doTest(new CertificateSecret("c", "b", null), "c", "b", "");
-    doTest(new CertificateSecret("c", "b", "a"), "c", "b", "a");
+  private CertificateSetRequestTranslator subject;
+
+  private NamedCertificateSecret entity;
+
+  {
+    wireAndUnwire(this);
+
+    describe("populating entity from json", () -> {
+
+      beforeEach(() -> {
+        subject = new CertificateSetRequestTranslator();
+        entity = subject.makeEntity("Foo");
+      });
+
+      it("creates an entity when all fields are present", () -> {
+        checkEntity("my-root", "my-cert", "my-priv", "my-root", "my-cert", "my-priv");
+        checkEntity("my-root", "my-cert", null, "my-root", "my-cert", "");
+        checkEntity("my-root", null, "my-priv", "my-root", "", "my-priv");
+        checkEntity("my-root", null, null, "my-root", "", "");
+        checkEntity(null, "my-cert", "my-priv", "", "my-cert", "my-priv");
+        checkEntity(null, "my-cert", null, "", "my-cert", "");
+        checkEntity(null, null, "my-priv", "", "", "my-priv");
+      });
+
+      itThrowsWithMessage("exception when all values are absent", ValidationException.class, "error.missing_certificate_credentials", () -> {
+        checkEntity(null, null, null, "", "", "");
+      });
+    });
   }
 
-  @Test
-  public void doInvalidScenario() {
-    try {
-      doTest(null, "", "", "");
-    } catch (ValidationException e) {
-      assertThat(e.getMessage(), equalTo("error.missing_certificate_credentials"));
-      return;
-    }
-    fail();
-  }
-
-  private void doTest(CertificateSecret expected, String root, String certificate, String privateKey) {
-    String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"" + root + "\",\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
-
+  private void checkEntity(String expectedRoot, String expectedCertificate, String expectedPrivateKey, String root, String certificate, String privateKey) {
+    String requestJson = createJson(root, certificate, privateKey);
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
-    CertificateSecret actual = new CertificateSetRequestTranslator().createSecretFromJson(parsed);
-    assertThat(actual, BeanMatchers.theSameAs(expected));
+    subject.populateEntityFromJson(entity, parsed);
+    assertThat(entity.getRoot(), equalTo(expectedRoot));
+    assertThat(entity.getCertificate(), equalTo(expectedCertificate));
+    assertThat(entity.getPrivateKey(), equalTo(expectedPrivateKey));
+  }
+
+  private String createJson(String root, String certificate, String privateKey) {
+    return "{\"type\":\"certificate\",\"value\":{\"root\":\"" + root + "\",\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
   }
 }

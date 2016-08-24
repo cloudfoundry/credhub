@@ -2,32 +2,35 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.view.CertificateSecret;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import javax.validation.ValidationException;
 
 @Component
-public class CertificateSetRequestTranslator implements SecretSetterRequestTranslator {
+public class CertificateSetRequestTranslator implements RequestTranslator<NamedCertificateSecret> {
 
   @Override
-  public CertificateSecret createSecretFromJson(DocumentContext parsed) throws ValidationException {
-    String root = parsed.read("$.value.root");
-    String certificate = parsed.read("$.value.certificate");
-    String privateKey = parsed.read("$.value.private_key");
-    root = StringUtils.isEmpty(root) ? null : root;
-    certificate = StringUtils.isEmpty(certificate) ? null : certificate;
-    privateKey = StringUtils.isEmpty(privateKey) ? null : privateKey;
-    if (root == null && certificate == null && privateKey == null) {
-      throw new ValidationException("error.missing_certificate_credentials");
-    }
-    return new CertificateSecret(root, certificate, privateKey);
+  public NamedCertificateSecret makeEntity(String name) {
+    return new NamedCertificateSecret(name);
   }
 
   @Override
-  public NamedSecret makeEntity(String name) {
-    return new NamedCertificateSecret(name);
+  public NamedCertificateSecret populateEntityFromJson(NamedCertificateSecret namedCertificateSecret, DocumentContext documentContext) {
+    String root = emptyToNull(documentContext.read("$.value.root"));
+    String certificate = emptyToNull(documentContext.read("$.value.certificate"));
+    String privateKey = emptyToNull(documentContext.read("$.value.private_key"));
+    if (root == null && certificate == null && privateKey == null) {
+      throw new ValidationException("error.missing_certificate_credentials");
+    }
+    namedCertificateSecret.setRoot(root);
+    namedCertificateSecret.setCertificate(certificate);
+    namedCertificateSecret.setPrivateKey(privateKey);
+    return  namedCertificateSecret;
+  }
+
+  private String emptyToNull(String val) {
+    return isEmpty(val) ? null : val;
   }
 }

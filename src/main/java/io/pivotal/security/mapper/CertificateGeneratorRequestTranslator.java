@@ -3,7 +3,9 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.view.CertificateSecret;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -12,7 +14,11 @@ import java.util.function.Supplier;
 import javax.validation.ValidationException;
 
 @Component
-public class CertificateGeneratorRequestTranslator implements SecretGeneratorRequestTranslator<CertificateSecretParameters> {
+public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters> {
+
+  @Autowired
+  SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateSecretGenerator;
+
   Supplier<CertificateSecretParameters> parametersSupplier = () -> new CertificateSecretParameters();
 
   public CertificateSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
@@ -55,8 +61,18 @@ public class CertificateGeneratorRequestTranslator implements SecretGeneratorReq
   }
 
   @Override
-  public NamedSecret makeEntity(String name) {
+  public NamedCertificateSecret makeEntity(String name) {
     return new NamedCertificateSecret(name);
+  }
+
+  @Override
+  public NamedCertificateSecret populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
+    CertificateSecretParameters requestParameters = validRequestParameters(documentContext);
+    CertificateSecret secret = certificateSecretGenerator.generateSecret(requestParameters);
+    entity.setRoot(secret.getCertificateBody().getRoot());
+    entity.setCertificate(secret.getCertificateBody().getCertificate());
+    entity.setPrivateKey(secret.getCertificateBody().getPrivateKey());
+    return entity;
   }
 
   void setParametersSupplier(Supplier<CertificateSecretParameters> parametersSupplier) {

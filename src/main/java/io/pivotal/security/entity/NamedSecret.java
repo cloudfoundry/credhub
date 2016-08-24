@@ -1,12 +1,24 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.view.BaseView;
+import io.pivotal.security.view.Secret;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
 import java.time.Instant;
+
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "NamedSecret")
@@ -77,6 +89,8 @@ abstract public class NamedSecret<T> implements EncryptedValueContainer {
   }
 
   public abstract BaseView generateView();
+
+  public abstract Secret getViewInstance();
 
   public Instant getUpdatedAt() {
     return updatedAt;

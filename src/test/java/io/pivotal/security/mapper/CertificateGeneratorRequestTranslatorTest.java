@@ -6,22 +6,32 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.controller.v1.RequestParameters;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.view.CertificateSecret;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import javax.validation.ValidationException;
 
@@ -33,16 +43,17 @@ public class CertificateGeneratorRequestTranslatorTest {
   @Autowired
   Configuration configuration;
 
+  @Mock
+  SecretGenerator secretGenerator;
+
+  @InjectMocks
   private CertificateGeneratorRequestTranslator subject;
+
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
 
   {
     wireAndUnwire(this);
-
-    beforeEach(() -> {
-      subject = new CertificateGeneratorRequestTranslator();
-    });
 
     it("ensures that all of the allowable parameters have been provided", () -> {
       String json = "{" +
@@ -129,25 +140,6 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
     });
 
-    describe("validates the parameter holder at least once", () -> {
-
-      beforeEach(() -> {
-        mockParams = mock(CertificateSecretParameters.class);
-        subject.setParametersSupplier(() -> mockParams);
-        parsed = JsonPath.using(configuration).parse("{}");
-      });
-
-      it("on a certificate generator request", () -> {
-        subject.validRequestParameters(parsed);
-        verify(mockParams, times(2)).validate();
-      });
-
-      it("on a certificate authority request", () -> {
-        subject.validCertificateAuthorityParameters(parsed);
-        verify(mockParams, times(1)).validate();
-      });
-    });
-
     it("ensures that alternative names are added as necessary", () -> {
       String json = "{" +
           "\"type\":\"certificate\"," +
@@ -223,6 +215,29 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
     });
 
+    describe("validates the parameter holder at least once", () -> {
+
+      beforeEach(() -> {
+        mockParams = mock(CertificateSecretParameters.class);
+        subject.setParametersSupplier(() -> mockParams);
+        parsed = JsonPath.using(configuration).parse("{}");
+      });
+
+      afterEach(() -> {
+        subject.setParametersSupplier(() -> new CertificateSecretParameters());
+      });
+
+      it("on a certificate generator request", () -> {
+        subject.validRequestParameters(parsed);
+        verify(mockParams, times(2)).validate();
+      });
+
+      it("on a certificate authority request", () -> {
+        subject.validCertificateAuthorityParameters(parsed);
+        verify(mockParams, times(1)).validate();
+      });
+    });
+
     it("ensures that key length is added", () -> {
       String json = "{" +
           "\"type\":\"certificate\"," +
@@ -243,6 +258,23 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
+    });
+
+    it("can make an entity", () -> {
+      final NamedCertificateSecret secret = subject.makeEntity("abc");
+      assertThat(secret.getName(), equalTo("abc"));
+    });
+
+    it("can populate an entity from JSON", () -> {
+      when(secretGenerator.generateSecret(any(RequestParameters.class)))
+          .thenReturn(new CertificateSecret("my-root", "my-cert", "my-priv"));
+      final NamedCertificateSecret secret = subject.makeEntity("abc");
+      String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\"}}";
+      parsed = JsonPath.using(configuration).parse(requestJson);
+      subject.populateEntityFromJson(secret, parsed);
+      assertThat(secret.getRoot(), notNullValue());
+      assertThat(secret.getCertificate(), notNullValue());
+      assertThat(secret.getPrivateKey(), notNullValue());
     });
   }
 }

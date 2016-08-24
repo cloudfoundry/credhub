@@ -8,6 +8,8 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
   @JsonProperty("value")
   private CertificateBody certificateBody;
 
+  public CertificateSecret() {}
+
   public CertificateSecret(String root, String certificate, String privateKey) {
     setCertificateBody(new CertificateBody(root, certificate, privateKey));
   }
@@ -22,6 +24,12 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
   }
 
   @Override
+  public CertificateSecret generateView(NamedCertificateSecret entity) {
+    return this.setCertificateBody(new CertificateBody(entity.getRoot(), entity.getCertificate(), entity.getPrivateKey()))
+        .setUpdatedAt(entity.getUpdatedAt());
+  }
+
+  @Override
   public void populateEntity(NamedCertificateSecret entity) {
     entity.setRoot(getCertificateBody().getRoot())
         .setCertificate(getCertificateBody().getCertificate())
@@ -32,7 +40,8 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
     return certificateBody;
   }
 
-  public void setCertificateBody(CertificateBody certificateBody) {
+  public CertificateSecret setCertificateBody(CertificateBody certificateBody) {
     this.certificateBody = certificateBody;
+    return this;
   }
 }

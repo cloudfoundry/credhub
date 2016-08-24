@@ -11,6 +11,8 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
   @JsonProperty("value")
   public String value;
 
+  public StringSecret() {}
+
   public StringSecret(String secretValue) {
     value = secretValue;
   }
@@ -23,6 +25,12 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
   @Override
   public String getType() {
     return "value";
+  }
+
+  @Override
+  public StringSecret generateView(NamedStringSecret entity) {
+    return this.setValue(entity.getValue())
+        .setUpdatedAt(entity.getUpdatedAt());
   }
 
   @Override
