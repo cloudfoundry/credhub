@@ -13,7 +13,7 @@ import java.time.Instant;
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-abstract public class NamedSecret<T> {
+abstract public class NamedSecret<T> implements EncryptedValueContainer {
   public static final int NONCE_BYTES = 16;
   static final int ENCRYPTED_BYTES = 7000;
   @Id

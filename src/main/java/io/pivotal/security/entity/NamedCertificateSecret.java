@@ -7,7 +7,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
-public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> implements EncryptedValueContainer {
+public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
 
   @Column(length = 7000)
   private String root;

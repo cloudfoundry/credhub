@@ -9,7 +9,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "StringSecret")
 @DiscriminatorValue("string_value")
-public class NamedStringSecret extends NamedSecret<NamedStringSecret> implements EncryptedValueContainer {
+public class NamedStringSecret extends NamedSecret<NamedStringSecret> {
 
   public NamedStringSecret() {
   }
