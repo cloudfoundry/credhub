@@ -8,7 +8,7 @@ export TERM=xterm
 APP_DIR=sec-eng-credential-manager
 
 pushd $APP_DIR
-gradle clean dependencyCheck --info
+gradle clean dependencyCheck
 popd
 
 echo "Credential Manager owasp check results" > ${OUTPUT_PATH}/owasp-check-email-subject.txt
