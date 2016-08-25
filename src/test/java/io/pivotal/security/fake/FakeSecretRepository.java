@@ -24,6 +24,11 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
+  public NamedSecret findOneByUuid(String uuid) {
+    return null;
+  }
+
+  @Override
   public <S extends NamedSecret> S save(S entity) {
     transactionManager.currentTransaction.enqueue(() -> {
       count++;

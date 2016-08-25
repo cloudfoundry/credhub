@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
   NamedSecret findOneByName(String name);
+  NamedSecret findOneByUuid(String uuid);
 }

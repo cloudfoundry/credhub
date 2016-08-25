@@ -4,11 +4,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
-import io.pivotal.security.mapper.CertificateSetRequestTranslator;
-import io.pivotal.security.mapper.RequestTranslator;
-import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
-import io.pivotal.security.mapper.StringSetRequestTranslator;
+import io.pivotal.security.mapper.*;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
@@ -25,21 +21,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Objects;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(path = "/api/v1/data", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -124,8 +114,8 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
   ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
-    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
     return auditLogService.performWithAuditing("credential_delete", new AuditRecordParameters(request, authentication), () -> {
+      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
       if (namedSecret != null) {
         secretRepository.delete(namedSecret);
         return new ResponseEntity(HttpStatus.OK);
@@ -136,10 +126,22 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-  public ResponseEntity get(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
-    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-
+  public ResponseEntity getByName(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request, authentication), () -> {
+      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+      if (namedSecret == null) {
+        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+      } else {
+        Secret secret = namedSecret.getViewInstance();
+        return new ResponseEntity<>(secret.generateView(namedSecret), HttpStatus.OK);
+      }
+    });
+  }
+
+  @RequestMapping(method = RequestMethod.GET)
+  public ResponseEntity getByUuid(@RequestParam("id") String uuid, HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request, authentication), () -> {
+      NamedSecret namedSecret = secretRepository.findOneByUuid(uuid);
       if (namedSecret == null) {
         return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
       } else {
@@ -187,5 +189,4 @@ public class SecretsController {
       throw new ValidationException("error.type_invalid");
     }
   }
-
 }
