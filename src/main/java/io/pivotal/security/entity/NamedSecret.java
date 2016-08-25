@@ -1,5 +1,6 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.util.UuidGenerator;
 import io.pivotal.security.view.Secret;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -17,7 +18,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "NamedSecret")
@@ -46,10 +50,18 @@ abstract public class NamedSecret<T> implements EncryptedValueContainer {
   @LastModifiedDate
   private Instant updatedAt;
 
+  @Column
+  private String uuid;
+
+  @Transient
+  UuidGenerator uuidGenerator;
+
   public NamedSecret() {
+    uuidGenerator = new UuidGenerator();
   }
 
   public NamedSecret(String name) {
+    this();
     this.setName(name);
   }
 
@@ -96,5 +108,24 @@ abstract public class NamedSecret<T> implements EncryptedValueContainer {
   public T setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
     return (T) this;
+  }
+
+  public String getUuid() {
+    return uuid;
+  }
+
+  public UuidGenerator getUuidGenerator() {
+    return uuidGenerator;
+  }
+
+  public T setUuidGenerator(UuidGenerator uuidGenerator) {
+    this.uuidGenerator = uuidGenerator;
+    return (T) this;
+  }
+
+  @PrePersist
+  @PreUpdate
+  public void updateUuidOnPersist() {
+    this.uuid = uuidGenerator.makeUuid();
   }
 }

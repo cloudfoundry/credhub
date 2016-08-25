@@ -3,7 +3,9 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -13,6 +15,7 @@ import static io.pivotal.security.helper.SpectrumHelper.json;
 import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.time.Instant;
@@ -21,6 +24,9 @@ import java.time.Instant;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class CertificateSecretTest {
+  @Autowired
+  SecretRepository secretRepository;
+
   private CertificateSecret subject;
   private NamedCertificateSecret entity;
 
@@ -44,14 +50,20 @@ public class CertificateSecretTest {
     });
 
     it("creates a view from entity", () -> {
-      assertThat(json(new CertificateSecret().generateView(entity)), equalTo("{\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"root\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
+      assertThat(json(new CertificateSecret().generateView(entity)), equalTo("{\"uuid\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"root\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
     });
 
-    it("set updated-at time on generated view", () -> {
+    it("sets updated-at time on generated view", () -> {
       Instant now = Instant.now();
       entity.setUpdatedAt(now);
       CertificateSecret actual = subject.generateView(entity);
       assertThat(actual.getUpdatedAt(), equalTo(now));
+    });
+
+    it("sets uuid on generated view", () -> {
+      entity = secretRepository.save(entity);
+      CertificateSecret actual = subject.generateView(entity);
+      assertThat(actual.getUuid(), notNullValue());
     });
   }
 }

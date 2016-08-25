@@ -25,8 +25,10 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
 
   @Override
   public CertificateSecret generateView(NamedCertificateSecret entity) {
-    return this.setCertificateBody(new CertificateBody(entity.getRoot(), entity.getCertificate(), entity.getPrivateKey()))
-        .setUpdatedAt(entity.getUpdatedAt());
+    return super
+        .generateView(entity)
+        .setCertificateBody(
+            new CertificateBody(entity.getRoot(), entity.getCertificate(), entity.getPrivateKey()));
   }
 
   @Override

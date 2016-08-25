@@ -9,7 +9,7 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
 
   @NotNull
   @JsonProperty("value")
-  public String value;
+  private String value;
 
   public StringSecret() {}
 
@@ -29,8 +29,9 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
 
   @Override
   public StringSecret generateView(NamedStringSecret entity) {
-    return this.setValue(entity.getValue())
-        .setUpdatedAt(entity.getUpdatedAt());
+    return super
+        .generateView(entity)
+        .setValue(entity.getValue());
   }
 
   @Override

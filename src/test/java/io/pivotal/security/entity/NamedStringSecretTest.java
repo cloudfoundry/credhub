@@ -85,5 +85,11 @@ public class NamedStringSecretTest {
     itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
       subject.setValue(null);
     });
+
+    it("sets UUID when Hibernate stores the object", () -> {
+      subject.setValue("my-value");
+      repository.save(subject);
+      assertThat(subject.getUuid().length(), equalTo(36));
+    });
   }
 }

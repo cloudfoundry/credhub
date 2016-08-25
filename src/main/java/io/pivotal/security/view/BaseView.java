@@ -9,7 +9,7 @@ public abstract class BaseView<ET, T> {
 
   public abstract void populateEntity(ET entity);
 
-  public abstract BaseView generateView(ET entity);
+  public abstract T generateView(ET entity);
 
   @JsonProperty("updated_at")
   public Instant getUpdatedAt() {
