@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.JsonExpectationsHelper;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -24,6 +25,9 @@ import java.time.Instant;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class CertificateSecretTest {
+
+  private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
+
   @Autowired
   SecretRepository secretRepository;
 
@@ -50,7 +54,7 @@ public class CertificateSecretTest {
     });
 
     it("creates a view from entity", () -> {
-      assertThat(json(new CertificateSecret().generateView(entity)), equalTo("{\"uuid\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"root\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
+      jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"root\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(new CertificateSecret().generateView(entity)), true);
     });
 
     it("sets updated-at time on generated view", () -> {

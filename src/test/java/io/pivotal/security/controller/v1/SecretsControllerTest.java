@@ -48,7 +48,6 @@ import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -61,6 +60,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @ActiveProfiles({"unit-test", "FakeUuidGenerator"})
 public class SecretsControllerTest {
+
+  private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
 
   @Autowired
   private MessageSource messageSource;
@@ -101,8 +102,6 @@ public class SecretsControllerTest {
 
   private String urlPath;
   private String secretName;
-
-  private final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
 
   {
     wireAndUnwire(this);
