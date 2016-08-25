@@ -10,7 +10,6 @@ import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
-import io.pivotal.security.util.UuidGenerator;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
@@ -31,6 +30,7 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.util.JsonExpectationsHelper;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
@@ -38,38 +38,28 @@ import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 import java.util.function.Consumer;
 
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.helper.SpectrumHelper.*;
+import static junit.framework.TestCase.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
-@ActiveProfiles("unit-test")
+@ActiveProfiles({"unit-test", "FakeUuidGenerator"})
 public class SecretsControllerTest {
 
   @Autowired
@@ -103,9 +93,6 @@ public class SecretsControllerTest {
   @Mock
   private ResourceServerTokenServices tokenServices;
 
-  @Mock
-  private UuidGenerator uuidGenerator;
-
   private MockMvc mockMvc;
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
   private SecurityContext oldContext;
@@ -114,6 +101,8 @@ public class SecretsControllerTest {
 
   private String urlPath;
   private String secretName;
+
+  private final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
 
   {
     wireAndUnwire(this);
@@ -145,8 +134,6 @@ public class SecretsControllerTest {
       SecurityContext securityContext = mock(SecurityContext.class);
       when(securityContext.getAuthentication()).thenReturn(authentication);
       SecurityContextHolder.setContext(securityContext);
-
-      when(uuidGenerator.makeUuid()).thenReturn("my-uuid");
     });
 
     afterEach(() -> {
@@ -157,39 +144,33 @@ public class SecretsControllerTest {
       beforeEach(() -> {
         expectedSecret = new NamedStringSecret(secretName)
             .setValue("very-secret")
-            .setUpdatedAt(frozenTime)
-            .setUuidGenerator(uuidGenerator);
+            .setUpdatedAt(frozenTime);
         when(stringGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(expectedSecret);
       });
 
-      fit("can save a client-provided string secret", () -> {
-        String requestJson = "{\"uuid\":\"my-uuid\",\"type\":\"value\",\"value\":\"very-secret\"}";
-        String resultJson = "{\"uuid\":\"my-uuid\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret\"}";
+      it("can save a client-provided string secret", () -> {
+        String requestJson = "{\"type\":\"value\",\"value\":\"very-secret\"}";
+        String resultJson = "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret\"}";
 
-        expectSuccessWithoutJson(putRequestBuilder(urlPath, requestJson));
+        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
         NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-//        assertThat(json(new StringSecret().generateView(stored)), equalTo(resultJson));
-        assertThat(stored, BeanMatchers.theSameAs(expectedSecret)
-            .excludeProperty("Id")
-            .excludeProperty("Uuid")
-            .excludeProperty("Nonce")
-            .excludeProperty("EncryptedValue")
-            .excludeProperty("UuidGenerator"));
-        assertNotNull(stored.getUuid());
+        jsonExpectationsHelper.assertJsonEqual(resultJson, json(new StringSecret().generateView(stored)), true);
       });
 
       it("can update a client-provided string secret", () -> {
-        String requestJson = "{\"uuid\":\"my-uuid\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret\"}";
-        String requestJson2 = "{\"uuid\":\"my-uuid\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret-2\"}";
+        String requestJson = "{\"type\":\"value\",\"value\":\"very-secret\"}";
+        String resultJson = "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret\"}";
+        String requestJson2 = "{\"type\":\"value\",\"value\":\"very-secret-2\"}";
+        String resultJson2 = "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"very-secret-2\"}";
 
-        expectSuccess(putRequestBuilder(urlPath, requestJson), requestJson);
-        expectSuccess(putRequestBuilder(urlPath, requestJson2), requestJson2);
+        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
+        expectSuccess(putRequestBuilder(urlPath, requestJson2), resultJson2);
 
         StringSecret expected = new StringSecret("very-secret-2");
         expected.setUpdatedAt(frozenTime);
         NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        assertThat(json(new StringSecret().generateView(stored)), equalTo(requestJson2));
+        jsonExpectationsHelper.assertJsonEqual(resultJson2, json(new StringSecret().generateView(stored)), true);
       });
 
       it("can fetch a string secret", () -> {
@@ -201,27 +182,33 @@ public class SecretsControllerTest {
       });
 
       it("can generate string secret", () -> {
-        StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
+        StringSecret expectedStringSecret = new StringSecret("very-secret")
+            .setUpdatedAt(frozenTime)
+            .setUuid("47c37cff-6d48-49ff-a294-3eca9b716e10");
 
         String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder(urlPath, "{\"uuid\":\"my-uuid\",\"type\":\"value\"}"), expectedJson);
+        expectSuccess(postRequestBuilder(urlPath, "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"value\"}"), expectedJson);
         assertThat((NamedStringSecret) secretRepository.findOneByName(secretName), BeanMatchers.theSameAs(expectedSecret).excludeProperty("Id"));
       });
 
       it("can generate string secret with empty parameters map", () -> {
-        StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
+        StringSecret expectedStringSecret = new StringSecret("very-secret")
+            .setUpdatedAt(frozenTime)
+            .setUuid("47c37cff-6d48-49ff-a294-3eca9b716e10");
 
         String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder(urlPath, "{\"uuid\":\"my-uuid\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"parameters\":{}}"), expectedJson);
+        expectSuccess(postRequestBuilder(urlPath, "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"parameters\":{}}"), expectedJson);
         NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
         assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
       });
 
       it("uses parameters to generate string secret", () -> {
-        StringSecret expectedStringSecret = new StringSecret("very-secret").setUpdatedAt(frozenTime);
+        StringSecret expectedStringSecret = new StringSecret("very-secret")
+            .setUpdatedAt(frozenTime)
+            .setUuid("47c37cff-6d48-49ff-a294-3eca9b716e10");
         String expectedJson = json(expectedStringSecret);
         String requestJson = "{" +
-            "\"uuid\":\"my-uuid\",\"type\":\"value\"," +
+            "\"type\":\"value\"," +
             "\"parameters\":{" +
             "\"length\":42, " +
             "\"exclude_special\": true," +
@@ -249,8 +236,8 @@ public class SecretsControllerTest {
       });
 
       it("can store a client-provided certificate", () -> {
-        String requestJson = "{\"uuid\":\"my-uuid\",\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
-        String resultJson = "{\"uuid\":\"my-uuid\",\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String resultJson = "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
@@ -258,6 +245,7 @@ public class SecretsControllerTest {
             .setRoot("my-ca")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
+            .setUuid("47c37cff-6d48-49ff-a294-3eca9b716e10")
             .setUpdatedAt(frozenTime);
         final NamedCertificateSecret storedSecret = (NamedCertificateSecret) secretRepository.findOneByName(secretName);
         assertThat(storedSecret, BeanMatchers.theSameAs(expectedCertificateSecret).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
@@ -265,8 +253,8 @@ public class SecretsControllerTest {
       });
 
       it("returns JSON that contains nulls in fields the client did not provide", () -> {
-        String requestJson = "{\"uuid\":\"my-uuid\",\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
-        String resultJson = "{\"uuid\":\"my-uuid\",\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String resultJson = "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
 
         expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
       });
@@ -280,7 +268,7 @@ public class SecretsControllerTest {
         when(certificateGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(expectedSecret);
 
         String requestJson = "{" +
-            "\"uuid\":\"my-uuid\",\"type\":\"certificate\"," +
+            "\"type\":\"certificate\"," +
             "\"parameters\":{" +
             "\"common_name\":\"My Common Name\", " +
             "\"organization\": \"organization.io\"," +
@@ -291,7 +279,9 @@ public class SecretsControllerTest {
             "\"alternative_names\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]" +
             "}" +
             "}";
-        CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv").setUpdatedAt(frozenTime);
+        CertificateSecret certificateSecret = new CertificateSecret("my-ca", "my-certificate", "my-priv")
+            .setUpdatedAt(frozenTime)
+            .setUuid("47c37cff-6d48-49ff-a294-3eca9b716e10");
         String expectedJson = json(certificateSecret);
         expectSuccess(postRequestBuilder(urlPath, requestJson), expectedJson);
         assertThat((NamedCertificateSecret) secretRepository.findOneByName(secretName), BeanMatchers.theSameAs(expectedSecret).excludeProperty("Id"));
@@ -351,7 +341,7 @@ public class SecretsControllerTest {
     });
 
     it("returns bad request (400) for PUT when client does not specify a value", () -> {
-      expectErrorKey(putRequestBuilder(urlPath, "{\"uuid\":\"my-uuid\",\"type\":\"value\"}"), HttpStatus.BAD_REQUEST, "error.missing_string_secret_value");
+      expectErrorKey(putRequestBuilder(urlPath, "{\"type\":\"value\"}"), HttpStatus.BAD_REQUEST, "error.missing_string_secret_value");
     });
 
     it("returns bad request (400) for PUT without a type parameter", () -> {
@@ -359,14 +349,14 @@ public class SecretsControllerTest {
     });
 
     it("returns bad request (400) for PUT with unsupported type", () -> {
-      expectErrorKey(putRequestBuilder(urlPath, "{\"uuid\":\"my-uuid\",\"type\":\"foo\", \"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
+      expectErrorKey(putRequestBuilder(urlPath, "{\"type\":\"foo\", \"value\":\"my-secret\"}"), HttpStatus.BAD_REQUEST, "error.type_invalid");
     });
 
     it("returns bad request (400) if client tries to change the type of a secret", () -> {
       NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("password");
       secretRepository.save(stringSecret);
 
-      String requestJson = "{\"uuid\":\"my-uuid\",\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+      String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
       expectErrorKey(putRequestBuilder(urlPath, requestJson), HttpStatus.BAD_REQUEST, "error.type_mismatch");
     });
 
@@ -383,7 +373,7 @@ public class SecretsControllerTest {
       doPutValue(testSecretName, "abc");
       doPutValue(uniquify("test.foo"), "def");
 
-      expectSuccess(get("/api/v1/data/" + testSecretName), "{\"uuid\":\"my-uuid\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"abc\"}");
+      expectSuccess(get("/api/v1/data/" + testSecretName), "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"abc\"}");
     });
   }
 
@@ -392,12 +382,6 @@ public class SecretsControllerTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(returnedJson, true));
-  }
-
-  private void expectSuccessWithoutJson(RequestBuilder requestBuilder) throws Exception {
-    mockMvc.perform(requestBuilder)
-        .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8));
   }
 
   private void expectErrorKey(RequestBuilder requestBuilder, HttpStatus httpStatus, String errorKey) throws Exception {
@@ -430,8 +414,8 @@ public class SecretsControllerTest {
   }
 
   private void doPutValue(String secretName, String secretValue) throws Exception {
-    String requestJson = "{\"uuid\":\"my-uuid\",\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
-    String resultJson = "{\"uuid\":\"my-uuid\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"" + secretValue + "\"}";
+    String requestJson = "{\"type\":\"value\",\"value\":\"" + secretValue + "\"}";
+    String resultJson = "{\"id\":\"47c37cff-6d48-49ff-a294-3eca9b716e10\",\"type\":\"value\"," + getUpdatedAtJson() + ",\"value\":\"" + secretValue + "\"}";
 
     expectSuccess(putRequestBuilder("/api/v1/data/" + secretName, requestJson), resultJson);
   }
@@ -483,7 +467,9 @@ public class SecretsControllerTest {
       NamedCertificateSecret certificateFromDb = (NamedCertificateSecret) secretRepository.findOneByName(localSecretName);
 
       if (isHttpOk) {
-        assertThat(new CertificateSecret().generateView(certificateFromDb), BeanMatchers.theSameAs(certificateSecretForResponse));
+        assertThat(new CertificateSecret().generateView(certificateFromDb),
+            BeanMatchers.theSameAs(certificateSecretForResponse)
+                .excludeProperty("Uuid"));
       } else {
         assertNull(certificateFromDb);
         result.andExpect(content().json(badResponseJson));

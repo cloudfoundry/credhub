@@ -7,9 +7,9 @@ public abstract class Secret<ET extends NamedSecret, T extends Secret> extends B
   @JsonProperty
   public abstract String getType();
 
-  @JsonProperty
   private String uuid;
 
+  @JsonProperty("id")
   public String getUuid() {
     return uuid;
   }
