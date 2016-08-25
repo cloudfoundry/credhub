@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping(path = "/api/v1/data", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -127,21 +128,17 @@ public class SecretsController {
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
   public ResponseEntity getByName(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
-    return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request, authentication), () -> {
-      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-      if (namedSecret == null) {
-        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
-      } else {
-        Secret secret = namedSecret.getViewInstance();
-        return new ResponseEntity<>(secret.generateView(namedSecret), HttpStatus.OK);
-      }
-    });
+    return retrieveWithAuditing(secretPath, secretRepository::findOneByName, request, authentication);
   }
 
   @RequestMapping(method = RequestMethod.GET)
   public ResponseEntity getByUuid(@RequestParam("id") String uuid, HttpServletRequest request, Authentication authentication) throws Exception {
+    return retrieveWithAuditing(uuid, secretRepository::findOneByUuid, request, authentication);
+  }
+
+  private ResponseEntity retrieveWithAuditing(String identifier, Function<String, NamedSecret> finder, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request, authentication), () -> {
-      NamedSecret namedSecret = secretRepository.findOneByUuid(uuid);
+      NamedSecret namedSecret = finder.apply(identifier);
       if (namedSecret == null) {
         return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
       } else {
