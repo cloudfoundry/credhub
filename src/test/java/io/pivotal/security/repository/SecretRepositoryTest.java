@@ -3,6 +3,7 @@ package io.pivotal.security.repository;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class SecretRepositoryTest {
   public void canStoreStringsOfLength7000WhichMeans7016ForGCM() throws Exception {
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-    NamedStringSecret entity = new NamedStringSecret(secretName);
+    NamedStringSecret entity = new NamedValueSecret(secretName);
     entity.setValue(stringBuilder.toString());
 
     subject.save(entity);

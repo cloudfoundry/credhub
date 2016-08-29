@@ -3,6 +3,7 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.StringSecretParameters;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,7 @@ import java.util.Optional;
 import javax.validation.ValidationException;
 
 @Component
-public class StringGeneratorRequestTranslator implements RequestTranslator<NamedStringSecret>, SecretGeneratorRequestTranslator<StringSecretParameters> {
+public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedStringSecret>, SecretGeneratorRequestTranslator<StringSecretParameters> {
 
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
@@ -44,7 +45,7 @@ public class StringGeneratorRequestTranslator implements RequestTranslator<Named
 
   @Override
   public NamedStringSecret makeEntity(String name) {
-    return new NamedStringSecret(name);
+    return new NamedValueSecret(name);
   }
 
   @Override

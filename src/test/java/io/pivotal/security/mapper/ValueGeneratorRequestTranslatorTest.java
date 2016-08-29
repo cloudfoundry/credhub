@@ -34,7 +34,7 @@ import javax.validation.ValidationException;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
-public class StringGeneratorRequestTranslatorTest {
+public class ValueGeneratorRequestTranslatorTest {
 
   @Autowired
   Configuration configuration;
@@ -43,7 +43,7 @@ public class StringGeneratorRequestTranslatorTest {
   SecretGenerator secretGenerator;
 
   @InjectMocks
-  private StringGeneratorRequestTranslator subject;
+  private ValueGeneratorRequestTranslator subject;
 
   {
     wireAndUnwire(this);

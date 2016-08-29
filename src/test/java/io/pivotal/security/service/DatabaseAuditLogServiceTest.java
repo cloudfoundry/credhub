@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.fake.FakeAuditRecordRepository;
 import io.pivotal.security.fake.FakeSecretRepository;
@@ -95,7 +96,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              final NamedStringSecret secret = secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("key").setValue("value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
           });
@@ -115,7 +116,7 @@ public class DatabaseAuditLogServiceTest {
             auditRepository.failOnSave();
 
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              final NamedStringSecret secret = secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("key").setValue("value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
           });
@@ -136,7 +137,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              secretRepository.save(new NamedValueSecret("key").setValue("value"));
               throw new RuntimeException("controller method failed");
             });
           });
@@ -156,7 +157,7 @@ public class DatabaseAuditLogServiceTest {
             auditRepository.failOnSave();
 
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              secretRepository.save(new NamedValueSecret("key").setValue("value"));
               throw new RuntimeException("controller method failed");
             });
           });
@@ -177,7 +178,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              secretRepository.save(new NamedValueSecret("key").setValue("value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
           });
@@ -196,7 +197,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             auditRepository.failOnSave();
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              secretRepository.save(new NamedValueSecret("key").setValue("value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
           });
@@ -217,7 +218,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             transactionManager.failOnCommit();
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedStringSecret("key").setValue("value"));
+              secretRepository.save(new NamedValueSecret("key").setValue("value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
           });

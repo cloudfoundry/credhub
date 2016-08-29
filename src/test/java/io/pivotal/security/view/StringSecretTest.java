@@ -3,6 +3,7 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +28,7 @@ import java.time.Instant;
 public class StringSecretTest {
   private StringSecret subject;
 
-  private NamedStringSecret entity;
+  private NamedValueSecret entity;
 
   @Autowired
   SecretRepository secretRepository;
@@ -37,7 +38,7 @@ public class StringSecretTest {
 
     beforeEach(() -> {
       subject = new StringSecret("myFavoriteValue");
-      entity = new NamedStringSecret(uniquify("foo"), "value");
+      entity = new NamedValueSecret(uniquify("foo"));
     });
 
     it("populates entity with all values", () -> {
@@ -64,11 +65,9 @@ public class StringSecretTest {
       });
 
       it("has type in the view", () -> {
-        entity.setSecretType("password");
-
         StringSecret actual = subject.generateView(entity);
 
-        assertThat(actual.getType(), equalTo("password"));
+        assertThat(actual.getType(), equalTo("value"));
       });
 
       it("has a uuid in the view", () -> {

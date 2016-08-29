@@ -3,6 +3,7 @@ package io.pivotal.security.config;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
@@ -43,7 +44,7 @@ public class DatabaseEncryptionConfigurationTest {
     describe("when a value has been written to the database", () -> {
       beforeEach(() -> {
         secretName = uniquify("test");
-        NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("value1");
+        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("value1");
         secretRepository.saveAndFlush(stringSecret);
       });
 

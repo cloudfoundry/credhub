@@ -24,7 +24,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
-public class NamedStringSecretTest {
+public class NamedValueSecretTest {
   @Autowired
   SecretRepository repository;
 
@@ -40,7 +40,7 @@ public class NamedStringSecretTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      subject = new NamedStringSecret("Foo", "value");
+      subject = new NamedValueSecret("Foo");
       ((FakeEncryptionService) encryptionService).setEncryptionCount(0);
     });
 
@@ -48,46 +48,10 @@ public class NamedStringSecretTest {
       repository.deleteAll();
     });
 
-    describe("secret types", () -> {
-      itThrows("disallows null for secret types", IllegalArgumentException.class, () -> {
-        subject.setSecretType(null);
-        repository.saveAndFlush(subject);
-      });
-
-      itThrows("disallows unknown secret types", IllegalArgumentException.class, () -> {
-        subject.setSecretType("foo");
-        repository.saveAndFlush(subject);
-      });
-
-      itThrows("disallows unknown secret types", IllegalArgumentException.class, () -> {
-        subject = new NamedStringSecret("Foo", "foo");
-        repository.saveAndFlush(subject);
-      });
-
-      it("allows 'value' or 'password' for secret type ", () -> {
-        repository.saveAndFlush(subject);
-
-        NamedStringSecret found = (NamedStringSecret) repository.findOne(subject.getId());
-        assertThat(found.getSecretType(), equalTo("value"));
-
-        subject.setSecretType("password");
-        repository.saveAndFlush(subject);
-
-        found = (NamedStringSecret) repository.findOne(subject.getId());
-        assertThat(found.getSecretType(), equalTo("password"));
-      });
-    });
-
-    describe("value string secrets", validateNamedStringSecret(new NamedStringSecret("foo", "value")));
-
-    describe("password string secrets", validateNamedStringSecret(new NamedStringSecret("foo", "password")));
-  }
-
-  private Spectrum.Block validateNamedStringSecret(NamedStringSecret namedStringSecret) {
-    return  () -> {
+    describe("value string secrets", () -> {
       describe("with or without alternative names", () -> {
         beforeEach(() -> {
-          subject = namedStringSecret;
+          subject = new NamedValueSecret("foo");
         });
 
         it("updates the secret value with the same name when overwritten", () -> {
@@ -132,6 +96,6 @@ public class NamedStringSecretTest {
           assertThat(subject.getUuid().length(), equalTo(36));
         });
       });
-    };
+    });
   }
 }

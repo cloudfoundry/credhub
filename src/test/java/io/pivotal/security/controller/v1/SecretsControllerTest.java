@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.*;
 import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
-import io.pivotal.security.mapper.StringGeneratorRequestTranslator;
+import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
+import io.pivotal.security.mapper.ValueGeneratorRequestTranslator;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateSecret;
@@ -89,7 +89,10 @@ public class SecretsControllerTest {
   FakeUuidGenerator fakeUuidGenerator;
 
   @Mock
-  StringGeneratorRequestTranslator stringGeneratorRequestTranslator;
+  ValueGeneratorRequestTranslator valueGeneratorRequestTranslator;
+
+  @Mock
+  PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
 
   @Mock
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
@@ -101,7 +104,7 @@ public class SecretsControllerTest {
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
   private SecurityContext oldContext;
   private Consumer<Long> fakeTimeSetter;
-  private NamedStringSecret expectedSecret;
+  private NamedSecret expectedSecret;
 
   private String urlPath;
   private String secretName;
@@ -142,10 +145,11 @@ public class SecretsControllerTest {
 
     describe("string secrets", () -> {
       beforeEach(() -> {
-        expectedSecret = new NamedStringSecret(secretName)
+        NamedStringSecret namedStringSecret = new NamedValueSecret(secretName)
             .setValue("very-secret")
             .setUpdatedAt(frozenTime);
-        when(stringGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(expectedSecret);
+        expectedSecret = namedStringSecret;
+        when(valueGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(namedStringSecret);
       });
 
       it("can save a client-provided string secret", () -> {
@@ -174,7 +178,7 @@ public class SecretsControllerTest {
       });
 
       it("can fetch a string secret by name", () -> {
-        NamedStringSecret stringSecret = new NamedStringSecret(secretName, "value").setValue("stringSecret contents");
+        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
         secretRepository.save(stringSecret);
         String expectedJson = json(new StringSecret().generateView(stringSecret));
 
@@ -182,7 +186,7 @@ public class SecretsControllerTest {
       });
 
       it("can fetch a string secret by uuid", () -> {
-        NamedStringSecret stringSecret = new NamedStringSecret(secretName, "value").setValue("stringSecret contents");
+        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
         secretRepository.save(stringSecret);
         String expectedJson = json(new StringSecret().generateView(stringSecret));
 
@@ -236,10 +240,11 @@ public class SecretsControllerTest {
 //    todo reuse suite from secrets; Dan has new story for removing
     describe("password secrets", () -> {
       beforeEach(() -> {
-        expectedSecret = new NamedStringSecret(secretName)
+        NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret(secretName)
             .setValue("my-password")
             .setUpdatedAt(frozenTime);
-        when(stringGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(expectedSecret);
+        expectedSecret = namedPasswordSecret;
+        when(passwordGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(namedPasswordSecret);
       });
 
       it("can save a client-provided password secret", () -> {
@@ -268,7 +273,7 @@ public class SecretsControllerTest {
       });
 
       it("can fetch a password secret by name", () -> {
-        NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("stringSecret contents");
+        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
         secretRepository.save(stringSecret);
         String expectedJson = json(new StringSecret().generateView(stringSecret));
 
@@ -402,7 +407,7 @@ public class SecretsControllerTest {
     });
 
     it("can delete a secret", () -> {
-      NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("super stringSecret do not tell");
+      NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("super stringSecret do not tell");
 
       secretRepository.save(stringSecret);
       mockMvc.perform(delete(urlPath))
@@ -451,7 +456,7 @@ public class SecretsControllerTest {
     });
 
     it("returns bad request (400) if client tries to change the type of a secret", () -> {
-      NamedStringSecret stringSecret = new NamedStringSecret(secretName).setValue("password");
+      NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("password");
       secretRepository.save(stringSecret);
 
       String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":null,\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";

@@ -6,6 +6,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -24,14 +25,14 @@ import javax.validation.ValidationException;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
-public class StringSetRequestTranslatorTest {
+public class ValueSetRequestTranslatorTest {
 
   @Autowired
   private Configuration jsonConfiguration;
 
-  private StringSetRequestTranslator subject;
+  private ValueSetRequestTranslator subject;
 
-  private NamedStringSecret entity;
+  private NamedValueSecret entity;
 
   {
     wireAndUnwire(this);
@@ -39,7 +40,7 @@ public class StringSetRequestTranslatorTest {
     describe("populating entity from JSON", () -> {
 
       beforeEach(() -> {
-        subject = new StringSetRequestTranslator();
+        subject = new ValueSetRequestTranslator();
         entity = subject.makeEntity("rick");
       });
 

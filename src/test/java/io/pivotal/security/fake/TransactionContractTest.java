@@ -1,7 +1,7 @@
 package io.pivotal.security.fake;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import org.junit.runner.RunWith;
 import org.springframework.transaction.TransactionStatus;
@@ -68,8 +68,8 @@ public class TransactionContractTest {
 
       describe("when data has been written", () -> {
         beforeEach(() -> {
-          secretRepository.save(new NamedStringSecret("test").setValue("value"));
-          secretRepository.save(new NamedStringSecret("otherTest").setValue("otherValue"));
+          secretRepository.save(new NamedValueSecret("test").setValue("value"));
+          secretRepository.save(new NamedValueSecret("otherTest").setValue("otherValue"));
 
           final OperationAuditRecord auditRecord = new OperationAuditRecord();
           auditRecord.setOperation("operation");
@@ -105,7 +105,7 @@ public class TransactionContractTest {
           describe("when another transaction is opened", () -> {
             beforeEach(() -> {
               transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-              secretRepository.save(new NamedStringSecret("test3").setValue("value3"));
+              secretRepository.save(new NamedValueSecret("test3").setValue("value3"));
               transactionManager.commit(transaction);
             });
 
