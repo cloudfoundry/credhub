@@ -37,7 +37,7 @@ public class StringSecretTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      subject = new StringSecret("myFavoriteValue");
+      subject = new StringSecret("value", "myFavoriteValue");
       entity = new NamedValueSecret(uniquify("foo"));
     });
 

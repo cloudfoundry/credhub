@@ -470,15 +470,16 @@ public class SecretsControllerTest {
         });
 
         it("can update a client-provided string secret", () -> {
-          String requestJson = "{\"type\":\"" + expectedSecret.getSecretType() + "\",\"value\":\"my-password\"}";
+          String secretType = expectedSecret.getSecretType();
+          String requestJson = "{\"type\":\"" + secretType + "\",\"value\":\"my-password\"}";
           String resultJson = resultStringMaker.apply("my-password");
           expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
-          String requestJson2 = "{\"type\":\"" + expectedSecret.getSecretType() + "\",\"value\":\"my-password-2\"}";
+          String requestJson2 = "{\"type\":\"" + secretType + "\",\"value\":\"my-password-2\"}";
           String resultJson2 = resultStringMaker.apply("my-password-2");
           expectSuccess(putRequestBuilder(urlPath, requestJson2), resultJson2);
 
-          StringSecret expected = new StringSecret("my-password-2");
+          StringSecret expected = new StringSecret(secretType, "my-password-2");
           expected.setUpdatedAt(frozenTime);
           NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
           jsonExpectationsHelper.assertJsonEqual(resultJson2, json(new StringSecret().generateView(stored)), true);

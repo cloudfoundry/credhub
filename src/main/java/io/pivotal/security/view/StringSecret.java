@@ -16,11 +16,6 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
 
   public StringSecret() {}
 
-  @Deprecated
-  public StringSecret(String secretValue) {
-    value = secretValue;
-  }
-
   public StringSecret(String secretType, String secretValue) {
     this.type = secretType;
     this.value = secretValue;

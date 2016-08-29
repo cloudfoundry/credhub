@@ -49,7 +49,7 @@ public class ValueGeneratorRequestTranslatorTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      when(secretGenerator.generateSecret(any(RequestParameters.class))).thenReturn(new StringSecret("my-password"));
+      when(secretGenerator.generateSecret(any(RequestParameters.class))).thenReturn(new StringSecret("value", "very-secret"));
     });
 
     it("returns a StringGeneratorRequest for valid json", () -> {
