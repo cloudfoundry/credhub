@@ -44,6 +44,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
@@ -104,7 +105,7 @@ public class SecretsControllerTest {
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
   private SecurityContext oldContext;
   private Consumer<Long> fakeTimeSetter;
-  private NamedSecret expectedSecret;
+  private NamedStringSecret expectedSecret;
 
   private String urlPath;
   private String secretName;
@@ -143,7 +144,7 @@ public class SecretsControllerTest {
       SecurityContextHolder.setContext(oldContext);
     });
 
-    describe("string secrets", () -> {
+    describe("value secrets", () -> {
       beforeEach(() -> {
         NamedStringSecret namedStringSecret = new NamedValueSecret(secretName)
             .setValue("very-secret")
@@ -152,92 +153,9 @@ public class SecretsControllerTest {
         when(valueGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(namedStringSecret);
       });
 
-      it("can save a client-provided string secret", () -> {
-        String requestJson = "{\"type\":\"value\",\"value\":\"very-secret\"}";
-        String resultJson = makeValueResultJsonString("very-secret");
-
-        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
-
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        jsonExpectationsHelper.assertJsonEqual(resultJson, json(new StringSecret().generateView(stored)), true);
-      });
-
-      it("can update a client-provided string secret", () -> {
-        String requestJson = "{\"type\":\"value\",\"value\":\"very-secret\"}";
-        String resultJson = makeValueResultJsonString("very-secret");
-        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
-
-        String requestJson2 = "{\"type\":\"value\",\"value\":\"very-secret-2\"}";
-        String resultJson2 = makeValueResultJsonString("very-secret-2");
-        expectSuccess(putRequestBuilder(urlPath, requestJson2), resultJson2);
-
-        StringSecret expected = new StringSecret("very-secret-2");
-        expected.setUpdatedAt(frozenTime);
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        jsonExpectationsHelper.assertJsonEqual(resultJson2, json(new StringSecret().generateView(stored)), true);
-      });
-
-      it("can fetch a string secret by name", () -> {
-        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
-        secretRepository.save(stringSecret);
-        String expectedJson = json(new StringSecret().generateView(stringSecret));
-
-        expectSuccess(get(urlPath), expectedJson);
-      });
-
-      it("can fetch a string secret by uuid", () -> {
-        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
-        secretRepository.save(stringSecret);
-        String expectedJson = json(new StringSecret().generateView(stringSecret));
-
-        expectSuccess(get("/api/v1/data?id=" + fakeUuidGenerator.getLastUuid()), expectedJson);
-      });
-
-      it("can generate string secret", () -> {
-        StringSecret expectedStringSecret = new StringSecret("very-secret")
-            .setUpdatedAt(frozenTime)
-            .setUuid(fakeUuidGenerator.peekNextUuid())
-            .setType("value");
-
-        String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"value\"}"), expectedJson);
-        assertThat((NamedStringSecret) secretRepository.findOneByName(secretName), BeanMatchers.theSameAs(expectedSecret).excludeProperty("Id"));
-      });
-
-      it("can generate string secret with empty parameters map", () -> {
-        StringSecret expectedStringSecret = new StringSecret("very-secret")
-            .setUpdatedAt(frozenTime)
-            .setUuid(fakeUuidGenerator.peekNextUuid())
-            .setType("value");
-
-        String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"value\"," + getUpdatedAtJson() + ",\"parameters\":{}}"), expectedJson);
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
-      });
-
-      it("uses parameters to generate string secret", () -> {
-        StringSecret expectedStringSecret = new StringSecret("very-secret")
-            .setUpdatedAt(frozenTime)
-            .setUuid(fakeUuidGenerator.peekNextUuid())
-            .setType("value");
-        String expectedJson = json(expectedStringSecret);
-        String requestJson = "{" +
-            "\"type\":\"value\"," +
-            "\"parameters\":{" +
-            "\"length\":42, " +
-            "\"exclude_special\": true," +
-            "\"exclude_number\": true," +
-            "\"exclude_upper\": true" +
-            "}" +
-            "}";
-        expectSuccess(postRequestBuilder(urlPath, requestJson), expectedJson);
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
-      });
+      describe("it behaves like string secrets", checkStringSecrets(this::makeValueResultJsonString));
     });
 
-//    todo reuse suite from secrets; Dan has new story for removing
     describe("password secrets", () -> {
       beforeEach(() -> {
         NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret(secretName)
@@ -247,82 +165,7 @@ public class SecretsControllerTest {
         when(passwordGeneratorRequestTranslator.makeEntity(any(String.class))).thenReturn(namedPasswordSecret);
       });
 
-      it("can save a client-provided password secret", () -> {
-        String requestJson = "{\"type\":\"password\",\"value\":\"my-password\"}";
-        String resultJson = makePasswordResultJsonString("my-password");
-
-        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
-
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        jsonExpectationsHelper.assertJsonEqual(resultJson, json(new StringSecret().generateView(stored)), true);
-      });
-
-      it("can update a client-provided password secret", () -> {
-        String requestJson = "{\"type\":\"password\",\"value\":\"my-password\"}";
-        String resultJson = makePasswordResultJsonString("my-password");
-        expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
-
-        String requestJson2 = "{\"type\":\"password\",\"value\":\"my-password-2\"}";
-        String resultJson2 = makePasswordResultJsonString("my-password-2");
-        expectSuccess(putRequestBuilder(urlPath, requestJson2), resultJson2);
-
-        StringSecret expected = new StringSecret("my-password-2");
-        expected.setUpdatedAt(frozenTime);
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        jsonExpectationsHelper.assertJsonEqual(resultJson2, json(new StringSecret().generateView(stored)), true);
-      });
-
-      it("can fetch a password secret by name", () -> {
-        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
-        secretRepository.save(stringSecret);
-        String expectedJson = json(new StringSecret().generateView(stringSecret));
-
-        expectSuccess(get(urlPath), expectedJson);
-      });
-
-      it("can generate password secret", () -> {
-        StringSecret expectedStringSecret = new StringSecret("my-password")
-            .setUpdatedAt(frozenTime)
-            .setUuid(fakeUuidGenerator.peekNextUuid())
-            .setType("password");
-
-        String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"password\"}"), expectedJson);
-        assertThat((NamedStringSecret) secretRepository.findOneByName(secretName), BeanMatchers.theSameAs(expectedSecret).excludeProperty("Id"));
-      });
-
-      it("can generate password secret with empty parameters map", () -> {
-        StringSecret expectedStringSecret = new StringSecret("my-password")
-            .setUpdatedAt(frozenTime)
-            .setUuid(fakeUuidGenerator.peekNextUuid())
-            .setType("password");
-
-        String expectedJson = json(expectedStringSecret);
-        expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"password\"," + getUpdatedAtJson() + ",\"parameters\":{}}"), expectedJson);
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
-      });
-
-      it("uses parameters to generate password secret", () -> {
-        StringSecret expectedStringSecret = new StringSecret("my-password")
-            .setUpdatedAt(frozenTime)
-            .setUuid(fakeUuidGenerator.peekNextUuid())
-            .setType("password");
-
-        String expectedJson = json(expectedStringSecret);
-        String requestJson = "{" +
-            "\"type\":\"password\"," +
-            "\"parameters\":{" +
-            "\"length\":42, " +
-            "\"exclude_special\": true," +
-            "\"exclude_number\": true," +
-            "\"exclude_upper\": true" +
-            "}" +
-            "}";
-        expectSuccess(postRequestBuilder(urlPath, requestJson), expectedJson);
-        NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
-        assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
-      });
+      describe("it behaves like string secrets", checkStringSecrets(this::makePasswordResultJsonString));
     });
 
     describe("certificate secrets", () -> {
@@ -611,5 +454,88 @@ public class SecretsControllerTest {
       }
       return this;
     }
+  }
+
+  private Spectrum.Block checkStringSecrets(Function<String, String> resultStringMaker) {
+    return () -> {
+      describe("it has string secret behavior", () -> {
+        it("can save a client-provided string secret", () -> {
+          String requestJson = "{\"type\":\"" + expectedSecret.getSecretType() + "\",\"value\":\"my-password\"}";
+          String resultJson = resultStringMaker.apply("my-password");
+
+          expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
+
+          NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+          jsonExpectationsHelper.assertJsonEqual(resultJson, json(new StringSecret().generateView(stored)), true);
+        });
+
+        it("can update a client-provided string secret", () -> {
+          String requestJson = "{\"type\":\"" + expectedSecret.getSecretType() + "\",\"value\":\"my-password\"}";
+          String resultJson = resultStringMaker.apply("my-password");
+          expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
+
+          String requestJson2 = "{\"type\":\"" + expectedSecret.getSecretType() + "\",\"value\":\"my-password-2\"}";
+          String resultJson2 = resultStringMaker.apply("my-password-2");
+          expectSuccess(putRequestBuilder(urlPath, requestJson2), resultJson2);
+
+          StringSecret expected = new StringSecret("my-password-2");
+          expected.setUpdatedAt(frozenTime);
+          NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+          jsonExpectationsHelper.assertJsonEqual(resultJson2, json(new StringSecret().generateView(stored)), true);
+        });
+
+        it("can fetch a string secret by name", () -> {
+          NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
+          secretRepository.save(stringSecret);
+          String expectedJson = json(new StringSecret().generateView(stringSecret));
+
+          expectSuccess(get(urlPath), expectedJson);
+        });
+
+        it("can generate a secret", () -> {
+          StringSecret expectedStringSecret = new StringSecret(expectedSecret.getSecretType(), expectedSecret.getValue())
+              .setUpdatedAt(frozenTime)
+              .setUuid(fakeUuidGenerator.peekNextUuid())
+              .setType(expectedSecret.getSecretType());
+
+          String expectedJson = json(expectedStringSecret);
+          expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"" + expectedSecret.getSecretType() + "\"}"), expectedJson);
+          assertThat((NamedStringSecret) secretRepository.findOneByName(secretName), BeanMatchers.theSameAs(expectedSecret).excludeProperty("Id"));
+        });
+
+        it("can generate a secret with empty parameters map", () -> {
+          StringSecret expectedStringSecret = new StringSecret(expectedSecret.getSecretType(), expectedSecret.getValue())
+              .setUpdatedAt(frozenTime)
+              .setUuid(fakeUuidGenerator.peekNextUuid())
+              .setType(expectedSecret.getSecretType());
+
+          String expectedJson = json(expectedStringSecret);
+          expectSuccess(postRequestBuilder(urlPath, "{\"type\":\"" + expectedSecret.getSecretType() + "\"," + getUpdatedAtJson() + ",\"parameters\":{}}"), expectedJson);
+          NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+          assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
+        });
+
+        it("uses parameters to generate a password secret", () -> {
+          StringSecret expectedStringSecret = new StringSecret(expectedSecret.getSecretType(), expectedSecret.getValue())
+              .setUpdatedAt(frozenTime)
+              .setUuid(fakeUuidGenerator.peekNextUuid())
+              .setType(expectedSecret.getSecretType());
+
+          String expectedJson = json(expectedStringSecret);
+          String requestJson = "{" +
+              "\"type\":\"" + expectedSecret.getSecretType() + "\"," +
+              "\"parameters\":{" +
+              "\"length\":42, " +
+              "\"exclude_special\": true," +
+              "\"exclude_number\": true," +
+              "\"exclude_upper\": true" +
+              "}" +
+              "}";
+          expectSuccess(postRequestBuilder(urlPath, requestJson), expectedJson);
+          NamedStringSecret stored = (NamedStringSecret) secretRepository.findOneByName(secretName);
+          assertThat(new StringSecret().generateView(stored), BeanMatchers.theSameAs(expectedStringSecret));
+        });
+      });
+    };
   }
 }
