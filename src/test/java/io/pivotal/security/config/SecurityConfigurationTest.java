@@ -14,9 +14,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;

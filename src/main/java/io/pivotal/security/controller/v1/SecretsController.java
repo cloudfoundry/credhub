@@ -4,12 +4,14 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.mapper.*;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.Secret;
+import io.pivotal.security.view.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
@@ -102,12 +104,19 @@ public class SecretsController {
         namedSecret = (NamedSecret) requestTranslator.makeEntity(secretPath);
       }
 
+      // todo better way?
+      if ("password".equals(type) || "value".equals(type)) {
+        NamedStringSecret namedStringSecret = (NamedStringSecret) namedSecret;
+        namedStringSecret.setSecretType(type);
+      }
+
       Secret secret = namedSecret.getViewInstance();
 
       validateTypeMatch(secret.getType(), type);
       requestTranslator.populateEntityFromJson(namedSecret, parsed);
       NamedSecret saved = secretRepository.save(namedSecret);
-      return new ResponseEntity<>(secret.generateView(saved), HttpStatus.OK);
+      Secret stringSecret = secret.generateView(saved);
+      return new ResponseEntity<>(stringSecret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
@@ -166,7 +175,7 @@ public class SecretsController {
   }
 
   private RequestTranslator getTranslator(String type, RequestTranslator stringRequestTranslator, RequestTranslator certificateRequestTranslator) {
-    if("value".equals(type)) {
+    if("value".equals(type) || "password".equals(type)) {
       return stringRequestTranslator;
     } else if("certificate".equals(type)) {
       return certificateRequestTranslator;

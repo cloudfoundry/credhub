@@ -11,10 +11,19 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
   @JsonProperty("value")
   private String value;
 
+  @JsonProperty() // superclass also has this annotation
+  private String type;
+
   public StringSecret() {}
 
+  @Deprecated
   public StringSecret(String secretValue) {
     value = secretValue;
+  }
+
+  public StringSecret(String secretType, String secretValue) {
+    this.type = secretType;
+    this.value = secretValue;
   }
 
   public StringSecret setValue(String value) {
@@ -24,14 +33,21 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
 
   @Override
   public String getType() {
-    return "value";
+    return this.type;
+  }
+
+  public StringSecret setType(String type) {
+    this.type = type;
+    return this;
   }
 
   @Override
   public StringSecret generateView(NamedStringSecret entity) {
-    return super
+    StringSecret result = super
         .generateView(entity)
-        .setValue(entity.getValue());
+        .setValue(entity.getValue())
+        .setType(entity.getSecretType());
+    return result;
   }
 
   @Override

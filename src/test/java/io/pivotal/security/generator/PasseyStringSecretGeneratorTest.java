@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -51,6 +52,7 @@ public class PasseyStringSecretGeneratorTest {
 
     it("can generate secret", () -> {
       StringSecretParameters secretParameters = new StringSecretParameters();
+      secretParameters.setType("value");
 
       List<CharacterRule> characterRules = new ArrayList<>();
 
@@ -67,6 +69,7 @@ public class PasseyStringSecretGeneratorTest {
 
       StringSecretParameters secretParameters = new StringSecretParameters();
       secretParameters.setLength(42);
+      secretParameters.setType("value");
 
       StringSecret secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getValue(), equalTo("very-secret"));
@@ -77,6 +80,7 @@ public class PasseyStringSecretGeneratorTest {
 
       StringSecretParameters secretParameters = new StringSecretParameters();
       secretParameters.setLength(3);
+      secretParameters.setType("value");
 
       StringSecret secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getValue(), equalTo("very-secret"));
@@ -87,6 +91,7 @@ public class PasseyStringSecretGeneratorTest {
 
       StringSecretParameters secretParameters = new StringSecretParameters();
       secretParameters.setLength(201);
+      secretParameters.setType("value");
 
       StringSecret secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getValue(), equalTo("very-secret"));

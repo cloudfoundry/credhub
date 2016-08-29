@@ -37,7 +37,7 @@ public class StringSecretTest {
 
     beforeEach(() -> {
       subject = new StringSecret("myFavoriteValue");
-      entity = new NamedStringSecret(uniquify("foo"));
+      entity = new NamedStringSecret(uniquify("foo"), "value");
     });
 
     it("populates entity with all values", () -> {
@@ -61,6 +61,14 @@ public class StringSecretTest {
         StringSecret actual = subject.generateView(entity);
 
         assertThat(actual.getUpdatedAt(), equalTo(now));
+      });
+
+      it("has type in the view", () -> {
+        entity.setSecretType("password");
+
+        StringSecret actual = subject.generateView(entity);
+
+        assertThat(actual.getType(), equalTo("password"));
       });
 
       it("has a uuid in the view", () -> {

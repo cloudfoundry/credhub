@@ -18,10 +18,13 @@ public class StringGeneratorRequestTranslator implements RequestTranslator<Named
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
+  private String secretType;
+
   @Override
   public StringSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
     StringSecretParameters secretParameters = new StringSecretParameters();
-    secretParameters.setType(parsed.read("$.type", String.class));
+    this.secretType = parsed.read("$.type", String.class);
+    secretParameters.setType(secretType);
     Optional.ofNullable(parsed.read("$.parameters.length", Integer.class))
         .ifPresent(secretParameters::setLength);
     Optional.ofNullable(parsed.read("$.parameters.exclude_lower", Boolean.class))

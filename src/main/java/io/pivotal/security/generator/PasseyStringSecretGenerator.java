@@ -28,7 +28,7 @@ public class PasseyStringSecretGenerator implements SecretGenerator<StringSecret
 
     List<CharacterRule> characterRules = characterRuleProvider.getCharacterRules(parameters);
 
-    return new StringSecret(passwordGenerator.generatePassword(passwordLength, characterRules));
+    return new StringSecret(parameters.getType(), passwordGenerator.generatePassword(passwordLength, characterRules));
   }
 
   private int normalizedSecretLength(int length) {
