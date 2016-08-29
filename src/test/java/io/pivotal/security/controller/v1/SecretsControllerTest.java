@@ -493,6 +493,14 @@ public class SecretsControllerTest {
           expectSuccess(get(urlPath), expectedJson);
         });
 
+        it("can fetch a string secret by uuid", () -> {
+          NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("stringSecret contents");
+          secretRepository.save(stringSecret);
+          String expectedJson = json(new StringSecret().generateView(stringSecret));
+
+          expectSuccess(get("/api/v1/data?id=" + fakeUuidGenerator.getLastUuid()), expectedJson);
+        });
+
         it("can generate a secret", () -> {
           StringSecret expectedStringSecret = new StringSecret(expectedSecret.getSecretType(), expectedSecret.getValue())
               .setUpdatedAt(frozenTime)
