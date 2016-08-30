@@ -17,7 +17,7 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
   }
 
   @Override
-  public NamedCertificateSecret populateEntityFromJson(NamedCertificateSecret namedCertificateSecret, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedCertificateSecret namedCertificateSecret, DocumentContext documentContext) {
     String root = emptyToNull(documentContext.read("$.value.root"));
     String certificate = emptyToNull(documentContext.read("$.value.certificate"));
     String privateKey = emptyToNull(documentContext.read("$.value.private_key"));
@@ -27,7 +27,6 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
     namedCertificateSecret.setRoot(root);
     namedCertificateSecret.setCertificate(certificate);
     namedCertificateSecret.setPrivateKey(privateKey);
-    return  namedCertificateSecret;
   }
 
   private String emptyToNull(String val) {

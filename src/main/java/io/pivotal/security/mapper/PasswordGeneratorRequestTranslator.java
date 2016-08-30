@@ -45,10 +45,9 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
   }
 
   @Override
-  public NamedStringSecret populateEntityFromJson(NamedStringSecret entity, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedStringSecret entity, DocumentContext documentContext) {
     StringSecretParameters requestParameters = validRequestParameters(documentContext);
     StringSecret secret = stringSecretGenerator.generateSecret(requestParameters);
     entity.setValue(secret.getValue());
-    return entity;
   }
 }

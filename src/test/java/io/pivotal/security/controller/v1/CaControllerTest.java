@@ -28,6 +28,7 @@ import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -175,7 +176,9 @@ public class CaControllerTest {
 
     it("returns bad request for POST with invalid type", () -> {
       when(requestTranslatorWithGeneration.makeEntity(any(String.class))).thenReturn(new NamedCertificateAuthority(uniquify("unused")));
-      when(requestTranslatorWithGeneration.populateEntityFromJson(any(NamedCertificateAuthority.class), any(DocumentContext.class))).thenThrow(new ValidationException("error.bad_authority_type"));
+      doThrow(new ValidationException("error.bad_authority_type"))
+          .when(requestTranslatorWithGeneration)
+          .populateEntityFromJson(any(NamedCertificateAuthority.class), any(DocumentContext.class));
       String uuid = UUID.randomUUID().toString();
       String requestJson = "{\"type\":" + uuid + "}";
 

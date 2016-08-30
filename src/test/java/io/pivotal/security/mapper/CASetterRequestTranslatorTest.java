@@ -45,9 +45,9 @@ public class CASetterRequestTranslatorTest {
         CertificateAuthority expected = new CertificateAuthority("root", "a", "b");
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
-        NamedCertificateAuthority actual = new CASetterRequestTranslator().populateEntityFromJson(entity, parsed);
+        new CASetterRequestTranslator().populateEntityFromJson(entity, parsed);
 
-        assertThat(new CertificateAuthority().generateView(actual), BeanMatchers.theSameAs(expected));
+        assertThat(new CertificateAuthority().generateView(entity), BeanMatchers.theSameAs(expected));
       });
 
       itThrowsWithMessage("exception when certificate is missing", ValidationException.class, "error.missing_ca_credentials", () -> {

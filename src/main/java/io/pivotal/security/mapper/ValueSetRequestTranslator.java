@@ -16,12 +16,11 @@ public class ValueSetRequestTranslator implements RequestTranslator<NamedValueSe
   }
 
   @Override
-  public NamedValueSecret populateEntityFromJson(NamedValueSecret namedStringSecret, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedValueSecret namedStringSecret, DocumentContext documentContext) {
     String value = documentContext.read("$.value");
     if (StringUtils.isEmpty(value)) {
       throw new ValidationException("error.missing_string_secret_value");
     }
     namedStringSecret.setValue(value);
-    return namedStringSecret;
   }
 }

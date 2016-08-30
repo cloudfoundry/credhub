@@ -3,13 +3,18 @@ package io.pivotal.security.controller.v1;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.mapper.*;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.Secret;
+import io.pivotal.security.view.SecretKind;
+import io.pivotal.security.view.SecretKindFromString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
@@ -29,7 +34,7 @@ import javax.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 @RestController
@@ -86,39 +91,98 @@ public class SecretsController {
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
   ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeSecret(requestBody, secretPath, valueGeneratorRequestTranslator, passwordGeneratorRequestTranslator, certificateGeneratorRequestTranslator);
+      return storeSecret(requestBody, secretPath, new SecretKind.Enumeration<RequestTranslator<NamedSecret>>() {
+        @Override
+        public RequestTranslator value() {
+          return valueGeneratorRequestTranslator;
+        }
+
+        @Override
+        public RequestTranslator password() {
+          return passwordGeneratorRequestTranslator;
+        }
+
+        @Override
+        public RequestTranslator certificate() {
+          return certificateGeneratorRequestTranslator;
+        }
+      });
     });
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
   ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeSecret(requestBody, secretPath, valueSetRequestTranslator, passwordSetRequestTranslator, certificateSetRequestTranslator);
+      return storeSecret(requestBody, secretPath, new SecretKind.Enumeration<RequestTranslator<NamedSecret>>() {
+        @Override
+        public RequestTranslator value() {
+          return valueSetRequestTranslator;
+        }
+
+        @Override
+        public RequestTranslator password() {
+          return passwordSetRequestTranslator;
+        }
+
+        @Override
+        public RequestTranslator certificate() {
+          return certificateSetRequestTranslator;
+        }
+      });
     });
   }
 
-  private ResponseEntity storeSecret(InputStream requestBody, String secretPath, RequestTranslator stringRequestTranslator, RequestTranslator passwordRequestTranslator, RequestTranslator certificateRequestTranslator) {
-    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    String type = parsed.read("$.type");
-    RequestTranslator requestTranslator = getTranslator(type, stringRequestTranslator, passwordRequestTranslator, certificateRequestTranslator);
-    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+  private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretKind.Enumeration<RequestTranslator<NamedSecret>> requestTranslators) {
+    final DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
 
     try {
+      final SecretKind secretKind = SecretKindFromString.fromString(parsed.read("$.type"));
+
+      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+
+      Optional.ofNullable(namedSecret).ifPresent((ns) -> validateType(ns, secretKind));
+
+      RequestTranslator<NamedSecret> requestTranslator = secretKind.selectFrom(requestTranslators);
+
       if (namedSecret == null) {
-        namedSecret = (NamedSecret) requestTranslator.makeEntity(secretPath);
+        namedSecret = requestTranslator.makeEntity(secretPath);
       }
-
-      Secret secret = namedSecret.getViewInstance();
-
-      validateTypeMatch(secret.getType(), type);
 
       requestTranslator.populateEntityFromJson(namedSecret, parsed);
       NamedSecret saved = secretRepository.save(namedSecret);
-      Secret stringSecret = secret.generateView(saved);
+      Secret stringSecret = namedSecret.getViewInstance().generateView(saved);
       return new ResponseEntity<>(stringSecret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private void validateType(NamedSecret namedSecret, SecretKind secretKind) throws ValidationException {
+    secretKind.selectFrom(new SecretKind.Enumeration<Void>() {
+      @Override
+      public Void value() {
+        if (!NamedValueSecret.class.isInstance(namedSecret)) {
+          throw new ValidationException("error.type_mismatch");
+        }
+        return null;
+      }
+
+      @Override
+      public Void password() {
+        if (!NamedPasswordSecret.class.isInstance(namedSecret)) {
+          throw new ValidationException("error.type_mismatch");
+        }
+        return null;
+      }
+
+      @Override
+      public Void certificate() {
+        if (!NamedCertificateSecret.class.isInstance(namedSecret)) {
+          throw new ValidationException("error.type_mismatch");
+        }
+        return null;
+      }
+    });
   }
 
   @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
@@ -165,35 +229,5 @@ public class SecretsController {
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
     String errorMessage = messageSourceAccessor.getMessage(key);
     return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
-  }
-
-  private void validateTypeMatch(String storedType, String providedType) {
-    if (!Objects.equals(storedType, providedType)) {
-      throw new ValidationException("error.type_mismatch");
-    }
-  }
-
-  private RequestTranslator getTranslator(String type, RequestTranslator stringRequestTranslator, RequestTranslator passwordRequstTranslator, RequestTranslator certificateRequestTranslator) {
-    if("value".equals(type)) {
-      return stringRequestTranslator;
-    } else if ("password".equals(type)) {
-      return passwordRequstTranslator;
-    } else if("certificate".equals(type)) {
-      return certificateRequestTranslator;
-    }
-
-    return new InvalidTranslator();
-  }
-
-  private class InvalidTranslator implements RequestTranslator {
-    @Override
-    public NamedSecret makeEntity(String name) {
-      throw new ValidationException("error.type_invalid");
-    }
-
-    @Override
-    public Object populateEntityFromJson(Object namedSecret, DocumentContext documentContext) {
-      throw new ValidationException("error.type_invalid");
-    }
   }
 }
