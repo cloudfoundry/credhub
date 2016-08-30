@@ -46,33 +46,6 @@ public class AuthFailureAuditRecord {
   public AuthFailureAuditRecord() {
   }
 
-  public AuthFailureAuditRecord(Instant now,
-                                String operation,
-                                String failureDescription,
-                                String errorMessage,
-                                String userId,
-                                String userName,
-                                String uaaUrl,
-                                long tokenIssued,
-                                long tokenExpires,
-                                String hostName,
-                                String path,
-                                String requesterIp,
-                                String xForwardedFor) {
-    this.now = Date.from(now);
-    this.operation = operation;
-    this.failureDescription = failureDescription;
-    this.userId = userId;
-    this.userName = userName;
-    this.uaaUrl = uaaUrl;
-    this.tokenIssued = tokenIssued;
-    this.tokenExpires = tokenExpires;
-    this.hostName = hostName;
-    this.path = path;
-    this.requesterIp = requesterIp;
-    this.xForwardedFor = xForwardedFor;
-  }
-
   public long getId() {
     return id;
   }

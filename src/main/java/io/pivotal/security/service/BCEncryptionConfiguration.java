@@ -26,7 +26,7 @@ public class BCEncryptionConfiguration implements EncryptionConfiguration {
       secureRandom = SecureRandom.getInstance("SHA1PRNG");
       key = new SecretKeySpec(new byte[] {-102, 88, 28, 1, -97, -31, -100, 124, 59, 36, -45, -10, 70, 106, 105, -125}, "AES");
     } catch (Exception e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 

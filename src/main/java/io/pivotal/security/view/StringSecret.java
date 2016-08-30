@@ -45,11 +45,6 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
     return result;
   }
 
-  @Override
-  public void populateEntity(NamedStringSecret entity) {
-    entity.setValue(getValue());
-  }
-
   public String getValue() {
     return value;
   }

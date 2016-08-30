@@ -9,6 +9,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.security.*;
 
+@SuppressWarnings("unused")
 @Component
 @ConditionalOnProperty(value = "hsm.disabled", havingValue = "false", matchIfMissing = true)
 public class LunaEncryptionConfiguration implements EncryptionConfiguration {

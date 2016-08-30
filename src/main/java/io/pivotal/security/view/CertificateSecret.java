@@ -14,10 +14,6 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
     setCertificateBody(new CertificateBody(root, certificate, privateKey));
   }
 
-  public CertificateSecret(String root, String privateKey) {
-    setCertificateBody(new CertificateBody(null, root, privateKey));
-  }
-
   @Override
   public String getType() {
     return "certificate";
@@ -29,13 +25,6 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
         .generateView(entity)
         .setCertificateBody(
             new CertificateBody(entity.getRoot(), entity.getCertificate(), entity.getPrivateKey()));
-  }
-
-  @Override
-  public void populateEntity(NamedCertificateSecret entity) {
-    entity.setRoot(getCertificateBody().getRoot())
-        .setCertificate(getCertificateBody().getCertificate())
-        .setPrivateKey(getCertificateBody().getPrivateKey());
   }
 
   public CertificateBody getCertificateBody() {

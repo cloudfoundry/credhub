@@ -41,11 +41,6 @@ public class StringSecretTest {
       entity = new NamedValueSecret(uniquify("foo"));
     });
 
-    it("populates entity with all values", () -> {
-      subject.populateEntity(entity);
-      assertThat(entity.getValue(), equalTo("myFavoriteValue"));
-    });
-
     describe("generating view", () -> {
       it("can create view from entity", () -> {
         entity.setValue("my-value");

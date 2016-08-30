@@ -23,9 +23,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
@@ -115,6 +113,48 @@ public class CaControllerTest {
           .andExpect(content().json(requestJson));
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
+      expected.setUpdatedAt(frozenTime);
+      assertThat(new CertificateAuthority().generateView(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+    });
+
+    it("can fetch a root ca", () -> {
+      NamedCertificateAuthority certificateSecret = new NamedCertificateAuthority(uniqueName)
+          .setType("root")
+          .setCertificate("get-certificate")
+          .setPrivateKey("get-priv");
+      caRepository.save(certificateSecret);
+
+      String expectedJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"get-certificate\",\"private_key\":\"get-priv\"}}";
+      mockMvc.perform(get(urlPath))
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(expectedJson));
+    });
+
+    it("can overwrite a root ca", () -> {
+      String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
+
+      RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
+
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(requestJson));
+
+      CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
+      expected.setUpdatedAt(frozenTime);
+      assertThat(new CertificateAuthority().generateView(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+
+      requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert2\",\"private_key\":\"private_key2\"}}";
+      requestBuilder = putRequestBuilder(urlPath, requestJson);
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(requestJson));
+
+      expected = new CertificateAuthority("root", "my_cert2", "private_key2");
       expected.setUpdatedAt(frozenTime);
       assertThat(new CertificateAuthority().generateView(caRepository.findOneByName(uniqueName)), theSameAs(expected));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());

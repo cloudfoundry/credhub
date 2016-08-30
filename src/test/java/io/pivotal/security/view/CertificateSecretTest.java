@@ -45,14 +45,6 @@ public class CertificateSecretTest {
           .setPrivateKey("priv");
     });
 
-    it("populates entity with all values", () -> {
-      NamedCertificateSecret entity = new NamedCertificateSecret();
-      subject.populateEntity(entity);
-      assertThat(entity.getRoot(), equalTo("ca"));
-      assertThat(entity.getCertificate(), equalTo("cert"));
-      assertThat(entity.getPrivateKey(), equalTo("priv"));
-    });
-
     it("creates a view from entity", () -> {
       jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"root\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(new CertificateSecret().generateView(entity)), true);
     });

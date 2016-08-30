@@ -18,13 +18,7 @@ public class CertificateAuthority extends BaseView<NamedCertificateAuthority, Ce
 
   public CertificateAuthority() {
   }
-
-  public void populateEntity(NamedCertificateAuthority entity) {
-    entity.setType(getType())
-        .setCertificate(getCertificateAuthorityBody().getCertificate())
-        .setPrivateKey(getCertificateAuthorityBody().getPrivateKey());
-  }
-
+  
   @Override
   public CertificateAuthority generateView(NamedCertificateAuthority entity) {
     return this

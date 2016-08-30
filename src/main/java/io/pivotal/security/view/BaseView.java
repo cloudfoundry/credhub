@@ -7,8 +7,6 @@ import java.time.Instant;
 public abstract class BaseView<ET, T> {
   private Instant updatedAt;
 
-  public abstract void populateEntity(ET entity);
-
   public abstract T generateView(ET entity);
 
   @JsonProperty("updated_at")
