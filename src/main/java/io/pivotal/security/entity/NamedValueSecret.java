@@ -1,8 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.StringSecret;
-
-import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;

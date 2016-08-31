@@ -2,6 +2,7 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedValueSecret;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 

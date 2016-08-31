@@ -15,6 +15,7 @@ import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.Secret;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
+import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
@@ -132,6 +133,8 @@ public class SecretsController {
     });
   }
 
+
+
   private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretKind.Enumeration<RequestTranslator<NamedSecret>> requestTranslators) {
     final DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
 
@@ -148,7 +151,12 @@ public class SecretsController {
         namedSecret = requestTranslator.makeEntity(secretPath);
       }
 
+      // pass the old value
       requestTranslator.populateEntityFromJson(namedSecret, parsed);
+      Boolean overwrite = parsed.read("$.parameters.overwrite", Boolean.class);
+//      if(BooleanUtils.isTrue(overwrite) && namedSecret)
+
+
       NamedSecret saved = secretRepository.save(namedSecret);
       Secret stringSecret = namedSecret.getViewInstance().generateView(saved);
       return new ResponseEntity<>(stringSecret, HttpStatus.OK);
