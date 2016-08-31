@@ -40,7 +40,7 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
   }
 
   @Override
-  public void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
+  public Void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
     if (!"root".equals(documentContext.read("$.type"))) {
       throw new ValidationException("error.bad_authority_type");
     }
@@ -61,5 +61,6 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
         .setType(certificateAuthority.getType())
         .setCertificate(caBody.getCertificate())
         .setPrivateKey(caBody.getPrivateKey());
+    return null;
   }
 }

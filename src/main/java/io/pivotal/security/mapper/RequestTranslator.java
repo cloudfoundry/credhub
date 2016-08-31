@@ -5,5 +5,5 @@ import com.jayway.jsonpath.DocumentContext;
 public interface RequestTranslator<ET> {
   ET makeEntity(String name);
 
-  void populateEntityFromJson(ET namedSecret, DocumentContext documentContext);
+  Void populateEntityFromJson(ET namedSecret, DocumentContext documentContext);
 }

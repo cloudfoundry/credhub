@@ -16,11 +16,12 @@ public class PasswordSetRequestTranslator implements RequestTranslator<NamedPass
   }
 
   @Override
-  public void populateEntityFromJson(NamedPasswordSecret namedStringSecret, DocumentContext documentContext) {
+  public Void populateEntityFromJson(NamedPasswordSecret namedStringSecret, DocumentContext documentContext) {
     String value = documentContext.read("$.value");
     if (StringUtils.isEmpty(value)) {
       throw new ValidationException("error.missing_string_secret_value");
     }
     namedStringSecret.setValue(value);
+    return null;
   }
 }

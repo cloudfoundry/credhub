@@ -2,7 +2,6 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedValueSecret;
-import org.apache.commons.lang.BooleanUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -17,11 +16,12 @@ public class ValueSetRequestTranslator implements RequestTranslator<NamedValueSe
   }
 
   @Override
-  public void populateEntityFromJson(NamedValueSecret namedStringSecret, DocumentContext documentContext) {
+  public Void populateEntityFromJson(NamedValueSecret namedStringSecret, DocumentContext documentContext) {
     String value = documentContext.read("$.value");
     if (StringUtils.isEmpty(value)) {
       throw new ValidationException("error.missing_string_secret_value");
     }
     namedStringSecret.setValue(value);
+    return null;
   }
 }

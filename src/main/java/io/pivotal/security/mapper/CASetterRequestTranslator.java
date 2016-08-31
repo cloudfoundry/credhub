@@ -16,7 +16,7 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
   }
 
   @Override
-  public void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
+  public Void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
     String type = documentContext.read("$.type");
     if (!"root".equals(type)) {
       throw new ValidationException("error.type_invalid");
@@ -32,5 +32,6 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
         .setType(type)
         .setCertificate(certificate)
         .setPrivateKey(privateKey);
+    return null;
   }
 }

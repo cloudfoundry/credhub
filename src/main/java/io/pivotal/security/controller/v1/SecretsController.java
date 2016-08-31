@@ -133,32 +133,26 @@ public class SecretsController {
     });
   }
 
-
-
   private ResponseEntity storeSecret(InputStream requestBody, String secretPath, SecretKind.Enumeration<RequestTranslator<NamedSecret>> requestTranslators) {
     final DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
 
     try {
       final SecretKind secretKind = SecretKindFromString.fromString(parsed.read("$.type"));
-
       NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-
       Optional.ofNullable(namedSecret).ifPresent((ns) -> validateType(ns, secretKind));
 
       RequestTranslator<NamedSecret> requestTranslator = secretKind.selectFrom(requestTranslators);
+      boolean willBeCreated = namedSecret == null;
+      boolean overwrite = BooleanUtils.isTrue(parsed.read("$.parameters.overwrite", Boolean.class)) || willBeCreated;
 
-      if (namedSecret == null) {
+      if (willBeCreated) {
         namedSecret = requestTranslator.makeEntity(secretPath);
       }
-
-      // pass the old value
-      requestTranslator.populateEntityFromJson(namedSecret, parsed);
-      Boolean overwrite = parsed.read("$.parameters.overwrite", Boolean.class);
-//      if(BooleanUtils.isTrue(overwrite) && namedSecret)
-
-
-      NamedSecret saved = secretRepository.save(namedSecret);
-      Secret stringSecret = namedSecret.getViewInstance().generateView(saved);
+      if (overwrite) {
+        requestTranslator.populateEntityFromJson(namedSecret, parsed);
+        secretRepository.save(namedSecret);
+      }
+      Secret stringSecret = namedSecret.getViewInstance().generateView(namedSecret);
       return new ResponseEntity<>(stringSecret, HttpStatus.OK);
     } catch (ValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
