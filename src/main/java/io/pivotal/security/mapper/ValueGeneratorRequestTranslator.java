@@ -19,12 +19,10 @@ public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedS
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
-  private String secretType;
-
   @Override
   public StringSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
     StringSecretParameters secretParameters = new StringSecretParameters();
-    this.secretType = parsed.read("$.type", String.class);
+    String secretType = parsed.read("$.type", String.class);
     secretParameters.setType(secretType);
     Optional.ofNullable(parsed.read("$.parameters.length", Integer.class))
         .ifPresent(secretParameters::setLength);
