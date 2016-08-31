@@ -40,13 +40,13 @@ public class CertificateSecretTest {
     beforeEach(() -> {
       subject = new CertificateSecret("ca", "cert", "priv");
       entity = new NamedCertificateSecret(uniquify("foo"))
-          .setRoot("ca")
+          .setCa("ca")
           .setCertificate("cert")
           .setPrivateKey("priv");
     });
 
     it("creates a view from entity", () -> {
-      jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"root\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(new CertificateSecret().generateView(entity)), true);
+      jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(new CertificateSecret().generateView(entity)), true);
     });
 
     it("sets updated-at time on generated view", () -> {

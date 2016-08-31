@@ -24,7 +24,7 @@ public class CertificateSecret extends Secret<NamedCertificateSecret, Certificat
     return super
         .generateView(entity)
         .setCertificateBody(
-            new CertificateBody(entity.getRoot(), entity.getCertificate(), entity.getPrivateKey()));
+            new CertificateBody(entity.getCa(), entity.getCertificate(), entity.getPrivateKey()));
   }
 
   public CertificateBody getCertificateBody() {

@@ -43,13 +43,13 @@ public class SecretRepositoryTest {
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
     NamedCertificateSecret entity = new NamedCertificateSecret(secretName);
-    entity.setRoot(stringBuilder.toString());
+    entity.setCa(stringBuilder.toString());
     entity.setCertificate(stringBuilder.toString());
     entity.setPrivateKey(stringBuilder.toString());
 
     subject.save(entity);
     NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findOneByName(secretName);
-    assertThat(certificateSecret.getRoot().length(), equalTo(7000));
+    assertThat(certificateSecret.getCa().length(), equalTo(7000));
     assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
     assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
   }

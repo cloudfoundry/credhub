@@ -272,7 +272,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\"}}";
       parsed = JsonPath.using(configuration).parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);
-      assertThat(secret.getRoot(), notNullValue());
+      assertThat(secret.getCa(), notNullValue());
       assertThat(secret.getCertificate(), notNullValue());
       assertThat(secret.getPrivateKey(), notNullValue());
     });

@@ -171,7 +171,7 @@ public class SecretsControllerTest {
     describe("certificate secrets", () -> {
       it("can fetch a certificate secret", () -> {
         NamedCertificateSecret certificateSecret = new NamedCertificateSecret(secretName)
-            .setRoot("get-ca")
+            .setCa("get-ca")
             .setCertificate("get-certificate")
             .setPrivateKey("get-priv");
         secretRepository.save(certificateSecret);
@@ -182,13 +182,13 @@ public class SecretsControllerTest {
       });
 
       it("can store a client-provided certificate", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"value\":{\"root\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"value\":{\"ca\":\"my-ca\",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
         String resultJson = makeCertificateResultJsonString("my-ca");
 
         expectSuccess(putRequestBuilder(urlPath, requestJson), resultJson);
 
         NamedCertificateSecret expectedCertificateSecret = new NamedCertificateSecret(secretName)
-            .setRoot("my-ca")
+            .setCa("my-ca")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUuid(fakeUuidGenerator.getLastUuid())
@@ -207,7 +207,7 @@ public class SecretsControllerTest {
 
       it("can generate certificates", () -> {
         NamedCertificateSecret expectedSecret = new NamedCertificateSecret(secretName)
-            .setRoot("my-ca")
+            .setCa("my-ca")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUpdatedAt(frozenTime);
@@ -336,7 +336,7 @@ public class SecretsControllerTest {
 
   private String makeCertificateResultJsonString(String root) {
     String encodedJson = root != null ? "\"" + root + "\"" : "null";
-    return "{\"id\":\"" + fakeUuidGenerator.peekNextUuid() + "\",\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"root\":" + encodedJson + ",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
+    return "{\"id\":\"" + fakeUuidGenerator.peekNextUuid() + "\",\"type\":\"certificate\"," + getUpdatedAtJson() + ",\"value\":{\"ca\":" + encodedJson + ",\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"}}";
   }
 
   private void expectSuccess(RequestBuilder requestBuilder, String returnedJson) throws Exception {

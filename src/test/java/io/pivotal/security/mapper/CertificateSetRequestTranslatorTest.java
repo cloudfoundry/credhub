@@ -63,12 +63,12 @@ public class CertificateSetRequestTranslatorTest {
     String requestJson = createJson(root, certificate, privateKey);
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
     subject.populateEntityFromJson(entity, parsed);
-    assertThat(entity.getRoot(), equalTo(expectedRoot));
+    assertThat(entity.getCa(), equalTo(expectedRoot));
     assertThat(entity.getCertificate(), equalTo(expectedCertificate));
     assertThat(entity.getPrivateKey(), equalTo(expectedPrivateKey));
   }
 
   private String createJson(String root, String certificate, String privateKey) {
-    return "{\"type\":\"certificate\",\"value\":{\"root\":\"" + root + "\",\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
+    return "{\"type\":\"certificate\",\"value\":{\"ca\":\"" + root + "\",\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
   }
 }

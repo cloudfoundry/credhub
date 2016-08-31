@@ -10,14 +10,14 @@ import javax.persistence.*;
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
 
   @Column(length = 7000)
-  private String root;
+  private String ca;
 
   @Column(length = 7000)
   private String certificate;
 
   public static NamedCertificateSecret make(String name, String root, String certificate, String privateKey) {
     return new NamedCertificateSecret(name)
-        .setRoot(root)
+        .setCa(root)
         .setCertificate(certificate)
         .setPrivateKey(privateKey);
   }
@@ -29,12 +29,12 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     super(name);
   }
 
-  public String getRoot() {
-    return root;
+  public String getCa() {
+    return ca;
   }
 
-  public NamedCertificateSecret setRoot(String root) {
-    this.root = root;
+  public NamedCertificateSecret setCa(String ca) {
+    this.ca = ca;
     return this;
   }
 

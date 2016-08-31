@@ -18,13 +18,13 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
 
   @Override
   public void populateEntityFromJson(NamedCertificateSecret namedCertificateSecret, DocumentContext documentContext) {
-    String root = emptyToNull(documentContext.read("$.value.root"));
+    String root = emptyToNull(documentContext.read("$.value.ca"));
     String certificate = emptyToNull(documentContext.read("$.value.certificate"));
     String privateKey = emptyToNull(documentContext.read("$.value.private_key"));
     if (root == null && certificate == null && privateKey == null) {
       throw new ValidationException("error.missing_certificate_credentials");
     }
-    namedCertificateSecret.setRoot(root);
+    namedCertificateSecret.setCa(root);
     namedCertificateSecret.setCertificate(certificate);
     namedCertificateSecret.setPrivateKey(privateKey);
   }

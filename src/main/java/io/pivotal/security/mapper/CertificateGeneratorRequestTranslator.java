@@ -69,7 +69,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   public void populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
     CertificateSecretParameters requestParameters = validRequestParameters(documentContext);
     CertificateSecret secret = certificateSecretGenerator.generateSecret(requestParameters);
-    entity.setRoot(secret.getCertificateBody().getRoot());
+    entity.setCa(secret.getCertificateBody().getCa());
     entity.setCertificate(secret.getCertificateBody().getCertificate());
     entity.setPrivateKey(secret.getCertificateBody().getPrivateKey());
   }

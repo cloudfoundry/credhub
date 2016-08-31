@@ -162,7 +162,7 @@ public class BCCertificateGeneratorTest {
       it("generates a valid childCertificate", () -> {
         CertificateSecret certificateSecret = subject.generateSecret(inputParameters);
 
-        assertThat(certificateSecret.getCertificateBody().getRoot(),
+        assertThat(certificateSecret.getCertificateBody().getCa(),
             equalTo(defaultNamedCA.getCertificate()));
         assertThat(certificateSecret.getCertificateBody().getPrivateKey(),
             equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
