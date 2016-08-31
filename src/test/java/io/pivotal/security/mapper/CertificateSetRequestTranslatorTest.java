@@ -40,7 +40,7 @@ public class CertificateSetRequestTranslatorTest {
 
       beforeEach(() -> {
         subject = new CertificateSetRequestTranslator();
-        entity = subject.makeEntity("Foo");
+        entity = new NamedCertificateSecret("Foo");
       });
 
       it("creates an entity when all fields are present", () -> {

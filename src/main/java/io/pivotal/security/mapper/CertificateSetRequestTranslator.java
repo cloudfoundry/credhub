@@ -12,12 +12,7 @@ import javax.validation.ValidationException;
 public class CertificateSetRequestTranslator implements RequestTranslator<NamedCertificateSecret> {
 
   @Override
-  public NamedCertificateSecret makeEntity(String name) {
-    return new NamedCertificateSecret(name);
-  }
-
-  @Override
-  public Void populateEntityFromJson(NamedCertificateSecret namedCertificateSecret, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedCertificateSecret namedCertificateSecret, DocumentContext documentContext) {
     String root = emptyToNull(documentContext.read("$.value.ca"));
     String certificate = emptyToNull(documentContext.read("$.value.certificate"));
     String privateKey = emptyToNull(documentContext.read("$.value.private_key"));
@@ -27,7 +22,6 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
     namedCertificateSecret.setCa(root);
     namedCertificateSecret.setCertificate(certificate);
     namedCertificateSecret.setPrivateKey(privateKey);
-    return null;
   }
 
   private String emptyToNull(String val) {

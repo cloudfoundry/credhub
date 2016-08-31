@@ -1,21 +1,25 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedStringSecret;
 
 import java.time.Instant;
 
-public abstract class BaseView<ET, T> {
+public class BaseView {
   private Instant updatedAt;
 
-  public abstract T generateView(ET entity);
+  BaseView(Instant updatedAt) {
+    this.updatedAt = updatedAt;
+  }
 
   @JsonProperty("updated_at")
   public Instant getUpdatedAt() {
     return updatedAt;
   }
 
-  public T setUpdatedAt(Instant updatedAt) {
+  public void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
-    return (T) this;
   }
 }

@@ -31,14 +31,12 @@ public class CertificateSecretTest {
   @Autowired
   SecretRepository secretRepository;
 
-  private CertificateSecret subject;
   private NamedCertificateSecret entity;
 
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      subject = new CertificateSecret("ca", "cert", "priv");
       entity = new NamedCertificateSecret(uniquify("foo"))
           .setCa("ca")
           .setCertificate("cert")
@@ -46,19 +44,19 @@ public class CertificateSecretTest {
     });
 
     it("creates a view from entity", () -> {
-      jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(new CertificateSecret().generateView(entity)), true);
+      jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(CertificateSecret.fromEntity(entity)), true);
     });
 
     it("sets updated-at time on generated view", () -> {
       Instant now = Instant.now();
       entity.setUpdatedAt(now);
-      CertificateSecret actual = subject.generateView(entity);
+      CertificateSecret actual = (CertificateSecret) CertificateSecret.fromEntity(entity);
       assertThat(actual.getUpdatedAt(), equalTo(now));
     });
 
     it("sets uuid on generated view", () -> {
       entity = secretRepository.save(entity);
-      CertificateSecret actual = subject.generateView(entity);
+      CertificateSecret actual = (CertificateSecret) CertificateSecret.fromEntity(entity);
       assertThat(actual.getUuid(), notNullValue());
     });
   }

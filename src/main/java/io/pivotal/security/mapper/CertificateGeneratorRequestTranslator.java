@@ -19,7 +19,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Autowired
   SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateSecretGenerator;
 
-  Supplier<CertificateSecretParameters> parametersSupplier = () -> new CertificateSecretParameters();
+  private Supplier<CertificateSecretParameters> parametersSupplier = CertificateSecretParameters::new;
 
   public CertificateSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
@@ -61,18 +61,12 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   }
 
   @Override
-  public NamedCertificateSecret makeEntity(String name) {
-    return new NamedCertificateSecret(name);
-  }
-
-  @Override
-  public Void populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
     CertificateSecretParameters requestParameters = validRequestParameters(documentContext);
     CertificateSecret secret = certificateSecretGenerator.generateSecret(requestParameters);
     entity.setCa(secret.getCertificateBody().getCa());
     entity.setCertificate(secret.getCertificateBody().getCertificate());
     entity.setPrivateKey(secret.getCertificateBody().getPrivateKey());
-    return null;
   }
 
   void setParametersSupplier(Supplier<CertificateSecretParameters> parametersSupplier) {

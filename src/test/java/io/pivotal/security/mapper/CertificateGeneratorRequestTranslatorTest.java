@@ -260,15 +260,11 @@ public class CertificateGeneratorRequestTranslatorTest {
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
-    it("can make an entity", () -> {
-      final NamedCertificateSecret secret = subject.makeEntity("abc");
-      assertThat(secret.getName(), equalTo("abc"));
-    });
-
     it("can populate an entity from JSON", () -> {
       when(secretGenerator.generateSecret(any(RequestParameters.class)))
-          .thenReturn(new CertificateSecret("my-root", "my-cert", "my-priv"));
-      final NamedCertificateSecret secret = subject.makeEntity("abc");
+          .thenReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"));
+
+      final NamedCertificateSecret secret = new NamedCertificateSecret("abc");
       String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\"}}";
       parsed = JsonPath.using(configuration).parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);

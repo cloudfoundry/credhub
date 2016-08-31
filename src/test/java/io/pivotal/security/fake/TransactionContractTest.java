@@ -68,8 +68,8 @@ public class TransactionContractTest {
 
       describe("when data has been written", () -> {
         beforeEach(() -> {
-          secretRepository.save(new NamedValueSecret("test").setValue("value"));
-          secretRepository.save(new NamedValueSecret("otherTest").setValue("otherValue"));
+          secretRepository.save(new NamedValueSecret("test", "value"));
+          secretRepository.save(new NamedValueSecret("otherTest", "otherValue"));
 
           final OperationAuditRecord auditRecord = new OperationAuditRecord();
           auditRecord.setOperation("operation");
@@ -105,7 +105,7 @@ public class TransactionContractTest {
           describe("when another transaction is opened", () -> {
             beforeEach(() -> {
               transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-              secretRepository.save(new NamedValueSecret("test3").setValue("value3"));
+              secretRepository.save(new NamedValueSecret("test3", "value3"));
               transactionManager.commit(transaction);
             });
 

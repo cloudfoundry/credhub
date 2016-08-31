@@ -48,53 +48,51 @@ public class NamedPasswordSecretTest {
       repository.deleteAll();
     });
 
-    describe("password string secrets", () -> {
-      describe("with or without alternative names", () -> {
-        beforeEach(() -> {
-          subject = new NamedPasswordSecret("foo");
-        });
+    describe("with or without alternative names", () -> {
+      beforeEach(() -> {
+        subject = new NamedPasswordSecret("foo");
+      });
 
-        it("updates the secret value with the same name when overwritten", () -> {
-          subject.setValue("my-value1");
-          repository.saveAndFlush(subject);
-          byte[] firstNonce = subject.getNonce();
+      it("updates the secret value with the same name when overwritten", () -> {
+        subject.setValue("my-value1");
+        repository.saveAndFlush(subject);
+        byte[] firstNonce = subject.getNonce();
 
-          subject.setValue("my-value2");
-          repository.saveAndFlush(subject);
+        subject.setValue("my-value2");
+        repository.saveAndFlush(subject);
 
-          NamedPasswordSecret second = (NamedPasswordSecret) repository.findOne(subject.getId());
-          assertThat(second.getValue(), equalTo("my-value2"));
-          assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
-        });
+        NamedPasswordSecret second = (NamedPasswordSecret) repository.findOne(subject.getId());
+        assertThat(second.getValue(), equalTo("my-value2"));
+        assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
+      });
 
-        it("only encrypts the value once for the same secret", () -> {
-          subject.setValue("my-value");
-          assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
+      it("only encrypts the value once for the same secret", () -> {
+        subject.setValue("my-value");
+        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
 
-          subject.setValue("my-value");
-          assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
-        });
+        subject.setValue("my-value");
+        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
+      });
 
-        it("sets the nonce and the encrypted value", () -> {
-          subject.setValue("my-value");
-          assertThat(subject.getEncryptedValue(), notNullValue());
-          assertThat(subject.getNonce(), notNullValue());
-        });
+      it("sets the nonce and the encrypted value", () -> {
+        subject.setValue("my-value");
+        assertThat(subject.getEncryptedValue(), notNullValue());
+        assertThat(subject.getNonce(), notNullValue());
+      });
 
-        it("can decrypt values", () -> {
-          subject.setValue("my-value");
-          assertThat(subject.getValue(), equalTo("my-value"));
-        });
+      it("can decrypt values", () -> {
+        subject.setValue("my-value");
+        assertThat(subject.getValue(), equalTo("my-value"));
+      });
 
-        itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
-          subject.setValue(null);
-        });
+      itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
+        subject.setValue(null);
+      });
 
-        it("sets UUID when Hibernate stores the object", () -> {
-          subject.setValue("my-value");
-          repository.save(subject);
-          assertThat(subject.getUuid().length(), equalTo(36));
-        });
+      it("sets UUID when Hibernate stores the object", () -> {
+        subject.setValue("my-value");
+        repository.save(subject);
+        assertThat(subject.getUuid().length(), equalTo(36));
       });
     });
   }

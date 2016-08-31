@@ -11,12 +11,7 @@ import javax.validation.ValidationException;
 public class CASetterRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
 
   @Override
-  public NamedCertificateAuthority makeEntity(String name) {
-    return new NamedCertificateAuthority(name);
-  }
-
-  @Override
-  public Void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
     String type = documentContext.read("$.type");
     if (!"root".equals(type)) {
       throw new ValidationException("error.type_invalid");
@@ -32,6 +27,5 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
         .setType(type)
         .setCertificate(certificate)
         .setPrivateKey(privateKey);
-    return null;
   }
 }

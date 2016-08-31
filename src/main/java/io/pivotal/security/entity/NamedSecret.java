@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.Secret;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,7 +12,7 @@ import java.time.Instant;
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-abstract public class NamedSecret<T> implements EncryptedValueContainer {
+abstract public class NamedSecret implements EncryptedValueContainer {
   public static final int NONCE_BYTES = 16;
   static final int ENCRYPTED_BYTES = 7000;
   @Id
@@ -50,18 +49,16 @@ abstract public class NamedSecret<T> implements EncryptedValueContainer {
     return id;
   }
 
-  public T setId(long id) {
+  public void setId(long id) {
     this.id = id;
-    return (T) this;
   }
 
   public String getName() {
     return name;
   }
 
-  public T setName(String name) {
+  public void setName(String name) {
     this.name = name;
-    return (T) this;
   }
 
   public byte[] getEncryptedValue() {
@@ -80,24 +77,20 @@ abstract public class NamedSecret<T> implements EncryptedValueContainer {
     this.nonce = nonce;
   }
 
-  public abstract Secret getViewInstance();
-
   public Instant getUpdatedAt() {
     return updatedAt;
   }
 
-  public T setUpdatedAt(Instant updatedAt) {
+  public void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
-    return (T) this;
   }
 
   public String getUuid() {
     return uuid;
   }
 
-  public T setUuid(String uuid) {
+  public void setUuid(String uuid) {
     this.uuid = uuid;
-    return (T) this;
   }
 
   @PrePersist

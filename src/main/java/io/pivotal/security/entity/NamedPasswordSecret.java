@@ -1,7 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.StringSecret;
-
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -9,7 +7,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "PasswordSecret")
 @DiscriminatorValue("password")
-public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> {
+public class NamedPasswordSecret extends NamedStringSecret {
 
   @SuppressWarnings("unused")
   public NamedPasswordSecret() {
@@ -17,6 +15,10 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
 
   public NamedPasswordSecret(String name) {
     super(name);
+  }
+
+  public NamedPasswordSecret(String name, String value) {
+    super(name, value);
   }
 
   @Override

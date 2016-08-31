@@ -8,6 +8,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.controller.v1.StringSecretParameters;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.StringSecret;
@@ -79,13 +80,8 @@ public class PasswordGeneratorRequestTranslatorTest {
       }
     });
 
-    it("can make an entity", () -> {
-      final NamedStringSecret secret = subject.makeEntity("abc");
-      assertThat(secret.getName(), equalTo("abc"));
-    });
-
     it("can populate an entity from JSON", () -> {
-      final NamedStringSecret secret = subject.makeEntity("abc");
+      final NamedPasswordSecret secret = new NamedPasswordSecret("abc");
 
       String requestJson = "{\"type\":\"password\"}";
       DocumentContext parsed = JsonPath.using(configuration).parse(requestJson);

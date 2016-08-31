@@ -44,7 +44,7 @@ public class DatabaseEncryptionConfigurationTest {
     describe("when a value has been written to the database", () -> {
       beforeEach(() -> {
         secretName = uniquify("test");
-        NamedStringSecret stringSecret = new NamedValueSecret(secretName).setValue("value1");
+        NamedStringSecret stringSecret = new NamedValueSecret(secretName, "value1");
         secretRepository.saveAndFlush(stringSecret);
       });
 

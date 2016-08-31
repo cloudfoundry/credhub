@@ -11,17 +11,11 @@ import javax.validation.ValidationException;
 public class ValueSetRequestTranslator implements RequestTranslator<NamedValueSecret> {
 
   @Override
-  public NamedValueSecret makeEntity(String name) {
-    return new NamedValueSecret(name);
-  }
-
-  @Override
-  public Void populateEntityFromJson(NamedValueSecret namedStringSecret, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedValueSecret namedStringSecret, DocumentContext documentContext) {
     String value = documentContext.read("$.value");
     if (StringUtils.isEmpty(value)) {
       throw new ValidationException("error.missing_string_secret_value");
     }
     namedStringSecret.setValue(value);
-    return null;
   }
 }

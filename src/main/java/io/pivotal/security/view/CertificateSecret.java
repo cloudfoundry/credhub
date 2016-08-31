@@ -3,28 +3,25 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateSecret;
 
-public class CertificateSecret extends Secret<NamedCertificateSecret, CertificateSecret> {
+import java.time.Instant;
+
+public class CertificateSecret extends Secret {
 
   @JsonProperty("value")
   private CertificateBody certificateBody;
 
-  public CertificateSecret() {}
+  public CertificateSecret(Instant updatedAt, String uuid, String ca, String certificate, String privateKey) {
+    super(updatedAt, uuid);
+    setCertificateBody(new CertificateBody(ca, certificate, privateKey));
+  }
 
-  public CertificateSecret(String root, String certificate, String privateKey) {
-    setCertificateBody(new CertificateBody(root, certificate, privateKey));
+  public CertificateSecret(NamedCertificateSecret namedCertificateSecret) {
+    this(namedCertificateSecret.getUpdatedAt(), namedCertificateSecret.getUuid(), namedCertificateSecret.getCa(), namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey());
   }
 
   @Override
   public String getType() {
     return "certificate";
-  }
-
-  @Override
-  public CertificateSecret generateView(NamedCertificateSecret entity) {
-    return super
-        .generateView(entity)
-        .setCertificateBody(
-            new CertificateBody(entity.getCa(), entity.getCertificate(), entity.getPrivateKey()));
   }
 
   public CertificateBody getCertificateBody() {

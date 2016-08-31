@@ -65,14 +65,14 @@ public class NamedCertificateAuthorityTest {
     });
 
     it("creates a model from entity", () -> {
-      CertificateAuthority certificateAuthority = new CertificateAuthority().generateView(subject);
+      CertificateAuthority certificateAuthority = CertificateAuthority.fromEntity(subject);
       assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo("{\"updated_at\":null,\"type\":\"root\",\"value\":{\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
     });
 
     it("set updated-at time on generated view", () -> {
       Instant now = Instant.now();
       subject.setUpdatedAt(now);
-      CertificateAuthority actual = new CertificateAuthority().generateView(subject);
+      CertificateAuthority actual = CertificateAuthority.fromEntity(subject);
       assertThat(actual.getUpdatedAt(), equalTo(now));
     });
 

@@ -5,87 +5,95 @@ import java.util.function.Function;
 public enum SecretKind implements SecretKindFromString {
   VALUE {
     @Override
-    public <T, R> Function<T, R> map(Map<T, R> map) {
-      return map::value;
+    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+      return (t) -> mapping.value(this, t);
     }
 
-    @Override
-    public <T> T selectFrom(Enumeration<T> enumeration) {
-      return enumeration.value();
-    }
   },
   PASSWORD {
     @Override
-    public <T, R> Function<T, R> map(Map<T, R> map) {
-      return map::password;
+    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+      return (t) -> mapping.password(this, t);
     }
 
-    @Override
-    public <T> T selectFrom(Enumeration<T> enumeration) {
-      return enumeration.password();
-    }
   },
   CERTIFICATE {
     @Override
-    public <T, R> Function<T, R> map(Map<T, R> map) {
-      return map::certificate;
+    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+      return (t) -> mapping.certificate(this, t);
     }
 
-    @Override
-    public <T> T selectFrom(Enumeration<T> enumeration) {
-      return enumeration.certificate();
-    }
   };
 
-  public abstract <T, R> Function<T, R> map(Map<T, R> map);
+  public abstract <T, R> Function<T, R> map(Mapping<T, R> mapping);
 
-  public abstract <T> T selectFrom(Enumeration<T> enumeration);
-
-  public interface Enumeration<T> {
-    T value();
-    T password();
-    T certificate();
+  public interface Mapping<T, R> {
+    R value(SecretKind secretKind, T t);
+    R password(SecretKind secretKind, T t);
+    R certificate(SecretKind secretKind, T t);
   }
 
-  public interface Map<T, R> {
-    R value(T t);
-    R password(T t);
-    R certificate(T t);
-  }
-
-  public static class IdentityMap<T> implements Map<T, T> {
+  public static class IdentityMapping<T> implements Mapping<T, T> {
 
     @Override
-    public T value(T t) {
+    public T value(SecretKind secretKind, T t) {
       return t;
     }
 
     @Override
-    public T password(T t) {
+    public T password(SecretKind secretKind, T t) {
       return t;
     }
 
     @Override
-    public T certificate(T t) {
+    public T certificate(SecretKind secretKind, T t) {
       return t;
     }
   }
 
-  public static class NullMap<T, R> implements Map<T, R> {
+  public static class NullMapping<T, R> implements Mapping<T, R> {
 
     @Override
-    public R value(T t) {
+    public R value(SecretKind secretKind, T t) {
       return null;
     }
 
     @Override
-    public R password(T t) {
+    public R password(SecretKind secretKind, T t) {
       return null;
     }
 
     @Override
-    public R certificate(T t) {
+    public R certificate(SecretKind secretKind, T t) {
       return null;
+    }
+  }
+
+  public static class StaticMapping<T> implements Mapping<Void, T> {
+
+    private final T value;
+    private final T password;
+    private final T certificate;
+
+    public StaticMapping(T value, T password, T certificate) {
+      this.value = value;
+      this.password = password;
+      this.certificate = certificate;
+    }
+
+    @Override
+    public T value(SecretKind secretKind, Void v) {
+      return value;
+    }
+
+    @Override
+    public T password(SecretKind secretKind, Void v) {
+      return password;
+    }
+
+    @Override
+    public T certificate(SecretKind secretKind, Void v) {
+      return certificate;
     }
   }
 }

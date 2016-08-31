@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedStringSecret;
 
 import javax.validation.constraints.NotNull;
+import java.time.Instant;
 
-public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
+public class StringSecret extends Secret {
 
   @NotNull
   @JsonProperty("value")
@@ -14,11 +15,25 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
   @JsonProperty() // superclass also has this annotation
   private String type;
 
-  public StringSecret() {}
+  public StringSecret(String type, String value) {
+    this(null, null, type, value);
+  }
 
-  public StringSecret(String secretType, String secretValue) {
-    this.type = secretType;
-    this.value = secretValue;
+  public StringSecret(Instant updatedAt, String uuid, String type) {
+    this(updatedAt, uuid, type, null);
+  }
+
+  public StringSecret(Instant updatedAt, String uuid, String type, String value) {
+    super(updatedAt, uuid);
+    if (type == null) {
+      throw new IllegalArgumentException("'value' must not be null");
+    }
+    this.type = type;
+    this.value = value;
+  }
+
+  public StringSecret(NamedStringSecret namedStringSecret) {
+    this(namedStringSecret.getUpdatedAt(), namedStringSecret.getUuid(), namedStringSecret.getSecretType(), namedStringSecret.getValue());
   }
 
   public StringSecret setValue(String value) {
@@ -34,15 +49,6 @@ public class StringSecret extends Secret<NamedStringSecret, StringSecret> {
   public StringSecret setType(String type) {
     this.type = type;
     return this;
-  }
-
-  @Override
-  public StringSecret generateView(NamedStringSecret entity) {
-    StringSecret result = super
-        .generateView(entity)
-        .setValue(entity.getValue())
-        .setType(entity.getSecretType());
-    return result;
   }
 
   public String getValue() {

@@ -1,13 +1,14 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.CertificateSecret;
-
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
-public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
+public class NamedCertificateSecret extends NamedSecret {
 
   @Column(length = 7000)
   private String ca;
@@ -15,18 +16,18 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   @Column(length = 7000)
   private String certificate;
 
-  public static NamedCertificateSecret make(String name, String root, String certificate, String privateKey) {
-    return new NamedCertificateSecret(name)
-        .setCa(root)
-        .setCertificate(certificate)
-        .setPrivateKey(privateKey);
-  }
-
   public NamedCertificateSecret() {
   }
 
   public NamedCertificateSecret(String name) {
     super(name);
+  }
+
+  public NamedCertificateSecret(String name, String ca, String certificate, String privateKey) {
+    super(name);
+    this.ca = ca;
+    this.certificate = certificate;
+    setPrivateKey(privateKey);
   }
 
   public String getCa() {
@@ -54,10 +55,5 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   public NamedCertificateSecret setPrivateKey(String privateKey) {
     new SecretEncryptionHelper().refreshEncryptedValue(this, privateKey);
     return this;
-  }
-
-  @Override
-  public CertificateSecret getViewInstance() {
-    return new CertificateSecret();
   }
 }

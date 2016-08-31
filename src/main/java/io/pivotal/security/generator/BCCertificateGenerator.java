@@ -56,7 +56,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
       String certPem = CertificateFormatter.pemOf(cert);
       String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-      return new CertificateSecret(ca.getCertificate(), certPem, privatePem);
+      return new CertificateSecret(null, null, ca.getCertificate(), certPem, privatePem);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

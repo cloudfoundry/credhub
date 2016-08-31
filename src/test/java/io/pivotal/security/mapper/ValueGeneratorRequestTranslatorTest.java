@@ -9,6 +9,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.controller.v1.StringSecretParameters;
 import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
@@ -79,13 +80,8 @@ public class ValueGeneratorRequestTranslatorTest {
       }
     });
 
-    it("can make an entity", () -> {
-      final NamedStringSecret secret = subject.makeEntity("abc");
-      assertThat(secret.getName(), equalTo("abc"));
-    });
-
     it("can populate an entity from JSON", () -> {
-      final NamedStringSecret secret = subject.makeEntity("abc");
+      final NamedValueSecret secret = new NamedValueSecret("abc");
 
       String requestJson = "{\"type\":\"value\"}";
       DocumentContext parsed = JsonPath.using(configuration).parse(requestJson);

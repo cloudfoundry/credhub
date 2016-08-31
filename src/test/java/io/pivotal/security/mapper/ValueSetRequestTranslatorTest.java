@@ -41,7 +41,7 @@ public class ValueSetRequestTranslatorTest {
 
       beforeEach(() -> {
         subject = new ValueSetRequestTranslator();
-        entity = subject.makeEntity("rick");
+        entity = new NamedValueSecret("rick");
       });
 
       it("fills in entity with values from JSON", () -> {

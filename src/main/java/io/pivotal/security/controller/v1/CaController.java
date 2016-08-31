@@ -86,7 +86,7 @@ public class CaController {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
     NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByName(caPath);
     if (namedCertificateAuthority == null) {
-      namedCertificateAuthority = requestTranslator.makeEntity(caPath);
+      namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     }
 
     try {
@@ -95,9 +95,8 @@ public class CaController {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
-    CertificateAuthority certificateAuthority = namedCertificateAuthority.getViewInstance();
     NamedCertificateAuthority saved = caRepository.save(namedCertificateAuthority);
-    return new ResponseEntity<>(certificateAuthority.generateView(saved), HttpStatus.OK);
+    return new ResponseEntity<>(CertificateAuthority.fromEntity(saved), HttpStatus.OK);
   }
 
   @SuppressWarnings("unused")
@@ -109,8 +108,7 @@ public class CaController {
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
       }
-      CertificateAuthority certificateAuthority = namedAuthority.getViewInstance();
-      return new ResponseEntity<>(certificateAuthority.generateView(namedAuthority), HttpStatus.OK);
+      return new ResponseEntity<>(CertificateAuthority.fromEntity(namedAuthority), HttpStatus.OK);
     });
   }
 

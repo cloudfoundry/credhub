@@ -28,8 +28,9 @@ import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -83,15 +84,23 @@ public class CaControllerTest {
     });
 
     it("can generate a ca", () -> {
+      doAnswer(invocation -> {
+        final NamedCertificateAuthority namedCertificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
+        namedCertificateAuthority.setType("root");
+        namedCertificateAuthority.setCertificate("my_cert");
+        namedCertificateAuthority.setPrivateKey("private_key");
+        return null;
+      }).when(requestTranslatorWithGeneration).populateEntityFromJson(isA(NamedCertificateAuthority.class), isA(DocumentContext.class));
+
       String requestJson = "{\"type\":\"root\"}";
       String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
 
       NamedCertificateAuthority entity =
           new NamedCertificateAuthority(uniqueName)
+              .setUpdatedAt(frozenTime)
               .setType("root")
               .setCertificate("my_cert")
               .setPrivateKey("private_key");
-      when(requestTranslatorWithGeneration.makeEntity(any(String.class))).thenReturn(entity);
       RequestBuilder requestBuilder = postRequestBuilder(urlPath, requestJson);
 
       mockMvc.perform(requestBuilder)
@@ -99,7 +108,7 @@ public class CaControllerTest {
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(responseJson));
       NamedCertificateAuthority oneByName = caRepository.findOneByName(uniqueName);
-      assertThat(oneByName, theSameAs(entity).excludeProperty("Id"));
+      assertThat(oneByName, theSameAs(entity).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
@@ -115,7 +124,7 @@ public class CaControllerTest {
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
       expected.setUpdatedAt(frozenTime);
-      assertThat(new CertificateAuthority().generateView(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+      assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
@@ -145,7 +154,7 @@ public class CaControllerTest {
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
       expected.setUpdatedAt(frozenTime);
-      assertThat(new CertificateAuthority().generateView(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+      assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());
 
       requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert2\",\"private_key\":\"private_key2\"}}";
@@ -157,7 +166,7 @@ public class CaControllerTest {
 
       expected = new CertificateAuthority("root", "my_cert2", "private_key2");
       expected.setUpdatedAt(frozenTime);
-      assertThat(new CertificateAuthority().generateView(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+      assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
@@ -175,7 +184,6 @@ public class CaControllerTest {
     });
 
     it("returns bad request for POST with invalid type", () -> {
-      when(requestTranslatorWithGeneration.makeEntity(any(String.class))).thenReturn(new NamedCertificateAuthority(uniquify("unused")));
       doThrow(new ValidationException("error.bad_authority_type"))
           .when(requestTranslatorWithGeneration)
           .populateEntityFromJson(any(NamedCertificateAuthority.class), any(DocumentContext.class));

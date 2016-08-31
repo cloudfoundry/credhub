@@ -5,6 +5,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.view.CertificateSecret;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -19,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
+import java.time.Instant;
 import java.util.Arrays;
 
 @RunWith(Spectrum.class)
@@ -38,7 +40,10 @@ public class NamedCertificateSecretTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      subject = io.pivotal.security.entity.NamedCertificateSecret.make("Foo", "my-ca", "my-cert", "my-priv");
+      subject = new NamedCertificateSecret("Foo")
+          .setCa("my-ca")
+          .setCertificate("my-cert")
+          .setPrivateKey("my-priv");
       ((FakeEncryptionService) encryptionService).setEncryptionCount(0);
     });
 

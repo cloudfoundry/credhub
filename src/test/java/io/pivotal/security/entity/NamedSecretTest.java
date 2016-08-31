@@ -34,7 +34,10 @@ public class NamedSecretTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(345345L);
       secretName = uniquify("foo");
-      secret = io.pivotal.security.entity.NamedCertificateSecret.make(secretName, "ca", "pub", "priv");
+      secret = new NamedCertificateSecret(secretName)
+          .setCa("ca")
+          .setCertificate("pub")
+          .setPrivateKey("priv");
     });
 
     it("returns date created", () -> {

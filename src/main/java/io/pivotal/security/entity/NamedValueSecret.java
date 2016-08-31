@@ -7,13 +7,17 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "ValueSecret")
 @DiscriminatorValue("value")
-public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
+public class NamedValueSecret extends NamedStringSecret {
 
   public NamedValueSecret() {
   }
 
   public NamedValueSecret(String name) {
     super(name);
+  }
+
+  public NamedValueSecret(String name, String value) {
+    super(name, value);
   }
 
   @Override

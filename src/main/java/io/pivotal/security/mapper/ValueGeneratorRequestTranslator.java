@@ -2,7 +2,6 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.StringSecretParameters;
-import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.StringSecret;
@@ -14,7 +13,7 @@ import java.util.Optional;
 import javax.validation.ValidationException;
 
 @Component
-public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedStringSecret>, SecretGeneratorRequestTranslator<StringSecretParameters> {
+public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedValueSecret>, SecretGeneratorRequestTranslator<StringSecretParameters> {
 
   @Autowired
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
@@ -42,15 +41,9 @@ public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedS
   }
 
   @Override
-  public NamedStringSecret makeEntity(String name) {
-    return new NamedValueSecret(name);
-  }
-
-  @Override
-  public Void populateEntityFromJson(NamedStringSecret entity, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedValueSecret entity, DocumentContext documentContext) {
     StringSecretParameters requestParameters = validRequestParameters(documentContext);
     StringSecret secret = stringSecretGenerator.generateSecret(requestParameters);
     entity.setValue(secret.getValue());
-    return null;
   }
 }
