@@ -12,8 +12,6 @@ import io.pivotal.security.view.SecretKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ValidationException;
-
 @Component
 class NamedSecretSetHandler implements SecretKindMappingFactory {
 
@@ -28,11 +26,10 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
   @Override
   public SecretKind.Mapping<NamedSecret, NamedSecret> make(String secretPath, DocumentContext parsed) {
+    //noinspection Duplicates
     return new SecretKind.Mapping<NamedSecret, NamedSecret>() {
       @Override
       public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
-        if (namedSecret != null && !(namedSecret instanceof NamedValueSecret)) throw new ValidationException("error.type_mismatch");
-
         NamedValueSecret namedValueSecret = namedSecret == null ? new NamedValueSecret(secretPath) : (NamedValueSecret) namedSecret;
         valueSetRequestTranslator.populateEntityFromJson(namedValueSecret, parsed);
         return namedValueSecret;
@@ -40,8 +37,6 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret password(SecretKind secretKind, NamedSecret namedSecret) {
-        if (namedSecret != null && !(namedSecret instanceof NamedPasswordSecret)) throw new ValidationException("error.type_mismatch");
-
         NamedPasswordSecret namedPasswordSecret = namedSecret == null ? new NamedPasswordSecret(secretPath) : (NamedPasswordSecret) namedSecret;
         passwordSetRequestTranslator.populateEntityFromJson(namedPasswordSecret, parsed);
         return namedPasswordSecret;
@@ -49,12 +44,10 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret certificate(SecretKind secretKind, NamedSecret namedSecret) {
-        if (namedSecret != null && !(namedSecret instanceof NamedCertificateSecret)) throw new ValidationException("error.type_mismatch");
-
         NamedCertificateSecret namedCertificateSecret = namedSecret == null ? new NamedCertificateSecret(secretPath) : (NamedCertificateSecret) namedSecret;
         certificateSetRequestTranslator.populateEntityFromJson(namedCertificateSecret, parsed);
         return namedCertificateSecret;
       }
-    };
+    }.compose(new ValidateTypeMatch());
   }
 }
