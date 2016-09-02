@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.validation.ValidationException;
 import java.time.Instant;
 import java.util.function.Consumer;
 
@@ -174,6 +175,29 @@ public class SecretsControllerTest {
         mockMvc.perform(delete("/api/v1/data/" + secretName))
             .andExpect(status().isOk());
       });
+    });
+
+    it("returns for 400 when the handler raises an exception", () -> {
+      when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
+          .thenReturn(new DefaultMapping() {
+            @Override
+            public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+              throw new ValidationException("error.type_mismatch");
+            }
+          });
+
+      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{" +
+              "  \"type\":\"value\"," +
+              "  \"value\":\"some value\"" +
+              "}");
+
+      mockMvc.perform(put)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
     });
   }
 }
