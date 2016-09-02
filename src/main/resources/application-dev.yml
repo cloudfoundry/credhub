@@ -1,3 +1,8 @@
+info:
+  app:
+    name: Pivotal Credential Manager
+    version: ${buildVersion}
+
 auth-server:
   url: https://50.17.59.67:8443
 
@@ -5,13 +10,13 @@ hsm:
   disabled: true
 
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
   datasource:
     username: pivotal
     password:
     # url: jdbc:postgresql://localhost:5432/credhub
+
+flyway:
+  locations:classpath:/db/migration/common,classpath:/db/migration/h2
 
 security:
   oauth2:
