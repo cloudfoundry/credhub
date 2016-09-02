@@ -79,7 +79,7 @@ public class CaControllerTest {
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
-      uniqueName = uniquify("ca-identifier");
+      uniqueName = uniquify("my-folder/ca-identifier");
       urlPath = "/api/v1/ca/" + uniqueName;
     });
 

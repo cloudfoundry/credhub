@@ -36,8 +36,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ValidationException;
 
 @RestController
-@RequestMapping(path = "/api/v1/ca", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class CaController {
+
+  public static final String API_V1_CA = "/api/v1/ca";
+
   @Autowired
   Configuration jsonPathConfiguration;
 
@@ -67,18 +70,18 @@ public class CaController {
   }
 
   @SuppressWarnings("unused")
-  @RequestMapping(path = "/{caPath}", method = RequestMethod.PUT)
-  ResponseEntity set(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+  @RequestMapping(path = "/**", method = RequestMethod.PUT)
+  ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(caPath, requestBody, caSetterRequestTranslator);
+      return storeAuthority(caPath(request), requestBody, caSetterRequestTranslator);
     });
   }
 
   @SuppressWarnings("unused")
-  @RequestMapping(path = "/{caPath}", method = RequestMethod.POST)
-  ResponseEntity generate(@PathVariable String caPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+  @RequestMapping(path = "/**", method = RequestMethod.POST)
+  ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(caPath, requestBody, caGeneratorRequestTranslator);
+      return storeAuthority(caPath(request), requestBody, caGeneratorRequestTranslator);
     });
   }
 
@@ -100,11 +103,11 @@ public class CaController {
   }
 
   @SuppressWarnings("unused")
-  @RequestMapping(path = "/{caPath}", method = RequestMethod.GET)
-  ResponseEntity get(@PathVariable String caPath, HttpServletRequest request, Authentication authentication) throws Exception {
-    NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath);
-
+  @RequestMapping(path = "/**", method = RequestMethod.GET)
+  ResponseEntity get(HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request, authentication), () -> {
+      NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath(request));
+
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
       }
@@ -116,6 +119,10 @@ public class CaController {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleHttpMessageNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
+  }
+
+  private String caPath(HttpServletRequest request) {
+    return request.getRequestURI().replace(API_V1_CA + "/", "");
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {

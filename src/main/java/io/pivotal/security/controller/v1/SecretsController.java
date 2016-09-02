@@ -34,8 +34,10 @@ import java.util.Collections;
 import java.util.function.Function;
 
 @RestController
-@RequestMapping(path = "/api/v1/data", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class SecretsController {
+
+  public static final String API_V1_DATA = "/api/v1/data";
 
   @Autowired
   SecretRepository secretRepository;
@@ -72,17 +74,17 @@ public class SecretsController {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
-  @RequestMapping(path = "/{secretPath}", method = RequestMethod.POST)
-  ResponseEntity generate(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+  @RequestMapping(path = "/**", method = RequestMethod.POST)
+  ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeSecret(requestBody, secretPath, namedSecretGenerateHandler);
+      return storeSecret(requestBody, secretPath(request), namedSecretGenerateHandler);
     });
   }
 
-  @RequestMapping(path = "/{secretPath}", method = RequestMethod.PUT)
-  ResponseEntity set(@PathVariable String secretPath, InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+  @RequestMapping(path = "/**", method = RequestMethod.PUT)
+  ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_update", new AuditRecordParameters(request, authentication), () -> {
-      return storeSecret(requestBody, secretPath, namedSecretSetHandler);
+      return storeSecret(requestBody, secretPath(request), namedSecretSetHandler);
     });
   }
 
@@ -109,10 +111,10 @@ public class SecretsController {
     }
   }
 
-  @RequestMapping(path = "/{secretPath}", method = RequestMethod.DELETE)
-  ResponseEntity delete(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
+  @RequestMapping(path = "/**", method = RequestMethod.DELETE)
+  ResponseEntity delete(HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_delete", new AuditRecordParameters(request, authentication), () -> {
-      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+      NamedSecret namedSecret = secretRepository.findOneByName(secretPath(request));
       if (namedSecret != null) {
         secretRepository.delete(namedSecret);
         return new ResponseEntity(HttpStatus.OK);
@@ -122,9 +124,9 @@ public class SecretsController {
     });
   }
 
-  @RequestMapping(path = "/{secretPath}", method = RequestMethod.GET)
-  public ResponseEntity getByName(@PathVariable String secretPath, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveWithAuditing(secretPath, secretRepository::findOneByName, request, authentication);
+  @RequestMapping(path = "/**", method = RequestMethod.GET)
+  public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
+    return retrieveWithAuditing(secretPath(request), secretRepository::findOneByName, request, authentication);
   }
 
   @RequestMapping(method = RequestMethod.GET)
@@ -147,6 +149,10 @@ public class SecretsController {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
+  }
+
+  private String secretPath(HttpServletRequest request) {
+    return request.getRequestURI().replace(API_V1_DATA + "/", "");
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {

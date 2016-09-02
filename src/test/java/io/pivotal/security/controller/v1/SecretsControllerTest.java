@@ -85,7 +85,7 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      secretName = uniquify("secret-name");
+      secretName = uniquify("my-namespace/secret-name");
 
       when(auditLogService.performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class)))
           .thenAnswer(invocation -> {
