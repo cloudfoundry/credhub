@@ -16,10 +16,10 @@ import java.util.UUID;
 @Profile("FakeUuidGenerator")
 public class FakeUuidGenerator implements UuidGenerator {
 
-  private final List<UUID> uuids = new ArrayList<>();
+  private static final List<UUID> uuids = new ArrayList<>();
 
   @Override
-  public String makeUuid() {
+  public synchronized String makeUuid() {
     UUID uuid = nextUuid();
     uuids.add(0, uuid);
     return uuid.toString();
@@ -62,6 +62,9 @@ public class FakeUuidGenerator implements UuidGenerator {
     System.out.println(fakeUuidGenerator.makeUuid());
     System.out.println(fakeUuidGenerator.makeUuid());
     System.out.println(fakeUuidGenerator.makeUuid());
+    System.out.println("------------------------------------");
+    System.out.println(fakeUuidGenerator.peekNextUuid());
     System.out.println(fakeUuidGenerator.makeUuid());
+    System.out.println(fakeUuidGenerator.getLastUuid());
   }
 }

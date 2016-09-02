@@ -198,6 +198,44 @@ public class SecretsControllerTest {
             .andExpect(jsonPath("$.value").value(specialValue));
       });
 
+      describe("fetching a secret by name", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder get = get("/api/v1/data/" + secretName)
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get)
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("value"))
+              .andExpect(jsonPath("$.value").value(otherValue))
+              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
+      describe("fetching a secret by id", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?id=" + fakeUuidGenerator.getLastUuid())
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get)
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("value"))
+              .andExpect(jsonPath("$.value").value(otherValue))
+              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
       describe("deleting a secret", () -> {
         beforeEach(() -> {
           mockMvc.perform(delete("/api/v1/data/" + secretName))
