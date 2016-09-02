@@ -50,7 +50,7 @@ public class CaController {
   private MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
-  private MessageSource messageSource;
+  MessageSource messageSource;
 
   @Autowired
   CASetterRequestTranslator caSetterRequestTranslator;
