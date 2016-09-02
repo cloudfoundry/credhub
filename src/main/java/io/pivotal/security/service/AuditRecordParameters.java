@@ -1,13 +1,10 @@
 package io.pivotal.security.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-
-import java.util.Collections;
-import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Enumeration;
 
 public class AuditRecordParameters {
   private final String hostName;
@@ -15,9 +12,6 @@ public class AuditRecordParameters {
   private final String requesterIp;
   private final String xForwardedFor;
   private final Authentication authentication;
-
-  @Autowired
-  ResourceServerTokenServices tokenServices;
 
   public AuditRecordParameters(HttpServletRequest request, Authentication authentication) {
     this(

@@ -64,7 +64,7 @@ public class PasseyStringSecretGeneratorTest {
       assertThat(secretValue.getValue(), equalTo("very-secret"));
     });
 
-    it("can generate secret iwth specific length", () -> {
+    it("can generate secret with specific length", () -> {
       when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-secret");
 
       StringSecretParameters secretParameters = new StringSecretParameters();

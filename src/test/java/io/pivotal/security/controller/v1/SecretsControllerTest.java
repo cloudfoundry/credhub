@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -215,6 +216,16 @@ public class SecretsControllerTest {
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
+
+        it("returns NOT_FOUND when the secret does not exist", () -> {
+          final MockHttpServletRequestBuilder get = get("/api/v1/data/invalid_name")
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get)
+              .andExpect(status().isNotFound())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
+        });
       });
 
       describe("fetching a secret by id", () -> {
@@ -248,6 +259,16 @@ public class SecretsControllerTest {
 
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(eq("credential_delete"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+
+        it("returns NOT_FOUND when the secret does not exist", () -> {
+          final MockHttpServletRequestBuilder delete = delete("/api/v1/data/invalid_name")
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(delete)
+              .andExpect(status().isNotFound())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
         });
       });
     });
@@ -289,6 +310,32 @@ public class SecretsControllerTest {
 
       mockMvc.perform(put)
           .andExpect(status().isInternalServerError());
+    });
+
+    it("allows secrets with '.' in the name", () -> {
+      final String testSecretName = uniquify("test");
+      final String testSecretNameWithDot = uniquify("test.foo");
+
+      when(namedSecretSetHandler.make(eq(testSecretName), isA(DocumentContext.class)))
+          .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(testSecretName, "abc"), null, null));
+
+      when(namedSecretSetHandler.make(eq(testSecretNameWithDot), isA(DocumentContext.class)))
+          .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(testSecretNameWithDot, "def"), null, null));
+
+      mockMvc.perform(put("/api/v1/data/" + testSecretName)
+          .content("{\"type\":\"value\",\"value\":\"" + "abc" + "\"}")
+          .contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(status().isOk());
+
+      mockMvc.perform(put("/api/v1/data/" + testSecretNameWithDot)
+          .content("{\"type\":\"value\",\"value\":\"" + "def" + "\"}")
+          .contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(status().isOk());
+
+      mockMvc.perform(get("/api/v1/data/" + testSecretName))
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(jsonPath("$.value").value("abc"));
     });
   }
 }
