@@ -6,6 +6,7 @@ import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
+import org.hamcrest.Matchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -19,6 +20,7 @@ import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
 
@@ -51,8 +53,8 @@ public class DatabaseEncryptionConfigurationTest {
       it("it encrypts the secret value", () -> {
         Map<String, Object> map = namedParameterJdbcTemplate.queryForMap("SELECT s.encrypted_value, n.nonce FROM named_secret s INNER JOIN named_secret n ON s.id = n.id WHERE n.name = '" + secretName + "'", Collections.emptyMap());
         assertThat(map, allOf(
-            hasEntry(equalTo("ENCRYPTED_VALUE"), not(equalTo("value1"))),
-            hasEntry(equalTo("NONCE"), notNullValue())
+            hasEntry(equalToIgnoringCase("encrypted_value"), not(equalTo("value1"))),
+            hasEntry(equalToIgnoringCase("nonce"), notNullValue())
         ));
       });
 

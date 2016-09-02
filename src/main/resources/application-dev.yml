@@ -16,7 +16,7 @@ spring:
     # url: jdbc:postgresql://localhost:5432/credhub
 
 flyway:
-  locations:classpath:/db/migration/common,classpath:/db/migration/h2
+  locations: classpath:/db/migration/common,classpath:/db/migration/h2
 
 security:
   oauth2:
