@@ -95,7 +95,7 @@ public class SecretsController {
       NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
 
       boolean willBeCreated = namedSecret == null;
-      boolean overwrite = BooleanUtils.isTrue(parsed.read("$.parameters.overwrite", Boolean.class));
+      boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
 
       if (willBeCreated || overwrite) {
         namedSecret = secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);

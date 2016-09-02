@@ -191,7 +191,7 @@ public class SecretsControllerTest {
             .content("{" +
                 "  \"type\":\"value\"," +
                 "  \"value\":\"" + specialValue + "\"," +
-                "  \"parameters\":{\"overwrite\":true}" +
+                "  \"overwrite\":true" +
                 "}");
 
         mockMvc.perform(put)
