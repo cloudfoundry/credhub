@@ -6,4 +6,4 @@ fly \
   -t private \
   execute \
   -c task.yml \
-  -i sec-eng-credential-manager=$HOME/workspace/cm-release/src/credhub
+  -i sec-eng-credential-manager=$HOME/workspace/credhub-release/src/credhub

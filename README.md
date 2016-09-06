@@ -10,8 +10,8 @@ Credhub is intended to live within a Bosh Director, providing
 
 See additional repos for more info:
 
-* cm-cli :     command line interface for credhub, coded in golang
-* cm-release : provides wrapper around credhub server so that bosh director can use it as a release within the director itself
+* credhub-cli :     command line interface for credhub, coded in golang
+* credhub-release : provides wrapper around credhub server so that bosh director can use it as a release within the director itself
 * sec-eng-deployment-credential-manager : cloud formation and bosh-init manifest template
 * sec-eng-ci : concourse pipelines, including credential-manager.yml
 * cred-hub-acceptance-tests : integration tests written in golang.
@@ -21,12 +21,12 @@ The latest code, including any changes you want to test, should be in ~/workspac
 You must also have installed /usr/local/bin/aws with ```brew install awscli```.
 
 If you haven't pulled the latest versions of the above repos recently, do it now. You need the latest version of the deploy_credhub.sh
-script, so you need to pull sec-eng-deployment-credential-manager. You need the latest BOSH release config, so you need to pull cm-release.
+script, so you need to pull sec-eng-deployment-credential-manager. You need the latest BOSH release config, so you need to pull credhub-release.
 
 In order to get the latest Credential Manager code into the release,
 
 ```
-cd ~/workspace/cm-release
+cd ~/workspace/credhub-release
 rm -rf dev_releases/credhub/*  # This step can be skipped if you've never run "bosh create release"
 ./scripts/update
 ```
