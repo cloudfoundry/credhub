@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -78,11 +78,11 @@ public class SignedCertificateGenerator {
       if (IP_ADDRESS_PATTERN.matcher(name).matches()) {
         genNames[i] = new GeneralName(GeneralName.iPAddress, name);
       } else if (BAD_IP_ADDRESS_PATTERN.matcher(name).matches()) {
-        throw new ValidationException("error.invalid_alternate_name");
+        throw new ParameterizedValidationException("error.invalid_alternate_name");
       } else if (DNS_PATTERN_INCLUDING_LEADING_WILDCARD.matcher(name).matches()) {
         genNames[i] = new GeneralName(GeneralName.dNSName, name);
       } else {
-        throw new ValidationException("error.invalid_alternate_name");
+        throw new ParameterizedValidationException("error.invalid_alternate_name");
       }
     }
     return new GeneralNames(genNames);

@@ -41,7 +41,7 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -184,7 +184,7 @@ public class CaControllerTest {
     });
 
     it("returns bad request for POST with invalid type", () -> {
-      doThrow(new ValidationException("error.bad_authority_type"))
+      doThrow(new ParameterizedValidationException("error.bad_authority_type"))
           .when(requestTranslatorWithGeneration)
           .populateEntityFromJson(any(NamedCertificateAuthority.class), any(DocumentContext.class));
       String uuid = UUID.randomUUID().toString();

@@ -6,7 +6,7 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -58,14 +58,14 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  public void validate() throws ValidationException {
+  public void validate() {
     if (StringUtils.isEmpty(organization)
         && StringUtils.isEmpty(state)
         && StringUtils.isEmpty(locality)
         && StringUtils.isEmpty(organizationUnit)
         && StringUtils.isEmpty(commonName)
         && StringUtils.isEmpty(country)) {
-      throw new ValidationException("error.missing_certificate_parameters");
+      throw new ParameterizedValidationException("error.missing_certificate_parameters");
     }
 
     switch (keyLength) {
@@ -74,11 +74,11 @@ public class CertificateSecretParameters implements RequestParameters {
       case 4096:
         break;
       default:
-        throw new ValidationException("error.invalid_key_length");
+        throw new ParameterizedValidationException("error.invalid_key_length");
     }
 
     if (durationDays < 1 || durationDays > 3650) {
-      throw new ValidationException("error.invalid_duration");
+      throw new ParameterizedValidationException("error.invalid_duration");
     }
   }
 

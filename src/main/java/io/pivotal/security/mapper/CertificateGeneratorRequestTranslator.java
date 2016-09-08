@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @Component
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters> {
@@ -21,7 +21,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
 
   private Supplier<CertificateSecretParameters> parametersSupplier = CertificateSecretParameters::new;
 
-  public CertificateSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
+  public CertificateSecretParameters validRequestParameters(DocumentContext parsed) {
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
 
     Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
@@ -34,7 +34,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     return secretParameters;
   }
 
-  public CertificateSecretParameters validCertificateAuthorityParameters(DocumentContext parsed) throws ValidationException {
+  public CertificateSecretParameters validCertificateAuthorityParameters(DocumentContext parsed) {
     CertificateSecretParameters secretParameters = parametersSupplier.get();
     Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
         .ifPresent(secretParameters::setCommonName);

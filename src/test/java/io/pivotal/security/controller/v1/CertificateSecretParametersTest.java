@@ -10,7 +10,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
@@ -231,7 +231,7 @@ public class CertificateSecretParametersTest {
         .setLocality(locality);
 
     if (!isExpectedValid) {
-      thrown.expect(ValidationException.class);
+      thrown.expect(ParameterizedValidationException.class);
       thrown.expectMessage("error.missing_certificate_parameters");
     }
     params.validate();

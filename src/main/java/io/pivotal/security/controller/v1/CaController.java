@@ -12,6 +12,7 @@ import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -33,7 +34,6 @@ import java.util.Collections;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ValidationException;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -94,7 +94,7 @@ public class CaController {
 
     try {
       requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsed);
-    } catch (ValidationException ve) {
+    } catch (ParameterizedValidationException ve) {
       return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
@@ -115,7 +115,7 @@ public class CaController {
     });
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
+  @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleHttpMessageNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);

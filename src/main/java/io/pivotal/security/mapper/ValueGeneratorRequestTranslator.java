@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @Component
 public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedValueSecret>, SecretGeneratorRequestTranslator<StringSecretParameters> {
@@ -19,7 +19,7 @@ public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedV
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
   @Override
-  public StringSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
+  public StringSecretParameters validRequestParameters(DocumentContext parsed) {
     StringSecretParameters secretParameters = new StringSecretParameters();
     String secretType = parsed.read("$.type", String.class);
     secretParameters.setType(secretType);
@@ -35,7 +35,7 @@ public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedV
         .ifPresent(secretParameters::setExcludeSpecial);
 
     if (!secretParameters.isValid()) {
-      throw new ValidationException("error.excludes_all_charsets");
+      throw new ParameterizedValidationException("error.excludes_all_charsets");
     }
     return secretParameters;
   }

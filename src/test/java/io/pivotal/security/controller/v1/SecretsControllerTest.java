@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 import java.time.Instant;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -278,7 +278,7 @@ public class SecretsControllerTest {
           .thenReturn(new DefaultMapping() {
             @Override
             public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
-              throw new ValidationException("error.type_mismatch");
+              throw new ParameterizedValidationException("error.type_mismatch");
             }
           });
 

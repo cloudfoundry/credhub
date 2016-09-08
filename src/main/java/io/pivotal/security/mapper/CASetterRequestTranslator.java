@@ -5,7 +5,7 @@ import io.pivotal.security.entity.NamedCertificateAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @Component
 public class CASetterRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
@@ -14,14 +14,14 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
   public void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
     String type = documentContext.read("$.type");
     if (!"root".equals(type)) {
-      throw new ValidationException("error.type_invalid");
+      throw new ParameterizedValidationException("error.type_invalid");
     }
     String certificate = documentContext.read("$.value.certificate");
     String privateKey = documentContext.read("$.value.private_key");
     certificate = StringUtils.isEmpty(certificate) ? null : certificate;
     privateKey = StringUtils.isEmpty(privateKey) ? null : privateKey;
     if (certificate == null || privateKey == null) {
-      throw new ValidationException("error.missing_ca_credentials");
+      throw new ParameterizedValidationException("error.missing_ca_credentials");
     }
     namedCA
         .setType(type)

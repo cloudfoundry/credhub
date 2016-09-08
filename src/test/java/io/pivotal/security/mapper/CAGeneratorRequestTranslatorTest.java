@@ -28,7 +28,7 @@ import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -102,12 +102,12 @@ public class CAGeneratorRequestTranslatorTest {
         Mockito.verify(certificateGeneratorRequestTranslator, times(1)).validCertificateAuthorityParameters(parsed);
       });
 
-      itThrows("returns error when type is not 'root'", ValidationException.class, () -> {
+      itThrows("returns error when type is not 'root'", ParameterizedValidationException.class, () -> {
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{\"type\":\"notRoot\"}");
         subject.createAuthorityFromJson(parsed);
       });
 
-      itThrows("returns error when type is not provided", ValidationException.class, () -> {
+      itThrows("returns error when type is not provided", ParameterizedValidationException.class, () -> {
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{}");
         subject.createAuthorityFromJson(parsed);
       });

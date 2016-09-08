@@ -21,7 +21,7 @@ import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.junit.Assert.assertThat;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -50,25 +50,25 @@ public class CASetterRequestTranslatorTest {
         assertThat(CertificateAuthority.fromEntity(entity), BeanMatchers.theSameAs(expected));
       });
 
-      itThrowsWithMessage("exception when certificate is missing", ValidationException.class, "error.missing_ca_credentials", () -> {
+      itThrowsWithMessage("exception when certificate is missing", ParameterizedValidationException.class, "error.missing_ca_credentials", () -> {
         doTestInvalid("root", "", "a");
       });
 
-      itThrowsWithMessage("exception when private key is missing", ValidationException.class, "error.missing_ca_credentials", () -> {
+      itThrowsWithMessage("exception when private key is missing", ParameterizedValidationException.class, "error.missing_ca_credentials", () -> {
         doTestInvalid("root", "b", "");
       });
 
-      itThrowsWithMessage("exception when all credentials are missing", ValidationException.class, "error.missing_ca_credentials", () -> {
+      itThrowsWithMessage("exception when all credentials are missing", ParameterizedValidationException.class, "error.missing_ca_credentials", () -> {
         doTestInvalid("root", "", "");
       });
 
-      itThrowsWithMessage("exception when type is invalid", ValidationException.class, "error.type_invalid", () -> {
+      itThrowsWithMessage("exception when type is invalid", ParameterizedValidationException.class, "error.type_invalid", () -> {
         doTestInvalid("invalid_ca_type", "b", "a");
       });
     });
   }
 
-  private void doTestInvalid(String type, String certificate, String privateKey) throws ValidationException {
+  private void doTestInvalid(String type, String certificate, String privateKey) throws ParameterizedValidationException {
     String requestJson = "{\"type\":" + type + ",\"value\":{\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);

@@ -8,7 +8,7 @@ import io.pivotal.security.view.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 import java.util.Optional;
 
 @Component
@@ -18,7 +18,7 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
   SecretGenerator<StringSecretParameters, StringSecret> stringSecretGenerator;
 
   @Override
-  public StringSecretParameters validRequestParameters(DocumentContext parsed) throws ValidationException {
+  public StringSecretParameters validRequestParameters(DocumentContext parsed) {
     StringSecretParameters secretParameters = new StringSecretParameters();
     secretParameters.setType(parsed.read("$.type", String.class));
     Optional.ofNullable(parsed.read("$.parameters.length", Integer.class))
@@ -33,7 +33,7 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
         .ifPresent(secretParameters::setExcludeSpecial);
 
     if (!secretParameters.isValid()) {
-      throw new ValidationException("error.excludes_all_charsets");
+      throw new ParameterizedValidationException("error.excludes_all_charsets");
     }
     return secretParameters;
   }

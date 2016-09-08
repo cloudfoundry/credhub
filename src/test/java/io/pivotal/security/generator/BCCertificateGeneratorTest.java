@@ -48,7 +48,7 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -117,7 +117,7 @@ public class BCCertificateGeneratorTest {
         try {
           subject.generateSecret(inputParameters);
           fail();
-        } catch (ValidationException ve) {
+        } catch (ParameterizedValidationException ve) {
           assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
         }
       });
@@ -128,7 +128,7 @@ public class BCCertificateGeneratorTest {
           inputParameters.setCa("default");
           subject.generateSecret(inputParameters);
           fail();
-        } catch (ValidationException ve) {
+        } catch (ParameterizedValidationException ve) {
           assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
         }
       });
@@ -140,7 +140,7 @@ public class BCCertificateGeneratorTest {
         try {
           subject.generateSecret(inputParameters);
           fail();
-        } catch (ValidationException ve) {
+        } catch (ParameterizedValidationException ve) {
           assertThat(ve.getMessage(), equalTo("error.ca_not_found_for_certificate_generation"));
         }
       });

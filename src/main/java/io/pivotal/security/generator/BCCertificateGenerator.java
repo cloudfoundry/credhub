@@ -28,7 +28,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @Component
 public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateSecret> {
@@ -73,7 +73,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     }
     NamedCertificateAuthority ca = authorityRepository.findOneByName(caName);
     if (ca == null) {
-      throw new ValidationException(missingCaErrorMessageKey);
+      throw new ParameterizedValidationException(missingCaErrorMessageKey);
     }
     return ca;
   }

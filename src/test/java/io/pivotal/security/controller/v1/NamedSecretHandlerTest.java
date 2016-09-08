@@ -7,7 +7,7 @@ import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -41,7 +41,7 @@ public class NamedSecretHandlerTest {
         expectedTranslator = translatorSupplier.get();
       });
 
-      itThrowsWithMessage("checks the type", ValidationException.class, "error.type_mismatch", () -> {
+      itThrowsWithMessage("checks the type", ParameterizedValidationException.class, "error.type_mismatch", () -> {
         mapFunction.apply(mistypedSecret);
       });
 

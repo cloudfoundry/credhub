@@ -52,7 +52,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 public class SignedCertificateGeneratorTest {
@@ -155,28 +155,28 @@ public class SignedCertificateGeneratorTest {
           ));
         });
 
-        itThrows("with invalid special DNS characters throws a validation exception", ValidationException.class, () -> {
+        itThrows("with invalid special DNS characters throws a validation exception", ParameterizedValidationException.class, () -> {
           inputParameters.addAlternativeName("foo!@#$%^&*()_-+=.com");
           makeCert.run();
         });
 
-        itThrows("with space character throws a validation exception", ValidationException.class, () -> {
+        itThrows("with space character throws a validation exception", ParameterizedValidationException.class, () -> {
           inputParameters.addAlternativeName("foo pivotal.io");
           makeCert.run();
         });
 
-        itThrows("with invalid IP address throws a validation exception", ValidationException.class, () -> {
+        itThrows("with invalid IP address throws a validation exception", ParameterizedValidationException.class, () -> {
           inputParameters.addAlternativeName("1.2.3.999");
           makeCert.run();
         });
 
         // email addresses are allowed in certificate spec, but we do not allow them per PM requirements
-        itThrows("with email address throws a validation exception", ValidationException.class, () -> {
+        itThrows("with email address throws a validation exception", ParameterizedValidationException.class, () -> {
           inputParameters.addAlternativeName("x@y.com");
           makeCert.run();
         });
 
-        itThrows("with URL throws a validation exception", ValidationException.class, () -> {
+        itThrows("with URL throws a validation exception", ParameterizedValidationException.class, () -> {
           inputParameters.addAlternativeName("https://foo.com");
           makeCert.run();
         });

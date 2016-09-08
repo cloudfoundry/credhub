@@ -8,6 +8,7 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.Secret;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.ValidationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -106,8 +106,8 @@ public class SecretsController {
 
       Secret stringSecret = Secret.fromEntity(namedSecret);
       return new ResponseEntity<>(stringSecret, HttpStatus.OK);
-    } catch (ValidationException ve) {
-      return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
+    } catch (ParameterizedValidationException ve) {
+      return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -145,7 +145,7 @@ public class SecretsController {
     });
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, ValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
+  @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
@@ -156,7 +156,11 @@ public class SecretsController {
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
-    String errorMessage = messageSourceAccessor.getMessage(key);
+    return createParameterizedErrorResponse(new ParameterizedValidationException(key), status);
+  }
+
+  private ResponseEntity createParameterizedErrorResponse(ParameterizedValidationException exception, HttpStatus status) {
+    String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
     return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
   }
 }

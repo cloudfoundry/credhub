@@ -33,7 +33,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -125,7 +125,7 @@ public class CertificateGeneratorRequestTranslatorTest {
         try {
           subject.validRequestParameters(parsed);
           fail();
-        } catch (ValidationException ve) {
+        } catch (ParameterizedValidationException ve) {
           assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
         }
       });
@@ -134,7 +134,7 @@ public class CertificateGeneratorRequestTranslatorTest {
         try {
           subject.validCertificateAuthorityParameters(parsed);
           fail();
-        } catch (ValidationException ve) {
+        } catch (ParameterizedValidationException ve) {
           assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
         }
       });

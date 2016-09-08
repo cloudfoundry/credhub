@@ -1,12 +1,10 @@
 package io.pivotal.security.view;
 
-import javax.validation.ValidationException;
-
 public interface SecretKindFromString {
 
-  static SecretKind fromString(String type) throws ValidationException {
+  static SecretKind fromString(String type) {
     if (type == null) {
-      throw new ValidationException("error.type_invalid");
+      throw new ParameterizedValidationException("error.type_invalid");
     }
     switch (type) {
       case "value":
@@ -16,6 +14,6 @@ public interface SecretKindFromString {
       case "certificate":
         return SecretKind.CERTIFICATE;
     }
-    throw new ValidationException("error.type_invalid");
+    throw new ParameterizedValidationException("error.type_invalid");
   }
 }

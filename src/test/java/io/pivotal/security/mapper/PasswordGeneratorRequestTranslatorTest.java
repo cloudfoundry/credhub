@@ -20,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -75,7 +75,7 @@ public class PasswordGeneratorRequestTranslatorTest {
       try {
         subject.validRequestParameters(JsonPath.using(configuration).parse(json));
         fail();
-      } catch (ValidationException ve) {
+      } catch (ParameterizedValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.excludes_all_charsets"));
       }
     });

@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -75,7 +75,7 @@ public class ValueGeneratorRequestTranslatorTest {
       try {
         subject.validRequestParameters(JsonPath.using(configuration).parse(json));
         fail();
-      } catch (ValidationException ve) {
+      } catch (ParameterizedValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.excludes_all_charsets"));
       }
     });

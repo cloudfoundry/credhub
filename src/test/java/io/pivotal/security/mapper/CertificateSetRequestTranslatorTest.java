@@ -19,7 +19,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -53,7 +53,7 @@ public class CertificateSetRequestTranslatorTest {
         checkEntity(null, null, "my-priv", "", "", "my-priv");
       });
 
-      itThrowsWithMessage("exception when all values are absent", ValidationException.class, "error.missing_certificate_credentials", () -> {
+      itThrowsWithMessage("exception when all values are absent", ParameterizedValidationException.class, "error.missing_certificate_credentials", () -> {
         checkEntity(null, null, null, "", "", "");
       });
     });

@@ -20,7 +20,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -52,13 +52,13 @@ public class ValueSetRequestTranslatorTest {
         assertThat(entity.getValue(), equalTo("myValue"));
       });
 
-      itThrowsWithMessage("exception when empty value is given", ValidationException.class, "error.missing_string_secret_value", () -> {
+      itThrowsWithMessage("exception when empty value is given", ParameterizedValidationException.class, "error.missing_string_secret_value", () -> {
         String requestJson = "{\"type\":\"value\",\"value\":\"\"}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
         subject.populateEntityFromJson(entity, parsed);
       });
 
-      itThrowsWithMessage("exception when value is omitted", ValidationException.class, "error.missing_string_secret_value", () -> {
+      itThrowsWithMessage("exception when value is omitted", ParameterizedValidationException.class, "error.missing_string_secret_value", () -> {
         String requestJson = "{\"type\":\"value\"}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
         subject.populateEntityFromJson(entity, parsed);

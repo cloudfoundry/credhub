@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import javax.validation.ValidationException;
+import io.pivotal.security.view.ParameterizedValidationException;
 
 @Component
 public class CertificateSetRequestTranslator implements RequestTranslator<NamedCertificateSecret> {
@@ -17,7 +17,7 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
     String certificate = emptyToNull(documentContext.read("$.value.certificate"));
     String privateKey = emptyToNull(documentContext.read("$.value.private_key"));
     if (root == null && certificate == null && privateKey == null) {
-      throw new ValidationException("error.missing_certificate_credentials");
+      throw new ParameterizedValidationException("error.missing_certificate_credentials");
     }
     namedCertificateSecret.setCa(root);
     namedCertificateSecret.setCertificate(certificate);
