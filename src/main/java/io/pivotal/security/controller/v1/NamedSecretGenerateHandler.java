@@ -29,17 +29,17 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
     return new SecretKind.Mapping<NamedSecret, NamedSecret>() {
       @Override
       public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
-        return processSecret((NamedValueSecret)namedSecret, new NamedValueSecret(secretPath), valueGeneratorRequestTranslator, parsed);
+        return processSecret((NamedValueSecret)namedSecret, NamedValueSecret::new, secretPath, valueGeneratorRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret password(SecretKind secretKind, NamedSecret namedSecret) {
-        return processSecret((NamedPasswordSecret)namedSecret, new NamedPasswordSecret(secretPath), passwordGeneratorRequestTranslator, parsed);
+        return processSecret((NamedPasswordSecret)namedSecret, NamedPasswordSecret::new, secretPath, passwordGeneratorRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret certificate(SecretKind secretKind, NamedSecret namedSecret) {
-        return processSecret((NamedCertificateSecret)namedSecret, new NamedCertificateSecret(secretPath), certificateGeneratorRequestTranslator, parsed);
+        return processSecret((NamedCertificateSecret)namedSecret, NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsed);
       }
     }.compose(new ValidateTypeMatch());
   }
