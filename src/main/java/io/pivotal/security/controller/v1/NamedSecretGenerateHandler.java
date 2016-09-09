@@ -26,27 +26,20 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
 
   @Override
   public SecretKind.Mapping<NamedSecret, NamedSecret> make(String secretPath, DocumentContext parsed) {
-    //noinspection Duplicates
     return new SecretKind.Mapping<NamedSecret, NamedSecret>() {
       @Override
       public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
-        NamedValueSecret namedValueSecret = namedSecret == null ? new NamedValueSecret(secretPath) : (NamedValueSecret) namedSecret;
-        valueGeneratorRequestTranslator.populateEntityFromJson(namedValueSecret, parsed);
-        return namedValueSecret;
+        return processSecret((NamedValueSecret)namedSecret, new NamedValueSecret(secretPath), valueGeneratorRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret password(SecretKind secretKind, NamedSecret namedSecret) {
-        NamedPasswordSecret namedPasswordSecret = namedSecret == null ? new NamedPasswordSecret(secretPath) : (NamedPasswordSecret) namedSecret;
-        passwordGeneratorRequestTranslator.populateEntityFromJson(namedPasswordSecret, parsed);
-        return namedPasswordSecret;
+        return processSecret((NamedPasswordSecret)namedSecret, new NamedPasswordSecret(secretPath), passwordGeneratorRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret certificate(SecretKind secretKind, NamedSecret namedSecret) {
-        NamedCertificateSecret namedCertificateSecret = namedSecret == null ? new NamedCertificateSecret(secretPath) : (NamedCertificateSecret) namedSecret;
-        certificateGeneratorRequestTranslator.populateEntityFromJson(namedCertificateSecret, parsed);
-        return namedCertificateSecret;
+        return processSecret((NamedCertificateSecret)namedSecret, new NamedCertificateSecret(secretPath), certificateGeneratorRequestTranslator, parsed);
       }
     }.compose(new ValidateTypeMatch());
   }
