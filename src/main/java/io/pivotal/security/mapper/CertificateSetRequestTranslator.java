@@ -4,9 +4,12 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import org.springframework.stereotype.Component;
 
+import static com.google.common.collect.ImmutableSet.of;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import io.pivotal.security.view.ParameterizedValidationException;
+
+import java.util.Set;
 
 @Component
 public class CertificateSetRequestTranslator implements RequestTranslator<NamedCertificateSecret> {
@@ -22,6 +25,11 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
     namedCertificateSecret.setCa(root);
     namedCertificateSecret.setCertificate(certificate);
     namedCertificateSecret.setPrivateKey(privateKey);
+  }
+
+  @Override
+  public Set<String> getValidKeys() {
+    return of("$['type']", "$['value']", "$['value']['ca']", "$['value']['certificate']", "$['value']['private_key']");
   }
 
   private String emptyToNull(String val) {

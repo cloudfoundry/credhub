@@ -9,9 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import io.pivotal.security.view.ParameterizedValidationException;
+
+import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters> {
@@ -67,6 +70,23 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     entity.setCa(secret.getCertificateBody().getCa());
     entity.setCertificate(secret.getCertificateBody().getCertificate());
     entity.setPrivateKey(secret.getCertificateBody().getPrivateKey());
+  }
+
+  @Override
+  public Set<String> getValidKeys() {
+    return of("$['type']",
+        "$['parameters']",
+        "$['parameters']['alternative_names']",
+        "$['parameters']['ca']",
+        "$['parameters']['common_name']",
+        "$['parameters']['organization']",
+        "$['parameters']['organization_unit']",
+        "$['parameters']['locality']",
+        "$['parameters']['state']",
+        "$['parameters']['country']",
+        "$['parameters']['key_length']",
+        "$['parameters']['duration']"
+    );
   }
 
   void setParametersSupplier(Supplier<CertificateSecretParameters> parametersSupplier) {

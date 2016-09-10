@@ -38,7 +38,6 @@ public class ValueSetRequestTranslatorTest {
     wireAndUnwire(this);
 
     describe("populating entity from JSON", () -> {
-
       beforeEach(() -> {
         subject = new ValueSetRequestTranslator();
         entity = new NamedValueSecret("rick");

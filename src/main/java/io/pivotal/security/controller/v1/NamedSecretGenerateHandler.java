@@ -44,3 +44,4 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
     }.compose(new ValidateTypeMatch());
   }
 }
+

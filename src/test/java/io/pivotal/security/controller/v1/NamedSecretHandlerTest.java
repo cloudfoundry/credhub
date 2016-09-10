@@ -2,12 +2,17 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.view.SecretKind;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
+
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -21,6 +26,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.verify;
 
+@RunWith(Spectrum.class)
+@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles("unit-test")
 public class NamedSecretHandlerTest {
 
   @Mock
@@ -29,10 +37,6 @@ public class NamedSecretHandlerTest {
   RequestTranslator expectedTranslator;
 
   Function<NamedSecret, NamedSecret> mapFunction;
-
-  {
-    beforeEach(injectMocks(this));
-  }
 
   protected Spectrum.Block behavesLikeMapper(Supplier<SecretKindMappingFactory> subject, Supplier<RequestTranslator> translatorSupplier, SecretKind secretKind, Class<? extends NamedSecret> clazz, NamedSecret mistypedSecret, NamedSecret existingEntity) {
     return () -> {

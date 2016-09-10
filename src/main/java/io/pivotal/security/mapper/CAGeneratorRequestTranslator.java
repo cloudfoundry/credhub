@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import io.pivotal.security.view.ParameterizedValidationException;
 
+import java.util.Set;
+
 @Component
 public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
   @Autowired
@@ -56,5 +58,10 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
         .setType(certificateAuthority.getType())
         .setCertificate(caBody.getCertificate())
         .setPrivateKey(caBody.getPrivateKey());
+  }
+
+  @Override
+  public Set<String> getValidKeys() {
+    return null;
   }
 }

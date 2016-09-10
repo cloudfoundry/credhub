@@ -9,8 +9,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.Set;
 
 import io.pivotal.security.view.ParameterizedValidationException;
+
+import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedValueSecret>, SecretGeneratorRequestTranslator<StringSecretParameters> {
@@ -45,5 +48,16 @@ public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedV
     StringSecretParameters requestParameters = validRequestParameters(documentContext);
     StringSecret secret = stringSecretGenerator.generateSecret(requestParameters);
     entity.setValue(secret.getValue());
+  }
+
+  @Override
+  public Set<String> getValidKeys() {
+    return of("$['type']",
+        "$['parameters']",
+        "$['parameters']['length']",
+        "$['parameters']['exclude_lower']",
+        "$['parameters']['exclude_upper']",
+        "$['parameters']['exclude_number']",
+        "$['parameters']['exclude_special']");
   }
 }

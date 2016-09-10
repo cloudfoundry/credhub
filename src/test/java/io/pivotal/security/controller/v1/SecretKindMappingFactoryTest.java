@@ -50,5 +50,11 @@ public class SecretKindMappingFactoryTest {
       subject.processSecret(existingObject, NamedValueSecret::new, "name", requestTranslator, parsed);
       verify(requestTranslator).populateEntityFromJson(existingObject, parsed);
     });
+
+    it("validates JSON keys", () -> {
+      NamedValueSecret existingObject = new NamedValueSecret("name");
+      subject.processSecret(existingObject, NamedValueSecret::new, "name", requestTranslator, parsed);
+      verify(requestTranslator).validateJsonKeys(parsed);
+    });
   }
 }

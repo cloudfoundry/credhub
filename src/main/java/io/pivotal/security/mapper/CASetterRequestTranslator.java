@@ -7,6 +7,8 @@ import org.springframework.util.StringUtils;
 
 import io.pivotal.security.view.ParameterizedValidationException;
 
+import java.util.Set;
+
 @Component
 public class CASetterRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
 
@@ -27,5 +29,10 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
         .setType(type)
         .setCertificate(certificate)
         .setPrivateKey(privateKey);
+  }
+
+  @Override
+  public Set<String> getValidKeys() {
+    return null;
   }
 }

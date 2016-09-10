@@ -12,6 +12,7 @@ public interface SecretKindMappingFactory {
 
   default <Z extends NamedSecret> Z processSecret(Z namedSecret, Function<String, Z> constructor, String secretPath, RequestTranslator<Z> requestTranslator, DocumentContext parsed) {
     Z result = namedSecret == null ? constructor.apply(secretPath) : namedSecret;
+    requestTranslator.validateJsonKeys(parsed);
     requestTranslator.populateEntityFromJson(result, parsed);
     return result;
   }

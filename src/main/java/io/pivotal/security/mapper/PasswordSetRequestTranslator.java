@@ -6,6 +6,10 @@ import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.Set;
+
+import static com.google.common.collect.ImmutableSet.of;
+
 @Component
 public class PasswordSetRequestTranslator implements RequestTranslator<NamedPasswordSecret> {
 
@@ -16,5 +20,10 @@ public class PasswordSetRequestTranslator implements RequestTranslator<NamedPass
       throw new ParameterizedValidationException("error.missing_string_secret_value");
     }
     namedStringSecret.setValue(value);
+  }
+
+  @Override
+  public Set<String> getValidKeys() {
+    return of("$['value']", "$['type']");
   }
 }

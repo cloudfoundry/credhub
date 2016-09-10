@@ -10,6 +10,9 @@ import org.springframework.stereotype.Component;
 
 import io.pivotal.security.view.ParameterizedValidationException;
 import java.util.Optional;
+import java.util.Set;
+
+import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class PasswordGeneratorRequestTranslator implements RequestTranslator<NamedPasswordSecret>, SecretGeneratorRequestTranslator<StringSecretParameters> {
@@ -43,5 +46,16 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
     StringSecretParameters requestParameters = validRequestParameters(documentContext);
     StringSecret secret = stringSecretGenerator.generateSecret(requestParameters);
     entity.setValue(secret.getValue());
+  }
+
+  @Override
+  public Set<String> getValidKeys() {
+    return of("$['type']",
+        "$['parameters']",
+        "$['parameters']['length']",
+        "$['parameters']['exclude_lower']",
+        "$['parameters']['exclude_upper']",
+        "$['parameters']['exclude_number']",
+        "$['parameters']['exclude_special']");
   }
 }
