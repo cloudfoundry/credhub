@@ -13,6 +13,8 @@ import io.pivotal.security.view.ParameterizedValidationException;
 
 import java.util.Set;
 
+import static com.google.common.collect.ImmutableSet.of;
+
 @Component
 public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
   @Autowired
@@ -62,6 +64,16 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
 
   @Override
   public Set<String> getValidKeys() {
-    return null;
+    return of("$['type']",
+        "$['parameters']",
+        "$['parameters']['common_name']",
+        "$['parameters']['organization']",
+        "$['parameters']['organization_unit']",
+        "$['parameters']['locality']",
+        "$['parameters']['state']",
+        "$['parameters']['country']",
+        "$['parameters']['key_length']",
+        "$['parameters']['duration']"
+    );
   }
 }

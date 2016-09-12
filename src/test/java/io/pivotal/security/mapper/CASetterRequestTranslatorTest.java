@@ -7,21 +7,16 @@ import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.junit.Assert.assertThat;
-
-import io.pivotal.security.view.ParameterizedValidationException;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -33,19 +28,33 @@ public class CASetterRequestTranslatorTest {
 
   private NamedCertificateAuthority entity;
 
+  private CASetterRequestTranslator subject;
+
   {
     wireAndUnwire(this);
 
     describe("populating entity from json", () -> {
       beforeEach(() -> {
         entity = new NamedCertificateAuthority(uniquify("foo"));
+        subject = new CASetterRequestTranslator();
+      });
+
+      it("validates the json keys", () -> {
+        String requestJson =
+            "{\"type\":\"root\"," +
+            "\"value\":{" +
+                "\"certificate\":\"a\"," +
+                "\"private_key\":\"b\"}}";
+        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+        subject.validateJsonKeys(parsed);
+        // no exception
       });
 
       it("populates CA entity for valid scenarios", () -> {
         CertificateAuthority expected = new CertificateAuthority("root", "a", "b");
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
-        new CASetterRequestTranslator().populateEntityFromJson(entity, parsed);
+        subject.populateEntityFromJson(entity, parsed);
 
         assertThat(CertificateAuthority.fromEntity(entity), BeanMatchers.theSameAs(expected));
       });
@@ -72,6 +81,6 @@ public class CASetterRequestTranslatorTest {
     String requestJson = "{\"type\":" + type + ",\"value\":{\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
 
     DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
-    new CASetterRequestTranslator().populateEntityFromJson(entity, parsed);
+    subject.populateEntityFromJson(entity, parsed);
   }
 }

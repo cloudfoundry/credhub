@@ -9,6 +9,8 @@ import io.pivotal.security.view.ParameterizedValidationException;
 
 import java.util.Set;
 
+import static com.google.common.collect.ImmutableSet.of;
+
 @Component
 public class CASetterRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
 
@@ -33,6 +35,7 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
 
   @Override
   public Set<String> getValidKeys() {
-    return null;
+    return of("$['type']", "$['value']",
+       "$['value']['certificate']", "$['value']['private_key']");
   }
 }

@@ -81,6 +81,11 @@ public class CAGeneratorRequestTranslatorTest {
         parsed = JsonPath.using(jsonConfiguration).parse(json);
       });
 
+      it("validates the json keys", () -> {
+        subject.validateJsonKeys(parsed);
+        // no exception
+      });
+
       it("creates view with specified parameters", () -> {
         when(certificateGenerator.generateCertificateAuthority(refEq(fullParams)))
             .thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));
