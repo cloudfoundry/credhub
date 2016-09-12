@@ -1,8 +1,8 @@
 package io.pivotal.security.controller.v1;
 
+import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedValueSecret;
@@ -10,15 +10,21 @@ import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.PasswordSetRequestTranslator;
 import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 
-public class NamedSecretSetHandlerTest extends NamedSecretHandlerTest {
+@RunWith(Spectrum.class)
+@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles("unit-test")
+public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
 
   @InjectMocks
   NamedSecretSetHandler subject;
@@ -39,39 +45,32 @@ public class NamedSecretSetHandlerTest extends NamedSecretHandlerTest {
   CertificateSetRequestTranslator certificateSetRequestTranslator;
 
   {
-    describe("mocked", () -> {
+    describe("it verifies the secret type and secret creation for", () -> {
       beforeEach(injectMocks(this));
 
-      describe("when mapping a value, it behaves like a mapper", behavesLikeMapper(() -> subject, () -> subject.valueSetRequestTranslator, SecretKind.VALUE, NamedValueSecret.class, new NamedCertificateSecret(), new NamedValueSecret()));
+      describe("value", behavesLikeMapper(() -> subject, () -> subject.valueSetRequestTranslator, SecretKind.VALUE, NamedValueSecret.class, new NamedCertificateSecret(), new NamedValueSecret()));
 
-      describe("when mapping a password, it behaves like a mapper", behavesLikeMapper(() -> subject, () -> subject.passwordSetRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
+      describe("password", behavesLikeMapper(() -> subject, () -> subject.passwordSetRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
 
-      describe("when mapping a certificate, it behaves like a mapper", behavesLikeMapper(() -> subject, () -> subject.certificateSetRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
+      describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateSetRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
     });
 
-    describe("not mocked", () -> {
+    describe("verifies full set of keys for", () -> {
       wireAndUnwire(this);
 
-      it("value", () -> {
-        String requestJson = "{\"type\":\"value\",\"value\":\"myValue\"}";
-        final DocumentContext parsed = JsonPath.using(configuration).parse(requestJson);
-        realSubject.make("name", parsed).value(SecretKind.VALUE, null);
-        // no exception
-      });
+      it("value", validateJsonKeys(() -> realSubject.valueSetRequestTranslator,
+          "{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));
 
-      it("password", () -> {
-        String requestJson = "{\"type\":\"password\",\"value\":\"myValue\"}";
-        final DocumentContext parsed = JsonPath.using(configuration).parse(requestJson);
-        realSubject.make("name", parsed).password(SecretKind.PASSWORD, null);
-        // no exception
-      });
+      it("password", validateJsonKeys(() -> realSubject.passwordSetRequestTranslator,
+          "{\"type\":\"password\",\"value\":\"myValue\",\"overwrite\":true}"));
 
-      it("certificate", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"pk\"}}";
-        final DocumentContext parsed = JsonPath.using(configuration).parse(requestJson);
-        realSubject.make("name", parsed).certificate(SecretKind.CERTIFICATE, null);
-        // no exception
-      });
+      it("certificate", validateJsonKeys(() -> realSubject.certificateSetRequestTranslator,
+          "{\"type\":\"certificate\"," +
+          "\"overwrite\":true," +
+          "\"value\":{" +
+              "\"ca\":\"ca\"," +
+              "\"certificate\":\"cert\"," +
+              "\"private_key\":\"pk\"}}"));
     });
   }
 }

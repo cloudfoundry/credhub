@@ -12,8 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import io.pivotal.security.view.ParameterizedValidationException;
-
 import static com.google.common.collect.ImmutableSet.of;
 
 @Component
@@ -75,6 +73,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Override
   public Set<String> getValidKeys() {
     return of("$['type']",
+        "$['overwrite']",
         "$['parameters']",
         "$['parameters']['alternative_names']",
         "$['parameters']['ca']",

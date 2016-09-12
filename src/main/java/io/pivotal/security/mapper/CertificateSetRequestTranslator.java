@@ -29,7 +29,8 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['type']", "$['value']", "$['value']['ca']", "$['value']['certificate']", "$['value']['private_key']");
+    return of("$['type']", "$['overwrite']", "$['value']",
+        "$['value']['ca']", "$['value']['certificate']", "$['value']['private_key']");
   }
 
   private String emptyToNull(String val) {

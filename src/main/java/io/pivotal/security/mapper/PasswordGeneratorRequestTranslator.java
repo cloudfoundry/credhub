@@ -51,6 +51,7 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
   @Override
   public Set<String> getValidKeys() {
     return of("$['type']",
+        "$['overwrite']",
         "$['parameters']",
         "$['parameters']['length']",
         "$['parameters']['exclude_lower']",

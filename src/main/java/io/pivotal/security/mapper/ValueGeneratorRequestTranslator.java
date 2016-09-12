@@ -53,6 +53,7 @@ public class ValueGeneratorRequestTranslator implements RequestTranslator<NamedV
   @Override
   public Set<String> getValidKeys() {
     return of("$['type']",
+        "$['overwrite']",
         "$['parameters']",
         "$['parameters']['length']",
         "$['parameters']['exclude_lower']",

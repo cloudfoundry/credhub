@@ -25,6 +25,6 @@ public class ValueSetRequestTranslator implements RequestTranslator<NamedValueSe
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['value']", "$['type']");
+    return of("$['value']", "$['type']", "$['overwrite']");
   }
 }

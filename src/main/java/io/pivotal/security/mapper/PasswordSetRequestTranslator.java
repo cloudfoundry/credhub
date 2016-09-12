@@ -24,6 +24,6 @@ public class PasswordSetRequestTranslator implements RequestTranslator<NamedPass
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['value']", "$['type']");
+    return of("$['value']", "$['type']", "$['overwrite']");
   }
 }
