@@ -42,7 +42,7 @@ public class CASetterRequestTranslatorTest {
       it("validates the json keys", () -> {
         String requestJson =
             "{\"type\":\"root\"," +
-            "\"value\":{" +
+                "\"value\":{" +
                 "\"certificate\":\"a\"," +
                 "\"private_key\":\"b\"}}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
@@ -54,6 +54,7 @@ public class CASetterRequestTranslatorTest {
         CertificateAuthority expected = new CertificateAuthority("root", "a", "b");
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+        subject.validateJsonKeys(parsed);
         subject.populateEntityFromJson(entity, parsed);
 
         assertThat(CertificateAuthority.fromEntity(entity), BeanMatchers.theSameAs(expected));
@@ -73,6 +74,15 @@ public class CASetterRequestTranslatorTest {
 
       itThrowsWithMessage("exception when type is invalid", ParameterizedValidationException.class, "error.type_invalid", () -> {
         doTestInvalid("invalid_ca_type", "b", "a");
+      });
+    });
+
+    describe("when random parameters are provided", () -> {
+      itThrows("it rejects request", ParameterizedValidationException.class, () -> {
+        String requestJson = "{\"type\":\"root\",\"foo\":\"bar\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
+        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+
+        subject.validateJsonKeys(parsed);
       });
     });
   }

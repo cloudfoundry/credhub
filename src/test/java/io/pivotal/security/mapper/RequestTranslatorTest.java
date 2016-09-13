@@ -38,7 +38,7 @@ public class RequestTranslatorTest {
 
       @Override
       public Set<String> getValidKeys() {
-        return of("$['foo']", "$['bar']", "$['baz']", "$['baz']['quux']");
+        return of("$['foo']", "$['bar']", "$['baz']", "$['baz']['quux']", "$['dynamic']", "$['dynamic'][*]");
       }
     };
 
@@ -58,6 +58,11 @@ public class RequestTranslatorTest {
       it("rejects additional keys at a lower level", () -> {
         String requestJson = "{\"foo\":\"value\",\"bar\":\"\",\"baz\":{\"quux1\":false}}";
         doInvalidTest(subject, requestJson, "$['baz']['quux1']");
+      });
+
+      it("accepts references from a dynamic array", () -> {
+        String requestJson = "{\"foo\":\"value\",\"bar\":\"\",\"dynamic\":[\"key1\",\"key2\"]}";
+        subject.validateJsonKeys(using(jsonPathConfiguration).parse(requestJson));
       });
     });
   }

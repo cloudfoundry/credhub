@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static com.google.common.collect.ImmutableSet.of;
+import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
 
 @Component
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters> {
@@ -76,6 +77,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         "$['overwrite']",
         "$['parameters']",
         "$['parameters']['alternative_names']",
+        "$['parameters']['alternative_names']" + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS,
         "$['parameters']['ca']",
         "$['parameters']['common_name']",
         "$['parameters']['organization']",

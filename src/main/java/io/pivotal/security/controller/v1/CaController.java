@@ -94,8 +94,9 @@ public class CaController {
 
     try {
       requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsed);
+      requestTranslator.validateJsonKeys(parsed);
     } catch (ParameterizedValidationException ve) {
-      return createErrorResponse(ve.getMessage(), HttpStatus.BAD_REQUEST);
+      return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
 
     NamedCertificateAuthority saved = caRepository.save(namedCertificateAuthority);
@@ -127,6 +128,11 @@ public class CaController {
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
     String errorMessage = messageSourceAccessor.getMessage(key);
+    return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
+  }
+
+  private ResponseEntity createParameterizedErrorResponse(ParameterizedValidationException exception, HttpStatus status) {
+    String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
     return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
   }
 }

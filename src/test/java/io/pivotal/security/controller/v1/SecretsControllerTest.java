@@ -9,6 +9,7 @@ import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -25,11 +26,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import io.pivotal.security.view.ParameterizedValidationException;
 import java.time.Instant;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -111,6 +112,10 @@ public class SecretsControllerTest {
             .andExpect(jsonPath("$.value").value("some value"))
             .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
             .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+      });
+
+      it("validates parameters", () -> {
+        verify(namedSecretGenerateHandler).make(eq(secretName), any(DocumentContext.class));
       });
 
       it("persists the secret", () -> {
@@ -294,6 +299,29 @@ public class SecretsControllerTest {
           .andExpect(status().isBadRequest())
           .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
           .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
+    });
+
+    it("returns a parameterized error message when json key is invalid", () -> {
+      when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
+          .thenReturn(new DefaultMapping() {
+            @Override
+            public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+              throw new ParameterizedValidationException("error.invalid_json_key", newArrayList("foo error"));
+            }
+          });
+
+      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{" +
+              "  \"type\":\"value\"," +
+              "  \"value\":\"some value\"" +
+              "}");
+
+      mockMvc.perform(put)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'foo error'. Please update or remove this parameter and retry your request."));
     });
 
     it("returns errors from the auditing service auditing fails", () -> {

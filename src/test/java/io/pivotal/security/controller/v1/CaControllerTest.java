@@ -8,6 +8,7 @@ import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -21,27 +22,22 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-
-import io.pivotal.security.view.ParameterizedValidationException;
+import static org.mockito.Mockito.*;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -63,7 +59,7 @@ public class CaControllerTest {
   private CaController caController;
 
   @Mock
-  CAGeneratorRequestTranslator requestTranslatorWithGeneration;
+  CAGeneratorRequestTranslator caGeneratorRequestTranslator;
 
   private MockMvc mockMvc;
   private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
@@ -71,6 +67,8 @@ public class CaControllerTest {
 
   private String uniqueName;
   private String urlPath;
+
+  private static final String CA_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
 
   {
     wireAndUnwire(this);
@@ -90,10 +88,10 @@ public class CaControllerTest {
         namedCertificateAuthority.setCertificate("my_cert");
         namedCertificateAuthority.setPrivateKey("private_key");
         return null;
-      }).when(requestTranslatorWithGeneration).populateEntityFromJson(isA(NamedCertificateAuthority.class), isA(DocumentContext.class));
+      }).when(caGeneratorRequestTranslator).populateEntityFromJson(isA(NamedCertificateAuthority.class), isA(DocumentContext.class));
 
       String requestJson = "{\"type\":\"root\"}";
-      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
+      String responseJson = "{" + getUpdatedAtJson() + "," + CA_CREATION_JSON + "}";
 
       NamedCertificateAuthority entity =
           new NamedCertificateAuthority(uniqueName)
@@ -107,25 +105,61 @@ public class CaControllerTest {
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(responseJson));
+
+      verify(caGeneratorRequestTranslator).validateJsonKeys(any(DocumentContext.class));
       NamedCertificateAuthority oneByName = caRepository.findOneByName(uniqueName);
       assertThat(oneByName, theSameAs(entity).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
       assertThat(secretRepository.findOneByName(uniqueName), nullValue());
     });
 
-    it("can set a root ca", () -> {
-      String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
+    describe("setter", () -> {
+      it("can set a root ca", () -> {
+        String requestJson = "{" + CA_CREATION_JSON + "}";
+        String responseJson = "{" + getUpdatedAtJson() + "," + CA_CREATION_JSON + "}";
 
-      RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
+        RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
 
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isOk())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(requestJson));
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().json(responseJson));
 
-      CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
-      expected.setUpdatedAt(frozenTime);
-      assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
-      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+        CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
+        expected.setUpdatedAt(frozenTime);
+        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+        assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+      });
+
+      it("can overwrite a root ca", () -> {
+        String requestJson = "{" + CA_CREATION_JSON + "}";
+        String responseJson = "{" + getUpdatedAtJson() + "," + CA_CREATION_JSON + "}";
+
+        RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
+
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().json(responseJson));
+
+        CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
+        expected.setUpdatedAt(frozenTime);
+        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+        assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+
+        String jsonContent = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert2\",\"private_key\":\"private_key2\"}";
+        requestJson = "{" + jsonContent + "}";
+        responseJson = "{" + getUpdatedAtJson() + "," + jsonContent + "}";
+        requestBuilder = putRequestBuilder(urlPath, requestJson);
+        mockMvc.perform(requestBuilder)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().json(responseJson));
+
+        expected = new CertificateAuthority("root", "my_cert2", "private_key2");
+        expected.setUpdatedAt(frozenTime);
+        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
+        assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+      });
     });
 
     it("can fetch a root ca", () -> {
@@ -142,34 +176,6 @@ public class CaControllerTest {
           .andExpect(content().json(expectedJson));
     });
 
-    it("can overwrite a root ca", () -> {
-      String requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
-
-      RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
-
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isOk())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(requestJson));
-
-      CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
-      expected.setUpdatedAt(frozenTime);
-      assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
-      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
-
-      requestJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_cert2\",\"private_key\":\"private_key2\"}}";
-      requestBuilder = putRequestBuilder(urlPath, requestJson);
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isOk())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(requestJson));
-
-      expected = new CertificateAuthority("root", "my_cert2", "private_key2");
-      expected.setUpdatedAt(frozenTime);
-      assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
-      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
-    });
-
     it("returns bad request for PUT with invalid type", () -> {
       String uuid = UUID.randomUUID().toString();
       String requestJson = "{\"type\":" + uuid + ",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
@@ -183,9 +189,9 @@ public class CaControllerTest {
           .andExpect(content().json(invalidTypeJson));
     });
 
-    it("returns bad request for POST with invalid type", () -> {
+    it("returns bad request for generate POST with invalid type", () -> {
       doThrow(new ParameterizedValidationException("error.bad_authority_type"))
-          .when(requestTranslatorWithGeneration)
+          .when(caGeneratorRequestTranslator)
           .populateEntityFromJson(any(NamedCertificateAuthority.class), any(DocumentContext.class));
       String uuid = UUID.randomUUID().toString();
       String requestJson = "{\"type\":" + uuid + "}";
@@ -269,6 +275,18 @@ public class CaControllerTest {
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isBadRequest());
+    });
+
+    it("returns a parameterized error message for an invalid key", () -> {
+      doThrow(new ParameterizedValidationException("error.invalid_json_key", newArrayList("foo error")))
+      .when(caGeneratorRequestTranslator).validateJsonKeys(isA(DocumentContext.class));
+
+      RequestBuilder requestBuilder = postRequestBuilder(urlPath, "{\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private_key\":\"my_private_key\"}}");
+
+      mockMvc.perform(requestBuilder)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'foo error'. Please update or remove this parameter and retry your request."));
     });
   }
 

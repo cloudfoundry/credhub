@@ -18,10 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -66,7 +64,8 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"state\": \"My State\"," +
           "\"country\": \"My Country\"," +
           "\"key_length\": 3072," +
-          "\"duration\": 1000" +
+          "\"duration\": 1000," +
+          "\"alternative_names\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]," +
           "}" +
           "}";
       CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
@@ -79,12 +78,12 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setType("certificate");
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
+      expectedParameters.addAlternativeName("My Alternative Name 1");
+      expectedParameters.addAlternativeName("My Alternative Name 2");
       DocumentContext parsed = JsonPath.using(configuration).parse(json);
 
+      subject.validateJsonKeys(parsed);
       CertificateSecretParameters params = subject.validRequestParameters(parsed);
-      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
-
-      params = subject.validRequestParameters(parsed);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -107,6 +106,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       CertificateSecretParameters params = subject.validRequestParameters(parsed);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
 
+      subject.validateJsonKeys(parsed);
       params = subject.validRequestParameters(parsed);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
@@ -159,6 +159,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.addAlternativeName("foo");
       expectedParameters.addAlternativeName("boo pivotal.io");
 
+      subject.validateJsonKeys(parsed);
       CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
@@ -184,12 +185,13 @@ public class CertificateGeneratorRequestTranslatorTest {
       CertificateSecretParameters params = subject.validRequestParameters(parsed);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
 
+      subject.validateJsonKeys(parsed);
       params = subject.validRequestParameters(parsed);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
     describe("params that should be excluded for Certificate Authority are excluded", () -> {
-      it("creates parameter holder with only allowed parameters", () -> {
+      itThrows("only allowed parameters", ParameterizedValidationException.class, () -> {
         String json = "{" +
             "\"type\":\"root\"," +
             "\"parameters\":{" +
@@ -202,16 +204,7 @@ public class CertificateGeneratorRequestTranslatorTest {
             "}" +
             "}";
         parsed = JsonPath.using(configuration).parse(json);
-        CertificateSecretParameters expectedParams = new CertificateSecretParameters()
-            .setOrganization("Organization")
-            .setState("My State")
-            .setCountry("My Country")
-            .setKeyLength(2048) // provided by default
-            .setDurationDays(365)
-            .setType("root");
-
-        CertificateSecretParameters parameters = subject.validCertificateAuthorityParameters(parsed);
-        assertThat(parameters, BeanMatchers.theSameAs(expectedParams));
+        subject.validateJsonKeys(parsed);
       });
     });
 

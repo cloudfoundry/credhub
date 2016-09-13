@@ -117,5 +117,17 @@ public class CAGeneratorRequestTranslatorTest {
         subject.createAuthorityFromJson(parsed);
       });
     });
+
+    describe("when random parameters are provided", () -> {
+      itThrows("it rejects request", ParameterizedValidationException.class, () -> {
+        String json = "{" +
+            "\"type\":\"root\"," +
+            "\"foo\":\"bar\"" +
+            "}";
+
+        parsed = JsonPath.using(jsonConfiguration).parse(json);
+        subject.validateJsonKeys(parsed);
+      });
+    });
   }
 }
