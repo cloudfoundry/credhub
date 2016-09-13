@@ -6,3 +6,7 @@ security:
   oauth2:
     resource:
       id: credhub
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
