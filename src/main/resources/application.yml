@@ -6,6 +6,9 @@ security:
   oauth2:
     resource:
       id: credhub
+  basic:
+    enabled: false
+
 spring:
   jpa:
     hibernate:

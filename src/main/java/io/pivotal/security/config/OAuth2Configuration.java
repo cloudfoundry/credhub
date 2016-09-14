@@ -2,6 +2,7 @@ package io.pivotal.security.config;
 
 import io.pivotal.security.oauth.AuditOAuth2AuthenticationEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,8 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
+
 import javax.annotation.PostConstruct;
 
 @Configuration
@@ -30,9 +33,18 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   @Autowired
   AuditOAuth2AuthenticationEntryPoint auditOAuth2AuthenticationEntryPoint;
 
+  @Autowired
+  SecurityProperties securityProperties;
+
+  @Autowired
+  GuidProvider guidProvider;
+
   @PostConstruct
   public void init() {
     Assert.notNull(resourceServerProperties.getJwt().getKeyValue(), "Configuration property security.oauth2.resource.jwt.key-value must be set.");
+    securityProperties.getUser().setName(guidProvider.getUUID());
+    securityProperties.getUser().setPassword(guidProvider.getUUID());
+    securityProperties.getUser().setRole(new ArrayList<>());
   }
 
   @Override
@@ -47,7 +59,9 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
         .authorizeRequests()
         .antMatchers("/info").permitAll()
         .antMatchers("/health").permitAll()
-        .antMatchers("/api/v1/**").access("#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write')");
+        .antMatchers("/api/v1/**").access("#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write')")
+        .and()
+        .httpBasic().disable();
   }
 
   @Bean

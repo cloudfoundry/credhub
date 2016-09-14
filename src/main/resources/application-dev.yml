@@ -32,5 +32,8 @@ security:
           KIlFvmT8XstT2JndP0iiZdod9V+h6FgowfExdWlNyUl/aWVGtmVftOQLZsSMtrHR
           xwIDAQAB
           -----END PUBLIC KEY-----
+  basic:
+    enabled: false
+
 server:
   port: 9000
