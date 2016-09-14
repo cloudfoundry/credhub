@@ -10,8 +10,9 @@ import java.util.function.Function;
 public interface SecretKindMappingFactory {
   SecretKind.Mapping<NamedSecret, NamedSecret> make(String secretPath, DocumentContext parsed);
 
-  default <Z extends NamedSecret> Z processSecret(Z namedSecret, Function<String, Z> constructor, String secretPath, RequestTranslator<Z> requestTranslator, DocumentContext parsed) {
-    Z result = namedSecret == null ? constructor.apply(secretPath) : namedSecret;
+  default <Z extends NamedSecret> Z processSecret(Z existingNamedSecret, Function<String, Z> constructor, String secretPath, RequestTranslator<Z> requestTranslator, DocumentContext parsed) {
+    Z result = existingNamedSecret == null ? constructor.apply(secretPath) : existingNamedSecret;
+    requestTranslator.validatePathName(secretPath);
     requestTranslator.validateJsonKeys(parsed);
     requestTranslator.populateEntityFromJson(result, parsed);
     return result;

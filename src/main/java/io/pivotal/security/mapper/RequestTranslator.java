@@ -5,13 +5,13 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.Option;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.ParameterizedValidationException;
+
 import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.JsonPath.using;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.jayway.jsonpath.JsonPath.using;
 
 public interface RequestTranslator<ET> {
   void populateEntityFromJson(ET namedSecret, DocumentContext documentContext);
@@ -27,6 +27,12 @@ public interface RequestTranslator<ET> {
       if(!keys.contains(path)) {
         throw new ParameterizedValidationException("error.invalid_json_key", newArrayList(path));
       }
+    }
+  }
+
+  default void validatePathName(String name) {
+    if (name.startsWith("/") || name.contains("//") || name.endsWith("/")) {
+      throw new ParameterizedValidationException("error.invalid_name_has_slash");
     }
   }
 }

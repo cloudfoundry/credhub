@@ -8,15 +8,17 @@ import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 
-import java.util.function.Function;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.function.Function;
 
 @RunWith(Spectrum.class)
 public class SecretKindMappingFactoryTest {
@@ -51,10 +53,17 @@ public class SecretKindMappingFactoryTest {
       verify(requestTranslator).populateEntityFromJson(existingObject, parsed);
     });
 
-    it("validates JSON keys", () -> {
-      NamedValueSecret existingObject = new NamedValueSecret("name");
-      subject.processSecret(existingObject, NamedValueSecret::new, "name", requestTranslator, parsed);
-      verify(requestTranslator).validateJsonKeys(parsed);
+    describe("validation", () -> {
+      it("calls the request translator to validate JSON keys", () -> {
+        subject.processSecret(null, NamedValueSecret::new, "name", requestTranslator, parsed);
+        verify(requestTranslator).validateJsonKeys(parsed);
+      });
+
+      it("calls the request translator to validate path", () -> {
+        subject.processSecret(null, NamedValueSecret::new, "/dont//do//this/", requestTranslator, parsed);
+        verify(requestTranslator).validatePathName(any(String.class));
+      });
     });
+
   }
 }

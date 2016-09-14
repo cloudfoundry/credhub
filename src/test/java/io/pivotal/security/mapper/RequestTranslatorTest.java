@@ -10,17 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Set;
-
 import static com.google.common.collect.ImmutableSet.of;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static com.jayway.jsonpath.JsonPath.using;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import java.util.Set;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -65,6 +66,25 @@ public class RequestTranslatorTest {
         subject.validateJsonKeys(using(jsonPathConfiguration).parse(requestJson));
       });
     });
+
+    describe("validation", () -> {
+      itThrows("validates path does not contain leading slash", ParameterizedValidationException.class, () -> {
+        subject.validatePathName("/dont-do-this");
+      });
+
+      itThrows("validates path does not contain trailing slash", ParameterizedValidationException.class, () -> {
+        subject.validatePathName("dont-do-this/");
+      });
+
+      itThrows("validates path does not contain double slashes", ParameterizedValidationException.class, () -> {
+        subject.validatePathName("dont//do//this");
+      });
+
+      itThrows("validates path does not contain any invalid combination of slashes", ParameterizedValidationException.class, () -> {
+        subject.validatePathName("/dont//do//this/");
+      });
+    });
+
   }
 
   private void doInvalidTest(RequestTranslator subject, String requestBody, String invalidKey) {
