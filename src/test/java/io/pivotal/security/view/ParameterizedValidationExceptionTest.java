@@ -8,7 +8,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.hamcrest.collection.IsArrayWithSize.arrayWithSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsInstanceOf.*;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
@@ -29,6 +29,18 @@ public class ParameterizedValidationExceptionTest {
       ParameterizedValidationException subject = new ParameterizedValidationException("message.code", newArrayList("foo", "bar"));
       assertThat(subject.getMessage(), equalTo("message.code"));
       assertThat(subject.getParameters(), arrayContaining("foo", "bar"));
+    });
+
+    it("formats the output of JsonPath keys to remove '$' and '[', \', etc", () -> {
+      ParameterizedValidationException subject = new ParameterizedValidationException("message.code",
+          newArrayList("$['iasjdoiasd']"));
+      assertThat(subject.getParameters(), arrayContaining("iasjdoiasd"));
+    });
+
+    it("formats the output of JsonPath keys to put dots between nested keys", () -> {
+      ParameterizedValidationException subject = new ParameterizedValidationException("message.code",
+          newArrayList("$['parameters']['alternative_names']", "$['parameters']['alternative_names'][*]"));
+      assertThat(subject.getParameters(), arrayContaining("parameters.alternative_names", "parameters.alternative_names.*"));
     });
   }
 }

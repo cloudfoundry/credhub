@@ -53,12 +53,12 @@ public class RequestTranslatorTest {
 
       it("rejects additional keys at top level", () -> {
         String requestJson = "{\"foo1\":\"value\",\"bar\":\"\",\"baz\":{\"quux\":false}}";
-        doInvalidTest(subject, requestJson, "$['foo1']");
+        doInvalidTest(subject, requestJson, "foo1");
       });
 
       it("rejects additional keys at a lower level", () -> {
         String requestJson = "{\"foo\":\"value\",\"bar\":\"\",\"baz\":{\"quux1\":false}}";
-        doInvalidTest(subject, requestJson, "$['baz']['quux1']");
+        doInvalidTest(subject, requestJson, "baz.quux1");
       });
 
       it("accepts references from a dynamic array", () -> {
