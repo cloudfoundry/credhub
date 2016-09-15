@@ -24,14 +24,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.function.Function;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -102,6 +108,9 @@ public class SecretsController {
       if (willBeCreated || overwrite) {
         namedSecret = secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);
         namedSecret = secretRepository.save(namedSecret);
+      } else {
+        // to catch invalid parameters, validate request even though we throw away the result
+        secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);
       }
 
       Secret stringSecret = Secret.fromEntity(namedSecret);

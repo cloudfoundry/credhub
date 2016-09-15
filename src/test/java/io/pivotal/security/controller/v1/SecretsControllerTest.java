@@ -26,22 +26,33 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.uniquify;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -162,9 +173,6 @@ public class SecretsControllerTest {
       });
 
       it("preserves secrets when updating without the overwrite flag", () -> {
-        when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
-            .thenThrow(new UnsupportedOperationException());
-
         final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
@@ -275,6 +283,30 @@ public class SecretsControllerTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
         });
+      });
+    });
+
+    describe("overwrite behavior", () -> {
+      it("validates parameters of request always, even with overwrite=false", () -> {
+          when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
+              .thenThrow(new ParameterizedValidationException("error.invalid_json_key", newArrayList("$.bogus")));
+
+        secretRepository.save(new NamedValueSecret(secretName, "anythingReally"));
+
+        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"value\"," +
+                "  \"value\":\"special value\"," +
+                "  \"overwrite\": false," +
+                "  \"bogus\":\"yargablabla\"" +
+                "}");
+
+        final String errorMessage = "The request includes an unrecognized parameter '$.bogus'. Please update or remove this parameter and retry your request.";
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value(errorMessage));
       });
     });
 
