@@ -67,6 +67,11 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
+  public List<NamedSecret> findByNameContainingOrderByUpdatedAtDesc(String nameSubstring) {
+    return null;
+  }
+
+  @Override
   public long count() {
     return count;
   }

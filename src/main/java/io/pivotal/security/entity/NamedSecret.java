@@ -81,8 +81,9 @@ abstract public class NamedSecret implements EncryptedValueContainer {
     return updatedAt;
   }
 
-  public void setUpdatedAt(Instant updatedAt) {
+  public NamedSecret setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
+    return this;
   }
 
   public String getUuid() {

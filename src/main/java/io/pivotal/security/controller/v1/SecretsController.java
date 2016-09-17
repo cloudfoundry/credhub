@@ -8,10 +8,8 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.Secret;
-import io.pivotal.security.view.SecretKind;
-import io.pivotal.security.view.SecretKindFromString;
+import io.pivotal.security.util.StringUtil;
+import io.pivotal.security.view.*;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -24,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -34,6 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import javax.annotation.PostConstruct;
@@ -135,15 +136,29 @@ public class SecretsController {
 
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveWithAuditing(secretPath(request), secretRepository::findOneByName, request, authentication);
+    return retrieveSecretWithAuditing(secretPath(request), secretRepository::findOneByName, request, authentication);
   }
 
   @RequestMapping(method = RequestMethod.GET)
-  public ResponseEntity getByUuid(@RequestParam("id") String uuid, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveWithAuditing(uuid, secretRepository::findOneByUuid, request, authentication);
+  public ResponseEntity getByRequestParam(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
+    if (params.containsKey("name-like")) {
+      return findByNameLike(params.get("name-like"), request, authentication);
+    }
+    return retrieveSecretWithAuditing(params.get("id"), secretRepository::findOneByUuid, request, authentication);
   }
 
-  private ResponseEntity retrieveWithAuditing(String identifier, Function<String, NamedSecret> finder, HttpServletRequest request, Authentication authentication) throws Exception {
+  private ResponseEntity findByNameLike(String nameSubstring, HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing("credential_find", new AuditRecordParameters(request, authentication), () -> {
+      List<NamedSecret> namedSecrets = secretRepository.findByNameContainingOrderByUpdatedAtDesc(nameSubstring);
+      if (namedSecrets == null) {
+        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+      } else {
+        return new ResponseEntity<>(FindResults.fromEntity(namedSecrets), HttpStatus.OK);
+      }
+    });
+  }
+
+  private ResponseEntity retrieveSecretWithAuditing(String identifier, Function<String, NamedSecret> finder, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("credential_access", new AuditRecordParameters(request, authentication), () -> {
       NamedSecret namedSecret = finder.apply(identifier);
       if (namedSecret == null) {

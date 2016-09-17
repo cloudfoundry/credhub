@@ -260,6 +260,23 @@ public class SecretsControllerTest {
         });
       });
 
+      describe("fetching credentials by name-like (partial names)", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + secretName.substring(4))
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get)
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.credentials[0].name").value(secretName))
+              .andExpect(jsonPath("$.credentials[0].updated_at").value(frozenTime.toString()));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_find"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
       describe("deleting a secret", () -> {
         beforeEach(() -> {
           mockMvc.perform(delete("/api/v1/data/" + secretName))
