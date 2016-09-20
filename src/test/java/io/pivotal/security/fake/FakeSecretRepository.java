@@ -72,6 +72,16 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
+  public List<NamedSecret> findByNameStartingWithOrderByUpdatedAtDesc(String nameSubstring) {
+    return null;
+  }
+
+  @Override
+  public Long deleteByName(String name) {
+    return null;
+  }
+
+  @Override
   public long count() {
     return count;
   }
