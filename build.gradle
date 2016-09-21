@@ -27,19 +27,9 @@ apply plugin: 'spring-boot'
 apply plugin: 'org.owasp.dependencycheck'
 apply plugin: 'jacoco'
 
-def getGitHash = { ->
-    def capture = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
-        standardOutput = capture
-    }
-    return capture.toString().trim()
-}
-
 jar {
     baseName = 'sec-eng-credential-manager'
-    version = '0.2.0'
-    classifier = getGitHash()
+    version = '0.1.0'
 }
 
 ext {
