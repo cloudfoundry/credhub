@@ -93,11 +93,12 @@ public class SecretsController {
   @RequestMapping(path = "/**", method = RequestMethod.DELETE)
   public ResponseEntity delete(HttpServletRequest request, Authentication authentication) throws Exception {
     return audit(CREDENTIAL_DELETE, request, authentication, () -> {
-      Long deleted = secretRepository.deleteByName(secretPath(request));
-      if (deleted == 0) {
-        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
-      } else {
+      NamedSecret namedSecret = secretRepository.findOneByName(secretPath(request));
+      if (namedSecret != null) {
+        secretRepository.delete(namedSecret);
         return new ResponseEntity(HttpStatus.OK);
+      } else {
+        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
       }
     });
   }

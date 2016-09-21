@@ -11,6 +11,4 @@ public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
   NamedSecret findOneByUuid(String uuid);
   List<NamedSecret> findByNameContainingOrderByUpdatedAtDesc(String nameSubstring);
   List<NamedSecret> findByNameStartingWithOrderByUpdatedAtDesc(String nameSubstring);
-  @Transactional
-  Long deleteByName(String name);
 }

@@ -77,11 +77,6 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public Long deleteByName(String name) {
-    return null;
-  }
-
-  @Override
   public long count() {
     return count;
   }
