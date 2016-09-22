@@ -6,8 +6,9 @@ info:
 auth-server:
   url: https://50.17.59.67:8443
 
-hsm:
-  disabled: true
+encryption:
+  provider: dev_internal
+  dev-key: D673ACD01DA091B08144FBC8C0B5F524
 
 spring:
   datasource:

@@ -1,20 +1,31 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.config.DevKeyProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+
+import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.security.*;
+import javax.xml.bind.DatatypeConverter;
 
 @Component
-@ConditionalOnProperty("hsm.disabled")
+@ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
 public class BCEncryptionConfiguration implements EncryptionConfiguration {
   private Provider provider;
   private SecureRandom secureRandom;
   private SecretKey key;
+
+  @Autowired
+  DevKeyProvider devKeyProvider;
 
   public BCEncryptionConfiguration() {
     try {
@@ -24,10 +35,14 @@ public class BCEncryptionConfiguration implements EncryptionConfiguration {
       KeyStore keyStore = KeyStore.getInstance("BKS", provider);
       keyStore.load(null, null);
       secureRandom = SecureRandom.getInstance("SHA1PRNG");
-      key = new SecretKeySpec(new byte[] {-102, 88, 28, 1, -97, -31, -100, 124, 59, 36, -45, -10, 70, 106, 105, -125}, "AES");
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @PostConstruct
+  public void init() {
+    key = new SecretKeySpec(DatatypeConverter.parseHexBinary(devKeyProvider.getDevKey()), "AES");
   }
 
   @Override

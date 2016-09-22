@@ -4,14 +4,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.Security;
+
 import javax.annotation.PostConstruct;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import java.security.*;
 
 @SuppressWarnings("unused")
 @Component
-@ConditionalOnProperty(value = "hsm.disabled", havingValue = "false", matchIfMissing = true)
+@ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
 public class LunaEncryptionConfiguration implements EncryptionConfiguration {
 
   @Value("${hsm.partition}")
