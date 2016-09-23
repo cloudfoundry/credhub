@@ -115,7 +115,7 @@ public class SecretsController {
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   public ResponseEntity findByPath(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findWithAuditing(params.get("path"), secretRepository::findByNameStartingWithOrderByUpdatedAtDesc, request, authentication);
+    return findStartingWithAuditing(params.get("path"), request, authentication);
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
@@ -188,5 +188,12 @@ public class SecretsController {
   private ResponseEntity createParameterizedErrorResponse(ParameterizedValidationException exception, HttpStatus status) {
     String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
     return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
+  }
+
+  private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
+    if (!path.endsWith("/")) {
+      path = path + "/";
+    }
+    return findWithAuditing(path, secretRepository::findByNameStartingWithOrderByUpdatedAtDesc, request, authentication);
   }
 }

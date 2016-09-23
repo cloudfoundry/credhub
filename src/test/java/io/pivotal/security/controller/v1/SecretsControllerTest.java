@@ -100,7 +100,7 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      secretName = uniquify("my-namespace/secret-name");
+      secretName = uniquify("my-namespace/subtree/secret-name");
 
       when(auditLogService.performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class)))
           .thenAnswer(invocation -> {
@@ -463,6 +463,32 @@ public class SecretsControllerTest {
           final String path = "namespace";
 
           assertTrue(secretName.contains(path));
+
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get).andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.credentials", hasSize(0)));
+        });
+
+        it("should return all children which are prefixed with the path", () -> {
+          final String path = "my-namespace";
+
+          assertTrue(secretName.startsWith(path));
+
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get).andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.credentials", hasSize(1)));
+        });
+
+        it("should not findSecretsUsingPath paths which start an existing path mut matches incompletely", () -> {
+          final String path = "my-namespace/subtr";
+
+          assertTrue(secretName.startsWith(path));
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
               .accept(APPLICATION_JSON);
