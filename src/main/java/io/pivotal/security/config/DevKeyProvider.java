@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DevKeyProvider {
-  @Value("${encryption.dev-key:D673ACD01DA091B08144FBC8C0B5F524}")
+  @Value("${encryption.dev-key}")
   private String devKey;
 
   public String getDevKey() {

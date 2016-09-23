@@ -3,7 +3,7 @@ auth-server:
 
 encryption:
   provider: dev_internal
-  dev-key: 0123456789ABCDEF0123456789ABCDEF
+  dev-key: D673ACD01DA091B08144FBC8C0B5F524
 
 spring:
   datasource:
