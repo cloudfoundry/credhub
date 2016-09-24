@@ -8,6 +8,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -24,6 +25,8 @@ public class NoExpirationSymmetricKeySecurityConfiguration {
   @Primary
   public JwtAccessTokenConverter customJwtAccessTokenConverter() throws Exception {
     JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+    DefaultAccessTokenConverter accessTokenConverter = (DefaultAccessTokenConverter) jwtAccessTokenConverter.getAccessTokenConverter();
+    accessTokenConverter.setIncludeGrantType(true);
     jwtAccessTokenConverter.setSigningKey("tokenkey");
     jwtAccessTokenConverter.afterPropertiesSet();
     return jwtAccessTokenConverter;

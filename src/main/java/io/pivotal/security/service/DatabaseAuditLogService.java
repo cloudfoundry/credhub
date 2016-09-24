@@ -8,7 +8,10 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
@@ -81,9 +85,12 @@ public class DatabaseAuditLogService implements AuditLogService {
   }
 
   private OperationAuditRecord getOperationAuditRecord(String operation, AuditRecordParameters auditRecordParameters) throws Exception {
-    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) auditRecordParameters.getAuthentication().getDetails();
+    Authentication authentication = auditRecordParameters.getAuthentication();
+    OAuth2Request oAuth2Request = ((OAuth2Authentication) authentication).getOAuth2Request();
+    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
     OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
     Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+    Set<String> scope = oAuth2Request.getScope();
     return new OperationAuditRecord(
         instantFactoryBean.getObject(),
         operation,
@@ -95,7 +102,10 @@ public class DatabaseAuditLogService implements AuditLogService {
         auditRecordParameters.getHostName(),
         auditRecordParameters.getPath(),
         auditRecordParameters.getRequesterIp(),
-        auditRecordParameters.getXForwardedFor()
+        auditRecordParameters.getXForwardedFor(),
+        oAuth2Request.getClientId(),
+        scope == null ? "" : String.join(",", scope),
+        oAuth2Request.getGrantType()
     );
   }
 

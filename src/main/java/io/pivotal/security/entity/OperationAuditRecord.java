@@ -2,8 +2,15 @@ package io.pivotal.security.entity;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
 import java.time.Instant;
+
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @SuppressWarnings("unused")
 @Entity
@@ -28,6 +35,9 @@ public class OperationAuditRecord {
   private String userName;
   private String requesterIp;
   private String xForwardedFor;
+  private String clientId;
+  private String scope;
+  private String grantType;
 
   public OperationAuditRecord() {
   }
@@ -42,7 +52,11 @@ public class OperationAuditRecord {
                               String hostName,
                               String path,
                               String requesterIp,
-                              String xForwardedFor) {
+                              String xForwardedFor,
+                              String clientId,
+                              String scope,
+                              String grantType
+                              ) {
     this.now = now;
     this.operation = operation;
     this.userId = userId;
@@ -54,6 +68,9 @@ public class OperationAuditRecord {
     this.path = path;
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
+    this.clientId = clientId;
+    this.scope = scope;
+    this.grantType = grantType;
   }
 
   public long getId() {
@@ -108,6 +125,18 @@ public class OperationAuditRecord {
     return xForwardedFor;
   }
 
+  public String getClientId() {
+    return clientId;
+  }
+
+  public String getScope() {
+    return scope;
+  }
+
+  public String getGrantType() {
+    return grantType;
+  }
+
   public void setRequesterIp(String requesterIp) {
     this.requesterIp = requesterIp;
   }
@@ -130,5 +159,17 @@ public class OperationAuditRecord {
 
   public void setId(long id) {
     this.id = id;
+  }
+
+  public void setClientId(String clientId) {
+    this.clientId = clientId;
+  }
+
+  public void setScope(String scope) {
+    this.scope = scope;
+  }
+
+  public void setGrantType(String grantType) {
+    this.grantType = grantType;
   }
 }

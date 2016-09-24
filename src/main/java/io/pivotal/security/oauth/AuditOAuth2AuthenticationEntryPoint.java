@@ -8,11 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.JsonParser;
 import org.springframework.security.oauth2.common.util.JsonParserFactory;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import static org.springframework.security.oauth2.provider.token.AccessTokenConv
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -38,18 +40,24 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
   @Autowired
   JwtAccessTokenConverter jwtAccessTokenConverter;
 
+  @Autowired
+  TokenStore jwtTokenStore;
+
+  @Autowired
+  ResourceServerTokenServices tokenServices;
+
   private JsonParser objectMapper = JsonParserFactory.create();
 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
       throws IOException, ServletException {
 
-    final OAuth2AccessToken oAuth2AccessToken = extractAuthentication(request);
-    logAuthFailureToDb(oAuth2AccessToken, authException, new AuditRecordParameters(request, null), request.getMethod());
+    final Map<String, Object> tokenInformation = extractTokenInformation(request);
+    logAuthFailureToDb(tokenInformation, authException, new AuditRecordParameters(request, null), request.getMethod());
     doHandle(request, response, authException);
   }
 
-  private OAuth2AccessToken extractAuthentication(HttpServletRequest request) {
+  private Map<String, Object> extractTokenInformation(HttpServletRequest request) {
     String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
     try {
       final Jwt jwt = JwtHelper.decode(token);
@@ -60,13 +68,13 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
         map.put(EXP, new Long(intValue));
       }
 
-      return jwtAccessTokenConverter.extractAccessToken(token, map);
+      return map;
     } catch (RuntimeException mie) {
       return null;
     }
   }
 
-  private void logAuthFailureToDb(OAuth2AccessToken oAuth2AccessToken, AuthenticationException authException, AuditRecordParameters parameters, String requestMethod) {
+  private void logAuthFailureToDb(Map<String, Object> tokenInformation, AuthenticationException authException, AuditRecordParameters parameters, String requestMethod) {
     RequestToOperationTranslator requestToOperationTranslator = new RequestToOperationTranslator(parameters.getPath()).setMethod(requestMethod);
 
     final Instant now;
@@ -81,14 +89,20 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
     String iss = null;
     long issued = -1;
     long expires = -1;
+    String clientId = null;
+    String scope = null;
+    String grantType = null;
 
-    if (oAuth2AccessToken != null) {
-      Map<String, Object> additionalInformation = oAuth2AccessToken.getAdditionalInformation();
-      userId = (String) additionalInformation.get("user_id");
-      userName = (String) additionalInformation.get("user_name");
-      iss = (String) additionalInformation.get("iss");
-      issued = ((Number) additionalInformation.get("iat")).longValue();
-      expires = oAuth2AccessToken.getExpiration().toInstant().getEpochSecond();
+    if (tokenInformation != null) {
+      List<String> scopeArray = (List<String>) tokenInformation.get("scope");
+      userId = (String) tokenInformation.get("user_id");
+      userName = (String) tokenInformation.get("user_name");
+      iss = (String) tokenInformation.get("iss");
+      issued = ((Number) tokenInformation.get("iat")).longValue();
+      expires = ((Number) tokenInformation.get("exp")).longValue();
+      clientId = (String) tokenInformation.get("client_id");
+      scope = scopeArray == null ? null : String.join(",", scopeArray);
+      grantType = (String) tokenInformation.get("grant_type");
     }
 
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
@@ -103,7 +117,10 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
         .setHostName(parameters.getHostName())
         .setPath(parameters.getPath())
         .setRequesterIp(parameters.getRequesterIp())
-        .setXForwardedFor(parameters.getXForwardedFor());
+        .setXForwardedFor(parameters.getXForwardedFor())
+        .setClientId(clientId)
+        .setScope(scope)
+        .setGrantType(grantType);
     auditRecordRepository.save(authFailureAuditRecord);
   }
 }

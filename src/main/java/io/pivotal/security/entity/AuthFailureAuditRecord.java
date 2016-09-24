@@ -42,6 +42,9 @@ public class AuthFailureAuditRecord {
   private String userName;
   private String requesterIp;
   private String xForwardedFor;
+  private String clientId;
+  private String scope;
+  private String grantType;
 
   public AuthFailureAuditRecord() {
   }
@@ -96,6 +99,18 @@ public class AuthFailureAuditRecord {
 
   public String getXForwardedFor() {
     return xForwardedFor;
+  }
+
+  public String getClientId() {
+    return clientId;
+  }
+
+  public String getScope() {
+    return scope;
+  }
+
+  public String getGrantType() {
+    return grantType;
   }
 
   public AuthFailureAuditRecord setNow(Instant now) {
@@ -160,6 +175,21 @@ public class AuthFailureAuditRecord {
 
   public AuthFailureAuditRecord setId(long id) {
     this.id = id;
+    return this;
+  }
+
+  public AuthFailureAuditRecord setClientId(String clientId) {
+    this.clientId = clientId;
+    return this;
+  }
+
+  public AuthFailureAuditRecord setScope(String scope) {
+    this.scope = scope;
+    return this;
+  }
+
+  public AuthFailureAuditRecord setGrantType(String grantType) {
+    this.grantType = grantType;
     return this;
   }
 }

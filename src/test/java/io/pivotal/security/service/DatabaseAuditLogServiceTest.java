@@ -23,10 +23,10 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.List;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -35,6 +35,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.List;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -255,5 +258,8 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.isSuccess(), equalTo(successFlag));
     assertThat(actual.getRequesterIp(), equalTo("127.0.0.1"));
     assertThat(actual.getXForwardedFor(), equalTo("1.2.3.4,5.6.7.8"));
+    assertThat(actual.getClientId(), equalTo("credhub"));
+    assertThat(actual.getScope(), equalTo("credhub.write,credhub.read"));
+    assertThat(actual.getGrantType(), equalTo("password"));
   }
 }
