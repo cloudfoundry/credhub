@@ -277,6 +277,8 @@ public class SecretsControllerTest {
               }
             });
 
+        fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
+
         final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
@@ -288,7 +290,8 @@ public class SecretsControllerTest {
 
         mockMvc.perform(put)
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.value").value(specialValue));
+            .andExpect(jsonPath("$.value").value(specialValue))
+            .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
       });
 
       it("without the overwrite flag it preserves secrets", () -> {
