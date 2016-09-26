@@ -78,7 +78,7 @@ public class DatabaseAuditLogServiceTest {
       when(mockDetails.getTokenValue()).thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
       authentication.setDetails(mockDetails);
 
-      auditRecordParameters = new AuditRecordParameters("hostName", "requestURI", "127.0.0.1", "1.2.3.4,5.6.7.8", authentication);
+      auditRecordParameters = new AuditRecordParameters("hostName", "GET", "requestURI", "127.0.0.1", "1.2.3.4,5.6.7.8", authentication);
       transactionManager = new FakeTransactionManager();
       auditRepository = new FakeAuditRecordRepository(transactionManager);
       secretRepository = new FakeSecretRepository(transactionManager);
@@ -109,7 +109,7 @@ public class DatabaseAuditLogServiceTest {
           });
 
           it("logs audit entry", () -> {
-            checkAuditRecord(true);
+            checkAuditRecord(true, HttpStatus.OK);
             assertThat(secretRepository.count(), equalTo(1L));
           });
         });
@@ -150,7 +150,7 @@ public class DatabaseAuditLogServiceTest {
           });
 
           it("logs failed audit entry", () -> {
-            checkAuditRecord(false);
+            checkAuditRecord(false, HttpStatus.INTERNAL_SERVER_ERROR);
             assertThat(secretRepository.count(), equalTo(0L));
           });
         });
@@ -187,7 +187,7 @@ public class DatabaseAuditLogServiceTest {
           });
 
           it("logs audit entry for failure", () -> {
-            checkAuditRecord(false);
+            checkAuditRecord(false, HttpStatus.BAD_GATEWAY);
             assertThat(secretRepository.count(), equalTo(0L));
           });
 
@@ -241,7 +241,7 @@ public class DatabaseAuditLogServiceTest {
     });
   }
 
-  private void checkAuditRecord(boolean successFlag) {
+  private void checkAuditRecord(boolean successFlag, HttpStatus status) {
     List<OperationAuditRecord> auditRecords = auditRepository.findAll();
     assertThat(auditRecords, hasSize(1));
 
@@ -261,5 +261,7 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.getClientId(), equalTo("credhub"));
     assertThat(actual.getScope(), equalTo("credhub.write,credhub.read"));
     assertThat(actual.getGrantType(), equalTo("password"));
+    assertThat(actual.getMethod(), equalTo("GET"));
+    assertThat(actual.getStatusCode(), equalTo(status.value()));
   }
 }

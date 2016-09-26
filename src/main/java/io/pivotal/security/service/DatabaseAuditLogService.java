@@ -52,7 +52,8 @@ public class DatabaseAuditLogService implements AuditLogService {
   }
 
   @Override
-  public ResponseEntity<?> performWithAuditing(String operation, AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws Exception {
+  public ResponseEntity<?> performWithAuditing(String operation, AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws
+      Exception {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
     OperationAuditRecord auditRecord = getOperationAuditRecord(operation, auditRecordParameters);
@@ -71,6 +72,8 @@ public class DatabaseAuditLogService implements AuditLogService {
       transactionManager.rollback(transaction);
       transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
+
+    auditRecord.setStatusCode(responseEntity.getStatusCodeValue());
 
     try {
       auditRecordRepository.save(auditRecord);
@@ -100,6 +103,7 @@ public class DatabaseAuditLogService implements AuditLogService {
         claimValueAsLong(additionalInformation, "iat"),
         accessToken.getExpiration().getTime() / 1000,
         auditRecordParameters.getHostName(),
+        auditRecordParameters.getMethod(),
         auditRecordParameters.getPath(),
         auditRecordParameters.getRequesterIp(),
         auditRecordParameters.getXForwardedFor(),

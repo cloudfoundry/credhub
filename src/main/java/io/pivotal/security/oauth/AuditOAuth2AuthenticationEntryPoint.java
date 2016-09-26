@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEntryPoint {
 
   @Autowired
-  private InstantFactoryBean instantFactoryBean;
+  InstantFactoryBean instantFactoryBean;
 
   @Autowired
   AuthFailureAuditRecordRepository auditRecordRepository;
@@ -53,8 +53,12 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
       throws IOException, ServletException {
 
     final Map<String, Object> tokenInformation = extractTokenInformation(request);
-    logAuthFailureToDb(tokenInformation, authException, new AuditRecordParameters(request, null), request.getMethod());
-    doHandle(request, response, authException);
+
+    try {
+      doHandle(request, response, authException);
+    } finally {
+      logAuthFailureToDb(tokenInformation, authException, new AuditRecordParameters(request, null), request.getMethod(), response.getStatus());
+    }
   }
 
   private Map<String, Object> extractTokenInformation(HttpServletRequest request) {
@@ -74,7 +78,7 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
     }
   }
 
-  private void logAuthFailureToDb(Map<String, Object> tokenInformation, AuthenticationException authException, AuditRecordParameters parameters, String requestMethod) {
+  private void logAuthFailureToDb(Map<String, Object> tokenInformation, AuthenticationException authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
     RequestToOperationTranslator requestToOperationTranslator = new RequestToOperationTranslator(parameters.getPath()).setMethod(requestMethod);
 
     final Instant now;
@@ -120,7 +124,9 @@ public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEnt
         .setXForwardedFor(parameters.getXForwardedFor())
         .setClientId(clientId)
         .setScope(scope)
-        .setGrantType(grantType);
+        .setGrantType(grantType)
+        .setMethod(requestMethod)
+        .setStatusCode(statusCode);
     auditRecordRepository.save(authFailureAuditRecord);
   }
 }

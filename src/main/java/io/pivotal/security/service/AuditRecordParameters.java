@@ -2,12 +2,14 @@ package io.pivotal.security.service;
 
 import org.springframework.security.core.Authentication;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import javax.servlet.http.HttpServletRequest;
+
 public class AuditRecordParameters {
   private final String hostName;
+  private final String method;
   private final String path;
   private final String requesterIp;
   private final String xForwardedFor;
@@ -16,6 +18,7 @@ public class AuditRecordParameters {
   public AuditRecordParameters(HttpServletRequest request, Authentication authentication) {
     this(
         request.getServerName(),
+        request.getMethod(),
         request.getRequestURI(),
         request.getRemoteAddr(),
         extractXForwardedFor(request.getHeaders("X-Forwarded-For")),
@@ -23,8 +26,9 @@ public class AuditRecordParameters {
     );
   }
 
-  AuditRecordParameters(String hostName, String path, String requesterIp, String xForwardedFor, Authentication authentication) {
+  AuditRecordParameters(String hostName, String method, String path, String requesterIp, String xForwardedFor, Authentication authentication) {
     this.hostName = hostName;
+    this.method = method;
     this.path = path;
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
@@ -33,6 +37,10 @@ public class AuditRecordParameters {
 
   public String getHostName() {
     return hostName;
+  }
+
+  public String getMethod() {
+    return method;
   }
 
   public String getPath() {

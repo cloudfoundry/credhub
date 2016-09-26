@@ -45,6 +45,8 @@ public class AuthFailureAuditRecord {
   private String clientId;
   private String scope;
   private String grantType;
+  private String method;
+  private int statusCode;
 
   public AuthFailureAuditRecord() {
   }
@@ -111,6 +113,14 @@ public class AuthFailureAuditRecord {
 
   public String getGrantType() {
     return grantType;
+  }
+
+  public String getMethod() {
+    return method;
+  }
+
+  public int getStatusCode() {
+    return statusCode;
   }
 
   public AuthFailureAuditRecord setNow(Instant now) {
@@ -190,6 +200,16 @@ public class AuthFailureAuditRecord {
 
   public AuthFailureAuditRecord setGrantType(String grantType) {
     this.grantType = grantType;
+    return this;
+  }
+
+  public AuthFailureAuditRecord setMethod(String method) {
+    this.method = method;
+    return this;
+  }
+
+  public AuthFailureAuditRecord setStatusCode(int statusCode) {
+    this.statusCode = statusCode;
     return this;
   }
 }

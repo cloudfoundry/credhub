@@ -124,6 +124,8 @@ public class AuditOAuth2AuthenticationEntryPointTest {
         assertThat(auditRecord.getClientId(), equalTo(null));
         assertThat(auditRecord.getScope(), equalTo(null));
         assertThat(auditRecord.getGrantType(), equalTo(null));
+        assertThat(auditRecord.getMethod(), equalTo("GET"));
+        assertThat(auditRecord.getStatusCode(), equalTo(401));
       });
     });
 
@@ -162,6 +164,8 @@ public class AuditOAuth2AuthenticationEntryPointTest {
         assertThat(auditRecord.getClientId(), equalTo("credhub"));
         assertThat(auditRecord.getScope(), equalTo("credhub.write,credhub.read"));
         assertThat(auditRecord.getGrantType(), equalTo("password"));
+        assertThat(auditRecord.getMethod(), equalTo("GET"));
+        assertThat(auditRecord.getStatusCode(), equalTo(401));
       });
     });
 
@@ -196,6 +200,8 @@ public class AuditOAuth2AuthenticationEntryPointTest {
         assertThat(auditRecord.getClientId(), equalTo(null));
         assertThat(auditRecord.getScope(), equalTo(null));
         assertThat(auditRecord.getGrantType(), equalTo(null));
+        assertThat(auditRecord.getMethod(), equalTo("GET"));
+        assertThat(auditRecord.getStatusCode(), equalTo(401));
       });
     });
   }

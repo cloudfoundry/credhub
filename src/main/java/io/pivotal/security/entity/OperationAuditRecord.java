@@ -38,6 +38,8 @@ public class OperationAuditRecord {
   private String clientId;
   private String scope;
   private String grantType;
+  private String method;
+  private int statusCode;
 
   public OperationAuditRecord() {
   }
@@ -50,13 +52,13 @@ public class OperationAuditRecord {
                               long tokenIssued,
                               long tokenExpires,
                               String hostName,
+                              String method,
                               String path,
                               String requesterIp,
                               String xForwardedFor,
                               String clientId,
                               String scope,
-                              String grantType
-                              ) {
+                              String grantType) {
     this.now = now;
     this.operation = operation;
     this.userId = userId;
@@ -65,6 +67,7 @@ public class OperationAuditRecord {
     this.tokenIssued = tokenIssued;
     this.tokenExpires = tokenExpires;
     this.hostName = hostName;
+    this.method = method;
     this.path = path;
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
@@ -87,6 +90,10 @@ public class OperationAuditRecord {
 
   public String getOperation() {
     return operation;
+  }
+
+  public String getMethod() {
+    return method;
   }
 
   public String getPath() {
@@ -137,6 +144,10 @@ public class OperationAuditRecord {
     return grantType;
   }
 
+  public int getStatusCode() {
+    return statusCode;
+  }
+
   public void setRequesterIp(String requesterIp) {
     this.requesterIp = requesterIp;
   }
@@ -147,6 +158,10 @@ public class OperationAuditRecord {
 
   public void setOperation(String operation) {
     this.operation = operation;
+  }
+
+  public void setMethod(String method) {
+    this.method = method;
   }
 
   public void setPath(String path) {
@@ -171,5 +186,9 @@ public class OperationAuditRecord {
 
   public void setGrantType(String grantType) {
     this.grantType = grantType;
+  }
+
+  public void setStatusCode(int statusCode) {
+    this.statusCode = statusCode;
   }
 }

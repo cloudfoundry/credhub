@@ -24,7 +24,28 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
   @Override
   public <S extends OperationAuditRecord> S save(S entity) {
     transactionManager.currentTransaction.enqueue(() -> {
-      auditRecords.add(entity);
+      OperationAuditRecord copy = new OperationAuditRecord(
+          entity.getNow(),
+          entity.getOperation(),
+          entity.getUserId(),
+          entity.getUserName(),
+          entity.getUaaUrl(),
+          entity.getTokenIssued(),
+          entity.getTokenExpires(),
+          entity.getHostName(),
+          entity.getMethod(),
+          entity.getPath(),
+          entity.getRequesterIp(),
+          entity.getXForwardedFor(),
+          entity.getClientId(),
+          entity.getScope(),
+          entity.getGrantType()
+      );
+      copy.setStatusCode(entity.getStatusCode());
+      if (!entity.isSuccess()) {
+        copy.setFailed();
+      }
+      auditRecords.add(copy);
     });
     if (shouldThrow) throw new RuntimeException(getClass().getSimpleName());
     return entity;
