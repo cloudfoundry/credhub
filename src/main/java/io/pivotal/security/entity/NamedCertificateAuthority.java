@@ -7,7 +7,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.time.Instant;
 
-import static io.pivotal.security.entity.NamedSecret.NONCE_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
 
 @Entity
 @Table(name = "NamedCertificateAuthority")
@@ -26,7 +27,7 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @Column(length = 7000)
   private String certificate;
 
-  @Column(length = NamedSecret.ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
   private byte[] encryptedValue;
 
   @Column(length = NONCE_BYTES)

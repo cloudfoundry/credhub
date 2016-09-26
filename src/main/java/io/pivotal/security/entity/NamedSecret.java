@@ -7,14 +7,15 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.time.Instant;
 
+import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
+
 @Entity
 @Table(name = "NamedSecret")
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 abstract public class NamedSecret implements EncryptedValueContainer {
-  public static final int NONCE_BYTES = 16;
-  static final int ENCRYPTED_BYTES = 7000;
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
@@ -22,7 +23,7 @@ abstract public class NamedSecret implements EncryptedValueContainer {
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Column(length = ENCRYPTED_BYTES+NONCE_BYTES, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
   private byte[] encryptedValue;
 
   @Column(length = NONCE_BYTES)

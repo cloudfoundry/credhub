@@ -8,7 +8,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.nio.charset.Charset;
 import java.security.*;
 
-import static io.pivotal.security.entity.NamedSecret.NONCE_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
 
 @Service
 public class EncryptionServiceImpl implements EncryptionService {
