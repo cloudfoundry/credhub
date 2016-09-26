@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -23,8 +24,9 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.lang.reflect.Field;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration
@@ -47,14 +49,14 @@ public class OAuth2ConfigurationTest {
   @Autowired
   OAuth2Configuration oAuth2Configuration;
 
+  @Autowired
+  JwtAccessTokenConverter accessTokenConverter;
+
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
       when(guidProvider.getUUID()).thenReturn("my guid");
-      final ResourceServerProperties.Jwt jwt = mock(ResourceServerProperties.Jwt.class);
-      when(resourceServerProperties.getJwt()).thenReturn(jwt);
-      when(jwt.getKeyValue()).thenReturn("");
 
       oAuth2Configuration.guidProvider = guidProvider;
     });
@@ -70,6 +72,12 @@ public class OAuth2ConfigurationTest {
       assertThat(securityAutoConfiguration.securityProperties().getBasic().isEnabled(), equalTo(false));
     });
 
+    it("should include grant type in its token converter", () -> {
+      DefaultAccessTokenConverter converter = (DefaultAccessTokenConverter) accessTokenConverter.getAccessTokenConverter();
+      Field includeGrantType = converter.getClass().getDeclaredField("includeGrantType");
+      includeGrantType.setAccessible(true);
+      assertThat(includeGrantType.get(converter), equalTo(true));
+    });
   }
 
   @Configuration
@@ -80,8 +88,11 @@ public class OAuth2ConfigurationTest {
     @Bean
     @Primary
     @Profile("OAuth2ConfigurationTest")
-    public JwtAccessTokenConverter symmetricTokenConverter() throws Exception {
-      return new JwtAccessTokenConverter();
+    public JwtAccessTokenConverter symmetricTokenConverter(DefaultAccessTokenConverter defaultAccessTokenConverter) throws Exception {
+      JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+      jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter);
+      jwtAccessTokenConverter.afterPropertiesSet();
+      return jwtAccessTokenConverter;
     }
   }
 }

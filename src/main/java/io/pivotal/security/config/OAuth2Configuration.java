@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -65,8 +66,16 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   }
 
   @Bean
-  public JwtAccessTokenConverter jwtAccessTokenConverter() throws Exception {
+  public DefaultAccessTokenConverter defaultAccessTokenConverter() {
+    DefaultAccessTokenConverter defaultAccessTokenConverter = new DefaultAccessTokenConverter();
+    defaultAccessTokenConverter.setIncludeGrantType(true);
+    return defaultAccessTokenConverter;
+  }
+
+  @Bean
+  public JwtAccessTokenConverter jwtAccessTokenConverter(DefaultAccessTokenConverter defaultAccessTokenConverter) throws Exception {
     JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+    jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter);
     jwtAccessTokenConverter.setVerifierKey(resourceServerProperties.getJwt().getKeyValue());
     jwtAccessTokenConverter.afterPropertiesSet();
     return jwtAccessTokenConverter;
