@@ -20,12 +20,12 @@ public class FakeSecretRepository implements SecretRepository {
 
   @Override
   public NamedSecret findOneByName(String name) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public NamedSecret findOneByUuid(String uuid) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -38,42 +38,42 @@ public class FakeSecretRepository implements SecretRepository {
 
   @Override
   public NamedSecret findOne(Long aLong) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean exists(Long aLong) {
-    return false;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public List<NamedSecret> findAll() {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public List<NamedSecret> findAll(Sort sort) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Page<NamedSecret> findAll(Pageable pageable) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public List<NamedSecret> findAll(Iterable<Long> longs) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public List<NamedSecret> findByNameContainingOrderByUpdatedAtDesc(String nameSubstring) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public List<NamedSecret> findByNameStartingWithOrderByUpdatedAtDesc(String nameSubstring) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -83,81 +83,81 @@ public class FakeSecretRepository implements SecretRepository {
 
   @Override
   public void delete(Long aLong) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void delete(NamedSecret entity) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void delete(Iterable<? extends NamedSecret> entities) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void deleteAll() {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void flush() {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void deleteInBatch(Iterable<NamedSecret> entities) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void deleteAllInBatch() {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public NamedSecret getOne(Long aLong) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> S saveAndFlush(S entity) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> List<S> save(Iterable<S> entities) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> List<S> findAll(Example<S> example) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> List<S> findAll(Example<S> example, Sort sort) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> S findOne(Example<S> example) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> Page<S> findAll(Example<S> example, Pageable pageable) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> long count(Example<S> example) {
-    return 0;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends NamedSecret> boolean exists(Example<S> example) {
-    return false;
+    throw new UnsupportedOperationException();
   }
 }

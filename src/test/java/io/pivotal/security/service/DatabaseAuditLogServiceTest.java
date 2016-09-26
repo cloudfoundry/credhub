@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -87,11 +86,6 @@ public class DatabaseAuditLogServiceTest {
 
       now = Instant.now();
       when(instantFactoryBean.getObject()).thenReturn(now);
-    });
-
-    afterEach(() -> {
-      auditRepository.deleteAll();
-      secretRepository.deleteAll();
     });
 
     describe("logging behavior", () -> {

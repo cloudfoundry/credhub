@@ -53,12 +53,12 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
 
   @Override
   public OperationAuditRecord findOne(Long aLong) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public boolean exists(Long aLong) {
-    return false;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -68,17 +68,17 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
 
   @Override
   public List<OperationAuditRecord> findAll(Sort sort) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public Page<OperationAuditRecord> findAll(Pageable pageable) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public List<OperationAuditRecord> findAll(Iterable<Long> longs) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -88,52 +88,52 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
 
   @Override
   public void delete(Long aLong) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void delete(OperationAuditRecord entity) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void delete(Iterable<? extends OperationAuditRecord> entities) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void deleteAll() {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void flush() {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void deleteInBatch(Iterable<OperationAuditRecord> entities) {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public void deleteAllInBatch() {
-
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public OperationAuditRecord getOne(Long aLong) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends OperationAuditRecord> S saveAndFlush(S entity) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends OperationAuditRecord> List<S> save(Iterable<S> entities) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   public void failOnSave() {
@@ -142,31 +142,31 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
 
   @Override
   public <S extends OperationAuditRecord> List<S> findAll(Example<S> example) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends OperationAuditRecord> List<S> findAll(Example<S> example, Sort sort) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends OperationAuditRecord> S findOne(Example<S> example) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends OperationAuditRecord> Page<S> findAll(Example<S> example, Pageable pageable) {
-    return null;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends OperationAuditRecord> long count(Example<S> example) {
-    return 0;
+    throw new UnsupportedOperationException();
   }
 
   @Override
   public <S extends OperationAuditRecord> boolean exists(Example<S> example) {
-    return false;
+    throw new UnsupportedOperationException();
   }
 }
