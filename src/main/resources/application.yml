@@ -1,7 +1,8 @@
 info:
   app:
-    name: Pivotal Credential Manager
+    name: CredHub for PCF
     version: ${buildVersion}
+
 security:
   oauth2:
     resource:

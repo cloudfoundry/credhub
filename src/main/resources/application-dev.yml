@@ -1,8 +1,3 @@
-info:
-  app:
-    name: Pivotal Credential Manager
-    version: ${buildVersion}
-
 auth-server:
   url: https://50.17.59.67:8443
 
@@ -33,8 +28,6 @@ security:
           KIlFvmT8XstT2JndP0iiZdod9V+h6FgowfExdWlNyUl/aWVGtmVftOQLZsSMtrHR
           xwIDAQAB
           -----END PUBLIC KEY-----
-  basic:
-    enabled: false
 
 server:
   port: 9000
