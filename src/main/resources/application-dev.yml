@@ -9,7 +9,7 @@ spring:
   datasource:
     username: pivotal
     password:
-    # url: jdbc:postgresql://localhost:5432/credhub
+#    url: jdbc:postgresql://localhost:5432/credhub
 
 flyway:
   locations: classpath:/db/migration/common,classpath:/db/migration/h2

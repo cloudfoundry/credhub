@@ -68,7 +68,7 @@ public class SecurityConfigurationTest {
     describe("with a token accepted by our security config", () -> {
       it("allows access", () -> {
         final MockHttpServletRequestBuilder post = post(urlPath)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .content(serializingObjectMapper.writeValueAsBytes(Collections.singletonMap("type", "value")));

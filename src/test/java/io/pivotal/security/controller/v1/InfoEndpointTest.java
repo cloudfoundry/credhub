@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import org.hamcrest.CoreMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -46,7 +45,7 @@ public class InfoEndpointTest {
           .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
           .andExpect(jsonPath("$.auth-server.url").value(startsWith("http")))
           .andExpect(jsonPath("$.app.version").isNotEmpty())
-          .andExpect(jsonPath("$.app.name").value("Pivotal Credential Manager"));
+          .andExpect(jsonPath("$.app.name").value("CredHub for PCF"));
     });
   }
 }

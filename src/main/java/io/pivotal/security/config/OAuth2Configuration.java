@@ -1,6 +1,7 @@
 package io.pivotal.security.config;
 
-import io.pivotal.security.oauth.AuditOAuth2AuthenticationEntryPoint;
+import io.pivotal.security.oauth.AuditOAuth2AccessDeniedHandler;
+import io.pivotal.security.oauth.AuditOAuth2AuthenticationExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
@@ -32,10 +33,13 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   ResourceServerProperties resourceServerProperties;
 
   @Autowired
-  AuditOAuth2AuthenticationEntryPoint auditOAuth2AuthenticationEntryPoint;
+  AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
 
   @Autowired
   SecurityProperties securityProperties;
+
+  @Autowired
+  AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
 
   @Autowired
   GuidProvider guidProvider;
@@ -51,7 +55,8 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   @Override
   public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
     resources.resourceId(resourceServerProperties.getResourceId());
-    resources.authenticationEntryPoint(auditOAuth2AuthenticationEntryPoint);
+    resources.authenticationEntryPoint(auditOAuth2AuthenticationExceptionHandler);
+    resources.accessDeniedHandler(auditOAuth2AccessDeniedHandler);
   }
 
   @Override
@@ -91,5 +96,10 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
     DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
     defaultTokenServices.setTokenStore(tokenStore);
     return defaultTokenServices;
+  }
+
+  @Bean
+  public AuditOAuth2AccessDeniedHandler getAuditOAuth2AccessDeniedHandler() {
+    return new AuditOAuth2AccessDeniedHandler();
   }
 }

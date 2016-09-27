@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Service
-public class AuditOAuth2AuthenticationEntryPoint extends OAuth2AuthenticationEntryPoint {
+public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
 
   @Autowired
   InstantFactoryBean instantFactoryBean;

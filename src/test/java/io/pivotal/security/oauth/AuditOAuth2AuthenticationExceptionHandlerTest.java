@@ -50,7 +50,7 @@ import javax.servlet.Filter;
 @SpringApplicationConfiguration
 @WebAppConfiguration
 @ActiveProfiles({"unit-test", "AuditOAuth2AuthenticationEntryPointTest"})
-public class AuditOAuth2AuthenticationEntryPointTest {
+public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
   @Autowired
   WebApplicationContext applicationContext;
@@ -60,7 +60,7 @@ public class AuditOAuth2AuthenticationEntryPointTest {
 
   @Autowired
   @InjectMocks
-  AuditOAuth2AuthenticationEntryPoint subject;
+  AuditOAuth2AuthenticationExceptionHandler subject;
 
   @Autowired
   AuthFailureAuditRecordRepository auditRecordRepository;
