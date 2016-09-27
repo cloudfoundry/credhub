@@ -5,22 +5,18 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
-import io.pivotal.security.view.CertificateSecret;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
-import java.time.Instant;
 import java.util.Arrays;
 
 @RunWith(Spectrum.class)
@@ -44,7 +40,7 @@ public class NamedCertificateSecretTest {
           .setCa("my-ca")
           .setCertificate("my-cert")
           .setPrivateKey("my-priv");
-      ((FakeEncryptionService) encryptionService).setEncryptionCount(0);
+      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     afterEach(() -> {

@@ -13,8 +13,6 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
 @Service
 public class EncryptionServiceImpl implements EncryptionService {
 
-  public static final Charset CHARSET = Charset.defaultCharset();
-
   private final EncryptionConfiguration encryptionConfiguration;
 
   @Autowired
@@ -31,7 +29,7 @@ public class EncryptionServiceImpl implements EncryptionService {
     Cipher encryptionCipher = Cipher.getInstance("AES/GCM/NoPadding", encryptionConfiguration.getProvider());
     encryptionCipher.init(Cipher.ENCRYPT_MODE, encryptionConfiguration.getKey(), ivSpec);
 
-    byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
+    byte[] encrypted = encryptionCipher.doFinal(value.getBytes(charset()));
 
     return new Encryption(nonce, encrypted);
   }
@@ -42,6 +40,6 @@ public class EncryptionServiceImpl implements EncryptionService {
     IvParameterSpec ivSpec = new IvParameterSpec(nonce);
     decryptionCipher.init(Cipher.DECRYPT_MODE, encryptionConfiguration.getKey(), ivSpec);
 
-    return new String(decryptionCipher.doFinal(encryptedValue), CHARSET);
+    return new String(decryptionCipher.doFinal(encryptedValue), charset());
   }
 }

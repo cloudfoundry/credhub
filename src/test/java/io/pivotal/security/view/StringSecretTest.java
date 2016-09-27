@@ -3,6 +3,7 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.repository.CanaryRepository;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -22,18 +22,19 @@ import static org.junit.Assert.assertThat;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class StringSecretTest {
-  private StringSecret subject;
 
-  private NamedValueSecret entity;
+  @Autowired
+  CanaryRepository canaryRepository;
 
   @Autowired
   SecretRepository secretRepository;
+
+  private NamedValueSecret entity;
 
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      subject = new StringSecret("value", "myFavoriteValue");
       entity = new NamedValueSecret(uniquify("foo"));
     });
 

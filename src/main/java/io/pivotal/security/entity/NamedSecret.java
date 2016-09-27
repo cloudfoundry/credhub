@@ -43,7 +43,7 @@ abstract public class NamedSecret implements EncryptedValueContainer {
   }
 
   public NamedSecret(String name) {
-    this.setName(name);
+    this.name = name;
   }
 
   public long getId() {

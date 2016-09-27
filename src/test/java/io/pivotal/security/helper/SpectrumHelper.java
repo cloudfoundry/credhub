@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.JpaAuditingHandler;
+import io.pivotal.security.repository.CanaryRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -65,6 +66,10 @@ public class SpectrumHelper {
     Supplier<MyTestContextManager> myTestContextManagerSupplier = Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
     beforeEach(injectMocksAndBeans(testInstance, myTestContextManagerSupplier));
     afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
+    afterEach(() -> {
+      //TODO: remove this in favor of transactional tests (requires nested transactions)
+      myTestContextManagerSupplier.get().getApplicationContext().getBean(CanaryRepository.class).deleteAll();
+    });
   }
 
   public static String json(Object o) throws IOException {

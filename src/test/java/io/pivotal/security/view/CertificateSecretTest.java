@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.repository.CanaryRepository;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,7 @@ import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -26,6 +26,9 @@ import static org.junit.Assert.assertThat;
 public class CertificateSecretTest {
 
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
+
+  @Autowired
+  CanaryRepository canaryRepository;
 
   @Autowired
   SecretRepository secretRepository;
@@ -46,6 +49,10 @@ public class CertificateSecretTest {
           .setCa("ca")
           .setCertificate("cert")
           .setPrivateKey("priv");
+    });
+
+    afterAll(() -> {
+      canaryRepository.deleteAll();
     });
 
     it("creates a view from entity", () -> {

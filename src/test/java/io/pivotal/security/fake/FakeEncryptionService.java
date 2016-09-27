@@ -16,7 +16,10 @@ public class FakeEncryptionService implements EncryptionService {
   @Override
   public Encryption encrypt(String value) {
     encryptionCount++;
-    return new Encryption(String.valueOf(encryptionCount).getBytes(), ("SECRET"+value).getBytes());
+    return new Encryption(
+        String.valueOf(encryptionCount).getBytes(),
+        ("SECRET"+value).getBytes()
+    );
   }
 
   @Override
@@ -29,7 +32,7 @@ public class FakeEncryptionService implements EncryptionService {
     return encryptionCount;
   }
 
-  public void setEncryptionCount(int encryptionCount) {
-    this.encryptionCount = encryptionCount;
+  public void resetEncryptionCount() {
+    encryptionCount = 0;
   }
 }

@@ -41,7 +41,7 @@ public class NamedPasswordSecretTest {
 
     beforeEach(() -> {
       subject = new NamedPasswordSecret("Foo");
-      ((FakeEncryptionService) encryptionService).setEncryptionCount(0);
+      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     afterEach(() -> {

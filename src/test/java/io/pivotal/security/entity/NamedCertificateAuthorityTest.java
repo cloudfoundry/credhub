@@ -12,9 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,7 +46,7 @@ public class NamedCertificateAuthorityTest {
       subject.setCertificate("cert");
       subject.setPrivateKey("priv");
       subject.setType("root");
-      ((FakeEncryptionService) encryptionService).setEncryptionCount(0);
+      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     afterEach(() -> {
