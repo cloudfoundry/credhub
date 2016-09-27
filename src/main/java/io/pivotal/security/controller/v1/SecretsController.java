@@ -171,12 +171,16 @@ public class SecretsController {
       boolean willBeCreated = namedSecret == null;
       boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
 
-      // to catch invalid parameters, validate request even though we throw away the result
-      namedSecret = secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);
       if (willBeCreated || overwrite) {
         // ensure updatedAt is committed with 'saveAndFlush'.
         // note that the test does NOT catch this.
+        namedSecret = secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);
         namedSecret = secretRepository.saveAndFlush(namedSecret);
+      } else {
+        // To catch invalid parameters, validate request even though we throw away the result.
+        // We need to apply it to null or Hibernate may decide to save the record.
+        // As above, the unit tests won't catch (all) issues :(
+        secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(null);
       }
 
       Secret stringSecret = Secret.fromEntity(namedSecret);

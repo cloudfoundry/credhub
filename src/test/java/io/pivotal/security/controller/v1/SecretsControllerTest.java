@@ -265,8 +265,9 @@ public class SecretsControllerTest {
         putSecretInDatabase("original value");
       });
 
-      it("with the overwrite flag it overwrites a secret", () -> {
-        final String specialValue = "special value";
+      describe("with the overwrite flag set to true", () -> {
+        it("should overwrite a secret", () -> {
+          final String specialValue = "special value";
 
         when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
             .thenReturn(new DefaultMapping() {
@@ -277,55 +278,78 @@ public class SecretsControllerTest {
               }
             });
 
-        fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
+          fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"value\":\"" + specialValue + "\"," +
-                "  \"overwrite\":true" +
-                "}");
+          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"value\"," +
+                  "  \"value\":\"" + specialValue + "\"," +
+                  "  \"overwrite\":true" +
+                  "}");
 
-        mockMvc.perform(put)
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.value").value(specialValue))
-            .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
+          mockMvc.perform(put)
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.value").value(specialValue))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
+        });
+
+        it("should validate requests", () -> {
+          when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
+              .thenThrow(new ParameterizedValidationException("error.invalid_json_key", newArrayList("$.bogus")));
+
+          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"value\"," +
+                  "  \"value\":\"original value\"," +
+                  "  \"overwrite\": true," +
+                  "  \"bogus\":\"yargablabla\"" +
+                  "}");
+
+          final String errorMessage = "The request includes an unrecognized parameter '$.bogus'. Please update or remove this parameter and retry your request.";
+          mockMvc.perform(put)
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.error").value(errorMessage));
+        });
       });
 
-      it("without the overwrite flag it preserves secrets", () -> {
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"value\":\"special value\"" +
-                "}");
+      describe("with the overwrite flag set to false", () -> {
+        it("should preserve secrets", () -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"value\"," +
+                  "  \"value\":\"special value\"" +
+                  "}");
 
-        mockMvc.perform(put)
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.value").value("original value"));
-      });
+          mockMvc.perform(put)
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.value").value("original value"));
+        });
 
-      it("validates parameters of request always, even with overwrite=false", () -> {
-        when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
-            .thenThrow(new ParameterizedValidationException("error.invalid_json_key", newArrayList("$.bogus")));
+        it("should validate requests", () -> {
+          when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
+              .thenThrow(new ParameterizedValidationException("error.invalid_json_key", newArrayList("$.bogus")));
 
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"value\":\"original value\"," +
-                "  \"overwrite\": false," +
-                "  \"bogus\":\"yargablabla\"" +
-                "}");
+          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"value\"," +
+                  "  \"value\":\"original value\"," +
+                  "  \"overwrite\": false," +
+                  "  \"bogus\":\"yargablabla\"" +
+                  "}");
 
-        final String errorMessage = "The request includes an unrecognized parameter '$.bogus'. Please update or remove this parameter and retry your request.";
-        mockMvc.perform(put)
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.error").value(errorMessage));
+          final String errorMessage = "The request includes an unrecognized parameter '$.bogus'. Please update or remove this parameter and retry your request.";
+          mockMvc.perform(put)
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.error").value(errorMessage));
+        });
       });
     });
 
