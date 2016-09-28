@@ -1,4 +1,4 @@
-CREATE TABLE `certificate_secret` (
+CREATE TABLE `ssh_secret` (
   `public_key` varchar(7000) DEFAULT NULL,
   `id` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
