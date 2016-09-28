@@ -5,7 +5,7 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import org.springframework.stereotype.Component;
 
 import static com.google.common.collect.ImmutableSet.of;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static io.pivotal.security.util.StringUtil.emptyToNull;
 
 import io.pivotal.security.view.ParameterizedValidationException;
 
@@ -31,9 +31,5 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
   public Set<String> getValidKeys() {
     return of("$['type']", "$['overwrite']", "$['value']",
         "$['value']['ca']", "$['value']['certificate']", "$['value']['private_key']");
-  }
-
-  private String emptyToNull(String val) {
-    return isEmpty(val) ? null : val;
   }
 }

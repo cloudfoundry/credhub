@@ -3,6 +3,7 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 
 import java.time.Instant;
@@ -36,6 +37,8 @@ public class Secret extends BaseView {
       result =  new StringSecret((NamedStringSecret) namedSecret);
     } else if (NamedCertificateSecret.class.isInstance(namedSecret)) {
       result = new CertificateSecret((NamedCertificateSecret) namedSecret);
+    } else if (NamedSshSecret.class.isInstance(namedSecret)) {
+      result = new SshSecret((NamedSshSecret) namedSecret);
     } else {
       throw new IllegalArgumentException();
     }

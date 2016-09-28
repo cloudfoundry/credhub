@@ -13,6 +13,8 @@ public interface SecretKindFromString {
         return SecretKind.PASSWORD;
       case "certificate":
         return SecretKind.CERTIFICATE;
+      case "ssh":
+        return SecretKind.SSH;
     }
     throw new ParameterizedValidationException("error.type_invalid");
   }

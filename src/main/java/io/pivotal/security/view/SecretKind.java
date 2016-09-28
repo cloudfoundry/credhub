@@ -24,6 +24,12 @@ public enum SecretKind implements SecretKindFromString {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.certificate(this, t);
     }
+  }, SSH {
+    @Override
+    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+      Objects.requireNonNull(mapping);
+      return (t) -> mapping.ssh(this, t);
+    }
   };
 
   public abstract <T, R> Function<T, R> map(Mapping<T, R> mapping);
@@ -32,6 +38,7 @@ public enum SecretKind implements SecretKindFromString {
     R value(SecretKind secretKind, T t);
     R password(SecretKind secretKind, T t);
     R certificate(SecretKind secretKind, T t);
+    R ssh(SecretKind secretKind, T t);
 
     default <V> Mapping<V, R> compose(Mapping<? super V, ? extends T> before) {
       Objects.requireNonNull(before);
@@ -50,6 +57,11 @@ public enum SecretKind implements SecretKindFromString {
         public R certificate(SecretKind secretKind, V v) {
           return Mapping.this.certificate(secretKind, before.certificate(secretKind, v));
         }
+
+        @Override
+        public R ssh(SecretKind secretKind, V v) {
+          return Mapping.this.ssh(secretKind, before.ssh(secretKind, v));
+        }
       };
     }
   }
@@ -59,11 +71,13 @@ public enum SecretKind implements SecretKindFromString {
     private final R value;
     private final R password;
     private final R certificate;
+    private final R ssh;
 
-    public StaticMapping(R value, R password, R certificate) {
+    public StaticMapping(R value, R password, R certificate, R ssh) {
       this.value = value;
       this.password = password;
       this.certificate = certificate;
+      this.ssh = ssh;
     }
 
     @Override
@@ -79,6 +93,11 @@ public enum SecretKind implements SecretKindFromString {
     @Override
     public R certificate(SecretKind secretKind, T t) {
       return certificate;
+    }
+
+    @Override
+    public R ssh(SecretKind secretKind, T t) {
+      return ssh;
     }
   }
 }

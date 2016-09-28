@@ -3,6 +3,8 @@ package io.pivotal.security.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 public class StringUtil {
 
   public static final String INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS = "[*]";
@@ -15,5 +17,9 @@ public class StringUtil {
       result = matcher.group(1) + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS + matcher.group(2);
     }
     return result;
+  }
+
+  public static String emptyToNull(String val) {
+    return isEmpty(val) ? null : val;
   }
 }

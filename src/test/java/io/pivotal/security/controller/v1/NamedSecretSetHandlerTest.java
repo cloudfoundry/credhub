@@ -5,9 +5,11 @@ import com.jayway.jsonpath.Configuration;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.PasswordSetRequestTranslator;
+import io.pivotal.security.mapper.SshSetRequestTranslator;
 import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
@@ -44,6 +46,9 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
   @Mock
   CertificateSetRequestTranslator certificateSetRequestTranslator;
 
+  @Mock
+  SshSetRequestTranslator sshSetRequestTranslator;
+
   {
     describe("it verifies the secret type and secret creation for", () -> {
       beforeEach(injectMocks(this));
@@ -53,6 +58,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe("password", behavesLikeMapper(() -> subject, () -> subject.passwordSetRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
 
       describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateSetRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
+
+      describe("ssh", behavesLikeMapper(() -> subject, () -> subject.sshSetRequestTranslator, SecretKind.SSH, NamedSshSecret.class, new NamedPasswordSecret(), new NamedSshSecret()));
     });
 
     describe("verifies full set of keys for", () -> {
@@ -71,6 +78,13 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               "\"ca\":\"ca\"," +
               "\"certificate\":\"cert\"," +
               "\"private_key\":\"pk\"}}"));
+
+      it("ssh", validateJsonKeys(() -> realSubject.sshSetRequestTranslator,
+          "{\"type\":\"ssh\"," +
+              "\"overwrite\":true," +
+              "\"value\":{" +
+              "\"public_key\":\"public-key\"," +
+              "\"private_key\":\"private-key\"}}"));
     });
   }
 }

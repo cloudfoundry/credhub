@@ -1,12 +1,10 @@
 package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.entity.*;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.PasswordSetRequestTranslator;
+import io.pivotal.security.mapper.SshSetRequestTranslator;
 import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +22,9 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
   @Autowired
   CertificateSetRequestTranslator certificateSetRequestTranslator;
 
+  @Autowired
+  SshSetRequestTranslator sshSetRequestTranslator;
+
   @Override
   public SecretKind.Mapping<NamedSecret, NamedSecret> make(String secretPath, DocumentContext parsed) {
     return new SecretKind.Mapping<NamedSecret, NamedSecret>() {
@@ -40,6 +41,11 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
       @Override
       public NamedSecret certificate(SecretKind secretKind, NamedSecret namedSecret) {
         return processSecret((NamedCertificateSecret)namedSecret, NamedCertificateSecret::new, secretPath, certificateSetRequestTranslator, parsed);
+      }
+
+      @Override
+      public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) {
+        return processSecret((NamedSshSecret)namedSecret, NamedSshSecret::new, secretPath, sshSetRequestTranslator, parsed);
       }
     }.compose(new ValidateTypeMatch());
   }

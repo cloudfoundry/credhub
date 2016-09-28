@@ -19,4 +19,9 @@ public abstract class DefaultMapping implements SecretKind.Mapping<NamedSecret, 
   public NamedSecret certificate(SecretKind secretKind, NamedSecret namedSecret) {
     return namedSecret;
   }
+
+  @Override
+  public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) {
+    return namedSecret;
+  }
 }

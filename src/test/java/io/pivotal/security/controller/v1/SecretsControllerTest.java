@@ -114,7 +114,7 @@ public class SecretsControllerTest {
       describe("for a new secret", () -> {
         beforeEach(() -> {
           when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
-              .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "some value"), null, null));
+              .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "some value"), null, null, null));
 
           final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
               .accept(APPLICATION_JSON)
@@ -203,7 +203,7 @@ public class SecretsControllerTest {
         describe("with the overwrite flag set to false", () -> {
           beforeEach(() -> {
             when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
-                .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "original value"), null, null));
+                .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "original value"), null, null, null));
 
             final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
                 .accept(APPLICATION_JSON)
@@ -330,10 +330,10 @@ public class SecretsControllerTest {
         final String testSecretNameWithDot = uniquify("test.response");
 
         when(namedSecretSetHandler.make(eq(testSecretName), isA(DocumentContext.class)))
-            .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(testSecretName, "abc"), null, null));
+            .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(testSecretName, "abc"), null, null, null));
 
         when(namedSecretSetHandler.make(eq(testSecretNameWithDot), isA(DocumentContext.class)))
-            .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(testSecretNameWithDot, "def"), null, null));
+            .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(testSecretNameWithDot, "def"), null, null, null));
 
         mockMvc.perform(put("/api/v1/data/" + testSecretName)
             .content("{\"type\":\"value\",\"value\":\"" + "abc" + "\"}")
@@ -642,7 +642,7 @@ public class SecretsControllerTest {
 
   private void putSecretInDatabase(String value) throws Exception {
     when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
-        .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, value), null, null));
+        .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, value), null, null, null));
 
     final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
         .accept(APPLICATION_JSON)

@@ -41,6 +41,11 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
       public NamedSecret certificate(SecretKind secretKind, NamedSecret namedSecret) {
         return processSecret((NamedCertificateSecret)namedSecret, NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsed);
       }
+
+      @Override
+      public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) {
+        return null;
+      }
     }.compose(new ValidateTypeMatch());
   }
 }
