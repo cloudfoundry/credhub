@@ -14,6 +14,7 @@ import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpStatus;
@@ -102,11 +103,7 @@ public class SecretsControllerTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
       secretName = uniquify("my-namespace/subtree/secret-name");
 
-      when(auditLogService.performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class)))
-          .thenAnswer(invocation -> {
-            final Supplier action = invocation.getArgumentAt(2, Supplier.class);
-            return action.get();
-          });
+      resetAuditLogMock();
     });
 
     afterEach(() -> {
@@ -114,35 +111,130 @@ public class SecretsControllerTest {
     });
 
     describe("generating a secret", () -> {
-      beforeEach(() -> {
-        when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
-            .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "some value"), null, null));
+      describe("for a new secret", () -> {
+        beforeEach(() -> {
+          when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
+              .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "some value"), null, null));
 
-        final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{\"type\":\"value\"}");
+          final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"type\":\"value\"}");
 
-        mockMvc.perform(post)
-            .andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.type").value("value"))
-            .andExpect(jsonPath("$.value").value("some value"))
-            .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
-            .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+          response = mockMvc.perform(post);
+        });
+
+        it("should return the expected response", () -> {
+          response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("value"))
+              .andExpect(jsonPath("$.value").value("some value"))
+              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+        });
+
+        it("validates parameters", () -> {
+          verify(namedSecretGenerateHandler).make(eq(secretName), any(DocumentContext.class));
+        });
+
+        it("persists the secret", () -> {
+          final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
+          assertThat(namedSecret.getValue(), equalTo("some value"));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
       });
 
-      it("validates parameters", () -> {
-        verify(namedSecretGenerateHandler).make(eq(secretName), any(DocumentContext.class));
-      });
+      describe("with an existing secret", () -> {
+        final String secretValue = "original value";
 
-      it("persists the secret", () -> {
-        final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
-        assertThat(namedSecret.getValue(), equalTo("some value"));
-      });
+        beforeEach(() -> {
+          putSecretInDatabase(secretValue);
+          resetAuditLogMock();
+        });
 
-      it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        describe("with the overwrite flag set to true", () -> {
+          beforeEach(() -> {
+            when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
+                .thenReturn(new DefaultMapping() {
+                  @Override
+                  public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+                    ((NamedValueSecret) namedSecret).setValue("generated value");
+                    return namedSecret;
+                  }
+                });
+
+            final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{" +
+                        "  \"type\":\"value\"," +
+                        "  \"overwrite\":true" +
+                        "}");
+
+            response = mockMvc.perform(post);
+          });
+
+          it("should return the correct response", () -> {
+            response.andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.type").value("value"))
+                .andExpect(jsonPath("$.value").value("generated value"))
+                .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+                .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+          });
+
+          it("validates parameters", () -> {
+            verify(namedSecretGenerateHandler).make(eq(secretName), any(DocumentContext.class));
+          });
+
+          it("persists the secret", () -> {
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
+            assertThat(namedSecret.getValue(), equalTo("generated value"));
+          });
+
+          it("persists an audit entry", () -> {
+            verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+          });
+        });
+
+        describe("with the overwrite flag set to false", () -> {
+          beforeEach(() -> {
+            when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
+                .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "original value"), null, null));
+
+            final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{\"type\":\"value\"}");
+
+            response = mockMvc.perform(post);
+          });
+
+          it("should return the expected response", () -> {
+            response.andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.type").value("value"))
+                .andExpect(jsonPath("$.value").value("original value"))
+                .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+                .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+          });
+
+          it("validates parameters", () -> {
+            verify(namedSecretGenerateHandler).make(eq(secretName), any(DocumentContext.class));
+          });
+
+          it("should not persist the secret", () -> {
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
+            assertThat(namedSecret.getValue(), equalTo("original value"));
+          });
+
+          it("persists an audit entry", () -> {
+            verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+          });
+        });
       });
     });
 
@@ -263,20 +355,21 @@ public class SecretsControllerTest {
     describe("updating a secret", () -> {
       beforeEach(() -> {
         putSecretInDatabase("original value");
+        resetAuditLogMock();
       });
 
       describe("with the overwrite flag set to true", () -> {
-        it("should overwrite a secret", () -> {
-          final String specialValue = "special value";
+        final String specialValue = "special value";
 
-        when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
-            .thenReturn(new DefaultMapping() {
-              @Override
-              public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
-                ((NamedValueSecret) namedSecret).setValue(specialValue);
-                return namedSecret;
-              }
-            });
+        beforeEach(() -> {
+          when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
+              .thenReturn(new DefaultMapping() {
+                @Override
+                public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+                  ((NamedValueSecret) namedSecret).setValue(specialValue);
+                  return namedSecret;
+                }
+              });
 
           fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
@@ -289,7 +382,11 @@ public class SecretsControllerTest {
                   "  \"overwrite\":true" +
                   "}");
 
-          mockMvc.perform(put)
+          response = mockMvc.perform(put);
+        });
+
+        it("should overwrite a secret", () -> {
+          response
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value(specialValue))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
@@ -314,10 +411,14 @@ public class SecretsControllerTest {
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.error").value(errorMessage));
         });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
       });
 
       describe("with the overwrite flag set to false", () -> {
-        it("should preserve secrets", () -> {
+        beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
@@ -326,8 +427,11 @@ public class SecretsControllerTest {
                   "  \"value\":\"special value\"" +
                   "}");
 
-          mockMvc.perform(put)
-              .andExpect(status().isOk())
+          response = mockMvc.perform(put);
+        });
+
+        it("should return the expected response", () -> {
+          response.andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value("original value"));
         });
 
@@ -349,6 +453,10 @@ public class SecretsControllerTest {
           mockMvc.perform(put)
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.error").value(errorMessage));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
     });
@@ -545,5 +653,14 @@ public class SecretsControllerTest {
             "}");
 
     response = mockMvc.perform(put);
+  }
+
+  private void resetAuditLogMock() throws Exception {
+    Mockito.reset(auditLogService);
+    when(auditLogService.performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class)))
+        .thenAnswer(invocation -> {
+          final Supplier action = invocation.getArgumentAt(2, Supplier.class);
+          return action.get();
+        });
   }
 }

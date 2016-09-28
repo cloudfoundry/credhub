@@ -91,16 +91,12 @@ public class SecretsController {
 
   @RequestMapping(path = "/**", method = RequestMethod.POST)
   public ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return audit(CREDENTIAL_UPDATE, request, authentication, () -> {
-      return storeSecret(requestBody, secretPath(request), namedSecretGenerateHandler);
-    });
+    return auditedStoreSecret(requestBody, request, authentication, namedSecretGenerateHandler);
   }
 
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   public ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return audit(CREDENTIAL_UPDATE, request, authentication, () -> {
-      return storeSecret(requestBody, secretPath(request), namedSecretSetHandler);
-    });
+    return auditedStoreSecret(requestBody, request, authentication, namedSecretSetHandler);
   }
 
   @RequestMapping(path = "/**", method = RequestMethod.DELETE)
@@ -160,18 +156,28 @@ public class SecretsController {
     });
   }
 
-  private ResponseEntity<?> storeSecret(InputStream requestBody, String secretPath, SecretKindMappingFactory namedSecretHandler) {
+  private ResponseEntity<?> auditedStoreSecret(InputStream requestBody, HttpServletRequest request, Authentication authentication, SecretKindMappingFactory handler) throws Exception {
     final DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
 
+    String secretPath = secretPath(request);
+    NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
+
+    boolean willBeCreated = namedSecret == null;
+    boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
+
+    boolean willWrite = willBeCreated || overwrite;
+    String operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+
+    return audit(operationCode, request, authentication, () -> {
+      return storeSecret(secretPath, handler, parsed, namedSecret, willWrite);
+    });
+  }
+
+  private ResponseEntity<?> storeSecret(String secretPath, SecretKindMappingFactory namedSecretHandler, DocumentContext parsed, NamedSecret namedSecret, boolean willWrite) {
     try {
       final SecretKind secretKind = SecretKindFromString.fromString(parsed.read("$.type"));
 
-      NamedSecret namedSecret = secretRepository.findOneByName(secretPath);
-
-      boolean willBeCreated = namedSecret == null;
-      boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
-
-      if (willBeCreated || overwrite) {
+      if (willWrite) {
         // ensure updatedAt is committed with 'saveAndFlush'.
         // note that the test does NOT catch this.
         namedSecret = secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);
@@ -179,7 +185,7 @@ public class SecretsController {
       } else {
         // To catch invalid parameters, validate request even though we throw away the result.
         // We need to apply it to null or Hibernate may decide to save the record.
-        // As above, the unit tests won't catch (all) issues :(
+        // As above, the unit tests won't catch (all) issues :( , but there is an integration test to cover it.
         secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(null);
       }
 
