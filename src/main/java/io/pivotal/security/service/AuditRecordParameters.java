@@ -14,22 +14,25 @@ public class AuditRecordParameters {
   private final String requesterIp;
   private final String xForwardedFor;
   private final Authentication authentication;
+  private final String queryParameters;
 
   public AuditRecordParameters(HttpServletRequest request, Authentication authentication) {
     this(
         request.getServerName(),
         request.getMethod(),
         request.getRequestURI(),
+        request.getQueryString(),
         request.getRemoteAddr(),
         extractXForwardedFor(request.getHeaders("X-Forwarded-For")),
         authentication
     );
   }
 
-  AuditRecordParameters(String hostName, String method, String path, String requesterIp, String xForwardedFor, Authentication authentication) {
+  AuditRecordParameters(String hostName, String method, String path, String queryParameters, String requesterIp, String xForwardedFor, Authentication authentication) {
     this.hostName = hostName;
     this.method = method;
     this.path = path;
+    this.queryParameters = queryParameters;
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
     this.authentication = authentication;
@@ -61,5 +64,9 @@ public class AuditRecordParameters {
 
   private static String extractXForwardedFor(Enumeration<String> values) {
     return String.join(",", Collections.list(values));
+  }
+
+  public String getQueryParameters() {
+    return queryParameters;
   }
 }

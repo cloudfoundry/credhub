@@ -77,7 +77,15 @@ public class DatabaseAuditLogServiceTest {
       when(mockDetails.getTokenValue()).thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
       authentication.setDetails(mockDetails);
 
-      auditRecordParameters = new AuditRecordParameters("hostName", "GET", "requestURI", "127.0.0.1", "1.2.3.4,5.6.7.8", authentication);
+      auditRecordParameters = new AuditRecordParameters(
+          "hostName",
+          "GET",
+          "requestURI",
+          "foo=bar",
+          "127.0.0.1",
+          "1.2.3.4,5.6.7.8",
+          authentication
+      );
       transactionManager = new FakeTransactionManager();
       auditRepository = new FakeAuditRecordRepository(transactionManager);
       secretRepository = new FakeSecretRepository(transactionManager);
@@ -249,6 +257,7 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.getTokenExpires(), equalTo(1469051824L));
     assertThat(actual.getHostName(), equalTo("hostName"));
     assertThat(actual.getPath(), equalTo("requestURI"));
+    assertThat(actual.getQueryParameters(), equalTo("foo=bar"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
     assertThat(actual.getRequesterIp(), equalTo("127.0.0.1"));
     assertThat(actual.getXForwardedFor(), equalTo("1.2.3.4,5.6.7.8"));

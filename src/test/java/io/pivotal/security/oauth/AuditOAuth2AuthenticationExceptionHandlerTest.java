@@ -78,6 +78,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   private Instant now;
 
   private final String credentialUrlPath = uniquify("/api/v1/data/foo");
+  private final String credentialUrlQueryParams = "?my_name=my_value";
+  private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
   private CountMemo auditRecordMemo;
 
   {
@@ -96,7 +98,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
     describe("when the token is invalid", () -> {
       beforeEach(() -> {
-        get = get(credentialUrlPath)
+        get = get(credentialUrl)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
@@ -112,6 +114,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         auditRecordMemo.expectIncreaseOf(1);
         AuthFailureAuditRecord auditRecord = auditRecordRepository.findFirstByOrderByIdDesc();
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -131,7 +134,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
     describe("when the token is expired", () -> {
       beforeEach(() -> {
-        get = get(credentialUrlPath)
+        get = get(credentialUrl)
             .header("Authorization", "Bearer " + EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
@@ -152,6 +155,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -171,7 +175,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
     describe("when there is no token provided", () -> {
       beforeEach(() -> {
-        get = get(credentialUrlPath)
+        get = get(credentialUrl)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
@@ -188,6 +192,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));

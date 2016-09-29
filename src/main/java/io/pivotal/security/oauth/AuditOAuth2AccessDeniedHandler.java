@@ -41,13 +41,12 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     try {
       super.handle(request, response, authException);
     } finally {
-      logAuthFailureToDb(request, new AuditRecordParameters(request, null), response.getStatus());
+      String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
+      logAuthFailureToDb(token, new AuditRecordParameters(request, null), response.getStatus());
     }
   }
 
-  private void logAuthFailureToDb(HttpServletRequest request, AuditRecordParameters auditRecordParameters, int status) {
-    String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
-
+  private void logAuthFailureToDb(String token, AuditRecordParameters auditRecordParameters, int status) {
     OAuth2Authentication authentication = tokenStore.readAuthentication(token);
     OAuth2Request oAuth2Request = authentication.getOAuth2Request();
 
@@ -78,6 +77,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
         auditRecordParameters.getHostName(),
         method,
         path,
+        auditRecordParameters.getQueryParameters(),
         auditRecordParameters.getRequesterIp(),
         auditRecordParameters.getXForwardedFor(),
         oAuth2Request.getClientId(),

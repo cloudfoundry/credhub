@@ -27,6 +27,7 @@ public class OperationAuditRecord {
   private Instant now;
   private String operation;
   private String path;
+  private String queryParameters;
   private long tokenIssued;
   private long tokenExpires;
   private boolean success = true;
@@ -54,6 +55,7 @@ public class OperationAuditRecord {
                               String hostName,
                               String method,
                               String path,
+                              String queryParameters,
                               String requesterIp,
                               String xForwardedFor,
                               String clientId,
@@ -69,6 +71,7 @@ public class OperationAuditRecord {
     this.hostName = hostName;
     this.method = method;
     this.path = path;
+    this.queryParameters = queryParameters;
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
     this.clientId = clientId;
@@ -98,6 +101,10 @@ public class OperationAuditRecord {
 
   public String getPath() {
     return path;
+  }
+
+  public String getQueryParameters() {
+    return queryParameters;
   }
 
   public long getTokenIssued() {
@@ -166,6 +173,10 @@ public class OperationAuditRecord {
 
   public void setPath(String path) {
     this.path = path;
+  }
+
+  public void setQueryParameters(String queryParameters) {
+    this.queryParameters = queryParameters;
   }
 
   public void setXForwardedFor(String xForwardedFor) {

@@ -105,6 +105,7 @@ public class DatabaseAuditLogService implements AuditLogService {
         auditRecordParameters.getHostName(),
         auditRecordParameters.getMethod(),
         auditRecordParameters.getPath(),
+        auditRecordParameters.getQueryParameters(),
         auditRecordParameters.getRequesterIp(),
         auditRecordParameters.getXForwardedFor(),
         oAuth2Request.getClientId(),

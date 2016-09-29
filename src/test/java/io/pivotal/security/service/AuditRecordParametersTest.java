@@ -24,6 +24,7 @@ public class AuditRecordParametersTest {
         request.setRemoteAddr("10.0.0.1");
         request.addHeader("X-Forwarded-For", "my-header");
         request.addHeader("X-Forwarded-For", "my-header2");
+        request.setQueryString("first=first_value&second=second_value");
         Authentication authentication = mock(Authentication.class);
         subject = new AuditRecordParameters(request, authentication);
       });
@@ -33,6 +34,7 @@ public class AuditRecordParametersTest {
         assertThat(subject.getPath(), equalTo("/api/v1/data"));
         assertThat(subject.getRequesterIp(), equalTo("10.0.0.1"));
         assertThat(subject.getXForwardedFor(), equalTo("my-header,my-header2"));
+        assertThat(subject.getQueryParameters(), equalTo("first=first_value&second=second_value"));
       });
     });
   }

@@ -47,6 +47,7 @@ public class AuthFailureAuditRecord {
   private String grantType;
   private String method;
   private int statusCode;
+  private String queryParameters;
 
   public AuthFailureAuditRecord() {
   }
@@ -73,6 +74,10 @@ public class AuthFailureAuditRecord {
 
   public String getPath() {
     return path;
+  }
+
+  public String getQueryParameters() {
+    return queryParameters;
   }
 
   public long getTokenIssued() {
@@ -170,6 +175,11 @@ public class AuthFailureAuditRecord {
 
   public AuthFailureAuditRecord setPath(String path) {
     this.path = path;
+    return this;
+  }
+
+  public AuthFailureAuditRecord setQueryParameters(String queryParameters) {
+    this.queryParameters = queryParameters;
     return this;
   }
 

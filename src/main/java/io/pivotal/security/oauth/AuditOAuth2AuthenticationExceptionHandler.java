@@ -120,6 +120,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
         .setTokenExpires(expires)
         .setHostName(parameters.getHostName())
         .setPath(parameters.getPath())
+        .setQueryParameters(parameters.getQueryParameters())
         .setRequesterIp(parameters.getRequesterIp())
         .setXForwardedFor(parameters.getXForwardedFor())
         .setClientId(clientId)

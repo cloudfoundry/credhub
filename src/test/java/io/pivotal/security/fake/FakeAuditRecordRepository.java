@@ -35,6 +35,7 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
           entity.getHostName(),
           entity.getMethod(),
           entity.getPath(),
+          entity.getQueryParameters(),
           entity.getRequesterIp(),
           entity.getXForwardedFor(),
           entity.getClientId(),

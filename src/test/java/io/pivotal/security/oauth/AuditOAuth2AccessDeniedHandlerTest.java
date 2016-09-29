@@ -70,6 +70,8 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   private Instant now;
 
   private final String credentialUrlPath = uniquify("/api/v1/data/foo");
+  private final String credentialUrlQueryParams = "?query=value";
+  private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
 
   {
     wireAndUnwire(this);
@@ -91,7 +93,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
     describe("when the scope is invalid", () -> {
       beforeEach(() -> {
         String bearer = "Bearer " + INVALID_SCOPE_SYMMETRIC_KEY_JWT;
-        get = get(credentialUrlPath)
+        get = get(credentialUrl)
             .header("Authorization", bearer)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
@@ -116,6 +118,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
         assertThat(auditRecord.isSuccess(), equalTo(false));
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getQueryParameters(), equalTo("query=value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
