@@ -21,6 +21,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -58,13 +59,12 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       beforeEach(injectMocks(this));
 
       describe("value", () -> {
-        it("cannot be generated", () -> {
-          try {
-            SecretKind.VALUE.map(subject.make("secret-path", documentContext)).apply(null);
-            fail();
-          } catch(ParameterizedValidationException e) {
-            assertThat(e.getMessage(), equalTo("error.invalid_generate_type"));
-          }
+        itThrowsWithMessage("cannot be generated", ParameterizedValidationException.class, "error.invalid_generate_type", () -> {
+          SecretKind.VALUE.map(subject.make("secret-path", documentContext)).apply(null);
+        });
+
+        itThrowsWithMessage("ignores type mismatches and gives the can't generate message", ParameterizedValidationException.class, "error.invalid_generate_type", () -> {
+          SecretKind.VALUE.map(subject.make("secret-path", documentContext)).apply(new NamedPasswordSecret());
         });
       });
 

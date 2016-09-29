@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.fake.FakeUuidGenerator;
@@ -28,33 +29,24 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.*;
 import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -111,15 +103,35 @@ public class SecretsControllerTest {
     });
 
     describe("generating a secret", () -> {
-      describe("for a new secret", () -> {
+      it("for a new value secret should return an error message", () -> {
+        when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
+            .thenReturn(new DefaultMapping() {
+              @Override
+              public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+                throw new ParameterizedValidationException("error.invalid_generate_type");
+              }
+            });
+
+        final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"value\"}");
+
+        mockMvc.perform(post)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+      });
+
+      describe("for a new non-value secret", () -> {
         beforeEach(() -> {
           when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
-              .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(secretName, "some value"), null, null, null));
+              .thenReturn(new SecretKind.StaticMapping(null, new NamedPasswordSecret(secretName, "some password"), null, null));
 
           final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content("{\"type\":\"value\"}");
+              .content("{\"type\":\"password\"}");
 
           response = mockMvc.perform(post);
         });
@@ -127,8 +139,8 @@ public class SecretsControllerTest {
         it("should return the expected response", () -> {
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.type").value("value"))
-              .andExpect(jsonPath("$.value").value("some value"))
+              .andExpect(jsonPath("$.type").value("password"))
+              .andExpect(jsonPath("$.value").value("some password"))
               .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
         });
@@ -138,8 +150,8 @@ public class SecretsControllerTest {
         });
 
         it("persists the secret", () -> {
-          final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
-          assertThat(namedSecret.getValue(), equalTo("some value"));
+          final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretRepository.findOneByName(secretName);
+          assertThat(namedSecret.getValue(), equalTo("some password"));
         });
 
         it("persists an audit entry", () -> {

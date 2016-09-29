@@ -42,7 +42,12 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
       public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) {
         return null;
       }
-    }.compose(new ValidateTypeMatch());
+    }.compose(new ValidateTypeMatch() {
+      @Override
+      public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+        return namedSecret;
+      }
+    });
   }
 }
 
