@@ -2,13 +2,15 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
-import io.pivotal.security.mapper.ValueGeneratorRequestTranslator;
+import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -20,6 +22,13 @@ import org.springframework.test.context.ActiveProfiles;
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -36,19 +45,28 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
   Configuration configuration;
 
   @Mock
-  ValueGeneratorRequestTranslator valueGeneratorRequestTranslator;
-
-  @Mock
   PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
 
   @Mock
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
+  @Mock
+  DocumentContext documentContext;
+
   {
     describe("it verifies the secret type and secret creation for", () -> {
       beforeEach(injectMocks(this));
 
-      describe("value", behavesLikeMapper(() -> subject, () -> subject.valueGeneratorRequestTranslator, SecretKind.VALUE, NamedValueSecret.class, new NamedCertificateSecret(), new NamedValueSecret()));
+      describe("value", () -> {
+        it("cannot be generated", () -> {
+          try {
+            SecretKind.VALUE.map(subject.make("secret-path", documentContext)).apply(null);
+            fail();
+          } catch(ParameterizedValidationException e) {
+            assertThat(e.getMessage(), equalTo("error.invalid_generate_type"));
+          }
+        });
+      });
 
       describe("password", behavesLikeMapper(() -> subject, () -> subject.passwordGeneratorRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
 
@@ -57,15 +75,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
     describe("verifies full set of keys for", () -> {
       wireAndUnwire(this);
-
-      it("value", validateJsonKeys(() -> realSubject.valueGeneratorRequestTranslator,
-          "{\"type\":\"value\"," +
-          "\"overwrite\":true," +
-          "\"parameters\":{\"length\":2048," +
-              "\"exclude_lower\":true," +
-              "\"exclude_upper\":false," +
-              "\"exclude_number\":false," +
-              "\"exclude_special\":false}}"));
 
       it("password", validateJsonKeys(() -> realSubject.passwordGeneratorRequestTranslator,
           "{\"type\":\"password\"," +

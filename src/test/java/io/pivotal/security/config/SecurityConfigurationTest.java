@@ -71,11 +71,11 @@ public class SecurityConfigurationTest {
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(serializingObjectMapper.writeValueAsBytes(Collections.singletonMap("type", "value")));
+            .content(serializingObjectMapper.writeValueAsBytes(Collections.singletonMap("type", "password")));
 
         mockMvc.perform(post)
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.type").value("value"))
+            .andExpect(jsonPath("$.type").value("password"))
             .andExpect(jsonPath("$.updated_at").exists())
             .andExpect(jsonPath("$.value").exists());
       });
