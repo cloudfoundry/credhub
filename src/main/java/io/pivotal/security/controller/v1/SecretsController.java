@@ -8,11 +8,7 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.view.FindResults;
-import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.Secret;
-import io.pivotal.security.view.SecretKind;
-import io.pivotal.security.view.SecretKindFromString;
+import io.pivotal.security.view.*;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -127,6 +123,11 @@ public class SecretsController {
     return findStartingWithAuditing(params.get("path"), request, authentication);
   }
 
+  @RequestMapping(path = "", params = "paths", method = RequestMethod.GET)
+  public ResponseEntity findPaths(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
+    return findPathsWithAuditing(params.get("paths"), secretRepository::findAllPaths, request, authentication);
+  }
+
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   public ResponseEntity findByNameLike(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
     return findWithAuditing(params.get("name-like"), secretRepository::findByNameContainingOrderByUpdatedAtDesc, request, authentication);
@@ -152,7 +153,14 @@ public class SecretsController {
   private ResponseEntity findWithAuditing(String nameSubstring, Function<String, List<NamedSecret>> finder, HttpServletRequest request, Authentication authentication) throws Exception {
     return audit(CREDENTIAL_FIND, request, authentication, () -> {
       List<NamedSecret> namedSecrets = finder.apply(nameSubstring);
-      return new ResponseEntity<>(FindResults.fromEntity(namedSecrets), HttpStatus.OK);
+      return new ResponseEntity<>(FindCredentialResults.fromEntity(namedSecrets), HttpStatus.OK);
+    });
+  }
+
+  private ResponseEntity findPathsWithAuditing(String findPaths, Function<Boolean, List<String>> finder, HttpServletRequest request, Authentication authentication) throws Exception {
+    return audit(CREDENTIAL_FIND, request, authentication, () -> {
+      List<String> paths = finder.apply("true".equalsIgnoreCase(findPaths));
+      return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
     });
   }
 

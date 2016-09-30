@@ -23,6 +23,9 @@ abstract public class NamedSecret implements EncryptedValueContainer {
   @Column(unique = true, nullable = false)
   private String name;
 
+  @Column(nullable = false)
+  private String path;
+
   @Column(length = ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
   private byte[] encryptedValue;
 
@@ -43,7 +46,7 @@ abstract public class NamedSecret implements EncryptedValueContainer {
   }
 
   public NamedSecret(String name) {
-    this.name = name;
+    setName(name);
   }
 
   public long getId() {
@@ -60,6 +63,8 @@ abstract public class NamedSecret implements EncryptedValueContainer {
 
   public void setName(String name) {
     this.name = name;
+    int lastSlash = name == null ? -1 : name.lastIndexOf('/');
+    path = lastSlash < 0 ? "" : name.substring(0, lastSlash + 1);
   }
 
   public byte[] getEncryptedValue() {
@@ -99,5 +104,9 @@ abstract public class NamedSecret implements EncryptedValueContainer {
   @PreUpdate
   public void updateUuidOnPersist() {
     this.uuid = UuidGeneratorProvider.getInstance().makeUuid();
+  }
+
+  public String getPath() {
+    return path;
   }
 }

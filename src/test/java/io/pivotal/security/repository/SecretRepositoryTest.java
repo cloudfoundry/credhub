@@ -15,8 +15,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -87,5 +86,40 @@ public class SecretRepositoryTest {
       List<NamedSecret> results = subject.findByNameContainingOrderByUpdatedAtDesc("Secret");
       MatcherAssert.assertThat(results, theSameAs(expectedResults).excludeProperty("Id").excludeProperty("Uuid"));
     });
+
+    it("can fetch the unique paths of all of the secrets", () -> {
+      String valueName = uniquify("value/Secret");
+      String valueOther = uniquify("fubario");
+      String passwordName = uniquify("password/Secret");
+      String passwordOther = uniquify("password/Secret2");
+      String certificateName = uniquify("certif/ic/ateSecret");
+      subject.save(new NamedValueSecret(valueName));
+      subject.save(new NamedValueSecret(valueOther));
+      subject.save(new NamedPasswordSecret(passwordName));
+      subject.save(new NamedPasswordSecret(passwordOther));
+      subject.save(new NamedCertificateSecret(certificateName));
+
+      assertThat(subject.getAllNamedSecretPaths(), equalTo(newArrayList("certif/ic/", "password/", "value/")));
+    });
+
+    describe("fetching paths", () -> {
+      beforeEach(() -> {
+        String valueName = uniquify("value/Secret");
+        String passwordName = uniquify("password/Secret");
+        String certificateName = uniquify("certif/ic/ateSecret");
+        subject.save(new NamedValueSecret(valueName));
+        subject.save(new NamedPasswordSecret(passwordName));
+        subject.save(new NamedCertificateSecret(certificateName));
+      });
+
+      it("can fetch all possible paths for all secrets", () -> {
+        assertThat(subject.findAllPaths(true), equalTo(newArrayList("certif/", "certif/ic/", "password/", "value/")));
+      });
+
+      it("returns an empty list when paths parameter is false", () -> {
+        assertThat(subject.findAllPaths(false), equalTo(newArrayList()));
+      });
+    });
+
   }
 }

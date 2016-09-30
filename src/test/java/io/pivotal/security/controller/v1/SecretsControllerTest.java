@@ -649,6 +649,23 @@ public class SecretsControllerTest {
           verify(auditLogService).performWithAuditing(eq("credential_find"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
+
+      describe("finding all paths", () -> {
+        beforeEach(() -> {
+          final String path = secretName.substring(0, secretName.lastIndexOf("/"));
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?paths=true")
+              .accept(APPLICATION_JSON);
+
+          this.response = mockMvc.perform(get);
+        });
+
+        it("returns all possible paths for the table of existing credentials", () -> {
+          this.response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.paths[0].path").value("my-namespace/"))
+              .andExpect(jsonPath("$.paths[1].path").value("my-namespace/subtree/"));
+        });
+      });
     });
   }
 

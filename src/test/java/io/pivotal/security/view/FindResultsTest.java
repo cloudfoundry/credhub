@@ -23,7 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
 public class FindResultsTest {
-  private FindResults expectedResults;
+  private FindCredentialResults expectedResults;
 
   {
     describe("FindResultsTest", () -> {
@@ -42,12 +42,12 @@ public class FindResultsTest {
           namedSecretList.add(new NamedPasswordSecret(passwordName).setUpdatedAt(updatedAt1));
           namedSecretList.add(new NamedCertificateSecret(certificateName).setUpdatedAt(updatedAt3));
 
-          expectedResults = new FindResults(newArrayList(
+          expectedResults = new FindCredentialResults(newArrayList(
               new Credential(certificateName, updatedAt3),
               new Credential(valueName, updatedAt2),
               new Credential(passwordName, updatedAt1)));
 
-          FindResults results = FindResults.fromEntity(namedSecretList);
+          FindCredentialResults results = FindCredentialResults.fromEntity(namedSecretList);
           assertThat(results, theSameAs(expectedResults));
         });
       });
