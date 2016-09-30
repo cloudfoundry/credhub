@@ -6,6 +6,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -17,9 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -45,6 +44,10 @@ public class CAGeneratorRequestTranslatorTest {
   @Mock
   BCCertificateGenerator certificateGenerator;
 
+  @Autowired
+  CertificateSecretParametersFactory parametersFactory;
+
+  @InjectMocks
   @Spy
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
@@ -98,10 +101,6 @@ public class CAGeneratorRequestTranslatorTest {
       });
 
       it("validates parameters", () -> {
-        CertificateSecretParameters parameters = new CertificateGeneratorRequestTranslator().validRequestParameters(parsed);
-        when(certificateGenerator.generateCertificateAuthority(refEq(parameters)))
-            .thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));
-
         subject.createAuthorityFromJson(parsed);
 
         Mockito.verify(certificateGeneratorRequestTranslator, times(1)).validCertificateAuthorityParameters(parsed);

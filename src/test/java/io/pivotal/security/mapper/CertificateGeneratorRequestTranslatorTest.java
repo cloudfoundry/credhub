@@ -6,6 +6,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
@@ -44,6 +45,12 @@ public class CertificateGeneratorRequestTranslatorTest {
   @Mock
   SecretGenerator secretGenerator;
 
+  @Mock
+  CertificateSecretParameters certificateSecretParameters;
+
+  @Mock
+  CertificateSecretParametersFactory certificateSecretParametersFactory;
+
   @InjectMocks
   private CertificateGeneratorRequestTranslator subject;
 
@@ -52,6 +59,10 @@ public class CertificateGeneratorRequestTranslatorTest {
 
   {
     wireAndUnwire(this);
+
+    beforeEach(() -> {
+      when(certificateSecretParametersFactory.get()).thenCallRealMethod();
+    });
 
     it("ensures that all of the allowable parameters have been provided", () -> {
       String json = "{" +
@@ -212,12 +223,8 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       beforeEach(() -> {
         mockParams = mock(CertificateSecretParameters.class);
-        subject.setParametersSupplier(() -> mockParams);
+        when(certificateSecretParametersFactory.get()).thenReturn(mockParams);
         parsed = JsonPath.using(configuration).parse("{}");
-      });
-
-      afterEach(() -> {
-        subject.setParametersSupplier(() -> new CertificateSecretParameters());
       });
 
       it("on a certificate generator request", () -> {

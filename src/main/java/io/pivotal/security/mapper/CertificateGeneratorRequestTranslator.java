@@ -2,6 +2,7 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.CertificateSecret;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static com.google.common.collect.ImmutableSet.of;
 import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
@@ -21,7 +21,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Autowired
   SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateSecretGenerator;
 
-  private Supplier<CertificateSecretParameters> parametersSupplier = CertificateSecretParameters::new;
+  @Autowired
+  CertificateSecretParametersFactory parametersFactory;
 
   public CertificateSecretParameters validRequestParameters(DocumentContext parsed) {
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
@@ -37,7 +38,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   }
 
   public CertificateSecretParameters validCertificateAuthorityParameters(DocumentContext parsed) {
-    CertificateSecretParameters secretParameters = parametersSupplier.get();
+    CertificateSecretParameters secretParameters = parametersFactory.get();
     Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
         .ifPresent(secretParameters::setCommonName);
     Optional.ofNullable(parsed.read("$.parameters.organization", String.class))
@@ -88,9 +89,5 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         "$['parameters']['key_length']",
         "$['parameters']['duration']"
     );
-  }
-
-  void setParametersSupplier(Supplier<CertificateSecretParameters> parametersSupplier) {
-    this.parametersSupplier = parametersSupplier;
   }
 }
