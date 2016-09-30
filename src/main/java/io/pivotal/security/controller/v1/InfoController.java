@@ -2,6 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.config.AuthServerProperties;
+import io.pivotal.security.config.VersionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
@@ -22,20 +23,17 @@ public class InfoController {
   @Autowired
   Environment environment;
 
+  @Autowired
+  VersionProvider versionProvider;
+
   @RequestMapping(method = RequestMethod.GET, path = "/info")
   public Map<String, ?> info() {
-    String version;
-    try {
-      version = environment.getProperty("info.app.version");
-    } catch (IllegalArgumentException e) {
-      version = "dev";
-    }
 
     return ImmutableMap.of(
         "auth-server", ImmutableMap.of("url", authServerProperties.getUrl()),
         "app", ImmutableMap.of(
             "name", environment.getProperty("info.app.name"),
-            "version", version
+            "version", versionProvider.getVersion()
         ));
   }
 }

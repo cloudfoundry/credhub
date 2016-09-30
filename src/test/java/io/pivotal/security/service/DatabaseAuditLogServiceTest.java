@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -32,7 +33,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
@@ -61,6 +65,9 @@ public class DatabaseAuditLogServiceTest {
 
   @Autowired
   ResourceServerTokenServices tokenServices;
+
+  @Mock
+  SecurityEventsLogService securityEventsLogService;
 
   AuditRecordParameters auditRecordParameters;
 
@@ -96,6 +103,10 @@ public class DatabaseAuditLogServiceTest {
       when(instantFactoryBean.getObject()).thenReturn(now);
     });
 
+    afterEach(() -> {
+      auditRepository.deleteAll();
+    });
+
     describe("logging behavior", () -> {
       describe("when the operation succeeds", () -> {
         describe("when the audit succeeds", () -> {
@@ -114,9 +125,13 @@ public class DatabaseAuditLogServiceTest {
             checkAuditRecord(true, HttpStatus.OK);
             assertThat(secretRepository.count(), equalTo(1L));
           });
+
+          it("logs in CEF format to file", () -> {
+            verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
+          });
         });
 
-        describe("when the audit fails", () -> {
+        describe("when the database audit fails", () -> {
           beforeEach(() -> {
             auditRepository.failOnSave();
 
@@ -134,6 +149,10 @@ public class DatabaseAuditLogServiceTest {
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
             assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+          });
+
+          it("should not write to the CEF log", () -> {
+            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
           });
         });
       });
@@ -155,9 +174,13 @@ public class DatabaseAuditLogServiceTest {
             checkAuditRecord(false, HttpStatus.INTERNAL_SERVER_ERROR);
             assertThat(secretRepository.count(), equalTo(0L));
           });
+
+          it("should write to the CEF log file", () -> {
+            verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
+          });
         });
 
-        describe("when the audit fails", () -> {
+        describe("when the database audit fails", () -> {
           beforeEach(() -> {
             auditRepository.failOnSave();
 
@@ -175,6 +198,10 @@ public class DatabaseAuditLogServiceTest {
           it("returns 500 and original error message", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
             assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+          });
+
+          it("should not write to the CEF log", () -> {
+            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
           });
         });
       });
@@ -196,9 +223,13 @@ public class DatabaseAuditLogServiceTest {
           it("returns the non-2xx status code", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_GATEWAY));
           });
+
+          it("should write to the CEF log file", () -> {
+            verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
+          });
         });
 
-        describe("when the audit fails", () -> {
+        describe("when the database audit fails", () -> {
           beforeEach(() -> {
             auditRepository.failOnSave();
             responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
@@ -216,6 +247,10 @@ public class DatabaseAuditLogServiceTest {
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
             assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+          });
+
+          it("should not write to the CEF log", () -> {
+            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
           });
         });
 
@@ -237,6 +272,10 @@ public class DatabaseAuditLogServiceTest {
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
             assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+          });
+
+          it("should not write to the CEF log", () -> {
+            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
           });
         });
       });

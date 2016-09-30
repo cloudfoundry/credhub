@@ -104,7 +104,7 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
 
   @Override
   public void deleteAll() {
-    throw new UnsupportedOperationException();
+    auditRecords.clear();
   }
 
   @Override

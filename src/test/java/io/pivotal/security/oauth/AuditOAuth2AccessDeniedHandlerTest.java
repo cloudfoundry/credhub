@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,6 +30,8 @@ import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -62,6 +65,9 @@ public class AuditOAuth2AccessDeniedHandlerTest {
 
   @Mock
   InstantFactoryBean instantFactoryBean;
+
+  @Mock
+  SecurityEventsLogService securityEventsLogService;
 
   private MockHttpServletRequestBuilder get;
 
@@ -132,6 +138,10 @@ public class AuditOAuth2AccessDeniedHandlerTest {
         assertThat(auditRecord.getGrantType(), equalTo("password"));
         assertThat(auditRecord.getMethod(), equalTo("GET"));
         assertThat(auditRecord.getStatusCode(), equalTo(403));
+      });
+
+      it("should log the failure in the CEF syslog file", () -> {
+        verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
       });
     });
   }

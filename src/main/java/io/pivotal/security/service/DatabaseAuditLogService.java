@@ -44,6 +44,9 @@ public class DatabaseAuditLogService implements AuditLogService {
   @Autowired
   MessageSource messageSource;
 
+  @Autowired
+  SecurityEventsLogService securityEventsLogService;
+
   private MessageSourceAccessor messageSourceAccessor;
 
   @PostConstruct
@@ -78,6 +81,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     try {
       auditRecordRepository.save(auditRecord);
       transactionManager.commit(transaction);
+      securityEventsLogService.log(auditRecord);
     } catch (Exception e) {
       if (!transaction.isCompleted()) transactionManager.rollback(transaction);
       final Map<String, String> error = Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure"));

@@ -3,10 +3,10 @@ package io.pivotal.security.oauth;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.AuditRecordRepository;
 import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
@@ -36,17 +36,22 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   @Autowired
   AuditRecordRepository operationAuditRecordRepository;
 
+  @Autowired
+  SecurityEventsLogService securityEventsLogService;
+
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException authException) throws IOException, ServletException {
     try {
       super.handle(request, response, authException);
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
-      logAuthFailureToDb(token, new AuditRecordParameters(request, null), response.getStatus());
+      OperationAuditRecord operationAuditRecord = createOperationAuditRecord(token, new AuditRecordParameters(request, null), response.getStatus());
+      operationAuditRecordRepository.save(operationAuditRecord);
+      securityEventsLogService.log(operationAuditRecord);
     }
   }
 
-  private void logAuthFailureToDb(String token, AuditRecordParameters auditRecordParameters, int status) {
+  private OperationAuditRecord createOperationAuditRecord(String token, AuditRecordParameters auditRecordParameters, int status) {
     OAuth2Authentication authentication = tokenStore.readAuthentication(token);
     OAuth2Request oAuth2Request = authentication.getOAuth2Request();
 
@@ -88,6 +93,6 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     operationAuditRecord.setStatusCode(status);
     operationAuditRecord.setFailed();
 
-    operationAuditRecordRepository.save(operationAuditRecord);
+    return operationAuditRecord;
   }
 }
