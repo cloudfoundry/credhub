@@ -45,22 +45,25 @@ public class OperationAuditRecord {
   public OperationAuditRecord() {
   }
 
-  public OperationAuditRecord(Instant now,
-                              String operation,
-                              String userId,
-                              String userName,
-                              String uaaUrl,
-                              long tokenIssued,
-                              long tokenExpires,
-                              String hostName,
-                              String method,
-                              String path,
-                              String queryParameters,
-                              String requesterIp,
-                              String xForwardedFor,
-                              String clientId,
-                              String scope,
-                              String grantType) {
+  public OperationAuditRecord(
+      Instant now,
+      String operation,
+      String userId,
+      String userName,
+      String uaaUrl,
+      long tokenIssued,
+      long tokenExpires,
+      String hostName,
+      String method,
+      String path,
+      String queryParameters,
+      int statusCode,
+      String requesterIp,
+      String xForwardedFor,
+      String clientId,
+      String scope, String grantType,
+      boolean success
+  ) {
     this.now = now;
     this.operation = operation;
     this.userId = userId;
@@ -72,11 +75,13 @@ public class OperationAuditRecord {
     this.method = method;
     this.path = path;
     this.queryParameters = queryParameters;
+    this.statusCode = statusCode;
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
     this.clientId = clientId;
     this.scope = scope;
     this.grantType = grantType;
+    this.success = success;
   }
 
   public long getId() {

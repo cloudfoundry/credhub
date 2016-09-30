@@ -36,16 +36,14 @@ public class FakeAuditRecordRepository implements AuditRecordRepository {
           entity.getMethod(),
           entity.getPath(),
           entity.getQueryParameters(),
+          entity.getStatusCode(),
           entity.getRequesterIp(),
           entity.getXForwardedFor(),
           entity.getClientId(),
           entity.getScope(),
-          entity.getGrantType()
+          entity.getGrantType(),
+          entity.isSuccess()
       );
-      copy.setStatusCode(entity.getStatusCode());
-      if (!entity.isSuccess()) {
-        copy.setFailed();
-      }
       auditRecords.add(copy);
     });
     if (shouldThrow) throw new RuntimeException(getClass().getSimpleName());

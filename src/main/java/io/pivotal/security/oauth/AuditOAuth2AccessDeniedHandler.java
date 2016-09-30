@@ -71,7 +71,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     Set<String> scopes = accessToken.getScope();
     String scope = scopes == null ? null : String.join(",", scopes);
 
-    OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
+    return new OperationAuditRecord(
         now,
         requestToOperationTranslator.translate(),
         (String) accessToken.getAdditionalInformation().get("user_id"),
@@ -83,16 +83,13 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
         method,
         path,
         auditRecordParameters.getQueryParameters(),
+        status,
         auditRecordParameters.getRequesterIp(),
         auditRecordParameters.getXForwardedFor(),
         oAuth2Request.getClientId(),
         scope,
-        oAuth2Request.getGrantType()
+        oAuth2Request.getGrantType(),
+        false
     );
-
-    operationAuditRecord.setStatusCode(status);
-    operationAuditRecord.setFailed();
-
-    return operationAuditRecord;
   }
 }

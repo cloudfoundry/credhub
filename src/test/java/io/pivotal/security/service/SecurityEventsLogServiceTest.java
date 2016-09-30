@@ -55,7 +55,6 @@ public class SecurityEventsLogServiceTest {
 
     describe("log", () -> {
       it("should log an operation audit record to the sys log", () -> {
-
         OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
             now,
             "some_operation",
@@ -68,13 +67,14 @@ public class SecurityEventsLogServiceTest {
             "GET",
             "/api/some-path",
             "foo=bar",
+            200,
             "127.0.0.1",
             "1.2.3.4,5.6.7.8",
             "some-client-id",
             "credhub.read",
-            "password"
+            "password",
+            true
         );
-        operationAuditRecord.setStatusCode(200);
         subject.log(operationAuditRecord);
 
         assertThat(version, notNullValue());

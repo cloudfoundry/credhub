@@ -59,24 +59,24 @@ public class DatabaseAuditLogService implements AuditLogService {
       Exception {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
-    OperationAuditRecord auditRecord = getOperationAuditRecord(operation, auditRecordParameters);
+    boolean auditSuccess = true;
 
     ResponseEntity<?> responseEntity;
     try {
       responseEntity = action.get();
       if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-        auditRecord.setFailed();
+        auditSuccess = false;
         transactionManager.rollback(transaction);
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       }
     } catch (RuntimeException e) {
       responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-      auditRecord.setFailed();
+      auditSuccess = false;
       transactionManager.rollback(transaction);
       transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
 
-    auditRecord.setStatusCode(responseEntity.getStatusCodeValue());
+    OperationAuditRecord auditRecord = getOperationAuditRecord(operation, auditRecordParameters, responseEntity.getStatusCodeValue(), auditSuccess);
 
     try {
       auditRecordRepository.save(auditRecord);
@@ -91,7 +91,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     return responseEntity;
   }
 
-  private OperationAuditRecord getOperationAuditRecord(String operation, AuditRecordParameters auditRecordParameters) throws Exception {
+  private OperationAuditRecord getOperationAuditRecord(String operation, AuditRecordParameters auditRecordParameters, int statusCode, boolean success) throws Exception {
     Authentication authentication = auditRecordParameters.getAuthentication();
     OAuth2Request oAuth2Request = ((OAuth2Authentication) authentication).getOAuth2Request();
     OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
@@ -110,11 +110,13 @@ public class DatabaseAuditLogService implements AuditLogService {
         auditRecordParameters.getMethod(),
         auditRecordParameters.getPath(),
         auditRecordParameters.getQueryParameters(),
+        statusCode,
         auditRecordParameters.getRequesterIp(),
         auditRecordParameters.getXForwardedFor(),
         oAuth2Request.getClientId(),
         scope == null ? "" : String.join(",", scope),
-        oAuth2Request.getGrantType()
+        oAuth2Request.getGrantType(),
+        success
     );
   }
 
