@@ -159,7 +159,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(), equalTo("Access token expired: " + EXPIRED_SYMMETRIC_KEY_JWT));
+        assertThat(auditRecord.getFailureDescription(), equalTo("Access token expired"));
         assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
         assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
         assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));

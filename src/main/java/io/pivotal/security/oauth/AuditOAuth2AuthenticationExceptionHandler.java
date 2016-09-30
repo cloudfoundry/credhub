@@ -52,17 +52,17 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
       throws IOException, ServletException {
 
-    final Map<String, Object> tokenInformation = extractTokenInformation(request);
+    String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
+    final Map<String, Object> tokenInformation = extractTokenInformation(token);
 
     try {
       doHandle(request, response, authException);
     } finally {
-      logAuthFailureToDb(tokenInformation, authException, new AuditRecordParameters(request, null), request.getMethod(), response.getStatus());
+      logAuthFailureToDb(token, tokenInformation, authException, new AuditRecordParameters(request, null), request.getMethod(), response.getStatus());
     }
   }
 
-  private Map<String, Object> extractTokenInformation(HttpServletRequest request) {
-    String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
+  private Map<String, Object> extractTokenInformation(String token) {
     try {
       final Jwt jwt = JwtHelper.decode(token);
 
@@ -78,7 +78,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
   }
 
-  private void logAuthFailureToDb(Map<String, Object> tokenInformation, AuthenticationException authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
+  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, AuthenticationException authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
     RequestToOperationTranslator requestToOperationTranslator = new RequestToOperationTranslator(parameters.getPath()).setMethod(requestMethod);
 
     final Instant now;
@@ -112,7 +112,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
         .setNow(now)
         .setOperation(requestToOperationTranslator.translate())
-        .setFailureDescription(authException.getMessage())
+        .setFailureDescription(cleanMessage(authException.getMessage(), token))
         .setUserId(userId)
         .setUserName(userName)
         .setUaaUrl(iss)
@@ -129,6 +129,10 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
         .setMethod(requestMethod)
         .setStatusCode(statusCode);
     auditRecordRepository.save(authFailureAuditRecord);
+  }
+
+  private String cleanMessage(String message, String token) {
+    return message.replace(": " + token, "");
   }
 }
 
