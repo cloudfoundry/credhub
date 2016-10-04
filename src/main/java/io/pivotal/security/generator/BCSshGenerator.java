@@ -8,8 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.security.KeyPairGenerator;
 
-import static io.pivotal.security.generator.BcKeyPairGenerator.DEFAULT_RSA_KEY_LENGTH;
-
 @Component
 public class BCSshGenerator implements SecretGenerator<SshSecretParameters, SshSecret> {
   @Autowired
@@ -17,7 +15,7 @@ public class BCSshGenerator implements SecretGenerator<SshSecretParameters, SshS
 
   @Override
   public SshSecret generateSecret(SshSecretParameters parameters) {
-    keyGenerator.initialize(DEFAULT_RSA_KEY_LENGTH);
+    keyGenerator.initialize(parameters.getKeyLength());
     final java.security.KeyPair keyPair = keyGenerator.generateKeyPair();
 
     try {

@@ -73,6 +73,15 @@ public class BCSshGeneratorTest {
         assertThat(sshSecret.getSshBody().getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
         assertThat(sshSecret.getSshBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
       });
+
+      it("should use the provided key length", () -> {
+        SshSecretParameters sshSecretParameters = new SshSecretParameters();
+        sshSecretParameters.setKeyLength(4096);
+
+        subject.generateSecret(sshSecretParameters);
+
+        verify(keyPairGeneratorMock).initialize(4096);
+      });
     });
   }
 }

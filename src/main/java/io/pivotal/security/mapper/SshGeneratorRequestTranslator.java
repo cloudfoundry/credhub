@@ -2,12 +2,14 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SshSecretParameters;
+import io.pivotal.security.controller.v1.SshSecretParametersFactory;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.generator.BCSshGenerator;
 import io.pivotal.security.view.SshSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.of;
@@ -19,8 +21,17 @@ public class SshGeneratorRequestTranslator
   @Autowired
   BCSshGenerator sshSecretGenerator;
 
+  @Autowired
+  SshSecretParametersFactory sshSecretParametersFactory;
+
   public SshSecretParameters validRequestParameters(DocumentContext parsed) {
-    return new SshSecretParameters();
+    SshSecretParameters sshSecretParameters = sshSecretParametersFactory.get();
+    Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
+        .ifPresent(sshSecretParameters::setKeyLength);
+
+    sshSecretParameters.validate();
+
+    return sshSecretParameters;
   }
 
   @Override
@@ -34,6 +45,11 @@ public class SshGeneratorRequestTranslator
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['type']", "$['overwrite']", "$['parameters']");
+    return of(
+        "$['type']",
+        "$['overwrite']",
+        "$['parameters']",
+        "$['parameters']['key_length']"
+    );
   }
 }

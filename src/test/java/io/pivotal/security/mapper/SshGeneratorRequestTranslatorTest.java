@@ -6,6 +6,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.SshSecretParameters;
+import io.pivotal.security.controller.v1.SshSecretParametersFactory;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.generator.BCSshGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -36,15 +37,31 @@ public class SshGeneratorRequestTranslatorTest {
   @Mock
   BCSshGenerator secretGenerator;
 
+  @Mock
+  SshSecretParametersFactory sshSecretParametersFactory;
+
   @InjectMocks
   private SshGeneratorRequestTranslator subject;
+
+  private SshSecretParameters mockParams;
 
   {
     wireAndUnwire(this);
 
+    beforeEach(() -> {
+      mockParams = spy(SshSecretParameters.class);
+      when(sshSecretParametersFactory.get()).thenReturn(mockParams);
+    });
+
     describe("validateJsonKeys", () -> {
       it("accepts valid keys", () -> {
-        String requestBody = "{\"type\":\"ssh\",\"overwrite\":false,\"parameters\":{}}";
+        String requestBody = "{\"" +
+            "type\":\"ssh\"," +
+            "\"overwrite\":false," +
+            "\"parameters\":{" +
+              "\"key_length\":3072" +
+            "}" +
+            "}";
         DocumentContext parsed = JsonPath.using(configuration).parse(requestBody);
 
         subject.validateJsonKeys(parsed);
@@ -72,10 +89,37 @@ public class SshGeneratorRequestTranslatorTest {
         NamedSshSecret namedSshSecret = new NamedSshSecret();
         subject.populateEntityFromJson(namedSshSecret, parsed);
 
-        verify(secretGenerator).generateSecret(isA(SshSecretParameters.class));
+        verify(secretGenerator).generateSecret(mockParams);
 
         assertThat(namedSshSecret.getPrivateKey(), equalTo("my-private"));
         assertThat(namedSshSecret.getPublicKey(), equalTo("my-public"));
+      });
+
+      it("validates the parameters", () -> {
+        String json = "{\"type\":\"ssh\"}";
+        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+
+        NamedSshSecret namedSshSecret = new NamedSshSecret();
+        subject.populateEntityFromJson(namedSshSecret, parsed);
+
+        verify(mockParams, times(1)).validate();
+      });
+
+      it("accepts a key-length", () -> {
+        String json = "{" +
+            "\"type\":\"ssh\"," +
+            "\"parameters\":{" +
+              "\"key_length\":3072" +
+            "}" +
+          "}";
+        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+
+        NamedSshSecret namedSshSecret = new NamedSshSecret();
+        subject.populateEntityFromJson(namedSshSecret, parsed);
+
+        verify(mockParams).setKeyLength(3072);
+
+        verify(secretGenerator).generateSecret(mockParams);
       });
     });
   }
