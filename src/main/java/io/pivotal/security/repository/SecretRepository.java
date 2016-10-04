@@ -19,7 +19,7 @@ public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
       return newArrayList();
     }
 
-    return findAll().parallelStream()
+    return findAll().stream()
         .map(NamedSecret::getName)
         .flatMap(NamedSecret::fullHierarchyForPath)
         .distinct()
