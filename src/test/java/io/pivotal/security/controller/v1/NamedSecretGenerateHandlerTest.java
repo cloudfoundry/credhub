@@ -4,12 +4,10 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.entity.*;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
+import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
@@ -52,6 +50,9 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
   @Mock
+  SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
+
+  @Mock
   DocumentContext documentContext;
 
   {
@@ -71,6 +72,8 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       describe("password", behavesLikeMapper(() -> subject, () -> subject.passwordGeneratorRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
 
       describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateGeneratorRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
+
+      describe("ssh", behavesLikeMapper(() -> subject, () -> subject.sshGeneratorRequestTranslator, SecretKind.SSH, NamedSshSecret.class, new NamedCertificateSecret(), new NamedSshSecret()));
     });
 
     describe("verifies full set of keys for", () -> {
@@ -83,7 +86,9 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
               "\"exclude_lower\":true," +
               "\"exclude_upper\":false," +
               "\"exclude_number\":false," +
-              "\"exclude_special\":false}}"));
+              "\"exclude_special\":false}" +
+            "}")
+      );
 
       it("certificate", validateJsonKeys(() -> realSubject.certificateGeneratorRequestTranslator,
         "{\"type\":\"certificate\"," +
@@ -99,7 +104,16 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
             "\"duration\": 1000," +
             "\"alternative_names\": []," +
             "\"ca\": \"default\"," +
-            "}}"));
+            "}" +
+          "}")
+      );
+
+     it("ssh", validateJsonKeys(() -> realSubject.sshGeneratorRequestTranslator,
+        "{" +
+        "\"type\":\"ssh\"," +
+        "\"overwrite\":true" +
+        "}")
+     );
     });
   }
 }
