@@ -86,6 +86,15 @@ public class BCRsaGeneratorTest {
 
         verify(keyPairGeneratorMock).initialize(4096);
       });
+
+      it("should use the provided key length", () -> {
+        SshSecretParameters sshSecretParameters = new SshSecretParameters();
+        sshSecretParameters.setKeyLength(4096);
+
+        subject.generateSecret(sshSecretParameters);
+
+        verify(keyPairGeneratorMock).initialize(4096);
+      });
     });
   }
 }
