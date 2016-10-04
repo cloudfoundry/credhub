@@ -6,6 +6,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
@@ -22,9 +25,6 @@ abstract public class NamedSecret implements EncryptedValueContainer {
 
   @Column(unique = true, nullable = false)
   private String name;
-
-  @Column(nullable = false)
-  private String path;
 
   @Column(length = ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
   private byte[] encryptedValue;
@@ -63,8 +63,6 @@ abstract public class NamedSecret implements EncryptedValueContainer {
 
   public void setName(String name) {
     this.name = name;
-    int lastSlash = name == null ? -1 : name.lastIndexOf('/');
-    path = lastSlash < 0 ? "" : name.substring(0, lastSlash + 1);
   }
 
   public byte[] getEncryptedValue() {
@@ -106,7 +104,19 @@ abstract public class NamedSecret implements EncryptedValueContainer {
     this.uuid = UuidGeneratorProvider.getInstance().makeUuid();
   }
 
-  public String getPath() {
-    return path;
+  public static Stream<String> fullHierarchyForPath(String path) {
+    String[] components = path.split("/");
+    if (components.length > 1) {
+      StringBuilder currentPath = new StringBuilder();
+      List<String> pathSet = new ArrayList<>();
+      for (int i = 0; i < components.length - 1; i++) {
+        String element = components[i];
+        currentPath.append(element).append('/');
+        pathSet.add(currentPath.toString());
+      }
+      return pathSet.stream();
+    } else {
+      return Stream.of();
+    }
   }
 }

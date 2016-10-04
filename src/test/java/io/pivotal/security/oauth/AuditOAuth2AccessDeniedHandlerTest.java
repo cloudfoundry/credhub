@@ -92,10 +92,6 @@ public class AuditOAuth2AccessDeniedHandlerTest {
           .build();
     });
 
-    afterEach(() -> {
-      operationAuditRecordRepository.deleteAll();
-    });
-
     describe("when the scope is invalid", () -> {
       beforeEach(() -> {
         String bearer = "Bearer " + INVALID_SCOPE_SYMMETRIC_KEY_JWT;

@@ -87,26 +87,13 @@ public class SecretRepositoryTest {
       MatcherAssert.assertThat(results, theSameAs(expectedResults).excludeProperty("Id").excludeProperty("Uuid"));
     });
 
-    it("can fetch the unique paths of all of the secrets", () -> {
-      String valueName = uniquify("value/Secret");
-      String valueOther = uniquify("fubario");
-      String passwordName = uniquify("password/Secret");
-      String passwordOther = uniquify("password/Secret2");
-      String certificateName = uniquify("certif/ic/ateSecret");
-      subject.save(new NamedValueSecret(valueName));
-      subject.save(new NamedValueSecret(valueOther));
-      subject.save(new NamedPasswordSecret(passwordName));
-      subject.save(new NamedPasswordSecret(passwordOther));
-      subject.save(new NamedCertificateSecret(certificateName));
-
-      assertThat(subject.getAllNamedSecretPaths(), equalTo(newArrayList("certif/ic/", "password/", "value/")));
-    });
-
     describe("fetching paths", () -> {
       beforeEach(() -> {
+        String valueOther = uniquify("fubario");
         String valueName = uniquify("value/Secret");
         String passwordName = uniquify("password/Secret");
         String certificateName = uniquify("certif/ic/ateSecret");
+        subject.save(new NamedValueSecret(valueOther));
         subject.save(new NamedValueSecret(valueName));
         subject.save(new NamedPasswordSecret(passwordName));
         subject.save(new NamedCertificateSecret(certificateName));
@@ -120,6 +107,5 @@ public class SecretRepositoryTest {
         assertThat(subject.findAllPaths(false), equalTo(newArrayList()));
       });
     });
-
   }
 }

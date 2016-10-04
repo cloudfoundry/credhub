@@ -49,10 +49,6 @@ public class NamedCertificateAuthorityTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
-    afterEach(() -> {
-      repository.deleteAll();
-    });
-
     it("saves to repository", () -> {
       repository.saveAndFlush(subject);
 

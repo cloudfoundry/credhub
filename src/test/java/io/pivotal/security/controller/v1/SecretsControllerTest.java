@@ -98,10 +98,6 @@ public class SecretsControllerTest {
       resetAuditLogMock();
     });
 
-    afterEach(() -> {
-      secretRepository.deleteAll();
-    });
-
     describe("generating a secret", () -> {
       it("for a new value secret should return an error message", () -> {
         when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))

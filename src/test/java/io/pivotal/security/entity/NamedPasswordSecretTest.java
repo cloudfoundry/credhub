@@ -44,10 +44,6 @@ public class NamedPasswordSecretTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
-    afterEach(() -> {
-      repository.deleteAll();
-    });
-
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
         subject = new NamedPasswordSecret("foo");

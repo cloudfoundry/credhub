@@ -103,10 +103,6 @@ public class DatabaseAuditLogServiceTest {
       when(instantFactoryBean.getObject()).thenReturn(now);
     });
 
-    afterEach(() -> {
-      auditRepository.deleteAll();
-    });
-
     describe("logging behavior", () -> {
       describe("when the operation succeeds", () -> {
         describe("when the audit succeeds", () -> {

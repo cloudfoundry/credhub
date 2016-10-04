@@ -11,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.function.Consumer;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,25 +51,6 @@ public class NamedSecretTest {
       secret.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
       secret = repository.save(secret);
       assertThat(repository.findOneByName(secretName).getUpdatedAt().toEpochMilli(), equalTo(444000L));
-    });
-
-    describe("path", () -> {
-      it("returns an empty path", () -> {
-        secret = repository.save(secret);
-        assertThat(repository.findOneByName(secretName).getPath(), equalTo(""));
-      });
-
-      it("returns a path of '/' path", () -> {
-        secret.setName("/foo");
-        assertThat(secret.getPath(), equalTo("/"));
-      });
-
-      it("returns a non-empty path", () -> {
-        secretName = uniquify("/etc/foo");
-        secret.setName(secretName);
-        secret = repository.save(secret);
-        assertThat(repository.findOneByName(secretName).getPath(), equalTo("/etc/"));
-      });
     });
   }
 }

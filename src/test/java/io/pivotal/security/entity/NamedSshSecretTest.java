@@ -42,10 +42,6 @@ public class NamedSshSecretTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
-    afterEach(() -> {
-      repository.deleteAll();
-    });
-
     it("sets a public key", () -> {
       subject
           .setPublicKey("my-public-key");

@@ -17,7 +17,7 @@ spring:
 
 flyway:
   # last value is either postgres/h2/mysql
-  locations: classpath:/db/migration/common,classpath:/db/migration/h2
+  locations: classpath:/db/migration/h2
 
 security:
   oauth2:

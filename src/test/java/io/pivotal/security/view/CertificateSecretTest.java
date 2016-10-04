@@ -51,10 +51,6 @@ public class CertificateSecretTest {
           .setPrivateKey("priv");
     });
 
-    afterAll(() -> {
-      canaryRepository.deleteAll();
-    });
-
     it("creates a view from entity", () -> {
       final Secret subject = CertificateSecret.fromEntity(entity);
       jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(subject), true);

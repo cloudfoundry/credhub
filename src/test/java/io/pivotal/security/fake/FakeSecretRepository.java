@@ -77,11 +77,6 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<String> getAllNamedSecretPaths() {
-    return null;
-  }
-
-  @Override
   public long count() {
     return count;
   }

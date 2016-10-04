@@ -58,15 +58,10 @@ public class AuditLogConfigurationTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
-      auditRecordRepository.deleteAll();
       credentialUrlPath = uniquify("/api/v1/data/foo");
       caUrlPath1 = uniquify("/api/v1/ca/bar");
       caUrlPath2 = uniquify("/api/v1/ca/baz");
       auditRecordCount = SpectrumHelper.markRepository(auditRecordRepository);
-    });
-
-    afterEach(() -> {
-      auditRecordRepository.deleteAll();
     });
 
     describe("when a request to set credential is served", () -> {

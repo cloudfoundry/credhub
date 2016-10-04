@@ -43,10 +43,6 @@ public class NamedCertificateSecretTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
-    afterEach(() -> {
-      repository.deleteAll();
-    });
-
     it("updates the secret value with the same name when overwritten", () -> {
       subject.setPrivateKey("first");
       repository.saveAndFlush(subject);

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.JpaAuditingHandler;
-import io.pivotal.security.repository.CanaryRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
+import org.flywaydb.core.Flyway;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
@@ -14,12 +14,6 @@ import org.springframework.test.context.TestContextManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -30,6 +24,12 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class SpectrumHelper {
@@ -68,7 +68,9 @@ public class SpectrumHelper {
     afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
     afterEach(() -> {
       //TODO: remove this in favor of transactional tests (requires nested transactions)
-      myTestContextManagerSupplier.get().getApplicationContext().getBean(CanaryRepository.class).deleteAll();
+      Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
+      flyway.clean();
+      flyway.migrate();
     });
   }
 
