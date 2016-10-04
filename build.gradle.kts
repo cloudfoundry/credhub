@@ -1,7 +1,6 @@
 import org.gradle.api.Task
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.wrapper.Wrapper
-import org.gradle.api.reporting.Reporting
 import org.gradle.api.reporting.ReportingExtension
 import org.gradle.jvm.tasks.Jar
 import org.gradle.language.jvm.tasks.ProcessResources
@@ -35,8 +34,8 @@ apply {
 
 val jar = getTask<Jar>("jar")
 jar.apply {
-    setBaseName("sec-eng-credential-manager")
-    setVersion("${System.getenv("VERSION") ?: "DEV"}")
+    baseName = "sec-eng-credential-manager"
+    version = "${System.getenv("VERSION") ?: "DEV"}"
 }
 
 configure<JavaPluginConvention> {
@@ -83,7 +82,7 @@ dependencies {
 }
 
 task<Wrapper>("wrapper") {
-    setGradleVersion("3.1")
+    gradleVersion = "3.1"
 }
 
 getTask<ProcessResources>("processResources").apply {
@@ -92,16 +91,16 @@ getTask<ProcessResources>("processResources").apply {
 }
 
 getExtension<JacocoPluginExtension>("jacoco").apply {
-    setToolVersion("0.7.6.201602180812")
+    toolVersion = "0.7.6.201602180812"
 }
 
 getTask<JacocoReport>("jacocoTestReport").apply {
     group = "Reporting"
     reports.apply {
-        getXml().setEnabled(false)
-        getCsv().setEnabled(false)
-        getHtml().apply {
-            setEnabled(true)
+        xml.isEnabled = false
+        csv.isEnabled = false
+        html.apply {
+            isEnabled = true
             setDestination("${project.buildDir}/reports/jacoco")
         }
     }
@@ -115,9 +114,9 @@ getTask<BootRunTask>("bootRun").apply {
 getTask<Test>("test").apply {
     val jacoco = extensions.findByName("jacoco") as JacocoTaskExtension
     jacoco.apply {
-        setAppend(false)
-        setDestinationFile(file("${project.buildDir}/jacoco/jacocoTest.exec"))
-        setClassDumpFile(file("${project.buildDir}/jacoco/classpathdumps"))
+        isAppend = false
+        destinationFile = file("${project.buildDir}/jacoco/jacocoTest.exec")
+        classDumpFile = file("${project.buildDir}/jacoco/classpathdumps")
     }
     testLogging.apply {
         setEvents(setOf("passed", "failed", "skipped"))
@@ -128,11 +127,8 @@ getTask<Test>("test").apply {
 tasks.withType<Test> {
     val reporting = getExtension<ReportingExtension>("reporting")
     val name = project.name
-    reports.getHtml().setDestination(file("${reporting.baseDir}/${name}"))
+    reports.html.setDestination(file("${reporting.baseDir}/${name}"))
 }
-
-getTask<Task>("check").dependsOn(getTask<Task>("jacocoTestReport"))
-getTask<Task>("check").dependsOn(getTask<Task>("dependencyCheck"))
 
 fun <T : Task> getTask(taskName: String): T {
     return project.tasks.getByName(taskName) as T
