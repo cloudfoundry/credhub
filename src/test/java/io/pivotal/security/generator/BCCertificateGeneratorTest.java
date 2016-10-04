@@ -8,6 +8,7 @@ import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -26,20 +27,10 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
-
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.X509Certificate;
@@ -48,7 +39,14 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
-import io.pivotal.security.view.ParameterizedValidationException;
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -66,6 +64,9 @@ public class BCCertificateGeneratorTest {
 
   @Mock
   KeyPairGenerator keyGenerator;
+
+  @Autowired
+  FakeKeyPairGenerator fakeKeyPairGenerator;
 
   @Mock
   CertificateAuthorityRepository authorityRepository;
@@ -95,7 +96,7 @@ public class BCCertificateGeneratorTest {
       when(randomSerialNumberGenerator.generate()).thenReturn(BigInteger.TEN);
 
       caDn = new X500Name("O=foo,ST=bar,C=mars");
-      caKeyPair = generateKeyPair();
+      caKeyPair = fakeKeyPairGenerator.generate();
       X509CertificateHolder caX509CertHolder = generateX509CertificateAuthority();
       caX509Cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
       defaultNamedCA = new NamedCertificateAuthority("default");
@@ -148,7 +149,7 @@ public class BCCertificateGeneratorTest {
 
     describe("when a default CA exists", () -> {
       beforeEach(() -> {
-        childCertificateKeyPair = generateKeyPair();
+        childCertificateKeyPair = fakeKeyPairGenerator.generate();
         when(keyGenerator.generateKeyPair()).thenReturn(childCertificateKeyPair);
         when(authorityRepository.findOneByName("default")).thenReturn(defaultNamedCA);
         childCertificateHolder = generateChildCertificateSignedByCa(
@@ -168,7 +169,7 @@ public class BCCertificateGeneratorTest {
             equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
         assertThat(certificateSecret.getCertificateBody().getCertificate(),
             equalTo(CertificateFormatter.pemOf(childCertificate)));
-        Mockito.verify(keyGenerator, times(1)).initialize(BcKeyPairGenerator.DEFAULT_KEY_LENGTH);
+        Mockito.verify(keyGenerator, times(1)).initialize(BcKeyPairGenerator.DEFAULT_RSA_KEY_LENGTH);
       });
 
       describe("when a key length is given", () -> {
@@ -198,12 +199,6 @@ public class BCCertificateGeneratorTest {
             equalTo(defaultNamedCA.getPrivateKey()));
       });
     });
-  }
-
-  private KeyPair generateKeyPair() throws NoSuchAlgorithmException, NoSuchProviderException {
-    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
-    generator.initialize(KEY_LENGTH_FOR_TESTING);
-    return generator.generateKeyPair();
   }
 
   private X509CertificateHolder generateX509CertificateAuthority() throws Exception {

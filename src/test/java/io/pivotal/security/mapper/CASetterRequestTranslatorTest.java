@@ -54,7 +54,6 @@ public class CASetterRequestTranslatorTest {
         CertificateAuthority expected = new CertificateAuthority("root", "a", "b");
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
-        subject.validateJsonKeys(parsed);
         subject.populateEntityFromJson(entity, parsed);
 
         assertThat(CertificateAuthority.fromEntity(entity), BeanMatchers.theSameAs(expected));

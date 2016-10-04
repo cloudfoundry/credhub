@@ -11,6 +11,7 @@ import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -23,16 +24,11 @@ import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import io.pivotal.security.view.ParameterizedValidationException;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.*;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -268,9 +264,12 @@ public class CertificateGeneratorRequestTranslatorTest {
       String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\"}}";
       parsed = JsonPath.using(configuration).parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);
-      assertThat(secret.getCa(), notNullValue());
-      assertThat(secret.getCertificate(), notNullValue());
-      assertThat(secret.getPrivateKey(), notNullValue());
+
+      verify(secretGenerator).generateSecret(isA(CertificateSecretParameters.class));
+
+      assertThat(secret.getCa(), equalTo("my-root"));
+      assertThat(secret.getCertificate(), equalTo("my-cert"));
+      assertThat(secret.getPrivateKey(), equalTo("my-priv"));
     });
   }
 }
