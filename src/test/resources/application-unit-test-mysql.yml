@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    username: root
+    url: jdbc:mysql://localhost:3306/credhub
+
+flyway:
+  locations: classpath:/db/migration/mysql

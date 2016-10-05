@@ -1,0 +1,2 @@
+flyway:
+  locations: classpath:/db/migration/h2

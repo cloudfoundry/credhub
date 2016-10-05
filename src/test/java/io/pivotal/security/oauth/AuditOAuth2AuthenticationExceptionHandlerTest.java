@@ -2,6 +2,7 @@ package io.pivotal.security.oauth;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.helper.CountMemo;
@@ -22,6 +23,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -49,6 +51,7 @@ import javax.servlet.Filter;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration
 @WebAppConfiguration
+@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles({"unit-test", "AuditOAuth2AuthenticationEntryPointTest"})
 public class AuditOAuth2AuthenticationExceptionHandlerTest {
 

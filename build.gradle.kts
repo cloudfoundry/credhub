@@ -122,6 +122,7 @@ getTask<Test>("test").apply {
         setEvents(setOf("passed", "failed", "skipped"))
         setExceptionFormat("full")
     }
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
 }
 
 tasks.withType<Test> {
