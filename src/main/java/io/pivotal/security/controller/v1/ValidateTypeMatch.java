@@ -29,4 +29,10 @@ class ValidateTypeMatch implements SecretKind.Mapping<NamedSecret, NamedSecret> 
     if (namedSecret != null && !(namedSecret instanceof NamedSshSecret)) throw new ParameterizedValidationException("error.type_mismatch");
     return namedSecret;
   }
+
+  @Override
+  public NamedSecret rsa(SecretKind secretKind, NamedSecret namedSecret) {
+    if (namedSecret != null && !(namedSecret instanceof NamedRsaSecret)) throw new ParameterizedValidationException("error.type_mismatch");
+    return namedSecret;
+  }
 }

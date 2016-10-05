@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.view.SecretKind;
 
 public abstract class DefaultMapping implements SecretKind.Mapping<NamedSecret, NamedSecret> {
@@ -22,6 +21,11 @@ public abstract class DefaultMapping implements SecretKind.Mapping<NamedSecret, 
 
   @Override
   public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) {
+    return namedSecret;
+  }
+
+  @Override
+  public NamedSecret rsa(SecretKind secretKind, NamedSecret namedSecret) {
     return namedSecret;
   }
 }

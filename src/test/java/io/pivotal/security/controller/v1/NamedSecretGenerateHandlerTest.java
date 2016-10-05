@@ -4,10 +4,13 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.*;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedRsaSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
-import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
+import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
@@ -18,16 +21,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.verify;
+import static io.pivotal.security.helper.SpectrumHelper.*;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -50,7 +44,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
   @Mock
-  SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
+  RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
 
   @Mock
   DocumentContext documentContext;
@@ -73,7 +67,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
       describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateGeneratorRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
 
-      describe("ssh", behavesLikeMapper(() -> subject, () -> subject.sshGeneratorRequestTranslator, SecretKind.SSH, NamedSshSecret.class, new NamedCertificateSecret(), new NamedSshSecret()));
+      describe("rsa", behavesLikeMapper(() -> subject, () -> subject.rsaGeneratorRequestTranslator, SecretKind.RSA, NamedRsaSecret.class, new NamedCertificateSecret(), new NamedRsaSecret()));
     });
 
     describe("verifies full set of keys for", () -> {
@@ -108,9 +102,9 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
           "}")
       );
 
-     it("ssh", validateJsonKeys(() -> realSubject.sshGeneratorRequestTranslator,
+     it("rsa", validateJsonKeys(() -> realSubject.rsaGeneratorRequestTranslator,
         "{" +
-        "\"type\":\"ssh\"," +
+        "\"type\":\"rsa\"," +
         "\"overwrite\":true" +
         "}")
      );

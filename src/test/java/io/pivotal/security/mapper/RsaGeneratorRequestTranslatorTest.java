@@ -5,12 +5,12 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.SshSecretParameters;
-import io.pivotal.security.controller.v1.SshSecretParametersFactory;
-import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.generator.BCSshGenerator;
+import io.pivotal.security.controller.v1.RsaSecretParameters;
+import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
+import io.pivotal.security.entity.NamedRsaSecret;
+import io.pivotal.security.generator.BCRsaGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.SshSecret;
+import io.pivotal.security.view.RsaSecret;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,28 +29,28 @@ import static org.mockito.Mockito.*;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
-public class SshGeneratorRequestTranslatorTest {
+public class RsaGeneratorRequestTranslatorTest {
 
   @Autowired
   Configuration configuration;
 
   @Mock
-  BCSshGenerator secretGenerator;
+  BCRsaGenerator secretGenerator;
 
   @Mock
-  SshSecretParametersFactory sshSecretParametersFactory;
+  RsaSecretParametersFactory rsaSecretParametersFactory;
 
   @InjectMocks
-  private SshGeneratorRequestTranslator subject;
+  private RsaGeneratorRequestTranslator subject;
 
-  private SshSecretParameters mockParams;
+  private RsaSecretParameters mockParams;
 
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockParams = spy(SshSecretParameters.class);
-      when(sshSecretParametersFactory.get()).thenReturn(mockParams);
+      mockParams = spy(RsaSecretParameters.class);
+      when(rsaSecretParametersFactory.get()).thenReturn(mockParams);
     });
 
     describe("validateJsonKeys", () -> {
@@ -78,29 +78,29 @@ public class SshGeneratorRequestTranslatorTest {
 
     describe("populateEntityFromJson", () -> {
       beforeEach(() -> {
-        when(secretGenerator.generateSecret(any(SshSecretParameters.class)))
-            .thenReturn(new SshSecret(null, null, "my-public", "my-private"));
+        when(secretGenerator.generateSecret(any(RsaSecretParameters.class)))
+            .thenReturn(new RsaSecret(null, null, "my-public", "my-private"));
       });
 
       it("populates an entity", () -> {
         String json = "{\"type\":\"ssh\"}";
         DocumentContext parsed = JsonPath.using(configuration).parse(json);
 
-        NamedSshSecret namedSshSecret = new NamedSshSecret();
-        subject.populateEntityFromJson(namedSshSecret, parsed);
+        NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
+        subject.populateEntityFromJson(namedRsaSecret, parsed);
 
         verify(secretGenerator).generateSecret(mockParams);
 
-        assertThat(namedSshSecret.getPrivateKey(), equalTo("my-private"));
-        assertThat(namedSshSecret.getPublicKey(), equalTo("my-public"));
+        assertThat(namedRsaSecret.getPrivateKey(), equalTo("my-private"));
+        assertThat(namedRsaSecret.getPublicKey(), equalTo("my-public"));
       });
 
       it("validates the parameters", () -> {
         String json = "{\"type\":\"ssh\"}";
         DocumentContext parsed = JsonPath.using(configuration).parse(json);
 
-        NamedSshSecret namedSshSecret = new NamedSshSecret();
-        subject.populateEntityFromJson(namedSshSecret, parsed);
+        NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
+        subject.populateEntityFromJson(namedRsaSecret, parsed);
 
         verify(mockParams, times(1)).validate();
       });
@@ -114,8 +114,8 @@ public class SshGeneratorRequestTranslatorTest {
           "}";
         DocumentContext parsed = JsonPath.using(configuration).parse(json);
 
-        NamedSshSecret namedSshSecret = new NamedSshSecret();
-        subject.populateEntityFromJson(namedSshSecret, parsed);
+        NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
+        subject.populateEntityFromJson(namedRsaSecret, parsed);
 
         verify(mockParams).setKeyLength(3072);
 

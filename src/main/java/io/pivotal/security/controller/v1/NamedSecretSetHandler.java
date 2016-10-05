@@ -47,6 +47,11 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
       public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) {
         return processSecret((NamedSshSecret)namedSecret, NamedSshSecret::new, secretPath, sshSetRequestTranslator, parsed);
       }
+
+      @Override
+      public NamedSecret rsa(SecretKind secretKind, NamedSecret namedSecret) {
+        return null;
+      }
     }.compose(new ValidateTypeMatch());
   }
 }

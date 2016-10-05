@@ -2,9 +2,9 @@ package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.SshSecretParameters;
+import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
-import io.pivotal.security.view.SshSecret;
+import io.pivotal.security.view.RsaSecret;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -30,10 +30,10 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles("unit-test")
-public class BCSshGeneratorTest {
+public class BCRsaGeneratorTest {
   @InjectMocks
   @Autowired
-  BCSshGenerator subject;
+  BCRsaGenerator subject;
 
   @Mock
   DateTimeProvider dateTimeProvider;
@@ -65,20 +65,20 @@ public class BCSshGeneratorTest {
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {
-        final SshSecret sshSecret = subject.generateSecret(new SshSecretParameters());
+        final RsaSecret rsa = subject.generateSecret(new RsaSecretParameters());
 
         verify(keyPairGeneratorMock).initialize(2048);
         verify(keyPairGeneratorMock).generateKeyPair();
 
-        assertThat(sshSecret.getSshBody().getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
-        assertThat(sshSecret.getSshBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
+        assertThat(rsa.getRsaBody().getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
+        assertThat(rsa.getRsaBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
       });
 
       it("should use the provided key length", () -> {
-        SshSecretParameters sshSecretParameters = new SshSecretParameters();
-        sshSecretParameters.setKeyLength(4096);
+        RsaSecretParameters rsaSecretParameters = new RsaSecretParameters();
+        rsaSecretParameters.setKeyLength(4096);
 
-        subject.generateSecret(sshSecretParameters);
+        subject.generateSecret(rsaSecretParameters);
 
         verify(keyPairGeneratorMock).initialize(4096);
       });

@@ -12,12 +12,12 @@ spring:
     # mysql
 #    username: root
     password:
-#    url: jdbc:postgresql://localhost:5432/credhub
+    url: jdbc:postgresql://localhost:5432/credhub
 #    url: jdbc:mysql://localhost:3306/credhub
 
 flyway:
   # last value is either postgres/h2/mysql
-  locations: classpath:/db/migration/h2
+  locations: classpath:/db/migration/postgres
 
 security:
   oauth2:

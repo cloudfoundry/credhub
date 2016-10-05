@@ -15,6 +15,8 @@ public interface SecretKindFromString {
         return SecretKind.CERTIFICATE;
       case "ssh":
         return SecretKind.SSH;
+      case "rsa":
+        return SecretKind.RSA;
     }
     throw new ParameterizedValidationException("error.type_invalid");
   }
