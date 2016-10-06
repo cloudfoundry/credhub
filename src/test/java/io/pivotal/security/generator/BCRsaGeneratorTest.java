@@ -3,7 +3,6 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.RsaSecret;
@@ -83,15 +82,6 @@ public class BCRsaGeneratorTest {
         rsaSecretParameters.setKeyLength(4096);
 
         subject.generateSecret(rsaSecretParameters);
-
-        verify(keyPairGeneratorMock).initialize(4096);
-      });
-
-      it("should use the provided key length", () -> {
-        SshSecretParameters sshSecretParameters = new SshSecretParameters();
-        sshSecretParameters.setKeyLength(4096);
-
-        subject.generateSecret(sshSecretParameters);
 
         verify(keyPairGeneratorMock).initialize(4096);
       });
