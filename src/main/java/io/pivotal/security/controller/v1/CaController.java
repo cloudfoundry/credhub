@@ -87,7 +87,7 @@ public class CaController {
 
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
-    NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByName(caPath);
+    NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByNameIgnoreCase(caPath);
     if (namedCertificateAuthority == null) {
       namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     }
@@ -107,7 +107,7 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   ResponseEntity get(HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request, authentication), () -> {
-      NamedCertificateAuthority namedAuthority = caRepository.findOneByName(caPath(request));
+      NamedCertificateAuthority namedAuthority = caRepository.findOneByNameIgnoreCase(caPath(request));
 
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);

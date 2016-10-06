@@ -20,7 +20,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -61,9 +60,9 @@ public class AuditLogConfigurationTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
-      credentialUrlPath = uniquify("/api/v1/data/foo");
-      caUrlPath1 = uniquify("/api/v1/ca/bar");
-      caUrlPath2 = uniquify("/api/v1/ca/baz");
+      credentialUrlPath = "/api/v1/data/foo";
+      caUrlPath1 = "/api/v1/ca/bar";
+      caUrlPath2 = "/api/v1/ca/baz";
       auditRecordCount = SpectrumHelper.markRepository(auditRecordRepository);
     });
 

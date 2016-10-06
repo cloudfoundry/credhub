@@ -96,7 +96,7 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      secretName = uniquify("my-namespace/subtree/secret-name");
+      secretName = "my-namespace/subTree/secret-name";
 
       resetAuditLogMock();
     });
@@ -149,7 +149,7 @@ public class SecretsControllerTest {
         });
 
         it("persists the secret", () -> {
-          final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretRepository.findOneByName(secretName);
+          final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretRepository.findOneByNameIgnoreCase(secretName);
           assertThat(namedSecret.getValue(), equalTo("some password"));
         });
 
@@ -202,7 +202,7 @@ public class SecretsControllerTest {
           });
 
           it("persists the secret", () -> {
-            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByNameIgnoreCase(secretName);
             assertThat(namedSecret.getValue(), equalTo("generated value"));
           });
 
@@ -238,7 +238,7 @@ public class SecretsControllerTest {
           });
 
           it("should not persist the secret", () -> {
-            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByNameIgnoreCase(secretName);
             assertThat(namedSecret.getValue(), equalTo("original value"));
           });
 
@@ -266,7 +266,7 @@ public class SecretsControllerTest {
       });
 
       it("persists the secret", () -> {
-        final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByName(secretName);
+        final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByNameIgnoreCase(secretName);
         assertThat(namedSecret.getValue(), equalTo(secretValue));
       });
 
@@ -337,8 +337,8 @@ public class SecretsControllerTest {
       });
 
       it("allows secrets with '.' in the name", () -> {
-        final String testSecretName = uniquify("test");
-        final String testSecretNameWithDot = uniquify("test.response");
+        final String testSecretName = "test";
+        final String testSecretNameWithDot = "test.response";
 
         when(namedSecretSetHandler.make(eq(testSecretName), isA(DocumentContext.class)))
             .thenReturn(new SecretKind.StaticMapping(new NamedValueSecret(testSecretName, "abc"), null, null, null, null));
@@ -369,7 +369,7 @@ public class SecretsControllerTest {
         resetAuditLogMock();
       });
 
-      describe("with the overwrite flag set to true", () -> {
+      describe("with the overwrite flag set to true case-insensitively", () -> {
         final String specialValue = "special value";
 
         beforeEach(() -> {
@@ -384,7 +384,7 @@ public class SecretsControllerTest {
 
           fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
-          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName.toUpperCase())
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{" +
@@ -450,7 +450,7 @@ public class SecretsControllerTest {
           when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
               .thenThrow(new ParameterizedValidationException("error.invalid_json_key", newArrayList("$.bogus")));
 
-          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName.toUpperCase())
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{" +
@@ -479,9 +479,9 @@ public class SecretsControllerTest {
         putSecretInDatabase(secretValue);
       });
 
-      describe("getting a secret by name", () -> {
+      describe("getting a secret by name case-insensitively", () -> {
         beforeEach(() -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data/" + secretName)
+          final MockHttpServletRequestBuilder get = get("/api/v1/data/" + secretName.toUpperCase())
               .accept(APPLICATION_JSON);
 
           this.response = mockMvc.perform(get);
@@ -534,11 +534,11 @@ public class SecretsControllerTest {
       });
     });
 
-    describe("deleting a secret", () -> {
+    describe("deleting a secret case-insensitively", () -> {
       beforeEach(() -> {
         putSecretInDatabase("some value");
 
-        this.response = mockMvc.perform(delete("/api/v1/data/" + secretName));
+        this.response = mockMvc.perform(delete("/api/v1/data/" + secretName.toUpperCase()));
       });
 
       it("should return a 200 status", () -> {
@@ -546,7 +546,7 @@ public class SecretsControllerTest {
       });
 
       it("removes it from storage", () -> {
-        assertThat(secretRepository.findOneByName(secretName), nullValue());
+        assertThat(secretRepository.findOneByNameIgnoreCase(secretName), nullValue());
       });
 
       it("persists an audit entry", () -> {
@@ -569,9 +569,9 @@ public class SecretsControllerTest {
         putSecretInDatabase("some value");
       });
 
-      describe("finding credentials by name-like, ie, partial names", () -> {
+      describe("finding credentials by name-like, i.e. partial names, case-insensitively", () -> {
         beforeEach(() -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + secretName.substring(4))
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + secretName.substring(4).toUpperCase())
               .accept(APPLICATION_JSON);
 
           this.response = mockMvc.perform(get);
@@ -605,12 +605,12 @@ public class SecretsControllerTest {
               .andExpect(jsonPath("$.credentials[0].updated_at").value(frozenTime.toString()));
         });
 
-        it("should only find paths that start with the specified substring", () -> {
+        it("should only find paths that start with the specified substring case-independently", () -> {
           final String path = "namespace";
 
           assertTrue(secretName.contains(path));
 
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path.toUpperCase())
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -618,12 +618,12 @@ public class SecretsControllerTest {
               .andExpect(jsonPath("$.credentials", hasSize(0)));
         });
 
-        it("should return all children which are prefixed with the path", () -> {
+        it("should return all children which are prefixed with the path case-independently", () -> {
           final String path = "my-namespace";
 
           assertTrue(secretName.startsWith(path));
 
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path.toUpperCase())
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -631,8 +631,8 @@ public class SecretsControllerTest {
               .andExpect(jsonPath("$.credentials", hasSize(1)));
         });
 
-        it("should not findSecretsUsingPath paths which start an existing path mut matches incompletely", () -> {
-          final String path = "my-namespace/subtr";
+        it("should not findSecretsUsingPath paths which start an existing path but matches incompletely", () -> {
+          final String path = "my-namespace/subTr";
 
           assertTrue(secretName.startsWith(path));
 
@@ -662,7 +662,7 @@ public class SecretsControllerTest {
           this.response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.paths[0].path").value("my-namespace/"))
-              .andExpect(jsonPath("$.paths[1].path").value("my-namespace/subtree/"));
+              .andExpect(jsonPath("$.paths[1].path").value("my-namespace/subTree/"));
         });
       });
     });

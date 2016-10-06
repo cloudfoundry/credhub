@@ -30,7 +30,6 @@ import java.util.Map;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -74,7 +73,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
 
   private Instant now;
 
-  private final String credentialUrlPath = uniquify("/api/v1/data/foo");
+  private final String credentialUrlPath = "/api/v1/data/foo";
   private final String credentialUrlQueryParams = "?query=value";
   private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
 

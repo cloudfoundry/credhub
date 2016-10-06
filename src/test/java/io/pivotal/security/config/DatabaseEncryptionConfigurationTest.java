@@ -7,7 +7,6 @@ import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
-import org.hamcrest.Matchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -19,7 +18,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
@@ -48,7 +46,7 @@ public class DatabaseEncryptionConfigurationTest {
 
     describe("when a value has been written to the database", () -> {
       beforeEach(() -> {
-        secretName = uniquify("test");
+        secretName = "test";
         NamedStringSecret stringSecret = new NamedValueSecret(secretName, "value1");
         secretRepository.saveAndFlush(stringSecret);
       });
@@ -62,7 +60,7 @@ public class DatabaseEncryptionConfigurationTest {
       });
 
       it("it decrypts the secret value when the entity is retrieved", () -> {
-        NamedStringSecret secret = (NamedStringSecret) secretRepository.findOneByName(secretName);
+        NamedStringSecret secret = (NamedStringSecret) secretRepository.findOneByNameIgnoreCase(secretName);
         assertThat(secret.getValue(), equalTo("value1"));
       });
     });

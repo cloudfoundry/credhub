@@ -38,7 +38,7 @@ public class StringSecretTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      entity = new NamedValueSecret(uniquify("foo"));
+      entity = new NamedValueSecret("foo");
     });
 
     it("can create view from entity", () -> {

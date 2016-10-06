@@ -18,7 +18,6 @@ import java.time.Instant;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -46,7 +45,7 @@ public class SshSecretTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      secretName = uniquify("foo");
+      secretName = "foo";
       entity = new NamedSshSecret(secretName)
           .setPublicKey("my-public-key")
           .setPrivateKey("my-private-key");

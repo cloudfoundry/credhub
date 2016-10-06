@@ -33,8 +33,6 @@ import static org.mockito.Mockito.when;
 
 
 public class SpectrumHelper {
-  private static long unique = System.currentTimeMillis();
-
   public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
     Spectrum.it(behavior, () -> {
       try {
@@ -90,10 +88,6 @@ public class SpectrumHelper {
     beforeEach(() -> transaction.set(transactionManagerSupplier.get().getTransaction(new DefaultTransactionDefinition())));
 
     afterEach(() -> transactionManagerSupplier.get().rollback(transaction.get()));
-  }
-
-  public static String uniquify(String template) {
-    return template + (++unique);
   }
 
   public static Consumer<Long> mockOutCurrentTimeProvider(Object testInstance) {

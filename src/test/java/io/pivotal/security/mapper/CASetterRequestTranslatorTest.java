@@ -38,7 +38,7 @@ public class CASetterRequestTranslatorTest {
 
     describe("populating entity from json", () -> {
       beforeEach(() -> {
-        entity = new NamedCertificateAuthority(uniquify("foo"));
+        entity = new NamedCertificateAuthority("foo");
         subject = new CASetterRequestTranslator();
       });
 

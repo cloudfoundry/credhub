@@ -55,7 +55,7 @@ public class NamedCertificateAuthorityTest {
     it("saves to repository", () -> {
       repository.saveAndFlush(subject);
 
-      NamedCertificateAuthority first = repository.findOneByName("Foo");
+      NamedCertificateAuthority first = repository.findOneByNameIgnoreCase("Foo");
       assertThat(first.getPrivateKey(), equalTo("priv"));
       assertThat(first.getCertificate(), equalTo("cert"));
       assertThat(first.getType(), equalTo("root"));

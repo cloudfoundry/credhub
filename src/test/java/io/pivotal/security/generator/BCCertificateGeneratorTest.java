@@ -154,7 +154,7 @@ public class BCCertificateGeneratorTest {
       beforeEach(() -> {
         childCertificateKeyPair = fakeKeyPairGenerator.generate();
         when(keyGenerator.generateKeyPair()).thenReturn(childCertificateKeyPair);
-        when(authorityRepository.findOneByName("default")).thenReturn(defaultNamedCA);
+        when(authorityRepository.findOneByNameIgnoreCase("default")).thenReturn(defaultNamedCA);
         childCertificateHolder = generateChildCertificateSignedByCa(
             childCertificateKeyPair, caKeyPair.getPrivate(), caDn);
         childCertificate = new JcaX509CertificateConverter()

@@ -80,7 +80,7 @@ public class CaControllerTest {
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
-      uniqueName = uniquify("my-folder/ca-identifier");
+      uniqueName = "my-folder/ca-identifier";
       urlPath = "/api/v1/ca/" + uniqueName;
     });
 
@@ -110,9 +110,9 @@ public class CaControllerTest {
           .andExpect(content().json(responseJson));
 
       verify(caGeneratorRequestTranslator).validateJsonKeys(any(DocumentContext.class));
-      NamedCertificateAuthority oneByName = caRepository.findOneByName(uniqueName);
+      NamedCertificateAuthority oneByName = caRepository.findOneByNameIgnoreCase(uniqueName);
       assertThat(oneByName, theSameAs(entity).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
-      assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+      assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
     });
 
     describe("setter", () -> {
@@ -129,15 +129,15 @@ public class CaControllerTest {
 
         CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
         expected.setUpdatedAt(frozenTime);
-        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
+        assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
       });
 
-      it("can overwrite a root ca", () -> {
+      it("can overwrite a root ca case-independently", () -> {
         String requestJson = "{" + CA_CREATION_JSON + "}";
         String responseJson = "{" + getUpdatedAtJson() + "," + CA_CREATION_JSON + "}";
 
-        RequestBuilder requestBuilder = putRequestBuilder(urlPath, requestJson);
+        RequestBuilder requestBuilder = putRequestBuilder("/api/v1/ca/" + uniqueName.toUpperCase(), requestJson);
 
         mockMvc.perform(requestBuilder)
             .andExpect(status().isOk())
@@ -146,8 +146,8 @@ public class CaControllerTest {
 
         CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
         expected.setUpdatedAt(frozenTime);
-        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
+        assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
 
         String jsonContent = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert2\",\"private_key\":\"private_key2\"}";
         requestJson = "{" + jsonContent + "}";
@@ -160,8 +160,8 @@ public class CaControllerTest {
 
         expected = new CertificateAuthority("root", "my_cert2", "private_key2");
         expected.setUpdatedAt(frozenTime);
-        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByName(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findOneByName(uniqueName), nullValue());
+        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
+        assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
       });
     });
 
@@ -208,7 +208,7 @@ public class CaControllerTest {
           .andExpect(content().json(invalidTypeJson));
     });
 
-    it("can get a certificate authority", () -> {
+    it("can get a certificate authority case-independently", () -> {
       String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private_key\":\"my_private_key\"}}";
       NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
       namedCertificateAuthority.setType("root");
@@ -216,7 +216,7 @@ public class CaControllerTest {
       namedCertificateAuthority.setPrivateKey("my_private_key");
       caRepository.save(namedCertificateAuthority);
 
-      RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/my_name");
+      RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/MY_NAME");
       mockMvc.perform(requestBuilder)
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -240,7 +240,7 @@ public class CaControllerTest {
           .andExpect(content().json(requestJson2));
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_certificate_2", "priv_2");
-      NamedCertificateAuthority saved = caRepository.findOneByName(uniqueName);
+      NamedCertificateAuthority saved = caRepository.findOneByNameIgnoreCase(uniqueName);
       assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), theSameAs(expected));
     });
 

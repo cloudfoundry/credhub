@@ -71,7 +71,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
       missingCaErrorMessageKey = "error.default_ca_required";
       caName = "default";
     }
-    NamedCertificateAuthority ca = authorityRepository.findOneByName(caName);
+    NamedCertificateAuthority ca = authorityRepository.findOneByNameIgnoreCase(caName);
     if (ca == null) {
       throw new ParameterizedValidationException(missingCaErrorMessageKey);
     }

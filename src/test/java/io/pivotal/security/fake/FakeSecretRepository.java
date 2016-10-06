@@ -19,7 +19,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findOneByName(String name) {
+  public NamedSecret findOneByNameIgnoreCase(String name) {
     throw new UnsupportedOperationException();
   }
 
@@ -67,12 +67,12 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findByNameContainingOrderByUpdatedAtDesc(String nameSubstring) {
+  public List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String nameSubstring) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<NamedSecret> findByNameStartingWithOrderByUpdatedAtDesc(String nameSubstring) {
+  public List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring) {
     throw new UnsupportedOperationException();
   }
 

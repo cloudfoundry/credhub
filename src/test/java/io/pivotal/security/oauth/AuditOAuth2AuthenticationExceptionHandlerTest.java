@@ -35,7 +35,6 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
 import static io.pivotal.security.helper.SpectrumHelper.markRepository;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -80,7 +79,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
   private Instant now;
 
-  private final String credentialUrlPath = uniquify("/api/v1/data/foo");
+  private final String credentialUrlPath = "/api/v1/data/foo";
   private final String credentialUrlQueryParams = "?my_name=my_value";
   private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
   private CountMemo auditRecordMemo;

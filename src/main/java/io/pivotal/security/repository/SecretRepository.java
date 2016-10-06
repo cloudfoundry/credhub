@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 
 public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
-  NamedSecret findOneByName(String name);
+  NamedSecret findOneByNameIgnoreCase(String name);
   NamedSecret findOneByUuid(String uuid);
-  List<NamedSecret> findByNameContainingOrderByUpdatedAtDesc(String nameSubstring);
-  List<NamedSecret> findByNameStartingWithOrderByUpdatedAtDesc(String nameSubstring);
+  List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String nameSubstring);
+  List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring);
 
   default List<String> findAllPaths(Boolean findPaths) {
     if (!findPaths) {

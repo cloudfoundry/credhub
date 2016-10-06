@@ -17,7 +17,6 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -38,9 +37,9 @@ public class FindResultsTest {
           Instant updatedAt2 = Instant.ofEpochSecond(20000L, 0);
           Instant updatedAt3 = Instant.ofEpochSecond(30000L, 0);
           namedSecretList.clear();
-          String valueName = uniquify("valueSecret");
-          String passwordName = uniquify("passwordSecret");
-          String certificateName = uniquify("certificateSecret");
+          String valueName = "valueSecret";
+          String passwordName = "passwordSecret";
+          String certificateName = "certificateSecret";
           namedSecretList.add(new NamedValueSecret(valueName).setUpdatedAt(updatedAt2));
           namedSecretList.add(new NamedPasswordSecret(passwordName).setUpdatedAt(updatedAt1));
           namedSecretList.add(new NamedCertificateSecret(certificateName).setUpdatedAt(updatedAt3));

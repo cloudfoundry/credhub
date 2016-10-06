@@ -13,7 +13,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.stream.Stream;
 
-import static io.pivotal.security.helper.SpectrumHelper.uniquify;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -28,7 +27,7 @@ public class CertificateAuthorityRepositoryTest {
 
   @Test
   public void canStoreCertificateAuthoritiesOfLength7000WhichMeans7016ForGCMEncryption() throws Exception {
-    final String secretName = uniquify("my-ca");
+    final String secretName = "my-ca";
     final StringBuilder stringBuilder = new StringBuilder(7000);
     Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
     NamedCertificateAuthority entity = new NamedCertificateAuthority(secretName);
@@ -36,7 +35,7 @@ public class CertificateAuthorityRepositoryTest {
     entity.setPrivateKey(stringBuilder.toString());
 
     subject.save(entity);
-    NamedCertificateAuthority certificateSecret = subject.findOneByName(secretName);
+    NamedCertificateAuthority certificateSecret = subject.findOneByNameIgnoreCase(secretName);
     assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
     assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
   }

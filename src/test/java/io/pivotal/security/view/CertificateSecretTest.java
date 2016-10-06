@@ -47,7 +47,7 @@ public class CertificateSecretTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      secretName = uniquify("foo");
+      secretName = "foo";
       entity = new NamedCertificateSecret(secretName)
           .setCa("ca")
           .setCertificate("cert")

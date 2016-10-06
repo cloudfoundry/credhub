@@ -39,7 +39,7 @@ public class SecretRepositoryTest {
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      secretName = uniquify("my-secret");
+      secretName = "my-secret";
       fakeTimeSetter.accept(345345L);
     });
 
@@ -53,7 +53,7 @@ public class SecretRepositoryTest {
       entity.setPrivateKey(longString);
 
       subject.save(entity);
-      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findOneByName(secretName);
+      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findOneByNameIgnoreCase(secretName);
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
       assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
@@ -66,19 +66,19 @@ public class SecretRepositoryTest {
       entity.setValue(stringBuilder.toString());
 
       subject.save(entity);
-      assertThat(((NamedStringSecret) subject.findOneByName(secretName)).getValue().length(), equalTo(7000));
+      assertThat(((NamedStringSecret) subject.findOneByNameIgnoreCase(secretName)).getValue().length(), equalTo(7000));
     });
 
     it("canFetchReverseChronologicallySortedCredentials", () -> {
-      String valueName = uniquify("value.Secret");
-      String passwordName = uniquify("password/Secret");
-      String certificateName = uniquify("certif/ic/ateSecret");
+      String valueName = "value.Secret";
+      String passwordName = "password/Secret";
+      String certificateName = "certif/ic/atesecret";
       fakeTimeSetter.accept(20000000L);
       subject.save(new NamedValueSecret(valueName));
-      subject.save(new NamedPasswordSecret(uniquify("mySe.cret")));
+      subject.save(new NamedPasswordSecret("mySe.cret"));
       fakeTimeSetter.accept(10000000L);
       subject.save(new NamedPasswordSecret(passwordName));
-      subject.save(new NamedCertificateSecret(uniquify("mysecret")));
+      subject.save(new NamedCertificateSecret("myseecret"));
       fakeTimeSetter.accept(30000000L);
       subject.save(new NamedCertificateSecret(certificateName));
       List<NamedSecret> expectedResults = newArrayList(
@@ -86,16 +86,16 @@ public class SecretRepositoryTest {
           new NamedValueSecret(valueName).setUpdatedAt(Instant.ofEpochSecond(20000L, 0)),
           new NamedPasswordSecret(passwordName).setUpdatedAt(Instant.ofEpochSecond(10000L, 0)));
 
-      List<NamedSecret> results = subject.findByNameContainingOrderByUpdatedAtDesc("Secret");
+      List<NamedSecret> results = subject.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc("Secret");
       MatcherAssert.assertThat(results, theSameAs(expectedResults).excludeProperty("Id").excludeProperty("Uuid"));
     });
 
     describe("fetching paths", () -> {
       beforeEach(() -> {
-        String valueOther = uniquify("fubario");
-        String valueName = uniquify("value/Secret");
-        String passwordName = uniquify("password/Secret");
-        String certificateName = uniquify("certif/ic/ateSecret");
+        String valueOther = "fubario";
+        String valueName = "value/Secret";
+        String passwordName = "password/Secret";
+        String certificateName = "certif/ic/ateSecret";
         subject.save(new NamedValueSecret(valueOther));
         subject.save(new NamedValueSecret(valueName));
         subject.save(new NamedPasswordSecret(passwordName));
