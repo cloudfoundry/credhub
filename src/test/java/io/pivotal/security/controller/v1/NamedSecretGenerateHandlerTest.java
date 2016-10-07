@@ -112,7 +112,9 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
         "{" +
         "\"type\":\"ssh\"," +
         "\"overwrite\":true," +
-        "\"parameters\":{}" +
+        "\"parameters\":{" +
+            "\"key_length\":3072" +
+          "}" +
         "}")
      );
 

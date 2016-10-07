@@ -9,6 +9,7 @@ import io.pivotal.security.view.SshSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.of;
@@ -25,6 +26,8 @@ public class SshGeneratorRequestTranslator
 
   public SshSecretParameters validRequestParameters(DocumentContext parsed) {
     SshSecretParameters sshSecretParameters = sshSecretParametersFactory.get();
+    Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
+        .ifPresent(sshSecretParameters::setKeyLength);
 
     sshSecretParameters.validate();
 
@@ -45,7 +48,8 @@ public class SshGeneratorRequestTranslator
     return of(
         "$['type']",
         "$['overwrite']",
-        "$['parameters']"
+        "$['parameters']",
+        "$['parameters']['key_length']"
     );
   }
 }

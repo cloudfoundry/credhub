@@ -61,7 +61,9 @@ public class SshGeneratorRequestTranslatorTest {
         String requestBody = "{\"" +
             "type\":\"ssh\"," +
             "\"overwrite\":false," +
-            "\"parameters\":{}" +
+            "\"parameters\":{" +
+              "\"key_length\":3072" +
+            "}" +
             "}";
         DocumentContext parsed = JsonPath.using(configuration).parse(requestBody);
 
@@ -104,6 +106,23 @@ public class SshGeneratorRequestTranslatorTest {
         subject.populateEntityFromJson(namedSshSecret, parsed);
 
         verify(mockParams, times(1)).validate();
+      });
+
+      it("accepts a key-length", () -> {
+        String json = "{" +
+            "\"type\":\"ssh\"," +
+            "\"parameters\":{" +
+            "\"key_length\":3072" +
+            "}" +
+            "}";
+        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+
+        NamedSshSecret namedSshSecret = new NamedSshSecret();
+        subject.populateEntityFromJson(namedSshSecret, parsed);
+
+        verify(mockParams).setKeyLength(3072);
+
+        verify(secretGenerator).generateSecret(mockParams);
       });
     });
   }

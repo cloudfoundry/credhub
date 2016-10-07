@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SshSecretParameters implements RequestParameters {
+  private int keyLength = 2048;
+
   @Override
   public String getType() {
     throw new UnsupportedOperationException();
@@ -14,6 +16,10 @@ public class SshSecretParameters implements RequestParameters {
   }
 
   public Integer getKeyLength() {
-    return 2048;
+    return keyLength;
+  }
+
+  public void setKeyLength(int keyLength) {
+    this.keyLength = keyLength;
   }
 }
