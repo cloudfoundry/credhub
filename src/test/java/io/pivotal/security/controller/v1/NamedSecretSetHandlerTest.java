@@ -4,14 +4,8 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.Configuration;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.mapper.CertificateSetRequestTranslator;
-import io.pivotal.security.mapper.PasswordSetRequestTranslator;
-import io.pivotal.security.mapper.SshSetRequestTranslator;
-import io.pivotal.security.mapper.ValueSetRequestTranslator;
+import io.pivotal.security.entity.*;
+import io.pivotal.security.mapper.*;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -52,6 +46,9 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
   @Mock
   SshSetRequestTranslator sshSetRequestTranslator;
 
+  @Mock
+  RsaSetRequestTranslator rsaSetRequestTranslator;
+
   {
     describe("it verifies the secret type and secret creation for", () -> {
       beforeEach(injectMocks(this));
@@ -63,6 +60,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateSetRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
 
       describe("ssh", behavesLikeMapper(() -> subject, () -> subject.sshSetRequestTranslator, SecretKind.SSH, NamedSshSecret.class, new NamedPasswordSecret(), new NamedSshSecret()));
+
+      describe("rsa", behavesLikeMapper(() -> subject, () -> subject.rsaSetRequestTranslator, SecretKind.RSA, NamedRsaSecret.class, new NamedPasswordSecret(), new NamedRsaSecret()));
     });
 
     describe("verifies full set of keys for", () -> {
@@ -84,6 +83,13 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
 
       it("ssh", validateJsonKeys(() -> realSubject.sshSetRequestTranslator,
           "{\"type\":\"ssh\"," +
+              "\"overwrite\":true," +
+              "\"value\":{" +
+              "\"public_key\":\"public-key\"," +
+              "\"private_key\":\"private-key\"}}"));
+
+      it("rsa", validateJsonKeys(() -> realSubject.rsaSetRequestTranslator,
+          "{\"type\":\"rsa\"," +
               "\"overwrite\":true," +
               "\"value\":{" +
               "\"public_key\":\"public-key\"," +

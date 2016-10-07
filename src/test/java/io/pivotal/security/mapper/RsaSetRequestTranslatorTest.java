@@ -6,7 +6,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.entity.NamedRsaSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +24,13 @@ import static org.junit.Assert.assertThat;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
-public class SshSetRequestTranslatorTest {
+public class RsaSetRequestTranslatorTest {
   @Autowired
   private Configuration jsonConfiguration;
 
-  private SshSetRequestTranslator subject;
+  private RsaSetRequestTranslator subject;
 
-  private NamedSshSecret entity;
+  private NamedRsaSecret entity;
 
   {
     wireAndUnwire(this);
@@ -38,8 +38,8 @@ public class SshSetRequestTranslatorTest {
     describe("populating entity from json", () -> {
 
       beforeEach(() -> {
-        subject = new SshSetRequestTranslator();
-        entity = new NamedSshSecret("Foo");
+        subject = new RsaSetRequestTranslator();
+        entity = new NamedRsaSecret("Foo");
       });
 
       it("creates an entity when all fields are present", () -> {
@@ -47,16 +47,12 @@ public class SshSetRequestTranslatorTest {
         checkEntity("my-public-key", null, "my-public-key", "");
         checkEntity(null, "my-private-key", "", "my-private-key");
       });
-
-      itThrowsWithMessage("exception when both values are absent", ParameterizedValidationException.class, "error.missing_ssh_parameters", () -> {
-        checkEntity(null, null, "", "");
-      });
     });
 
     describe("validateJsonKeys", () -> {
       it("should pass if given correct parameters", () -> {
         String requestBody = "{\"" +
-            "type\":\"ssh\"," +
+            "type\":\"rsa\"," +
             "\"overwrite\":false," +
             "\"value\":{" +
             "\"public_key\":\"somepublickey\"," +
@@ -70,7 +66,7 @@ public class SshSetRequestTranslatorTest {
       });
 
       itThrowsWithMessage("should throw if given invalid keys", ParameterizedValidationException.class, "error.invalid_json_key", () -> {
-        String requestBody = "{\"type\":\"ssh\",\"foo\":\"invalid\"}";
+        String requestBody = "{\"type\":\"rsa\",\"foo\":\"invalid\"}";
         DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestBody);
 
         subject.validateJsonKeys(parsed);
@@ -87,6 +83,6 @@ public class SshSetRequestTranslatorTest {
   }
 
   private String createJson(String publicKey, String privateKey) {
-    return "{\"type\":\"ssh\",\"value\":{\"public_key\":\"" + publicKey + "\",\"private_key\":\"" + privateKey + "\"}}";
+    return "{\"type\":\"rsa\",\"value\":{\"public_key\":\"" + publicKey + "\",\"private_key\":\"" + privateKey + "\"}}";
   }
 }
