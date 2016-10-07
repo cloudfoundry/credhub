@@ -26,8 +26,11 @@ public class SshGeneratorRequestTranslator
 
   public SshSecretParameters validRequestParameters(DocumentContext parsed) {
     SshSecretParameters sshSecretParameters = sshSecretParametersFactory.get();
+
     Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
         .ifPresent(sshSecretParameters::setKeyLength);
+    Optional.ofNullable(parsed.read("$.parameters.ssh_comment", String.class))
+        .ifPresent(sshSecretParameters::setSshComment);
 
     sshSecretParameters.validate();
 
@@ -39,8 +42,8 @@ public class SshGeneratorRequestTranslator
     SshSecretParameters sshSecretParameters = validRequestParameters(documentContext);
     final SshSecret sshSecret = sshGenerator.generateSecret(sshSecretParameters);
 
-    namedSshSecret.setPrivateKey(sshSecret.getSshBody().getPrivateKey());
     namedSshSecret.setPublicKey(sshSecret.getSshBody().getPublicKey());
+    namedSshSecret.setPrivateKey(sshSecret.getSshBody().getPrivateKey());
   }
 
   @Override
@@ -49,7 +52,8 @@ public class SshGeneratorRequestTranslator
         "$['type']",
         "$['overwrite']",
         "$['parameters']",
-        "$['parameters']['key_length']"
+        "$['parameters']['key_length']",
+        "$['parameters']['ssh_comment']"
     );
   }
 }

@@ -81,6 +81,17 @@ public class BCSshGeneratorTest {
 
         verify(keyPairGeneratorMock).initialize(4096);
       });
+
+      it("should use the provided ssh comment", () -> {
+        SshSecretParameters sshSecretParameters = new SshSecretParameters();
+        sshSecretParameters.setSshComment("this is an ssh comment");
+
+        final SshSecret ssh = subject.generateSecret(sshSecretParameters);
+
+        String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + " this is an ssh comment";
+
+        assertThat(ssh.getSshBody().getPublicKey(), equalTo(expectedPublicKey));
+      });
     });
   }
 }

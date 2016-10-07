@@ -5,6 +5,7 @@ import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.SshSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPublicKey;
@@ -20,7 +21,13 @@ public class BCSshGenerator implements SecretGenerator<SshSecretParameters, SshS
     final java.security.KeyPair keyPair = keyGenerator.generateKeyPair();
 
     try {
-      return new SshSecret(null, null, CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()), CertificateFormatter.pemOf(keyPair.getPrivate()));
+      String sshComment = parameters.getSshComment();
+      String sshCommentMessage = StringUtils.isEmpty(sshComment) ? "" : " " + sshComment;
+
+      String publicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + sshCommentMessage;
+      String privateKey = CertificateFormatter.pemOf(keyPair.getPrivate());
+
+      return new SshSecret(null, null, publicKey, privateKey);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

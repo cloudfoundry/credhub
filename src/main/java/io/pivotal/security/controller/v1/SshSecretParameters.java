@@ -10,6 +10,7 @@ import java.util.List;
 public class SshSecretParameters implements RequestParameters {
   private int keyLength = 2048;
   private List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
+  private String sshComment = "";
 
   @Override
   public String getType() {
@@ -26,7 +27,15 @@ public class SshSecretParameters implements RequestParameters {
     return keyLength;
   }
 
+  public String getSshComment() {
+    return sshComment;
+  }
+
   public void setKeyLength(int keyLength) {
     this.keyLength = keyLength;
+  }
+
+  public void setSshComment(String sshComment) {
+    this.sshComment = sshComment;
   }
 }
