@@ -6,5 +6,5 @@ set -o pipefail
 export TERM=xterm
 
 pushd sec-eng-credential-manager
-gradle clean test
+gradle -Dspring.active.profiles=${DATABASE_PROFILE}` clean test
 popd
