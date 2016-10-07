@@ -44,10 +44,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
   CertificateSetRequestTranslator certificateSetRequestTranslator;
 
   @Mock
-  SshSetRequestTranslator sshSetRequestTranslator;
-
-  @Mock
-  RsaSetRequestTranslator rsaSetRequestTranslator;
+  RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
 
   {
     describe("it verifies the secret type and secret creation for", () -> {
@@ -59,9 +56,9 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
 
       describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateSetRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
 
-      describe("ssh", behavesLikeMapper(() -> subject, () -> subject.sshSetRequestTranslator, SecretKind.SSH, NamedSshSecret.class, new NamedPasswordSecret(), new NamedSshSecret()));
+      describe("ssh", behavesLikeMapper(() -> subject, () -> subject.rsaSshSetRequestTranslator, SecretKind.SSH, NamedSshSecret.class, new NamedPasswordSecret(), new NamedSshSecret()));
 
-      describe("rsa", behavesLikeMapper(() -> subject, () -> subject.rsaSetRequestTranslator, SecretKind.RSA, NamedRsaSecret.class, new NamedPasswordSecret(), new NamedRsaSecret()));
+      describe("rsa", behavesLikeMapper(() -> subject, () -> subject.rsaSshSetRequestTranslator, SecretKind.RSA, NamedRsaSecret.class, new NamedPasswordSecret(), new NamedRsaSecret()));
     });
 
     describe("verifies full set of keys for", () -> {
@@ -81,14 +78,14 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               "\"certificate\":\"cert\"," +
               "\"private_key\":\"pk\"}}"));
 
-      it("ssh", validateJsonKeys(() -> realSubject.sshSetRequestTranslator,
+      it("ssh", validateJsonKeys(() -> realSubject.rsaSshSetRequestTranslator,
           "{\"type\":\"ssh\"," +
               "\"overwrite\":true," +
               "\"value\":{" +
               "\"public_key\":\"public-key\"," +
               "\"private_key\":\"private-key\"}}"));
 
-      it("rsa", validateJsonKeys(() -> realSubject.rsaSetRequestTranslator,
+      it("rsa", validateJsonKeys(() -> realSubject.rsaSshSetRequestTranslator,
           "{\"type\":\"rsa\"," +
               "\"overwrite\":true," +
               "\"value\":{" +

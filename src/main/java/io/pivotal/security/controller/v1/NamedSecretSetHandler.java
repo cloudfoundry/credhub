@@ -20,10 +20,7 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
   CertificateSetRequestTranslator certificateSetRequestTranslator;
 
   @Autowired
-  SshSetRequestTranslator sshSetRequestTranslator;
-
-  @Autowired
-  RsaSetRequestTranslator rsaSetRequestTranslator;
+  RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
 
   @Override
   public SecretKind.Mapping<NamedSecret, NamedSecret> make(String secretPath, DocumentContext parsed) {
@@ -45,12 +42,12 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) {
-        return processSecret((NamedSshSecret)namedSecret, NamedSshSecret::new, secretPath, sshSetRequestTranslator, parsed);
+        return processSecret((NamedSshSecret)namedSecret, NamedSshSecret::new, secretPath, rsaSshSetRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret rsa(SecretKind secretKind, NamedSecret namedSecret) {
-        return processSecret((NamedRsaSecret)namedSecret, NamedRsaSecret::new, secretPath, rsaSetRequestTranslator, parsed);
+        return processSecret((NamedRsaSecret)namedSecret, NamedRsaSecret::new, secretPath, rsaSshSetRequestTranslator, parsed);
       }
     }.compose(new ValidateTypeMatch());
   }

@@ -24,11 +24,11 @@ import static org.junit.Assert.assertThat;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
-public class RsaSetRequestTranslatorTest {
+public class RsaSshSetRequestTranslatorTest {
   @Autowired
   private Configuration jsonConfiguration;
 
-  private RsaSetRequestTranslator subject;
+  private RsaSshSetRequestTranslator subject;
 
   private NamedRsaSecret entity;
 
@@ -38,7 +38,7 @@ public class RsaSetRequestTranslatorTest {
     describe("populating entity from json", () -> {
 
       beforeEach(() -> {
-        subject = new RsaSetRequestTranslator();
+        subject = new RsaSshSetRequestTranslator();
         entity = new NamedRsaSecret("Foo");
       });
 
@@ -46,6 +46,10 @@ public class RsaSetRequestTranslatorTest {
         checkEntity("my-public-key", "my-private-key", "my-public-key", "my-private-key");
         checkEntity("my-public-key", null, "my-public-key", "");
         checkEntity(null, "my-private-key", "", "my-private-key");
+      });
+
+      itThrowsWithMessage("exception when both values are absent", ParameterizedValidationException.class, "error.missing_rsa_ssh_parameters", () -> {
+        checkEntity(null, null, "", "");
       });
     });
 

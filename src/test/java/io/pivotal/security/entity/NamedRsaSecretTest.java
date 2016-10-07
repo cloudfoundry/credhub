@@ -17,26 +17,25 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
-public class NamedSshSecretTest {
+public class NamedRsaSecretTest {
   @Autowired
   SecretRepository repository;
 
   @Autowired
   EncryptionService encryptionService;
 
-  private NamedSshSecret subject;
+  private NamedRsaSecret subject;
 
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      subject = new NamedSshSecret("Foo");
+      subject = new NamedRsaSecret("Foo");
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
@@ -44,7 +43,7 @@ public class NamedSshSecretTest {
       subject
           .setPublicKey("my-public-key");
       repository.saveAndFlush(subject);
-      NamedSshSecret result = (NamedSshSecret) repository.findOne(subject.getId());
+      NamedRsaSecret result = (NamedRsaSecret) repository.findOne(subject.getId());
       assertThat(result.getPublicKey(), equalTo("my-public-key"));
     });
 
@@ -53,7 +52,7 @@ public class NamedSshSecretTest {
           .setPrivateKey("some-private-value");
       repository.saveAndFlush(subject);
 
-      NamedSshSecret result = (NamedSshSecret) repository.findOne(subject.getId());
+      NamedRsaSecret result = (NamedRsaSecret) repository.findOne(subject.getId());
 
       assertThat(result.getPrivateKey(), equalTo("some-private-value"));
     });
@@ -65,7 +64,7 @@ public class NamedSshSecretTest {
       subject.setPrivateKey("second");
       repository.saveAndFlush(subject);
 
-      NamedSshSecret result = (NamedSshSecret) repository.findOne(subject.getId());
+      NamedRsaSecret result = (NamedRsaSecret) repository.findOne(subject.getId());
       assertThat(result.getPrivateKey(), equalTo("second"));
     });
   }
