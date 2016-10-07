@@ -6,13 +6,10 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.*;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedRsaSecret;
-import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
+import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
@@ -25,13 +22,6 @@ import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
-import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -53,6 +43,9 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
   @Mock
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
+
+  @Mock
+  SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
 
   @Mock
   RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
@@ -77,6 +70,8 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       describe("password", behavesLikeMapper(() -> subject, () -> subject.passwordGeneratorRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
 
       describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateGeneratorRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
+
+      describe("ssh", behavesLikeMapper(() -> subject, () -> subject.sshGeneratorRequestTranslator, SecretKind.SSH, NamedSshSecret.class, new NamedCertificateSecret(), new NamedSshSecret()));
 
       describe("rsa", behavesLikeMapper(() -> subject, () -> subject.rsaGeneratorRequestTranslator, SecretKind.RSA, NamedRsaSecret.class, new NamedCertificateSecret(), new NamedRsaSecret()));
     });
@@ -113,10 +108,21 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
           "}")
       );
 
+     it("ssh", validateJsonKeys(() -> realSubject.sshGeneratorRequestTranslator,
+        "{" +
+        "\"type\":\"ssh\"," +
+        "\"overwrite\":true," +
+        "\"parameters\":{}" +
+        "}")
+     );
+
      it("rsa", validateJsonKeys(() -> realSubject.rsaGeneratorRequestTranslator,
         "{" +
         "\"type\":\"rsa\"," +
-        "\"overwrite\":true" +
+        "\"overwrite\":true," +
+        "\"parameters\":{" +
+            "\"key_length\":2048" +
+        "}" +
         "}")
      );
     });
