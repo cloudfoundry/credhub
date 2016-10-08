@@ -12,6 +12,3 @@ inputs:
 
 run:
   path: sec-eng-credential-manager/ci/tasks/unit-tests/task.sh
-
-params:
-  DATABASE_PROFILE:
