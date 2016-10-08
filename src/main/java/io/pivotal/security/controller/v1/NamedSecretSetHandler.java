@@ -11,10 +11,7 @@ import org.springframework.stereotype.Component;
 class NamedSecretSetHandler implements SecretKindMappingFactory {
 
   @Autowired
-  ValueSetRequestTranslator valueSetRequestTranslator;
-
-  @Autowired
-  PasswordSetRequestTranslator passwordSetRequestTranslator;
+  StringSetRequestTranslator stringSetRequestTranslator;
 
   @Autowired
   CertificateSetRequestTranslator certificateSetRequestTranslator;
@@ -27,12 +24,12 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
     return new SecretKind.Mapping<NamedSecret, NamedSecret>() {
       @Override
       public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
-        return processSecret((NamedValueSecret)namedSecret, NamedValueSecret::new, secretPath, valueSetRequestTranslator, parsed);
+        return processSecret((NamedValueSecret)namedSecret, NamedValueSecret::new, secretPath, stringSetRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret password(SecretKind secretKind, NamedSecret namedSecret) {
-        return processSecret((NamedPasswordSecret)namedSecret, NamedPasswordSecret::new, secretPath, passwordSetRequestTranslator, parsed);
+        return processSecret((NamedPasswordSecret)namedSecret, NamedPasswordSecret::new, secretPath, stringSetRequestTranslator, parsed);
       }
 
       @Override

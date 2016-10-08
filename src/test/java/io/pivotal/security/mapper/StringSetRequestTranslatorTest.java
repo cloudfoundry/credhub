@@ -27,12 +27,12 @@ import org.springframework.test.context.BootstrapWith;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
-public class ValueSetRequestTranslatorTest {
+public class StringSetRequestTranslatorTest {
 
   @Autowired
   private Configuration jsonConfiguration;
 
-  private ValueSetRequestTranslator subject;
+  private StringSetRequestTranslator subject;
 
   private NamedValueSecret entity;
 
@@ -41,7 +41,7 @@ public class ValueSetRequestTranslatorTest {
 
     describe("populating entity from JSON", () -> {
       beforeEach(() -> {
-        subject = new ValueSetRequestTranslator();
+        subject = new StringSetRequestTranslator();
         entity = new NamedValueSecret("rick");
       });
 

@@ -35,10 +35,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
   Configuration configuration;
 
   @Mock
-  ValueSetRequestTranslator valueSetRequestTranslator;
-
-  @Mock
-  PasswordSetRequestTranslator passwordSetRequestTranslator;
+  StringSetRequestTranslator stringSetRequestTranslator;
 
   @Mock
   CertificateSetRequestTranslator certificateSetRequestTranslator;
@@ -50,9 +47,9 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     describe("it verifies the secret type and secret creation for", () -> {
       beforeEach(injectMocks(this));
 
-      describe("value", behavesLikeMapper(() -> subject, () -> subject.valueSetRequestTranslator, SecretKind.VALUE, NamedValueSecret.class, new NamedCertificateSecret(), new NamedValueSecret()));
+      describe("value", behavesLikeMapper(() -> subject, () -> subject.stringSetRequestTranslator, SecretKind.VALUE, NamedValueSecret.class, new NamedCertificateSecret(), new NamedValueSecret()));
 
-      describe("password", behavesLikeMapper(() -> subject, () -> subject.passwordSetRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
+      describe("password", behavesLikeMapper(() -> subject, () -> subject.stringSetRequestTranslator, SecretKind.PASSWORD, NamedPasswordSecret.class, new NamedValueSecret(), new NamedPasswordSecret()));
 
       describe("certificate", behavesLikeMapper(() -> subject, () -> subject.certificateSetRequestTranslator, SecretKind.CERTIFICATE, NamedCertificateSecret.class, new NamedPasswordSecret(), new NamedCertificateSecret()));
 
@@ -64,10 +61,10 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     describe("verifies full set of keys for", () -> {
       wireAndUnwire(this);
 
-      it("value", validateJsonKeys(() -> realSubject.valueSetRequestTranslator,
+      it("value", validateJsonKeys(() -> realSubject.stringSetRequestTranslator,
           "{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));
 
-      it("password", validateJsonKeys(() -> realSubject.passwordSetRequestTranslator,
+      it("password", validateJsonKeys(() -> realSubject.stringSetRequestTranslator,
           "{\"type\":\"password\",\"value\":\"myValue\",\"overwrite\":true}"));
 
       it("certificate", validateJsonKeys(() -> realSubject.certificateSetRequestTranslator,
