@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.JpaAuditingHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.flywaydb.core.Flyway;
 import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
@@ -69,6 +70,10 @@ public class SpectrumHelper {
       Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
       flyway.clean();
       flyway.migrate();
+    });
+    afterEach(() -> {
+      DataSource dataSource = myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class);
+      dataSource.purge();
     });
   }
 

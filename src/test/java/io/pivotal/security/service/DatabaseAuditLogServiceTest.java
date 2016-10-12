@@ -25,9 +25,10 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import java.time.Instant;
+import java.util.List;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -35,13 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.List;
+import static org.mockito.Mockito.*;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)

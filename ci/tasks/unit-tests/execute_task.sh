@@ -2,7 +2,8 @@
 
 set -eux
 
-fly \
+echo "Database Profile = $1"
+DATABASE_PROFILE=$1 fly \
   -t private \
   execute \
   -c task.yml \
