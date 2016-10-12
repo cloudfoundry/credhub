@@ -1,5 +1,7 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.view.SecretKind;
+
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -23,5 +25,10 @@ public class NamedValueSecret extends NamedStringSecret {
   @Override
   public String getSecretType() {
     return "value";
+  }
+
+  @Override
+  public SecretKind getKind() {
+    return SecretKind.VALUE;
   }
 }

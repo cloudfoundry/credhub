@@ -1,5 +1,7 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.view.SecretKind;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -55,5 +57,10 @@ public class NamedCertificateSecret extends NamedSecret {
   public NamedCertificateSecret setPrivateKey(String privateKey) {
     new SecretEncryptionHelper().refreshEncryptedValue(this, privateKey);
     return this;
+  }
+
+  @Override
+  public SecretKind getKind() {
+    return SecretKind.CERTIFICATE;
   }
 }

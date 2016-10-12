@@ -1,5 +1,6 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.view.SecretKind;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -97,6 +98,8 @@ abstract public class NamedSecret implements EncryptedValueContainer {
   public void setUuid(String uuid) {
     this.uuid = uuid;
   }
+
+  public abstract SecretKind getKind();
 
   @PrePersist
   @PreUpdate

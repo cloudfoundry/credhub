@@ -1,6 +1,10 @@
 package io.pivotal.security.entity;
 
-import javax.persistence.*;
+import io.pivotal.security.view.SecretKind;
+
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "SshSecret")
@@ -12,5 +16,9 @@ public class NamedSshSecret extends NamedRsaSshSecret {
 
   public NamedSshSecret(String name) {
     super(name);
+  }
+
+  public SecretKind getKind() {
+    return SecretKind.SSH;
   }
 }

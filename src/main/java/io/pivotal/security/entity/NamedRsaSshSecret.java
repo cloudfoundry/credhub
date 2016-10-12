@@ -1,10 +1,13 @@
 package io.pivotal.security.entity;
 
 
-import javax.persistence.*;
+import io.pivotal.security.view.SecretKind;
+
+import javax.persistence.Column;
+import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public class NamedRsaSshSecret extends NamedSecret {
+public abstract class NamedRsaSshSecret extends NamedSecret {
   @Column(length = 7000)
   private String publicKey;
 
@@ -30,4 +33,5 @@ public class NamedRsaSshSecret extends NamedSecret {
     return (T) this;
   }
 
+  public abstract SecretKind getKind();
 }
