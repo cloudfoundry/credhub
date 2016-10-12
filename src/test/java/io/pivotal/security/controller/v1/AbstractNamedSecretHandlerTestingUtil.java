@@ -1,15 +1,12 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -19,15 +16,11 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.verify;
 
 public class AbstractNamedSecretHandlerTestingUtil {
-
-  @Autowired
-  Configuration configuration;
 
   @Mock
   DocumentContext documentContext;
@@ -59,13 +52,6 @@ public class AbstractNamedSecretHandlerTestingUtil {
         verify(expectedTranslator).populateEntityFromJson(existingEntity, documentContext);
         assertThat(namedSecret, sameInstance(existingEntity));
       });
-    };
-  }
-
-  protected Spectrum.Block validateJsonKeys(Supplier<RequestTranslator> translatorSupplier, String requestJson) {
-    return () -> {
-      final DocumentContext parsed = JsonPath.using(configuration).parse(requestJson);
-      translatorSupplier.get().validateJsonKeys(parsed);
     };
   }
 }

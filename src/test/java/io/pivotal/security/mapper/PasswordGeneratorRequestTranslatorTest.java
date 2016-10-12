@@ -2,15 +2,15 @@ package io.pivotal.security.mapper;
 
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.controller.v1.StringSecretParameters;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
@@ -19,8 +19,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
-
-import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -40,7 +38,7 @@ import static org.mockito.Mockito.when;
 public class PasswordGeneratorRequestTranslatorTest {
 
   @Autowired
-  Configuration configuration;
+  ParseContext jsonPath;
 
   @Mock
   SecretGenerator secretGenerator;
@@ -57,7 +55,7 @@ public class PasswordGeneratorRequestTranslatorTest {
 
     it("returns a StringGeneratorRequest for valid json", () -> {
       String json = "{\"type\":\"password\"}";
-      StringSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      StringSecretParameters params = subject.validRequestParameters(jsonPath.parse(json));
       StringSecretParameters expectedParameters = new StringSecretParameters();
       expectedParameters.setType("password");
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
@@ -75,7 +73,7 @@ public class PasswordGeneratorRequestTranslatorTest {
           "}" +
           "}";
       try {
-        subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+        subject.validRequestParameters(jsonPath.parse(json));
         fail();
       } catch (ParameterizedValidationException ve) {
         assertThat(ve.getMessage(), equalTo("error.excludes_all_charsets"));
@@ -86,7 +84,7 @@ public class PasswordGeneratorRequestTranslatorTest {
       final NamedPasswordSecret secret = new NamedPasswordSecret("abc");
 
       String requestJson = "{\"type\":\"password\"}";
-      DocumentContext parsed = JsonPath.using(configuration).parse(requestJson);
+      DocumentContext parsed = jsonPath.parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);
       assertThat(secret.getValue(), notNullValue());
     });

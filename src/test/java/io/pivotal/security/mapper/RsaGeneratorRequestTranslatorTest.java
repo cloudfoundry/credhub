@@ -1,9 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
@@ -35,7 +34,7 @@ import static org.mockito.Mockito.*;
 public class RsaGeneratorRequestTranslatorTest {
 
   @Autowired
-  Configuration configuration;
+  ParseContext jsonPath;
 
   @Mock
   BCRsaGenerator secretGenerator;
@@ -65,7 +64,7 @@ public class RsaGeneratorRequestTranslatorTest {
               "\"key_length\":3072" +
             "}" +
             "}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(requestBody);
+        DocumentContext parsed = jsonPath.parse(requestBody);
 
         subject.validateJsonKeys(parsed);
         //pass
@@ -73,7 +72,7 @@ public class RsaGeneratorRequestTranslatorTest {
 
       itThrowsWithMessage("should throw if given invalid keys", ParameterizedValidationException.class, "error.invalid_json_key", () -> {
         String requestBody = "{\"type\":\"rsa\",\"foo\":\"invalid\"}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(requestBody);
+        DocumentContext parsed = jsonPath.parse(requestBody);
 
         subject.validateJsonKeys(parsed);
       });
@@ -87,7 +86,7 @@ public class RsaGeneratorRequestTranslatorTest {
 
       it("populates an entity", () -> {
         String json = "{\"type\":\"rsa\"}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+        DocumentContext parsed = jsonPath.parse(json);
 
         NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
         subject.populateEntityFromJson(namedRsaSecret, parsed);
@@ -100,7 +99,7 @@ public class RsaGeneratorRequestTranslatorTest {
 
       it("validates the parameters", () -> {
         String json = "{\"type\":\"rsa\"}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+        DocumentContext parsed = jsonPath.parse(json);
 
         NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
         subject.populateEntityFromJson(namedRsaSecret, parsed);
@@ -115,7 +114,7 @@ public class RsaGeneratorRequestTranslatorTest {
               "\"key_length\":3072" +
             "}" +
           "}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+        DocumentContext parsed = jsonPath.parse(json);
 
         NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
         subject.populateEntityFromJson(namedRsaSecret, parsed);

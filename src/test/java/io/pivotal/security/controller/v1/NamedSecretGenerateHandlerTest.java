@@ -1,8 +1,8 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.*;
@@ -36,7 +36,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
   NamedSecretGenerateHandler realSubject;
 
   @Autowired
-  Configuration configuration;
+  ParseContext jsonPath;
 
   @Mock
   PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
@@ -79,55 +79,59 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
     describe("verifies full set of keys for", () -> {
       wireAndUnwire(this);
 
-      it("password", validateJsonKeys(() -> realSubject.passwordGeneratorRequestTranslator,
-          "{\"type\":\"password\"," +
-          "\"overwrite\":true," +
-          "\"parameters\":{\"length\":2048," +
-              "\"exclude_lower\":true," +
-              "\"exclude_upper\":false," +
-              "\"exclude_number\":false," +
-              "\"exclude_special\":false}" +
-            "}")
+      it("password", () -> {
+            passwordGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\"," +
+                "\"overwrite\":true," +
+                "\"parameters\":{\"length\":2048," +
+                "\"exclude_lower\":true," +
+                "\"exclude_upper\":false," +
+                "\"exclude_number\":false," +
+                "\"exclude_special\":false}" +
+                "}"));
+          }
       );
 
-      it("certificate", validateJsonKeys(() -> realSubject.certificateGeneratorRequestTranslator,
-        "{\"type\":\"certificate\"," +
-        "\"overwrite\":true," +
-        "\"parameters\":{" +
-            "\"common_name\":\"My Common Name\", " +
-            "\"organization\": \"organization.io\"," +
-            "\"organization_unit\": \"My Unit\"," +
-            "\"locality\": \"My Locality\"," +
-            "\"state\": \"My State\"," +
-            "\"country\": \"My Country\"," +
-            "\"key_length\": 3072," +
-            "\"duration\": 1000," +
-            "\"alternative_names\": []," +
-            "\"ca\": \"default\"," +
-            "}" +
-          "}")
+      it("certificate", () -> {
+            certificateGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"certificate\"," +
+                "\"overwrite\":true," +
+                "\"parameters\":{" +
+                "\"common_name\":\"My Common Name\", " +
+                "\"organization\": \"organization.io\"," +
+                "\"organization_unit\": \"My Unit\"," +
+                "\"locality\": \"My Locality\"," +
+                "\"state\": \"My State\"," +
+                "\"country\": \"My Country\"," +
+                "\"key_length\": 3072," +
+                "\"duration\": 1000," +
+                "\"alternative_names\": []," +
+                "\"ca\": \"default\"," +
+                "}" +
+                "}"));
+          }
       );
 
-     it("ssh", validateJsonKeys(() -> realSubject.sshGeneratorRequestTranslator,
-        "{" +
-        "\"type\":\"ssh\"," +
-        "\"overwrite\":true," +
-        "\"parameters\":{" +
-            "\"key_length\":3072," +
-            "\"ssh_comment\":\"ssh comment\"" +
-          "}" +
-        "}")
-     );
+      it("ssh", () -> {
+            sshGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{" +
+                "\"type\":\"ssh\"," +
+                "\"overwrite\":true," +
+                "\"parameters\":{" +
+                "\"key_length\":3072," +
+                "\"ssh_comment\":\"ssh comment\"" +
+                "}" +
+                "}"));
+          }
+      );
 
-     it("rsa", validateJsonKeys(() -> realSubject.rsaGeneratorRequestTranslator,
-        "{" +
-        "\"type\":\"rsa\"," +
-        "\"overwrite\":true," +
-        "\"parameters\":{" +
-            "\"key_length\":2048" +
-        "}" +
-        "}")
-     );
+      it("rsa", () -> {
+            rsaGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{" +
+                "\"type\":\"rsa\"," +
+                "\"overwrite\":true," +
+                "\"parameters\":{" +
+                "\"key_length\":2048" +
+                "}" +
+                "}"));
+          }
+      );
     });
   }
 }

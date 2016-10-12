@@ -1,9 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
@@ -39,7 +38,7 @@ import static org.mockito.Mockito.*;
 public class CertificateGeneratorRequestTranslatorTest {
 
   @Autowired
-  Configuration configuration;
+  ParseContext jsonPath;
 
   @Mock
   SecretGenerator secretGenerator;
@@ -90,7 +89,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setKeyLength(3072);
       expectedParameters.addAlternativeName("My Alternative Name 1");
       expectedParameters.addAlternativeName("My Alternative Name 2");
-      DocumentContext parsed = JsonPath.using(configuration).parse(json);
+      DocumentContext parsed = jsonPath.parse(json);
 
       subject.validateJsonKeys(parsed);
       CertificateSecretParameters params = subject.validRequestParameters(parsed);
@@ -111,7 +110,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
       expectedParameters.setType("certificate");
-      DocumentContext parsed = JsonPath.using(configuration).parse(json);
+      DocumentContext parsed = jsonPath.parse(json);
 
       CertificateSecretParameters params = subject.validRequestParameters(parsed);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
@@ -128,7 +127,7 @@ public class CertificateGeneratorRequestTranslatorTest {
             "\"parameters\":{" +
             "}" +
             "}";
-        parsed = JsonPath.using(configuration).parse(json);
+        parsed = jsonPath.parse(json);
       });
 
       it("fails on a certificate generator request", () -> {
@@ -170,7 +169,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.addAlternativeName("boo pivotal.io");
 
       subject.validateJsonKeys(parsed);
-      CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json));
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -190,7 +189,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setCountry("My Country");
       expectedParameters.setType("certificate");
       expectedParameters.setKeyLength(2048);
-      DocumentContext parsed = JsonPath.using(configuration).parse(json);
+      DocumentContext parsed = jsonPath.parse(json);
 
       CertificateSecretParameters params = subject.validRequestParameters(parsed);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
@@ -213,7 +212,7 @@ public class CertificateGeneratorRequestTranslatorTest {
             "\"foo\": \"bar\"," +
             "}" +
             "}";
-        parsed = JsonPath.using(configuration).parse(json);
+        parsed = jsonPath.parse(json);
         subject.validateJsonKeys(parsed);
       });
     });
@@ -223,7 +222,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       beforeEach(() -> {
         mockParams = mock(CertificateSecretParameters.class);
         when(certificateSecretParametersFactory.get()).thenReturn(mockParams);
-        parsed = JsonPath.using(configuration).parse("{}");
+        parsed = jsonPath.parse("{}");
       });
 
       it("on a certificate generator request", () -> {
@@ -255,7 +254,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setType("certificate");
       expectedParameters.setKeyLength(3072);
 
-      CertificateSecretParameters params = subject.validRequestParameters(JsonPath.using(configuration).parse(json));
+      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json));
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -265,7 +264,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       final NamedCertificateSecret secret = new NamedCertificateSecret("abc");
       String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\"}}";
-      parsed = JsonPath.using(configuration).parse(requestJson);
+      parsed = jsonPath.parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);
 
       verify(secretGenerator).generateSecret(isA(CertificateSecretParameters.class));

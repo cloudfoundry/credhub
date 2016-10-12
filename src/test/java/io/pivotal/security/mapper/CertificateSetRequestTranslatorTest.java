@@ -1,27 +1,23 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-
-import io.pivotal.security.view.ParameterizedValidationException;
-import org.springframework.test.context.BootstrapWith;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -30,7 +26,7 @@ import org.springframework.test.context.BootstrapWith;
 public class CertificateSetRequestTranslatorTest {
 
   @Autowired
-  private Configuration jsonConfiguration;
+  private ParseContext jsonPath;
 
   private CertificateSetRequestTranslator subject;
 
@@ -64,7 +60,7 @@ public class CertificateSetRequestTranslatorTest {
 
   private void checkEntity(String expectedRoot, String expectedCertificate, String expectedPrivateKey, String root, String certificate, String privateKey) {
     String requestJson = createJson(root, certificate, privateKey);
-    DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+    DocumentContext parsed = jsonPath.parse(requestJson);
     subject.populateEntityFromJson(entity, parsed);
     assertThat(entity.getCa(), equalTo(expectedRoot));
     assertThat(entity.getCertificate(), equalTo(expectedCertificate));

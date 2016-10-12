@@ -1,8 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -12,10 +12,11 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.util.Set;
+
 import static com.google.common.collect.ImmutableSet.of;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static com.jayway.jsonpath.JsonPath.using;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,15 +24,14 @@ import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import java.util.Set;
-
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
 public class RequestTranslatorTest {
+
   @Autowired
-  Configuration jsonPathConfiguration;
+  ParseContext jsonPath;
 
   {
     RequestTranslator subject = new RequestTranslator() {
@@ -51,7 +51,7 @@ public class RequestTranslatorTest {
     describe("populating entity from JSON", () -> {
       it("can accept all these valid keys", () -> {
         String requestBody = "{\"foo\":\"value\",\"bar\":\"\",\"baz\":{\"quux\":false}}";
-        subject.validateJsonKeys(using(jsonPathConfiguration).parse(requestBody));
+        subject.validateJsonKeys(jsonPath.parse(requestBody));
       });
 
       it("rejects additional keys at top level", () -> {
@@ -66,7 +66,7 @@ public class RequestTranslatorTest {
 
       it("accepts references from a dynamic array", () -> {
         String requestJson = "{\"foo\":\"value\",\"bar\":\"\",\"dynamic\":[\"key1\",\"key2\"]}";
-        subject.validateJsonKeys(using(jsonPathConfiguration).parse(requestJson));
+        subject.validateJsonKeys(jsonPath.parse(requestJson));
       });
     });
 
@@ -92,7 +92,7 @@ public class RequestTranslatorTest {
 
   private void doInvalidTest(RequestTranslator subject, String requestBody, String invalidKey) {
     try {
-      subject.validateJsonKeys(using(jsonPathConfiguration).parse(requestBody));
+      subject.validateJsonKeys(jsonPath.parse(requestBody));
       fail();
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_json_key"));

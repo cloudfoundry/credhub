@@ -1,15 +1,15 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -18,6 +18,7 @@ import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
@@ -28,9 +29,6 @@ import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
-import io.pivotal.security.view.ParameterizedValidationException;
-import org.springframework.test.context.BootstrapWith;
-
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
@@ -38,7 +36,7 @@ import org.springframework.test.context.BootstrapWith;
 public class CAGeneratorRequestTranslatorTest {
 
   @Autowired
-  private Configuration jsonConfiguration;
+  ParseContext jsonPath;
 
   @InjectMocks
   @Autowired
@@ -84,7 +82,7 @@ public class CAGeneratorRequestTranslatorTest {
             "\"duration\": 365" +
             "}" +
             "}";
-        parsed = JsonPath.using(jsonConfiguration).parse(json);
+        parsed = jsonPath.parse(json);
       });
 
       it("validates the json keys", () -> {
@@ -110,12 +108,12 @@ public class CAGeneratorRequestTranslatorTest {
       });
 
       itThrows("returns error when type is not 'root'", ParameterizedValidationException.class, () -> {
-        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{\"type\":\"notRoot\"}");
+        DocumentContext parsed = jsonPath.parse("{\"type\":\"notRoot\"}");
         subject.createAuthorityFromJson(parsed);
       });
 
       itThrows("returns error when type is not provided", ParameterizedValidationException.class, () -> {
-        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse("{}");
+        DocumentContext parsed = jsonPath.parse("{}");
         subject.createAuthorityFromJson(parsed);
       });
     });
@@ -127,7 +125,7 @@ public class CAGeneratorRequestTranslatorTest {
             "\"foo\":\"bar\"" +
             "}";
 
-        parsed = JsonPath.using(jsonConfiguration).parse(json);
+        parsed = jsonPath.parse(json);
         subject.validateJsonKeys(parsed);
       });
     });

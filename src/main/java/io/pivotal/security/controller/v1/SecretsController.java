@@ -1,8 +1,7 @@
 package io.pivotal.security.controller.v1;
 
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
@@ -51,7 +50,7 @@ public class SecretsController {
   NamedSecretSetHandler namedSecretSetHandler;
 
   @Autowired
-  Configuration jsonPathConfiguration;
+  ParseContext jsonPath;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
@@ -156,7 +155,7 @@ public class SecretsController {
   }
 
   private ResponseEntity<?> auditedStoreSecret(InputStream requestBody, HttpServletRequest request, Authentication authentication, SecretKindMappingFactory handler) throws Exception {
-    final DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
+    final DocumentContext parsed = jsonPath.parse(requestBody);
 
     String secretPath = secretPath(request);
     NamedSecret namedSecret = secretRepository.findOneByNameIgnoreCase(secretPath);

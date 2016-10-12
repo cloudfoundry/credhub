@@ -1,8 +1,7 @@
 package io.pivotal.security.controller.v1;
 
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
@@ -21,19 +20,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -42,7 +35,7 @@ public class CaController {
   public static final String API_V1_CA = "/api/v1/ca";
 
   @Autowired
-  Configuration jsonPathConfiguration;
+  ParseContext jsonPath;
 
   @Autowired
   CertificateAuthorityRepository caRepository;
@@ -86,7 +79,7 @@ public class CaController {
   }
 
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
-    DocumentContext parsed = JsonPath.using(jsonPathConfiguration).parse(requestBody);
+    DocumentContext parsed = jsonPath.parse(requestBody);
     NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByNameIgnoreCase(caPath);
     if (namedCertificateAuthority == null) {
       namedCertificateAuthority = new NamedCertificateAuthority(caPath);

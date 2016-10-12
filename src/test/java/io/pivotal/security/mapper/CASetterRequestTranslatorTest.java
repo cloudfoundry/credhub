@@ -1,9 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateAuthority;
@@ -27,7 +26,7 @@ import static org.junit.Assert.assertThat;
 public class CASetterRequestTranslatorTest {
 
   @Autowired
-  private Configuration jsonConfiguration;
+  ParseContext jsonPath;
 
   private NamedCertificateAuthority entity;
 
@@ -48,7 +47,7 @@ public class CASetterRequestTranslatorTest {
                 "\"value\":{" +
                 "\"certificate\":\"a\"," +
                 "\"private_key\":\"b\"}}";
-        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+        DocumentContext parsed = jsonPath.parse(requestJson);
         subject.validateJsonKeys(parsed);
         // no exception
       });
@@ -56,7 +55,7 @@ public class CASetterRequestTranslatorTest {
       it("populates CA entity for valid scenarios", () -> {
         CertificateAuthority expected = new CertificateAuthority("root", "a", "b");
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
-        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+        DocumentContext parsed = jsonPath.parse(requestJson);
         subject.populateEntityFromJson(entity, parsed);
 
         assertThat(CertificateAuthority.fromEntity(entity), BeanMatchers.theSameAs(expected));
@@ -82,7 +81,7 @@ public class CASetterRequestTranslatorTest {
     describe("when random parameters are provided", () -> {
       itThrows("it rejects request", ParameterizedValidationException.class, () -> {
         String requestJson = "{\"type\":\"root\",\"foo\":\"bar\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
-        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+        DocumentContext parsed = jsonPath.parse(requestJson);
 
         subject.validateJsonKeys(parsed);
       });
@@ -92,7 +91,7 @@ public class CASetterRequestTranslatorTest {
   private void doTestInvalid(String type, String certificate, String privateKey) throws ParameterizedValidationException {
     String requestJson = "{\"type\":" + type + ",\"value\":{\"certificate\":\"" + certificate + "\",\"private_key\":\"" + privateKey + "\"}}";
 
-    DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+    DocumentContext parsed = jsonPath.parse(requestJson);
     subject.populateEntityFromJson(entity, parsed);
   }
 }

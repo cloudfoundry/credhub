@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.Option;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.AuthServerProperties;
 import io.pivotal.security.entity.JpaAuditingHandlerRegistrar;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -27,7 +29,7 @@ import java.time.format.DateTimeFormatter;
 import static java.time.format.DateTimeFormatter.ofPattern;
 
 @SpringBootApplication
-@EnableConfigurationProperties({ AuthServerProperties.class })
+@EnableConfigurationProperties({AuthServerProperties.class})
 @EnableJpaAuditing(dateTimeProviderRef = "currentTimeProvider")
 @Import(JpaAuditingHandlerRegistrar.class)
 public class CredentialManagerApp {
@@ -39,9 +41,10 @@ public class CredentialManagerApp {
   }
 
   @Bean
-  Configuration getConfiguration() {
-    return Configuration.defaultConfiguration()
+  ParseContext jsonPath() {
+    Configuration configuration = Configuration.defaultConfiguration()
         .addOptions(Option.SUPPRESS_EXCEPTIONS);
+    return JsonPath.using(configuration);
   }
 
   @Bean(name = "currentTimeProvider")

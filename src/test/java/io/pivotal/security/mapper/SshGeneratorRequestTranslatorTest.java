@@ -1,9 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.SshSecretParameters;
@@ -35,7 +34,7 @@ import static org.mockito.Mockito.*;
 public class SshGeneratorRequestTranslatorTest {
 
   @Autowired
-  Configuration configuration;
+  ParseContext jsonPath;
 
   @Mock
   BCSshGenerator secretGenerator;
@@ -66,7 +65,7 @@ public class SshGeneratorRequestTranslatorTest {
               "\"ssh_comment\":\"commentcommentcomment\"" +
             "}" +
             "}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(requestBody);
+        DocumentContext parsed = jsonPath.parse(requestBody);
 
         subject.validateJsonKeys(parsed);
         //pass
@@ -74,7 +73,7 @@ public class SshGeneratorRequestTranslatorTest {
 
       itThrowsWithMessage("should throw if given invalid keys", ParameterizedValidationException.class, "error.invalid_json_key", () -> {
         String requestBody = "{\"type\":\"ssh\",\"foo\":\"invalid\"}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(requestBody);
+        DocumentContext parsed = jsonPath.parse(requestBody);
 
         subject.validateJsonKeys(parsed);
       });
@@ -88,7 +87,7 @@ public class SshGeneratorRequestTranslatorTest {
 
       it("populates an entity", () -> {
         String json = "{\"type\":\"ssh\"}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+        DocumentContext parsed = jsonPath.parse(json);
 
         NamedSshSecret namedSshSecret = new NamedSshSecret();
         subject.populateEntityFromJson(namedSshSecret, parsed);
@@ -101,7 +100,7 @@ public class SshGeneratorRequestTranslatorTest {
 
       it("validates the parameters", () -> {
         String json = "{\"type\":\"ssh\"}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+        DocumentContext parsed = jsonPath.parse(json);
 
         NamedSshSecret namedSshSecret = new NamedSshSecret();
         subject.populateEntityFromJson(namedSshSecret, parsed);
@@ -117,7 +116,7 @@ public class SshGeneratorRequestTranslatorTest {
               "\"ssh_comment\":\"this is an ssh comment\"" +
             "}" +
           "}";
-        DocumentContext parsed = JsonPath.using(configuration).parse(json);
+        DocumentContext parsed = jsonPath.parse(json);
 
         NamedSshSecret namedSshSecret = new NamedSshSecret();
         subject.populateEntityFromJson(namedSshSecret, parsed);

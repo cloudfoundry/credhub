@@ -1,11 +1,13 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.*;
-import io.pivotal.security.mapper.*;
+import io.pivotal.security.mapper.CertificateSetRequestTranslator;
+import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
+import io.pivotal.security.mapper.StringSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -32,7 +34,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
   NamedSecretSetHandler realSubject;
 
   @Autowired
-  Configuration configuration;
+  ParseContext jsonPath;
 
   @Mock
   StringSetRequestTranslator stringSetRequestTranslator;
@@ -61,33 +63,38 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     describe("verifies full set of keys for", () -> {
       wireAndUnwire(this);
 
-      it("value", validateJsonKeys(() -> realSubject.stringSetRequestTranslator,
-          "{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));
+      it("value", () -> {
+        stringSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));
+      });
 
-      it("password", validateJsonKeys(() -> realSubject.stringSetRequestTranslator,
-          "{\"type\":\"password\",\"value\":\"myValue\",\"overwrite\":true}"));
+      it("password", () -> {
+        stringSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\",\"value\":\"myValue\",\"overwrite\":true}"));
+      });
 
-      it("certificate", validateJsonKeys(() -> realSubject.certificateSetRequestTranslator,
-          "{\"type\":\"certificate\"," +
-          "\"overwrite\":true," +
-          "\"value\":{" +
-              "\"ca\":\"ca\"," +
-              "\"certificate\":\"cert\"," +
-              "\"private_key\":\"pk\"}}"));
+      it("certificate", () -> {
+        certificateSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"certificate\"," +
+            "\"overwrite\":true," +
+            "\"value\":{" +
+            "\"ca\":\"ca\"," +
+            "\"certificate\":\"cert\"," +
+            "\"private_key\":\"pk\"}}"));
+      });
 
-      it("ssh", validateJsonKeys(() -> realSubject.rsaSshSetRequestTranslator,
-          "{\"type\":\"ssh\"," +
-              "\"overwrite\":true," +
-              "\"value\":{" +
-              "\"public_key\":\"public-key\"," +
-              "\"private_key\":\"private-key\"}}"));
+      it("ssh", () -> {
+        rsaSshSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"ssh\"," +
+            "\"overwrite\":true," +
+            "\"value\":{" +
+            "\"public_key\":\"public-key\"," +
+            "\"private_key\":\"private-key\"}}"));
+      });
 
-      it("rsa", validateJsonKeys(() -> realSubject.rsaSshSetRequestTranslator,
-          "{\"type\":\"rsa\"," +
-              "\"overwrite\":true," +
-              "\"value\":{" +
-              "\"public_key\":\"public-key\"," +
-              "\"private_key\":\"private-key\"}}"));
+      it("rsa", () -> {
+        rsaSshSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"rsa\"," +
+            "\"overwrite\":true," +
+            "\"value\":{" +
+            "\"public_key\":\"public-key\"," +
+            "\"private_key\":\"private-key\"}}"));
+      });
     });
   }
 }

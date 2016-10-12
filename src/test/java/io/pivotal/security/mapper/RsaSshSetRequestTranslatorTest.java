@@ -1,9 +1,8 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedRsaSecret;
@@ -26,7 +25,7 @@ import static org.junit.Assert.assertThat;
 @ActiveProfiles("unit-test")
 public class RsaSshSetRequestTranslatorTest {
   @Autowired
-  private Configuration jsonConfiguration;
+  private ParseContext jsonPath;
 
   private RsaSshSetRequestTranslator subject;
 
@@ -63,7 +62,7 @@ public class RsaSshSetRequestTranslatorTest {
             "\"private_key\":\"someprivatekey\"" +
             "}" +
             "}";
-        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestBody);
+        DocumentContext parsed = jsonPath.parse(requestBody);
 
         subject.validateJsonKeys(parsed);
         // pass
@@ -71,7 +70,7 @@ public class RsaSshSetRequestTranslatorTest {
 
       itThrowsWithMessage("should throw if given invalid keys", ParameterizedValidationException.class, "error.invalid_json_key", () -> {
         String requestBody = "{\"type\":\"rsa\",\"foo\":\"invalid\"}";
-        DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestBody);
+        DocumentContext parsed = jsonPath.parse(requestBody);
 
         subject.validateJsonKeys(parsed);
       });
@@ -80,7 +79,7 @@ public class RsaSshSetRequestTranslatorTest {
 
   private void checkEntity(String expectedPublicKey, String expectedPrivateKey, String actualPublicKey, String actualPrivateKey) {
     String requestJson = createJson(actualPublicKey, actualPrivateKey);
-    DocumentContext parsed = JsonPath.using(jsonConfiguration).parse(requestJson);
+    DocumentContext parsed = jsonPath.parse(requestJson);
     subject.populateEntityFromJson(entity, parsed);
     assertThat(entity.getPublicKey(), equalTo(expectedPublicKey));
     assertThat(entity.getPrivateKey(), equalTo(expectedPrivateKey));
