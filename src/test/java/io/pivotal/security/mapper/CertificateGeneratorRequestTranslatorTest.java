@@ -92,7 +92,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       DocumentContext parsed = jsonPath.parse(json);
 
       subject.validateJsonKeys(parsed);
-      CertificateSecretParameters params = subject.validRequestParameters(parsed);
+      CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -112,11 +112,11 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setType("certificate");
       DocumentContext parsed = jsonPath.parse(json);
 
-      CertificateSecretParameters params = subject.validRequestParameters(parsed);
+      CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
 
       subject.validateJsonKeys(parsed);
-      params = subject.validRequestParameters(parsed);
+      params = subject.validRequestParameters(parsed, null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -132,7 +132,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       it("fails on a certificate generator request", () -> {
         try {
-          subject.validRequestParameters(parsed);
+          subject.validRequestParameters(parsed, null);
           fail();
         } catch (ParameterizedValidationException ve) {
           assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
@@ -169,7 +169,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.addAlternativeName("boo pivotal.io");
 
       subject.validateJsonKeys(parsed);
-      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json));
+      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -191,11 +191,11 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setKeyLength(2048);
       DocumentContext parsed = jsonPath.parse(json);
 
-      CertificateSecretParameters params = subject.validRequestParameters(parsed);
+      CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
 
       subject.validateJsonKeys(parsed);
-      params = subject.validRequestParameters(parsed);
+      params = subject.validRequestParameters(parsed, null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -226,7 +226,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
 
       it("on a certificate generator request", () -> {
-        subject.validRequestParameters(parsed);
+        subject.validRequestParameters(parsed, null);
         verify(mockParams, times(2)).validate();
       });
 
@@ -254,7 +254,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setType("certificate");
       expectedParameters.setKeyLength(3072);
 
-      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json));
+      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 

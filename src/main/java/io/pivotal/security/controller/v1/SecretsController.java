@@ -162,8 +162,9 @@ public class SecretsController {
 
     boolean willBeCreated = namedSecret == null;
     boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
+    boolean regenerate = BooleanUtils.isTrue(parsed.read("$.regenerate", Boolean.class));
 
-    boolean willWrite = willBeCreated || overwrite;
+    boolean willWrite = willBeCreated || overwrite || regenerate;
     String operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
 
     return audit(operationCode, request, authentication, () -> {

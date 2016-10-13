@@ -86,11 +86,11 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   }
 
   public String getPrivateKey() {
-    return new SecretEncryptionHelper().retrieveClearTextValue(this);
+    return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }
 
   public NamedCertificateAuthority setPrivateKey(String privateKey) {
-    new SecretEncryptionHelper().refreshEncryptedValue(this, privateKey);
+    SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, privateKey);
     return this;
   }
 

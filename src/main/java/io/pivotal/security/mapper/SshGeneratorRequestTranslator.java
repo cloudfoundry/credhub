@@ -16,7 +16,7 @@ import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class SshGeneratorRequestTranslator
-    implements RequestTranslator<NamedSshSecret>, SecretGeneratorRequestTranslator<SshSecretParameters> {
+    implements RequestTranslator<NamedSshSecret>, SecretGeneratorRequestTranslator<SshSecretParameters, NamedSshSecret> {
 
   @Autowired
   BCSshGenerator sshGenerator;
@@ -24,7 +24,8 @@ public class SshGeneratorRequestTranslator
   @Autowired
   SshSecretParametersFactory sshSecretParametersFactory;
 
-  public SshSecretParameters validRequestParameters(DocumentContext parsed) {
+  @Override
+  public SshSecretParameters validRequestParameters(DocumentContext parsed, NamedSshSecret entity) {
     SshSecretParameters sshSecretParameters = sshSecretParametersFactory.get();
 
     Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
@@ -39,7 +40,7 @@ public class SshGeneratorRequestTranslator
 
   @Override
   public void populateEntityFromJson(NamedSshSecret namedSshSecret, DocumentContext documentContext) {
-    SshSecretParameters sshSecretParameters = validRequestParameters(documentContext);
+    SshSecretParameters sshSecretParameters = validRequestParameters(documentContext, namedSshSecret);
     final SshSecret sshSecret = sshGenerator.generateSecret(sshSecretParameters);
 
     namedSshSecret.setPublicKey(sshSecret.getSshBody().getPublicKey());

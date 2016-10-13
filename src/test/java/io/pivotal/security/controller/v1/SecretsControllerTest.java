@@ -13,6 +13,7 @@ import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
+import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -38,7 +39,8 @@ import java.util.function.Supplier;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.*;
 import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -468,6 +470,52 @@ public class SecretsControllerTest {
 
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
+      describe("regenerating a password", () -> {
+        beforeEach(() -> {
+          when(namedSecretGenerateHandler.make(eq("my-password"), isA(DocumentContext.class)))
+              .thenReturn(new SecretKind.StaticMapping(null, new NamedPasswordSecret("my-password", "original"), null, null, null));
+
+          mockMvc.perform(post("/api/v1/data/my-password")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"password\"," +
+                  "}"));
+
+          resetAuditLogMock();
+
+          when(namedSecretGenerateHandler.make(eq("my-password"), isA(DocumentContext.class)))
+              .thenReturn(new DefaultMapping() {
+                @Override
+                public NamedSecret password(SecretKind secretKind, NamedSecret namedSecret) {
+                  Assert.assertEquals(secretKind, SecretKind.PASSWORD);
+                  ((NamedPasswordSecret) namedSecret).setValue("regenerated");
+                  return namedSecret;
+                }
+              });
+
+          fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
+
+          response = mockMvc.perform(post("/api/v1/data/my-password")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"regenerate\":true}"));
+        });
+
+        it("should regenerate the secret", () -> {
+          this.response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("password"))
+              .andExpect(jsonPath("$.value").value("regenerated"))
+              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
     });

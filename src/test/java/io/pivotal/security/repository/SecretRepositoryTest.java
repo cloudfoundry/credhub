@@ -3,23 +3,25 @@ package io.pivotal.security.repository;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.entity.*;
-import org.hamcrest.MatcherAssert;
+import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.entity.NamedValueSecret;
+import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.*;
-import static org.exparity.hamcrest.BeanMatchers.theSameAs;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.exparity.hamcrest.BeanMatchers.hasProperty;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -69,7 +71,7 @@ public class SecretRepositoryTest {
       assertThat(((NamedStringSecret) subject.findOneByNameIgnoreCase(secretName)).getValue().length(), equalTo(7000));
     });
 
-    it("canFetchReverseChronologicallySortedCredentials", () -> {
+    it("can fetch credentials sorted in reverse chronological order", () -> {
       String valueName = "value.Secret";
       String passwordName = "password/Secret";
       String certificateName = "certif/ic/atesecret";
@@ -81,13 +83,12 @@ public class SecretRepositoryTest {
       subject.save(new NamedCertificateSecret("myseecret"));
       fakeTimeSetter.accept(30000000L);
       subject.save(new NamedCertificateSecret(certificateName));
-      List<NamedSecret> expectedResults = newArrayList(
-          new NamedCertificateSecret(certificateName).setUpdatedAt(Instant.ofEpochSecond(30000L, 0)),
-          new NamedValueSecret(valueName).setUpdatedAt(Instant.ofEpochSecond(20000L, 0)),
-          new NamedPasswordSecret(passwordName).setUpdatedAt(Instant.ofEpochSecond(10000L, 0)));
 
-      List<NamedSecret> results = subject.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc("Secret");
-      MatcherAssert.assertThat(results, theSameAs(expectedResults).excludeProperty("Id").excludeProperty("Uuid"));
+      assertThat(subject.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc("Secret"), IsIterableContainingInOrder.contains(
+          hasProperty("name", equalTo(certificateName)),
+          hasProperty("name", equalTo(valueName)),
+          hasProperty("name", equalTo(passwordName))
+      ));
     });
 
     describe("fetching paths", () -> {

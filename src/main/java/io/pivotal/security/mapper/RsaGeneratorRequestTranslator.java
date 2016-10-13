@@ -16,7 +16,7 @@ import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class RsaGeneratorRequestTranslator
-    implements RequestTranslator<NamedRsaSecret>, SecretGeneratorRequestTranslator<RsaSecretParameters> {
+    implements RequestTranslator<NamedRsaSecret>, SecretGeneratorRequestTranslator<RsaSecretParameters, NamedRsaSecret> {
 
   @Autowired
   BCRsaGenerator rsaGenerator;
@@ -24,7 +24,8 @@ public class RsaGeneratorRequestTranslator
   @Autowired
   RsaSecretParametersFactory rsaSecretParametersFactory;
 
-  public RsaSecretParameters validRequestParameters(DocumentContext parsed) {
+  @Override
+  public RsaSecretParameters validRequestParameters(DocumentContext parsed, NamedRsaSecret entity) {
     RsaSecretParameters rsaSecretParameters = rsaSecretParametersFactory.get();
     Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
         .ifPresent(rsaSecretParameters::setKeyLength);
@@ -36,7 +37,7 @@ public class RsaGeneratorRequestTranslator
 
   @Override
   public void populateEntityFromJson(NamedRsaSecret namedRsaSecret, DocumentContext documentContext) {
-    RsaSecretParameters rsaSecretParameters = validRequestParameters(documentContext);
+    RsaSecretParameters rsaSecretParameters = validRequestParameters(documentContext, namedRsaSecret);
     final RsaSecret rsaSecret = rsaGenerator.generateSecret(rsaSecretParameters);
 
     namedRsaSecret.setPrivateKey(rsaSecret.getRsaBody().getPrivateKey());

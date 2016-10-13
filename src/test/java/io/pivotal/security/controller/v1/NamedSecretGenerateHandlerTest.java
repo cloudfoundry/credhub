@@ -10,6 +10,7 @@ import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
+import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
@@ -37,6 +38,9 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
   @Autowired
   ParseContext jsonPath;
+
+  @Autowired
+  SecretRepository secretRepository;
 
   @Mock
   PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
@@ -82,6 +86,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       it("password", () -> {
             passwordGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\"," +
                 "\"overwrite\":true," +
+                "\"regenerate\":true," +
                 "\"parameters\":{\"length\":2048," +
                 "\"exclude_lower\":true," +
                 "\"exclude_upper\":false," +

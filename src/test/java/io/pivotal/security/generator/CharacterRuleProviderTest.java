@@ -2,7 +2,7 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.StringSecretParameters;
+import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -32,7 +32,7 @@ public class CharacterRuleProviderTest {
 
   @Test
   public void getCharacterRules() {
-    StringSecretParameters secretParameters = new StringSecretParameters();
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
     assertThat(characterRules, iterableWithSize(4));
@@ -40,7 +40,7 @@ public class CharacterRuleProviderTest {
 
   @Test
   public void getCharacterRulesWithoutUppercase() {
-    StringSecretParameters secretParameters = new StringSecretParameters();
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
     secretParameters.setExcludeUpper(true);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
@@ -54,7 +54,7 @@ public class CharacterRuleProviderTest {
 
   @Test
   public void getCharacterRulesWithoutLowercase() {
-    StringSecretParameters secretParameters = new StringSecretParameters();
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
     secretParameters.setExcludeLower(true);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
@@ -68,7 +68,7 @@ public class CharacterRuleProviderTest {
 
   @Test
   public void getCharacterRulesWithoutSpecial() {
-    StringSecretParameters secretParameters = new StringSecretParameters();
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
     secretParameters.setExcludeSpecial(true);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
@@ -82,7 +82,7 @@ public class CharacterRuleProviderTest {
 
   @Test
   public void getCharacterRulesWithoutNumber() {
-    StringSecretParameters secretParameters = new StringSecretParameters();
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
     secretParameters.setExcludeNumber(true);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
@@ -96,7 +96,7 @@ public class CharacterRuleProviderTest {
 
   @Test
   public void getCharacterRulesWithoutAny() {
-    StringSecretParameters secretParameters = new StringSecretParameters();
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
     secretParameters.setExcludeSpecial(true);
     secretParameters.setExcludeNumber(true);
     secretParameters.setExcludeUpper(true);

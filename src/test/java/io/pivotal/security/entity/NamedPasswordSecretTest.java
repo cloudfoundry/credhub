@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
@@ -28,16 +29,19 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class NamedPasswordSecretTest {
+
   @Autowired
   SecretRepository repository;
 
   @Autowired
-  public ObjectMapper objectMapper;
+  ObjectMapper objectMapper;
 
   @Autowired
   EncryptionService encryptionService;
 
   NamedPasswordSecret subject;
+
+  PasswordGenerationParameters generationParameters;
 
   {
     wireAndUnwire(this);
@@ -45,6 +49,11 @@ public class NamedPasswordSecretTest {
     beforeEach(() -> {
       subject = new NamedPasswordSecret("Foo");
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
+
+      generationParameters = new PasswordGenerationParameters();
+      generationParameters.setExcludeLower(true);
+      generationParameters.setExcludeSpecial(true);
+      generationParameters.setLength(10);
     });
 
     describe("with or without alternative names", () -> {
@@ -92,6 +101,32 @@ public class NamedPasswordSecretTest {
         subject.setValue("my-value");
         repository.save(subject);
         assertThat(subject.getUuid().length(), equalTo(36));
+      });
+
+      it("only encrypts the generationParameters once for the same secret", () -> {
+        subject.setGenerationParameters(generationParameters);
+        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
+
+        PasswordGenerationParameters generationParameters2 = new PasswordGenerationParameters();
+        generationParameters2.setExcludeLower(true);
+        generationParameters2.setExcludeSpecial(true);
+        generationParameters2.setLength(10);
+        subject.setGenerationParameters(generationParameters2);
+        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
+      });
+
+      it("sets the parametersNonce and the encryptedGenerationParameters", () -> {
+        subject.setGenerationParameters(generationParameters);
+        assertThat(subject.getEncryptedGenerationParameters(), notNullValue());
+        assertThat(subject.getParametersNonce(), notNullValue());
+      });
+
+      it("can decrypt values", () -> {
+        subject.setValue("length10pw");
+        subject.setGenerationParameters(generationParameters);
+        assertThat(subject.getGenerationParameters().getLength(), equalTo(10));
+        assertThat(subject.getGenerationParameters().isExcludeLower(), equalTo(true));
+        assertThat(subject.getGenerationParameters().isExcludeUpper(), equalTo(false));
       });
     });
   }

@@ -16,7 +16,7 @@ import static com.google.common.collect.ImmutableSet.of;
 import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
 
 @Component
-public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters> {
+public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {
 
   @Autowired
   SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateSecretGenerator;
@@ -24,7 +24,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Autowired
   CertificateSecretParametersFactory parametersFactory;
 
-  public CertificateSecretParameters validRequestParameters(DocumentContext parsed) {
+  @Override
+  public CertificateSecretParameters validRequestParameters(DocumentContext parsed, NamedCertificateSecret entity) {
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
 
     Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
@@ -65,7 +66,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
 
   @Override
   public void populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
-    CertificateSecretParameters requestParameters = validRequestParameters(documentContext);
+    CertificateSecretParameters requestParameters = validRequestParameters(documentContext, entity);
     CertificateSecret secret = certificateSecretGenerator.generateSecret(requestParameters);
     entity.setCa(secret.getCertificateBody().getCa());
     entity.setCertificate(secret.getCertificateBody().getCertificate());

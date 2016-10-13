@@ -15,14 +15,14 @@ public abstract class NamedStringSecret extends NamedSecret {
   }
 
   public String getValue() {
-    return new SecretEncryptionHelper().retrieveClearTextValue(this);
+    return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }
 
   public void setValue(String value) {
     if (value == null) {
       throw new IllegalArgumentException("value cannot be null");
     }
-    new SecretEncryptionHelper().refreshEncryptedValue(this, value);
+    SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, value);
   }
 
   public abstract String getSecretType();

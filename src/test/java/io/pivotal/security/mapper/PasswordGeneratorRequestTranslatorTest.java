@@ -6,8 +6,8 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.controller.v1.RequestParameters;
-import io.pivotal.security.controller.v1.StringSecretParameters;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -23,11 +23,11 @@ import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -55,13 +55,12 @@ public class PasswordGeneratorRequestTranslatorTest {
 
     it("returns a StringGeneratorRequest for valid json", () -> {
       String json = "{\"type\":\"password\"}";
-      StringSecretParameters params = subject.validRequestParameters(jsonPath.parse(json));
-      StringSecretParameters expectedParameters = new StringSecretParameters();
-      expectedParameters.setType("password");
+      PasswordGenerationParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
+      PasswordGenerationParameters expectedParameters = new PasswordGenerationParameters();
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
-    it("rejects excluding all possible character sets as an invalid case", () -> {
+    itThrowsWithMessage("rejects excluding all possible character sets as an invalid case", ParameterizedValidationException.class, "error.excludes_all_charsets", () -> {
       String json = "{" +
           "\"type\":\"password\"," +
           "\"parameters\": {" +
@@ -72,21 +71,45 @@ public class PasswordGeneratorRequestTranslatorTest {
           "\"length\": 42" +
           "}" +
           "}";
-      try {
-        subject.validRequestParameters(jsonPath.parse(json));
-        fail();
-      } catch (ParameterizedValidationException ve) {
-        assertThat(ve.getMessage(), equalTo("error.excludes_all_charsets"));
-      }
+      subject.validRequestParameters(jsonPath.parse(json), null);
+    });
+
+    itThrowsWithMessage("rejects any parameters given in addition to regenerate", ParameterizedValidationException.class, "error.invalid_regenerate_parameters", () -> {
+      String json = "{" +
+          "  \"type\":\"password\"," +
+          "  \"regenerate\":true" +
+          "}";
+      subject.validRequestParameters(jsonPath.parse(json), null);
     });
 
     it("can populate an entity from JSON", () -> {
       final NamedPasswordSecret secret = new NamedPasswordSecret("abc");
 
-      String requestJson = "{\"type\":\"password\"}";
+      String requestJson = "{" +
+          "  \"type\":\"password\"," +
+          "  \"parameters\":{" +
+          "    \"length\":11," +
+          "    \"exclude_upper\":true" +
+          "  }" +
+          "}";
       DocumentContext parsed = jsonPath.parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);
       assertThat(secret.getValue(), notNullValue());
+      assertThat(secret.getGenerationParameters().getLength(), equalTo(11));
+      assertThat(secret.getGenerationParameters().isExcludeLower(), equalTo(false));
+      assertThat(secret.getGenerationParameters().isExcludeUpper(), equalTo(true));
+    });
+
+    it("can regenerate using the existing entity and json", () -> {
+      PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
+
+      NamedPasswordSecret secret = new NamedPasswordSecret("test", "old-password", generationParameters);
+
+      subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
+
+      when(secretGenerator.generateSecret(generationParameters)).thenReturn(new StringSecret("password", "my-password"));
+
+      assertThat(secret.getValue(), equalTo("my-password"));
     });
   }
 }
