@@ -64,6 +64,7 @@ public class PasswordGeneratorRequestTranslatorTest {
       String json = "{" +
           "\"type\":\"password\"," +
           "\"parameters\": {" +
+          "\"only_hex\": false," +
           "\"exclude_special\": true," +
           "\"exclude_number\": true," +
           "\"exclude_upper\": true," +
@@ -98,6 +99,24 @@ public class PasswordGeneratorRequestTranslatorTest {
       assertThat(secret.getGenerationParameters().getLength(), equalTo(11));
       assertThat(secret.getGenerationParameters().isExcludeLower(), equalTo(false));
       assertThat(secret.getGenerationParameters().isExcludeUpper(), equalTo(true));
+    });
+
+
+    it("can populate a hex-only entity from JSON", () -> {
+      final NamedPasswordSecret secret = new NamedPasswordSecret("abc");
+
+      String requestJson = "{" +
+          "  \"type\":\"password\"," +
+          "  \"parameters\":{" +
+          "    \"length\":11," +
+          "    \"only_hex\":true" +
+          "  }" +
+          "}";
+      DocumentContext parsed = jsonPath.parse(requestJson);
+      subject.populateEntityFromJson(secret, parsed);
+      assertThat(secret.getValue(), notNullValue());
+      assertThat(secret.getGenerationParameters().getLength(), equalTo(11));
+      assertThat(secret.getGenerationParameters().isOnlyHex(), equalTo(true));
     });
 
     it("can regenerate using the existing entity and json", () -> {

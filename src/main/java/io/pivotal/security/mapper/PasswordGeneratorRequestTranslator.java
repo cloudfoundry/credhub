@@ -44,6 +44,8 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
           .ifPresent(secretParameters::setExcludeNumber);
       Optional.ofNullable(parsed.read("$.parameters.exclude_special", Boolean.class))
           .ifPresent(secretParameters::setExcludeSpecial);
+      Optional.ofNullable(parsed.read("$.parameters.only_hex", Boolean.class))
+          .ifPresent(secretParameters::setOnlyHex);
 
       if (!secretParameters.isValid()) {
         throw new ParameterizedValidationException("error.excludes_all_charsets");
@@ -62,7 +64,8 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['type']",
+    return of(
+        "$['type']",
         "$['overwrite']",
         "$['regenerate']",
         "$['parameters']",
@@ -70,6 +73,8 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
         "$['parameters']['exclude_lower']",
         "$['parameters']['exclude_upper']",
         "$['parameters']['exclude_number']",
-        "$['parameters']['exclude_special']");
+        "$['parameters']['exclude_special']",
+        "$['parameters']['only_hex']"
+      );
   }
 }

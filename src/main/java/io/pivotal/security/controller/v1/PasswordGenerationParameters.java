@@ -24,6 +24,9 @@ public class PasswordGenerationParameters implements RequestParameters {
   @JsonProperty(value = "exclude_upper", index = 3)
   private boolean excludeUpper;
 
+  @JsonProperty(value = "only_hex", index = 4)
+  private boolean onlyHex;
+
   public int getLength() {
     return length;
   }
@@ -69,12 +72,24 @@ public class PasswordGenerationParameters implements RequestParameters {
     return this;
   }
 
+  public boolean isOnlyHex() {
+    return onlyHex;
+  }
+
+  public PasswordGenerationParameters setOnlyHex(boolean onlyHex) {
+    this.onlyHex = onlyHex;
+
+    return this;
+  }
+
   @JsonIgnore
   public boolean isValid() {
     return !(excludeSpecial
         && excludeNumber
         && excludeUpper
-        && excludeLower);
+        && excludeLower
+        && !onlyHex
+    );
   }
 
   @JsonIgnore

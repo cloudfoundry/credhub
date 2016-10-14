@@ -17,8 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,6 +49,9 @@ public class CharacterRuleProviderTest {
         hasCharacters("123"),
         hasCharacters("#$%")
     ));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("ABC")
+    )));
   }
 
   @Test
@@ -64,6 +66,9 @@ public class CharacterRuleProviderTest {
         hasCharacters("123"),
         hasCharacters("#$%")
     ));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("abc")
+    )));
   }
 
   @Test
@@ -78,6 +83,9 @@ public class CharacterRuleProviderTest {
         hasCharacters("abc"),
         hasCharacters("123")
     ));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("#$%")
+    )));
   }
 
   @Test
@@ -92,6 +100,48 @@ public class CharacterRuleProviderTest {
         hasCharacters("abc"),
         hasCharacters("#$%")
     ));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("123")
+    )));
+  }
+
+  @Test
+  public void getCharacterRulesWithHexOnly() {
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+    secretParameters.setOnlyHex(true);
+
+    List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
+    assertThat(characterRules, iterableWithSize(2));
+    assertThat(characterRules, containsInAnyOrder(
+        hasCharacters("123"),
+        hasCharacters("ABC")
+    ));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("abc")
+    )));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("GH")
+    )));
+  }
+
+  @Test
+  public void getCharacterRulesWithHexOnlyIgnoresOtherRules() {
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+    secretParameters.setOnlyHex(true);
+    secretParameters.setExcludeUpper(true);
+
+    List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
+    assertThat(characterRules, iterableWithSize(2));
+    assertThat(characterRules, containsInAnyOrder(
+        hasCharacters("123"),
+        hasCharacters("ABC")
+    ));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("abc")
+    )));
+    assertThat(characterRules, not(hasItem(
+        hasCharacters("GH")
+    )));
   }
 
   @Test

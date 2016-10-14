@@ -13,6 +13,7 @@ import java.util.List;
 public class CharacterRuleProvider {
 
   private CharacterData specialCharacters;
+  private CharacterData hexCharacters;
 
   public CharacterRuleProvider() {
     specialCharacters = new CharacterData() {
@@ -27,25 +28,42 @@ public class CharacterRuleProvider {
         return "!\"#$%&'()*,-./:;<=>?@[\\]^_`{|}~";
       }
     };
+
+    hexCharacters = new CharacterData() {
+      @Override
+      public String getErrorCode() {
+        return "error.insufficient_hex_alpha";
+      }
+
+      @Override
+      public String getCharacters() {
+        return "0123456789ABCDEF";
+      }
+    };
   }
 
   public List<CharacterRule> getCharacterRules(PasswordGenerationParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();
 
-    if (!parameters.isExcludeSpecial()) {
-      characterRules.add(new CharacterRule(specialCharacters));
-    }
-
-    if (!parameters.isExcludeNumber()) {
+    if (parameters.isOnlyHex()) {
       characterRules.add(new CharacterRule(EnglishCharacterData.Digit));
-    }
+      characterRules.add(new CharacterRule(hexCharacters));
+    } else {
+      if (!parameters.isExcludeSpecial()) {
+        characterRules.add(new CharacterRule(specialCharacters));
+      }
 
-    if (!parameters.isExcludeUpper()) {
-      characterRules.add(new CharacterRule(EnglishCharacterData.UpperCase));
-    }
+      if (!parameters.isExcludeNumber()) {
+        characterRules.add(new CharacterRule(EnglishCharacterData.Digit));
+      }
 
-    if (!parameters.isExcludeLower()) {
-      characterRules.add(new CharacterRule(EnglishCharacterData.LowerCase));
+      if (!parameters.isExcludeUpper()) {
+        characterRules.add(new CharacterRule(EnglishCharacterData.UpperCase));
+      }
+
+      if (!parameters.isExcludeLower()) {
+        characterRules.add(new CharacterRule(EnglishCharacterData.LowerCase));
+      }
     }
 
     return characterRules;
