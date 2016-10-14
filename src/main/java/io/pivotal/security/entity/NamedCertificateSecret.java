@@ -18,6 +18,9 @@ public class NamedCertificateSecret extends NamedSecret {
   @Column(length = 7000)
   private String certificate;
 
+  @Column
+  private String caName;
+
   public NamedCertificateSecret() {
   }
 
@@ -62,5 +65,14 @@ public class NamedCertificateSecret extends NamedSecret {
   @Override
   public SecretKind getKind() {
     return SecretKind.CERTIFICATE;
+  }
+
+  public NamedCertificateSecret setCaName(String caName) {
+    this.caName = caName;
+    return this;
+  }
+
+  public String getCaName() {
+    return caName;
   }
 }

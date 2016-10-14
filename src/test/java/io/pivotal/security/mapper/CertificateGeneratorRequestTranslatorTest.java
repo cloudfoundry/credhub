@@ -258,20 +258,26 @@ public class CertificateGeneratorRequestTranslatorTest {
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
-    it("can populate an entity from JSON", () -> {
-      when(secretGenerator.generateSecret(any(RequestParameters.class)))
-          .thenReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"));
-
+    describe("populating an entity from JSON", () -> {
       final NamedCertificateSecret secret = new NamedCertificateSecret("abc");
-      String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\"}}";
-      parsed = jsonPath.parse(requestJson);
-      subject.populateEntityFromJson(secret, parsed);
 
-      verify(secretGenerator).generateSecret(isA(CertificateSecretParameters.class));
+      beforeEach(() -> {
+        when(secretGenerator.generateSecret(any(RequestParameters.class)))
+            .thenReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"));
+      });
 
-      assertThat(secret.getCa(), equalTo("my-root"));
-      assertThat(secret.getCertificate(), equalTo("my-cert"));
-      assertThat(secret.getPrivateKey(), equalTo("my-priv"));
+      it("can populate an entity from JSON", () -> {
+        String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\",\"ca\":\"my-ca-name\"}}";
+        parsed = jsonPath.parse(requestJson);
+        subject.populateEntityFromJson(secret, parsed);
+
+        verify(secretGenerator).generateSecret(isA(CertificateSecretParameters.class));
+
+        assertThat(secret.getCa(), equalTo("my-root"));
+        assertThat(secret.getCertificate(), equalTo("my-cert"));
+        assertThat(secret.getPrivateKey(), equalTo("my-priv"));
+        assertThat(secret.getCaName(), equalTo("my-ca-name"));
+      });
     });
   }
 }
