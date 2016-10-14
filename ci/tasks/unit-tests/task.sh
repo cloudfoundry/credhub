@@ -14,5 +14,11 @@ createdb credhub_test
 psql -d credhub_test -c "ALTER USER root WITH PASSWORD 'root';"
 
 pushd sec-eng-credential-manager
+set +e
 gradle -Dspring.profiles.active=${DATABASE_PROFILE} clean test
+exit_code=$?
 popd
+
+service mysql stop
+
+exit $exit_code
