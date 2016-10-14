@@ -8,7 +8,7 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
 import io.pivotal.security.entity.NamedRsaSecret;
-import io.pivotal.security.generator.BCRsaGenerator;
+import io.pivotal.security.generator.RsaGeneratorImpl;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.RsaSecret;
 import org.junit.runner.RunWith;
@@ -37,7 +37,7 @@ public class RsaGeneratorRequestTranslatorTest {
   ParseContext jsonPath;
 
   @Mock
-  BCRsaGenerator secretGenerator;
+  RsaGeneratorImpl secretGenerator;
 
   @Mock
   RsaSecretParametersFactory rsaSecretParametersFactory;

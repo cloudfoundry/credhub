@@ -6,19 +6,18 @@ import io.pivotal.security.view.RsaSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.security.KeyPairGenerator;
+import java.security.KeyPair;
 
 @Component
-public class BCRsaGenerator implements SecretGenerator<RsaSecretParameters, RsaSecret> {
+public class RsaGeneratorImpl implements SecretGenerator<RsaSecretParameters, RsaSecret> {
+
   @Autowired
-  KeyPairGenerator keyGenerator;
+  RsaKeyPairGenerator keyGenerator;
 
   @Override
   public RsaSecret generateSecret(RsaSecretParameters parameters) {
-    keyGenerator.initialize(parameters.getKeyLength());
-    final java.security.KeyPair keyPair = keyGenerator.generateKeyPair();
-
     try {
+      final KeyPair keyPair = keyGenerator.generateKeyPair(parameters.getKeyLength());
       return new RsaSecret(null, null, CertificateFormatter.pemOf(keyPair.getPublic()), CertificateFormatter.pemOf(keyPair.getPrivate()));
     } catch (Exception e) {
       throw new RuntimeException(e);
