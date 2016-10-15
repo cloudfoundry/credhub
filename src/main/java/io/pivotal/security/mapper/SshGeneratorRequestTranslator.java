@@ -4,7 +4,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
 import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.generator.SshGeneratorImpl;
+import io.pivotal.security.generator.BCSshGenerator;
 import io.pivotal.security.view.SshSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ public class SshGeneratorRequestTranslator
     implements RequestTranslator<NamedSshSecret>, SecretGeneratorRequestTranslator<SshSecretParameters, NamedSshSecret> {
 
   @Autowired
-  SshGeneratorImpl sshGenerator;
+  BCSshGenerator sshGenerator;
 
   @Autowired
   SshSecretParametersFactory sshSecretParametersFactory;

@@ -3,9 +3,9 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.RsaSecretParameters;
+import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
-import io.pivotal.security.view.RsaSecret;
+import io.pivotal.security.view.SshSecret;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -17,13 +17,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.Security;
+import java.security.interfaces.RSAPublicKey;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,10 +32,10 @@ import static org.mockito.Mockito.when;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
-public class RsaGeneratorImplTest {
+public class BCSshGeneratorTest {
   @InjectMocks
   @Autowired
-  RsaGeneratorImpl subject;
+  BCSshGenerator subject;
 
   @Mock
   DateTimeProvider dateTimeProvider;
@@ -43,7 +44,7 @@ public class RsaGeneratorImplTest {
   RandomSerialNumberGenerator randomSerialNumberGenerator;
 
   @Mock
-  RsaKeyPairGenerator keyPairGeneratorMock;
+  KeyPairGenerator keyPairGeneratorMock;
 
   @Autowired
   FakeKeyPairGenerator fakeKeyPairGenerator;
@@ -56,28 +57,40 @@ public class RsaGeneratorImplTest {
       Security.addProvider(new BouncyCastleProvider());
 
       keyPair = fakeKeyPairGenerator.generate();
-      when(keyPairGeneratorMock.generateKeyPair(anyInt())).thenReturn(keyPair);
+      when(keyPairGeneratorMock.generateKeyPair()).thenReturn(keyPair);
     });
 
     afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {
-        final RsaSecret rsa = subject.generateSecret(new RsaSecretParameters());
+        final SshSecret ssh = subject.generateSecret(new SshSecretParameters());
 
-        verify(keyPairGeneratorMock).generateKeyPair(2048);
+        verify(keyPairGeneratorMock).initialize(2048);
+        verify(keyPairGeneratorMock).generateKeyPair();
 
-        assertThat(rsa.getRsaBody().getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
-        assertThat(rsa.getRsaBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
+        assertThat(ssh.getSshBody().getPublicKey(), equalTo(CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())));
+        assertThat(ssh.getSshBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
       });
 
       it("should use the provided key length", () -> {
-        RsaSecretParameters rsaSecretParameters = new RsaSecretParameters();
-        rsaSecretParameters.setKeyLength(4096);
+        SshSecretParameters sshSecretParameters = new SshSecretParameters();
+        sshSecretParameters.setKeyLength(4096);
 
-        subject.generateSecret(rsaSecretParameters);
+        subject.generateSecret(sshSecretParameters);
 
-        verify(keyPairGeneratorMock).generateKeyPair(4096);
+        verify(keyPairGeneratorMock).initialize(4096);
+      });
+
+      it("should use the provided ssh comment", () -> {
+        SshSecretParameters sshSecretParameters = new SshSecretParameters();
+        sshSecretParameters.setSshComment("this is an ssh comment");
+
+        final SshSecret ssh = subject.generateSecret(sshSecretParameters);
+
+        String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + " this is an ssh comment";
+
+        assertThat(ssh.getSshBody().getPublicKey(), equalTo(expectedPublicKey));
       });
     });
   }

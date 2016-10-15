@@ -4,7 +4,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
 import io.pivotal.security.entity.NamedRsaSecret;
-import io.pivotal.security.generator.RsaGeneratorImpl;
+import io.pivotal.security.generator.BCRsaGenerator;
 import io.pivotal.security.view.RsaSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ public class RsaGeneratorRequestTranslator
     implements RequestTranslator<NamedRsaSecret>, SecretGeneratorRequestTranslator<RsaSecretParameters, NamedRsaSecret> {
 
   @Autowired
-  RsaGeneratorImpl rsaGenerator;
+  BCRsaGenerator rsaGenerator;
 
   @Autowired
   RsaSecretParametersFactory rsaSecretParametersFactory;
