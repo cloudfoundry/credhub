@@ -61,7 +61,8 @@ public class DatabaseAuditLogService implements AuditLogService {
 
     boolean auditSuccess = true;
 
-    ResponseEntity<?> responseEntity;
+    ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    RuntimeException thrown = null;
     try {
       responseEntity = action.get();
       if (!responseEntity.getStatusCode().is2xxSuccessful()) {
@@ -70,7 +71,7 @@ public class DatabaseAuditLogService implements AuditLogService {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       }
     } catch (RuntimeException e) {
-      responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+      thrown = e;
       auditSuccess = false;
       transactionManager.rollback(transaction);
       transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
@@ -85,7 +86,11 @@ public class DatabaseAuditLogService implements AuditLogService {
     } catch (Exception e) {
       if (!transaction.isCompleted()) transactionManager.rollback(transaction);
       final Map<String, String> error = Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure"));
-      responseEntity = new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if (thrown != null) {
+      throw thrown;
     }
 
     return responseEntity;

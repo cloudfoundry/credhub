@@ -25,10 +25,9 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.time.Instant;
-import java.util.List;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -36,7 +35,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.List;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -152,15 +157,22 @@ public class DatabaseAuditLogServiceTest {
 
       describe("when the operation fails with an exception", () -> {
         describe("when the audit succeeds", () -> {
+          Spectrum.Value<Object> exception = Spectrum.value();
+          RuntimeException re = new RuntimeException("controller method failed");
+
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedValueSecret("key", "value"));
-              throw new RuntimeException("controller method failed");
-            });
+            try {
+              subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
+                secretRepository.save(new NamedValueSecret("key", "value"));
+                throw re;
+              });
+            } catch (Exception e) {
+              exception.value = e;
+            }
           });
 
           it("leaves the 500 response from the controller alone", () -> {
-            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
+            assertThat(exception.value, equalTo(re));
           });
 
           it("logs failed audit entry", () -> {
