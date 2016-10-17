@@ -1,6 +1,5 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.service.EncryptionConfiguration;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,9 +10,6 @@ import java.security.NoSuchAlgorithmException;
 
 @Component
 class BCRsaKeyPairGenerator {
-
-  @Autowired
-  EncryptionConfiguration encryptionConfiguration;
 
   @Autowired
   BouncyCastleProvider provider;
