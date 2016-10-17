@@ -12,8 +12,11 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,21 +24,53 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import java.security.Security;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
 public class CertificateGeneratorRequestTranslatorTest {
+
+  // Issuer: O=Pivotal, ST=CA, C=US, CN=Credhub Unit Tests CA, OU=CredHub, L=San Francisco
+  // Subject: O=Pivotal, ST=CA, C=US, CN=Credhub Unit Tests, OU=CredHub, L=San Francisco
+  private static final String TEST_CERTIFICATE = "-----BEGIN CERTIFICATE-----\n" +
+      "MIIDhzCCAm+gAwIBAgIUabl2OG9xnWMbdwsMglP1ynLXZdMwDQYJKoZIhvcNAQEL\n" +
+      "BQAwdjEQMA4GA1UECgwHUGl2b3RhbDELMAkGA1UECAwCQ0ExCzAJBgNVBAYTAlVT\n" +
+      "MR4wHAYDVQQDDBVDcmVkaHViIFVuaXQgVGVzdHMgQ0ExEDAOBgNVBAsMB0NyZWRI\n" +
+      "dWIxFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28wHhcNMTYxMDE0MTczMzQzWhcNMTcx\n" +
+      "MDE0MTczMzQzWjBzMRAwDgYDVQQKDAdQaXZvdGFsMQswCQYDVQQIDAJDQTELMAkG\n" +
+      "A1UEBhMCVVMxGzAZBgNVBAMMEkNyZWRodWIgVW5pdCBUZXN0czEQMA4GA1UECwwH\n" +
+      "Q3JlZEh1YjEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzCCASIwDQYJKoZIhvcNAQEB\n" +
+      "BQADggEPADCCAQoCggEBALEfEeqPmzqSWm+DfdlrYB2JwFeVqCcbo2L2sYTY+ue9\n" +
+      "nFwRoD/QEy2ocFJxYoRZA3po0+FiQ7yMK0Lp1f7AUAInWY3VuFp425AyaDFS1oxR\n" +
+      "nTRcZcgu06AQxJdy5KhWf9oxwedL6tnBvt20VJp6zQvIMrkFO4KfbSZ0keR0ulDg\n" +
+      "QUraEwI0lzFZ8LfD6FigILqnCr48+B0om79jprLzVw83GtjCyiIqUEf2sllpGn90\n" +
+      "0WFOHLjXQ2Qdaka0tRDpDFQT+X7yvEVYdN8SBqpIa423ykw0Y/4xWwN5bmyz6pTL\n" +
+      "uKvXWwhO8CqeoG9ineUiEMqV307jTyEZaPwNCE1gTfMCAwEAAaMQMA4wDAYDVR0T\n" +
+      "AQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAQEAaodDBvwJDvyLUH4VsN0ZY/hNUHmj\n" +
+      "WDJYVVcjsd/dTkNMSGxIaHPmm6sjOlTHxVLdC8uc9RzTbGpyigMmKeT/lo1yH+Es\n" +
+      "E7CPHzJgJWiU0y+MggBv8woRAfByTRlnHnW0wMFPSnFpRkfX012c2gAeqKE+/cxS\n" +
+      "IVGym4gO5fMju5tIsbe6FIVvMsxQzNDy/nl9a905+vqSS8ZHra+lkfc+JTyC4fXP\n" +
+      "ImCB8ZYcdM+nCmudHFkIB9MptX4MIl8ttRPz0rErmPrA6MbH/oSCte5XKE9+H+Jc\n" +
+      "QZmvNrWHgZnngW/Ko07KXNUNC7iaT7Kudltmdyu6K8AA38z8Ys0claJ1FQ==\n" +
+      "-----END CERTIFICATE-----";
 
   @Autowired
   ParseContext jsonPath;
@@ -59,12 +94,14 @@ public class CertificateGeneratorRequestTranslatorTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
+      Security.addProvider(new BouncyCastleProvider());
       when(certificateSecretParametersFactory.get()).thenCallRealMethod();
     });
 
     it("ensures that all of the allowable parameters have been provided", () -> {
       String json = "{" +
           "\"type\":\"certificate\"," +
+          "\"regenerate\":false," +
           "\"parameters\":{" +
           "\"common_name\":\"My Common Name\", " +
           "\"organization\": \"organization.io\"," +
@@ -278,6 +315,24 @@ public class CertificateGeneratorRequestTranslatorTest {
         assertThat(secret.getPrivateKey(), equalTo("my-priv"));
         assertThat(secret.getCaName(), equalTo("my-ca-name"));
       });
+    });
+
+    it("can regenerate using the existing entity and json", () -> {
+      NamedCertificateSecret secret = new NamedCertificateSecret("test").setCertificate(TEST_CERTIFICATE).setCaName("my-ca-name");
+
+      ArgumentCaptor<Object> parameterCaptor = ArgumentCaptor.forClass(Object.class);
+      when(secretGenerator.generateSecret(parameterCaptor.capture()))
+          .thenReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"));
+
+      subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
+
+      CertificateSecretParameters requestParameters = (CertificateSecretParameters) parameterCaptor.getValue();
+      assertNotNull(requestParameters.getX500Name());
+      assertNotNull(requestParameters.getCa());
+      assertThat(requestParameters.getX500Name().getRDNs(BCStyle.CN)[0].getFirst().getValue().toString(), equalTo("Credhub Unit Tests"));
+      assertThat(secret.getCa(), equalTo("my-root"));
+      assertThat(secret.getCertificate(), equalTo("my-cert"));
+      assertThat(secret.getPrivateKey(), equalTo("my-priv"));
     });
   }
 }

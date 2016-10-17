@@ -1,12 +1,18 @@
 package io.pivotal.security.controller.v1;
 
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import io.pivotal.security.view.ParameterizedValidationException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.NoSuchProviderException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +33,18 @@ public class CertificateSecretParameters implements RequestParameters {
   private int durationDays = 365;
   private String ca;
   private String type;
+  private X500Name x500Name;
+
+  public CertificateSecretParameters() {
+  }
+
+  public CertificateSecretParameters(String certificate) {
+    try {
+      this.x500Name = getSubjectX500Name(certificate);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   public CertificateSecretParameters setCommonName(String commonName) {
     this.commonName = commonName;
@@ -83,6 +101,10 @@ public class CertificateSecretParameters implements RequestParameters {
   }
 
   public X500Name getDN() {
+    if (this.x500Name != null) {
+      return this.x500Name;
+    }
+
     X500NameBuilder builder = new X500NameBuilder();
 
     if (!StringUtils.isEmpty(organization)) {
@@ -159,5 +181,15 @@ public class CertificateSecretParameters implements RequestParameters {
   public CertificateSecretParameters setType(String type) {
     this.type = type;
     return this;
+  }
+
+  public X500Name getX500Name() {
+    return x500Name;
+  }
+
+  private static X500Name getSubjectX500Name(String cert) throws IOException, CertificateException, NoSuchProviderException {
+    X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
+        .generateCertificate(new ByteArrayInputStream(cert.getBytes()));
+    return new X500Name(certificate.getSubjectDN().getName());
   }
 }
