@@ -8,73 +8,73 @@ import java.util.function.Function;
 public enum SecretKind implements SecretKindFromString {
   VALUE {
     @Override
-    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+    public <T, R> Function<T, R> lift(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.value(this, t);
     }
 
     @Override
-    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
       return t -> mapping.value(this, t);
     }
   },
   PASSWORD {
     @Override
-    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+    public <T, R> Function<T, R> lift(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.password(this, t);
     }
 
     @Override
-    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
       return t -> mapping.password(this, t);
     }
   },
   CERTIFICATE {
     @Override
-    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+    public <T, R> Function<T, R> lift(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.certificate(this, t);
     }
 
     @Override
-    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
       return t -> mapping.certificate(this, t);
     }
   },
   SSH {
     @Override
-    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+    public <T, R> Function<T, R> lift(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.ssh(this, t);
     }
 
     @Override
-    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
       return t -> mapping.ssh(this, t);
     }
   },
   RSA {
     @Override
-    public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
+    public <T, R> Function<T, R> lift(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.rsa(this, t);
     }
 
     @Override
-    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
       return t -> mapping.rsa(this, t);
     }
   };
 
-  public abstract <T, R> Function<T, R> map(Mapping<T, R> mapping);
+  public abstract <T, R> Function<T, R> lift(Mapping<T, R> mapping);
 
-  public abstract <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping);
+  public abstract <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping);
 
   public interface Mapping<T, R> {
     R value(SecretKind secretKind, T t);

@@ -195,13 +195,13 @@ public class SecretsController {
       if (willWrite) {
         // ensure updatedAt is committed with 'saveAndFlush'.
         // note that the test does NOT catch this.
-        namedSecret = secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);
+        namedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(namedSecret);
         namedSecret = secretRepository.saveAndFlush(namedSecret);
       } else {
         // To catch invalid parameters, validate request even though we throw away the result.
         // We need to apply it to null or Hibernate may decide to save the record.
         // As above, the unit tests won't catch (all) issues :( , but there is an integration test to cover it.
-        secretKind.map(namedSecretHandler.make(secretPath, parsed)).apply(null);
+        secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(null);
       }
 
       Secret stringSecret = Secret.fromEntity(namedSecret);

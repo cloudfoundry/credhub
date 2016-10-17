@@ -63,11 +63,11 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
       describe("value", () -> {
         itThrowsWithMessage("cannot be generated", ParameterizedValidationException.class, "error.invalid_generate_type", () -> {
-          SecretKind.VALUE.map(subject.make("secret-path", documentContext)).apply(null);
+          SecretKind.VALUE.lift(subject.make("secret-path", documentContext)).apply(null);
         });
 
         itThrowsWithMessage("ignores type mismatches and gives the can't generate message", ParameterizedValidationException.class, "error.invalid_generate_type", () -> {
-          SecretKind.VALUE.map(subject.make("secret-path", documentContext)).apply(new NamedPasswordSecret());
+          SecretKind.VALUE.lift(subject.make("secret-path", documentContext)).apply(new NamedPasswordSecret());
         });
       });
 
