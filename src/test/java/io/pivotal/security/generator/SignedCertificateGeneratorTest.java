@@ -2,6 +2,7 @@ package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
@@ -52,8 +53,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 
-import io.pivotal.security.view.ParameterizedValidationException;
-
 @RunWith(Spectrum.class)
 public class SignedCertificateGeneratorTest {
   private static final String SEPARATE_ISSUER_PRINCIPAL_STRING = "OU=cool org,C=\"adsf asdf\",ST=\'my fav state\',O=foo\\,inc.";
@@ -80,11 +79,17 @@ public class SignedCertificateGeneratorTest {
   SignedCertificateGenerator subject;
 
   {
-    beforeAll(() -> Security.addProvider(new BouncyCastleProvider()));
+    BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
+
+    beforeAll(() -> {
+      Security.addProvider(bouncyCastleProvider);
+    });
 
     beforeEach(injectMocks(this));
 
     beforeEach(() -> {
+      subject.provider = bouncyCastleProvider;
+
       nowCalendar.setTime(Date.from(now));
       when(timeProvider.getNow()).thenReturn(nowCalendar);
       when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(12));

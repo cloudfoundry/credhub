@@ -6,32 +6,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+
+import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
-import java.security.*;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
 public class BCEncryptionConfiguration implements EncryptionConfiguration {
-  private Provider provider;
   private SecureRandom secureRandom;
   private SecretKey key;
 
   @Autowired
+  BouncyCastleProvider provider;
+
+  @Autowired
   DevKeyProvider devKeyProvider;
 
-  public BCEncryptionConfiguration() {
-    try {
-      provider = new BouncyCastleProvider();
-      Security.addProvider(provider);
-
-      KeyStore keyStore = KeyStore.getInstance("BKS", provider);
-      keyStore.load(null, null);
-      secureRandom = SecureRandom.getInstance("SHA1PRNG");
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  @PostConstruct
+  public void postConstruct() throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+    KeyStore keyStore = KeyStore.getInstance("BKS", provider);
+    keyStore.load(null, null);
+    secureRandom = SecureRandom.getInstance("SHA1PRNG");
   }
 
   @Override

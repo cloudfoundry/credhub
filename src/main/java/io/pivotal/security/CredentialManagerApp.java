@@ -12,6 +12,7 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.AuthServerProperties;
 import io.pivotal.security.entity.JpaAuditingHandlerRegistrar;
 import io.pivotal.security.util.CurrentTimeProvider;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,13 +21,14 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
+import static java.time.format.DateTimeFormatter.ofPattern;
+
 import java.io.IOException;
+import java.security.Security;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-
-import static java.time.format.DateTimeFormatter.ofPattern;
 
 @SpringBootApplication
 @EnableConfigurationProperties({AuthServerProperties.class})
@@ -70,5 +72,12 @@ public class CredentialManagerApp {
     Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
     builder.modules(javaTimeModule);
     return builder;
+  }
+
+  @Bean
+  BouncyCastleProvider bouncyCastleProvider() {
+    BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
+    Security.addProvider(bouncyCastleProvider);
+    return bouncyCastleProvider;
   }
 }

@@ -1,5 +1,7 @@
 package io.pivotal.security.view;
 
+import io.pivotal.security.util.CheckedFunction;
+
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -10,12 +12,24 @@ public enum SecretKind implements SecretKindFromString {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.value(this, t);
     }
+
+    @Override
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+      Objects.requireNonNull(mapping);
+      return t -> mapping.value(this, t);
+    }
   },
   PASSWORD {
     @Override
     public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.password(this, t);
+    }
+
+    @Override
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+      Objects.requireNonNull(mapping);
+      return t -> mapping.password(this, t);
     }
   },
   CERTIFICATE {
@@ -24,21 +38,43 @@ public enum SecretKind implements SecretKindFromString {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.certificate(this, t);
     }
-  }, SSH {
+
+    @Override
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+      Objects.requireNonNull(mapping);
+      return t -> mapping.certificate(this, t);
+    }
+  },
+  SSH {
     @Override
     public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.ssh(this, t);
     }
-  }, RSA {
+
+    @Override
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+      Objects.requireNonNull(mapping);
+      return t -> mapping.ssh(this, t);
+    }
+  },
+  RSA {
     @Override
     public <T, R> Function<T, R> map(Mapping<T, R> mapping) {
       Objects.requireNonNull(mapping);
       return (t) -> mapping.rsa(this, t);
     }
+
+    @Override
+    public <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping) {
+      Objects.requireNonNull(mapping);
+      return t -> mapping.rsa(this, t);
+    }
   };
 
   public abstract <T, R> Function<T, R> map(Mapping<T, R> mapping);
+
+  public abstract <T, R, E extends Throwable> CheckedFunction<T, R, E> map(CheckedMapping<T, R, E> mapping);
 
   public interface Mapping<T, R> {
     R value(SecretKind secretKind, T t);
@@ -78,45 +114,41 @@ public enum SecretKind implements SecretKindFromString {
     }
   }
 
-  public static class StaticMapping<T, R> implements Mapping<T, R> {
+  public interface CheckedMapping<T, R, E extends Throwable> {
+    R value(SecretKind secretKind, T t) throws E;
+    R password(SecretKind secretKind, T t) throws E;
+    R certificate(SecretKind secretKind, T t) throws E;
+    R ssh(SecretKind secretKind, T t) throws E;
+    R rsa(SecretKind secretKind, T t) throws E;
 
-    private final R value;
-    private final R password;
-    private final R certificate;
-    private final R ssh;
-    private final R rsa;
+    default <V> CheckedMapping<V, R, E> compose(Mapping<? super V, ? extends T> before) {
+      Objects.requireNonNull(before);
+      return new CheckedMapping<V, R, E>() {
+        @Override
+        public R value(SecretKind secretKind, V v) throws E {
+          return CheckedMapping.this.value(secretKind, before.value(secretKind, v));
+        }
 
-    public StaticMapping(R value, R password, R certificate, R ssh, R rsa) {
-      this.value = value;
-      this.password = password;
-      this.certificate = certificate;
-      this.ssh = ssh;
-      this.rsa = rsa;
-    }
+        @Override
+        public R password(SecretKind secretKind, V v) throws E {
+          return CheckedMapping.this.password(secretKind, before.password(secretKind, v));
+        }
 
-    @Override
-    public R value(SecretKind secretKind, T t) {
-      return value;
-    }
+        @Override
+        public R certificate(SecretKind secretKind, V v) throws E {
+          return CheckedMapping.this.certificate(secretKind, before.certificate(secretKind, v));
+        }
 
-    @Override
-    public R password(SecretKind secretKind, T t) {
-      return password;
-    }
+        @Override
+        public R ssh(SecretKind secretKind, V v) throws E {
+          return CheckedMapping.this.ssh(secretKind, before.ssh(secretKind, v));
+        }
 
-    @Override
-    public R certificate(SecretKind secretKind, T t) {
-      return certificate;
-    }
-
-    @Override
-    public R ssh(SecretKind secretKind, T t) {
-      return ssh;
-    }
-
-    @Override
-    public R rsa(SecretKind secretKind, T t) {
-      return rsa;
+        @Override
+        public R rsa(SecretKind secretKind, V v) throws E {
+          return CheckedMapping.this.rsa(secretKind, before.rsa(secretKind, v));
+        }
+      };
     }
   }
 }

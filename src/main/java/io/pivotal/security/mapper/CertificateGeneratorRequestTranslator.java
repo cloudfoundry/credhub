@@ -9,11 +9,11 @@ import io.pivotal.security.view.CertificateSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-import java.util.Set;
-
 import static com.google.common.collect.ImmutableSet.of;
 import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
+
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {

@@ -1,9 +1,10 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.view;
 
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.view.SecretKind;
 
-public abstract class DefaultMapping implements SecretKind.Mapping<NamedSecret, NamedSecret> {
+import java.security.NoSuchAlgorithmException;
+
+public abstract class DefaultMapping implements SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException> {
   @Override
   public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
     return namedSecret;

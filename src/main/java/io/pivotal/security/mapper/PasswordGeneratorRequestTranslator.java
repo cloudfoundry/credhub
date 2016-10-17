@@ -9,11 +9,11 @@ import io.pivotal.security.view.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import static com.google.common.collect.ImmutableSet.of;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class PasswordGeneratorRequestTranslator implements RequestTranslator<NamedPasswordSecret>, SecretGeneratorRequestTranslator<PasswordGenerationParameters, NamedPasswordSecret> {

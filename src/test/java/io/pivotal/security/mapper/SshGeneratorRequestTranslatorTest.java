@@ -8,7 +8,7 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
 import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.generator.BCSshGenerator;
+import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SshSecret;
 import org.junit.runner.RunWith;
@@ -37,7 +37,7 @@ public class SshGeneratorRequestTranslatorTest {
   ParseContext jsonPath;
 
   @Mock
-  BCSshGenerator secretGenerator;
+  SshGenerator secretGenerator;
 
   @Mock
   SshSecretParametersFactory sshSecretParametersFactory;

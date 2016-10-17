@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.DevKeyProvider;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -22,12 +23,15 @@ public class EncryptionServiceImplTest {
   {
     beforeEach(() -> {
       bcEncryptionConfiguration = new BCEncryptionConfiguration();
+      bcEncryptionConfiguration.provider = new BouncyCastleProvider();
       bcEncryptionConfiguration.devKeyProvider = new DevKeyProvider() {
         @Override
         public String getDevKey() {
           return "1234abcd1234abcd1234abcd1234abcd";
         }
       };
+      bcEncryptionConfiguration.postConstruct();
+
       subject = new EncryptionServiceImpl(bcEncryptionConfiguration);
       encryption = subject.encrypt(plaintext);
     });

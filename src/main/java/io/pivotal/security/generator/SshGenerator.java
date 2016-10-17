@@ -7,20 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.security.KeyPairGenerator;
+import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 
 @Component
-public class BCSshGenerator implements SecretGenerator<SshSecretParameters, SshSecret> {
+public class SshGenerator implements SecretGenerator<SshSecretParameters, SshSecret> {
+
   @Autowired
-  KeyPairGenerator keyGenerator;
+  BCRsaKeyPairGenerator keyGenerator;
 
   @Override
   public SshSecret generateSecret(SshSecretParameters parameters) {
-    keyGenerator.initialize(parameters.getKeyLength());
-    final java.security.KeyPair keyPair = keyGenerator.generateKeyPair();
-
     try {
+      final KeyPair keyPair = keyGenerator.generateKeyPair(parameters.getKeyLength());
       String sshComment = parameters.getSshComment();
       String sshCommentMessage = StringUtils.isEmpty(sshComment) ? "" : " " + sshComment;
 

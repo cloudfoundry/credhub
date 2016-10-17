@@ -29,9 +29,21 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+
 import java.math.BigInteger;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Security;
@@ -40,15 +52,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
-
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -66,7 +69,7 @@ public class BCCertificateGeneratorTest {
   private SignedCertificateGenerator signedCertificateGenerator;
 
   @Mock
-  KeyPairGenerator keyGenerator;
+  BCRsaKeyPairGenerator keyGenerator;
 
   @Autowired
   FakeKeyPairGenerator fakeKeyPairGenerator;
@@ -153,7 +156,7 @@ public class BCCertificateGeneratorTest {
     describe("when a default CA exists", () -> {
       beforeEach(() -> {
         childCertificateKeyPair = fakeKeyPairGenerator.generate();
-        when(keyGenerator.generateKeyPair()).thenReturn(childCertificateKeyPair);
+        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
         when(authorityRepository.findOneByNameIgnoreCase("default")).thenReturn(defaultNamedCA);
         childCertificateHolder = generateChildCertificateSignedByCa(
             childCertificateKeyPair, caKeyPair.getPrivate(), caDn);
@@ -172,17 +175,17 @@ public class BCCertificateGeneratorTest {
             equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
         assertThat(certificateSecret.getCertificateBody().getCertificate(),
             equalTo(CertificateFormatter.pemOf(childCertificate)));
-        Mockito.verify(keyGenerator, times(1)).initialize(BcKeyPairGenerator.DEFAULT_RSA_KEY_LENGTH);
+        Mockito.verify(keyGenerator, times(1)).generateKeyPair(2048);
       });
 
       describe("when a key length is given", () -> {
-        beforeEach(() -> inputParameters.setKeyLength(2048));
+        beforeEach(() -> inputParameters.setKeyLength(4096));
 
         it("generates a valid childCertificate", () -> {
           CertificateSecret certificateSecret = subject.generateSecret(inputParameters);
 
           assertThat(certificateSecret, notNullValue());
-          Mockito.verify(keyGenerator, times(1)).initialize(2048);
+          Mockito.verify(keyGenerator, times(1)).generateKeyPair(4096);
         });
       });
     });
@@ -190,11 +193,11 @@ public class BCCertificateGeneratorTest {
     describe("when generating a self signed root childCertificate authority", () -> {
       it("generates a valid root childCertificate authority", () -> {
         inputParameters.setKeyLength(KEY_LENGTH_FOR_TESTING);
-        when(keyGenerator.generateKeyPair()).thenReturn(caKeyPair);
+        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(caKeyPair);
         when(signedCertificateGenerator.getSelfSigned(caKeyPair, inputParameters)).thenReturn(caX509Cert);
 
         CertificateAuthority certificateAuthority = subject.generateCertificateAuthority(inputParameters);
-        Mockito.verify(keyGenerator, times(1)).initialize(KEY_LENGTH_FOR_TESTING);
+        Mockito.verify(keyGenerator, times(1)).generateKeyPair(KEY_LENGTH_FOR_TESTING);
 
         assertThat(certificateAuthority.getCertificateAuthorityBody().getCertificate(),
             equalTo(defaultNamedCA.getCertificate()));

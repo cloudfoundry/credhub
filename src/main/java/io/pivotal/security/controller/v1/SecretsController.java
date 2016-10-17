@@ -7,7 +7,12 @@ import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.view.*;
+import io.pivotal.security.view.FindCredentialResults;
+import io.pivotal.security.view.FindPathResults;
+import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.view.Secret;
+import io.pivotal.security.view.SecretKind;
+import io.pivotal.security.view.SecretKindFromString;
 import org.apache.commons.lang.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -20,19 +25,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.*;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -193,6 +208,8 @@ public class SecretsController {
       return new ResponseEntity<>(stringSecret, HttpStatus.OK);
     } catch (ParameterizedValidationException ve) {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
     }
   }
 

@@ -6,8 +6,10 @@ import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
@@ -19,22 +21,18 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
-import io.pivotal.security.view.ParameterizedValidationException;
-
 @Component
 public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateSecret> {
 
   @Autowired
-  KeyPairGenerator keyGenerator;
+  BCRsaKeyPairGenerator keyGenerator;
 
   @Autowired
   SignedCertificateGenerator signedCertificateGenerator;
@@ -42,13 +40,14 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   @Autowired
   CertificateAuthorityRepository authorityRepository;
 
+  @Autowired
+  BouncyCastleProvider provider;
+
   @Override
   public CertificateSecret generateSecret(CertificateSecretParameters params) {
-    keyGenerator.initialize(params.getKeyLength());
-    KeyPair keyPair = keyGenerator.generateKeyPair();
-
     NamedCertificateAuthority ca = findCa(params.getCa());
     try {
+      KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       X500Name issuerDn = getIssuer(ca);
       PrivateKey issuerKey = getPrivateKey(ca);
 
@@ -78,22 +77,21 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     return ca;
   }
 
-  private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException {
+  private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     PEMParser pemParser = new PEMParser(new StringReader(ca.getPrivateKey()));
     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 
-  private X500Name getIssuer(NamedCertificateAuthority ca) throws IOException, CertificateException, NoSuchProviderException {
-    X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
+  private X500Name getIssuer(NamedCertificateAuthority ca) throws IOException, CertificateException {
+    X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", provider)
         .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
     return new X500Name(certificate.getIssuerDN().getName());
   }
 
   public CertificateAuthority generateCertificateAuthority(CertificateSecretParameters params) throws Exception {
-    keyGenerator.initialize(params.getKeyLength());
-    KeyPair keyPair = keyGenerator.generateKeyPair();
+    KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
     X509Certificate ca = signedCertificateGenerator.getSelfSigned(keyPair, params);
     String certPem = CertificateFormatter.pemOf(ca);
     String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());

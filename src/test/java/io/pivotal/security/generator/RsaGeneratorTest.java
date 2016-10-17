@@ -16,25 +16,28 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.Security;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.KeyPair;
+import java.security.Security;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
-public class BCRsaGeneratorTest {
+public class RsaGeneratorTest {
   @InjectMocks
   @Autowired
-  BCRsaGenerator subject;
+  RsaGenerator subject;
 
   @Mock
   DateTimeProvider dateTimeProvider;
@@ -43,7 +46,7 @@ public class BCRsaGeneratorTest {
   RandomSerialNumberGenerator randomSerialNumberGenerator;
 
   @Mock
-  KeyPairGenerator keyPairGeneratorMock;
+  BCRsaKeyPairGenerator keyPairGeneratorMock;
 
   @Autowired
   FakeKeyPairGenerator fakeKeyPairGenerator;
@@ -56,7 +59,7 @@ public class BCRsaGeneratorTest {
       Security.addProvider(new BouncyCastleProvider());
 
       keyPair = fakeKeyPairGenerator.generate();
-      when(keyPairGeneratorMock.generateKeyPair()).thenReturn(keyPair);
+      when(keyPairGeneratorMock.generateKeyPair(anyInt())).thenReturn(keyPair);
     });
 
     afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
@@ -65,8 +68,7 @@ public class BCRsaGeneratorTest {
       it("should return a generated secret", () -> {
         final RsaSecret rsa = subject.generateSecret(new RsaSecretParameters());
 
-        verify(keyPairGeneratorMock).initialize(2048);
-        verify(keyPairGeneratorMock).generateKeyPair();
+        verify(keyPairGeneratorMock).generateKeyPair(2048);
 
         assertThat(rsa.getRsaBody().getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
         assertThat(rsa.getRsaBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
@@ -78,7 +80,7 @@ public class BCRsaGeneratorTest {
 
         subject.generateSecret(rsaSecretParameters);
 
-        verify(keyPairGeneratorMock).initialize(4096);
+        verify(keyPairGeneratorMock).generateKeyPair(4096);
       });
     });
   }
