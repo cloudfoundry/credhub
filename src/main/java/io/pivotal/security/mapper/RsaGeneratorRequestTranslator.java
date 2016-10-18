@@ -27,10 +27,16 @@ public class RsaGeneratorRequestTranslator
   @Override
   public RsaSecretParameters validRequestParameters(DocumentContext parsed, NamedRsaSecret entity) {
     RsaSecretParameters rsaSecretParameters = rsaSecretParametersFactory.get();
-    Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
-        .ifPresent(rsaSecretParameters::setKeyLength);
 
-    rsaSecretParameters.validate();
+    Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
+    if (Boolean.TRUE.equals(regenerate)) {
+      rsaSecretParameters.setKeyLength(entity.getKeyLength());
+    } else {
+      Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
+          .ifPresent(rsaSecretParameters::setKeyLength);
+
+      rsaSecretParameters.validate();
+    }
 
     return rsaSecretParameters;
   }
@@ -48,6 +54,7 @@ public class RsaGeneratorRequestTranslator
   public Set<String> getValidKeys() {
     return of(
         "$['type']",
+        "$['regenerate']",
         "$['overwrite']",
         "$['parameters']",
         "$['parameters']['key_length']"

@@ -12,6 +12,7 @@ import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.RsaSecret;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,18 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -57,8 +63,9 @@ public class RsaGeneratorRequestTranslatorTest {
 
     describe("validateJsonKeys", () -> {
       it("accepts valid keys", () -> {
-        String requestBody = "{\"" +
-            "type\":\"rsa\"," +
+        String requestBody = "{" +
+            "\"type\":\"rsa\"," +
+            "\"regenerate\": true," +
             "\"overwrite\":false," +
             "\"parameters\":{" +
               "\"key_length\":3072" +
@@ -122,6 +129,23 @@ public class RsaGeneratorRequestTranslatorTest {
         verify(mockParams).setKeyLength(3072);
 
         verify(secretGenerator).generateSecret(mockParams);
+      });
+
+      it("can regenerate using the existing entity and JSON", () -> {
+        NamedRsaSecret secret = spy(NamedRsaSecret.class);
+        secret.setName("test");
+        when(secret.getKeyLength()).thenReturn(3072);
+
+        ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor.forClass(RsaSecretParameters.class);
+        when(secretGenerator.generateSecret(parameterCaptor.capture()))
+            .thenReturn(new RsaSecret(null, null, "my-new-pub", "my-new-priv"));
+
+        subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
+
+        RsaSecretParameters requestParameters = parameterCaptor.getValue();
+        assertThat(requestParameters.getKeyLength(), equalTo(3072));
+        assertThat(secret.getPublicKey(), equalTo("my-new-pub"));
+        assertThat(secret.getPrivateKey(), equalTo("my-new-priv"));
       });
     });
   }
