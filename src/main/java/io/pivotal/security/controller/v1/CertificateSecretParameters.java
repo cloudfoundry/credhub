@@ -1,10 +1,14 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.springframework.stereotype.Component;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -13,27 +17,31 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.regex.Pattern;
 
-@Component
 public class CertificateSecretParameters implements RequestParameters {
-  // Required Certificate Parameters
+  private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
+  private static final Pattern BAD_IP_ADDRESS_PATTERN = Pattern.compile("^(\\d+\\.){3}\\d+$");
+  private static final Pattern DNS_PATTERN_INCLUDING_LEADING_WILDCARD = Pattern.compile("^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
+
+  private String type;
+
+  // Parameters used in RDN; at least one must be set
   private String organization;
   private String state;
   private String country;
-
-  // Optional Certificate Parameters
   private String commonName;
   private String organizationUnit;
   private String locality;
-  private String[] alternativeNames = new String[0];
+
+  // Optional Certificate Parameters (not used in RDN)
   private int keyLength = 2048;
   private int durationDays = 365;
-  private String ca;
-  private String type;
+  private String caName = "default";
+
+  // Used for regen; contains RDN (NOT key length, duration days, or alternative names)
   private X500Name x500Name;
+  private ASN1Object alternativeNames;
 
   public CertificateSecretParameters() {
   }
@@ -129,22 +137,33 @@ public class CertificateSecretParameters implements RequestParameters {
     return builder.build();
   }
 
-  public CertificateSecretParameters addAlternativeName(String alternativeName) {
-    List<String> tmp = new ArrayList<>(Arrays.asList(alternativeNames));
-    tmp.add(alternativeName);
-    alternativeNames = tmp.toArray(new String[tmp.size()]);
+  public CertificateSecretParameters addAlternativeNames(Extension encodedAlternativeNames) {
+    this.alternativeNames = GeneralNames.getInstance(ASN1Sequence.getInstance(encodedAlternativeNames.getParsedValue()));
     return this;
   }
 
-  public CertificateSecretParameters addAlternativeNames(String[] alternativeNames) {
-    for (String a : alternativeNames) {
-      addAlternativeName(a);
+  public CertificateSecretParameters addAlternativeNames(String... alternativeNames) {
+    GeneralName[] genNames = new GeneralName[alternativeNames.length];
+    for (int i = 0; i < alternativeNames.length; i++) {
+      String name = alternativeNames[i];
+      if (IP_ADDRESS_PATTERN.matcher(name).matches()) {
+        genNames[i] = new GeneralName(GeneralName.iPAddress, name);
+      } else if (BAD_IP_ADDRESS_PATTERN.matcher(name).matches()) {
+        throw new ParameterizedValidationException("error.invalid_alternate_name");
+      } else if (DNS_PATTERN_INCLUDING_LEADING_WILDCARD.matcher(name).matches()) {
+        genNames[i] = new GeneralName(GeneralName.dNSName, name);
+      } else {
+        throw new ParameterizedValidationException("error.invalid_alternate_name");
+      }
     }
+
+    this.alternativeNames = new GeneralNames(genNames);
+
     return this;
   }
 
-  public List<String> getAlternativeNames() {
-    return Arrays.asList(alternativeNames);
+  public ASN1Object getAlternativeNames() {
+    return alternativeNames;
   }
 
   public CertificateSecretParameters setKeyLength(int keyLength) {
@@ -165,12 +184,12 @@ public class CertificateSecretParameters implements RequestParameters {
     return durationDays;
   }
 
-  public String getCa() {
-    return ca;
+  public String getCaName() {
+    return caName;
   }
 
-  public CertificateSecretParameters setCa(String ca) {
-    this.ca = ca;
+  public CertificateSecretParameters setCaName(String caName) {
+    this.caName = caName;
     return this;
   }
 
@@ -181,10 +200,6 @@ public class CertificateSecretParameters implements RequestParameters {
   public CertificateSecretParameters setType(String type) {
     this.type = type;
     return this;
-  }
-
-  public X500Name getX500Name() {
-    return x500Name;
   }
 
   private static X500Name getSubjectX500Name(String cert) throws IOException, CertificateException, NoSuchProviderException {

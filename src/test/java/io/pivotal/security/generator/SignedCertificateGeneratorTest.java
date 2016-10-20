@@ -16,22 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.auditing.DateTimeProvider;
 
-import static com.greghaskins.spectrum.Spectrum.beforeAll;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -52,6 +36,22 @@ import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+
+import static com.greghaskins.spectrum.Spectrum.beforeAll;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class SignedCertificateGeneratorTest {
@@ -145,10 +145,7 @@ public class SignedCertificateGeneratorTest {
         });
 
         it("are supported", () -> {
-          inputParameters.addAlternativeName("1.1.1.1");
-          inputParameters.addAlternativeName("example.com");
-          inputParameters.addAlternativeName("foo.pivotal.io");
-          inputParameters.addAlternativeName("*.pivotal.io");
+          inputParameters.addAlternativeNames("1.1.1.1", "example.com", "foo.pivotal.io", "*.pivotal.io");
 
           makeCert.run();
 
@@ -161,28 +158,28 @@ public class SignedCertificateGeneratorTest {
         });
 
         itThrows("with invalid special DNS characters throws a validation exception", ParameterizedValidationException.class, () -> {
-          inputParameters.addAlternativeName("foo!@#$%^&*()_-+=.com");
+          inputParameters.addAlternativeNames("foo!@#$%^&*()_-+=.com");
           makeCert.run();
         });
 
         itThrows("with space character throws a validation exception", ParameterizedValidationException.class, () -> {
-          inputParameters.addAlternativeName("foo pivotal.io");
+          inputParameters.addAlternativeNames("foo pivotal.io");
           makeCert.run();
         });
 
         itThrows("with invalid IP address throws a validation exception", ParameterizedValidationException.class, () -> {
-          inputParameters.addAlternativeName("1.2.3.999");
+          inputParameters.addAlternativeNames("1.2.3.999");
           makeCert.run();
         });
 
         // email addresses are allowed in certificate spec, but we do not allow them per PM requirements
         itThrows("with email address throws a validation exception", ParameterizedValidationException.class, () -> {
-          inputParameters.addAlternativeName("x@y.com");
+          inputParameters.addAlternativeNames("x@y.com");
           makeCert.run();
         });
 
         itThrows("with URL throws a validation exception", ParameterizedValidationException.class, () -> {
-          inputParameters.addAlternativeName("https://foo.com");
+          inputParameters.addAlternativeNames("https://foo.com");
           makeCert.run();
         });
       });

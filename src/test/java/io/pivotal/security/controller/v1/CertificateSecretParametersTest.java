@@ -2,7 +2,10 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -12,10 +15,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import io.pivotal.security.view.ParameterizedValidationException;
+import java.io.IOException;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -50,15 +52,16 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
-  public void canAddAlternativeNames() {
+  public void canAddAlternativeNames() throws IOException {
     CertificateSecretParameters params = new CertificateSecretParameters();
     params.setCountry("My Country");
     params.setState("My State");
     params.setOrganization("My Organization");
-    params.addAlternativeName("Alternative Name 1");
-    params.addAlternativeName("Alternative Name 2");
+    params.addAlternativeNames("alternative-name-1", "alternative-name-2");
 
-    assertThat(params.getAlternativeNames(), contains("Alternative Name 1", "Alternative Name 2"));
+    ASN1Sequence sequence = ASN1Sequence.getInstance(params.getAlternativeNames());
+    assertThat(sequence.getObjectAt(0), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-1")));
+    assertThat(sequence.getObjectAt(1), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-2")));
   }
 
   @Test
@@ -67,15 +70,13 @@ public class CertificateSecretParametersTest {
     params.setCountry("My Country");
     params.setState("My State");
     params.setOrganization("My Organization");
-    params.addAlternativeName("Alternative Name 1");
-    params.addAlternativeName("Alternative Name 2");
+    params.addAlternativeNames("alternative-name-1", "alternative-name-2");
 
     CertificateSecretParameters params2 = new CertificateSecretParameters();
     params2.setCountry("My Country");
     params2.setState("My State");
     params2.setOrganization("My Organization");
-    params2.addAlternativeName("Alternative Name 1dif");
-    params2.addAlternativeName("Alternative Name 2");
+    params2.addAlternativeNames("alternative-name-1-foobar", "alternative-name-2");
 
     assertThat(isEqual(params, params2), is(false));
   }

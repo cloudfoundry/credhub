@@ -27,15 +27,21 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Override
   public CertificateSecretParameters validRequestParameters(DocumentContext parsed, NamedCertificateSecret entity) {
     Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
+
     if (Boolean.TRUE.equals(regenerate)) {
-      return new CertificateSecretParameters(entity.getCertificate()).setCa(entity.getCaName());
+      return new CertificateSecretParameters(entity.getCertificate())
+          .setCaName(entity.getCaName())
+          .setDurationDays(entity.getDurationDays())
+          .setKeyLength(entity.getKeyLength())
+          .addAlternativeNames(entity.getAlternativeNames());
     }
+
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
 
     Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
         .ifPresent(secretParameters::addAlternativeNames);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
-        .ifPresent(secretParameters::setCa);
+        .ifPresent(secretParameters::setCaName);
 
     secretParameters.validate();
 
@@ -75,7 +81,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     entity.setCa(secret.getCertificateBody().getCa());
     entity.setCertificate(secret.getCertificateBody().getCertificate());
     entity.setPrivateKey(secret.getCertificateBody().getPrivateKey());
-    entity.setCaName(requestParameters.getCa());
+    entity.setCaName(requestParameters.getCaName());
   }
 
   @Override

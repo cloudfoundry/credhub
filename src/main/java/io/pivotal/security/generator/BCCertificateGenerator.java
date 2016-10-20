@@ -15,7 +15,6 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
   @Override
   public CertificateSecret generateSecret(CertificateSecretParameters params) {
-    NamedCertificateAuthority ca = findCa(params.getCa());
+    NamedCertificateAuthority ca = findCa(params.getCaName());
     try {
       KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
       X500Name issuerDn = getIssuer(ca.getCertificate());
@@ -62,18 +61,16 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private NamedCertificateAuthority findCa(String caName) {
-    boolean hasCaName = !StringUtils.isEmpty(caName);
-    String missingCaErrorMessageKey;
-    if (hasCaName && !"default".equals(caName)) {
-      missingCaErrorMessageKey = "error.ca_not_found_for_certificate_generation";
-    } else {
-      missingCaErrorMessageKey = "error.default_ca_required";
-      caName = "default";
-    }
     NamedCertificateAuthority ca = authorityRepository.findOneByNameIgnoreCase(caName);
+
     if (ca == null) {
-      throw new ParameterizedValidationException(missingCaErrorMessageKey);
+      if ("default".equals(caName)) {
+        throw new ParameterizedValidationException("error.default_ca_required");
+      } else {
+        throw new ParameterizedValidationException("error.ca_not_found_for_certificate_generation");
+      }
     }
+
     return ca;
   }
 

@@ -1,12 +1,9 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
@@ -24,15 +21,9 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
-import java.util.regex.Pattern;
 
 @Component
 public class SignedCertificateGenerator {
-  private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
-  private static final Pattern BAD_IP_ADDRESS_PATTERN = Pattern.compile("^(\\d+\\.){3}\\d+$");
-  private static final Pattern DNS_PATTERN_INCLUDING_LEADING_WILDCARD = Pattern.compile("^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
-
   @Autowired
   DateTimeProvider timeProvider;
 
@@ -66,8 +57,8 @@ public class SignedCertificateGenerator {
         publicKeyInfo
     );
 
-    if (params.getAlternativeNames().size() > 0) {
-      certificateBuilder.addExtension(Extension.subjectAlternativeName, false, getAlternativeNames(params));
+    if (params.getAlternativeNames() != null) {
+      certificateBuilder.addExtension(Extension.subjectAlternativeName, false, params.getAlternativeNames());
     }
 
     certificateBuilder.addExtension(Extension.basicConstraints, true,
@@ -75,24 +66,6 @@ public class SignedCertificateGenerator {
 
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 
-    return new JcaX509CertificateConverter().setProvider("BC").getCertificate(holder);
-  }
-
-  private GeneralNames getAlternativeNames(CertificateSecretParameters params) {
-    List<String> alternateNames = params.getAlternativeNames();
-    GeneralName[] genNames = new GeneralName[alternateNames.size()];
-    for (int i = 0; i < alternateNames.size(); i++) {
-      String name = alternateNames.get(i);
-      if (IP_ADDRESS_PATTERN.matcher(name).matches()) {
-        genNames[i] = new GeneralName(GeneralName.iPAddress, name);
-      } else if (BAD_IP_ADDRESS_PATTERN.matcher(name).matches()) {
-        throw new ParameterizedValidationException("error.invalid_alternate_name");
-      } else if (DNS_PATTERN_INCLUDING_LEADING_WILDCARD.matcher(name).matches()) {
-        genNames[i] = new GeneralName(GeneralName.dNSName, name);
-      } else {
-        throw new ParameterizedValidationException("error.invalid_alternate_name");
-      }
-    }
-    return new GeneralNames(genNames);
+    return new JcaX509CertificateConverter().setProvider(provider).getCertificate(holder);
   }
 }

@@ -7,18 +7,22 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
-import io.pivotal.security.controller.v1.RequestParameters;
+import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.repository.CertificateAuthorityRepository;
+import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
-import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,11 +36,13 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,35 +54,13 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("unit-test")
 public class CertificateGeneratorRequestTranslatorTest {
 
-  // Issuer: O=Pivotal, ST=CA, C=US, CN=Credhub Unit Tests CA, OU=CredHub, L=San Francisco
-  // Subject: O=Pivotal, ST=CA, C=US, CN=Credhub Unit Tests, OU=CredHub, L=San Francisco
-  private static final String TEST_CERTIFICATE = "-----BEGIN CERTIFICATE-----\n" +
-      "MIIDhzCCAm+gAwIBAgIUabl2OG9xnWMbdwsMglP1ynLXZdMwDQYJKoZIhvcNAQEL\n" +
-      "BQAwdjEQMA4GA1UECgwHUGl2b3RhbDELMAkGA1UECAwCQ0ExCzAJBgNVBAYTAlVT\n" +
-      "MR4wHAYDVQQDDBVDcmVkaHViIFVuaXQgVGVzdHMgQ0ExEDAOBgNVBAsMB0NyZWRI\n" +
-      "dWIxFjAUBgNVBAcMDVNhbiBGcmFuY2lzY28wHhcNMTYxMDE0MTczMzQzWhcNMTcx\n" +
-      "MDE0MTczMzQzWjBzMRAwDgYDVQQKDAdQaXZvdGFsMQswCQYDVQQIDAJDQTELMAkG\n" +
-      "A1UEBhMCVVMxGzAZBgNVBAMMEkNyZWRodWIgVW5pdCBUZXN0czEQMA4GA1UECwwH\n" +
-      "Q3JlZEh1YjEWMBQGA1UEBwwNU2FuIEZyYW5jaXNjbzCCASIwDQYJKoZIhvcNAQEB\n" +
-      "BQADggEPADCCAQoCggEBALEfEeqPmzqSWm+DfdlrYB2JwFeVqCcbo2L2sYTY+ue9\n" +
-      "nFwRoD/QEy2ocFJxYoRZA3po0+FiQ7yMK0Lp1f7AUAInWY3VuFp425AyaDFS1oxR\n" +
-      "nTRcZcgu06AQxJdy5KhWf9oxwedL6tnBvt20VJp6zQvIMrkFO4KfbSZ0keR0ulDg\n" +
-      "QUraEwI0lzFZ8LfD6FigILqnCr48+B0om79jprLzVw83GtjCyiIqUEf2sllpGn90\n" +
-      "0WFOHLjXQ2Qdaka0tRDpDFQT+X7yvEVYdN8SBqpIa423ykw0Y/4xWwN5bmyz6pTL\n" +
-      "uKvXWwhO8CqeoG9ineUiEMqV307jTyEZaPwNCE1gTfMCAwEAAaMQMA4wDAYDVR0T\n" +
-      "AQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAQEAaodDBvwJDvyLUH4VsN0ZY/hNUHmj\n" +
-      "WDJYVVcjsd/dTkNMSGxIaHPmm6sjOlTHxVLdC8uc9RzTbGpyigMmKeT/lo1yH+Es\n" +
-      "E7CPHzJgJWiU0y+MggBv8woRAfByTRlnHnW0wMFPSnFpRkfX012c2gAeqKE+/cxS\n" +
-      "IVGym4gO5fMju5tIsbe6FIVvMsxQzNDy/nl9a905+vqSS8ZHra+lkfc+JTyC4fXP\n" +
-      "ImCB8ZYcdM+nCmudHFkIB9MptX4MIl8ttRPz0rErmPrA6MbH/oSCte5XKE9+H+Jc\n" +
-      "QZmvNrWHgZnngW/Ko07KXNUNC7iaT7Kudltmdyu6K8AA38z8Ys0claJ1FQ==\n" +
-      "-----END CERTIFICATE-----";
-
   @Autowired
   ParseContext jsonPath;
 
-  @Mock
-  SecretGenerator secretGenerator;
+  @Autowired
+  @InjectMocks
+  @Spy
+  BCCertificateGenerator secretGenerator;
 
   @Mock
   CertificateSecretParameters certificateSecretParameters;
@@ -85,7 +69,10 @@ public class CertificateGeneratorRequestTranslatorTest {
   CertificateSecretParametersFactory certificateSecretParametersFactory;
 
   @InjectMocks
-  private CertificateGeneratorRequestTranslator subject;
+  CertificateGeneratorRequestTranslator subject;
+
+  @Autowired
+  CertificateAuthorityRepository authorityRepository;
 
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
@@ -111,7 +98,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"country\": \"My Country\"," +
           "\"key_length\": 3072," +
           "\"duration\": 1000," +
-          "\"alternative_names\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]," +
+          "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
           "}" +
           "}";
       CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
@@ -124,8 +111,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setType("certificate");
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
-      expectedParameters.addAlternativeName("My Alternative Name 1");
-      expectedParameters.addAlternativeName("My Alternative Name 2");
+      expectedParameters.addAlternativeNames("my-alternative-name-1", "my-alternative-name-2");
       DocumentContext parsed = jsonPath.parse(json);
 
       subject.validateJsonKeys(parsed);
@@ -193,7 +179,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"organization\": \"organization.io\"," +
           "\"state\": \"My State\"," +
           "\"country\": \"My Country\"," +
-          "\"alternative_names\": [\"foo\", \"boo pivotal.io\"]" +
+          "\"alternative_names\": [\"foo\", \"bar\"]" +
           "}" +
           "}";
 
@@ -202,9 +188,9 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
       expectedParameters.setType("certificate");
-      expectedParameters.addAlternativeName("foo");
-      expectedParameters.addAlternativeName("boo pivotal.io");
+      expectedParameters.addAlternativeNames("foo", "bar");
 
+      DocumentContext parsed = jsonPath.parse(json);
       subject.validateJsonKeys(parsed);
       CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
@@ -244,7 +230,7 @@ public class CertificateGeneratorRequestTranslatorTest {
             "\"organization\": \"Organization\"," +
             "\"state\": \"My State\"," +
             "\"country\": \"My Country\"," +
-            "\"alternative_names\": [\"My Alternative Name 1\", \"My Alternative Name 2\"]," +
+            "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
             "\"ca\":\"my-ca\"," +
             "\"foo\": \"bar\"," +
             "}" +
@@ -299,8 +285,9 @@ public class CertificateGeneratorRequestTranslatorTest {
       final NamedCertificateSecret secret = new NamedCertificateSecret("abc");
 
       beforeEach(() -> {
-        when(secretGenerator.generateSecret(any(RequestParameters.class)))
-            .thenReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"));
+        doReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"))
+            .when(secretGenerator)
+            .generateSecret(any(CertificateSecretParameters.class));
       });
 
       it("can populate an entity from JSON", () -> {
@@ -318,21 +305,52 @@ public class CertificateGeneratorRequestTranslatorTest {
     });
 
     it("can regenerate using the existing entity and json", () -> {
-      NamedCertificateSecret secret = new NamedCertificateSecret("test").setCertificate(TEST_CERTIFICATE).setCaName("my-ca-name");
+      NamedCertificateAuthority certificateAuthority = setupCa();
 
-      ArgumentCaptor<Object> parameterCaptor = ArgumentCaptor.forClass(Object.class);
-      when(secretGenerator.generateSecret(parameterCaptor.capture()))
-          .thenReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"));
+      CertificateSecretParameters parameters = new CertificateSecretParameters();
+      parameters.setCaName("my-root");
+      parameters.setCommonName("Credhub Unit Tests");
+      parameters.setKeyLength(1024);
+      parameters.setDurationDays(30);
+      parameters.addAlternativeNames("another-name");
+      CertificateSecret secret = secretGenerator.generateSecret(parameters);
 
-      subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
+      String originalPrivateKey = secret.getCertificateBody().getPrivateKey();
+      String originalCertificate = secret.getCertificateBody().getCertificate();
 
-      CertificateSecretParameters requestParameters = (CertificateSecretParameters) parameterCaptor.getValue();
-      assertNotNull(requestParameters.getX500Name());
-      assertNotNull(requestParameters.getCa());
-      assertThat(requestParameters.getX500Name().getRDNs(BCStyle.CN)[0].getFirst().getValue().toString(), equalTo("Credhub Unit Tests"));
-      assertThat(secret.getCa(), equalTo("my-root"));
-      assertThat(secret.getCertificate(), equalTo("my-cert"));
-      assertThat(secret.getPrivateKey(), equalTo("my-priv"));
+      NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
+      namedCertificateSecret.setCaName("my-root");
+      namedCertificateSecret.setCa(secret.getCertificateBody().getCa());
+      namedCertificateSecret.setCertificate(originalCertificate);
+      namedCertificateSecret.setPrivateKey(originalPrivateKey);
+
+      subject.populateEntityFromJson(namedCertificateSecret, jsonPath.parse("{\"regenerate\":true}"));
+
+      assertThat(namedCertificateSecret.getCertificate(), not(equalTo(originalCertificate)));
+      assertNotNull(namedCertificateSecret.getCertificate());
+      assertThat(namedCertificateSecret.getPrivateKey(), not(equalTo(originalPrivateKey)));
+      assertNotNull(namedCertificateSecret.getPrivateKey());
+
+      assertThat(namedCertificateSecret.getCaName(), equalTo("my-root"));
+      assertThat(namedCertificateSecret.getCa(), equalTo(certificateAuthority.getCertificate()));
+
+      assertThat(namedCertificateSecret.getKeyLength(), equalTo(1024));
+      assertThat(namedCertificateSecret.getDurationDays(), equalTo(30));
+
+      ASN1Sequence sequence = (ASN1Sequence) namedCertificateSecret.getAlternativeNames().getParsedValue();
+      assertThat(((DERTaggedObject) sequence.getObjectAt(0)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "another-name").getEncoded()));
     });
+  }
+
+  private NamedCertificateAuthority setupCa() throws Exception {
+    CertificateSecretParameters authorityParameters = new CertificateSecretParameters();
+    authorityParameters.setCommonName("my-root");
+    CertificateAuthority certificateSecret = secretGenerator.generateCertificateAuthority(authorityParameters);
+    NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("my-root");
+    certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate());
+    certificateAuthority.setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
+    authorityRepository.saveAndFlush(certificateAuthority);
+
+    return certificateAuthority;
   }
 }
