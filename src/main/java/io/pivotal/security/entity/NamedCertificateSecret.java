@@ -2,7 +2,6 @@ package io.pivotal.security.entity;
 
 import io.pivotal.security.view.SecretKind;
 import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.asn1.x509.Certificate;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
@@ -15,10 +14,13 @@ import javax.persistence.Table;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.X509EncodedKeySpec;
+import java.util.Date;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Entity
 @Table(name = "CertificateSecret")
@@ -90,42 +92,55 @@ public class NamedCertificateSecret extends NamedSecret {
   }
 
   public int getKeyLength() {
-    String certificate = getCertificate();
+    // We could conceivably use the CertificateHolder again, but it quickly became even messier
+    // and was giving us a strange off-by-1 error (e.g., 4097 bits instead of 4096).
+    // BouncyCastle's KeyFactorySpi.generatePublic also works (via certificateHolder.getSubjectPublicKeyInfo),
+    // but was still slightly messier/less clear than the below.
+    String certificateString = getCertificate();
 
-    if (StringUtils.isEmpty(certificate)) {
+    if (StringUtils.isEmpty(certificateString)) {
       return 0;
     }
 
-    String strippedCertificate = certificate
+    String strippedCertificate = certificateString
         .replaceFirst("-----BEGIN CERTIFICATE-----", "")
         .replaceFirst("-----END CERTIFICATE-----", "")
         .replaceAll("\n", "");
     byte[] byteCertificate = Base64.decodeBase64(strippedCertificate.getBytes());
+
     try {
-      return ((RSAPublicKey) CertificateFactory.getInstance("X.509").generateCertificate(new ByteArrayInputStream(byteCertificate)).getPublicKey()).getModulus().bitLength();
+      ByteArrayInputStream byteStream = new ByteArrayInputStream(byteCertificate);
+      Certificate certificate = CertificateFactory.getInstance("X.509").generateCertificate(byteStream);
+      return ((RSAPublicKey) certificate.getPublicKey()).getModulus().bitLength();
     } catch (CertificateException e) {
       throw new RuntimeException(e);
     }
   }
 
   public int getDurationDays() {
-    String certificate = getCertificate();
+    X509CertificateHolder certificateHolder = getCertificateHolder();
 
-    if (StringUtils.isEmpty(certificate)) {
+    if (certificateHolder == null) {
       return 0;
     }
 
-    String strippedCertificate = certificate
-        .replaceFirst("-----BEGIN CERTIFICATE-----", "")
-        .replaceFirst("-----END CERTIFICATE-----", "")
-        .replaceAll("\n", "");
-    byte[] byteCertificate = Base64.decodeBase64(strippedCertificate.getBytes());
-    X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(byteCertificate);
-    Certificate decodedCertificate = Certificate.getInstance(x509EncodedKeySpec.getEncoded());
-    return (int) ((decodedCertificate.getEndDate().getDate().getTime() - decodedCertificate.getStartDate().getDate().getTime()) / 60 / 60 / 24 / 1000);
+    Date startDate = certificateHolder.getNotBefore();
+    Date endDate = certificateHolder.getNotAfter();
+
+    return (int) DAYS.between(startDate.toInstant(), endDate.toInstant());
   }
 
   public Extension getAlternativeNames() {
+    X509CertificateHolder certificateHolder = getCertificateHolder();
+
+    if (certificateHolder == null) {
+      return null;
+    } else {
+      return certificateHolder.getExtension(Extension.subjectAlternativeName);
+    }
+  }
+
+  private X509CertificateHolder getCertificateHolder() {
     String certificate = getCertificate();
 
     if (StringUtils.isEmpty(certificate)) {
@@ -133,8 +148,7 @@ public class NamedCertificateSecret extends NamedSecret {
     }
 
     try {
-      X509CertificateHolder c = (X509CertificateHolder) (new PEMParser(new StringReader(certificate)).readObject());
-      return c.getExtension(Extension.subjectAlternativeName);
+      return (X509CertificateHolder) (new PEMParser((new StringReader(certificate))).readObject());
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
