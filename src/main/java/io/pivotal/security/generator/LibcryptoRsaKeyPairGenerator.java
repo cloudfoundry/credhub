@@ -22,7 +22,6 @@ import java.security.spec.RSAPublicKeySpec;
 class LibcryptoRsaKeyPairGenerator {
 
   private final KeyFactory keyFactory;
-  private Crypto crypto = Crypto.INSTANCE;
 
   @Autowired
   public LibcryptoRsaKeyPairGenerator(BouncyCastleProvider bouncyCastleProvider) throws NoSuchAlgorithmException {
@@ -30,15 +29,15 @@ class LibcryptoRsaKeyPairGenerator {
   }
 
   public synchronized KeyPair generateKeyPair(int keyLength) throws InvalidKeyException, InvalidKeySpecException {
-    BIGNUM.ByReference bne = crypto.BN_new();
-    crypto.BN_set_word(bne, Crypto.RSA_F4);
-    RSA.ByReference rsa = crypto.RSA_new();
-    crypto.RSA_generate_key_ex(rsa, keyLength, bne, null);
+    BIGNUM.ByReference bne = Crypto.BN_new();
+    Crypto.BN_set_word(bne, Crypto.RSA_F4);
+    RSA.ByReference rsa = Crypto.RSA_new();
+    Crypto.RSA_generate_key_ex(rsa, keyLength, bne, null);
 
     KeyPair keyPair = toKeyPair(rsa);
 
-    crypto.RSA_free(rsa);
-    crypto.BN_free(bne);
+    Crypto.RSA_free(rsa);
+    Crypto.BN_free(bne);
 
     return keyPair;
   }
@@ -61,6 +60,6 @@ class LibcryptoRsaKeyPairGenerator {
   }
 
   private BigInteger convert(BIGNUM.ByReference bignum) {
-    return new BigInteger(crypto.BN_bn2hex(bignum), 16);
+    return new BigInteger(Crypto.BN_bn2hex(bignum), 16);
   }
 }
