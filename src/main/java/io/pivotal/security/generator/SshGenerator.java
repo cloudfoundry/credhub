@@ -14,7 +14,7 @@ import java.security.interfaces.RSAPublicKey;
 public class SshGenerator implements SecretGenerator<SshSecretParameters, SshSecret> {
 
   @Autowired
-  BCRsaKeyPairGenerator keyGenerator;
+  LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Override
   public SshSecret generateSecret(SshSecretParameters parameters) {

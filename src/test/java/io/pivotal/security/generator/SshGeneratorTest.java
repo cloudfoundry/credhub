@@ -47,7 +47,7 @@ public class SshGeneratorTest {
   RandomSerialNumberGenerator randomSerialNumberGenerator;
 
   @Mock
-  BCRsaKeyPairGenerator keyPairGeneratorMock;
+  LibcryptoRsaKeyPairGenerator keyPairGeneratorMock;
 
   @Autowired
   FakeKeyPairGenerator fakeKeyPairGenerator;

@@ -69,7 +69,7 @@ public class BCCertificateGeneratorTest {
   private SignedCertificateGenerator signedCertificateGenerator;
 
   @Mock
-  BCRsaKeyPairGenerator keyGenerator;
+  LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Autowired
   FakeKeyPairGenerator fakeKeyPairGenerator;

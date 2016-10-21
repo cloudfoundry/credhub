@@ -12,7 +12,7 @@ import java.security.KeyPair;
 public class RsaGenerator implements SecretGenerator<RsaSecretParameters, RsaSecret> {
 
   @Autowired
-  BCRsaKeyPairGenerator keyGenerator;
+  LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Override
   public RsaSecret generateSecret(RsaSecretParameters parameters) {

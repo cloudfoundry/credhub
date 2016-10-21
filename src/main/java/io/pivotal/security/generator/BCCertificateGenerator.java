@@ -31,7 +31,7 @@ import java.security.spec.InvalidKeySpecException;
 public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateSecret> {
 
   @Autowired
-  BCRsaKeyPairGenerator keyGenerator;
+  LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Autowired
   SignedCertificateGenerator signedCertificateGenerator;

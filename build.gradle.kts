@@ -74,6 +74,7 @@ dependencies {
     compile("org.postgresql:postgresql:9.3-1100-jdbc4")
     compile("mysql:mysql-connector-java:5.1.38")
     compile("org.flywaydb:flyway-core:4.0.3")
+    compile("net.java.dev.jna:jna:4.2.2")
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.skyscreamer:jsonassert")
     testCompile("com.jayway.jsonpath:json-path-assert:2.2.0")
