@@ -13,13 +13,14 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
+import static io.pivotal.security.entity.NamedCertificateSecret.NEW_LINE;
+
 @Entity
 @Table(name = "RsaSecret")
 @DiscriminatorValue("rsa")
 public class NamedRsaSecret extends NamedRsaSshSecret {
-  static private final String rsaStart = "-----BEGIN PUBLIC KEY-----\n";
-  static private final String rsaEnd = "\n-----END PUBLIC KEY-----";
-  static private final String newLine = "\n";
+  static private final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
+  static private final String RSA_END = "\n-----END PUBLIC KEY-----";
 
   public NamedRsaSecret() {
     this(null);
@@ -42,9 +43,9 @@ public class NamedRsaSecret extends NamedRsaSshSecret {
 
     try {
       String key = publicKey
-            .replaceFirst(rsaStart, "")
-            .replaceFirst(rsaEnd, "")
-            .replaceAll(newLine, "");
+            .replaceFirst(RSA_START, "")
+            .replaceFirst(RSA_END, "")
+            .replaceAll(NEW_LINE, "");
       byte[] byteKey = Base64.decodeBase64(key.getBytes());
       X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
       KeyFactory kf = KeyFactory.getInstance("RSA");

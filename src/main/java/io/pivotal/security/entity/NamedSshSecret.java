@@ -44,32 +44,45 @@ public class NamedSshSecret extends NamedRsaSshSecret {
     String publicKey = getPublicKey();
     ParsedPublicKeyValues values = new ParsedPublicKeyValues();
 
-    try {
-      String[] publicKeyParts = publicKey.split(" ");
-      String publicKeyWithoutPrefix = publicKeyParts[1];
-      values.comment = publicKeyParts.length > 2 ? publicKeyParts[2] : "";
+    String[] publicKeyParts = publicKey.split(" ");
+    String publicKeyWithoutPrefix = publicKeyParts[1];
 
-      DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(publicKeyWithoutPrefix)));
+    values.comment = publicKeyParts.length > 2 ? publicKeyParts[2] : "";
+
+    DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(publicKeyWithoutPrefix)));
+
+    readType(dataStream);
+    readExponent(dataStream);
+    values.keyLength = readKeyLength(dataStream);
+
+    return values;
+  }
+
+  private int readKeyLength(DataInputStream dataStream) {
+    byte[] buf = readBytesFrom(dataStream);
+    BigInteger modulus = new BigInteger(Arrays.copyOf(buf, buf.length));
+    // calculate key length
+    return modulus.bitLength();
+  }
+
+  private void readExponent(DataInputStream dataStream) {
+    readBytesFrom(dataStream);
+  }
+
+  private void readType(DataInputStream dataStream) {
+    readBytesFrom(dataStream);
+  }
+
+  private byte[] readBytesFrom(DataInputStream dataStream) {
+    byte[] buf;
+    try {
       int length = dataStream.readInt();
-      byte[] buf = new byte[SMALL_BUFFER_SIZE];
-      // read and ignore type - it's always just "ssh-rsa"
-      dataStream.read(buf, 0, length);
-      // read and ignore exponent
-      length = dataStream.readInt();
-      dataStream.read(buf, 0, length);
-      // read modulus
-      length = dataStream.readInt();
       buf = new byte[length];
       dataStream.read(buf, 0, length);
-      BigInteger modulus = new BigInteger(Arrays.copyOf(buf, length));
-      // calculate key length
-      values.keyLength = modulus.bitLength();
-
-      return values;
-
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+    return buf;
   }
 
   private static class ParsedPublicKeyValues {
