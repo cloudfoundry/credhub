@@ -41,7 +41,7 @@ public class CertificateSecretParameters implements RequestParameters {
 
   // Used for regen; contains RDN (NOT key length, duration days, or alternative names)
   private X500Name x500Name;
-  private ASN1Object alternativeNames;
+  private GeneralNames alternativeNames;
 
   public CertificateSecretParameters() {
   }

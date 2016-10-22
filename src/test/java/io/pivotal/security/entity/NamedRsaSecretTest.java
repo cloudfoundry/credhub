@@ -70,7 +70,7 @@ public class NamedRsaSecretTest {
     });
 
     describe("getKeyLength", () -> {
-      it("should return the length of the unencrypted private key", () -> {
+      it("should return the length of the public key", () -> {
         String publicKey = "-----BEGIN PUBLIC KEY-----\n" +
             "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAoRIqdibiYHKZhyH91xYR\n" +
             "Tpz728+A8d/t2U2e8OIhNqI7pjh5uKnbmeoAXdZAbGN3TW7xArdMAUOSRhELH0Gc\n" +

@@ -21,19 +21,27 @@ public class SshGeneratorRequestTranslator
   @Autowired
   SshGenerator sshGenerator;
 
-    @Autowired
+  @Autowired
   SshSecretParametersFactory sshSecretParametersFactory;
 
   @Override
   public SshSecretParameters validRequestParameters(DocumentContext parsed, NamedSshSecret entity) {
     SshSecretParameters sshSecretParameters = sshSecretParametersFactory.get();
 
-    Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
-        .ifPresent(sshSecretParameters::setKeyLength);
-    Optional.ofNullable(parsed.read("$.parameters.ssh_comment", String.class))
-        .ifPresent(sshSecretParameters::setSshComment);
+    Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
 
-    sshSecretParameters.validate();
+    if (Boolean.TRUE.equals(regenerate)) {
+      sshSecretParameters.setKeyLength(entity.getKeyLength());
+      sshSecretParameters.setSshComment(entity.getComment());
+    } else {
+      Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
+          .ifPresent(sshSecretParameters::setKeyLength);
+      Optional.ofNullable(parsed.read("$.parameters.ssh_comment", String.class))
+          .ifPresent(sshSecretParameters::setSshComment);
+
+      sshSecretParameters.validate();
+    }
+
 
     return sshSecretParameters;
   }
@@ -52,6 +60,7 @@ public class SshGeneratorRequestTranslator
     return of(
         "$['type']",
         "$['overwrite']",
+        "$['regenerate']",
         "$['parameters']",
         "$['parameters']['key_length']",
         "$['parameters']['ssh_comment']"

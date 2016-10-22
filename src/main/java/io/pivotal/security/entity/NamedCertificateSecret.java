@@ -26,6 +26,9 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
 public class NamedCertificateSecret extends NamedSecret {
+  private static final String rsaStart = "-----BEGIN CERTIFICATE-----";
+  private static final String rsaEnd = "-----END CERTIFICATE-----";
+  private static final String newLine = "\n";
 
   @Column(length = 7000)
   private String ca;
@@ -103,9 +106,9 @@ public class NamedCertificateSecret extends NamedSecret {
     }
 
     String strippedCertificate = certificateString
-        .replaceFirst("-----BEGIN CERTIFICATE-----", "")
-        .replaceFirst("-----END CERTIFICATE-----", "")
-        .replaceAll("\n", "");
+        .replaceFirst(rsaStart, "")
+        .replaceFirst(rsaEnd, "")
+        .replaceAll(newLine, "");
     byte[] byteCertificate = Base64.decodeBase64(strippedCertificate.getBytes());
 
     try {
