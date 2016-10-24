@@ -1,6 +1,7 @@
 package io.pivotal.security.jna.libcrypto;
 
 import com.greghaskins.spectrum.Spectrum;
+import com.sun.jna.Pointer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
@@ -12,6 +13,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.Security;
@@ -67,9 +69,7 @@ public class CryptoWrapperTest {
         byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
         int result = Crypto.RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_NO_PADDING);
         if (result == -1) {
-          byte[] buffer = new byte[128];
-          Crypto.ERR_error_string_n(Crypto.ERR_get_error(), buffer, buffer.length);
-          System.out.println(new String(buffer));
+          System.out.println(subject.getError());
         }
         assert result >= 0;
 
@@ -82,6 +82,24 @@ public class CryptoWrapperTest {
 
         assertThat("Encryption should work the same inside and outside openssl", javaCipherText, equalTo(ciphertext));
       });
+    });
+
+    it("can convert BIGNUM to BigInteger", () -> {
+      BIGNUM.ByReference bn = Crypto.BN_new();
+      try {
+        Crypto.BN_set_word(bn, 0x12345678L);
+        Crypto.BN_mul_word(bn, 0xFFFFFFFFL);
+        BigInteger converted = subject.convert(bn);
+        Pointer hex = Crypto.BN_bn2hex(bn);
+        try {
+          assertThat(hex.getString(0), equalTo("12345677EDCBA988"));
+          assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
+        } finally {
+          Crypto.CRYPTO_free(hex);
+        }
+      } finally {
+        Crypto.BN_free(bn);
+      }
     });
   }
 }
