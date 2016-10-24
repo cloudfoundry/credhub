@@ -1,6 +1,7 @@
 package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.jna.libcrypto.CryptoWrapper;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
@@ -18,7 +19,7 @@ public class LibcryptoRsaKeyPairGeneratorTest {
 
   {
     beforeEach(() -> {
-      subject = new LibcryptoRsaKeyPairGenerator(new BouncyCastleProvider());
+      subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(new BouncyCastleProvider()));
     });
 
     it("can generate keypairs", () -> {
