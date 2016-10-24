@@ -1,5 +1,5 @@
 # PCF CredHub
-=========================
+
 The CredHub server helps manage secrets like passwords, certificates, and CAs,
 offering a REST API for access to get/set/generate such secrets.
  

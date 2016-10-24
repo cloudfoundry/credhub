@@ -16,5 +16,6 @@ public class Crypto {
   public native static RSA.ByReference RSA_new();
   public native static void RSA_free(RSA.ByReference r);
   public native static int RSA_generate_key_ex(RSA.ByReference rsa, int bits, BIGNUM.ByReference e, Pointer cb);
-  public native static String BN_bn2hex(BIGNUM.ByReference a);
+  public native static Pointer BN_bn2hex(BIGNUM.ByReference a);
+  public native static void CRYPTO_free(Pointer ptr);
 }

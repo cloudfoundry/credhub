@@ -1,5 +1,6 @@
 package io.pivotal.security.generator;
 
+import com.sun.jna.Pointer;
 import io.pivotal.security.jna.libcrypto.BIGNUM;
 import io.pivotal.security.jna.libcrypto.Crypto;
 import io.pivotal.security.jna.libcrypto.RSA;
@@ -60,6 +61,9 @@ class LibcryptoRsaKeyPairGenerator {
   }
 
   private BigInteger convert(BIGNUM.ByReference bignum) {
-    return new BigInteger(Crypto.BN_bn2hex(bignum), 16);
+    Pointer pointer = Crypto.BN_bn2hex(bignum);
+    BigInteger bigInteger = new BigInteger(pointer.getString(0), 16);
+    Crypto.CRYPTO_free(pointer);
+    return bigInteger;
   }
 }
