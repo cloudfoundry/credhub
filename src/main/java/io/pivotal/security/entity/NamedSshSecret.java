@@ -30,8 +30,6 @@ public class NamedSshSecret extends NamedRsaSshSecret {
     return SecretKind.SSH;
   }
 
-  // https://www.ietf.org/rfc/rfc4253.txt - section 6.6
-  // we are parsing the key which consists of multiple precision integers to derive modulus and hence key length
   public int getKeyLength() {
     return parsePublicKey().keyLength;
   }
@@ -41,15 +39,23 @@ public class NamedSshSecret extends NamedRsaSshSecret {
   }
 
   private ParsedPublicKeyValues parsePublicKey() {
+    // https://www.ietf.org/rfc/rfc4253.txt - section 6.6
+    // we are parsing the key which consists of multiple precision integers to derive modulus and hence key length
     String publicKey = getPublicKey();
     ParsedPublicKeyValues values = new ParsedPublicKeyValues();
 
-    String[] publicKeyParts = publicKey.split(" ");
-    String publicKeyWithoutPrefix = publicKeyParts[1];
+    int endOfPrefix = publicKey.indexOf(' ') + 1;
+    int startOfComment = publicKey.indexOf(' ', endOfPrefix);
+    String isolatedPublicKey;
+    if (startOfComment != -1) {
+      isolatedPublicKey = publicKey.substring(endOfPrefix, startOfComment);
+      values.comment = publicKey.substring(startOfComment + 1);
+    } else {
+      isolatedPublicKey = publicKey.substring(endOfPrefix);
+      values.comment = "";
+    }
 
-    values.comment = publicKeyParts.length > 2 ? publicKeyParts[2] : "";
-
-    DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(publicKeyWithoutPrefix)));
+    DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(Base64.decodeBase64(isolatedPublicKey)));
 
     readType(dataStream);
     readExponent(dataStream);
@@ -58,19 +64,19 @@ public class NamedSshSecret extends NamedRsaSshSecret {
     return values;
   }
 
+  private byte[] readType(DataInputStream dataStream) {
+    return readBytesFrom(dataStream);
+  }
+
+  private byte[] readExponent(DataInputStream dataStream) {
+    return readBytesFrom(dataStream);
+  }
+
   private int readKeyLength(DataInputStream dataStream) {
     byte[] buf = readBytesFrom(dataStream);
     BigInteger modulus = new BigInteger(Arrays.copyOf(buf, buf.length));
     // calculate key length
     return modulus.bitLength();
-  }
-
-  private void readExponent(DataInputStream dataStream) {
-    readBytesFrom(dataStream);
-  }
-
-  private void readType(DataInputStream dataStream) {
-    readBytesFrom(dataStream);
   }
 
   private byte[] readBytesFrom(DataInputStream dataStream) {
@@ -86,7 +92,7 @@ public class NamedSshSecret extends NamedRsaSshSecret {
   }
 
   private static class ParsedPublicKeyValues {
-    public int keyLength;
-    public String comment;
+    int keyLength;
+    String comment;
   }
 }
