@@ -85,6 +85,11 @@ public class NamedCertificateSecret extends NamedSecret {
     return SecretKind.CERTIFICATE;
   }
 
+  @Override
+  public String getSecretType() {
+    throw new UnsupportedOperationException();
+  }
+
   public NamedCertificateSecret setCaName(String caName) {
     this.caName = caName;
     return this;

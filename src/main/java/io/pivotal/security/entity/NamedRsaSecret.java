@@ -34,6 +34,11 @@ public class NamedRsaSecret extends NamedRsaSshSecret {
     return SecretKind.RSA;
   }
 
+  @Override
+  public String getSecretType() {
+    return "rsa";
+  }
+
   public int getKeyLength() {
     String publicKey = this.getPublicKey();
 

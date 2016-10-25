@@ -48,6 +48,6 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
       public NamedSecret rsa(SecretKind secretKind, NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return processSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaSshSetRequestTranslator, parsed);
       }
-    }.compose(new ValidateTypeMatch());
+    };
   }
 }

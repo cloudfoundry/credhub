@@ -55,12 +55,7 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
       public NamedSecret rsa(SecretKind secretKind, NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return processSecret((NamedRsaSecret)namedSecret, NamedRsaSecret::new, secretPath, rsaGeneratorRequestTranslator, parsed);
       }
-    }.compose(new ValidateTypeMatch() {
-      @Override
-      public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
-        return namedSecret;
-      }
-    });
+    };
   }
 }
 

@@ -30,6 +30,11 @@ public class NamedSshSecret extends NamedRsaSshSecret {
     return SecretKind.SSH;
   }
 
+  @Override
+  public String getSecretType() {
+    return "ssh";
+  }
+
   public int getKeyLength() {
     return parsePublicKey().keyLength;
   }

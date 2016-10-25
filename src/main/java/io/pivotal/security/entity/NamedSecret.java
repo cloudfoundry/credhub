@@ -101,6 +101,8 @@ abstract public class NamedSecret implements EncryptedValueContainer {
 
   public abstract SecretKind getKind();
 
+  public abstract String getSecretType();
+
   @PrePersist
   @PreUpdate
   public void updateUuidOnPersist() {

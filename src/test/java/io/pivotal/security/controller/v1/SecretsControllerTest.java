@@ -34,6 +34,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -58,10 +62,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -385,6 +385,21 @@ public class SecretsControllerTest {
       beforeEach(() -> {
         putSecretInDatabase("original value");
         resetAuditLogMock();
+      });
+
+      it("should return 400 when trying to update a secret with a mismatching type", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName.toUpperCase())
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"value\":\"my-password\"," +
+                "  \"overwrite\":true" +
+                "}");
+        final String errorMessage = "The credential type cannot be modified. Please delete the credential if you wish to create it with a different type.";
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value(errorMessage));
       });
 
       describe("with the overwrite flag set to true case-insensitively", () -> {

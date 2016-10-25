@@ -5,13 +5,14 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.util.CheckedFunction;
-import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.function.Supplier;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -19,9 +20,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.verify;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.function.Supplier;
 
 public class AbstractNamedSecretHandlerTestingUtil {
 
@@ -37,10 +35,6 @@ public class AbstractNamedSecretHandlerTestingUtil {
       beforeEach(() -> {
         mapFunction = secretKind.lift(subject.get().make("secret-path", documentContext));
         expectedTranslator = translatorSupplier.get();
-      });
-
-      itThrowsWithMessage("checks the type", ParameterizedValidationException.class, "error.type_mismatch", () -> {
-        mapFunction.apply(mistypedSecret);
       });
 
       it("creates the secret", () -> {

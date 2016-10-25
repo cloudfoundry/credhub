@@ -192,9 +192,12 @@ public class SecretsController {
                                         NamedSecret existingNamedSecret,
                                         boolean willWrite) {
     try {
+      String requestedSecretType = parsed.read("$.type");
       final SecretKind secretKind = (existingNamedSecret != null ?
           existingNamedSecret.getKind() :
-          SecretKindFromString.fromString(parsed.read("$.type")));
+          SecretKindFromString.fromString(requestedSecretType));
+      if (existingNamedSecret != null && requestedSecretType != null && !existingNamedSecret.getSecretType().equals(requestedSecretType))
+        throw new ParameterizedValidationException("error.type_mismatch");
       secretPath = existingNamedSecret == null ? secretPath : existingNamedSecret.getName();
 
       NamedSecret storedNamedSecret;
