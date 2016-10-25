@@ -38,6 +38,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -339,6 +340,28 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       ASN1Sequence sequence = (ASN1Sequence) namedCertificateSecret.getAlternativeNames().getParsedValue();
       assertThat(((DERTaggedObject) sequence.getObjectAt(0)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "another-name").getEncoded()));
+    });
+
+    it("can regenerate using the existing entity and json when there are no alternative names", () -> {
+      setupCa();
+
+      CertificateSecretParameters parameters = new CertificateSecretParameters();
+      parameters.setCaName("my-root");
+      parameters.setCommonName("Credhub Unit Tests");
+      CertificateSecret secret = secretGenerator.generateSecret(parameters);
+
+      String originalPrivateKey = secret.getCertificateBody().getPrivateKey();
+      String originalCertificate = secret.getCertificateBody().getCertificate();
+
+      NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
+      namedCertificateSecret.setCaName("my-root");
+      namedCertificateSecret.setCa(secret.getCertificateBody().getCa());
+      namedCertificateSecret.setCertificate(originalCertificate);
+      namedCertificateSecret.setPrivateKey(originalPrivateKey);
+
+      subject.populateEntityFromJson(namedCertificateSecret, jsonPath.parse("{\"regenerate\":true}"));
+
+      assertNull(namedCertificateSecret.getAlternativeNames());
     });
   }
 

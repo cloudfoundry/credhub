@@ -138,7 +138,10 @@ public class CertificateSecretParameters implements RequestParameters {
   }
 
   public CertificateSecretParameters addAlternativeNames(Extension encodedAlternativeNames) {
-    this.alternativeNames = GeneralNames.getInstance(ASN1Sequence.getInstance(encodedAlternativeNames.getParsedValue()));
+    if (encodedAlternativeNames != null) {
+      this.alternativeNames = GeneralNames.getInstance(ASN1Sequence.getInstance(encodedAlternativeNames.getParsedValue()));
+    }
+
     return this;
   }
 
