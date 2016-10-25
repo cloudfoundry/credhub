@@ -56,6 +56,10 @@ public class NamedPasswordSecretTest {
       generationParameters.setLength(10);
     });
 
+    it("returns type password", () -> {
+      assertThat(subject.getSecretType(), equalTo("password"));
+    });
+
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
         subject = new NamedPasswordSecret("foo");

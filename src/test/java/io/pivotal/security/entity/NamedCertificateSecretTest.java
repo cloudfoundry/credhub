@@ -53,6 +53,10 @@ public class NamedCertificateSecretTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
+    it("returns type certificate", () -> {
+      assertThat(subject.getSecretType(), equalTo("certificate"));
+    });
+
     it("updates the secret value with the same name when overwritten", () -> {
       subject.setPrivateKey("first");
       repository.saveAndFlush(subject);

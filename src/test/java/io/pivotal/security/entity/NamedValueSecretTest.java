@@ -47,6 +47,10 @@ public class NamedValueSecretTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
+    it("returns type value", () -> {
+      assertThat(subject.getSecretType(), equalTo("value"));
+    });
+
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
         subject = new NamedValueSecret("foo");

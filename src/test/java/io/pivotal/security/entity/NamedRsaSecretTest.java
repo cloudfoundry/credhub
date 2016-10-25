@@ -40,6 +40,10 @@ public class NamedRsaSecretTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
+    it("returns type rsa", () -> {
+      assertThat(subject.getSecretType(), equalTo("rsa"));
+    });
+
     it("sets a public key", () -> {
       subject
           .setPublicKey("my-public-key");

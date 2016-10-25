@@ -38,6 +38,10 @@ public class NamedSshSecretTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
+    it("returns type ssh", () -> {
+      assertThat(subject.getSecretType(), equalTo("ssh"));
+    });
+
     it("sets a public key", () -> {
       subject
           .setPublicKey("my-public-key");
