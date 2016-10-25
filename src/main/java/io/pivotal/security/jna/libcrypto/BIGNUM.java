@@ -11,9 +11,11 @@ public class BIGNUM extends Structure {
 
   public Pointer d;
   public int top;
+  public int dmax;
+  public int neg;
 
   @Override
   protected List getFieldOrder() {
-    return Arrays.asList("d", "top");
+    return Arrays.asList("d", "top", "dmax", "neg");
   }
 }

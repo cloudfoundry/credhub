@@ -1,11 +1,11 @@
 package io.pivotal.security.jna.libcrypto;
 
 import com.sun.jna.Native;
-import com.sun.jna.Pointer;
 import io.pivotal.security.util.CheckedConsumer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;
@@ -42,9 +42,11 @@ public class CryptoWrapper {
         consumer.accept(rsa);
       } finally {
         Crypto.RSA_free(rsa);
+        rsa = null;
       }
     } finally {
       Crypto.BN_free(bne);
+      bne = null;
     }
   }
 
@@ -57,11 +59,18 @@ public class CryptoWrapper {
   }
 
   synchronized BigInteger convert(BIGNUM.ByReference bignum) {
-    Pointer pointer = Crypto.BN_bn2hex(bignum);
-    BigInteger bigInteger = new BigInteger(pointer.getString(0), 16);
-    //TODO: finish the wip_pk_sp_bignum branch
-//    Crypto.CRYPTO_free(pointer);
-    return bigInteger;
+    Assert.notNull(bignum, "bignum cannot be null");
+
+    int ratio = 8;
+    long[] longs = bignum.d.getLongArray(0, bignum.top);
+    byte[] bytes = new byte[longs.length * ratio];
+    for (int i = 0; i < longs.length; i++) {
+      for (int j = 0; j < ratio; j++) {
+        bytes[(bytes.length - 1) - (ratio * i + j)] = (byte) (longs[i] >>> (j * ratio));
+      }
+    }
+
+    return new BigInteger(bignum.neg != 0 ? -1 : 1, bytes);
   }
 
   synchronized String getError() {

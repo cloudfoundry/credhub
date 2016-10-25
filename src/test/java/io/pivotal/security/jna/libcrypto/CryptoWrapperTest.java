@@ -5,20 +5,20 @@ import com.sun.jna.Pointer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
+import javax.crypto.Cipher;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.Security;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.jna.libcrypto.Crypto.RSA_NO_PADDING;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.Security;
-
-import javax.crypto.Cipher;
 
 @RunWith(Spectrum.class)
 public class CryptoWrapperTest {
@@ -34,22 +34,17 @@ public class CryptoWrapperTest {
     });
 
     it("can generate keypairs", () -> {
+      // We expect that the openssl random number generator is seeded automatically.
+      // RSA_generate_key_ex uses BN_generate_prime for primes
+      // BN_generate_prime uses RAND, and RAND is transparently seeded with /dev/urandom
+
+      // https://www.openssl.org/docs/man1.0.1/crypto/RSA_generate_key.html
+      // https://www.openssl.org/docs/man1.0.1/crypto/BN_generate_prime.html
+      // https://www.openssl.org/docs/man1.0.1/crypto/RAND_add.html
+
       subject.generateKeyPair(1024, first -> {
         KeyPair firstKeyPair = subject.toKeyPair(first);
         assertThat(firstKeyPair.getPublic(), notNullValue());
-
-        assertThat("The first key should not repeat (RNG has been seeded)", firstKeyPair.getPublic().getEncoded(), not(equalTo(new byte[] {
-            48, -127, -97, 48, 13, 6, 9, 42, -122, 72, -122, -9, 13, 1, 1, 1,
-            5, 0, 3, -127, -115, 0, 48, -127, -119, 2, -127, -127, 0, -81, -49, -46,
-            -34, 69, 68, 5, 24, -79, -93, -127, 46, -19, -11, 82, 65, -109, 117, -4,
-            -124, 114, -37, 78, -54, -51, -5, 111, 39, -93, 91, -24, -113, -121, 12, -109,
-            -101, -89, 38, -53, 125, -57, 85, -55, 28, 75, 7, -61, 58, 70, 103, 115,
-            73, 63, 114, 25, -70, 29, 65, -105, 43, -35, 39, -85, -71, -93, -37, -1,
-            95, -55, 118, 69, 76, 70, 37, 82, -98, 82, -127, 80, -32, 80, -4, 30, -121,
-            -104, 88, 22, -52, 126, -52, 83, 58, 77, -11, 114, -79, 109, -91, 25, 51,
-            -97, 14, 22, -30, 21, -76, -32, -83, -82, -97, -86, 102, -5, -26, 116, 122,
-            -33, -73, -80, -123, 31, 50, -119, -8, -89, 12, -72, -65, 2, 3, 1, 0, 1
-        })));
 
         subject.generateKeyPair(1024, second -> {
           KeyPair secondKeyPair = subject.toKeyPair(second);
@@ -84,22 +79,63 @@ public class CryptoWrapperTest {
       });
     });
 
-    it("can convert BIGNUM to BigInteger", () -> {
-      BIGNUM.ByReference bn = Crypto.BN_new();
-      try {
-        Crypto.BN_set_word(bn, 0x12345678L);
-        Crypto.BN_mul_word(bn, 0xFFFFFFFFL);
-        BigInteger converted = subject.convert(bn);
-        Pointer hex = Crypto.BN_bn2hex(bn);
+    describe("converting BIGNUM to BigInteger", () -> {
+      it("works for small positive numbers", () -> {
+        BIGNUM.ByReference bn = Crypto.BN_new();
         try {
-          assertThat(hex.getString(0), equalTo("12345677EDCBA988"));
-          assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
+          Crypto.BN_set_word(bn, 18);
+          BigInteger converted = subject.convert(bn);
+          Pointer hex = Crypto.BN_bn2hex(bn);
+          try {
+            assertThat(hex.getString(0), equalTo("12"));
+            assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
+          } finally {
+            Crypto.CRYPTO_free(hex);
+            hex = null;
+          }
         } finally {
-          Crypto.CRYPTO_free(hex);
+          Crypto.BN_free(bn);
+          bn = null;
         }
-      } finally {
-        Crypto.BN_free(bn);
-      }
+      });
+
+      it("works for small negative numbers", () -> {
+        BIGNUM.ByReference bn = Crypto.BN_new();
+        try {
+          Crypto.BN_set_word(bn, 16);
+          Crypto.BN_set_negative(bn, 1);
+          BigInteger converted = subject.convert(bn);
+          Pointer hex = Crypto.BN_bn2hex(bn);
+          try {
+            assertThat(hex.getString(0), equalTo("-10"));
+            assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
+          } finally {
+            Crypto.CRYPTO_free(hex);
+            hex = null;
+          }
+        } finally {
+          Crypto.BN_free(bn);
+          bn = null;
+        }
+      });
+
+      it("works with more than 64 bits", () -> {
+        BIGNUM.ByReference bn = Crypto.BN_new();
+        try {
+          Crypto.BN_set_word(bn, 0x1234567800000000L);
+          Crypto.BN_mul_word(bn, 0xFFFFFFFFFFFFFFFFL);
+          BigInteger converted = subject.convert(bn);
+          Pointer hex = Crypto.BN_bn2hex(bn);
+          try {
+            assertThat(hex.getString(0), equalTo("12345677FFFFFFFFEDCBA98800000000"));
+            assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
+          } finally {
+            Crypto.CRYPTO_free(hex);
+          }
+        } finally {
+          Crypto.BN_free(bn);
+        }
+      });
     });
   }
 }

@@ -8,12 +8,13 @@ class Crypto {
     Native.register("crypto");
   }
 
-  public static final long RSA_F4 = 0x10001L;
-  public static final int RSA_NO_PADDING = 3;
+  static final long RSA_F4 = 0x10001L;
+  static final int RSA_NO_PADDING = 3;
 
   public native static BIGNUM.ByReference BN_new();
   public native static int BN_set_word(BIGNUM.ByReference a, long w);
   public native static int BN_mul_word(BIGNUM.ByReference a, long w);
+  public native static void BN_set_negative(BIGNUM.ByReference b, int n);
   public native static Pointer BN_bn2hex(BIGNUM.ByReference a);
   public native static void BN_free(BIGNUM.ByReference bn);
 
