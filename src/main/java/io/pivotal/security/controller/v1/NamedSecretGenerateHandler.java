@@ -32,27 +32,27 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
   public SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed) {
     return new SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException>() {
       @Override
-      public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+      public NamedSecret value(NamedSecret namedSecret) {
         throw new ParameterizedValidationException("error.invalid_generate_type");
       }
 
       @Override
-      public NamedSecret password(SecretKind secretKind, NamedSecret namedSecret) throws NoSuchAlgorithmException {
+      public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return processSecret((NamedPasswordSecret)namedSecret, NamedPasswordSecret::new, secretPath, passwordGeneratorRequestTranslator, parsed);
       }
 
       @Override
-      public NamedSecret certificate(SecretKind secretKind, NamedSecret namedSecret) throws NoSuchAlgorithmException {
+      public NamedSecret certificate(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return processSecret((NamedCertificateSecret)namedSecret, NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsed);
       }
 
       @Override
-      public NamedSecret ssh(SecretKind secretKind, NamedSecret namedSecret) throws NoSuchAlgorithmException {
+      public NamedSecret ssh(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return processSecret((NamedSshSecret)namedSecret, NamedSshSecret::new, secretPath, sshGeneratorRequestTranslator, parsed);
       }
 
       @Override
-      public NamedSecret rsa(SecretKind secretKind, NamedSecret namedSecret) throws NoSuchAlgorithmException {
+      public NamedSecret rsa(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return processSecret((NamedRsaSecret)namedSecret, NamedRsaSecret::new, secretPath, rsaGeneratorRequestTranslator, parsed);
       }
     };

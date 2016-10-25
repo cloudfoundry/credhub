@@ -19,27 +19,27 @@ public class StaticMapping<T, R> implements SecretKind.CheckedMapping<T, R, NoSu
   }
 
   @Override
-  public R value(SecretKind secretKind, T t) {
+  public R value(T t) {
     return value;
   }
 
   @Override
-  public R password(SecretKind secretKind, T t) {
+  public R password(T t) {
     return password;
   }
 
   @Override
-  public R certificate(SecretKind secretKind, T t) {
+  public R certificate(T t) {
     return certificate;
   }
 
   @Override
-  public R ssh(SecretKind secretKind, T t) {
+  public R ssh(T t) {
     return ssh;
   }
 
   @Override
-  public R rsa(SecretKind secretKind, T t) {
+  public R rsa(T t) {
     return rsa;
   }
 }

@@ -13,9 +13,7 @@ import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.DefaultMapping;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.StaticMapping;
-import org.junit.Assert;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -119,7 +117,7 @@ public class SecretsControllerTest {
         when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
             .thenReturn(new DefaultMapping() {
               @Override
-              public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+              public NamedSecret value(NamedSecret namedSecret) {
                 throw new ParameterizedValidationException("error.invalid_generate_type");
               }
             });
@@ -184,7 +182,7 @@ public class SecretsControllerTest {
             when(namedSecretGenerateHandler.make(eq(secretName), isA(DocumentContext.class)))
                 .thenReturn(new DefaultMapping() {
                   @Override
-                  public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+                  public NamedSecret value(NamedSecret namedSecret) {
                     ((NamedValueSecret) namedSecret).setValue("generated value");
                     return namedSecret;
                   }
@@ -296,7 +294,7 @@ public class SecretsControllerTest {
         when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
             .thenReturn(new DefaultMapping() {
               @Override
-              public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+              public NamedSecret value(NamedSecret namedSecret) {
                 throw new ParameterizedValidationException("error.type_mismatch");
               }
             });
@@ -319,7 +317,7 @@ public class SecretsControllerTest {
         when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
             .thenReturn(new DefaultMapping() {
               @Override
-              public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+              public NamedSecret value(NamedSecret namedSecret) {
                 throw new ParameterizedValidationException("error.invalid_json_key", newArrayList("response error"));
               }
             });
@@ -409,7 +407,7 @@ public class SecretsControllerTest {
           when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
               .thenReturn(new DefaultMapping() {
                 @Override
-                public NamedSecret value(SecretKind secretKind, NamedSecret namedSecret) {
+                public NamedSecret value(NamedSecret namedSecret) {
                   ((NamedValueSecret) namedSecret).setValue(specialValue);
                   return namedSecret;
                 }
@@ -521,8 +519,7 @@ public class SecretsControllerTest {
           when(namedSecretGenerateHandler.make(eq("my-password"), isA(DocumentContext.class)))
               .thenReturn(new DefaultMapping() {
                 @Override
-                public NamedSecret password(SecretKind secretKind, NamedSecret namedSecret) {
-                  Assert.assertEquals(secretKind, SecretKind.PASSWORD);
+                public NamedSecret password(NamedSecret namedSecret) {
                   ((NamedPasswordSecret) namedSecret).setValue("regenerated");
                   return namedSecret;
                 }

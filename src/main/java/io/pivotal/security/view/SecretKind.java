@@ -9,45 +9,45 @@ public enum SecretKind implements SecretKindFromString {
     @Override
     public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
-      return t -> mapping.value(this, t);
+      return mapping::value;
     }
   },
   PASSWORD {
     @Override
     public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
-      return t -> mapping.password(this, t);
+      return mapping::password;
     }
   },
   CERTIFICATE {
     @Override
     public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
-      return t -> mapping.certificate(this, t);
+      return mapping::certificate;
     }
   },
   SSH {
     @Override
     public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
-      return t -> mapping.ssh(this, t);
+      return mapping::ssh;
     }
   },
   RSA {
     @Override
     public <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping) {
       Objects.requireNonNull(mapping);
-      return t -> mapping.rsa(this, t);
+      return mapping::rsa;
     }
   };
 
   public abstract <T, R, E extends Throwable> CheckedFunction<T, R, E> lift(CheckedMapping<T, R, E> mapping);
 
   public interface CheckedMapping<T, R, E extends Throwable> {
-    R value(SecretKind secretKind, T t) throws E;
-    R password(SecretKind secretKind, T t) throws E;
-    R certificate(SecretKind secretKind, T t) throws E;
-    R ssh(SecretKind secretKind, T t) throws E;
-    R rsa(SecretKind secretKind, T t) throws E;
+    R value(T t) throws E;
+    R password(T t) throws E;
+    R certificate(T t) throws E;
+    R ssh(T t) throws E;
+    R rsa(T t) throws E;
   }
 }
