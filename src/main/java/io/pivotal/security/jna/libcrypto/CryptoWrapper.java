@@ -59,7 +59,8 @@ public class CryptoWrapper {
   synchronized BigInteger convert(BIGNUM.ByReference bignum) {
     Pointer pointer = Crypto.BN_bn2hex(bignum);
     BigInteger bigInteger = new BigInteger(pointer.getString(0), 16);
-    Crypto.CRYPTO_free(pointer);
+    //TODO: finish the wip_pk_sp_bignum branch
+//    Crypto.CRYPTO_free(pointer);
     return bigInteger;
   }
 
