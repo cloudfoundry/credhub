@@ -1,7 +1,7 @@
 package io.pivotal.security.oauth;
 
+import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
-import io.pivotal.security.repository.AuthFailureAuditRecordRepository;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +17,15 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.stereotype.Service;
 
-import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
-
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
 
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
@@ -35,7 +34,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   InstantFactoryBean instantFactoryBean;
 
   @Autowired
-  AuthFailureAuditRecordRepository auditRecordRepository;
+  AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
 
   @Autowired
   JwtAccessTokenConverter jwtAccessTokenConverter;
@@ -128,7 +127,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
         .setGrantType(grantType)
         .setMethod(requestMethod)
         .setStatusCode(statusCode);
-    auditRecordRepository.save(authFailureAuditRecord);
+    authFailureAuditRecordDataService.save(authFailureAuditRecord);
   }
 
   private String cleanMessage(String message, String token) {

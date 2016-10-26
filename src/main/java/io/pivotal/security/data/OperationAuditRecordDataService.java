@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OperationAuditRecordDataService {
   @Autowired
-  public OperationAuditRecordRepository operationAuditRecordRepository;
+  OperationAuditRecordRepository operationAuditRecordRepository;
 
   public OperationAuditRecord save(OperationAuditRecord record) {
     return operationAuditRecordRepository.save(record);

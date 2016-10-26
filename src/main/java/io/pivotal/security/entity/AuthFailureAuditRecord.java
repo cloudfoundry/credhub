@@ -2,9 +2,6 @@ package io.pivotal.security.entity;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
-import java.util.Date;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
@@ -14,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.time.Instant;
+import java.util.Date;
 
 @SuppressWarnings("unused")
 @Entity
@@ -31,6 +30,7 @@ public class AuthFailureAuditRecord {
 
   private String operation;
   private String path;
+
   private long tokenIssued;
   private long tokenExpires;
 
@@ -221,5 +221,59 @@ public class AuthFailureAuditRecord {
   public AuthFailureAuditRecord setStatusCode(int statusCode) {
     this.statusCode = statusCode;
     return this;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+
+    AuthFailureAuditRecord that = (AuthFailureAuditRecord) o;
+
+    if (id != that.id) return false;
+    if (tokenIssued != that.tokenIssued) return false;
+    if (tokenExpires != that.tokenExpires) return false;
+    if (statusCode != that.statusCode) return false;
+    if (hostName != null ? !hostName.equals(that.hostName) : that.hostName != null) return false;
+    if (now != null ? !now.equals(that.now) : that.now != null) return false;
+    if (operation != null ? !operation.equals(that.operation) : that.operation != null) return false;
+    if (path != null ? !path.equals(that.path) : that.path != null) return false;
+    if (failureDescription != null ? !failureDescription.equals(that.failureDescription) : that.failureDescription != null)
+      return false;
+    if (uaaUrl != null ? !uaaUrl.equals(that.uaaUrl) : that.uaaUrl != null) return false;
+    if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+    if (userName != null ? !userName.equals(that.userName) : that.userName != null) return false;
+    if (requesterIp != null ? !requesterIp.equals(that.requesterIp) : that.requesterIp != null) return false;
+    if (xForwardedFor != null ? !xForwardedFor.equals(that.xForwardedFor) : that.xForwardedFor != null) return false;
+    if (clientId != null ? !clientId.equals(that.clientId) : that.clientId != null) return false;
+    if (scope != null ? !scope.equals(that.scope) : that.scope != null) return false;
+    if (grantType != null ? !grantType.equals(that.grantType) : that.grantType != null) return false;
+    if (method != null ? !method.equals(that.method) : that.method != null) return false;
+    return queryParameters != null ? queryParameters.equals(that.queryParameters) : that.queryParameters == null;
+
+  }
+
+  @Override
+  public int hashCode() {
+    int result = (int) (id ^ (id >>> 32));
+    result = 31 * result + (hostName != null ? hostName.hashCode() : 0);
+    result = 31 * result + (now != null ? now.hashCode() : 0);
+    result = 31 * result + (operation != null ? operation.hashCode() : 0);
+    result = 31 * result + (path != null ? path.hashCode() : 0);
+    result = 31 * result + (int) (tokenIssued ^ (tokenIssued >>> 32));
+    result = 31 * result + (int) (tokenExpires ^ (tokenExpires >>> 32));
+    result = 31 * result + (failureDescription != null ? failureDescription.hashCode() : 0);
+    result = 31 * result + (uaaUrl != null ? uaaUrl.hashCode() : 0);
+    result = 31 * result + (userId != null ? userId.hashCode() : 0);
+    result = 31 * result + (userName != null ? userName.hashCode() : 0);
+    result = 31 * result + (requesterIp != null ? requesterIp.hashCode() : 0);
+    result = 31 * result + (xForwardedFor != null ? xForwardedFor.hashCode() : 0);
+    result = 31 * result + (clientId != null ? clientId.hashCode() : 0);
+    result = 31 * result + (scope != null ? scope.hashCode() : 0);
+    result = 31 * result + (grantType != null ? grantType.hashCode() : 0);
+    result = 31 * result + (method != null ? method.hashCode() : 0);
+    result = 31 * result + statusCode;
+    result = 31 * result + (queryParameters != null ? queryParameters.hashCode() : 0);
+    return result;
   }
 }

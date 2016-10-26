@@ -4,11 +4,11 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
+import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
-import io.pivotal.security.helper.CountMemo;
-import io.pivotal.security.repository.AuthFailureAuditRecordRepository;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,22 +30,22 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.Filter;
+import java.time.Instant;
+import java.util.Map;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
-import static io.pivotal.security.helper.SpectrumHelper.markRepository;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
-import java.time.Instant;
-import java.util.Map;
-
-import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration
@@ -64,8 +64,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   @InjectMocks
   AuditOAuth2AuthenticationExceptionHandler subject;
 
-  @Autowired
-  AuthFailureAuditRecordRepository auditRecordRepository;
+  @Mock
+  AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
@@ -82,7 +82,6 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   private final String credentialUrlPath = "/api/v1/data/foo";
   private final String credentialUrlQueryParams = "?my_name=my_value";
   private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
-  private CountMemo auditRecordMemo;
 
   {
     wireAndUnwire(this);
@@ -95,7 +94,6 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
           .webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
-      auditRecordMemo = markRepository(auditRecordRepository);
     });
 
     describe("when the token is invalid", () -> {
@@ -113,8 +111,10 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
       });
 
       it("logs the 'token_invalid' auth exception to the database", () -> {
-        auditRecordMemo.expectIncreaseOf(1);
-        AuthFailureAuditRecord auditRecord = auditRecordRepository.findFirstByOrderByIdDesc();
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
+
+        AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
@@ -152,8 +152,10 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_SYMMETRIC_KEY_JWT);
         Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
-        auditRecordMemo.expectIncreaseOf(1);
-        AuthFailureAuditRecord auditRecord = auditRecordRepository.findFirstByOrderByIdDesc();
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
+
+        AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
 
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
@@ -189,8 +191,10 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
       });
 
       it("logs the 'no_token' auth exception to the database", () -> {
-        auditRecordMemo.expectIncreaseOf(1);
-        AuthFailureAuditRecord auditRecord = auditRecordRepository.findFirstByOrderByIdDesc();
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
+
+        AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
 
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
