@@ -1,7 +1,7 @@
 package io.pivotal.security.oauth;
 
+import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.repository.OperationAuditRecordRepository;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.InstantFactoryBean;
@@ -15,13 +15,12 @@ import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHand
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Set;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Set;
 
 public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   @Autowired
@@ -34,7 +33,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   InstantFactoryBean instantFactoryBean;
 
   @Autowired
-  OperationAuditRecordRepository operationAuditRecordRepository;
+  OperationAuditRecordDataService operationAuditRecordDataService;
 
   @Autowired
   SecurityEventsLogService securityEventsLogService;
@@ -46,7 +45,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
       OperationAuditRecord operationAuditRecord = createOperationAuditRecord(token, new AuditRecordParameters(request, null), response.getStatus());
-      operationAuditRecordRepository.save(operationAuditRecord);
+      operationAuditRecordDataService.save(operationAuditRecord);
       securityEventsLogService.log(operationAuditRecord);
     }
   }

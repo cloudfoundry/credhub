@@ -3,11 +3,12 @@ package io.pivotal.security.oauth;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.repository.OperationAuditRecordRepository;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,15 +26,17 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
 import java.time.Instant;
-import java.util.List;
 import java.util.Map;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -55,8 +58,8 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   @InjectMocks
   AuditOAuth2AccessDeniedHandler subject;
 
-  @Autowired
-  OperationAuditRecordRepository operationAuditRecordRepository;
+  @Mock
+  OperationAuditRecordDataService operationAuditRecordDataService;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
@@ -109,11 +112,10 @@ public class AuditOAuth2AccessDeniedHandlerTest {
         OAuth2AccessToken accessToken = tokenServices.readAccessToken(INVALID_SCOPE_SYMMETRIC_KEY_JWT);
         Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
-        List<OperationAuditRecord> auditRecords = operationAuditRecordRepository.findAll();
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        assertThat(auditRecords.size(), equalTo(1));
-
-        OperationAuditRecord auditRecord = auditRecords.get(0);
+        OperationAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.isSuccess(), equalTo(false));
         assertThat(auditRecord.getNow(), equalTo(now));
