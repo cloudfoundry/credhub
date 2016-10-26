@@ -6,7 +6,7 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.helper.CountMemo;
 import io.pivotal.security.helper.SpectrumHelper;
-import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.repository.OperationAuditRecordRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -42,7 +42,7 @@ public class AuditLogConfigurationTest {
   WebApplicationContext applicationContext;
 
   @Autowired
-  AuditRecordRepository auditRecordRepository;
+  OperationAuditRecordRepository operationAuditRecordRepository;
 
   @Autowired
   Filter springSecurityFilterChain;
@@ -63,7 +63,7 @@ public class AuditLogConfigurationTest {
       credentialUrlPath = "/api/v1/data/foo";
       caUrlPath1 = "/api/v1/ca/bar";
       caUrlPath2 = "/api/v1/ca/baz";
-      auditRecordCount = SpectrumHelper.markRepository(auditRecordRepository);
+      auditRecordCount = SpectrumHelper.markRepository(operationAuditRecordRepository);
     });
 
     describe("when a request to set credential is served", () -> {
@@ -87,7 +87,7 @@ public class AuditLogConfigurationTest {
       it("logs an audit record for credential update operation", () -> {
         auditRecordCount.expectIncreaseOf(1);
 
-        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
@@ -115,7 +115,7 @@ public class AuditLogConfigurationTest {
       it("logs an audit record for credential_update operation", () -> {
         auditRecordCount.expectIncreaseOf(1);
 
-        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -143,7 +143,7 @@ public class AuditLogConfigurationTest {
       it("logs an audit record for credential_delete operation", () -> {
         auditRecordCount.expectIncreaseOf(1);
 
-        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_delete"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -159,7 +159,7 @@ public class AuditLogConfigurationTest {
       it("logs an audit record for credential_access operation", () -> {
         auditRecordCount.expectIncreaseOf(1);
 
-        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -201,13 +201,13 @@ public class AuditLogConfigurationTest {
       it("logs an audit record for ca_update operation", () -> {
         auditRecordCount.expectIncreaseOf(2);
 
-        OperationAuditRecord auditRecord1 = auditRecordRepository.findAll().get(0);
+        OperationAuditRecord auditRecord1 = operationAuditRecordRepository.findAll().get(0);
         assertThat(auditRecord1.getPath(), equalTo(caUrlPath1));
         assertThat(auditRecord1.getOperation(), equalTo("ca_update"));
         assertThat(auditRecord1.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord1.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 
-        OperationAuditRecord auditRecord2 = auditRecordRepository.findAll().get(1);
+        OperationAuditRecord auditRecord2 = operationAuditRecordRepository.findAll().get(1);
         assertThat(auditRecord2.getPath(), equalTo(caUrlPath2));
         assertThat(auditRecord2.getOperation(), equalTo("ca_update"));
         assertThat(auditRecord2.getRequesterIp(), equalTo("12345"));
@@ -223,7 +223,7 @@ public class AuditLogConfigurationTest {
       it("logs an audit record for ca_access operation", () -> {
         auditRecordCount.expectIncreaseOf(1);
 
-        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getPath(), equalTo(caUrlPath1));
         assertThat(auditRecord.getOperation(), equalTo("ca_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -252,7 +252,7 @@ public class AuditLogConfigurationTest {
       it("logs all X-Forwarded-For values", () -> {
         auditRecordCount.expectIncreaseOf(1);
 
-        OperationAuditRecord auditRecord = auditRecordRepository.findAll().get(0);
+        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2,3.3.3.3"));
       });
     });

@@ -5,6 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface AuditRecordRepository extends JpaRepository<OperationAuditRecord, Long> {
+public interface OperationAuditRecordRepository extends JpaRepository<OperationAuditRecord, Long> {
   List<OperationAuditRecord> findAll();
 }

@@ -1,7 +1,7 @@
 package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.repository.OperationAuditRecordRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,13 +10,13 @@ import org.springframework.data.domain.Sort;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FakeAuditRecordRepository implements AuditRecordRepository {
+public class FakeOperationAuditRecordRepository implements OperationAuditRecordRepository {
   private final FakeTransactionManager transactionManager;
   private List<OperationAuditRecord> auditRecords;
 
   private boolean shouldThrow = false;
 
-  public FakeAuditRecordRepository(FakeTransactionManager transactionManager) {
+  public FakeOperationAuditRecordRepository(FakeTransactionManager transactionManager) {
     this.transactionManager = transactionManager;
     this.auditRecords = new ArrayList<>();
   }

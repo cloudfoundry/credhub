@@ -7,7 +7,7 @@ import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.fake.FakeAuditRecordRepository;
+import io.pivotal.security.fake.FakeOperationAuditRecordRepository;
 import io.pivotal.security.fake.FakeSecretRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
 import io.pivotal.security.util.InstantFactoryBean;
@@ -25,6 +25,9 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.time.Instant;
+import java.util.List;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -40,9 +43,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-import java.util.List;
-
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
@@ -53,7 +53,7 @@ public class DatabaseAuditLogServiceTest {
   @InjectMocks
   DatabaseAuditLogService subject;
 
-  FakeAuditRecordRepository auditRepository;
+  FakeOperationAuditRecordRepository auditRepository;
 
   FakeSecretRepository secretRepository;
 
@@ -96,9 +96,9 @@ public class DatabaseAuditLogServiceTest {
           authentication
       );
       transactionManager = new FakeTransactionManager();
-      auditRepository = new FakeAuditRecordRepository(transactionManager);
+      auditRepository = new FakeOperationAuditRecordRepository(transactionManager);
       secretRepository = new FakeSecretRepository(transactionManager);
-      subject.auditRecordRepository = auditRepository;
+      subject.operationAuditRecordRepository = auditRepository;
       subject.transactionManager = transactionManager;
 
       now = Instant.now();

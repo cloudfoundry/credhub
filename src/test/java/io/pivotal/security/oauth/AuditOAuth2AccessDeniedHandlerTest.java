@@ -4,7 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.repository.OperationAuditRecordRepository;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.junit.runner.RunWith;
@@ -56,7 +56,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   AuditOAuth2AccessDeniedHandler subject;
 
   @Autowired
-  AuditRecordRepository operationAuditRecordRepository;
+  OperationAuditRecordRepository operationAuditRecordRepository;
 
   @Autowired
   ResourceServerTokenServices tokenServices;

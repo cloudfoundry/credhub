@@ -20,7 +20,7 @@ public class TransactionContractTest {
 
   FakeSecretRepository secretRepository;
 
-  FakeAuditRecordRepository auditRecordRepository;
+  FakeOperationAuditRecordRepository auditRecordRepository;
 
   FakeTransactionManager transactionManager;
 
@@ -30,7 +30,7 @@ public class TransactionContractTest {
     beforeEach(() -> {
       transactionManager = new FakeTransactionManager();
       secretRepository = new FakeSecretRepository(transactionManager);
-      auditRecordRepository = new FakeAuditRecordRepository(transactionManager);
+      auditRecordRepository = new FakeOperationAuditRecordRepository(transactionManager);
     });
 
     describe("a transaction", () -> {

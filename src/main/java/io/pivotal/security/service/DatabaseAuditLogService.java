@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.repository.OperationAuditRecordRepository;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -19,12 +19,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-
-import javax.annotation.PostConstruct;
 
 @Service
 public class DatabaseAuditLogService implements AuditLogService {
@@ -36,7 +35,7 @@ public class DatabaseAuditLogService implements AuditLogService {
   ResourceServerTokenServices tokenServices;
 
   @Autowired
-  AuditRecordRepository auditRecordRepository;
+  OperationAuditRecordRepository operationAuditRecordRepository;
 
   @Autowired
   PlatformTransactionManager transactionManager;
@@ -80,7 +79,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     OperationAuditRecord auditRecord = getOperationAuditRecord(operation, auditRecordParameters, responseEntity.getStatusCodeValue(), auditSuccess);
 
     try {
-      auditRecordRepository.save(auditRecord);
+      operationAuditRecordRepository.save(auditRecord);
       transactionManager.commit(transaction);
       securityEventsLogService.log(auditRecord);
     } catch (Exception e) {

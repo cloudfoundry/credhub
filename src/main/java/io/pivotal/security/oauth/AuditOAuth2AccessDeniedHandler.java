@@ -1,7 +1,7 @@
 package io.pivotal.security.oauth;
 
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.repository.AuditRecordRepository;
+import io.pivotal.security.repository.OperationAuditRecordRepository;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.InstantFactoryBean;
@@ -34,7 +34,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   InstantFactoryBean instantFactoryBean;
 
   @Autowired
-  AuditRecordRepository operationAuditRecordRepository;
+  OperationAuditRecordRepository operationAuditRecordRepository;
 
   @Autowired
   SecurityEventsLogService securityEventsLogService;
