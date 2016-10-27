@@ -20,6 +20,8 @@ class LibcryptoRsaKeyPairGenerator {
   }
 
   public synchronized KeyPair generateKeyPair(int keyLength) throws InvalidKeyException, InvalidKeySpecException {
-    return cryptoWrapper.toKeyPair(cryptoWrapper.generateKeyPair(keyLength));
+    final KeyPair[] keyPair = {null};
+    cryptoWrapper.generateKeyPair(keyLength, byReference -> keyPair[0] = cryptoWrapper.toKeyPair(byReference));
+    return keyPair[0];
   }
 }

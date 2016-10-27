@@ -1,6 +1,7 @@
 package io.pivotal.security.jna.libcrypto;
 
 import com.sun.jna.Native;
+import io.pivotal.security.util.CheckedConsumer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,22 +24,30 @@ public class CryptoWrapper {
 
   private final KeyFactory keyFactory;
 
-  private BIGNUM.ByReference bne = Crypto.BN_new();
-  private RSA.ByReference rsa = Crypto.RSA_new();
-
   @Autowired
   public CryptoWrapper(BouncyCastleProvider bouncyCastleProvider) throws NoSuchAlgorithmException {
     keyFactory = KeyFactory.getInstance(ALGORITHM, bouncyCastleProvider);
-    Crypto.BN_set_word(bne, Crypto.RSA_F4);
   }
 
-  public synchronized <E extends Throwable> RSA.ByReference generateKeyPair(int keyLength) throws E {
-    rsa.clear();
-    int r = Crypto.RSA_generate_key_ex(rsa, keyLength, bne, null);
-    if (r < 1) {
-      throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
+  public synchronized <E extends Throwable> void generateKeyPair(int keyLength, CheckedConsumer<RSA.ByReference, E> consumer) throws E {
+    BIGNUM.ByReference bne = Crypto.BN_new();
+    try {
+      Crypto.BN_set_word(bne, Crypto.RSA_F4);
+      RSA.ByReference rsa = Crypto.RSA_new();
+      int r = Crypto.RSA_generate_key_ex(rsa, keyLength, bne, null);
+      if (r < 1) {
+        throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
+      }
+      try {
+        consumer.accept(rsa);
+      } finally {
+        Crypto.RSA_free(rsa);
+        rsa = null;
+      }
+    } finally {
+      Crypto.BN_free(bne);
+      bne = null;
     }
-    return rsa;
   }
 
   public synchronized KeyPair toKeyPair(RSA.ByReference rsa) throws InvalidKeySpecException {
@@ -72,8 +81,7 @@ public class CryptoWrapper {
   }
 
   private RSAPrivateCrtKeySpec getRsaPrivateCrtKeySpec(RSA.ByReference rsa) {
-    // https://www.openssl.org/docs/man1.0.1/crypto/rsa.html
-    RSAPrivateCrtKeySpec rsaPrivateCrtKeySpec = new RSAPrivateCrtKeySpec(
+    return new RSAPrivateCrtKeySpec(
         convert(rsa.n),
         convert(rsa.e),
         convert(rsa.d),
@@ -83,7 +91,6 @@ public class CryptoWrapper {
         convert(rsa.dmq1),
         convert(rsa.iqmp)
     );
-    return rsaPrivateCrtKeySpec;
   }
 
   private RSAPublicKeySpec getRsaPublicKeySpec(RSA.ByReference rsa) {
