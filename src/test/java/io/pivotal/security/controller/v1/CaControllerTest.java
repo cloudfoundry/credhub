@@ -4,13 +4,14 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
-import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,21 +26,35 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -54,8 +69,8 @@ public class CaControllerTest {
   @Autowired
   private SecretRepository secretRepository;
 
-  @Autowired
-  private NamedCertificateAuthorityRepository caRepository;
+  @Mock
+  private NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
 
   @InjectMocks
   @Autowired
@@ -72,6 +87,7 @@ public class CaControllerTest {
   private String urlPath;
 
   private static final String CA_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
+  private NamedCertificateAuthority mockCA;
 
   {
     wireAndUnwire(this);
@@ -82,6 +98,14 @@ public class CaControllerTest {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       uniqueName = "my-folder/ca-identifier";
       urlPath = "/api/v1/ca/" + uniqueName;
+
+      mockCA = mock(NamedCertificateAuthority.class);
+
+      doAnswer(invocation -> {
+        NamedCertificateAuthority namedCertificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
+        namedCertificateAuthority.setUpdatedAt(frozenTime);
+        return namedCertificateAuthority;
+      }).when(namedCertificateAuthorityDataService).save(isA(NamedCertificateAuthority.class));
     });
 
     it("can generate a ca", () -> {
@@ -109,10 +133,13 @@ public class CaControllerTest {
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(responseJson));
 
+      ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+
       verify(caGeneratorRequestTranslator).validateJsonKeys(any(DocumentContext.class));
-      NamedCertificateAuthority oneByName = caRepository.findOneByNameIgnoreCase(uniqueName);
-      assertThat(oneByName, theSameAs(entity).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
-      assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
+      verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+
+      NamedCertificateAuthority savedEntity = argumentCaptor.getValue();
+      assertThat(savedEntity, theSameAs(entity).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
     });
 
     describe("setter", () -> {
@@ -129,8 +156,13 @@ public class CaControllerTest {
 
         CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
         expected.setUpdatedAt(frozenTime);
-        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
+
+        ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+        verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+
+        CertificateAuthority actual = CertificateAuthority.fromEntity(argumentCaptor.getValue());
+
+        assertThat(actual, theSameAs(expected));
       });
 
       it("can overwrite a root ca case-independently", () -> {
@@ -144,11 +176,6 @@ public class CaControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(content().json(responseJson));
 
-        CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
-        expected.setUpdatedAt(frozenTime);
-        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
-
         String jsonContent = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert2\",\"private_key\":\"private_key2\"}";
         requestJson = "{" + jsonContent + "}";
         responseJson = "{" + getUpdatedAtJson() + "," + jsonContent + "}";
@@ -158,19 +185,32 @@ public class CaControllerTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
             .andExpect(content().json(responseJson));
 
+        CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
+        expected.setUpdatedAt(frozenTime);
+        ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+
+        verify(namedCertificateAuthorityDataService, times(2)).save(argumentCaptor.capture());
+        List<NamedCertificateAuthority> actual = argumentCaptor.getAllValues();
+
+        assertThat(actual.size(), equalTo(2));
+
+        NamedCertificateAuthority actual1 = actual.get(0);
+        assertThat(CertificateAuthority.fromEntity(actual1), theSameAs(expected));
+
         expected = new CertificateAuthority("root", "my_cert2", "private_key2");
         expected.setUpdatedAt(frozenTime);
-        assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
+
+        NamedCertificateAuthority actual2 = actual.get(1);
+        assertThat(CertificateAuthority.fromEntity(actual2), theSameAs(expected));
       });
     });
 
     it("can fetch a root ca", () -> {
-      NamedCertificateAuthority certificateSecret = new NamedCertificateAuthority(uniqueName)
-          .setType("root")
-          .setCertificate("get-certificate")
-          .setPrivateKey("get-priv");
-      caRepository.save(certificateSecret);
+      when(mockCA.getType()).thenReturn("root");
+      when(mockCA.getCertificate()).thenReturn("get-certificate");
+      when(mockCA.getPrivateKey()).thenReturn("get-priv");
+      when(mockCA.getUpdatedAt()).thenReturn(frozenTime);
+      when(namedCertificateAuthorityDataService.findOneByNameIgnoreCase(uniqueName)).thenReturn(mockCA);
 
       String expectedJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"get-certificate\",\"private_key\":\"get-priv\"}}";
       mockMvc.perform(get(urlPath))
@@ -209,12 +249,13 @@ public class CaControllerTest {
     });
 
     it("can get a certificate authority case-independently", () -> {
+      when(mockCA.getType()).thenReturn("root");
+      when(mockCA.getCertificate()).thenReturn("my_certificate");
+      when(mockCA.getPrivateKey()).thenReturn("my_private_key");
+      when(mockCA.getUpdatedAt()).thenReturn(frozenTime);
+      when(namedCertificateAuthorityDataService.findOneByNameIgnoreCase("MY_NAME")).thenReturn(mockCA);
+
       String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private_key\":\"my_private_key\"}}";
-      NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my_name");
-      namedCertificateAuthority.setType("root");
-      namedCertificateAuthority.setCertificate("my_certificate");
-      namedCertificateAuthority.setPrivateKey("my_private_key");
-      caRepository.save(namedCertificateAuthority);
 
       RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/MY_NAME");
       mockMvc.perform(requestBuilder)
@@ -240,8 +281,16 @@ public class CaControllerTest {
           .andExpect(content().json(requestJson2));
 
       CertificateAuthority expected = new CertificateAuthority("root", "my_certificate_2", "priv_2");
-      NamedCertificateAuthority saved = caRepository.findOneByNameIgnoreCase(uniqueName);
-      assertThat(new CertificateAuthority(saved.getType(), saved.getCertificate(), saved.getPrivateKey()), theSameAs(expected));
+
+      ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+      verify(namedCertificateAuthorityDataService, times(2)).save(argumentCaptor.capture());
+
+      List<NamedCertificateAuthority> savedEntities = argumentCaptor.getAllValues();
+
+      assertThat(savedEntities.size(), equalTo(2));
+
+      NamedCertificateAuthority endResult = savedEntities.get(1);
+      assertThat(new CertificateAuthority(endResult.getType(), endResult.getCertificate(), endResult.getPrivateKey()), theSameAs(expected));
     });
 
     it("get returns 404 when not found", () -> {

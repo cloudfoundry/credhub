@@ -7,10 +7,10 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.BCCertificateGenerator;
-import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -72,8 +72,8 @@ public class CertificateGeneratorRequestTranslatorTest {
   @InjectMocks
   CertificateGeneratorRequestTranslator subject;
 
-  @Autowired
-  NamedCertificateAuthorityRepository authorityRepository;
+  @Mock
+  NamedCertificateAuthorityDataService certificateAuthorityDataService;
 
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
@@ -372,7 +372,8 @@ public class CertificateGeneratorRequestTranslatorTest {
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("my-root");
     certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate());
     certificateAuthority.setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
-    authorityRepository.saveAndFlush(certificateAuthority);
+
+    when(certificateAuthorityDataService.findOneByNameIgnoreCase("my-root")).thenReturn(certificateAuthority);
 
     return certificateAuthority;
   }

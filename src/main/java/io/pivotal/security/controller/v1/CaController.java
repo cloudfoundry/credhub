@@ -2,12 +2,12 @@ package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.mapper.CASetterRequestTranslator;
 import io.pivotal.security.mapper.RequestTranslator;
-import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.CertificateAuthority;
@@ -38,7 +38,7 @@ public class CaController {
   ParseContext jsonPath;
 
   @Autowired
-  NamedCertificateAuthorityRepository caRepository;
+  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
 
   private MessageSourceAccessor messageSourceAccessor;
 
@@ -80,7 +80,7 @@ public class CaController {
 
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsed = jsonPath.parse(requestBody);
-    NamedCertificateAuthority namedCertificateAuthority = caRepository.findOneByNameIgnoreCase(caPath);
+    NamedCertificateAuthority namedCertificateAuthority = namedCertificateAuthorityDataService.findOneByNameIgnoreCase(caPath);
     if (namedCertificateAuthority == null) {
       namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     }
@@ -92,7 +92,7 @@ public class CaController {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
 
-    NamedCertificateAuthority saved = caRepository.save(namedCertificateAuthority);
+    NamedCertificateAuthority saved = namedCertificateAuthorityDataService.save(namedCertificateAuthority);
     return new ResponseEntity<>(CertificateAuthority.fromEntity(saved), HttpStatus.OK);
   }
 
@@ -100,7 +100,7 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   ResponseEntity get(HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request, authentication), () -> {
-      NamedCertificateAuthority namedAuthority = caRepository.findOneByNameIgnoreCase(caPath(request));
+      NamedCertificateAuthority namedAuthority = namedCertificateAuthorityDataService.findOneByNameIgnoreCase(caPath(request));
 
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);

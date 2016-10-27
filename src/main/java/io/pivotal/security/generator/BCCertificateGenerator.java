@@ -1,8 +1,8 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
@@ -37,7 +37,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   SignedCertificateGenerator signedCertificateGenerator;
 
   @Autowired
-  NamedCertificateAuthorityRepository authorityRepository;
+  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
 
   @Autowired
   BouncyCastleProvider provider;
@@ -61,7 +61,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private NamedCertificateAuthority findCa(String caName) {
-    NamedCertificateAuthority ca = authorityRepository.findOneByNameIgnoreCase(caName);
+    NamedCertificateAuthority ca = namedCertificateAuthorityDataService.findOneByNameIgnoreCase(caName);
 
     if (ca == null) {
       if ("default".equals(caName)) {
