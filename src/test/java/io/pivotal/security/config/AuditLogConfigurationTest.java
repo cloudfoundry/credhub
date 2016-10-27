@@ -3,11 +3,13 @@ package io.pivotal.security.config;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.helper.CountMemo;
-import io.pivotal.security.helper.SpectrumHelper;
-import io.pivotal.security.repository.OperationAuditRecordRepository;
+import io.pivotal.security.service.DatabaseAuditLogService;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
@@ -19,17 +21,22 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import javax.servlet.Filter;
+import java.util.List;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
@@ -42,7 +49,11 @@ public class AuditLogConfigurationTest {
   WebApplicationContext applicationContext;
 
   @Autowired
-  OperationAuditRecordRepository operationAuditRecordRepository;
+  @InjectMocks
+  DatabaseAuditLogService auditLogService;
+
+  @Mock
+  OperationAuditRecordDataService operationAuditRecordDataService;
 
   @Autowired
   Filter springSecurityFilterChain;
@@ -51,7 +62,6 @@ public class AuditLogConfigurationTest {
   private String credentialUrlPath;
   private String caUrlPath1;
   private String caUrlPath2;
-  private CountMemo auditRecordCount;
 
   {
     wireAndUnwire(this);
@@ -63,7 +73,6 @@ public class AuditLogConfigurationTest {
       credentialUrlPath = "/api/v1/data/foo";
       caUrlPath1 = "/api/v1/ca/bar";
       caUrlPath2 = "/api/v1/ca/baz";
-      auditRecordCount = SpectrumHelper.markRepository(operationAuditRecordRepository);
     });
 
     describe("when a request to set credential is served", () -> {
@@ -85,9 +94,12 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for credential update operation", () -> {
-        auditRecordCount.expectIncreaseOf(1);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
 
-        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
+        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+        OperationAuditRecord auditRecord = recordCaptor.getValue();
+
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
@@ -113,9 +125,12 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for credential_update operation", () -> {
-        auditRecordCount.expectIncreaseOf(1);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
 
-        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
+        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+        OperationAuditRecord auditRecord = recordCaptor.getValue();
+
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -141,9 +156,12 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for credential_delete operation", () -> {
-        auditRecordCount.expectIncreaseOf(1);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
 
-        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
+        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+        OperationAuditRecord auditRecord = recordCaptor.getValue();
+
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_delete"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -157,9 +175,12 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for credential_access operation", () -> {
-        auditRecordCount.expectIncreaseOf(1);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
 
-        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
+        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+        OperationAuditRecord auditRecord = recordCaptor.getValue();
+
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -199,15 +220,21 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for ca_update operation", () -> {
-        auditRecordCount.expectIncreaseOf(2);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
 
-        OperationAuditRecord auditRecord1 = operationAuditRecordRepository.findAll().get(0);
+        verify(operationAuditRecordDataService, times(2)).save(recordCaptor.capture());
+
+        List<OperationAuditRecord> records = recordCaptor.getAllValues();
+
+        assertThat(records.size(), equalTo(2));
+
+        OperationAuditRecord auditRecord1 = records.get(0);
         assertThat(auditRecord1.getPath(), equalTo(caUrlPath1));
         assertThat(auditRecord1.getOperation(), equalTo("ca_update"));
         assertThat(auditRecord1.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord1.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 
-        OperationAuditRecord auditRecord2 = operationAuditRecordRepository.findAll().get(1);
+        OperationAuditRecord auditRecord2 = records.get(1);
         assertThat(auditRecord2.getPath(), equalTo(caUrlPath2));
         assertThat(auditRecord2.getOperation(), equalTo("ca_update"));
         assertThat(auditRecord2.getRequesterIp(), equalTo("12345"));
@@ -221,9 +248,12 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs an audit record for ca_access operation", () -> {
-        auditRecordCount.expectIncreaseOf(1);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
 
-        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
+        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+        OperationAuditRecord auditRecord = recordCaptor.getValue();
+
         assertThat(auditRecord.getPath(), equalTo(caUrlPath1));
         assertThat(auditRecord.getOperation(), equalTo("ca_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
@@ -250,9 +280,12 @@ public class AuditLogConfigurationTest {
       });
 
       it("logs all X-Forwarded-For values", () -> {
-        auditRecordCount.expectIncreaseOf(1);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
 
-        OperationAuditRecord auditRecord = operationAuditRecordRepository.findAll().get(0);
+        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+        OperationAuditRecord auditRecord = recordCaptor.getValue();
+
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2,3.3.3.3"));
       });
     });
