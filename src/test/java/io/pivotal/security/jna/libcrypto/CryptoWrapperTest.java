@@ -42,41 +42,38 @@ public class CryptoWrapperTest {
       // https://www.openssl.org/docs/man1.0.1/crypto/BN_generate_prime.html
       // https://www.openssl.org/docs/man1.0.1/crypto/RAND_add.html
 
-      subject.generateKeyPair(1024, first -> {
-        KeyPair firstKeyPair = subject.toKeyPair(first);
-        assertThat(firstKeyPair.getPublic(), notNullValue());
+      RSA.ByReference first = subject.generateKeyPair(1024);
+      KeyPair firstKeyPair = subject.toKeyPair(first);
+      assertThat(firstKeyPair.getPublic(), notNullValue());
 
-        subject.generateKeyPair(1024, second -> {
-          KeyPair secondKeyPair = subject.toKeyPair(second);
-          assertThat(secondKeyPair.getPublic(), notNullValue());
+      RSA.ByReference second = subject.generateKeyPair(1024);
+      KeyPair secondKeyPair = subject.toKeyPair(second);
+      assertThat(secondKeyPair.getPublic(), notNullValue());
 
-          assertThat(secondKeyPair.getPublic().getEncoded(), not(equalTo(firstKeyPair.getPublic().getEncoded())));
-        });
-      });
+      assertThat(secondKeyPair.getPublic().getEncoded(), not(equalTo(firstKeyPair.getPublic().getEncoded())));
     });
 
     it("can transform RSA structs into KeyPairs", () -> {
-      subject.generateKeyPair(1024, rsa -> {
-        byte[] plaintext = new byte[128];
-        byte[] message = "OpenSSL for speed".getBytes();
-        System.arraycopy(message, 0, plaintext, 0, message.length);
+      RSA.ByReference rsa = subject.generateKeyPair(1024);
+      byte[] plaintext = new byte[128];
+      byte[] message = "OpenSSL for speed".getBytes();
+      System.arraycopy(message, 0, plaintext, 0, message.length);
 
-        byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
-        int result = Crypto.RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_NO_PADDING);
-        if (result == -1) {
-          System.out.println(subject.getError());
-        }
-        assert result >= 0;
+      byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
+      int result = Crypto.RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_NO_PADDING);
+      if (result == -1) {
+        System.out.println(subject.getError());
+      }
+      assert result >= 0;
 
-        KeyPair keyPair = subject.toKeyPair(rsa);
-        PrivateKey privateKey = keyPair.getPrivate();
+      KeyPair keyPair = subject.toKeyPair(rsa);
+      PrivateKey privateKey = keyPair.getPrivate();
 
-        Cipher cipher = Cipher.getInstance(CryptoWrapper.ALGORITHM, bouncyCastleProvider);
-        cipher.init(Cipher.ENCRYPT_MODE, privateKey);
-        byte[] javaCipherText = cipher.doFinal(plaintext);
+      Cipher cipher = Cipher.getInstance(CryptoWrapper.ALGORITHM, bouncyCastleProvider);
+      cipher.init(Cipher.ENCRYPT_MODE, privateKey);
+      byte[] javaCipherText = cipher.doFinal(plaintext);
 
-        assertThat("Encryption should work the same inside and outside openssl", javaCipherText, equalTo(ciphertext));
-      });
+      assertThat("Encryption should work the same inside and outside openssl", javaCipherText, equalTo(ciphertext));
     });
 
     describe("converting BIGNUM to BigInteger", () -> {

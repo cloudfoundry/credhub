@@ -15,6 +15,7 @@ class Crypto {
   public native static int BN_set_word(BIGNUM.ByReference a, long w);
   public native static int BN_mul_word(BIGNUM.ByReference a, long w);
   public native static void BN_set_negative(BIGNUM.ByReference b, int n);
+  public native static void BN_clear(BIGNUM.ByReference a);
   public native static Pointer BN_bn2hex(BIGNUM.ByReference a);
   public native static void BN_free(BIGNUM.ByReference bn);
 
@@ -22,7 +23,6 @@ class Crypto {
   public native static int RSA_generate_key_ex(RSA.ByReference rsa, int bits, BIGNUM.ByReference e, Pointer cb);
   public native static int RSA_size(RSA.ByReference rsa);
   public native static int RSA_private_encrypt(int flen, byte[] from, byte[] to, RSA.ByReference rsa, int padding);
-  public native static void RSA_free(RSA.ByReference r);
 
   public native static void CRYPTO_free(Pointer ptr);
 
