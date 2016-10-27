@@ -19,6 +19,8 @@ import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -34,6 +36,10 @@ public class OperationAuditRecordDataServiceTest {
 
   @Autowired
   JdbcTemplate jdbcTemplate;
+
+  private final Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+  private final long tokenIssued = frozenTime.getEpochSecond();
+  private final long tokenExpires = tokenIssued + 10000;
 
   {
     wireAndUnwire(this);
@@ -75,20 +81,41 @@ public class OperationAuditRecordDataServiceTest {
         });
 
         assertThat(records.size(), equalTo(1));
-        assertThat(record, equalTo(records.get(0)));
+
+        OperationAuditRecord actual = records.get(0);
+        OperationAuditRecord expected = record;
+
+        assertThat(actual.getId(), equalTo(expected.getId()));
+        assertThat(actual.getNow(), equalTo(expected.getNow()));
+        assertThat(actual.getNow(), equalTo(frozenTime));
+        assertThat(actual.getOperation(), equalTo(expected.getOperation()));
+        assertThat(actual.getUserId(), equalTo(expected.getUserId()));
+        assertThat(actual.getUserName(), equalTo(expected.getUserName()));
+        assertThat(actual.getUaaUrl(), equalTo(expected.getUaaUrl()));
+        assertThat(actual.getTokenIssued(), equalTo(expected.getTokenIssued()));
+        assertThat(actual.getTokenIssued(), equalTo(tokenIssued));
+        assertThat(actual.getTokenExpires(), equalTo(expected.getTokenExpires()));
+        assertThat(actual.getTokenExpires(), equalTo(tokenExpires));
+        assertThat(actual.getHostName(), equalTo(expected.getHostName()));
+        assertThat(actual.getMethod(), equalTo(expected.getMethod()));
+        assertThat(actual.getPath(), equalTo(expected.getPath()));
+        assertThat(actual.getQueryParameters(), equalTo(expected.getQueryParameters()));
+        assertThat(actual.getStatusCode(), equalTo(expected.getStatusCode()));
+        assertThat(actual.getRequesterIp(), equalTo(expected.getRequesterIp()));
+        assertThat(actual.getXForwardedFor(), equalTo(expected.getXForwardedFor()));
+        assertThat(actual.getClientId(), equalTo(expected.getClientId()));
+        assertThat(actual.getScope(), equalTo(expected.getScope()));
+        assertThat(actual.getGrantType(), equalTo(expected.getGrantType()));
+        assertThat(actual.isSuccess(), equalTo(expected.isSuccess()));
       });
     });
   }
 
   OperationAuditRecord createOperationAuditRecord() {
-    long year2000 = 946688461;
-    Instant fakeNow = new Timestamp(year2000).toInstant();
-    long tokenIssued = year2000;
-    long tokenExpires = tokenIssued + 10000;
     int statusCode = 200;
 
     return new OperationAuditRecord(
-        fakeNow,
+        frozenTime,
         "test-operation",
         "test-user-id",
         "test-user-name",

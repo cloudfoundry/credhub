@@ -36,6 +36,10 @@ public class AuthFailureAuditRecordDataServiceTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
 
+  private final Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+  private final long tokenIssued = frozenTime.getEpochSecond();
+  private final long tokenExpires = tokenIssued + 10000;
+
   {
     wireAndUnwire(this);
 
@@ -75,21 +79,41 @@ public class AuthFailureAuditRecordDataServiceTest {
         });
 
         assertThat(records.size(), equalTo(1));
-        assertThat(record, equalTo(records.get(0)));
+
+        AuthFailureAuditRecord expected = records.get(0);
+        AuthFailureAuditRecord actual = record;
+
+        assertThat(expected.getId(), equalTo(actual.getId()));
+        assertThat(expected.getFailureDescription(), equalTo(actual.getFailureDescription()));
+        assertThat(expected.getHostName(), equalTo(actual.getHostName()));
+        assertThat(expected.getNow(), equalTo(actual.getNow()));
+        assertThat(expected.getNow(), equalTo(frozenTime));
+        assertThat(expected.getOperation(), equalTo(actual.getOperation()));
+        assertThat(expected.getPath(), equalTo(actual.getPath()));
+        assertThat(expected.getRequesterIp(), equalTo(actual.getRequesterIp()));
+        assertThat(expected.getTokenExpires(), equalTo(actual.getTokenExpires()));
+        assertThat(expected.getTokenExpires(), equalTo(tokenExpires));
+        assertThat(expected.getTokenIssued(), equalTo(actual.getTokenIssued()));
+        assertThat(expected.getTokenIssued(), equalTo(tokenIssued));
+        assertThat(expected.getUaaUrl(), equalTo(actual.getUaaUrl()));
+        assertThat(expected.getUserId(), equalTo(actual.getUserId()));
+        assertThat(expected.getUserName(), equalTo(actual.getUserName()));
+        assertThat(expected.getXForwardedFor(), equalTo(actual.getXForwardedFor()));
+        assertThat(expected.getScope(), equalTo(actual.getScope()));
+        assertThat(expected.getGrantType(), equalTo(actual.getGrantType()));
+        assertThat(expected.getClientId(), equalTo(actual.getClientId()));
+        assertThat(expected.getMethod(), equalTo(actual.getMethod()));
+        assertThat(expected.getStatusCode(), equalTo(actual.getStatusCode()));
+        assertThat(expected.getQueryParameters(), equalTo(actual.getQueryParameters()));
       });
     });
   }
 
   AuthFailureAuditRecord createAuthFailureAuditRecord() {
-    long year2000 = 946688461;
-    Instant fakeNow = new Timestamp(year2000).toInstant();
-    long tokenIssued = year2000;
-    long tokenExpires = tokenIssued + 10000;
-
     AuthFailureAuditRecord record = new AuthFailureAuditRecord();
     record.setFailureDescription("it failed");
     record.setHostName("host.example.com");
-    record.setNow(fakeNow);
+    record.setNow(frozenTime);
     record.setOperation("test-operation");
     record.setPath("/api/some-path");
     record.setRequesterIp("127.0.0.1");
