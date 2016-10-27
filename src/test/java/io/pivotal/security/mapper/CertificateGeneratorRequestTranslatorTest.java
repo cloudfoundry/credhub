@@ -10,7 +10,7 @@ import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.BCCertificateGenerator;
-import io.pivotal.security.repository.CertificateAuthorityRepository;
+import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -73,7 +73,7 @@ public class CertificateGeneratorRequestTranslatorTest {
   CertificateGeneratorRequestTranslator subject;
 
   @Autowired
-  CertificateAuthorityRepository authorityRepository;
+  NamedCertificateAuthorityRepository authorityRepository;
 
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;

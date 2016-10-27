@@ -20,10 +20,10 @@ import static org.junit.Assert.assertThat;
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
-public class CertificateAuthorityRepositoryTest {
+public class NamedCertificateAuthorityRepositoryTest {
 
   @Autowired
-  CertificateAuthorityRepository subject;
+  NamedCertificateAuthorityRepository subject;
 
   @Test
   public void canStoreCertificateAuthoritiesOfLength7000WhichMeans7016ForGCMEncryption() throws Exception {

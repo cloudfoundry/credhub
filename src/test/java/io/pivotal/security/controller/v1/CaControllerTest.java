@@ -6,7 +6,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
-import io.pivotal.security.repository.CertificateAuthorityRepository;
+import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -55,7 +55,7 @@ public class CaControllerTest {
   private SecretRepository secretRepository;
 
   @Autowired
-  private CertificateAuthorityRepository caRepository;
+  private NamedCertificateAuthorityRepository caRepository;
 
   @InjectMocks
   @Autowired

@@ -7,7 +7,7 @@ import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.mapper.CASetterRequestTranslator;
 import io.pivotal.security.mapper.RequestTranslator;
-import io.pivotal.security.repository.CertificateAuthorityRepository;
+import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.CertificateAuthority;
@@ -38,7 +38,7 @@ public class CaController {
   ParseContext jsonPath;
 
   @Autowired
-  CertificateAuthorityRepository caRepository;
+  NamedCertificateAuthorityRepository caRepository;
 
   private MessageSourceAccessor messageSourceAccessor;
 

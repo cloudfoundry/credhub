@@ -5,7 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.repository.CertificateAuthorityRepository;
+import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 public class NamedCertificateAuthorityTest {
 
   @Autowired
-  CertificateAuthorityRepository repository;
+  NamedCertificateAuthorityRepository repository;
 
   @Autowired
   EncryptionService encryptionService;
