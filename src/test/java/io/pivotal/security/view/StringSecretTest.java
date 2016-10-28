@@ -4,7 +4,6 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.repository.CanaryRepository;
 import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +13,10 @@ import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
 
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.json;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -25,9 +26,6 @@ import static org.junit.Assert.assertThat;
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class StringSecretTest {
-
-  @Autowired
-  CanaryRepository canaryRepository;
 
   @Autowired
   SecretRepository secretRepository;

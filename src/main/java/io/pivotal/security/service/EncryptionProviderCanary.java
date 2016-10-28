@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.data.CanaryDataService;
 import io.pivotal.security.entity.NamedCanary;
-import io.pivotal.security.repository.CanaryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +19,7 @@ public class EncryptionProviderCanary {
   EncryptionConfiguration encryptionConfiguration;
 
   @Autowired
-  CanaryRepository birdCage;
+  CanaryDataService birdCage;
 
   @PostConstruct
   public void checkForDataCorruption() {
