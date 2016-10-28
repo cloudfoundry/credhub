@@ -60,7 +60,7 @@ public class DatabaseEncryptionConfigurationTest {
       });
 
       it("it decrypts the secret value when the entity is retrieved", () -> {
-        NamedStringSecret secret = (NamedStringSecret) secretRepository.findOneByNameIgnoreCase(secretName);
+        NamedStringSecret secret = (NamedStringSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
         assertThat(secret.getValue(), equalTo("value1"));
       });
     });

@@ -160,7 +160,7 @@ public class SecretsControllerTest {
         });
 
         it("persists the secret", () -> {
-          final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretRepository.findOneByNameIgnoreCase(secretName);
+          final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
           assertThat(namedSecret.getValue(), equalTo("some password"));
         });
 
@@ -213,7 +213,7 @@ public class SecretsControllerTest {
           });
 
           it("persists the secret", () -> {
-            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByNameIgnoreCase(secretName);
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
             assertThat(namedSecret.getValue(), equalTo("generated value"));
           });
 
@@ -249,7 +249,7 @@ public class SecretsControllerTest {
           });
 
           it("should not persist the secret", () -> {
-            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByNameIgnoreCase(secretName);
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
             assertThat(namedSecret.getValue(), equalTo("original value"));
           });
 
@@ -272,7 +272,7 @@ public class SecretsControllerTest {
         putSecretInDatabase(secretValue);
       });
 
-      it("sets a secret in the database", () -> {
+      it("returns the secret as json", () -> {
         response.andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.type").value("value"))
@@ -282,7 +282,7 @@ public class SecretsControllerTest {
       });
 
       it("persists the secret", () -> {
-        final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findOneByNameIgnoreCase(secretName);
+        final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
         assertThat(namedSecret.getValue(), equalTo(secretValue));
       });
 
@@ -402,14 +402,14 @@ public class SecretsControllerTest {
 
       describe("with the overwrite flag set to true case-insensitively", () -> {
         final String specialValue = "special value";
+        final Spectrum.Value<String> oldUuid = Spectrum.value();
 
         beforeEach(() -> {
           when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
               .thenReturn(new DefaultMapping() {
                 @Override
                 public NamedSecret value(NamedSecret namedSecret) {
-                  ((NamedValueSecret) namedSecret).setValue(specialValue);
-                  return namedSecret;
+                  return new NamedValueSecret(namedSecret.getName(), specialValue);
                 }
               });
 
@@ -424,14 +424,24 @@ public class SecretsControllerTest {
                   "  \"overwrite\":true" +
                   "}");
 
+          oldUuid.value = fakeUuidGenerator.getLastUuid();
+
           response = mockMvc.perform(put);
         });
 
-        it("should overwrite a secret", () -> {
+        it("should return the updated value", () -> {
           response
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value(specialValue))
+              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
+        });
+
+        it("should retain the previous value at the previous id", () -> {
+          mockMvc.perform(get("/api/v1/data?id=" + oldUuid.value))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.value").value("original value"))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
         });
 
         it("should validate requests", () -> {
@@ -622,7 +632,7 @@ public class SecretsControllerTest {
       });
 
       it("removes it from storage", () -> {
-        assertThat(secretRepository.findOneByNameIgnoreCase(secretName), nullValue());
+        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName), nullValue());
       });
 
       it("persists an audit entry", () -> {

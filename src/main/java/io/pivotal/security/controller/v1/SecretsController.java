@@ -102,7 +102,7 @@ public class SecretsController {
   @RequestMapping(path = "/**", method = RequestMethod.DELETE)
   public ResponseEntity delete(HttpServletRequest request, Authentication authentication) throws Exception {
     return audit(CREDENTIAL_DELETE, request, authentication, () -> {
-      NamedSecret namedSecret = secretRepository.findOneByNameIgnoreCase(secretPath(request));
+      NamedSecret namedSecret = secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath(request));
       if (namedSecret != null) {
         secretRepository.delete(namedSecret);
         return new ResponseEntity(HttpStatus.OK);
@@ -114,7 +114,7 @@ public class SecretsController {
 
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(secretPath(request), secretRepository::findOneByNameIgnoreCase, request, authentication);
+    return retrieveSecretWithAuditing(secretPath(request), secretRepository::findFirstByNameIgnoreCaseOrderByUpdatedAtDesc, request, authentication);
   }
 
   @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
@@ -172,7 +172,7 @@ public class SecretsController {
     final DocumentContext parsed = jsonPath.parse(requestBody);
 
     String secretPath = secretPath(request);
-    NamedSecret existingNamedSecret = secretRepository.findOneByNameIgnoreCase(secretPath);
+    NamedSecret existingNamedSecret = secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath);
 
     boolean willBeCreated = existingNamedSecret == null;
     boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));

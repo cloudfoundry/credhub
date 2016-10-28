@@ -55,7 +55,7 @@ public class SecretRepositoryTest {
       entity.setPrivateKey(longString);
 
       subject.save(entity);
-      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findOneByNameIgnoreCase(secretName);
+      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
       assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
@@ -68,7 +68,7 @@ public class SecretRepositoryTest {
       entity.setValue(stringBuilder.toString());
 
       subject.save(entity);
-      assertThat(((NamedStringSecret) subject.findOneByNameIgnoreCase(secretName)).getValue().length(), equalTo(7000));
+      assertThat(((NamedStringSecret) subject.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName)).getValue().length(), equalTo(7000));
     });
 
     it("can fetch credentials sorted in reverse chronological order", () -> {

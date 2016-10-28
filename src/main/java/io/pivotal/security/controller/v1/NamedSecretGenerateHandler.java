@@ -38,22 +38,22 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret((NamedPasswordSecret)namedSecret, NamedPasswordSecret::new, secretPath, passwordGeneratorRequestTranslator, parsed);
+        return processSecret(NamedPasswordSecret::new, secretPath, passwordGeneratorRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret certificate(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret((NamedCertificateSecret)namedSecret, NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsed);
+        return processSecret(NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret ssh(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret((NamedSshSecret)namedSecret, NamedSshSecret::new, secretPath, sshGeneratorRequestTranslator, parsed);
+        return processSecret(NamedSshSecret::new, secretPath, sshGeneratorRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret rsa(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret((NamedRsaSecret)namedSecret, NamedRsaSecret::new, secretPath, rsaGeneratorRequestTranslator, parsed);
+        return processSecret(NamedRsaSecret::new, secretPath, rsaGeneratorRequestTranslator, parsed);
       }
     };
   }

@@ -19,7 +19,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findOneByNameIgnoreCase(String name) {
+  public NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name) {
     throw new UnsupportedOperationException();
   }
 

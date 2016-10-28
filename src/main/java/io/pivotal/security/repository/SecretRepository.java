@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 
 public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
-  NamedSecret findOneByNameIgnoreCase(String name);
+  NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
   NamedSecret findOneByUuid(String uuid);
   List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String nameSubstring);
   List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring);

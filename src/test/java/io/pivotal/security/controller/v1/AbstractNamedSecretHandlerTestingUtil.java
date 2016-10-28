@@ -15,6 +15,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
@@ -46,8 +47,9 @@ public class AbstractNamedSecretHandlerTestingUtil {
 
       it("updates the secret", () -> {
         NamedSecret namedSecret = mapFunction.apply(existingEntity);
-        verify(expectedTranslator).populateEntityFromJson(existingEntity, documentContext);
-        assertThat(namedSecret, sameInstance(existingEntity));
+        verify(expectedTranslator).populateEntityFromJson(namedSecret, documentContext);
+        assertThat(namedSecret, not(sameInstance(existingEntity)));
+        assertThat(namedSecret, instanceOf(clazz));
       });
     };
   }

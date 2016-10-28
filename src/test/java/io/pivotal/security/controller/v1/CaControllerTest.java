@@ -112,7 +112,7 @@ public class CaControllerTest {
       verify(caGeneratorRequestTranslator).validateJsonKeys(any(DocumentContext.class));
       NamedCertificateAuthority oneByName = caRepository.findOneByNameIgnoreCase(uniqueName);
       assertThat(oneByName, theSameAs(entity).excludeProperty("Id").excludeProperty("Nonce").excludeProperty("EncryptedValue"));
-      assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
+      assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
     });
 
     describe("setter", () -> {
@@ -130,7 +130,7 @@ public class CaControllerTest {
         CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
         expected.setUpdatedAt(frozenTime);
         assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
+        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
       });
 
       it("can overwrite a root ca case-independently", () -> {
@@ -147,7 +147,7 @@ public class CaControllerTest {
         CertificateAuthority expected = new CertificateAuthority("root", "my_cert", "private_key");
         expected.setUpdatedAt(frozenTime);
         assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
+        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
 
         String jsonContent = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert2\",\"private_key\":\"private_key2\"}";
         requestJson = "{" + jsonContent + "}";
@@ -161,7 +161,7 @@ public class CaControllerTest {
         expected = new CertificateAuthority("root", "my_cert2", "private_key2");
         expected.setUpdatedAt(frozenTime);
         assertThat(CertificateAuthority.fromEntity(caRepository.findOneByNameIgnoreCase(uniqueName)), theSameAs(expected));
-        assertThat(secretRepository.findOneByNameIgnoreCase(uniqueName), nullValue());
+        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(uniqueName), nullValue());
       });
     });
 

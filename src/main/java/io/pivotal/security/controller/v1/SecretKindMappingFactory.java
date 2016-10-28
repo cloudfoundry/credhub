@@ -11,8 +11,8 @@ import java.util.function.Function;
 public interface SecretKindMappingFactory {
   SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed);
 
-  default <Z extends NamedSecret> Z processSecret(Z existingNamedSecret, Function<String, Z> constructor, String secretPath, RequestTranslator<Z> requestTranslator, DocumentContext parsed) throws NoSuchAlgorithmException {
-    Z result = existingNamedSecret == null ? constructor.apply(secretPath) : existingNamedSecret;
+  default <Z extends NamedSecret> Z processSecret(Function<String, Z> constructor, String secretPath, RequestTranslator<Z> requestTranslator, DocumentContext parsed) throws NoSuchAlgorithmException {
+    Z result = constructor.apply(secretPath);
     requestTranslator.validatePathName(secretPath);
     requestTranslator.validateJsonKeys(parsed);
     requestTranslator.populateEntityFromJson(result, parsed);
