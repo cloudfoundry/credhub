@@ -1,6 +1,7 @@
 package io.pivotal.security.jna.libcrypto;
 
 import com.sun.jna.Native;
+import com.sun.jna.Pointer;
 import io.pivotal.security.util.CheckedConsumer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +30,11 @@ public class CryptoWrapper {
     keyFactory = KeyFactory.getInstance(ALGORITHM, bouncyCastleProvider);
   }
 
-  public synchronized <E extends Throwable> void generateKeyPair(int keyLength, CheckedConsumer<RSA.ByReference, E> consumer) throws E {
-    BIGNUM.ByReference bne = Crypto.BN_new();
+  public synchronized <E extends Throwable> void generateKeyPair(int keyLength, CheckedConsumer<Pointer, E> consumer) throws E {
+    Pointer bne = Crypto.BN_new();
     try {
       Crypto.BN_set_word(bne, Crypto.RSA_F4);
-      RSA.ByReference rsa = Crypto.RSA_new();
+      Pointer rsa = Crypto.RSA_new();
       int r = Crypto.RSA_generate_key_ex(rsa, keyLength, bne, null);
       if (r < 1) {
         throw new RuntimeException(String.format("RSA key generation failed: %s", getError()));
@@ -42,24 +43,29 @@ public class CryptoWrapper {
         consumer.accept(rsa);
       } finally {
         Crypto.RSA_free(rsa);
-        rsa = null;
       }
     } finally {
       Crypto.BN_free(bne);
-      bne = null;
     }
   }
 
-  public synchronized KeyPair toKeyPair(RSA.ByReference rsa) throws InvalidKeySpecException {
-    RSAPublicKeySpec publicKeySpec = getRsaPublicKeySpec(rsa);
-    RSAPrivateCrtKeySpec privateCrtKeySpec = getRsaPrivateCrtKeySpec(rsa);
+  public synchronized KeyPair toKeyPair(Pointer rsa) throws InvalidKeySpecException {
+    RSA.ByReference rsaStructure = new RSA.ByReference(rsa);
+    rsaStructure.read();
+
+    RSAPublicKeySpec publicKeySpec = getRsaPublicKeySpec(rsaStructure);
+    RSAPrivateCrtKeySpec privateCrtKeySpec = getRsaPrivateCrtKeySpec(rsaStructure);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
     PrivateKey privateKey = keyFactory.generatePrivate(privateCrtKeySpec);
     return new KeyPair(publicKey, privateKey);
   }
 
-  synchronized BigInteger convert(BIGNUM.ByReference bignum) {
-    Assert.notNull(bignum, "bignum cannot be null");
+  synchronized BigInteger convert(Pointer bn) {
+    Assert.notNull(bn, "bn cannot be null");
+    Assert.notNull(Pointer.nativeValue(bn), "bn cannot be wrapping null");
+
+    BIGNUM.ByReference bignum = new BIGNUM.ByReference(bn);
+    bignum.read();
 
     int ratio = 8;
     long[] longs = bignum.d.getLongArray(0, bignum.top);

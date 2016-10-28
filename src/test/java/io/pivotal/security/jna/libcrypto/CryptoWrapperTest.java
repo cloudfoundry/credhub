@@ -81,7 +81,7 @@ public class CryptoWrapperTest {
 
     describe("converting BIGNUM to BigInteger", () -> {
       it("works for small positive numbers", () -> {
-        BIGNUM.ByReference bn = Crypto.BN_new();
+        Pointer bn = Crypto.BN_new();
         try {
           Crypto.BN_set_word(bn, 18);
           BigInteger converted = subject.convert(bn);
@@ -91,16 +91,14 @@ public class CryptoWrapperTest {
             assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
           } finally {
             Crypto.CRYPTO_free(hex);
-            hex = null;
           }
         } finally {
           Crypto.BN_free(bn);
-          bn = null;
         }
       });
 
       it("works for small negative numbers", () -> {
-        BIGNUM.ByReference bn = Crypto.BN_new();
+        Pointer bn = Crypto.BN_new();
         try {
           Crypto.BN_set_word(bn, 16);
           Crypto.BN_set_negative(bn, 1);
@@ -111,16 +109,14 @@ public class CryptoWrapperTest {
             assertThat(converted.toString(16).toUpperCase(), equalTo(hex.getString(0)));
           } finally {
             Crypto.CRYPTO_free(hex);
-            hex = null;
           }
         } finally {
           Crypto.BN_free(bn);
-          bn = null;
         }
       });
 
       it("works with more than 64 bits", () -> {
-        BIGNUM.ByReference bn = Crypto.BN_new();
+        Pointer bn = Crypto.BN_new();
         try {
           Crypto.BN_set_word(bn, 0x1234567800000000L);
           Crypto.BN_mul_word(bn, 0xFFFFFFFFFFFFFFFFL);

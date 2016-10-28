@@ -7,20 +7,28 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RSA extends Structure {
-  public static class ByReference extends RSA implements Structure.ByReference {}
+  public static class ByReference extends RSA implements Structure.ByReference {
+    public ByReference(Pointer p) {
+      super(p);
+    }
+  }
 
   public int pad;
   public long version;
   public Pointer RSA_METHOD;
   public Pointer ENGINE;
-  public BIGNUM.ByReference n;
-  public BIGNUM.ByReference e;
-  public BIGNUM.ByReference d;
-  public BIGNUM.ByReference p;
-  public BIGNUM.ByReference q;
-  public BIGNUM.ByReference dmp1;
-  public BIGNUM.ByReference dmq1;
-  public BIGNUM.ByReference iqmp;
+  public Pointer n;
+  public Pointer e;
+  public Pointer d;
+  public Pointer p;
+  public Pointer q;
+  public Pointer dmp1;
+  public Pointer dmq1;
+  public Pointer iqmp;
+
+  public RSA(Pointer p) {
+    super(p);
+  }
 
   @Override
   protected List getFieldOrder() {

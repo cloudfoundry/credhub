@@ -7,7 +7,15 @@ import java.util.Arrays;
 import java.util.List;
 
 public class BIGNUM extends Structure {
-  public static class ByReference extends BIGNUM implements Structure.ByReference {};
+  public static class ByReference extends BIGNUM implements Structure.ByReference {
+    public ByReference(Pointer p) {
+      super(p);
+    }
+  }
+
+  public BIGNUM(Pointer p) {
+    super(p);
+  }
 
   public Pointer d;
   public int top;
