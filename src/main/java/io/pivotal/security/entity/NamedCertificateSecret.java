@@ -25,7 +25,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
-public class NamedCertificateSecret extends NamedSecret {
+public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
   private static final String RSA_START = "-----BEGIN CERTIFICATE-----";
   private static final String RSA_END = "-----END CERTIFICATE-----";
   public static final String NEW_LINE = "\n";
@@ -88,6 +88,13 @@ public class NamedCertificateSecret extends NamedSecret {
   @Override
   public String getSecretType() {
     return "certificate";
+  }
+
+  @Override
+  void copyIntoImpl(NamedCertificateSecret copy) {
+    copy.setCaName(caName);
+    copy.setCa(ca);
+    copy.setCertificate(certificate);
   }
 
   public NamedCertificateSecret setCaName(String caName) {

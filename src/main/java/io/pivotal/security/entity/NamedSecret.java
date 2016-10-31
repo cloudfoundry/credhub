@@ -5,7 +5,19 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.DiscriminatorType;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +31,7 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-abstract public class NamedSecret implements EncryptedValueContainer {
+abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedValueContainer {
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
@@ -123,5 +135,14 @@ abstract public class NamedSecret implements EncryptedValueContainer {
     } else {
       return Stream.of();
     }
+  }
+
+  abstract void copyIntoImpl(Z copy);
+
+  public final void copyInto(Z copy) {
+    copy.setName(name);
+    copy.setEncryptedValue(encryptedValue);
+    copy.setNonce(nonce);
+    this.copyIntoImpl(copy);
   }
 }

@@ -12,12 +12,15 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.time.Instant;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -73,7 +76,7 @@ public class NamedRsaSecretTest {
       assertThat(result.getPrivateKey(), equalTo("second"));
     });
 
-    describe("getKeyLength", () -> {
+    describe("#getKeyLength", () -> {
       it("should return the length of the public key", () -> {
         String publicKey = "-----BEGIN PUBLIC KEY-----\n" +
             "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAoRIqdibiYHKZhyH91xYR\n" +
@@ -96,6 +99,28 @@ public class NamedRsaSecretTest {
 
       it("should return 0 if the private key has not been set", () -> {
         assertThat(subject.getKeyLength(), equalTo(0));
+      });
+    });
+
+    describe("#copyInto", () -> {
+      it("should copy the correct properties into the other object", () -> {
+        Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+
+        subject = new NamedRsaSecret("foo");
+        subject.setPublicKey("fake-public-key");
+        subject.setPrivateKey("fake-private-key");
+        subject.setUuid("fake-uuid");
+        subject.setUpdatedAt(frozenTime);
+
+        NamedRsaSecret copy = new NamedRsaSecret();
+        subject.copyInto(copy);
+
+        assertThat(copy.getName(), equalTo("foo"));
+        assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
+        assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+
+        assertThat(copy.getUuid(), not(equalTo("fake-uuid")));
+        assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
       });
     });
   }

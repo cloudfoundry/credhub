@@ -9,7 +9,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "ValueSecret")
 @DiscriminatorValue("value")
-public class NamedValueSecret extends NamedStringSecret {
+public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
 
   public NamedValueSecret() {
   }
@@ -25,6 +25,10 @@ public class NamedValueSecret extends NamedStringSecret {
   @Override
   public String getSecretType() {
     return "value";
+  }
+
+  @Override
+  void copyIntoImpl(NamedValueSecret copy) {
   }
 
   @Override

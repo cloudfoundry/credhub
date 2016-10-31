@@ -26,27 +26,27 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
     return new SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException>() {
       @Override
       public NamedSecret value(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret(NamedValueSecret::new, secretPath, stringSetRequestTranslator, parsed);
+        return processSecret((NamedValueSecret) namedSecret, NamedValueSecret::new, secretPath, stringSetRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret(NamedPasswordSecret::new, secretPath, stringSetRequestTranslator, parsed);
+        return processSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new, secretPath, stringSetRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret certificate(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret(NamedCertificateSecret::new, secretPath, certificateSetRequestTranslator, parsed);
+        return processSecret((NamedCertificateSecret) namedSecret, NamedCertificateSecret::new, secretPath, certificateSetRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret ssh(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret(NamedSshSecret::new, secretPath, rsaSshSetRequestTranslator, parsed);
+        return processSecret((NamedSshSecret) namedSecret, NamedSshSecret::new, secretPath, rsaSshSetRequestTranslator, parsed);
       }
 
       @Override
       public NamedSecret rsa(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return processSecret(NamedRsaSecret::new, secretPath, rsaSshSetRequestTranslator, parsed);
+        return processSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaSshSetRequestTranslator, parsed);
       }
     };
   }

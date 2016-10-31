@@ -7,7 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public abstract class NamedRsaSshSecret extends NamedSecret {
+public abstract class NamedRsaSshSecret extends NamedSecret<NamedRsaSshSecret> {
   @Column(length = 7000)
   private String publicKey;
 
@@ -34,4 +34,9 @@ public abstract class NamedRsaSshSecret extends NamedSecret {
   }
 
   public abstract SecretKind getKind();
+
+  @Override
+  void copyIntoImpl(NamedRsaSshSecret copy) {
+    copy.setPublicKey(getPublicKey());
+  }
 }

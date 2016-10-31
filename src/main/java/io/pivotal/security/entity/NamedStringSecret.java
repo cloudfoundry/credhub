@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-public abstract class NamedStringSecret extends NamedSecret {
+public abstract class NamedStringSecret<T extends NamedStringSecret> extends NamedSecret<T> {
 
   public NamedStringSecret() {
   }

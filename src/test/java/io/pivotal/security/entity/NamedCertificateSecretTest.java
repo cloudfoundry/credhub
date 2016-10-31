@@ -6,7 +6,6 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
-import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -16,6 +15,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.time.Instant;
 import java.util.Arrays;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -25,6 +25,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
@@ -104,7 +105,7 @@ public class NamedCertificateSecretTest {
       assertThat(secret.getPrivateKey(), equalTo(""));
     });
 
-    describe("getKeyLength", () -> {
+    describe("#getKeyLength", () -> {
       it("should return 0 if there is no certificate", () -> {
         subject = new NamedCertificateSecret("no-cert");
 
@@ -142,7 +143,7 @@ public class NamedCertificateSecretTest {
       });
     });
 
-    describe("getDurationDays", () -> {
+    describe("#getDurationDays", () -> {
       it("should return 0 if there is no certificate", () -> {
         subject = new NamedCertificateSecret("no-cert");
         assertThat(subject.getDurationDays(), equalTo(0));
@@ -173,7 +174,7 @@ public class NamedCertificateSecretTest {
       });
     });
 
-    describe("getAlternativeNames", () -> {
+    describe("#getAlternativeNames", () -> {
       it("should return null if there is no certificate", () -> {
         subject = new NamedCertificateSecret("no-alternative-names");
 
@@ -206,6 +207,28 @@ public class NamedCertificateSecretTest {
         ASN1Sequence sequence = (ASN1Sequence) subject.getAlternativeNames().getParsedValue();
         assertThat(((DERTaggedObject) sequence.getObjectAt(0)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "some-alternative-name").getEncoded()));
         assertThat(((DERTaggedObject) sequence.getObjectAt(1)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "another-alternative-name").getEncoded()));
+      });
+    });
+
+    describe("#copyInto", () -> {
+      it("should copy the correct values", () -> {
+        Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+
+        subject = new NamedCertificateSecret("name", "fake-ca", "fake-certificate", "fake-private-key");
+        subject.setCaName("ca-name");
+        subject.setUuid("fake-uuid");
+        subject.setUpdatedAt(frozenTime);
+
+        NamedCertificateSecret copy = new NamedCertificateSecret();
+        subject.copyInto(copy);
+
+        assertThat(copy.getName(), equalTo("name"));
+        assertThat(copy.getCaName(), equalTo("ca-name"));
+        assertThat(copy.getCa(), equalTo("fake-ca"));
+        assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+
+        assertThat(copy.getUuid(), not(equalTo("fake-uuid")));
+        assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
       });
     });
   }

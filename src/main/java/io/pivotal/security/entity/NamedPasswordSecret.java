@@ -13,7 +13,7 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
 @Entity
 @Table(name = "PasswordSecret")
 @DiscriminatorValue("password")
-public class NamedPasswordSecret extends NamedStringSecret {
+public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> {
 
   @Column(length = 255 + NONCE_BYTES)
   private byte[] encryptedGenerationParameters;
@@ -65,6 +65,12 @@ public class NamedPasswordSecret extends NamedStringSecret {
   @Override
   public String getSecretType() {
     return "password";
+  }
+
+  @Override
+  void copyIntoImpl(NamedPasswordSecret copy) {
+    copy.setEncryptedGenerationParameters(encryptedGenerationParameters);
+    copy.setParametersNonce(parametersNonce);
   }
 
   @Override

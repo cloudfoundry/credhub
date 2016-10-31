@@ -14,6 +14,10 @@ public class FakeSecretRepository implements SecretRepository {
 
   private final FakeTransactionManager transactionManager;
 
+  public FakeSecretRepository() {
+    this.transactionManager = new FakeTransactionManager();
+  }
+
   public FakeSecretRepository(FakeTransactionManager transactionManager) {
     this.transactionManager = transactionManager;
   }
