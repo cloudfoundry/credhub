@@ -108,7 +108,7 @@ public class SecretsController {
       if (namedSecrets.size() > 0) {
         return new ResponseEntity(HttpStatus.OK);
       } else {
-        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
     });
   }
@@ -157,7 +157,7 @@ public class SecretsController {
     return audit(CREDENTIAL_ACCESS, request, authentication, () -> {
       NamedSecret namedSecret = finder.apply(identifier);
       if (namedSecret == null) {
-        return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
+        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       } else {
         return new ResponseEntity<>(Secret.fromEntity(namedSecret), HttpStatus.OK);
       }

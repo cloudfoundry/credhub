@@ -625,7 +625,7 @@ public class SecretsControllerTest {
         mockMvc.perform(delete)
             .andExpect(status().isNotFound())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
+            .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
       });
 
       describe("with a transaction", () -> {
@@ -814,7 +814,7 @@ public class SecretsControllerTest {
         mockMvc.perform(get)
             .andExpect(status().isNotFound())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
+            .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
       });
     };
   }
