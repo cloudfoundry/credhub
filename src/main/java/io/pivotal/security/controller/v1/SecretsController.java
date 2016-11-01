@@ -32,8 +32,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -43,10 +46,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -178,6 +179,10 @@ public class SecretsController {
     boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
     boolean regenerate = BooleanUtils.isTrue(parsed.read("$.regenerate", Boolean.class));
 
+    if (regenerate && existingNamedSecret == null) {
+      return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
+    }
+
     boolean willWrite = willBeCreated || overwrite || regenerate;
     String operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
 
@@ -202,9 +207,6 @@ public class SecretsController {
 
       NamedSecret storedNamedSecret;
       if (willWrite) {
-        // ensure updatedAt is committed with 'saveAndFlush' (SecretDataService
-        // calls saveAndFlush on repository)
-        // note that the test does NOT catch this.
         storedNamedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(existingNamedSecret);
         storedNamedSecret = secretDataService.save(storedNamedSecret);
       } else {
