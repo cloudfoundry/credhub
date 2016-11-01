@@ -1,0 +1,181 @@
+package io.pivotal.security.controller.v1;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.fake.FakeUuidGenerator;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordParameters;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mockito;
+import org.mockito.Spy;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.BootstrapWith;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@RunWith(Spectrum.class)
+@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
+@WebAppConfiguration
+@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
+@ActiveProfiles({"unit-test", "FakeUuidGenerator"})
+public class GetTest {
+
+  @Autowired
+  WebApplicationContext webApplicationContext;
+
+  @Autowired
+  @InjectMocks
+  SecretsController subject;
+
+  @Spy
+  @Autowired
+  @InjectMocks
+  AuditLogService auditLogService;
+
+  @Spy
+  @Autowired
+  SecretDataService secretDataService;
+
+  @Autowired
+  FakeUuidGenerator fakeUuidGenerator;
+
+  private MockMvc mockMvc;
+
+  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
+
+  private final Consumer<Long> fakeTimeSetter;
+
+  private final String secretName = "my-namespace/subTree/secret-name";
+
+  private ResultActions response;
+  private String uuid;
+
+  {
+    wireAndUnwire(this);
+    fakeTimeSetter = mockOutCurrentTimeProvider(this);
+
+    beforeEach(() -> {
+      fakeTimeSetter.accept(frozenTime.toEpochMilli());
+      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+
+      resetAuditLogMock();
+    });
+
+    describe("getting a secret", () -> {
+      final String secretValue = "my value";
+
+      beforeEach(() -> {
+        uuid = fakeUuidGenerator.makeUuid();
+        NamedValueSecret valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(uuid).setUpdatedAt(frozenTime);
+        doReturn(
+            valueSecret
+        ).when(secretDataService).findMostRecent(secretName);
+        doReturn(
+            valueSecret
+        ).when(secretDataService).findMostRecent(secretName.toUpperCase());
+        doReturn(
+            valueSecret
+        ).when(secretDataService).findByUuid(uuid);
+      });
+
+      describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name"));
+
+      describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name"));
+
+      describe("getting a secret by id", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?id=" + uuid)
+              .accept(APPLICATION_JSON);
+
+          this.response = mockMvc.perform(get);
+        });
+
+        it("should return the secret", () -> {
+          this.response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("value"))
+              .andExpect(jsonPath("$.value").value(secretValue))
+              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+    });
+  }
+
+  private Spectrum.Block makeGetByNameBlock(String secretValue, String validUrl, String invalidUrl) {
+    return () -> {
+      beforeEach(() -> {
+        final MockHttpServletRequestBuilder get = get(validUrl)
+            .accept(APPLICATION_JSON);
+
+        this.response = mockMvc.perform(get);
+      });
+
+      it("should return the secret", () -> {
+        this.response.andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.type").value("value"))
+            .andExpect(jsonPath("$.value").value(secretValue))
+            .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+            .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+      });
+
+      it("persists an audit entry", () -> {
+        verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+      });
+
+      it("returns NOT_FOUND when the secret does not exist", () -> {
+        final MockHttpServletRequestBuilder get = get(invalidUrl)
+            .accept(APPLICATION_JSON);
+
+        mockMvc.perform(get)
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
+      });
+    };
+  }
+
+  private void resetAuditLogMock() throws Exception {
+    Mockito.reset(auditLogService);
+    doAnswer(invocation -> {
+      final Supplier action = invocation.getArgumentAt(2, Supplier.class);
+      return action.get();
+    }).when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+  }
+}

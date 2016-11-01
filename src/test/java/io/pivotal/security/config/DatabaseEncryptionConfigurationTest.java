@@ -65,7 +65,7 @@ public class DatabaseEncryptionConfigurationTest {
       });
 
       it("it decrypts the secret value when the entity is retrieved", () -> {
-        NamedStringSecret secret = (NamedStringSecret) secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
+        NamedStringSecret secret = (NamedStringSecret) secretDataService.findMostRecent(secretName);
         assertThat(secret.getValue(), equalTo("value1"));
       });
     });

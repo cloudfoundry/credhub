@@ -66,7 +66,7 @@ public class NamedValueSecretTest {
         subject.setValue("my-value2");
         subject = (NamedStringSecret) repository.save(subject);
 
-        NamedStringSecret second = (NamedStringSecret) repository.findOneByUuid(subject.getUuid());
+        NamedStringSecret second = (NamedStringSecret) repository.findByUuid(subject.getUuid());
         assertThat(second.getValue(), equalTo("my-value2"));
         assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
       });

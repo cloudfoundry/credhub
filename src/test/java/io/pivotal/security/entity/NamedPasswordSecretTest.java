@@ -77,7 +77,7 @@ public class NamedPasswordSecretTest {
         subject.setValue("my-value2");
         subject = (NamedPasswordSecret) secretDataService.save(subject);
 
-        NamedPasswordSecret second = (NamedPasswordSecret) secretDataService.findOneByUuid(subject.getUuid());
+        NamedPasswordSecret second = (NamedPasswordSecret) secretDataService.findByUuid(subject.getUuid());
         assertThat(second.getValue(), equalTo("my-value2"));
         assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
       });

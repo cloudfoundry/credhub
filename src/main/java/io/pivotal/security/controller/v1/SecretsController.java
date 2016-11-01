@@ -102,7 +102,7 @@ public class SecretsController {
   @RequestMapping(path = "/**", method = RequestMethod.DELETE)
   public ResponseEntity delete(HttpServletRequest request, Authentication authentication) throws Exception {
     return audit(CREDENTIAL_DELETE, request, authentication, () -> {
-      List<NamedSecret> namedSecrets = secretDataService.deleteByNameIgnoreCase(secretPath(request));
+      List<NamedSecret> namedSecrets = secretDataService.delete(secretPath(request));
 
       if (namedSecrets.size() > 0) {
         return new ResponseEntity(HttpStatus.OK);
@@ -123,12 +123,12 @@ public class SecretsController {
   }
 
   private ResponseEntity getByName(HttpServletRequest request, Authentication authentication, String identifier) throws Exception {
-    return retrieveSecretWithAuditing(identifier, secretDataService::findFirstByNameIgnoreCaseOrderByUpdatedAtDesc, request, authentication);
+    return retrieveSecretWithAuditing(identifier, secretDataService::findMostRecent, request, authentication);
   }
 
   @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
   public ResponseEntity getById(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(params.get("id"), secretDataService::findOneByUuid, request, authentication);
+    return retrieveSecretWithAuditing(params.get("id"), secretDataService::findByUuid, request, authentication);
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
@@ -136,14 +136,14 @@ public class SecretsController {
     return findStartingWithAuditing(params.get("path"), request, authentication);
   }
 
-  @RequestMapping(path = "", params = "paths", method = RequestMethod.GET)
-  public ResponseEntity findPaths(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findPathsWithAuditing(params.get("paths"), secretDataService::findAllPaths, request, authentication);
+  @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
+  public ResponseEntity findPaths(HttpServletRequest request, Authentication authentication) throws Exception {
+    return findPathsWithAuditing(request, authentication);
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   public ResponseEntity findByNameLike(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findWithAuditing(params.get("name-like"), secretDataService::findByNameIgnoreCaseContainingOrderByUpdatedAtDesc, request, authentication);
+    return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request, authentication);
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
@@ -170,9 +170,9 @@ public class SecretsController {
     });
   }
 
-  private ResponseEntity findPathsWithAuditing(String findPaths, Function<Boolean, List<String>> finder, HttpServletRequest request, Authentication authentication) throws Exception {
+  private ResponseEntity findPathsWithAuditing(HttpServletRequest request, Authentication authentication) throws Exception {
     return audit(CREDENTIAL_FIND, request, authentication, () -> {
-      List<String> paths = finder.apply("true".equalsIgnoreCase(findPaths));
+      List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
     });
   }
@@ -181,7 +181,7 @@ public class SecretsController {
     final DocumentContext parsed = jsonPath.parse(requestBody);
 
     String secretPath = secretPath(request);
-    NamedSecret existingNamedSecret = secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath);
+    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretPath);
 
     boolean willBeCreated = existingNamedSecret == null;
     boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
@@ -252,9 +252,6 @@ public class SecretsController {
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
-    if (!path.endsWith("/")) {
-      path = path + "/";
-    }
-    return findWithAuditing(path, secretDataService::findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc, request, authentication);
+    return findWithAuditing(path, secretDataService::findStartingWithName, request, authentication);
   }
 }

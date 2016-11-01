@@ -1,10 +1,8 @@
-package io.pivotal.security.integration;
+package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.controller.v1.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakePasswordGenerator;
@@ -14,7 +12,6 @@ import io.pivotal.security.service.AuditRecordParameters;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +42,6 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -57,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles({"unit-test", "FakeUuidGenerator"})
-public class RegenerationTest {
+public class RegenerateTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
@@ -66,10 +62,21 @@ public class RegenerationTest {
   @InjectMocks
   SecretsController subject;
 
-  @Mock
+  @Spy
+  @Autowired
+  NamedSecretGenerateHandler namedSecretGenerateHandler;
+
+  @Spy
+  @Autowired
+  NamedSecretSetHandler namedSecretSetHandler;
+
+  @Spy
+  @Autowired
+  @InjectMocks
   AuditLogService auditLogService;
 
   @Spy
+  @Autowired
   SecretDataService secretDataService;
 
   @Autowired
@@ -105,7 +112,7 @@ public class RegenerationTest {
         generationParameters.setExcludeNumber(true);
         originalSecret.setGenerationParameters(generationParameters);
 
-        doReturn(originalSecret).when(secretDataService).findFirstByNameIgnoreCaseOrderByUpdatedAtDesc("my-password");
+        doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
         doAnswer(invocation -> {
           NamedPasswordSecret newSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
@@ -144,14 +151,25 @@ public class RegenerationTest {
         verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
       });
     });
+
+    describe("regenerate request for a non-existent secret", () -> {
+      it("returns an error", () -> {
+        String notFoundJson = "{\"error\": \"Credential not found. Please validate your input and retry your request.\"}";
+
+        response = mockMvc.perform(post("/api/v1/data/my-password")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"regenerate\":true}"))
+            .andExpect(content().json(notFoundJson));
+      });
+    });
   }
 
   private void resetAuditLogMock() throws Exception {
     Mockito.reset(auditLogService);
-    when(auditLogService.performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class)))
-        .thenAnswer(invocation -> {
-          final Supplier action = invocation.getArgumentAt(2, Supplier.class);
-          return action.get();
-        });
+    doAnswer(invocation -> {
+      final Supplier action = invocation.getArgumentAt(2, Supplier.class);
+      return action.get();
+    }).when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }

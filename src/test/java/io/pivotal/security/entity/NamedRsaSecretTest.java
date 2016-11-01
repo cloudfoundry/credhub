@@ -51,7 +51,7 @@ public class NamedRsaSecretTest {
       subject
           .setPublicKey("my-public-key");
       secretDataService.save(subject);
-      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findByUuid(subject.getUuid());
       assertThat(result.getPublicKey(), equalTo("my-public-key"));
     });
 
@@ -60,7 +60,7 @@ public class NamedRsaSecretTest {
           .setPrivateKey("some-private-value");
       secretDataService.save(subject);
 
-      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findByUuid(subject.getUuid());
 
       assertThat(result.getPrivateKey(), equalTo("some-private-value"));
     });
@@ -72,7 +72,7 @@ public class NamedRsaSecretTest {
       subject.setPrivateKey("second");
       subject = (NamedRsaSecret) secretDataService.save(subject);
 
-      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findByUuid(subject.getUuid());
       assertThat(result.getPrivateKey(), equalTo("second"));
     });
 

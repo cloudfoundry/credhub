@@ -17,27 +17,30 @@ public class SecretDataService {
     return secretRepository.saveAndFlush(namedSecret);
   }
 
-  public List<String> findAllPaths(Boolean findPaths) {
-    return secretRepository.findAllPaths(findPaths);
+  public List<String> findAllPaths() {
+    return secretRepository.findAllPaths(true);
   }
 
-  public NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name) {
+  public NamedSecret findMostRecent(String name) {
     return secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(name);
   }
 
-  public NamedSecret findOneByUuid(String uuid) {
+  public NamedSecret findByUuid(String uuid) {
     return secretRepository.findOneByUuid(uuid);
   }
 
-  public List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String name) {
+  public List<NamedSecret> findContainingName(String name) {
     return secretRepository.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(name);
   }
 
-  public List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String name) {
+  public List<NamedSecret> findStartingWithName(String name) {
+    if (!name.endsWith("/")) {
+      name += "/";
+    }
     return secretRepository.findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(name);
   }
 
-  public List<NamedSecret> deleteByNameIgnoreCase(String name) {
+  public List<NamedSecret> delete(String name) {
     return secretRepository.deleteByNameIgnoreCase(name);
   }
 }

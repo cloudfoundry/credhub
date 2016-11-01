@@ -66,7 +66,7 @@ public class NamedCertificateSecretTest {
       subject.setPrivateKey("second");
       subject = (NamedCertificateSecret) secretDataService.save(subject);
 
-      NamedCertificateSecret second = (NamedCertificateSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedCertificateSecret second = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid());
       assertThat(second.getPrivateKey(), equalTo("second"));
       assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
     });
@@ -93,7 +93,7 @@ public class NamedCertificateSecretTest {
     it("allows a null private key", () -> {
       subject.setPrivateKey(null);
       secretDataService.save(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid());
       assertThat(secret.getPrivateKey(), equalTo(null));
       assertThat(secret.getNonce(), equalTo(null));
     });
@@ -101,7 +101,7 @@ public class NamedCertificateSecretTest {
     it("allows an empty private key", () -> {
       subject.setPrivateKey("");
       secretDataService.save(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid());
       assertThat(secret.getPrivateKey(), equalTo(""));
     });
 

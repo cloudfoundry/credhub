@@ -46,7 +46,7 @@ public class NamedSecretTest {
 
     it("returns date created", () -> {
       secret = (NamedCertificateSecret) secretDataService.save(secret);
-      assertThat(secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName).getUpdatedAt().toEpochMilli(), equalTo(345000L));
+      assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt().toEpochMilli(), equalTo(345000L));
     });
 
     it("returns date updated", () -> {
@@ -54,7 +54,7 @@ public class NamedSecretTest {
       fakeTimeSetter.accept(444444L);
       secret.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
       secret = (NamedCertificateSecret) secretDataService.save(secret);
-      assertThat(secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName).getUpdatedAt().toEpochMilli(), equalTo(444000L));
+      assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt().toEpochMilli(), equalTo(444000L));
     });
   }
 }

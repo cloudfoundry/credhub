@@ -51,7 +51,7 @@ public class NamedSshSecretTest {
       subject
           .setPublicKey("my-public-key");
       secretDataService.save(subject);
-      NamedSshSecret result = (NamedSshSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid());
       assertThat(result.getPublicKey(), equalTo("my-public-key"));
     });
 
@@ -60,7 +60,7 @@ public class NamedSshSecretTest {
           .setPrivateKey("some-private-value");
       secretDataService.save(subject);
 
-      NamedSshSecret result = (NamedSshSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid());
 
       assertThat(result.getPrivateKey(), equalTo("some-private-value"));
     });
@@ -72,7 +72,7 @@ public class NamedSshSecretTest {
       subject.setPrivateKey("second");
       subject = (NamedSshSecret) secretDataService.save(subject);
 
-      NamedSshSecret result = (NamedSshSecret) secretDataService.findOneByUuid(subject.getUuid());
+      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid());
       assertThat(result.getPrivateKey(), equalTo("second"));
     });
 

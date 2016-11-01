@@ -25,7 +25,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fdescribe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -104,7 +103,7 @@ public class SecretDataServiceTest {
       });
     });
 
-    describe("#deleteByNameIgnoreCase", () -> {
+    describe("#delete", () -> {
       beforeEach(() -> {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       });
@@ -112,45 +111,45 @@ public class SecretDataServiceTest {
         transactionManager.rollback(transaction);
       });
 
-      it("should be able to delete a secret", () -> {
+      it("should be able to delete a secret ignoring case", () -> {
         NamedPasswordSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
         subject.save(secret);
         secret = new NamedPasswordSecret("my-secret", "another password");
         subject.save(secret);
         assertThat(getSecretsFromDb().size(), equalTo(2));
 
-        subject.deleteByNameIgnoreCase("my-secret");
+        subject.delete("MY-SECRET");
 
-        assertThat(subject.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc("my-secret"), empty());
+        assertThat(subject.findContainingName("my-secret"), empty());
       });
     });
 
-    describe("#findFirstByNameIgnoreCaseOrderByUpdatedAtDesc", () -> {
+    describe("#findMostRecent", () -> {
       it("returns all secrets ignoring case", () -> {
-        NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret("My-secret", "my-password");
-        NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret("my-secret-2", "my-password");
+        NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret("my-SECRET", "my-password");
+        NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret("MY-SECRET-2", "my-password");
         subject.save(namedPasswordSecret1);
         subject.save(namedPasswordSecret2);
 
-        NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc("my-secret");
-        assertThat(passwordSecret.getName(), equalTo("My-secret"));
+        NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findMostRecent("my-secret");
+        assertThat(passwordSecret.getName(), equalTo("my-SECRET"));
         assertThat(passwordSecret.getValue(), equalTo("my-password"));
       });
     });
 
-    describe("#findOneByUuid", () -> {
+    describe("#findByUuid", () -> {
       it("should be able to find secret by uuid", () -> {
         NamedSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
         NamedPasswordSecret savedSecret = (NamedPasswordSecret) subject.save(secret);
 
         assertNotNull(savedSecret.getUuid());
-        NamedPasswordSecret oneByUuid = (NamedPasswordSecret) subject.findOneByUuid(savedSecret.getUuid());
+        NamedPasswordSecret oneByUuid = (NamedPasswordSecret) subject.findByUuid(savedSecret.getUuid());
         assertThat(oneByUuid.getName(), equalTo("my-secret"));
         assertThat(oneByUuid.getValue(), equalTo("secret-password"));
       });
     });
 
-    describe("#findByNameIgnoreCaseContainingOrderByUpdatedAtDesc", () -> {
+    describe("#findContainingName", () -> {
       it("returns secrets in reverse chronological order", () -> {
         fakeTimeSetter.accept(20000000L);
         String valueName = "value.Secret";
@@ -166,7 +165,7 @@ public class SecretDataServiceTest {
         String certificateName = "certif/ic/atesecret";
         subject.save(new NamedCertificateSecret(certificateName));
 
-        assertThat(subject.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc("Secret"), IsIterableContainingInOrder.contains(
+        assertThat(subject.findContainingName("SECRET"), IsIterableContainingInOrder.contains(
             hasProperty("name", equalTo(certificateName)),
             hasProperty("name", equalTo(valueName)),
             hasProperty("name", equalTo(passwordName))
@@ -175,31 +174,46 @@ public class SecretDataServiceTest {
       });
     });
 
-    describe("#findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc", () -> {
-      it("should return a list of secrets in chronological order that start with a given string", () -> {
+    describe("#findStartingWithName", () -> {
+      beforeEach(() -> {
         fakeTimeSetter.accept(20000000L);
-        NamedPasswordSecret secret1 = new NamedPasswordSecret("secret1");
+        NamedPasswordSecret secret1 = new NamedPasswordSecret("secret/1");
         subject.save(secret1);
 
         fakeTimeSetter.accept(30000000L);
-        NamedPasswordSecret secret2 = new NamedPasswordSecret("Secret2");
+        NamedPasswordSecret secret2 = new NamedPasswordSecret("Secret/2");
         subject.save(secret2);
 
         fakeTimeSetter.accept(10000000L);
-        NamedPasswordSecret secret3 = new NamedPasswordSecret("SECRET3");
+        NamedPasswordSecret secret3 = new NamedPasswordSecret("SECRET/3");
         subject.save(secret3);
 
-        NamedPasswordSecret secret4 = new NamedPasswordSecret("notSoSecret");
+        NamedPasswordSecret secret4 = new NamedPasswordSecret("not/So/Secret");
         subject.save(secret4);
 
-        List<NamedSecret> secrets = subject.findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc("Secret");
+        NamedPasswordSecret secret5 = new NamedPasswordSecret("SECRETnotrailingslash");
+        subject.save(secret5);
+      });
+
+      it("should return a list of secrets in chronological order that start with a given string", () -> {
+        List<NamedSecret> secrets = subject.findStartingWithName("Secret/");
+
         assertThat(secrets.size(), equalTo(3));
         assertThat(secrets, IsIterableContainingInOrder.contains(
-            hasProperty("name", equalTo(secret2.getName())),
-            hasProperty("name", equalTo(secret1.getName())),
-            hasProperty("name", equalTo(secret3.getName()))
+            hasProperty("name", equalTo("Secret/2")),
+            hasProperty("name", equalTo("secret/1")),
+            hasProperty("name", equalTo("SECRET/3"))
         ));
         assertThat(secrets, not(contains(hasProperty("notSoSecret"))));
+      });
+
+      describe("when the path does not have a trailing slash", () -> {
+        it("should append an ending slash", () -> {
+          List<NamedSecret> secrets = subject.findStartingWithName("Secret");
+
+          assertThat(secrets.size(), equalTo(3));
+          assertThat(secrets, not(contains(hasProperty("name", equalTo("SECRETnotrailingslash")))));
+        });
       });
     });
 
@@ -215,12 +229,8 @@ public class SecretDataServiceTest {
         subject.save(new NamedCertificateSecret(certificateName));
       });
 
-      it("can fetch all possible paths for all secrets", () -> {
-        assertThat(subject.findAllPaths(true), equalTo(newArrayList("certif/", "certif/ic/", "password/", "value/")));
-      });
-
-      it("returns an empty list when paths parameter is false", () -> {
-        assertThat(subject.findAllPaths(false), equalTo(newArrayList()));
+      it("can fetches possible paths for all secrets", () -> {
+        assertThat(subject.findAllPaths(), equalTo(newArrayList("certif/", "certif/ic/", "password/", "value/")));
       });
     });
   }
