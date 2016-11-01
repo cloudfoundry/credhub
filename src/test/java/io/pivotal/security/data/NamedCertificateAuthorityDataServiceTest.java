@@ -167,7 +167,7 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
     });
 
-    describe("#findOneByNameIgnoreCase", () -> {
+    describe("#find", () -> {
       beforeEach(() -> {
         subject.save(createCertificateAuthority("test-ca", "fake-certificate", "fake-encrypted-value"));
         subject.save(createCertificateAuthority("TEST", "fake-certificate", "fake-encrypted-value"));
@@ -176,7 +176,7 @@ public class NamedCertificateAuthorityDataServiceTest {
 
       describe("when there is no entity with the name", () -> {
         it("should return null", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findOneByNameIgnoreCase("this-entity-does-not-exist");
+          NamedCertificateAuthority certificateAuthority = subject.find("this-entity-does-not-exist");
 
           assertNull(certificateAuthority);
         });
@@ -184,7 +184,7 @@ public class NamedCertificateAuthorityDataServiceTest {
 
       describe("when given a name in the same case as the entity's name", () -> {
         it("should retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findOneByNameIgnoreCase("test-ca");
+          NamedCertificateAuthority certificateAuthority = subject.find("test-ca");
 
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
@@ -193,7 +193,7 @@ public class NamedCertificateAuthorityDataServiceTest {
 
       describe("when given a name with a different case than the entity's name", () -> {
         it("should still retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findOneByNameIgnoreCase("TEST-CA");
+          NamedCertificateAuthority certificateAuthority = subject.find("TEST-CA");
 
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
@@ -203,12 +203,10 @@ public class NamedCertificateAuthorityDataServiceTest {
   }
 
   NamedCertificateAuthority createCertificateAuthority(String name, String certificate, String privateKey) {
-    NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority();
+    NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority(name);
 
-    // The nonce is set by the canary
     certificateAuthority.setCertificate(certificate);
     certificateAuthority.setPrivateKey(privateKey);
-    certificateAuthority.setName(name);
     certificateAuthority.setType("test-ca-type");
 
     return certificateAuthority;

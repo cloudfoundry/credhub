@@ -4,11 +4,11 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.fake.FakeUuidGenerator;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.DefaultMapping;
@@ -85,7 +85,7 @@ public class SecretsControllerTest {
   AuditLogService auditLogService;
 
   @Autowired
-  SecretRepository secretRepository;
+  SecretDataService secretDataService;
 
   @Autowired
   FakeUuidGenerator fakeUuidGenerator;
@@ -160,7 +160,7 @@ public class SecretsControllerTest {
         });
 
         it("persists the secret", () -> {
-          final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
+          final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
           assertThat(namedSecret.getValue(), equalTo("some password"));
         });
 
@@ -213,7 +213,7 @@ public class SecretsControllerTest {
           });
 
           it("persists the secret", () -> {
-            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
             assertThat(namedSecret.getValue(), equalTo("generated value"));
           });
 
@@ -249,7 +249,7 @@ public class SecretsControllerTest {
           });
 
           it("should not persist the secret", () -> {
-            final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
+            final NamedValueSecret namedSecret = (NamedValueSecret) secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
             assertThat(namedSecret.getValue(), equalTo("original value"));
           });
 
@@ -282,7 +282,7 @@ public class SecretsControllerTest {
       });
 
       it("persists the secret", () -> {
-        final NamedValueSecret namedSecret = (NamedValueSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
+        final NamedValueSecret namedSecret = (NamedValueSecret) secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
         assertThat(namedSecret.getValue(), equalTo(secretValue));
       });
 
@@ -632,7 +632,7 @@ public class SecretsControllerTest {
       });
 
       it("removes it from storage", () -> {
-        assertThat(secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName), nullValue());
+        assertThat(secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName), nullValue());
       });
 
       it("persists an audit entry", () -> {

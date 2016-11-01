@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -21,7 +21,7 @@ import static io.pivotal.security.helper.SpectrumHelper.json;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -32,7 +32,7 @@ public class SshSecretTest {
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
 
   @Autowired
-  SecretRepository secretRepository;
+  SecretDataService secretDataService;
 
   @Autowired
   ObjectMapper serializingObjectMapper;
@@ -64,7 +64,7 @@ public class SshSecretTest {
     });
 
     it("sets uuid on generated view", () -> {
-      entity = secretRepository.save(entity);
+      entity = (NamedSshSecret) secretDataService.save(entity);
       SshSecret subject = (SshSecret) SshSecret.fromEntity(entity);
       assertThat(subject.getUuid(), notNullValue());
     });

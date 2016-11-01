@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,9 @@ import org.springframework.test.context.BootstrapWith;
 
 import java.util.Arrays;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -29,7 +31,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class NamedValueSecretTest {
   @Autowired
-  SecretRepository repository;
+  SecretDataService repository;
 
   @Autowired
   public ObjectMapper objectMapper;
@@ -58,13 +60,13 @@ public class NamedValueSecretTest {
 
       it("updates the secret value with the same name when overwritten", () -> {
         subject.setValue("my-value1");
-        repository.saveAndFlush(subject);
+        subject = (NamedStringSecret) repository.save(subject);
         byte[] firstNonce = subject.getNonce();
 
         subject.setValue("my-value2");
-        repository.saveAndFlush(subject);
+        subject = (NamedStringSecret) repository.save(subject);
 
-        NamedStringSecret second = (NamedStringSecret) repository.findOne(subject.getId());
+        NamedStringSecret second = (NamedStringSecret) repository.findOneByUuid(subject.getUuid());
         assertThat(second.getValue(), equalTo("my-value2"));
         assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
       });

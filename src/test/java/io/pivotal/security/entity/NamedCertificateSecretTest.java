@@ -3,8 +3,8 @@ package io.pivotal.security.entity;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -36,7 +36,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 public class NamedCertificateSecretTest {
 
   @Autowired
-  SecretRepository repository;
+  SecretDataService secretDataService;
 
   @Autowired
   EncryptionService encryptionService;
@@ -60,13 +60,13 @@ public class NamedCertificateSecretTest {
 
     it("updates the secret value with the same name when overwritten", () -> {
       subject.setPrivateKey("first");
-      repository.saveAndFlush(subject);
+      subject = (NamedCertificateSecret) secretDataService.save(subject);
       byte[] firstNonce = subject.getNonce();
 
       subject.setPrivateKey("second");
-      repository.saveAndFlush(subject);
+      subject = (NamedCertificateSecret) secretDataService.save(subject);
 
-      NamedCertificateSecret second = (NamedCertificateSecret) repository.findOne(subject.getId());
+      NamedCertificateSecret second = (NamedCertificateSecret) secretDataService.findOneByUuid(subject.getUuid());
       assertThat(second.getPrivateKey(), equalTo("second"));
       assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
     });
@@ -92,16 +92,16 @@ public class NamedCertificateSecretTest {
 
     it("allows a null private key", () -> {
       subject.setPrivateKey(null);
-      repository.saveAndFlush(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) repository.findOne(subject.getId());
+      secretDataService.save(subject);
+      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findOneByUuid(subject.getUuid());
       assertThat(secret.getPrivateKey(), equalTo(null));
       assertThat(secret.getNonce(), equalTo(null));
     });
 
     it("allows an empty private key", () -> {
       subject.setPrivateKey("");
-      repository.saveAndFlush(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) repository.findOne(subject.getId());
+      secretDataService.save(subject);
+      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findOneByUuid(subject.getUuid());
       assertThat(secret.getPrivateKey(), equalTo(""));
     });
 

@@ -373,7 +373,7 @@ public class CertificateGeneratorRequestTranslatorTest {
     certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate());
     certificateAuthority.setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
 
-    when(certificateAuthorityDataService.findOneByNameIgnoreCase("my-root")).thenReturn(certificateAuthority);
+    when(certificateAuthorityDataService.find("my-root")).thenReturn(certificateAuthority);
 
     return certificateAuthority;
   }

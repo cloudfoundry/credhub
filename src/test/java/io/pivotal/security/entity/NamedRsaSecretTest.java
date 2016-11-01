@@ -3,8 +3,8 @@ package io.pivotal.security.entity;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.not;
 @ActiveProfiles({"unit-test", "FakeEncryptionService"})
 public class NamedRsaSecretTest {
   @Autowired
-  SecretRepository repository;
+  SecretDataService secretDataService;
 
   @Autowired
   EncryptionService encryptionService;
@@ -50,29 +50,29 @@ public class NamedRsaSecretTest {
     it("sets a public key", () -> {
       subject
           .setPublicKey("my-public-key");
-      repository.saveAndFlush(subject);
-      NamedRsaSecret result = (NamedRsaSecret) repository.findOne(subject.getId());
+      secretDataService.save(subject);
+      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findOneByUuid(subject.getUuid());
       assertThat(result.getPublicKey(), equalTo("my-public-key"));
     });
 
     it("sets an encrypted private key", () -> {
       subject
           .setPrivateKey("some-private-value");
-      repository.saveAndFlush(subject);
+      secretDataService.save(subject);
 
-      NamedRsaSecret result = (NamedRsaSecret) repository.findOne(subject.getId());
+      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findOneByUuid(subject.getUuid());
 
       assertThat(result.getPrivateKey(), equalTo("some-private-value"));
     });
 
     it("updates the private key value with the same name when overwritten", () -> {
       subject.setPrivateKey("first");
-      repository.saveAndFlush(subject);
+      subject = (NamedRsaSecret) secretDataService.save(subject);
 
       subject.setPrivateKey("second");
-      repository.saveAndFlush(subject);
+      subject = (NamedRsaSecret) secretDataService.save(subject);
 
-      NamedRsaSecret result = (NamedRsaSecret) repository.findOne(subject.getId());
+      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findOneByUuid(subject.getUuid());
       assertThat(result.getPrivateKey(), equalTo("second"));
     });
 

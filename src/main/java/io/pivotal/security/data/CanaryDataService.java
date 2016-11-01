@@ -14,7 +14,7 @@ public class CanaryDataService {
     return canaryRepository.save(canary);
   }
 
-  public NamedCanary findOneByName(String name) {
+  public NamedCanary find(String name) {
     return canaryRepository.findOneByName(name);
   }
 }

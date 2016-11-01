@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -32,7 +32,7 @@ public class CertificateSecretTest {
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
 
   @Autowired
-  SecretRepository secretRepository;
+  SecretDataService secretDataService;
 
   @Autowired
   ObjectMapper serializingObjectMapper;
@@ -65,7 +65,7 @@ public class CertificateSecretTest {
     });
 
     it("sets uuid on generated view", () -> {
-      entity = secretRepository.save(entity);
+      entity = (NamedCertificateSecret) secretDataService.save(entity);
       CertificateSecret subject = (CertificateSecret) CertificateSecret.fromEntity(entity);
       assertThat(subject.getUuid(), notNullValue());
     });

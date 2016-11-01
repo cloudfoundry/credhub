@@ -25,7 +25,7 @@ public class EncryptionProviderCanary {
   public void checkForDataCorruption() {
     String canaryValue = new String(new byte[encryptionConfiguration.getKey().getEncoded().length * 8], encryptionService.charset());
 
-    NamedCanary canary = birdCage.findOneByName(CANARY_NAME);
+    NamedCanary canary = birdCage.find(CANARY_NAME);
     if (canary == null) {
       canary = new NamedCanary(CANARY_NAME);
       try {

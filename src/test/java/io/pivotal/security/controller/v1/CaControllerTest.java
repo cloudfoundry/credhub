@@ -7,7 +7,6 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
@@ -38,7 +37,6 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
@@ -65,9 +63,6 @@ public class CaControllerTest {
 
   @Autowired
   protected WebApplicationContext context;
-
-  @Autowired
-  private SecretRepository secretRepository;
 
   @Mock
   private NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
@@ -210,7 +205,7 @@ public class CaControllerTest {
       when(mockCA.getCertificate()).thenReturn("get-certificate");
       when(mockCA.getPrivateKey()).thenReturn("get-priv");
       when(mockCA.getUpdatedAt()).thenReturn(frozenTime);
-      when(namedCertificateAuthorityDataService.findOneByNameIgnoreCase(uniqueName)).thenReturn(mockCA);
+      when(namedCertificateAuthorityDataService.find(uniqueName)).thenReturn(mockCA);
 
       String expectedJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"get-certificate\",\"private_key\":\"get-priv\"}}";
       mockMvc.perform(get(urlPath))
@@ -253,7 +248,7 @@ public class CaControllerTest {
       when(mockCA.getCertificate()).thenReturn("my_certificate");
       when(mockCA.getPrivateKey()).thenReturn("my_private_key");
       when(mockCA.getUpdatedAt()).thenReturn(frozenTime);
-      when(namedCertificateAuthorityDataService.findOneByNameIgnoreCase("MY_NAME")).thenReturn(mockCA);
+      when(namedCertificateAuthorityDataService.find("MY_NAME")).thenReturn(mockCA);
 
       String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private_key\":\"my_private_key\"}}";
 

@@ -18,11 +18,12 @@ public abstract class NamedStringSecret<T extends NamedStringSecret> extends Nam
     return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }
 
-  public void setValue(String value) {
+  public NamedStringSecret setValue(String value) {
     if (value == null) {
       throw new IllegalArgumentException("value cannot be null");
     }
     SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, value);
+    return this;
   }
 
   public abstract String getSecretType();

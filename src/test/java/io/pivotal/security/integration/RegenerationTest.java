@@ -5,8 +5,8 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.controller.v1.SecretsController;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.fake.FakeSecretRepository;
 import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
@@ -69,7 +69,7 @@ public class RegenerationTest {
   AuditLogService auditLogService;
 
   @Spy
-  FakeSecretRepository secretRepository;
+  SecretDataService secretDataService;
 
   @Autowired
   FakeUuidGenerator fakeUuidGenerator;
@@ -101,14 +101,14 @@ public class RegenerationTest {
         generationParameters.setExcludeNumber(true);
         originalSecret.setGenerationParameters(generationParameters);
 
-        doReturn(originalSecret).when(secretRepository).findFirstByNameIgnoreCaseOrderByUpdatedAtDesc("my-password");
+        doReturn(originalSecret).when(secretDataService).findFirstByNameIgnoreCaseOrderByUpdatedAtDesc("my-password");
 
         doAnswer(invocation -> {
           NamedPasswordSecret newSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
           newSecret.setUuid(fakeUuidGenerator.makeUuid());
           newSecret.setUpdatedAt(frozenTime.plusSeconds(10));
           return newSecret;
-        }).when(secretRepository).saveAndFlush(any(NamedPasswordSecret.class));
+        }).when(secretDataService).save(any(NamedPasswordSecret.class));
 
         resetAuditLogMock();
 
@@ -128,7 +128,7 @@ public class RegenerationTest {
             .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
 
         ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-        verify(secretRepository, times(1)).saveAndFlush(argumentCaptor.capture());
+        verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
         NamedPasswordSecret newPassword = argumentCaptor.getValue();
 

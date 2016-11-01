@@ -3,8 +3,8 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.repository.SecretRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertThat;
 public class StringSecretTest {
 
   @Autowired
-  SecretRepository secretRepository;
+  SecretDataService secretDataService;
 
   private NamedValueSecret entity;
 
@@ -68,7 +68,7 @@ public class StringSecretTest {
 
     it("has a uuid in the view", () -> {
       entity.setValue("my-value");
-      entity = secretRepository.save(entity);
+      entity = (NamedValueSecret) secretDataService.save(entity);
 
       StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
 

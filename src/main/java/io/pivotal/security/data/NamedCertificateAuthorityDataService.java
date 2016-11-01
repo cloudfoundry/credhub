@@ -14,7 +14,7 @@ public class NamedCertificateAuthorityDataService {
     return certificateAuthorityRepository.save(certificateAuthority);
   }
 
-  public NamedCertificateAuthority findOneByNameIgnoreCase(String name) {
+  public NamedCertificateAuthority find(String name) {
     return certificateAuthorityRepository.findOneByNameIgnoreCase(name);
   }
 }

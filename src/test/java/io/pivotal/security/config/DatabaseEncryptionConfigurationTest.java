@@ -3,9 +3,9 @@ package io.pivotal.security.config;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +17,14 @@ import org.springframework.test.context.BootstrapWith;
 import java.util.Collections;
 import java.util.Map;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
@@ -31,7 +36,7 @@ import static org.junit.Assert.assertThat;
 public class DatabaseEncryptionConfigurationTest {
 
   @Autowired
-  SecretRepository secretRepository;
+  SecretDataService secretDataService;
 
   @Autowired
   NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -48,7 +53,7 @@ public class DatabaseEncryptionConfigurationTest {
       beforeEach(() -> {
         secretName = "test";
         NamedStringSecret stringSecret = new NamedValueSecret(secretName, "value1");
-        secretRepository.saveAndFlush(stringSecret);
+        secretDataService.save(stringSecret);
       });
 
       it("it encrypts the secret value", () -> {
@@ -60,7 +65,7 @@ public class DatabaseEncryptionConfigurationTest {
       });
 
       it("it decrypts the secret value when the entity is retrieved", () -> {
-        NamedStringSecret secret = (NamedStringSecret) secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
+        NamedStringSecret secret = (NamedStringSecret) secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
         assertThat(secret.getValue(), equalTo("value1"));
       });
     });

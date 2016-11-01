@@ -5,8 +5,8 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +35,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 public class NamedPasswordSecretTest {
 
   @Autowired
-  SecretRepository repository;
+  SecretDataService secretDataService;
 
   @Autowired
   ObjectMapper objectMapper;
@@ -71,13 +71,13 @@ public class NamedPasswordSecretTest {
 
       it("updates the secret value with the same name when overwritten", () -> {
         subject.setValue("my-value1");
-        repository.saveAndFlush(subject);
+        subject = (NamedPasswordSecret) secretDataService.save(subject);
         byte[] firstNonce = subject.getNonce();
 
         subject.setValue("my-value2");
-        repository.saveAndFlush(subject);
+        subject = (NamedPasswordSecret) secretDataService.save(subject);
 
-        NamedPasswordSecret second = (NamedPasswordSecret) repository.findOne(subject.getId());
+        NamedPasswordSecret second = (NamedPasswordSecret) secretDataService.findOneByUuid(subject.getUuid());
         assertThat(second.getValue(), equalTo("my-value2"));
         assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
       });
@@ -107,7 +107,7 @@ public class NamedPasswordSecretTest {
 
       it("sets UUID when Hibernate stores the object", () -> {
         subject.setValue("my-value");
-        repository.save(subject);
+        secretDataService.save(subject);
         assertThat(subject.getUuid().length(), equalTo(36));
       });
 

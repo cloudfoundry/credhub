@@ -20,7 +20,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -80,7 +85,7 @@ public class CaController {
 
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsed = jsonPath.parse(requestBody);
-    NamedCertificateAuthority namedCertificateAuthority = namedCertificateAuthorityDataService.findOneByNameIgnoreCase(caPath);
+    NamedCertificateAuthority namedCertificateAuthority = namedCertificateAuthorityDataService.find(caPath);
     if (namedCertificateAuthority == null) {
       namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     }
@@ -100,7 +105,7 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   ResponseEntity get(HttpServletRequest request, Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request, authentication), () -> {
-      NamedCertificateAuthority namedAuthority = namedCertificateAuthorityDataService.findOneByNameIgnoreCase(caPath(request));
+      NamedCertificateAuthority namedAuthority = namedCertificateAuthorityDataService.find(caPath(request));
 
       if (namedAuthority == null) {
         return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);

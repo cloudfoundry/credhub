@@ -2,8 +2,8 @@ package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -55,7 +55,7 @@ public class SecretsController {
   public static final String API_V1_DATA = "/api/v1/data";
 
   @Autowired
-  SecretRepository secretRepository;
+  SecretDataService secretDataService;
 
   @Autowired
   NamedSecretGenerateHandler namedSecretGenerateHandler;
@@ -102,9 +102,9 @@ public class SecretsController {
   @RequestMapping(path = "/**", method = RequestMethod.DELETE)
   public ResponseEntity delete(HttpServletRequest request, Authentication authentication) throws Exception {
     return audit(CREDENTIAL_DELETE, request, authentication, () -> {
-      NamedSecret namedSecret = secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath(request));
+      NamedSecret namedSecret = secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath(request));
       if (namedSecret != null) {
-        secretRepository.delete(namedSecret);
+        secretDataService.delete(namedSecret);
         return new ResponseEntity(HttpStatus.OK);
       } else {
         return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
@@ -114,12 +114,12 @@ public class SecretsController {
 
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(secretPath(request), secretRepository::findFirstByNameIgnoreCaseOrderByUpdatedAtDesc, request, authentication);
+    return retrieveSecretWithAuditing(secretPath(request), secretDataService::findFirstByNameIgnoreCaseOrderByUpdatedAtDesc, request, authentication);
   }
 
   @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
   public ResponseEntity getById(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(params.get("id"), secretRepository::findOneByUuid, request, authentication);
+    return retrieveSecretWithAuditing(params.get("id"), secretDataService::findOneByUuid, request, authentication);
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
@@ -129,12 +129,12 @@ public class SecretsController {
 
   @RequestMapping(path = "", params = "paths", method = RequestMethod.GET)
   public ResponseEntity findPaths(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findPathsWithAuditing(params.get("paths"), secretRepository::findAllPaths, request, authentication);
+    return findPathsWithAuditing(params.get("paths"), secretDataService::findAllPaths, request, authentication);
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   public ResponseEntity findByNameLike(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findWithAuditing(params.get("name-like"), secretRepository::findByNameIgnoreCaseContainingOrderByUpdatedAtDesc, request, authentication);
+    return findWithAuditing(params.get("name-like"), secretDataService::findByNameIgnoreCaseContainingOrderByUpdatedAtDesc, request, authentication);
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
@@ -172,7 +172,7 @@ public class SecretsController {
     final DocumentContext parsed = jsonPath.parse(requestBody);
 
     String secretPath = secretPath(request);
-    NamedSecret existingNamedSecret = secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath);
+    NamedSecret existingNamedSecret = secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath);
 
     boolean willBeCreated = existingNamedSecret == null;
     boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
@@ -202,10 +202,11 @@ public class SecretsController {
 
       NamedSecret storedNamedSecret;
       if (willWrite) {
-        // ensure updatedAt is committed with 'saveAndFlush'.
+        // ensure updatedAt is committed with 'saveAndFlush' (SecretDataService
+        // calls saveAndFlush on repository)
         // note that the test does NOT catch this.
         storedNamedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(existingNamedSecret);
-        storedNamedSecret = secretRepository.saveAndFlush(storedNamedSecret);
+        storedNamedSecret = secretDataService.save(storedNamedSecret);
       } else {
         // To catch invalid parameters, validate request even though we throw away the result.
         // We need to apply it to null or Hibernate may decide to save the record.
@@ -244,6 +245,6 @@ public class SecretsController {
     if (!path.endsWith("/")) {
       path = path + "/";
     }
-    return findWithAuditing(path, secretRepository::findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc, request, authentication);
+    return findWithAuditing(path, secretDataService::findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc, request, authentication);
   }
 }

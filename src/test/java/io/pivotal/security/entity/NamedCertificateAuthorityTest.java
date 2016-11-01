@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -14,15 +14,16 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import java.time.Instant;
+import java.util.Arrays;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-
-import java.time.Instant;
-import java.util.Arrays;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -31,7 +32,7 @@ import java.util.Arrays;
 public class NamedCertificateAuthorityTest {
 
   @Autowired
-  NamedCertificateAuthorityRepository repository;
+  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
 
   @Autowired
   EncryptionService encryptionService;
@@ -52,15 +53,6 @@ public class NamedCertificateAuthorityTest {
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
-    it("saves to repository", () -> {
-      repository.saveAndFlush(subject);
-
-      NamedCertificateAuthority first = repository.findOneByNameIgnoreCase("Foo");
-      assertThat(first.getPrivateKey(), equalTo("priv"));
-      assertThat(first.getCertificate(), equalTo("cert"));
-      assertThat(first.getType(), equalTo("root"));
-    });
-
     it("creates a model from entity", () -> {
       CertificateAuthority certificateAuthority = CertificateAuthority.fromEntity(subject);
       assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo("{\"updated_at\":null,\"type\":\"root\",\"value\":{\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
@@ -75,13 +67,13 @@ public class NamedCertificateAuthorityTest {
 
     it("updates the secret value with the same name when overwritten", () -> {
       subject.setPrivateKey("first");
-      repository.saveAndFlush(subject);
+      namedCertificateAuthorityDataService.save(subject);
       byte[] firstNonce = subject.getNonce();
 
       subject.setPrivateKey("second");
-      repository.saveAndFlush(subject);
+      namedCertificateAuthorityDataService.save(subject);
 
-      NamedCertificateAuthority second = repository.findOne(subject.getId());
+      NamedCertificateAuthority second = namedCertificateAuthorityDataService.find(subject.getName());
       assertThat(second.getPrivateKey(), equalTo("second"));
       assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
     });
@@ -107,23 +99,23 @@ public class NamedCertificateAuthorityTest {
 
     it("allows a null private key", () -> {
       subject.setPrivateKey(null);
-      repository.saveAndFlush(subject);
-      NamedCertificateAuthority secret = repository.findOne(subject.getId());
+      namedCertificateAuthorityDataService.save(subject);
+      NamedCertificateAuthority secret = namedCertificateAuthorityDataService.find(subject.getName());
       assertThat(secret.getPrivateKey(), equalTo(null));
       assertThat(secret.getNonce(), equalTo(null));
     });
 
     it("allows an empty private key", () -> {
       subject.setPrivateKey("");
-      repository.saveAndFlush(subject);
-      NamedCertificateAuthority secret = repository.findOne(subject.getId());
+      namedCertificateAuthorityDataService.save(subject);
+      NamedCertificateAuthority secret = namedCertificateAuthorityDataService.find(subject.getName());
       assertThat(secret.getPrivateKey(), equalTo(""));
     });
 
     it("generateView tells HSM to decrypt the private key", () -> {
       subject.setPrivateKey("abc");
-      repository.saveAndFlush(subject);
-      NamedCertificateAuthority secret = repository.findOne(subject.getId());
+      namedCertificateAuthorityDataService.save(subject);
+      NamedCertificateAuthority secret = namedCertificateAuthorityDataService.find(subject.getName());
       assertThat(secret.getPrivateKey(), equalTo("abc"));
     });
   }

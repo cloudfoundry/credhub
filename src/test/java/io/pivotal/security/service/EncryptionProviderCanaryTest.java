@@ -56,7 +56,7 @@ public class EncryptionProviderCanaryTest {
     describe("#checkForDataCorruption", () -> {
       describe("when there is no existing canary", () -> {
         beforeEach(() -> {
-          when(canaryDataService.findOneByName(CANARY_NAME)).thenReturn(null);
+          when(canaryDataService.find(CANARY_NAME)).thenReturn(null);
         });
 
         it("should create a new canary", () -> {
@@ -88,7 +88,7 @@ public class EncryptionProviderCanaryTest {
           canary.setNonce("test-nonce".getBytes());
           canary.setEncryptedValue("fake-encrypted-value".getBytes());
 
-          when(canaryDataService.findOneByName(CANARY_NAME)).thenReturn(canary);
+          when(canaryDataService.find(CANARY_NAME)).thenReturn(canary);
         });
 
         it("should not fail if the decrypted value matches the expected value", () -> {
