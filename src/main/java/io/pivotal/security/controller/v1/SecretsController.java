@@ -32,11 +32,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -46,8 +43,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -226,8 +225,8 @@ public class SecretsController {
         secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(null);
       }
 
-      Secret stringSecret = Secret.fromEntity(storedNamedSecret);
-      return new ResponseEntity<>(stringSecret, HttpStatus.OK);
+      Secret secret = Secret.fromEntity(storedNamedSecret);
+      return new ResponseEntity<>(secret, HttpStatus.OK);
     } catch (ParameterizedValidationException ve) {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     } catch (NoSuchAlgorithmException e) {

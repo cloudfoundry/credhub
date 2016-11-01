@@ -202,16 +202,17 @@ public class CaControllerTest {
 
     it("can fetch a root ca", () -> {
       when(mockCA.getType()).thenReturn("root");
-      when(mockCA.getCertificate()).thenReturn("get-certificate");
-      when(mockCA.getPrivateKey()).thenReturn("get-priv");
+      when(mockCA.getCertificate()).thenReturn("my-certificate");
+      when(mockCA.getPrivateKey()).thenReturn("my-priv");
       when(mockCA.getUpdatedAt()).thenReturn(frozenTime);
+      when(mockCA.getUuid()).thenReturn("my-uuid");
       when(namedCertificateAuthorityDataService.find(uniqueName)).thenReturn(mockCA);
 
-      String expectedJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"get-certificate\",\"private_key\":\"get-priv\"}}";
+      String expectedJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"},\"id\":\"my-uuid\"}";
       mockMvc.perform(get(urlPath))
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(expectedJson));
+          .andExpect(content().json(expectedJson, true));
     });
 
     it("returns bad request for PUT with invalid type", () -> {
@@ -248,15 +249,16 @@ public class CaControllerTest {
       when(mockCA.getCertificate()).thenReturn("my_certificate");
       when(mockCA.getPrivateKey()).thenReturn("my_private_key");
       when(mockCA.getUpdatedAt()).thenReturn(frozenTime);
+      when(mockCA.getUuid()).thenReturn("my_uuid");
       when(namedCertificateAuthorityDataService.find("MY_NAME")).thenReturn(mockCA);
 
-      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private_key\":\"my_private_key\"}}";
+      String responseJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\",\"private_key\":\"my_private_key\"},\"id\":\"my_uuid\"}";
 
       RequestBuilder requestBuilder = getRequestBuilder("/api/v1/ca/MY_NAME");
       mockMvc.perform(requestBuilder)
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(responseJson));
+          .andExpect(content().json(responseJson, true));
     });
 
     it("can put a certificate authority twice", () -> {

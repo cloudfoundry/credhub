@@ -12,19 +12,29 @@ public class CertificateAuthority extends BaseView {
 
   @JsonProperty("value")
   private CertificateAuthorityBody certificateAuthorityBody;
+  private String uuid;
 
   public CertificateAuthority(String type, String certificate, String privateKey) {
-    this(null, type, certificate, privateKey);
+    this(null, type, certificate, privateKey, null);
   }
 
-  public CertificateAuthority(Instant updatedAt, String type, String certificate, String privateKey) {
+  public CertificateAuthority(Instant updatedAt,
+                              String type,
+                              String certificate,
+                              String privateKey,
+                              String uuid) {
     super(updatedAt);
     setType(type);
     setCertificateBody(new CertificateAuthorityBody(certificate, privateKey));
+    setUuid(uuid);
   }
 
-  public CertificateAuthority(NamedCertificateAuthority namedCertificateAuthority) {
-    this(namedCertificateAuthority.getUpdatedAt(), namedCertificateAuthority.getType(), namedCertificateAuthority.getCertificate(), namedCertificateAuthority.getPrivateKey());
+  public CertificateAuthority(NamedCertificateAuthority namedCa) {
+    this(namedCa.getUpdatedAt(),
+        namedCa.getType(),
+        namedCa.getCertificate(),
+        namedCa.getPrivateKey(),
+        namedCa.getUuid());
   }
 
   public CertificateAuthorityBody getCertificateAuthorityBody() {
@@ -43,6 +53,15 @@ public class CertificateAuthority extends BaseView {
 
   public String getType() {
     return type;
+  }
+
+  @JsonProperty("id")
+  public String getUuid() {
+    return uuid;
+  }
+
+  public void setUuid(String uuid) {
+    this.uuid = uuid;
   }
 
   public static CertificateAuthority fromEntity(NamedCertificateAuthority namedCertificateAuthority) {

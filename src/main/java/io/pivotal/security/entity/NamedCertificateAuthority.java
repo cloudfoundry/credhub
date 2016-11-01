@@ -39,6 +39,9 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @LastModifiedDate
   private Instant updatedAt;
 
+  @Column
+  private String uuid;
+
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
   }
@@ -111,11 +114,25 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     return encryptedValue;
   }
 
+  public String getUuid() {
+    return uuid;
+  }
+
   public void setEncryptedValue(byte[] encryptedValue) {
     this.encryptedValue = encryptedValue;
   }
 
   public void setNonce(byte[] nonce) {
     this.nonce = nonce;
+  }
+
+  public void setUuid(String uuid) {
+    this.uuid = uuid;
+  }
+
+  @PrePersist
+  @PreUpdate
+  public void updateUuidOnPersist() {
+    this.uuid = UuidGeneratorProvider.getInstance().makeUuid();
   }
 }

@@ -50,12 +50,13 @@ public class NamedCertificateAuthorityTest {
       subject.setCertificate("cert");
       subject.setPrivateKey("priv");
       subject.setType("root");
+      subject.setUuid("uuid");
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     it("creates a model from entity", () -> {
       CertificateAuthority certificateAuthority = CertificateAuthority.fromEntity(subject);
-      assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo("{\"updated_at\":null,\"type\":\"root\",\"value\":{\"certificate\":\"cert\",\"private_key\":\"priv\"}}"));
+      assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo("{\"updated_at\":null,\"type\":\"root\",\"value\":{\"certificate\":\"cert\",\"private_key\":\"priv\"},\"id\":\"uuid\"}"));
     });
 
     it("set updated-at time on generated view", () -> {

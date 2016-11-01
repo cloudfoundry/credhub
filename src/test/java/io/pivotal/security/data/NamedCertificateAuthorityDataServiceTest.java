@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.stream.Stream;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fdescribe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -31,7 +33,7 @@ import static org.junit.Assert.assertNull;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test"})
+@ActiveProfiles({"unit-test", "FakeUuidGenerator"})
 public class NamedCertificateAuthorityDataServiceTest {
   @Autowired
   NamedCertificateAuthorityDataService subject;
@@ -41,6 +43,9 @@ public class NamedCertificateAuthorityDataServiceTest {
 
   @Autowired
   EncryptionService encryptionService;
+
+  @Autowired
+  FakeUuidGenerator fakeUuidGenerator;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
   private Consumer<Long> fakeTimeSetter;
@@ -75,6 +80,7 @@ public class NamedCertificateAuthorityDataServiceTest {
           ca.setNonce(rs.getBytes("nonce"));
           ca.setType(rs.getString("type"));
           ca.setUpdatedAt(Instant.ofEpochSecond(rs.getLong("updated_at")));
+          ca.setUuid(fakeUuidGenerator.getLastUuid());
 
           return ca;
         });
@@ -92,6 +98,7 @@ public class NamedCertificateAuthorityDataServiceTest {
         assertThat(actual.getType(), equalTo(expected.getType()));
         assertThat(actual.getUpdatedAt(), equalTo(expected.getUpdatedAt()));
         assertThat(actual.getUpdatedAt(), equalTo(frozenTime));
+        assertThat(actual.getUuid(), equalTo(expected.getUuid()));
       });
 
       it("can store a CA with a certificate of length 7000", () -> {
