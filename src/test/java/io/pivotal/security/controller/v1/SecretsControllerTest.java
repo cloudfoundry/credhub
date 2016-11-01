@@ -110,7 +110,7 @@ public class SecretsControllerTest {
 
   private final Consumer<Long> fakeTimeSetter;
 
-  private String secretName;
+  private final String secretName = "my-namespace/subTree/secret-name";
 
   private ResultActions response;
 
@@ -121,7 +121,6 @@ public class SecretsControllerTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      secretName = "my-namespace/subTree/secret-name";
 
       resetAuditLogMock();
     });
@@ -591,37 +590,9 @@ public class SecretsControllerTest {
         putSecretInDatabase(secretName, secretValue);
       });
 
-      describe("getting a secret by name case-insensitively", () -> {
-        beforeEach(() -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data/" + secretName.toUpperCase())
-              .accept(APPLICATION_JSON);
+      describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name"));
 
-          this.response = mockMvc.perform(get);
-        });
-
-        it("should return the secret", () -> {
-          this.response.andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.type").value("value"))
-              .andExpect(jsonPath("$.value").value(secretValue))
-              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
-              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
-        });
-
-        it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
-        });
-
-        it("returns NOT_FOUND when the secret does not exist", () -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data/invalid_name")
-              .accept(APPLICATION_JSON);
-
-          mockMvc.perform(get)
-              .andExpect(status().isNotFound())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
-        });
-      });
+      describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name"));
 
       describe("getting a secret by id", () -> {
         beforeEach(() -> {
@@ -811,6 +782,41 @@ public class SecretsControllerTest {
         });
       });
     });
+  }
+
+
+  private Spectrum.Block makeGetByNameBlock(String secretValue, String validUrl, String invalidUrl) {
+    return () -> {
+      beforeEach(() -> {
+        final MockHttpServletRequestBuilder get = get(validUrl)
+            .accept(APPLICATION_JSON);
+
+        this.response = mockMvc.perform(get);
+      });
+
+      it("should return the secret", () -> {
+        this.response.andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.type").value("value"))
+            .andExpect(jsonPath("$.value").value(secretValue))
+            .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+            .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+      });
+
+      it("persists an audit entry", () -> {
+        verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+      });
+
+      it("returns NOT_FOUND when the secret does not exist", () -> {
+        final MockHttpServletRequestBuilder get = get(invalidUrl)
+            .accept(APPLICATION_JSON);
+
+        mockMvc.perform(get)
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
+      });
+    };
   }
 
   private void putSecretInDatabase(String secretName, String value) throws Exception {

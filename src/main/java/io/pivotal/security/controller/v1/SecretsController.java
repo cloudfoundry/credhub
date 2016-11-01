@@ -115,7 +115,16 @@ public class SecretsController {
 
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(secretPath(request), secretDataService::findFirstByNameIgnoreCaseOrderByUpdatedAtDesc, request, authentication);
+    return getByName(request, authentication, secretPath(request));
+  }
+
+  @RequestMapping(path = "", params="name", method = RequestMethod.GET)
+  public ResponseEntity getByName(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
+    return getByName(request, authentication, params.get("name"));
+  }
+
+  private ResponseEntity getByName(HttpServletRequest request, Authentication authentication, String identifier) throws Exception {
+    return retrieveSecretWithAuditing(identifier, secretDataService::findFirstByNameIgnoreCaseOrderByUpdatedAtDesc, request, authentication);
   }
 
   @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
