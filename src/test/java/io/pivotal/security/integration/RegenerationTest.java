@@ -7,6 +7,7 @@ import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.controller.v1.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.fake.FakePasswordGenerator;
 import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
@@ -74,6 +75,9 @@ public class RegenerationTest {
   @Autowired
   FakeUuidGenerator fakeUuidGenerator;
 
+  @Autowired
+  FakePasswordGenerator fakePasswordGenerator;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -95,7 +99,7 @@ public class RegenerationTest {
 
     describe("regenerating a password", () -> {
       beforeEach(() -> {
-        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "21-character-password");
+        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "original-password");
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
 
         generationParameters.setExcludeNumber(true);
@@ -121,7 +125,7 @@ public class RegenerationTest {
       });
 
       it("should regenerate the secret", () -> {
-        this.response.andExpect(status().isOk())
+        response.andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.type").value("password"))
             .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
@@ -132,7 +136,7 @@ public class RegenerationTest {
 
         NamedPasswordSecret newPassword = argumentCaptor.getValue();
 
-        assertThat(newPassword.getValue().length(), equalTo(21));
+        assertThat(newPassword.getValue(), equalTo(fakePasswordGenerator.getFakePassword()));
         assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
       });
 

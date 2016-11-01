@@ -104,7 +104,7 @@ public class SecretDataServiceTest {
       });
     });
 
-    fdescribe("#deleteByNameIgnoreCase", () -> {
+    describe("#deleteByNameIgnoreCase", () -> {
       beforeEach(() -> {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       });

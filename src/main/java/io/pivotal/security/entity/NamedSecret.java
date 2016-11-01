@@ -98,17 +98,18 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return updatedAt;
   }
 
-  public NamedSecret setUpdatedAt(Instant updatedAt) {
+  public Z setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
-    return this;
+    return (Z) this;
   }
 
   public String getUuid() {
     return uuid;
   }
 
-  public void setUuid(String uuid) {
+  public Z setUuid(String uuid) {
     this.uuid = uuid;
+    return (Z) this;
   }
 
   public abstract SecretKind getKind();
