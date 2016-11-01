@@ -11,6 +11,7 @@ import static com.google.common.collect.Lists.newArrayList;
 public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
   NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
   NamedSecret findOneByUuid(String uuid);
+  List<NamedSecret> deleteByNameIgnoreCase(String name);
   List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String nameSubstring);
   List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring);
 

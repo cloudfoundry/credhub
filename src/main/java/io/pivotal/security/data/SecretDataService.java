@@ -37,7 +37,7 @@ public class SecretDataService {
     return secretRepository.findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(name);
   }
 
-  public void delete(NamedSecret secret) {
-    secretRepository.delete(secret);
+  public List<NamedSecret> deleteByNameIgnoreCase(String name) {
+    return secretRepository.deleteByNameIgnoreCase(name);
   }
 }

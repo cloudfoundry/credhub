@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpStatus;
@@ -30,9 +31,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.context.WebApplicationContext;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -46,6 +51,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -81,7 +89,9 @@ public class SecretsControllerTest {
   @Mock
   NamedSecretSetHandler namedSecretSetHandler;
 
-  @Mock
+  @Spy
+  @Autowired
+  @InjectMocks
   AuditLogService auditLogService;
 
   @Autowired
@@ -89,6 +99,10 @@ public class SecretsControllerTest {
 
   @Autowired
   FakeUuidGenerator fakeUuidGenerator;
+
+  @Autowired
+  PlatformTransactionManager transactionManager;
+  TransactionStatus transaction;
 
   private MockMvc mockMvc;
 
@@ -173,7 +187,7 @@ public class SecretsControllerTest {
         final String secretValue = "original value";
 
         beforeEach(() -> {
-          putSecretInDatabase(secretValue);
+          putSecretInDatabase(secretName, secretValue);
           resetAuditLogMock();
         });
 
@@ -269,7 +283,7 @@ public class SecretsControllerTest {
       final String secretValue = "some other value";
 
       beforeEach(() -> {
-        putSecretInDatabase(secretValue);
+        putSecretInDatabase(secretName, secretValue);
       });
 
       it("returns the secret as json", () -> {
@@ -337,8 +351,8 @@ public class SecretsControllerTest {
       });
 
       it("returns errors from the auditing service auditing fails", () -> {
-        when(auditLogService.performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class)))
-            .thenReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR));
+        doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
+            .when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
 
         final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
             .accept(APPLICATION_JSON)
@@ -381,7 +395,7 @@ public class SecretsControllerTest {
 
     describe("updating a secret", () -> {
       beforeEach(() -> {
-        putSecretInDatabase("original value");
+        putSecretInDatabase(secretName, "original value");
         resetAuditLogMock();
       });
 
@@ -574,7 +588,7 @@ public class SecretsControllerTest {
       final String secretValue = "my value";
 
       beforeEach(() -> {
-        putSecretInDatabase(secretValue);
+        putSecretInDatabase(secretName, secretValue);
       });
 
       describe("getting a secret by name case-insensitively", () -> {
@@ -632,26 +646,8 @@ public class SecretsControllerTest {
       });
     });
 
-    describe("deleting a secret case-insensitively", () -> {
-      beforeEach(() -> {
-        putSecretInDatabase("some value");
-
-        this.response = mockMvc.perform(delete("/api/v1/data/" + secretName.toUpperCase()));
-      });
-
-      it("should return a 200 status", () -> {
-        this.response.andExpect(status().isOk());
-      });
-
-      it("removes it from storage", () -> {
-        assertThat(secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName), nullValue());
-      });
-
-      it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(eq("credential_delete"), isA(AuditRecordParameters.class), any(Supplier.class));
-      });
-
-      it("returns NOT_FOUND when the secret does not exist", () -> {
+    describe("deleting a secret", () -> {
+      it("should return NOT_FOUND when there is no secret with that name", () -> {
         final MockHttpServletRequestBuilder delete = delete("/api/v1/data/invalid_name")
             .accept(APPLICATION_JSON);
 
@@ -660,11 +656,62 @@ public class SecretsControllerTest {
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.error").value("Secret not found. Please validate your input and retry your request."));
       });
+
+      describe("with a transaction", () -> {
+        beforeEach(() -> {
+          transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        });
+
+        afterEach(() -> {
+          transactionManager.rollback(transaction);
+        });
+
+        describe("when there is one secret with the name (case-insensitive)", () -> {
+          beforeEach(() -> {
+            secretDataService.save(new NamedPasswordSecret(secretName, "some value"));
+
+            this.response = mockMvc.perform(delete("/api/v1/data/" + secretName.toUpperCase()));
+          });
+
+          it("should return a 200 status", () -> {
+            this.response.andExpect(status().isOk());
+          });
+
+          it("removes it from storage", () -> {
+            assertThat(secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName), nullValue());
+          });
+
+          it("persists an audit entry", () -> {
+            verify(auditLogService).performWithAuditing(eq("credential_delete"), isA(AuditRecordParameters.class), any(Supplier.class));
+          });
+        });
+
+        describe("when there are multiple secrets with that name", () -> {
+          beforeEach(() -> {
+            secretDataService.save(new NamedPasswordSecret(secretName, "value1"));
+            secretDataService.save(new NamedPasswordSecret(secretName, "value2"));
+
+            this.response = mockMvc.perform(delete("/api/v1/data/" + secretName));
+          });
+
+          it("should succeed", () -> {
+            this.response.andExpect(status().isOk());
+          });
+
+          it("should remove them all from the database", () -> {
+            assertThat(secretDataService.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(secretName).size(), equalTo(0));
+          });
+
+          it("persists a single audit entry", () -> {
+            verify(auditLogService, times(1)).performWithAuditing(eq("credential_delete"), isA(AuditRecordParameters.class), any(Supplier.class));
+          });
+        });
+      });
     });
 
     describe("finding secrets", () -> {
       beforeEach(() -> {
-        putSecretInDatabase("some value");
+        putSecretInDatabase(secretName, "some value");
       });
 
       describe("finding credentials by name-like, i.e. partial names, case-insensitively", () -> {
@@ -766,7 +813,7 @@ public class SecretsControllerTest {
     });
   }
 
-  private void putSecretInDatabase(String value) throws Exception {
+  private void putSecretInDatabase(String secretName, String value) throws Exception {
     when(namedSecretSetHandler.make(eq(secretName), isA(DocumentContext.class)))
         .thenReturn(new StaticMapping(new NamedValueSecret(secretName, value), null, null, null, null));
 
@@ -783,10 +830,9 @@ public class SecretsControllerTest {
 
   private void resetAuditLogMock() throws Exception {
     Mockito.reset(auditLogService);
-    when(auditLogService.performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class)))
-        .thenAnswer(invocation -> {
-          final Supplier action = invocation.getArgumentAt(2, Supplier.class);
-          return action.get();
-        });
+    doAnswer(invocation -> {
+      final Supplier action = invocation.getArgumentAt(2, Supplier.class);
+      return action.get();
+    }).when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }

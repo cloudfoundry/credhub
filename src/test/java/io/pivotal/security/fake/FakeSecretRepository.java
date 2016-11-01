@@ -33,6 +33,11 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
+  public List<NamedSecret> deleteByNameIgnoreCase(String name) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public <S extends NamedSecret> S save(S entity) {
     transactionManager.currentTransaction.enqueue(() -> {
       count++;

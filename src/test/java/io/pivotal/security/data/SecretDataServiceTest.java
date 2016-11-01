@@ -14,6 +14,9 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -22,6 +25,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fdescribe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -44,6 +48,10 @@ public class SecretDataServiceTest {
 
   @Autowired
   JdbcTemplate jdbcTemplate;
+
+  @Autowired
+  PlatformTransactionManager transactionManager;
+  TransactionStatus transaction;
 
   private final Consumer<Long> fakeTimeSetter;
 
@@ -96,13 +104,24 @@ public class SecretDataServiceTest {
       });
     });
 
-    describe("#delete", () -> {
+    fdescribe("#deleteByNameIgnoreCase", () -> {
+      beforeEach(() -> {
+        transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+      });
+      afterEach(() -> {
+        transactionManager.rollback(transaction);
+      });
+
       it("should be able to delete a secret", () -> {
-        NamedSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
-        NamedSecret savedSecret = subject.save(secret);
-        assertThat(getSecretsFromDb().size(), equalTo(1));
-        subject.delete(savedSecret);
-        assertThat(getSecretsFromDb(), empty());
+        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
+        subject.save(secret);
+        secret = new NamedPasswordSecret("my-secret", "another password");
+        subject.save(secret);
+        assertThat(getSecretsFromDb().size(), equalTo(2));
+
+        subject.deleteByNameIgnoreCase("my-secret");
+
+        assertThat(subject.findByNameIgnoreCaseContainingOrderByUpdatedAtDesc("my-secret"), empty());
       });
     });
 

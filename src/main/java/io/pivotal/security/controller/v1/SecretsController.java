@@ -103,9 +103,9 @@ public class SecretsController {
   @RequestMapping(path = "/**", method = RequestMethod.DELETE)
   public ResponseEntity delete(HttpServletRequest request, Authentication authentication) throws Exception {
     return audit(CREDENTIAL_DELETE, request, authentication, () -> {
-      NamedSecret namedSecret = secretDataService.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretPath(request));
-      if (namedSecret != null) {
-        secretDataService.delete(namedSecret);
+      List<NamedSecret> namedSecrets = secretDataService.deleteByNameIgnoreCase(secretPath(request));
+
+      if (namedSecrets.size() > 0) {
         return new ResponseEntity(HttpStatus.OK);
       } else {
         return createErrorResponse("error.secret_not_found", HttpStatus.NOT_FOUND);
