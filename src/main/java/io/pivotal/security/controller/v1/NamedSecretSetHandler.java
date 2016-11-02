@@ -22,8 +22,8 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
   RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
 
   @Override
-  public SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed) {
-    return new SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException>() {
+  public SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed) {
+    return new SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException>() {
       @Override
       public NamedSecret value(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return processSecret((NamedValueSecret) namedSecret, NamedValueSecret::new, secretPath, stringSetRequestTranslator, parsed);

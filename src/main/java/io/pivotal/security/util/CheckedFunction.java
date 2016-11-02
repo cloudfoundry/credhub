@@ -1,6 +1,6 @@
 package io.pivotal.security.util;
 
 @FunctionalInterface
-public interface CheckedFunction<T, R, E extends Throwable> {
-  R apply(T t) throws E;
+public interface CheckedFunction<T, E extends Throwable> {
+  T apply(T t) throws E;
 }

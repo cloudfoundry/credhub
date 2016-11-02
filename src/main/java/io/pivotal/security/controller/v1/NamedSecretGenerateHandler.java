@@ -29,8 +29,8 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
   RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
 
   @Override
-  public SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed) {
-    return new SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException>() {
+  public SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed) {
+    return new SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException>() {
       @Override
       public NamedSecret value(NamedSecret namedSecret) {
         throw new ParameterizedValidationException("error.invalid_generate_type");

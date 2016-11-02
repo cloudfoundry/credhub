@@ -8,6 +8,9 @@ import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
 
+import java.security.NoSuchAlgorithmException;
+import java.util.function.Supplier;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -20,9 +23,6 @@ import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.verify;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.function.Supplier;
-
 public class AbstractNamedSecretHandlerTestingUtil {
 
   @Mock
@@ -30,7 +30,7 @@ public class AbstractNamedSecretHandlerTestingUtil {
 
   RequestTranslator expectedTranslator;
 
-  CheckedFunction<NamedSecret, NamedSecret, NoSuchAlgorithmException> mapFunction;
+  CheckedFunction<NamedSecret, NoSuchAlgorithmException> mapFunction;
 
   protected Spectrum.Block behavesLikeMapper(Supplier<SecretKindMappingFactory> subject, Supplier<RequestTranslator> translatorSupplier, SecretKind secretKind, Class<? extends NamedSecret> clazz, NamedSecret mistypedSecret, NamedSecret existingEntity) {
     return () -> {

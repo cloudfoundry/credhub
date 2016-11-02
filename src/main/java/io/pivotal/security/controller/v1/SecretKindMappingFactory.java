@@ -9,7 +9,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.function.Function;
 
 public interface SecretKindMappingFactory {
-  SecretKind.CheckedMapping<NamedSecret, NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed);
+  SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed);
 
   default <Z extends NamedSecret> Z processSecret(Z existingNamedSecret, Function<String, Z> constructor, String secretPath, RequestTranslator<Z> requestTranslator, DocumentContext parsed) throws NoSuchAlgorithmException {
     Z result = constructor.apply(secretPath);
