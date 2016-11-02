@@ -1,6 +1,7 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.controller.v1.secret;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.entity.*;
 import io.pivotal.security.mapper.*;
 import io.pivotal.security.view.SecretKind;

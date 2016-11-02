@@ -1,10 +1,12 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
+import io.pivotal.security.controller.v1.secret.NamedSecretGenerateHandler;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;

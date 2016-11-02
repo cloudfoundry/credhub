@@ -1,7 +1,10 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.controller.v1.secret;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.controller.v1.ResponseError;
+import io.pivotal.security.controller.v1.ResponseErrorType;
+import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.service.AuditLogService;
@@ -33,11 +36,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -47,8 +47,10 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

@@ -1,8 +1,9 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.fake.FakeUuidGenerator;
@@ -52,7 +53,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebAppConfiguration
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
-public class FindTest {
+public class SecretsControllerFindTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
@@ -94,7 +95,7 @@ public class FindTest {
       resetAuditLogMock();
     });
 
-    describe("finding secrets", () -> {
+    describe("finding secret", () -> {
       describe("finding credentials by name-like, i.e. partial names, case-insensitively", () -> {
         beforeEach(() -> {
           String substring = secretName.substring(4).toUpperCase();
