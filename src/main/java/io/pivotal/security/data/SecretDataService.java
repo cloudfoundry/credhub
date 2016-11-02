@@ -1,5 +1,6 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.repository.SecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +43,9 @@ public class SecretDataService {
 
   public List<NamedSecret> delete(String name) {
     return secretRepository.deleteByNameIgnoreCase(name);
+  }
+
+  public List<NamedPasswordSecret> findAllByName(String name) {
+    return secretRepository.findAllByName(name);
   }
 }

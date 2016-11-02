@@ -18,9 +18,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -31,10 +28,14 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+
+import java.util.List;
+import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -103,7 +104,7 @@ public class SecretDataServiceTest {
       });
     });
 
-    describe("#delete", () -> {
+    describe("#deleteByNameIgnoreCase", () -> {
       beforeEach(() -> {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       });
@@ -176,23 +177,11 @@ public class SecretDataServiceTest {
 
     describe("#findStartingWithName", () -> {
       beforeEach(() -> {
-        fakeTimeSetter.accept(20000000L);
-        NamedPasswordSecret secret1 = new NamedPasswordSecret("secret/1");
-        subject.save(secret1);
-
-        fakeTimeSetter.accept(30000000L);
-        NamedPasswordSecret secret2 = new NamedPasswordSecret("Secret/2");
-        subject.save(secret2);
-
-        fakeTimeSetter.accept(10000000L);
-        NamedPasswordSecret secret3 = new NamedPasswordSecret("SECRET/3");
-        subject.save(secret3);
-
-        NamedPasswordSecret secret4 = new NamedPasswordSecret("not/So/Secret");
-        subject.save(secret4);
-
-        NamedPasswordSecret secret5 = new NamedPasswordSecret("SECRETnotrailingslash");
-        subject.save(secret5);
+        saveNamedPassword(20000000L, "secret/1");
+        saveNamedPassword(30000000L, "Secret/2");
+        saveNamedPassword(10000000L, "SECRET/3");
+        saveNamedPassword(10000000L, "not/So/Secret");
+        saveNamedPassword(10000000L, "SECRETnotrailingslash");
       });
 
       it("should return a list of secrets in chronological order that start with a given string", () -> {
@@ -233,6 +222,24 @@ public class SecretDataServiceTest {
         assertThat(subject.findAllPaths(), equalTo(newArrayList("certif/", "certif/ic/", "password/", "value/")));
       });
     });
+
+    describe("#findAllByName", () -> {
+
+      it("finds all by name", () -> {
+        NamedPasswordSecret secret1 = saveNamedPassword(20000000L, "secret1");
+        NamedPasswordSecret secret2 = saveNamedPassword(40000000L, "secret1");
+        saveNamedPassword(30000000L, "Secret2");
+
+        List<NamedPasswordSecret> secrets = subject.findAllByName("secret1");
+        assertThat(secrets, containsInAnyOrder(secret1, secret2));
+      });
+    });
+  }
+
+  private NamedPasswordSecret saveNamedPassword(long timeMillis, String secretName) {
+    fakeTimeSetter.accept(timeMillis);
+    NamedPasswordSecret secretObject = new NamedPasswordSecret(secretName);
+    return (NamedPasswordSecret) subject.save(secretObject);
   }
 
   private List<NamedPasswordSecret> getSecretsFromDb() {

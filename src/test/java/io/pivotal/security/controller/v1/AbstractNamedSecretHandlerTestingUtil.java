@@ -8,9 +8,6 @@ import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -20,7 +17,11 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.verify;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.function.Supplier;
 
 public class AbstractNamedSecretHandlerTestingUtil {
 
@@ -47,7 +48,7 @@ public class AbstractNamedSecretHandlerTestingUtil {
 
       it("updates the secret", () -> {
         NamedSecret namedSecret = mapFunction.apply(existingEntity);
-        verify(expectedTranslator).populateEntityFromJson(namedSecret, documentContext);
+        verify(expectedTranslator).populateEntityFromJson(same(namedSecret), same(documentContext));
         assertThat(namedSecret, not(sameInstance(existingEntity)));
         assertThat(namedSecret, instanceOf(clazz));
       });

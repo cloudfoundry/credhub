@@ -1,5 +1,6 @@
 package io.pivotal.security.fake;
 
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.repository.SecretRepository;
 import org.springframework.data.domain.Example;
@@ -82,6 +83,11 @@ public class FakeSecretRepository implements SecretRepository {
 
   @Override
   public List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<NamedPasswordSecret> findAllByName(String name) {
     throw new UnsupportedOperationException();
   }
 
