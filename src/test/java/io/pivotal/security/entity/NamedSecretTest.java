@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
+import org.springframework.util.StringUtils;
 
 import java.util.function.Consumer;
 
@@ -28,7 +29,7 @@ public class NamedSecretTest {
   SecretDataService secretDataService;
 
   private Consumer<Long> fakeTimeSetter;
-  private NamedCertificateSecret secret;
+  private NamedCertificateSecret subject;
   private String secretName;
 
   {
@@ -38,23 +39,35 @@ public class NamedSecretTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(345345L);
       secretName = "foo";
-      secret = new NamedCertificateSecret(secretName)
+      subject = new NamedCertificateSecret(secretName)
           .setCa("ca")
           .setCertificate("pub")
           .setPrivateKey("priv");
     });
 
     it("returns date created", () -> {
-      secret = (NamedCertificateSecret) secretDataService.save(secret);
+      subject = (NamedCertificateSecret) secretDataService.save(subject);
       assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt().toEpochMilli(), equalTo(345000L));
     });
 
     it("returns date updated", () -> {
-      secret = (NamedCertificateSecret) secretDataService.save(secret);
+      subject = (NamedCertificateSecret) secretDataService.save(subject);
       fakeTimeSetter.accept(444444L);
-      secret.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
-      secret = (NamedCertificateSecret) secretDataService.save(secret);
+      subject.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
+      subject = (NamedCertificateSecret) secretDataService.save(subject);
       assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt().toEpochMilli(), equalTo(444000L));
+    });
+
+    it("should have a consistent UUID", () -> {
+      subject = (NamedCertificateSecret) secretDataService.save(this.subject);
+      String originalUuid = subject.getUuid();
+
+      assertThat(StringUtils.isEmpty(originalUuid), equalTo(false));
+
+      subject.setCertificate("fake-new-certificate");
+      subject = (NamedCertificateSecret) secretDataService.save(subject);
+
+      assertThat(subject.getUuid(), equalTo(originalUuid));
     });
   }
 }
