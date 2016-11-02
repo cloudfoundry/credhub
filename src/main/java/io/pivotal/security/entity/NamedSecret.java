@@ -147,20 +147,4 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     copy.setNonce(nonce);
     this.copyIntoImpl(copy);
   }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof NamedSecret)) return false;
-
-    NamedSecret<?> that = (NamedSecret<?>) o;
-
-    return getUuid().equals(that.getUuid());
-
-  }
-
-  @Override
-  public int hashCode() {
-    return getUuid().hashCode();
-  }
 }
