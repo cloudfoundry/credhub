@@ -119,9 +119,13 @@ public class SecretsController {
     return retrieveSecretWithAuditing(secretPath(request), secretDataService::findMostRecentAsList, request, authentication, (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0)));
   }
 
-  @RequestMapping(path = "", params="name", method = RequestMethod.GET)
-  public ResponseEntity getByName(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(params.get("name"), secretDataService::findAllByName, request, authentication, (namedSecret) -> DataResponse.fromEntity(namedSecret));
+  @RequestMapping(path = "", method = RequestMethod.GET)
+  public ResponseEntity getByName(@RequestParam(value="name") String secretName,
+                                  @RequestParam(value="current", required = false, defaultValue = "false") boolean current,
+                                  HttpServletRequest request,
+                                  Authentication authentication) throws Exception {
+    Function<String, List<NamedSecret>> lookupFunction = current ? secretDataService::findMostRecentAsList : secretDataService::findAllByName;
+    return retrieveSecretWithAuditing(secretName, lookupFunction, request, authentication, (namedSecret) -> DataResponse.fromEntity(namedSecret));
   }
 
   @RequestMapping(path = "", params = "id", method = RequestMethod.GET)

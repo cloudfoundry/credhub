@@ -29,6 +29,8 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -99,11 +101,12 @@ public class GetTest {
       beforeEach(() -> {
         uuid = fakeUuidGenerator.makeUuid();
         NamedValueSecret valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(uuid).setUpdatedAt(frozenTime);
+        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName, secretValue).setUuid(uuid).setUpdatedAt(frozenTime);
         doReturn(
             valueSecret
         ).when(secretDataService).findMostRecent(secretName);
         doReturn(
-            newArrayList(valueSecret)
+            newArrayList(valueSecret, valueSecret2)
         ).when(secretDataService).findAllByName(secretName.toUpperCase());
         doReturn(
             valueSecret
@@ -116,6 +119,34 @@ public class GetTest {
       describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name", "$"));
 
       describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
+
+      describe("when passing a 'current' query parameter", () -> {
+        it("when true should return only the most recent version", () -> {
+          mockMvc.perform(get("/api/v1/data?current=true&name=" + secretName.toUpperCase())
+              .accept(APPLICATION_JSON))
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.data", hasSize(1)));
+
+          verify(secretDataService).findMostRecent(secretName.toUpperCase());
+        });
+
+        it("when false should return all versions", () -> {
+          mockMvc.perform(get("/api/v1/data?current=false&name=" + secretName.toUpperCase())
+              .accept(APPLICATION_JSON))
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.data", hasSize(greaterThan(1))));
+        });
+
+        it("when omitted should return all versions", () -> {
+          mockMvc.perform(get("/api/v1/data?name=" + secretName.toUpperCase())
+              .accept(APPLICATION_JSON))
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.data", hasSize(greaterThan(1))));
+        });
+      });
 
       describe("getting a secret by id", () -> {
         beforeEach(() -> {
