@@ -7,4 +7,5 @@ public class AuditingOperationCodes {
   public static final String CREDENTIAL_UPDATE = "credential_update";
 
   public static final String AUTHORITY_ACCESS = "ca_access";
+  public static final String AUTHORITY_UPDATE = "ca_update";
 }

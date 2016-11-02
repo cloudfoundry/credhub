@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -75,7 +76,7 @@ public class CaController {
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
+    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
       return storeAuthority(caPath(request), requestBody, caSetterRequestTranslator);
     });
   }
@@ -83,7 +84,7 @@ public class CaController {
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.POST)
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return auditLogService.performWithAuditing("ca_update", new AuditRecordParameters(request, authentication), () -> {
+    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
       return storeAuthority(caPath(request), requestBody, caGeneratorRequestTranslator);
     });
   }

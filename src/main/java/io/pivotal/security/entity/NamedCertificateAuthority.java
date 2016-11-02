@@ -110,24 +110,25 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     return nonce;
   }
 
-  public byte[] getEncryptedValue() {
-    return encryptedValue;
+  public void setNonce(byte[] nonce) {
+    this.nonce = nonce;
   }
 
-  public String getUuid() {
-    return uuid;
+  public byte[] getEncryptedValue() {
+    return encryptedValue;
   }
 
   public void setEncryptedValue(byte[] encryptedValue) {
     this.encryptedValue = encryptedValue;
   }
 
-  public void setNonce(byte[] nonce) {
-    this.nonce = nonce;
+  public String getUuid() {
+    return uuid;
   }
 
-  public void setUuid(String uuid) {
+  public NamedCertificateAuthority setUuid(String uuid) {
     this.uuid = uuid;
+    return this;
   }
 
   @PrePersist
