@@ -7,6 +7,7 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -32,8 +33,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -43,10 +47,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -114,21 +116,32 @@ public class SecretsController {
 
   @RequestMapping(path = "/**", method = RequestMethod.GET)
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
-    return getByName(request, authentication, secretPath(request));
+    return retrieveSecretWithAuditing(secretPath(request), secretDataService::findMostRecentAsList, request, authentication, (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0)));
   }
 
   @RequestMapping(path = "", params="name", method = RequestMethod.GET)
   public ResponseEntity getByName(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return getByName(request, authentication, params.get("name"));
-  }
-
-  private ResponseEntity getByName(HttpServletRequest request, Authentication authentication, String identifier) throws Exception {
-    return retrieveSecretWithAuditing(identifier, secretDataService::findMostRecent, request, authentication);
+    return retrieveSecretWithAuditing(params.get("name"), secretDataService::findAllByName, request, authentication, (namedSecret) -> DataResponse.fromEntity(namedSecret));
   }
 
   @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
   public ResponseEntity getById(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(params.get("id"), secretDataService::findByUuid, request, authentication);
+    return retrieveSecretWithAuditing(params.get("id"), secretDataService::findByUuidAsList, request, authentication, (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0)));
+  }
+
+  private ResponseEntity retrieveSecretWithAuditing(String identifier,
+                                                    Function<String, List<NamedSecret>> finder,
+                                                    HttpServletRequest request,
+                                                    Authentication authentication,
+                                                    Function<List<NamedSecret>, Object> presenter) throws Exception {
+    return audit(CREDENTIAL_ACCESS, request, authentication, () -> {
+      List<NamedSecret> namedSecrets = finder.apply(identifier);
+      if (namedSecrets.isEmpty()) {
+        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
+      } else {
+        return new ResponseEntity<>(presenter.apply(namedSecrets), HttpStatus.OK);
+      }
+    });
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
@@ -150,17 +163,6 @@ public class SecretsController {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
-  }
-
-  private ResponseEntity retrieveSecretWithAuditing(String identifier, Function<String, NamedSecret> finder, HttpServletRequest request, Authentication authentication) throws Exception {
-    return audit(CREDENTIAL_ACCESS, request, authentication, () -> {
-      NamedSecret namedSecret = finder.apply(identifier);
-      if (namedSecret == null) {
-        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
-      } else {
-        return new ResponseEntity<>(Secret.fromEntity(namedSecret), HttpStatus.OK);
-      }
-    });
   }
 
   private ResponseEntity findWithAuditing(String nameSubstring, Function<String, List<NamedSecret>> finder, HttpServletRequest request, Authentication authentication) throws Exception {

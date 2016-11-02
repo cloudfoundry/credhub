@@ -23,10 +23,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -43,6 +40,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -102,6 +103,9 @@ public class GetTest {
             valueSecret
         ).when(secretDataService).findMostRecent(secretName);
         doReturn(
+            newArrayList(valueSecret)
+        ).when(secretDataService).findAllByName(secretName.toUpperCase());
+        doReturn(
             valueSecret
         ).when(secretDataService).findMostRecent(secretName.toUpperCase());
         doReturn(
@@ -109,9 +113,9 @@ public class GetTest {
         ).when(secretDataService).findByUuid(uuid);
       });
 
-      describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name"));
+      describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name", "$"));
 
-      describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name"));
+      describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
 
       describe("getting a secret by id", () -> {
         beforeEach(() -> {
@@ -137,7 +141,7 @@ public class GetTest {
     });
   }
 
-  private Spectrum.Block makeGetByNameBlock(String secretValue, String validUrl, String invalidUrl) {
+  private Spectrum.Block makeGetByNameBlock(String secretValue, String validUrl, String invalidUrl, String jsonPathPrefix) {
     return () -> {
       beforeEach(() -> {
         final MockHttpServletRequestBuilder get = get(validUrl)
@@ -149,10 +153,10 @@ public class GetTest {
       it("should return the secret", () -> {
         this.response.andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.type").value("value"))
-            .andExpect(jsonPath("$.value").value(secretValue))
-            .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
-            .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+            .andExpect(jsonPath(jsonPathPrefix + ".type").value("value"))
+            .andExpect(jsonPath(jsonPathPrefix + ".value").value(secretValue))
+            .andExpect(jsonPath(jsonPathPrefix + ".id").value(fakeUuidGenerator.getLastUuid()))
+            .andExpect(jsonPath(jsonPathPrefix + ".updated_at").value(frozenTime.toString()));
       });
 
       it("persists an audit entry", () -> {

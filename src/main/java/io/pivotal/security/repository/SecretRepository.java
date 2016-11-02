@@ -1,6 +1,5 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -15,7 +14,7 @@ public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
   List<NamedSecret> deleteByNameIgnoreCase(String name);
   List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String nameSubstring);
   List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring);
-  List<NamedPasswordSecret> findAllByName(String name);
+  List<NamedSecret> findAllByName(String name);
 
   default List<String> findAllPaths(Boolean findPaths) {
     if (!findPaths) {

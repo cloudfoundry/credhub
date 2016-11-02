@@ -1,10 +1,11 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.repository.SecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
@@ -20,6 +21,16 @@ public class SecretDataService {
 
   public List<String> findAllPaths() {
     return secretRepository.findAllPaths(true);
+  }
+
+  public List<NamedSecret> findMostRecentAsList(String name) {
+    NamedSecret foundSecret = findMostRecent(name);
+    return foundSecret == null ? newArrayList() : newArrayList(foundSecret);
+  }
+
+  public List<NamedSecret> findByUuidAsList(String uuid) {
+    NamedSecret foundSecret = findByUuid(uuid);
+    return foundSecret == null ? newArrayList() : newArrayList(foundSecret);
   }
 
   public NamedSecret findMostRecent(String name) {
@@ -45,7 +56,7 @@ public class SecretDataService {
     return secretRepository.deleteByNameIgnoreCase(name);
   }
 
-  public List<NamedPasswordSecret> findAllByName(String name) {
+  public List<NamedSecret> findAllByName(String name) {
     return secretRepository.findAllByName(name);
   }
 }

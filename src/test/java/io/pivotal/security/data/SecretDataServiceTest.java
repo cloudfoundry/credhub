@@ -230,7 +230,7 @@ public class SecretDataServiceTest {
         NamedPasswordSecret secret2 = saveNamedPassword(40000000L, "secret1");
         saveNamedPassword(30000000L, "Secret2");
 
-        List<NamedPasswordSecret> secrets = subject.findAllByName("secret1");
+        List<NamedSecret> secrets = subject.findAllByName("secret1");
         assertThat(secrets, containsInAnyOrder(hasProperty("id", equalTo(secret1.getId())), hasProperty("id", equalTo(secret2.getId()))));
       });
     });
