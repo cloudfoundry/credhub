@@ -7,12 +7,14 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
+import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
@@ -21,6 +23,7 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -73,6 +76,11 @@ public class CaControllerTest {
 
   @Mock
   CAGeneratorRequestTranslator caGeneratorRequestTranslator;
+
+  @Spy
+  @Autowired
+  @InjectMocks
+  AuditLogService auditLogService;
 
   private MockMvc mockMvc;
   private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
@@ -210,6 +218,30 @@ public class CaControllerTest {
 
       String expectedJson = "{" + getUpdatedAtJson() + ",\"type\":\"root\",\"value\":{\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"},\"id\":\"my-uuid\"}";
       mockMvc.perform(get(urlPath))
+          .andExpect(status().isOk())
+          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(content().json(expectedJson, true));
+    });
+
+    it("fetch a root ca by id", () -> {
+      String uuid = "a fake uuid";
+      when(mockCA.getType()).thenReturn("root");
+      when(mockCA.getCertificate()).thenReturn("my-certificate");
+      when(mockCA.getPrivateKey()).thenReturn("my-priv");
+      when(mockCA.getUpdatedAt()).thenReturn(frozenTime);
+      when(mockCA.getUuid()).thenReturn(uuid);
+      when(namedCertificateAuthorityDataService.findOneByUuid(uuid)).thenReturn(mockCA);
+
+      String expectedJson = "{" +
+          getUpdatedAtJson() +
+          ",\"type\":\"root\",\"value\":{\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"},\"id\":\"" +
+          uuid +
+          "\"}";
+
+      final MockHttpServletRequestBuilder get = get("/api/v1/ca?id=" + uuid)
+          .accept(APPLICATION_JSON);
+
+      mockMvc.perform(get)
           .andExpect(status().isOk())
           .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(content().json(expectedJson, true));

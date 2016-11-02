@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,6 +33,10 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Map;
+import java.util.function.Function;
+
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -103,21 +108,48 @@ public class CaController {
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.GET)
-  ResponseEntity get(HttpServletRequest request, Authentication authentication) throws Exception {
-    return auditLogService.performWithAuditing("ca_access", new AuditRecordParameters(request, authentication), () -> {
-      NamedCertificateAuthority namedAuthority = namedCertificateAuthorityDataService.find(caPath(request));
+  public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
+    return retrieveAuthorityWithAuditing(
+        caPath(request),
+        namedCertificateAuthorityDataService::find,
+        request,
+        authentication);
+  }
 
-      if (namedAuthority == null) {
-        return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
-      }
-      return new ResponseEntity<>(CertificateAuthority.fromEntity(namedAuthority), HttpStatus.OK);
-    });
+  @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
+  public ResponseEntity getById(
+      @RequestParam Map<String, String> params,
+      HttpServletRequest request,
+      Authentication authentication) throws Exception {
+    return retrieveAuthorityWithAuditing(
+        params.get("id"),
+        namedCertificateAuthorityDataService::findOneByUuid,
+        request,
+        authentication);
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleHttpMessageNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
+  }
+
+  private ResponseEntity retrieveAuthorityWithAuditing(
+      String identifier,
+      Function<String, NamedCertificateAuthority> finder,
+      HttpServletRequest request,
+      Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing(
+        AUTHORITY_ACCESS,
+        new AuditRecordParameters(request, authentication),
+        () -> {
+          NamedCertificateAuthority namedAuthority = finder.apply(identifier);
+
+          if (namedAuthority == null) {
+            return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
+          }
+          return new ResponseEntity<>(CertificateAuthority.fromEntity(namedAuthority), HttpStatus.OK);
+        });
   }
 
   private String caPath(HttpServletRequest request) {

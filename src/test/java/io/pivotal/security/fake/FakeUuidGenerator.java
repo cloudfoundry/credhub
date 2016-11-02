@@ -2,7 +2,6 @@ package io.pivotal.security.fake;
 
 import io.pivotal.security.util.UuidGenerator;
 import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
@@ -13,7 +12,6 @@ import java.util.UUID;
 
 @Component
 @Primary
-@Profile("FakeUuidGenerator")
 public class FakeUuidGenerator implements UuidGenerator {
 
   private static final List<UUID> uuids = new ArrayList<>();

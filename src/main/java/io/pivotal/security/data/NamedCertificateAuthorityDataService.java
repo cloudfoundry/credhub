@@ -17,4 +17,8 @@ public class NamedCertificateAuthorityDataService {
   public NamedCertificateAuthority find(String name) {
     return certificateAuthorityRepository.findOneByNameIgnoreCase(name);
   }
+
+  public NamedCertificateAuthority findOneByUuid(String uuid) {
+    return certificateAuthorityRepository.findOneByUuid(uuid);
+  }
 }

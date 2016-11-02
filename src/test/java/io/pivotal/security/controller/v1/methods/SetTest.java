@@ -56,7 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "FakeUuidGenerator"})
+@ActiveProfiles("unit-test")
 public class SetTest {
 
   @Autowired

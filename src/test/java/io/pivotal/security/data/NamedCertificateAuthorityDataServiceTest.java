@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fdescribe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -33,7 +32,7 @@ import static org.junit.Assert.assertNull;
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "FakeUuidGenerator"})
+@ActiveProfiles("unit-test")
 public class NamedCertificateAuthorityDataServiceTest {
   @Autowired
   NamedCertificateAuthorityDataService subject;
@@ -205,6 +204,19 @@ public class NamedCertificateAuthorityDataServiceTest {
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
         });
+      });
+    });
+
+    describe("#findOneByUuid", () -> {
+      it("should be able to find a CA by uuid", () -> {
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert", "my-priv");
+        NamedCertificateAuthority savedSecret = subject.save(certificateAuthority);
+
+        assertNotNull(savedSecret.getUuid());
+        NamedCertificateAuthority oneByUuid = subject.findOneByUuid(savedSecret.getUuid());
+        assertThat(oneByUuid.getName(), equalTo("my-ca"));
+        assertThat(oneByUuid.getCertificate(), equalTo("my-cert"));
+        assertThat(oneByUuid.getPrivateKey(), equalTo("my-priv"));
       });
     });
   }
