@@ -36,8 +36,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
+import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -47,10 +50,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -116,36 +117,62 @@ public class SecretsController {
     });
   }
 
-  @RequestMapping(path = "/**", method = RequestMethod.GET)
-  public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(secretPath(request), secretDataService::findMostRecentAsList, request, authentication, (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0)));
-  }
-
   @RequestMapping(path = "", method = RequestMethod.GET)
-  public ResponseEntity getByName(@RequestParam(value="name") String secretName,
-                                  @RequestParam(value="current", required = false, defaultValue = "false") boolean current,
-                                  HttpServletRequest request,
-                                  Authentication authentication) throws Exception {
-    Function<String, List<NamedSecret>> lookupFunction = current ? secretDataService::findMostRecentAsList : secretDataService::findAllByName;
-    return retrieveSecretWithAuditing(secretName, lookupFunction, request, authentication, (namedSecret) -> DataResponse.fromEntity(namedSecret));
+  public ResponseEntity getSecret(
+      @RequestParam(value = "name", required = false) String secretName,
+      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
+      @RequestParam(value = "id", required = false) String id,
+      HttpServletRequest request,
+      Authentication authentication) throws Exception {
+
+    String secretIdentifier = id != null ? id : secretName;
+
+    return retrieveSecretWithAuditing(
+        secretIdentifier,
+        selectLookupFunction(current, id),
+        request,
+        authentication,
+        selectPresenterFunction(id)
+    );
   }
 
-  @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
-  public ResponseEntity getById(@RequestParam Map<String, String> params, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(params.get("id"), secretDataService::findByUuidAsList, request, authentication, (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0)));
+  private Function<List<NamedSecret>, Object> selectPresenterFunction(String id) {
+    if (id != null) {
+      return (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0));
+    } else {
+      return (namedSecret) -> DataResponse.fromEntity(namedSecret);
+    }
+  }
+
+  private Function<String, List<NamedSecret>> selectLookupFunction(boolean current, String id) {
+    if (id != null) {
+      return secretDataService::findByUuidAsList;
+    } else {
+      if (current) {
+        return secretDataService::findMostRecentAsList;
+      } else {
+        return secretDataService::findAllByName;
+      }
+    }
+  }
+
+  @RequestMapping(path = "/**", method = RequestMethod.GET)
+  public ResponseEntity getGetSecretByPath(HttpServletRequest request, Authentication authentication) throws Exception {
+    return retrieveSecretWithAuditing(secretPath(request), secretDataService::findMostRecentAsList, request, authentication, (namedSecrets) -> Secret
+        .fromEntity(namedSecrets.get(0)));
   }
 
   private ResponseEntity retrieveSecretWithAuditing(String identifier,
                                                     Function<String, List<NamedSecret>> finder,
                                                     HttpServletRequest request,
                                                     Authentication authentication,
-                                                    Function<List<NamedSecret>, Object> presenter) throws Exception {
+                                                    Function<List<NamedSecret>, Object> secretPresenter) throws Exception {
     return audit(CREDENTIAL_ACCESS, request, authentication, () -> {
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       } else {
-        return new ResponseEntity<>(presenter.apply(namedSecrets), HttpStatus.OK);
+        return new ResponseEntity<>(secretPresenter.apply(namedSecrets), HttpStatus.OK);
       }
     });
   }
@@ -171,7 +198,8 @@ public class SecretsController {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
   }
 
-  private ResponseEntity findWithAuditing(String nameSubstring, Function<String, List<NamedSecret>> finder, HttpServletRequest request, Authentication authentication) throws Exception {
+  private ResponseEntity findWithAuditing(String nameSubstring, Function<String, List<NamedSecret>> finder, HttpServletRequest request, Authentication
+      authentication) throws Exception {
     return audit(CREDENTIAL_FIND, request, authentication, () -> {
       List<NamedSecret> namedSecrets = finder.apply(nameSubstring);
       return new ResponseEntity<>(FindCredentialResults.fromEntity(namedSecrets), HttpStatus.OK);
@@ -185,7 +213,8 @@ public class SecretsController {
     });
   }
 
-  private ResponseEntity<?> auditedStoreSecret(InputStream requestBody, HttpServletRequest request, Authentication authentication, SecretKindMappingFactory handler) throws Exception {
+  private ResponseEntity<?> auditedStoreSecret(InputStream requestBody, HttpServletRequest request, Authentication authentication, SecretKindMappingFactory
+      handler) throws Exception {
     final DocumentContext parsed = jsonPath.parse(requestBody);
 
     String secretPath = secretPath(request);
@@ -242,7 +271,8 @@ public class SecretsController {
     }
   }
 
-  private ResponseEntity audit(String operationCode, HttpServletRequest request, Authentication authentication, Supplier<ResponseEntity<?>> action) throws Exception {
+  private ResponseEntity audit(String operationCode, HttpServletRequest request, Authentication authentication, Supplier<ResponseEntity<?>> action) throws
+      Exception {
     return auditLogService.performWithAuditing(operationCode, new AuditRecordParameters(request, authentication), action);
   }
 
