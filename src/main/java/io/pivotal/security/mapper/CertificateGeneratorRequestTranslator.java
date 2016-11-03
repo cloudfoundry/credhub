@@ -6,6 +6,7 @@ import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.of;
 import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Component
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {
@@ -29,6 +31,9 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
 
     if (Boolean.TRUE.equals(regenerate)) {
+      if (isEmpty(entity.getCaName())) {
+        throw new ParameterizedValidationException("error.cannot_regenerated_non_generated_credentials");
+      }
       return new CertificateSecretParameters(entity.getCertificate())
           .setCaName(entity.getCaName())
           .setDurationDays(entity.getDurationDays())

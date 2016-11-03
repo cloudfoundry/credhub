@@ -5,11 +5,13 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakePasswordGenerator;
 import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.view.CertificateSecret;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -158,19 +160,17 @@ public class SecretsControllerRegenerateTest {
       });
     });
 
-    describe("should return an error when attempting to regenerate a non-regenerated",() -> {
-      it("password", () -> {
-        String cannotRegenerateJson = "{\"error\": \"The credential could not be regenerated because the value was statically set. Only generated credentials may be regenerated.\"}";
+    it("should return an error when attempting to regenerate a non-regenerated password", () -> {
+      String cannotRegenerateJson = "{\"error\": \"The credential could not be regenerated because the value was statically set. Only generated credentials may be regenerated.\"}";
 
-        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "abcde");
-        doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
+      NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "abcde");
+      doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
-        mockMvc.perform(post("/api/v1/data/my-password")
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .content("{\"regenerate\":true}"))
-                .andExpect(content().json(cannotRegenerateJson));
-      });
+      mockMvc.perform(post("/api/v1/data/my-password")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"regenerate\":true}"))
+              .andExpect(content().json(cannotRegenerateJson));
     });
   }
 

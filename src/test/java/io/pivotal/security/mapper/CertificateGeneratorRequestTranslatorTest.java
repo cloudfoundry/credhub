@@ -34,6 +34,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.not;
@@ -363,6 +364,12 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       assertNull(namedCertificateSecret.getAlternativeNames());
     });
+
+
+    itThrowsWithMessage("regeneration is not allowed if caName is not present", ParameterizedValidationException.class, "error.cannot_regenerated_non_generated_credentials", () -> {
+      subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), new NamedCertificateSecret("foo", "", "", ""));
+    });
+
   }
 
   private NamedCertificateAuthority setupCa() throws Exception {
