@@ -130,5 +130,11 @@ public class PasswordGeneratorRequestTranslatorTest {
 
       assertThat(secret.getValue(), equalTo("my-password"));
     });
+
+    itThrowsWithMessage("rejects generation unless generation parameters are present in the existing entity", ParameterizedValidationException.class, "error.cannot_regenerated_non_generated_credentials", () -> {
+      NamedPasswordSecret secretWithoutGenerationParameters = new NamedPasswordSecret("test", "old-passwword");
+
+      subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), secretWithoutGenerationParameters);
+    });
   }
 }

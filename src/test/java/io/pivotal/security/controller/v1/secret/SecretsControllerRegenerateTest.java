@@ -4,7 +4,6 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakePasswordGenerator;
@@ -30,9 +29,7 @@ import java.time.Instant;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -40,15 +37,10 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -158,11 +150,26 @@ public class SecretsControllerRegenerateTest {
       it("returns an error", () -> {
         String notFoundJson = "{\"error\": \"Credential not found. Please validate your input and retry your request.\"}";
 
-        response = mockMvc.perform(post("/api/v1/data/my-password")
+        mockMvc.perform(post("/api/v1/data/my-password")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{\"regenerate\":true}"))
             .andExpect(content().json(notFoundJson));
+      });
+    });
+
+    describe("should return an error when attempting to regenerate a non-regenerated",() -> {
+      it("password", () -> {
+        String cannotRegenerateJson = "{\"error\": \"The credential could not be regenerated because the value was statically set. Only generated credentials may be regenerated.\"}";
+
+        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "abcde");
+        doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
+
+        mockMvc.perform(post("/api/v1/data/my-password")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{\"regenerate\":true}"))
+                .andExpect(content().json(cannotRegenerateJson));
       });
     });
   }

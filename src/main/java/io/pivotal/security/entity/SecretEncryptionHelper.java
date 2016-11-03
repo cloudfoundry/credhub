@@ -57,7 +57,9 @@ class SecretEncryptionHelper {
     String password = retrieveClearTextValue(namedPasswordSecret);
     Assert.notNull(password, "Password length generation parameter cannot be restored without an existing password");
     String json = retrieveClearTextValue(new ParametersAdapter(namedPasswordSecret));
-    if (json == null) {return null;}
+    if (json == null) {
+      return null;
+    }
     try {
       return objectMapper.readValue(json, PasswordGenerationParameters.class).setLength(password.length());
     } catch (IOException e) {
