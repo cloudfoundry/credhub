@@ -6,6 +6,7 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.runner.RunWith;
@@ -17,6 +18,10 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
@@ -33,10 +38,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -102,6 +103,19 @@ public class SecretDataServiceTest {
         NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
         assertThat(passwordSecret.getName(), equalTo("my-secret-2"));
         assertThat(passwordSecret.getValue(), equalTo("irynas-ninja-skills"));
+      });
+
+      it("should generate a uuid when creating", () -> {
+        NamedSecret secret = new NamedSshSecret("my-secret-2").setPublicKey("fake-public-key");
+        NamedSshSecret savedSecret = (NamedSshSecret) subject.save(secret);
+
+        UUID generatedUuid = savedSecret.getUuid();
+        assertNotNull(generatedUuid);
+
+        savedSecret.setPublicKey("updated-fake-public-key");
+        savedSecret = (NamedSshSecret) subject.save(savedSecret);
+
+        assertThat(savedSecret.getUuid(), equalTo(generatedUuid));
       });
     });
 

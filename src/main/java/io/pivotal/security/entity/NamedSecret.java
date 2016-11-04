@@ -1,6 +1,7 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.view.SecretKind;
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -11,10 +12,10 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -38,6 +39,8 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   // https://github.com/h2database/h2database/issues/345
   @Id
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
   @Column(unique = true, nullable = false)
@@ -108,11 +111,6 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   public abstract SecretKind getKind();
 
   public abstract String getSecretType();
-
-  @PrePersist
-  public void updateUuidOnPersist() {
-    this.uuid = UuidGeneratorProvider.getInstance().makeUuid();
-  }
 
   public static Stream<String> fullHierarchyForPath(String path) {
     String[] components = path.split("/");

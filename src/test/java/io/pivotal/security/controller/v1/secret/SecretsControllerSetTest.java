@@ -4,8 +4,8 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import org.junit.runner.RunWith;
@@ -33,8 +33,10 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -81,9 +83,6 @@ public class SecretsControllerSetTest {
   @Autowired
   SecretDataService secretDataService;
 
-  @Autowired
-  FakeUuidGenerator fakeUuidGenerator;
-
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -93,6 +92,8 @@ public class SecretsControllerSetTest {
   private final String secretName = "my-namespace/subTree/secret-name";
 
   private ResultActions response;
+
+  private UUID uuid;
 
   final String secretValue = "secret-value";
   private NamedValueSecret valueSecret;
@@ -112,7 +113,8 @@ public class SecretsControllerSetTest {
 
     describe("setting a secret", () -> {
       beforeEach(() -> {
-        valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(fakeUuidGenerator.makeUuid()).setUpdatedAt(frozenTime);
+        uuid = UUID.randomUUID();
+        valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(uuid).setUpdatedAt(frozenTime);
 
         doReturn(
             valueSecret
@@ -192,7 +194,6 @@ public class SecretsControllerSetTest {
 
       describe("with the overwrite flag set to true case-insensitively", () -> {
         final String specialValue = "special value";
-        final Spectrum.Value<String> oldUuid = Spectrum.value();
 
         beforeEach(() -> {
           fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
@@ -206,21 +207,31 @@ public class SecretsControllerSetTest {
                   "  \"overwrite\":true" +
                   "}");
 
-          oldUuid.value = fakeUuidGenerator.getLastUuid();
-
           response = mockMvc.perform(put);
         });
 
         it("should return the updated value", () -> {
+          ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
+
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+          // Because the data service mutates the original entity, the UUID should be set
+          // on the original object during the save.
+          UUID originalUuid = uuid;
+          UUID expectedUuid = argumentCaptor.getValue().getUuid();
+
           response
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value(specialValue))
-              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.id").value(expectedUuid.toString()))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
+
+          assertNotNull(expectedUuid);
+          assertThat(expectedUuid, not(equalTo(originalUuid)));
         });
 
         it("should retain the previous value at the previous id", () -> {
-          mockMvc.perform(get("/api/v1/data?id=" + oldUuid.value))
+          mockMvc.perform(get("/api/v1/data?id=" + uuid.toString()))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value("original value"))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
@@ -263,7 +274,7 @@ public class SecretsControllerSetTest {
           .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
           .andExpect(jsonPath("$.type").value("value"))
           .andExpect(jsonPath("$.value").value(secretValue))
-          .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+          .andExpect(jsonPath("$.id").value(uuid.toString()))
           .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
     });
 
@@ -282,7 +293,7 @@ public class SecretsControllerSetTest {
 
     it("returns 400 when the handler raises an exception", () -> {
       doReturn(
-          new NamedValueSecret(secretName, secretValue).setUuid(fakeUuidGenerator.makeUuid()).setUpdatedAt(frozenTime)
+          new NamedValueSecret(secretName, secretValue)
       ).when(secretDataService).findMostRecent(secretName);
 
       final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
@@ -342,7 +353,7 @@ public class SecretsControllerSetTest {
   }
 
   private void putSecretInDatabase(String name, String value) throws Exception {
-    UUID uuid = fakeUuidGenerator.makeUuid();
+    uuid = UUID.randomUUID();
     NamedValueSecret valueSecret = new NamedValueSecret(name, value).setUuid(uuid).setUpdatedAt(frozenTime);
     doReturn(
         valueSecret

@@ -3,10 +3,8 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import org.junit.runner.RunWith;
@@ -70,9 +68,6 @@ public class SecretsControllerFindTest {
   @Spy
   @Autowired
   SecretDataService secretDataService;
-
-  @Autowired
-  FakeUuidGenerator fakeUuidGenerator;
 
   private MockMvc mockMvc;
 

@@ -5,13 +5,10 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakePasswordGenerator;
-import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
-import io.pivotal.security.view.CertificateSecret;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -28,10 +25,13 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -39,10 +39,15 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -76,9 +81,6 @@ public class SecretsControllerRegenerateTest {
   SecretDataService secretDataService;
 
   @Autowired
-  FakeUuidGenerator fakeUuidGenerator;
-
-  @Autowired
   FakePasswordGenerator fakePasswordGenerator;
 
   private MockMvc mockMvc;
@@ -88,6 +90,8 @@ public class SecretsControllerRegenerateTest {
   private final Consumer<Long> fakeTimeSetter;
 
   private ResultActions response;
+
+  private UUID uuid;
 
   {
     wireAndUnwire(this);
@@ -112,7 +116,8 @@ public class SecretsControllerRegenerateTest {
 
         doAnswer(invocation -> {
           NamedPasswordSecret newSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
-          newSecret.setUuid(fakeUuidGenerator.makeUuid());
+          uuid = UUID.randomUUID();
+          newSecret.setUuid(uuid);
           newSecret.setUpdatedAt(frozenTime.plusSeconds(10));
           return newSecret;
         }).when(secretDataService).save(any(NamedPasswordSecret.class));
@@ -131,7 +136,7 @@ public class SecretsControllerRegenerateTest {
         response.andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.type").value("password"))
-            .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+            .andExpect(jsonPath("$.id").value(uuid.toString()))
             .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
 
         ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);

@@ -8,7 +8,6 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.fake.FakePasswordGenerator;
-import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import org.junit.runner.RunWith;
@@ -26,6 +25,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -47,10 +51,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -80,9 +80,6 @@ public class SecretsControllerGenerateTest {
   SecretDataService secretDataService;
 
   @Autowired
-  FakeUuidGenerator fakeUuidGenerator;
-
-  @Autowired
   FakePasswordGenerator fakePasswordGenerator;
 
   private MockMvc mockMvc;
@@ -94,6 +91,7 @@ public class SecretsControllerGenerateTest {
   private final String secretName = "my-namespace/subTree/secret-name";
 
   private ResultActions response;
+  private UUID uuid;
 
   {
     wireAndUnwire(this);
@@ -109,6 +107,17 @@ public class SecretsControllerGenerateTest {
     });
 
     describe("generating a secret", () -> {
+      beforeEach(() -> {
+        uuid = UUID.randomUUID();
+
+        doAnswer(invocation -> {
+          NamedSecret secret = invocation.getArgumentAt(0, NamedSecret.class);
+          secret.setUuid(uuid);
+          secret.setUpdatedAt(frozenTime);
+          return secret;
+        }).when(secretDataService).save(any(NamedSecret.class));
+      });
+
       it("for a new value secret should return an error message", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
             .accept(APPLICATION_JSON)
@@ -141,7 +150,7 @@ public class SecretsControllerGenerateTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("password"))
               .andExpect(jsonPath("$.value").value(fakePasswordGenerator.getFakePassword()))
-              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
         });
 
@@ -181,7 +190,7 @@ public class SecretsControllerGenerateTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("password"))
               .andExpect(jsonPath("$.value").value(fakePasswordGenerator.getFakePassword()))
-              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
         });
 
@@ -202,9 +211,10 @@ public class SecretsControllerGenerateTest {
 
       describe("with an existing secret", () -> {
         beforeEach(() -> {
+          uuid = UUID.randomUUID();
           final NamedPasswordSecret expectedSecret = new NamedPasswordSecret(secretName, fakePasswordGenerator.getFakePassword());
           doReturn(expectedSecret
-              .setUuid(fakeUuidGenerator.makeUuid())
+              .setUuid(uuid)
               .setUpdatedAt(frozenTime))
               .when(secretDataService).findMostRecent(secretName);
           resetAuditLogMock();
@@ -228,7 +238,7 @@ public class SecretsControllerGenerateTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePasswordGenerator.getFakePassword()))
-                .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+                .andExpect(jsonPath("$.id").value(uuid.toString()))
                 .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
           });
 
@@ -261,7 +271,7 @@ public class SecretsControllerGenerateTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePasswordGenerator.getFakePassword()))
-                .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+                .andExpect(jsonPath("$.id").value(uuid.toString()))
                 .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
           });
 

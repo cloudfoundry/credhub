@@ -5,7 +5,6 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.fake.FakeUuidGenerator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import org.junit.runner.RunWith;
@@ -71,9 +70,6 @@ public class SecretsControllerGetTest {
   @Autowired
   SecretDataService secretDataService;
 
-  @Autowired
-  FakeUuidGenerator fakeUuidGenerator;
-
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -100,7 +96,7 @@ public class SecretsControllerGetTest {
       final String secretValue = "my value";
 
       beforeEach(() -> {
-        uuid = fakeUuidGenerator.makeUuid();
+        uuid = UUID.randomUUID();
         NamedValueSecret valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(uuid).setUpdatedAt(frozenTime);
         NamedValueSecret valueSecret2 = new NamedValueSecret(secretName, secretValue).setUuid(uuid).setUpdatedAt(frozenTime);
         doReturn(
@@ -162,7 +158,7 @@ public class SecretsControllerGetTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("value"))
               .andExpect(jsonPath("$.value").value(secretValue))
-              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
         });
 
@@ -187,7 +183,7 @@ public class SecretsControllerGetTest {
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath(jsonPathPrefix + ".type").value("value"))
             .andExpect(jsonPath(jsonPathPrefix + ".value").value(secretValue))
-            .andExpect(jsonPath(jsonPathPrefix + ".id").value(fakeUuidGenerator.getLastUuid()))
+            .andExpect(jsonPath(jsonPathPrefix + ".id").value(uuid.toString()))
             .andExpect(jsonPath(jsonPathPrefix + ".updated_at").value(frozenTime.toString()));
       });
 
