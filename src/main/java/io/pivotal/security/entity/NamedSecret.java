@@ -11,7 +11,6 @@ import javax.persistence.DiscriminatorColumn;
 import javax.persistence.DiscriminatorType;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
@@ -33,10 +32,13 @@ import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedValueContainer {
+  // Use VARBINARY to make all 3 DB types happy.
+  // H2 doesn't distinguish between "binary" and "varbinary" - see
+  // https://hibernate.atlassian.net/browse/HHH-9835 and
+  // https://github.com/h2database/h2database/issues/345
   @Id
-  @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
-  private long id;
-
+  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  private UUID uuid;
 
   @Column(unique = true, nullable = false)
   private String name;
@@ -53,13 +55,6 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @LastModifiedDate
   private Instant updatedAt;
 
-  // Use VARBINARY to make all 3 DB types happy.
-  // H2 doesn't distinguish between "binary" and "varbinary" - see
-  // https://hibernate.atlassian.net/browse/HHH-9835 and
-  // https://github.com/h2database/h2database/issues/345
-  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
-  private UUID uuid;
-
   public NamedSecret() {
     this(null);
   }
@@ -68,12 +63,13 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     setName(name);
   }
 
-  public long getId() {
-    return id;
+  public UUID getUuid() {
+    return uuid;
   }
 
-  public void setId(long id) {
-    this.id = id;
+  public Z setUuid(UUID uuid) {
+    this.uuid = uuid;
+    return (Z) this;
   }
 
   public String getName() {
@@ -112,15 +108,6 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   public abstract SecretKind getKind();
 
   public abstract String getSecretType();
-
-  public UUID getUuid() {
-    return uuid;
-  }
-
-  public Z setUuid(UUID uuid) {
-    this.uuid = uuid;
-    return (Z) this;
-  }
 
   @PrePersist
   public void updateUuidOnPersist() {

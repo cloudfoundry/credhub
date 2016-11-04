@@ -15,6 +15,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 
@@ -56,6 +58,7 @@ public class MigrationsTest {
 
   private void storeValueSecret(String secretName) {
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
+    String uuid = UUID.randomUUID().toString().replace("-", "");
 
     paramSource.addValue("id", id++);
     paramSource.addValue("type", "value");
@@ -63,7 +66,7 @@ public class MigrationsTest {
     paramSource.addValue("name", secretName);
     paramSource.addValue("nonce", new byte[16]);
     paramSource.addValue("updated_at", 0);
-    paramSource.addValue("uuid", "00000000-0000-0000-0000-000000000001");
+    paramSource.addValue("uuid", uuid);
 
     boolean isPostgres = environment.acceptsProfiles("unit-test-postgres");
     String sql = "INSERT INTO named_secret(" +

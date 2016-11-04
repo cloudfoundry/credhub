@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -32,11 +33,15 @@ public class StringSecretTest {
 
   private NamedValueSecret entity;
 
+  private UUID uuid;
+
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      entity = new NamedValueSecret("foo");
+      uuid = UUID.randomUUID();
+      entity = new NamedValueSecret("foo")
+        .setUuid(uuid);
     });
 
     it("can create view from entity", () -> {
@@ -45,7 +50,7 @@ public class StringSecretTest {
       assertThat(json(actual), equalTo("{" +
           "\"type\":\"value\"," +
           "\"updated_at\":null," +
-          "\"id\":null," +
+          "\"id\":\"" + uuid.toString() + "\"," +
           "\"value\":\"my-value\"" +
           "}"));
     });

@@ -14,6 +14,7 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -41,19 +42,31 @@ public class SshSecretTest {
 
   private String secretName;
 
+  private UUID uuid;
+
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
       secretName = "foo";
+      uuid = UUID.randomUUID();
       entity = new NamedSshSecret(secretName)
           .setPublicKey("my-public-key")
           .setPrivateKey("my-private-key");
+      entity.setUuid(uuid);
     });
 
     it("creates a view from entity", () -> {
       final Secret subject = SshSecret.fromEntity(entity);
-      jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"ssh\",\"updated_at\":null,\"value\":{\"public_key\":\"my-public-key\",\"private_key\":\"my-private-key\"}}", json(subject), true);
+      jsonExpectationsHelper.assertJsonEqual("{" +
+          "\"id\":\"" + uuid.toString() + "\"," +
+          "\"type\":\"ssh\"," +
+          "\"updated_at\":null," +
+          "\"value\":{" +
+            "\"public_key\":\"my-public-key\"," +
+            "\"private_key\":\"my-private-key\"" +
+          "}" +
+        "}", json(subject), true);
     });
 
     it("sets updated-at time on generated view", () -> {

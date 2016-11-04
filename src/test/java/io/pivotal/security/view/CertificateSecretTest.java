@@ -14,6 +14,7 @@ import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -41,20 +42,24 @@ public class CertificateSecretTest {
 
   private String secretName;
 
+  private UUID uuid;
+
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
       secretName = "foo";
+      uuid = UUID.randomUUID();
       entity = new NamedCertificateSecret(secretName)
           .setCa("ca")
           .setCertificate("cert")
-          .setPrivateKey("priv");
+          .setPrivateKey("priv")
+          .setUuid(uuid);
     });
 
     it("creates a view from entity", () -> {
       final Secret subject = CertificateSecret.fromEntity(entity);
-      jsonExpectationsHelper.assertJsonEqual("{\"id\":null,\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(subject), true);
+      jsonExpectationsHelper.assertJsonEqual("{\"id\":\"" + uuid.toString() + "\",\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(subject), true);
     });
 
     it("sets updated-at time on generated view", () -> {
@@ -71,8 +76,17 @@ public class CertificateSecretTest {
     });
 
     it("includes keys with null values", () -> {
-      final Secret subject = CertificateSecret.fromEntity(new NamedCertificateSecret(secretName));
-      assertThat(serializingObjectMapper.writeValueAsString(subject), equalTo("{\"type\":\"certificate\",\"updated_at\":null,\"id\":null,\"value\":{\"ca\":null,\"certificate\":null,\"private_key\":null}}"));
+      final Secret subject = CertificateSecret.fromEntity(new NamedCertificateSecret(secretName).setUuid(uuid));
+      assertThat(serializingObjectMapper.writeValueAsString(subject), equalTo("{" +
+          "\"type\":\"certificate\"," +
+          "\"updated_at\":null," +
+          "\"id\":\"" + uuid.toString() + "\"," +
+          "\"value\":{" +
+            "\"ca\":null," +
+            "\"certificate\":null," +
+            "\"private_key\":null" +
+          "}" +
+        "}"));
     });
   }
 }
