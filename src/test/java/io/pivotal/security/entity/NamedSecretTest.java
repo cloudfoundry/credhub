@@ -11,14 +11,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.util.StringUtils;
 
-import java.util.function.Consumer;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
+import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+
+import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -34,6 +36,9 @@ public class NamedSecretTest {
 
   {
     wireAndUnwire(this);
+    cleanUpBeforeTests(this);
+    cleanUpAfterTests(this);
+
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {

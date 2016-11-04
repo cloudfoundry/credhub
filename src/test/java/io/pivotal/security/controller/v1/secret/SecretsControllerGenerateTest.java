@@ -30,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -96,6 +97,8 @@ public class SecretsControllerGenerateTest {
 
   {
     wireAndUnwire(this);
+    cleanUpAfterTests(this);
+
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {

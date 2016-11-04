@@ -16,6 +16,12 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -25,12 +31,6 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 public class SpectrumHelper {
@@ -61,20 +61,36 @@ public class SpectrumHelper {
     });
   }
 
-  public static void wireAndUnwire(final Object testInstance) {
-    Supplier<MyTestContextManager> myTestContextManagerSupplier = Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
-    beforeEach(injectMocksAndBeans(testInstance, myTestContextManagerSupplier));
-    afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
-    afterEach(() -> {
-      //TODO: remove this in favor of transactional tests (requires nested transactions)
+  public static void cleanUpBeforeTests(final Object testInstance) {
+    Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
+    beforeEach(() -> {
       Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
       flyway.clean();
       flyway.migrate();
     });
+  }
+
+  public static void cleanUpAfterTests(final Object testInstance) {
+    Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
+    afterEach(() -> {
+      Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
+      flyway.clean();
+      flyway.migrate();
+    });
+  }
+
+  public static void wireAndUnwire(final Object testInstance) {
+    Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
+    beforeEach(injectMocksAndBeans(testInstance, myTestContextManagerSupplier));
+    afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
     afterEach(() -> {
       DataSource dataSource = myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class);
       dataSource.purge();
     });
+  }
+
+  public static Supplier<MyTestContextManager> getTestContextManagerSupplier(Object testInstance) {
+    return Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
   }
 
   public static String json(Object o) throws IOException {

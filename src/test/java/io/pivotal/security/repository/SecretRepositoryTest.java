@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -36,6 +37,8 @@ public class SecretRepositoryTest {
 
   {
     wireAndUnwire(this);
+    cleanUpAfterTests(this);
+
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
