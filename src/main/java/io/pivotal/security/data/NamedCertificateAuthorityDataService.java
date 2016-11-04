@@ -5,13 +5,16 @@ import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 public class NamedCertificateAuthorityDataService {
   @Autowired
   NamedCertificateAuthorityRepository certificateAuthorityRepository;
 
   public NamedCertificateAuthority save(NamedCertificateAuthority certificateAuthority) {
-    return certificateAuthorityRepository.save(certificateAuthority);
+    NamedCertificateAuthority save = certificateAuthorityRepository.save(certificateAuthority);
+    return save;
   }
 
   public NamedCertificateAuthority find(String name) {
@@ -19,6 +22,6 @@ public class NamedCertificateAuthorityDataService {
   }
 
   public NamedCertificateAuthority findOneByUuid(String uuid) {
-    return certificateAuthorityRepository.findOneByUuid(uuid);
+    return certificateAuthorityRepository.findOneByUuid(UUID.fromString(uuid));
   }
 }

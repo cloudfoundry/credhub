@@ -1,22 +1,33 @@
 package io.pivotal.security.entity;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "NamedCertificateAuthority")
 @EntityListeners(AuditingEntityListener.class)
 public class NamedCertificateAuthority implements EncryptedValueContainer {
   @Id
-  @GeneratedValue(strategy = GenerationType.AUTO)
-  private long id;
+  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
+  private UUID uuid;
 
   @Column(unique = true, nullable = false)
   private String name;
@@ -39,9 +50,6 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @LastModifiedDate
   private Instant updatedAt;
 
-  @Column
-  private String uuid;
-
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
   }
@@ -50,14 +58,12 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     this.name = name;
   }
 
-  @SuppressWarnings("unused")
-  public long getId() {
-    return id;
+  public UUID getUuid() {
+    return uuid;
   }
 
-  @SuppressWarnings("unused")
-  public NamedCertificateAuthority setId(long id) {
-    this.id = id;
+  public NamedCertificateAuthority setUuid(UUID uuid) {
+    this.uuid = uuid;
     return this;
   }
 
@@ -120,20 +126,5 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
 
   public void setEncryptedValue(byte[] encryptedValue) {
     this.encryptedValue = encryptedValue;
-  }
-
-  public String getUuid() {
-    return uuid;
-  }
-
-  public NamedCertificateAuthority setUuid(String uuid) {
-    this.uuid = uuid;
-    return this;
-  }
-
-  @PrePersist
-  @PreUpdate
-  public void updateUuidOnPersist() {
-    this.uuid = UuidGeneratorProvider.getInstance().makeUuid().toString();
   }
 }

@@ -4,7 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.fake.FakeUuidGenerator;
+import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +15,7 @@ import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -44,7 +45,7 @@ public class NamedCertificateAuthorityDataServiceTest {
   EncryptionService encryptionService;
 
   @Autowired
-  FakeUuidGenerator fakeUuidGenerator;
+  NamedCertificateAuthorityRepository namedCertificateAuthorityRepository;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
   private Consumer<Long> fakeTimeSetter;
@@ -71,15 +72,12 @@ public class NamedCertificateAuthorityDataServiceTest {
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
 
-          ca.setId(rs.getLong("id"));
-
           ca.setCertificate(rs.getString("certificate"));
           ca.setEncryptedValue(rs.getBytes("encrypted_value"));
           ca.setName(rs.getString("name"));
           ca.setNonce(rs.getBytes("nonce"));
           ca.setType(rs.getString("type"));
           ca.setUpdatedAt(Instant.ofEpochSecond(rs.getLong("updated_at")));
-          ca.setUuid(fakeUuidGenerator.getLastUuid());
 
           return ca;
         });
@@ -89,7 +87,6 @@ public class NamedCertificateAuthorityDataServiceTest {
         NamedCertificateAuthority actual = certificateAuthorities.get(0);
         NamedCertificateAuthority expected = certificateAuthority;
 
-        assertThat(actual.getId(), equalTo(expected.getId()));
         assertThat(actual.getCertificate(), equalTo(expected.getCertificate()));
         assertThat(actual.getEncryptedValue(), equalTo(expected.getEncryptedValue()));
         assertThat(actual.getName(), equalTo(expected.getName()));
@@ -97,7 +94,13 @@ public class NamedCertificateAuthorityDataServiceTest {
         assertThat(actual.getType(), equalTo(expected.getType()));
         assertThat(actual.getUpdatedAt(), equalTo(expected.getUpdatedAt()));
         assertThat(actual.getUpdatedAt(), equalTo(frozenTime));
-        assertThat(actual.getUuid(), equalTo(expected.getUuid()));
+
+        // The Java UUID class doesn't let us convert to UUID type 4... so
+        // we must rely on Hibernate to do that for us.
+        certificateAuthorities = namedCertificateAuthorityRepository.findAll();
+        UUID actualUuid = certificateAuthorities.get(0).getUuid();
+        assertNotNull(actualUuid);
+        assertThat(actualUuid, equalTo(expected.getUuid()));
       });
 
       it("can store a CA with a certificate of length 7000", () -> {
@@ -155,19 +158,12 @@ public class NamedCertificateAuthorityDataServiceTest {
           certificateAuthority.setCertificate(newCertificateValue);
           certificateAuthority = subject.save(certificateAuthority);
 
-          List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
-            NamedCertificateAuthority ca = new NamedCertificateAuthority();
-
-            ca.setId(rs.getLong("id"));
-            ca.setCertificate(rs.getString("certificate"));
-
-            return ca;
-          });
+          List<NamedCertificateAuthority> certificateAuthorities = namedCertificateAuthorityRepository.findAll();
 
           assertThat(certificateAuthorities.size(), equalTo(1));
           NamedCertificateAuthority actual = certificateAuthorities.get(0);
 
-          assertThat(actual.getId(), equalTo(certificateAuthority.getId()));
+          assertThat(actual.getUuid(), equalTo(certificateAuthority.getUuid()));
           assertThat(actual.getCertificate(), equalTo(newCertificateValue));
         });
       });
@@ -213,7 +209,7 @@ public class NamedCertificateAuthorityDataServiceTest {
         NamedCertificateAuthority savedSecret = subject.save(certificateAuthority);
 
         assertNotNull(savedSecret.getUuid());
-        NamedCertificateAuthority oneByUuid = subject.findOneByUuid(savedSecret.getUuid());
+        NamedCertificateAuthority oneByUuid = subject.findOneByUuid(savedSecret.getUuid().toString());
         assertThat(oneByUuid.getName(), equalTo("my-ca"));
         assertThat(oneByUuid.getCertificate(), equalTo("my-cert"));
         assertThat(oneByUuid.getPrivateKey(), equalTo("my-priv"));

@@ -92,6 +92,7 @@ public class CaControllerTest {
 
   private String uniqueName;
   private String urlPath;
+  private UUID uuid;
   private NamedCertificateAuthority fakeGeneratedCa;
 
   private ResultActions response;
@@ -109,11 +110,12 @@ public class CaControllerTest {
 
     describe("generating a ca", () -> {
       beforeEach(() -> {
+        uuid = UUID.randomUUID();
         fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
             .setType("root")
             .setCertificate("my_cert")
             .setPrivateKey("private_key")
-            .setUuid("fake-uuid")
+            .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
         doReturn(new CertificateAuthority(fakeGeneratedCa))
             .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
@@ -169,13 +171,14 @@ public class CaControllerTest {
 
     describe("setting a ca", () -> {
       beforeEach(() -> {
+        uuid = UUID.randomUUID();
         doReturn(
             new NamedCertificateAuthority(uniqueName)
                 .setType("root")
                 .setCertificate("my_cert")
                 .setPrivateKey("private_key")
                 .setUpdatedAt(FROZEN_TIME_INSTANT)
-                .setUuid("fake-uuid")
+                .setUuid(uuid)
         ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
 
         String requestJson = "{" + CA_CREATION_JSON + "}";
@@ -208,13 +211,14 @@ public class CaControllerTest {
 
       describe("overwriting a root ca", () -> {
         beforeEach(() -> {
+          uuid = UUID.randomUUID();
           doReturn(
               new NamedCertificateAuthority(uniqueName)
                   .setType("root")
                   .setCertificate("original_cert")
                   .setPrivateKey("original_private_key")
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
-                  .setUuid("original-uuid")
+                  .setUuid(uuid)
           ).when(namedCertificateAuthorityDataService).find(eq(uniqueName));
         });
 
@@ -272,11 +276,12 @@ public class CaControllerTest {
 
     describe("getting a ca", () -> {
       beforeEach(() -> {
+        uuid = UUID.randomUUID();
         NamedCertificateAuthority storedCa = new NamedCertificateAuthority(uniqueName)
             .setType("root")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
-            .setUuid("my-uuid")
+            .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
         doReturn(storedCa).when(namedCertificateAuthorityDataService).find(eq(uniqueName));
         doReturn(storedCa).when(namedCertificateAuthorityDataService).findOneByUuid(eq("my-uuid"));
@@ -288,7 +293,14 @@ public class CaControllerTest {
         });
 
         it("returns the ca", () -> {
-          String expectedJson = "{" + UPDATED_AT_JSON + ",\"type\":\"root\",\"value\":{\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"},\"id\":\"my-uuid\"}";
+          String expectedJson = "{"
+              + UPDATED_AT_JSON + "," +
+              "\"type\":\"root\"," +
+              "\"value\":{" +
+                "\"certificate\":\"my-certificate\"," +
+                "\"private_key\":\"my-priv\"}," +
+              "\"id\":\"" + uuid.toString() +
+              "\"}";
           response.andExpect(status().isOk())
               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(content().json(expectedJson, true));
@@ -309,10 +321,14 @@ public class CaControllerTest {
 
         it("returns the ca", () -> {
           String expectedJson = "{" +
-              UPDATED_AT_JSON +
-              ",\"type\":\"root\",\"value\":{\"certificate\":\"my-certificate\",\"private_key\":\"my-priv\"},\"id\":\"" +
-              "my-uuid" +
-              "\"}";
+              UPDATED_AT_JSON + "," +
+              "\"type\":\"root\"," +
+              "\"value\":{" +
+                "\"certificate\":\"my-certificate\"," +
+                "\"private_key\":\"my-priv\"" +
+              "}," +
+              "\"id\":\"" + uuid.toString() + "\"" +
+              "}";
           response.andExpect(status().isOk())
               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(content().json(expectedJson, true));

@@ -8,6 +8,7 @@ import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.repository.SecretRepository;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,9 @@ public class SecretDataServiceTest {
   JdbcTemplate jdbcTemplate;
 
   @Autowired
+  SecretRepository secretRepository;
+
+  @Autowired
   PlatformTransactionManager transactionManager;
   TransactionStatus transaction;
 
@@ -88,6 +92,11 @@ public class SecretDataServiceTest {
         NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
         assertThat(passwordSecret.getName(), equalTo("my-secret"));
         assertThat(passwordSecret.getValue(), equalTo("secret-password"));
+
+        // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
+        // we need to use Hibernate to check the UUID :(
+        passwordSecret = (NamedPasswordSecret) (secretRepository.findAll().get(0));
+        assertThat(passwordSecret.getUuid(), equalTo(secret.getUuid()));
       });
 
       it("should update a secret", () -> {
@@ -103,6 +112,9 @@ public class SecretDataServiceTest {
         NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
         assertThat(passwordSecret.getName(), equalTo("my-secret-2"));
         assertThat(passwordSecret.getValue(), equalTo("irynas-ninja-skills"));
+
+        passwordSecret = (NamedPasswordSecret) (secretRepository.findAll().get(0));
+        assertThat(passwordSecret.getUuid(), equalTo(secret.getUuid()));
       });
 
       it("should generate a uuid when creating", () -> {

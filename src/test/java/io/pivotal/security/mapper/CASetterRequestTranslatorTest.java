@@ -15,6 +15,8 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.*;
 import static org.junit.Assert.assertThat;
@@ -32,12 +34,16 @@ public class CASetterRequestTranslatorTest {
 
   private CASetterRequestTranslator subject;
 
+  private UUID uuid;
+
   {
     wireAndUnwire(this);
 
     describe("populating entity from json", () -> {
       beforeEach(() -> {
         entity = new NamedCertificateAuthority("foo");
+        uuid = UUID.randomUUID();
+        entity.setUuid(uuid);
         subject = new CASetterRequestTranslator();
       });
 
@@ -54,6 +60,7 @@ public class CASetterRequestTranslatorTest {
 
       it("populates CA entity for valid scenarios", () -> {
         CertificateAuthority expected = new CertificateAuthority("root", "a", "b");
+        expected.setUuid(uuid);
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
         DocumentContext parsed = jsonPath.parse(requestJson);
         subject.populateEntityFromJson(entity, parsed);

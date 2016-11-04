@@ -14,6 +14,10 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
@@ -22,9 +26,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-
-import java.time.Instant;
-import java.util.Arrays;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -52,13 +53,23 @@ public class NamedCertificateAuthorityTest {
       subject.setCertificate("cert");
       subject.setPrivateKey("priv");
       subject.setType("root");
-      subject.setUuid("uuid");
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     it("creates a model from entity", () -> {
+      UUID uuid = UUID.randomUUID();
+      subject.setUuid(uuid);
       CertificateAuthority certificateAuthority = CertificateAuthority.fromEntity(subject);
-      assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo("{\"updated_at\":null,\"type\":\"root\",\"value\":{\"certificate\":\"cert\",\"private_key\":\"priv\"},\"id\":\"uuid\"}"));
+      String expectedJson = "{" +
+          "\"updated_at\":null," +
+          "\"type\":\"root\"," +
+          "\"value\":{" +
+            "\"certificate\":\"cert\"," +
+            "\"private_key\":\"priv\"" +
+          "}," +
+          "\"id\":\"" + uuid.toString() + "\"" +
+        "}";
+      assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo(expectedJson));
     });
 
     it("set updated-at time on generated view", () -> {

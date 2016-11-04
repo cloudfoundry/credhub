@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public class CertificateAuthority extends BaseView {
 
@@ -12,7 +13,7 @@ public class CertificateAuthority extends BaseView {
 
   @JsonProperty("value")
   private CertificateAuthorityBody certificateAuthorityBody;
-  private String uuid;
+  private UUID uuid;
 
   public CertificateAuthority(String type, String certificate, String privateKey) {
     this(null, type, certificate, privateKey, null);
@@ -22,7 +23,7 @@ public class CertificateAuthority extends BaseView {
                               String type,
                               String certificate,
                               String privateKey,
-                              String uuid) {
+                              UUID uuid) {
     super(updatedAt);
     setType(type);
     setCertificateBody(new CertificateAuthorityBody(certificate, privateKey));
@@ -57,10 +58,10 @@ public class CertificateAuthority extends BaseView {
 
   @JsonProperty("id")
   public String getUuid() {
-    return uuid;
+    return uuid.toString();
   }
 
-  public void setUuid(String uuid) {
+  public void setUuid(UUID uuid) {
     this.uuid = uuid;
   }
 
