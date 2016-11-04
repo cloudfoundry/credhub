@@ -8,4 +8,4 @@ spring:
       max-idle: 10
 
 flyway:
-  locations: classpath:/db/migration/postgres
+  locations: classpath:/db/migration/common,classpath:/db/migration/postgres
