@@ -37,8 +37,8 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
@@ -93,6 +93,9 @@ public class SecretsControllerSetTest {
 
   private ResultActions response;
 
+  final String secretValue = "secret-value";
+  private NamedValueSecret valueSecret;
+
   {
     wireAndUnwire(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
@@ -105,105 +108,45 @@ public class SecretsControllerSetTest {
     });
 
     describe("setting a secret", () -> {
-      final String secretValue = "secret-value";
-
       beforeEach(() -> {
-        NamedValueSecret valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(fakeUuidGenerator.makeUuid()).setUpdatedAt(frozenTime);
+        valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(fakeUuidGenerator.makeUuid()).setUpdatedAt(frozenTime);
+
         doReturn(
             valueSecret
         ).when(secretDataService).save(any(NamedValueSecret.class));
-
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"value\":\"" + secretValue + "\"" +
-                "}");
-
-        response = mockMvc.perform(put);
       });
 
-      it("returns the secret as json", () -> {
-        response.andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.type").value("value"))
-            .andExpect(jsonPath("$.value").value(secretValue))
-            .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
-            .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+      describe("via parameter in request body", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"value\"," +
+                  "  \"name\":\"" + secretName + "\"," +
+                  "  \"value\":\"" + secretValue + "\"" +
+                  "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        setSecretBehavior();
       });
 
-      it("asks the data service to persist the secret", () -> {
-        ArgumentCaptor<NamedValueSecret> argumentCaptor = ArgumentCaptor.forClass(NamedValueSecret.class);
+      describe("via path", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"value\"," +
+                  "  \"value\":\"" + secretValue + "\"" +
+                  "}");
 
-        verify(secretDataService, times(1)).save(argumentCaptor.capture());
+          response = mockMvc.perform(put);
+        });
 
-        NamedValueSecret namedValueSecret = argumentCaptor.getValue();
-        assertThat(namedValueSecret.getValue(), equalTo(secretValue));
-      });
-
-      it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
-      });
-
-      it("returns 400 when the handler raises an exception", () -> {
-        doReturn(
-            new NamedValueSecret(secretName, secretValue).setUuid(fakeUuidGenerator.makeUuid()).setUpdatedAt(frozenTime)
-        ).when(secretDataService).findMostRecent(secretName);
-
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"password\"," +
-                "  \"value\":\"some password\"" +
-                "}");
-
-        mockMvc.perform(put)
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
-      });
-
-      it("returns a parameterized error message when json key is invalid", () -> {
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"response error\":\"invalid key\"," +
-                "  \"value\":\"some value\"" +
-                "}");
-
-        mockMvc.perform(put)
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'response error'. Please update or remove this parameter and retry your request."));
-      });
-
-      it("returns errors from the auditing service auditing fails", () -> {
-        doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-            .when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
-
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"value\":\"some value\"" +
-                "}");
-
-        mockMvc.perform(put)
-            .andExpect(status().isInternalServerError());
-      });
-
-      it("allows secret with '.' in the name", () -> {
-        final String testSecretNameWithDot = "test.response";
-
-        mockMvc.perform(put("/api/v1/data/" + testSecretNameWithDot)
-            .content("{\"type\":\"value\",\"value\":\"" + "def" + "\"}")
-            .contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(status().isOk());
+        setSecretBehavior();
       });
     });
 
@@ -307,6 +250,91 @@ public class SecretsControllerSetTest {
           verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
+    });
+  }
+
+  // this is extracted while we are supporting both body and path
+  private void setSecretBehavior() {
+    it("returns the secret as json", () -> {
+      response.andExpect(status().isOk())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.type").value("value"))
+          .andExpect(jsonPath("$.value").value(secretValue))
+          .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+          .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+    });
+
+    it("asks the data service to persist the secret", () -> {
+      ArgumentCaptor<NamedValueSecret> argumentCaptor = ArgumentCaptor.forClass(NamedValueSecret.class);
+
+      verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+      NamedValueSecret namedValueSecret = argumentCaptor.getValue();
+      assertThat(namedValueSecret.getValue(), equalTo(secretValue));
+    });
+
+    it("persists an audit entry", () -> {
+      verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+    });
+
+    it("returns 400 when the handler raises an exception", () -> {
+      doReturn(
+          new NamedValueSecret(secretName, secretValue).setUuid(fakeUuidGenerator.makeUuid()).setUpdatedAt(frozenTime)
+      ).when(secretDataService).findMostRecent(secretName);
+
+      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{" +
+              "  \"type\":\"password\"," +
+              "  \"value\":\"some password\"" +
+              "}");
+
+      mockMvc.perform(put)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
+    });
+
+    it("returns a parameterized error message when json key is invalid", () -> {
+      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{" +
+              "  \"type\":\"value\"," +
+              "  \"response error\":\"invalid key\"," +
+              "  \"value\":\"some value\"" +
+              "}");
+
+      mockMvc.perform(put)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'response error'. Please update or remove this parameter and retry your request."));
+    });
+
+    it("returns errors from the auditing service auditing fails", () -> {
+      doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
+          .when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+
+      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{" +
+              "  \"type\":\"value\"," +
+              "  \"value\":\"some value\"" +
+              "}");
+
+      mockMvc.perform(put)
+          .andExpect(status().isInternalServerError());
+    });
+
+    it("allows secret with '.' in the name", () -> {
+      final String testSecretNameWithDot = "test.response";
+
+      mockMvc.perform(put("/api/v1/data/" + testSecretNameWithDot)
+          .content("{\"type\":\"value\",\"value\":\"" + "def" + "\"}")
+          .contentType(MediaType.APPLICATION_JSON_UTF8))
+          .andExpect(status().isOk());
     });
   }
 
