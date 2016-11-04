@@ -52,10 +52,11 @@ public class RsaSshSetRequestTranslatorTest {
       });
     });
 
-    describe("validateJsonKeys", () -> {
+    describe("#validateJsonKeys", () -> {
       it("should pass if given correct parameters", () -> {
-        String requestBody = "{\"" +
-            "type\":\"rsa\"," +
+        String requestBody = "{" +
+            "\"type\":\"rsa\"," +
+            "\"name\":\"someName\"," +
             "\"overwrite\":false," +
             "\"value\":{" +
             "\"public_key\":\"somepublickey\"," +

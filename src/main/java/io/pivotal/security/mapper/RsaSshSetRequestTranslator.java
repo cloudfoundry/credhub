@@ -5,10 +5,10 @@ import io.pivotal.security.entity.NamedRsaSshSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
 import static com.google.common.collect.ImmutableSortedSet.of;
 import static io.pivotal.security.util.StringUtil.emptyToNull;
+
+import java.util.Set;
 
 @Component
 public class RsaSshSetRequestTranslator implements RequestTranslator<NamedRsaSshSecret> {
@@ -28,7 +28,7 @@ public class RsaSshSetRequestTranslator implements RequestTranslator<NamedRsaSsh
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['type']", "$['overwrite']", "$['value']",
+    return of("$['type']", "$['name']", "$['overwrite']", "$['value']",
         "$['value']['public_key']", "$['value']['private_key']");
   }
 }

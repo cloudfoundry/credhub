@@ -2,12 +2,11 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 
 import static com.google.common.collect.ImmutableSet.of;
 import static io.pivotal.security.util.StringUtil.emptyToNull;
-
-import io.pivotal.security.view.ParameterizedValidationException;
 
 import java.util.Set;
 
@@ -29,7 +28,7 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['type']", "$['overwrite']", "$['value']",
+    return of("$['type']", "$['name']", "$['overwrite']", "$['value']",
         "$['value']['ca']", "$['value']['certificate']", "$['value']['private_key']");
   }
 }

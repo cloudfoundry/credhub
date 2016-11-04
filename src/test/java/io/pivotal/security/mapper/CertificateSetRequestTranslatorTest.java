@@ -56,6 +56,32 @@ public class CertificateSetRequestTranslatorTest {
         checkEntity(null, null, null, "", "", "");
       });
     });
+
+    describe("#validateJsonKeys", () -> {
+      it("should pass if given correct parameters", () -> {
+        String requestBody = "{" +
+            "\"type\":\"certificate\"," +
+            "\"name\":\"someName\"," +
+            "\"overwrite\":false," +
+            "\"value\":{" +
+            "\"ca\":\"my-ca-so-awesome\"," +
+            "\"certificate\":\"certstuffs\"," +
+            "\"private_key\":\"someprivatekey\"" +
+            "}" +
+        "}";
+        DocumentContext parsed = jsonPath.parse(requestBody);
+
+        subject.validateJsonKeys(parsed);
+        // pass
+      });
+
+      itThrowsWithMessage("should throw if given invalid keys", ParameterizedValidationException.class, "error.invalid_json_key", () -> {
+        String requestBody = "{\"type\":\"certificate\",\"foo\":\"invalid\"}";
+        DocumentContext parsed = jsonPath.parse(requestBody);
+
+        subject.validateJsonKeys(parsed);
+      });
+    });
   }
 
   private void checkEntity(String expectedRoot, String expectedCertificate, String expectedPrivateKey, String root, String certificate, String privateKey) {
