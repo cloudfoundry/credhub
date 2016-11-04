@@ -1,5 +1,7 @@
 package io.pivotal.security.util;
 
+import java.util.UUID;
+
 public interface UuidGenerator {
-  String makeUuid();
+  UUID makeUuid();
 }

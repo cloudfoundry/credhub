@@ -16,6 +16,7 @@ import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -77,7 +78,7 @@ public class NamedPasswordSecretTest {
         subject.setValue("my-value2");
         subject = (NamedPasswordSecret) secretDataService.save(subject);
 
-        NamedPasswordSecret second = (NamedPasswordSecret) secretDataService.findByUuid(subject.getUuid());
+        NamedPasswordSecret second = (NamedPasswordSecret) secretDataService.findByUuid(subject.getUuid().toString());
         assertThat(second.getValue(), equalTo("my-value2"));
         assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
       });
@@ -108,7 +109,7 @@ public class NamedPasswordSecretTest {
       it("sets UUID when Hibernate stores the object", () -> {
         subject.setValue("my-value");
         secretDataService.save(subject);
-        assertThat(subject.getUuid().length(), equalTo(36));
+        assertThat(subject.getUuid().toString().length(), equalTo(36));
       });
 
       it("only encrypts the generationParameters once for the same secret", () -> {
@@ -141,6 +142,7 @@ public class NamedPasswordSecretTest {
     describe("#copyInto", () -> {
       it("should copy the correct properties into the other object", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+        UUID uuid = UUID.randomUUID();
 
         PasswordGenerationParameters parameters = new PasswordGenerationParameters();
         parameters.setExcludeNumber(true);
@@ -148,7 +150,7 @@ public class NamedPasswordSecretTest {
         parameters.setExcludeUpper(false);
 
         subject = new NamedPasswordSecret("foo", "value", parameters);
-        subject.setUuid("fake-uuid");
+        subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
 
         NamedPasswordSecret copy = new NamedPasswordSecret();
@@ -162,7 +164,7 @@ public class NamedPasswordSecretTest {
         assertThat(copyParameters.isExcludeLower(), equalTo(true));
         assertThat(copyParameters.isExcludeUpper(), equalTo(false));
 
-        assertThat(copy.getUuid(), not(equalTo("fake-uuid")));
+        assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
       });
     });

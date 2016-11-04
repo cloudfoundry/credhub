@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.UUID;
 
 public class FakeSecretRepository implements SecretRepository {
   public int count = 0;
@@ -28,7 +29,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findOneByUuid(String uuid) {
+  public NamedSecret findOneByUuid(UUID uuid) {
     throw new UnsupportedOperationException();
   }
 

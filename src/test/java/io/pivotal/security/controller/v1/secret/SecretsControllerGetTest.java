@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.fake.FakeUuidGenerator;
@@ -24,6 +23,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -43,10 +47,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -83,7 +83,7 @@ public class SecretsControllerGetTest {
   private final String secretName = "my-namespace/subTree/secret-name";
 
   private ResultActions response;
-  private String uuid;
+  private UUID uuid;
 
   {
     wireAndUnwire(this);
@@ -114,7 +114,7 @@ public class SecretsControllerGetTest {
         ).when(secretDataService).findMostRecent(secretName.toUpperCase());
         doReturn(
             valueSecret
-        ).when(secretDataService).findByUuid(uuid);
+        ).when(secretDataService).findByUuid(uuid.toString());
       });
 
       describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name", "$"));

@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedCertificateSecret;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public class CertificateSecret extends Secret {
 
   @JsonProperty("value")
   private CertificateBody certificateBody;
 
-  public CertificateSecret(Instant updatedAt, String uuid, String ca, String certificate, String privateKey) {
+  public CertificateSecret(Instant updatedAt, UUID uuid, String ca, String certificate, String privateKey) {
     super(updatedAt, uuid);
     setCertificateBody(new CertificateBody(ca, certificate, privateKey));
   }

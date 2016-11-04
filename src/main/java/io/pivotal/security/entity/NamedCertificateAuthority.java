@@ -134,6 +134,6 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @PrePersist
   @PreUpdate
   public void updateUuidOnPersist() {
-    this.uuid = UuidGeneratorProvider.getInstance().makeUuid();
+    this.uuid = UuidGeneratorProvider.getInstance().makeUuid().toString();
   }
 }

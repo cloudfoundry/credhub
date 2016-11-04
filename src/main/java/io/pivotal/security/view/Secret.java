@@ -8,12 +8,13 @@ import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedStringSecret;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public class Secret extends BaseView {
 
-  private String uuid;
+  private UUID uuid;
 
-  protected Secret(Instant updatedAt, String uuid) {
+  protected Secret(Instant updatedAt, UUID uuid) {
     super(updatedAt);
     this.uuid = uuid;
   }
@@ -25,10 +26,10 @@ public class Secret extends BaseView {
 
   @JsonProperty("id")
   public String getUuid() {
-    return uuid;
+    return uuid.toString();
   }
 
-  public void setUuid(String uuid) {
+  public void setUuid(UUID uuid) {
     this.uuid = uuid;
   }
 

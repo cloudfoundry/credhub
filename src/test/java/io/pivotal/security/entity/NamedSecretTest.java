@@ -60,14 +60,14 @@ public class NamedSecretTest {
 
     it("should have a consistent UUID", () -> {
       subject = (NamedCertificateSecret) secretDataService.save(this.subject);
-      String originalUuid = subject.getUuid();
+      String originalUuid = subject.getUuid().toString();
 
       assertThat(StringUtils.isEmpty(originalUuid), equalTo(false));
 
       subject.setCertificate("fake-new-certificate");
       subject = (NamedCertificateSecret) secretDataService.save(subject);
 
-      assertThat(subject.getUuid(), equalTo(originalUuid));
+      assertThat(subject.getUuid().toString(), equalTo(originalUuid));
     });
   }
 }

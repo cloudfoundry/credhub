@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.fake.FakeUuidGenerator;
@@ -29,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -311,7 +311,7 @@ public class SecretsControllerSetTest {
   }
 
   private void putSecretInDatabase(String name, String value) throws Exception {
-    String uuid = fakeUuidGenerator.makeUuid();
+    UUID uuid = fakeUuidGenerator.makeUuid();
     NamedValueSecret valueSecret = new NamedValueSecret(name, value).setUuid(uuid).setUpdatedAt(frozenTime);
     doReturn(
         valueSecret
@@ -336,7 +336,7 @@ public class SecretsControllerSetTest {
     ).when(secretDataService).findMostRecent(name.toUpperCase());
     doReturn(
         valueSecret
-    ).when(secretDataService).findByUuid(uuid);
+    ).when(secretDataService).findByUuid(uuid.toString());
   }
 
   private void resetAuditLogMock() throws Exception {

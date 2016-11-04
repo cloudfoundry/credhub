@@ -5,6 +5,7 @@ import io.pivotal.security.entity.NamedStringSecret;
 
 import javax.validation.constraints.NotNull;
 import java.time.Instant;
+import java.util.UUID;
 
 public class StringSecret extends Secret {
 
@@ -19,11 +20,11 @@ public class StringSecret extends Secret {
     this(null, null, type, value);
   }
 
-  public StringSecret(Instant updatedAt, String uuid, String type) {
+  public StringSecret(Instant updatedAt, UUID uuid, String type) {
     this(updatedAt, uuid, type, null);
   }
 
-  public StringSecret(Instant updatedAt, String uuid, String type, String value) {
+  public StringSecret(Instant updatedAt, UUID uuid, String type, String value) {
     super(updatedAt, uuid);
     if (type == null) {
       throw new IllegalArgumentException("'value' must not be null");

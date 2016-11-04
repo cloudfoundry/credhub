@@ -66,7 +66,7 @@ public class NamedValueSecretTest {
         subject.setValue("my-value2");
         subject = (NamedStringSecret) repository.save(subject);
 
-        NamedStringSecret second = (NamedStringSecret) repository.findByUuid(subject.getUuid());
+        NamedStringSecret second = (NamedStringSecret) repository.findByUuid(subject.getUuid().toString());
         assertThat(second.getValue(), equalTo("my-value2"));
         assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
       });
@@ -97,7 +97,7 @@ public class NamedValueSecretTest {
       it("sets UUID when Hibernate stores the object", () -> {
         subject.setValue("my-value");
         repository.save(subject);
-        assertThat(subject.getUuid().length(), equalTo(36));
+        assertThat(subject.getUuid().toString().length(), equalTo(36));
       });
     });
   }

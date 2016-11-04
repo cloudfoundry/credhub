@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -51,7 +52,7 @@ public class NamedSshSecretTest {
       subject
           .setPublicKey("my-public-key");
       secretDataService.save(subject);
-      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid());
+      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid().toString());
       assertThat(result.getPublicKey(), equalTo("my-public-key"));
     });
 
@@ -60,7 +61,7 @@ public class NamedSshSecretTest {
           .setPrivateKey("some-private-value");
       secretDataService.save(subject);
 
-      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid());
+      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid().toString());
 
       assertThat(result.getPrivateKey(), equalTo("some-private-value"));
     });
@@ -72,7 +73,7 @@ public class NamedSshSecretTest {
       subject.setPrivateKey("second");
       subject = (NamedSshSecret) secretDataService.save(subject);
 
-      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid());
+      NamedSshSecret result = (NamedSshSecret) secretDataService.findByUuid(subject.getUuid().toString());
       assertThat(result.getPrivateKey(), equalTo("second"));
     });
 
@@ -127,11 +128,12 @@ public class NamedSshSecretTest {
     describe("#copyInto", () -> {
       it("should copy the correct properties into the other object", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+        UUID uuid = UUID.randomUUID();
 
         subject = new NamedSshSecret("foo");
         subject.setPublicKey("fake-public-key");
         subject.setPrivateKey("fake-private-key");
-        subject.setUuid("fake-uuid");
+        subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
 
         NamedSshSecret copy = new NamedSshSecret();
@@ -141,7 +143,7 @@ public class NamedSshSecretTest {
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
         assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
 
-        assertThat(copy.getUuid(), not(equalTo("fake-uuid")));
+        assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
       });
     });

@@ -57,7 +57,7 @@ public class DatabaseEncryptionConfigurationTest {
       });
 
       it("it encrypts the secret value", () -> {
-        Map<String, Object> map = namedParameterJdbcTemplate.queryForMap("SELECT s.encrypted_value, n.nonce FROM named_secret s INNER JOIN named_secret n ON s.id = n.id WHERE n.name = '" + secretName + "'", Collections.emptyMap());
+        Map<String, Object> map = namedParameterJdbcTemplate.queryForMap("SELECT s.encrypted_value, n.nonce FROM named_secret s INNER JOIN named_secret n ON s.uuid = n.uuid WHERE n.name = '" + secretName + "'", Collections.emptyMap());
         assertThat(map, allOf(
             hasEntry(equalToIgnoringCase("encrypted_value"), not(equalTo("value1"))),
             hasEntry(equalToIgnoringCase("nonce"), notNullValue())

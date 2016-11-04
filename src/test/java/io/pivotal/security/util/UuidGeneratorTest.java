@@ -27,8 +27,8 @@ public class UuidGeneratorTest {
     wireAndUnwire(this);
 
     it("generates a UUID", () -> {
-      final String uuid1 = subject.makeUuid();
-      final String uuid2 = subject.makeUuid();
+      final String uuid1 = subject.makeUuid().toString();
+      final String uuid2 = subject.makeUuid().toString();
       assertThat(uuid1.length(), equalTo(36));
       assertThat(uuid2.length(), equalTo(36));
       assertThat(uuid1, not(equalTo(uuid2)));

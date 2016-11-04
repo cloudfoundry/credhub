@@ -17,10 +17,10 @@ public class FakeUuidGenerator implements UuidGenerator {
   private static final List<UUID> uuids = new ArrayList<>();
 
   @Override
-  public synchronized String makeUuid() {
+  public synchronized UUID makeUuid() {
     UUID uuid = nextUuid();
     uuids.add(0, uuid);
-    return uuid.toString();
+    return uuid;
   }
 
   private UUID nextUuid() {

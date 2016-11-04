@@ -17,6 +17,7 @@ import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -66,7 +67,7 @@ public class NamedCertificateSecretTest {
       subject.setPrivateKey("second");
       subject = (NamedCertificateSecret) secretDataService.save(subject);
 
-      NamedCertificateSecret second = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid());
+      NamedCertificateSecret second = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid().toString());
       assertThat(second.getPrivateKey(), equalTo("second"));
       assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
     });
@@ -93,7 +94,7 @@ public class NamedCertificateSecretTest {
     it("allows a null private key", () -> {
       subject.setPrivateKey(null);
       secretDataService.save(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid());
+      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid().toString());
       assertThat(secret.getPrivateKey(), equalTo(null));
       assertThat(secret.getNonce(), equalTo(null));
     });
@@ -101,7 +102,7 @@ public class NamedCertificateSecretTest {
     it("allows an empty private key", () -> {
       subject.setPrivateKey("");
       secretDataService.save(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid());
+      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid().toString());
       assertThat(secret.getPrivateKey(), equalTo(""));
     });
 
@@ -213,10 +214,11 @@ public class NamedCertificateSecretTest {
     describe("#copyInto", () -> {
       it("should copy the correct values", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+        UUID uuid = UUID.randomUUID();
 
         subject = new NamedCertificateSecret("name", "fake-ca", "fake-certificate", "fake-private-key");
         subject.setCaName("ca-name");
-        subject.setUuid("fake-uuid");
+        subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
 
         NamedCertificateSecret copy = new NamedCertificateSecret();
@@ -227,7 +229,7 @@ public class NamedCertificateSecretTest {
         assertThat(copy.getCa(), equalTo("fake-ca"));
         assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
 
-        assertThat(copy.getUuid(), not(equalTo("fake-uuid")));
+        assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
       });
     });

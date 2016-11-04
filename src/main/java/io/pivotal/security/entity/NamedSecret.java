@@ -20,10 +20,12 @@ import javax.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "NamedSecret")
@@ -34,6 +36,7 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
+
 
   @Column(unique = true, nullable = false)
   private String name;
@@ -50,8 +53,12 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @LastModifiedDate
   private Instant updatedAt;
 
-  @Column
-  private String uuid;
+  // Use VARBINARY to make all 3 DB types happy.
+  // H2 doesn't distinguish between "binary" and "varbinary" - see
+  // https://hibernate.atlassian.net/browse/HHH-9835 and
+  // https://github.com/h2database/h2database/issues/345
+  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  private UUID uuid;
 
   public NamedSecret() {
     this(null);
@@ -102,18 +109,18 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return (Z) this;
   }
 
-  public String getUuid() {
-    return uuid;
-  }
-
-  public Z setUuid(String uuid) {
-    this.uuid = uuid;
-    return (Z) this;
-  }
-
   public abstract SecretKind getKind();
 
   public abstract String getSecretType();
+
+  public UUID getUuid() {
+    return uuid;
+  }
+
+  public Z setUuid(UUID uuid) {
+    this.uuid = uuid;
+    return (Z) this;
+  }
 
   @PrePersist
   public void updateUuidOnPersist() {

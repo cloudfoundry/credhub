@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
@@ -144,7 +145,7 @@ public class SecretDataServiceTest {
         NamedPasswordSecret savedSecret = (NamedPasswordSecret) subject.save(secret);
 
         assertNotNull(savedSecret.getUuid());
-        NamedPasswordSecret oneByUuid = (NamedPasswordSecret) subject.findByUuid(savedSecret.getUuid());
+        NamedPasswordSecret oneByUuid = (NamedPasswordSecret) subject.findByUuid(savedSecret.getUuid().toString());
         assertThat(oneByUuid.getName(), equalTo("my-secret"));
         assertThat(oneByUuid.getValue(), equalTo("secret-password"));
       });
@@ -224,14 +225,13 @@ public class SecretDataServiceTest {
     });
 
     describe("#findAllByName", () -> {
-
       it("finds all by name", () -> {
         NamedPasswordSecret secret1 = saveNamedPassword(20000000L, "secret1");
         NamedPasswordSecret secret2 = saveNamedPassword(40000000L, "secret1");
         saveNamedPassword(30000000L, "Secret2");
 
         List<NamedSecret> secrets = subject.findAllByName("secret1");
-        assertThat(secrets, containsInAnyOrder(hasProperty("id", equalTo(secret1.getId())), hasProperty("id", equalTo(secret2.getId()))));
+        assertThat(secrets, containsInAnyOrder(hasProperty("uuid", equalTo(secret1.getUuid())), hasProperty("uuid", equalTo(secret2.getUuid()))));
       });
     });
   }
@@ -246,7 +246,7 @@ public class SecretDataServiceTest {
     return jdbcTemplate.query("select * from named_secret", (rowSet, rowNum) -> {
             NamedPasswordSecret passwordSecret = new NamedPasswordSecret(rowSet.getString("name"));
 
-            passwordSecret.setId(rowSet.getLong("id"));
+            passwordSecret.setUuid(UUID.nameUUIDFromBytes(rowSet.getBytes("uuid")));
             passwordSecret.setNonce(rowSet.getBytes("nonce"));
             passwordSecret.setEncryptedValue(rowSet.getBytes("encrypted_value"));
 

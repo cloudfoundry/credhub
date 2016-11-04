@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedSshSecret;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public class SshSecret extends Secret {
   @JsonProperty("value")
   private SshBody sshBody;
 
-  public SshSecret(Instant updatedAt, String uuid, String publicKey, String privateKey) {
+  public SshSecret(Instant updatedAt, UUID uuid, String publicKey, String privateKey) {
     super(updatedAt, uuid);
     setSshBody(new SshBody(publicKey, privateKey));
   }
