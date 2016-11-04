@@ -213,12 +213,21 @@ public class SecretsController {
     });
   }
 
-  private ResponseEntity<?> auditedStoreSecret(InputStream requestBody, HttpServletRequest request, Authentication authentication, SecretKindMappingFactory
-      handler) throws Exception {
+  private ResponseEntity<?> auditedStoreSecret(InputStream requestBody,
+                                               HttpServletRequest request,
+                                               Authentication authentication,
+                                               SecretKindMappingFactory handler) throws Exception {
     final DocumentContext parsed = jsonPath.parse(requestBody);
 
     String secretPath = secretPath(request);
-    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretPath);
+    final String secretName;
+    if (secretPath.isEmpty()) {
+      secretName = parsed.read("$.name", String.class);
+    } else {
+      secretName = secretPath;
+    }
+
+    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
     boolean willBeCreated = existingNamedSecret == null;
     boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
@@ -232,7 +241,7 @@ public class SecretsController {
     String operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
 
     return audit(operationCode, request, authentication, () -> {
-      return storeSecret(secretPath, handler, parsed, existingNamedSecret, willWrite);
+      return storeSecret(secretName, handler, parsed, existingNamedSecret, willWrite);
     });
   }
 
@@ -277,7 +286,12 @@ public class SecretsController {
   }
 
   private String secretPath(HttpServletRequest request) {
-    return request.getRequestURI().replace(API_V1_DATA + "/", "");
+    String requestURI = request.getRequestURI();
+    String path = requestURI.replace(API_V1_DATA, "");
+    if (path.startsWith("/")) {
+      path = path.substring(1);
+    }
+    return path;
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {

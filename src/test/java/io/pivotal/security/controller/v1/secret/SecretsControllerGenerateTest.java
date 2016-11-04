@@ -4,7 +4,6 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
@@ -28,10 +27,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -51,6 +46,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -119,7 +118,7 @@ public class SecretsControllerGenerateTest {
             .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
       });
 
-      describe("for a new non-value secret", () -> {
+      describe("for a new non-value secret, name in path", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
               .accept(APPLICATION_JSON)
@@ -151,6 +150,46 @@ public class SecretsControllerGenerateTest {
 
           assertThat(newPassword.getValue(), equalTo(fakePasswordGenerator.getFakePassword()));
           assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
+      describe("for a new non-value secret, name in body, not in path", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "\"type\":\"password\"," +
+                  "\"name\":\"" + secretName + "\"," +
+                  "\"parameters\":{" +
+                  "\"exclude_number\": true" +
+                  "}" +
+                  "}");
+
+          response = mockMvc.perform(post);
+        });
+
+        it("should return the expected response", () -> {
+          response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("password"))
+              .andExpect(jsonPath("$.value").value(fakePasswordGenerator.getFakePassword()))
+              .andExpect(jsonPath("$.id").value(fakeUuidGenerator.getLastUuid()))
+              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+        });
+
+        it("asks the data service to persist the secret", () -> {
+          ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+          NamedPasswordSecret newPassword = argumentCaptor.getValue();
+
+          assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
+          assertThat(newPassword.getValue(), equalTo(fakePasswordGenerator.getFakePassword()));
         });
 
         it("persists an audit entry", () -> {

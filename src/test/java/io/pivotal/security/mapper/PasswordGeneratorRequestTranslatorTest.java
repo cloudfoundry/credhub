@@ -22,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -129,6 +130,36 @@ public class PasswordGeneratorRequestTranslatorTest {
       when(secretGenerator.generateSecret(generationParameters)).thenReturn(new StringSecret("password", "my-password"));
 
       assertThat(secret.getValue(), equalTo("my-password"));
+    });
+
+    describe("validateJsonKeys", () -> {
+      it("accepts valid keys", () -> {
+        String requestBody = "{" +
+            "\"type\":\"password\"," +
+            "\"overwrite\":false," +
+            "\"name\":\"eggbert\"," +
+            "\"regenerate\":true," +
+            "\"parameters\":{" +
+            "\"length\":3," +
+            "\"exclude_lower\":true" +
+            "\"exclude_upper\":true" +
+            "\"exclude_number\":true" +
+            "\"exclude_special\":true" +
+            "\"only_hex\":true" +
+            "}" +
+            "}";
+        DocumentContext parsed = jsonPath.parse(requestBody);
+
+        subject.validateJsonKeys(parsed);
+        //pass
+      });
+
+      itThrowsWithMessage("should throw if given invalid keys", ParameterizedValidationException.class, "error.invalid_json_key", () -> {
+        String requestBody = "{\"type\":\"password\",\"foo\":\"invalid\"}";
+        DocumentContext parsed = jsonPath.parse(requestBody);
+
+        subject.validateJsonKeys(parsed);
+      });
     });
 
     itThrowsWithMessage("rejects generation unless generation parameters are present in the existing entity", ParameterizedValidationException.class, "error.cannot_regenerated_non_generated_credentials", () -> {
