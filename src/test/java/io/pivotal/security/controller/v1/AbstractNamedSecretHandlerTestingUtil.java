@@ -23,7 +23,7 @@ import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.verify;
 
-public class AbstractNamedSecretHandlerTestingUtil {
+public abstract class AbstractNamedSecretHandlerTestingUtil {
 
   @Mock
   DocumentContext documentContext;
@@ -32,7 +32,15 @@ public class AbstractNamedSecretHandlerTestingUtil {
 
   CheckedFunction<NamedSecret, NoSuchAlgorithmException> mapFunction;
 
-  protected Spectrum.Block behavesLikeMapper(Supplier<SecretKindMappingFactory> subject, Supplier<RequestTranslator> translatorSupplier, SecretKind secretKind, Class<? extends NamedSecret> clazz, NamedSecret mistypedSecret, NamedSecret existingEntity) {
+  protected abstract void verifyExistingSecretCopying(NamedSecret mockExistingSecret);
+
+  protected Spectrum.Block behavesLikeMapper(
+      Supplier<SecretKindMappingFactory> subject,
+      Supplier<RequestTranslator> translatorSupplier,
+      SecretKind secretKind,
+      Class<? extends NamedSecret> clazz,
+      NamedSecret existingEntity,
+      NamedSecret mockExistingSecret) {
     return () -> {
       beforeEach(() -> {
         mapFunction = secretKind.lift(subject.get().make("secret-path", documentContext));
@@ -51,6 +59,11 @@ public class AbstractNamedSecretHandlerTestingUtil {
         verify(expectedTranslator).populateEntityFromJson(same(namedSecret), same(documentContext));
         assertThat(namedSecret, not(sameInstance(existingEntity)));
         assertThat(namedSecret, instanceOf(clazz));
+      });
+
+      it("pass the existing secret through only when doing generation, not set", () -> {
+        mapFunction.apply(mockExistingSecret);
+        verifyExistingSecretCopying(mockExistingSecret);
       });
     };
   }

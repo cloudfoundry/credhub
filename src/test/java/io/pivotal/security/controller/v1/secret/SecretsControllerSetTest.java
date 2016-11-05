@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
@@ -27,6 +28,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -35,6 +41,7 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -50,11 +57,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -263,6 +265,22 @@ public class SecretsControllerSetTest {
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
+      });
+
+      it("does not copy values from existing secret to new secret", () -> {
+        doReturn(new NamedPasswordSecret("foo").setEncryptedGenerationParameters(new byte[1])).when(secretDataService).findMostRecent("foo");
+        mockMvc.perform(put("/api/v1/data/foo")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"value\":\"my-password\"," +
+                "  \"overwrite\":true" +
+                "}"))
+            .andExpect(status().isOk());
+        ArgumentCaptor<NamedPasswordSecret> captor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
+        verify(secretDataService).save(captor.capture());
+        assertThat(captor.getValue().getEncryptedGenerationParameters(), nullValue());
       });
     });
   }

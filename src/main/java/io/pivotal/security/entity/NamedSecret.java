@@ -130,10 +130,10 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
 
   abstract void copyIntoImpl(Z copy);
 
-  public final void copyInto(Z copy) {
+  public void copyInto(Z copy) {
     copy.setName(name);
     copy.setEncryptedValue(encryptedValue);
     copy.setNonce(nonce);
-    this.copyIntoImpl(copy);
+    copyIntoImpl(copy);
   }
 }

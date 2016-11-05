@@ -28,7 +28,7 @@ public class SecretKindMappingFactoryTest {
   private RequestTranslator<NamedPasswordSecret> requestTranslator;
 
   @Mock
-  private DocumentContext parsed;
+  private DocumentContext parsedRequest;
 
   {
     SecretKindMappingFactory subject = (secretPath, parsed) -> null;
@@ -41,10 +41,10 @@ public class SecretKindMappingFactoryTest {
         NamedPasswordSecret constructedObject = new NamedPasswordSecret("name");
         when(constructor.apply("name")).thenReturn(constructedObject);
 
-        Assert.assertThat(subject.processSecret(null, constructor, "name", requestTranslator, parsed), sameInstance(constructedObject));
+        Assert.assertThat(subject.createNewSecret(null, constructor, "name", requestTranslator, parsedRequest), sameInstance(constructedObject));
         verify(constructor).apply("name");
 
-        verify(requestTranslator).populateEntityFromJson(constructedObject, parsed);
+        verify(requestTranslator).populateEntityFromJson(constructedObject, parsedRequest);
       });
     });
 
@@ -56,22 +56,22 @@ public class SecretKindMappingFactoryTest {
         NamedPasswordSecret constructedObject = new NamedPasswordSecret("name");
         when(constructor.apply("name")).thenReturn(constructedObject);
 
-        Assert.assertThat(subject.processSecret(existingObject, constructor, "name", requestTranslator, parsed), sameInstance(constructedObject));
+        Assert.assertThat(subject.createNewSecret(existingObject, constructor, "name", requestTranslator, parsedRequest), sameInstance(constructedObject));
         verify(constructor).apply("name");
 
         verify(existingObject).copyInto(constructedObject);
-        verify(requestTranslator).populateEntityFromJson(constructedObject, parsed);
+        verify(requestTranslator).populateEntityFromJson(constructedObject, parsedRequest);
       });
     });
 
     describe("validation", () -> {
       it("calls the request translator to validate JSON keys", () -> {
-        subject.processSecret(null, NamedPasswordSecret::new, "name", requestTranslator, parsed);
-        verify(requestTranslator).validateJsonKeys(parsed);
+        subject.createNewSecret(null, NamedPasswordSecret::new, "name", requestTranslator, parsedRequest);
+        verify(requestTranslator).validateJsonKeys(parsedRequest);
       });
 
       it("calls the request translator to validate path", () -> {
-        subject.processSecret(null, NamedPasswordSecret::new, "/dont//do//this/", requestTranslator, parsed);
+        subject.createNewSecret(null, NamedPasswordSecret::new, "/dont//do//this/", requestTranslator, parsedRequest);
         verify(requestTranslator).validatePathName(any(String.class));
       });
     });

@@ -42,24 +42,27 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
     return encryptedGenerationParameters;
   }
 
-  public void setEncryptedGenerationParameters(byte[] encryptedGenerationParameters) {
+  public NamedPasswordSecret setEncryptedGenerationParameters(byte[] encryptedGenerationParameters) {
     this.encryptedGenerationParameters = encryptedGenerationParameters;
+    return this;
   }
 
   public byte[] getParametersNonce() {
     return parametersNonce;
   }
 
-  public void setParametersNonce(byte[] parametersNonce) {
+  public NamedPasswordSecret setParametersNonce(byte[] parametersNonce) {
     this.parametersNonce = parametersNonce;
+    return this;
   }
 
   public PasswordGenerationParameters getGenerationParameters() {
     return SecretEncryptionHelperProvider.getInstance().retrieveGenerationParameters(this);
   }
 
-  public void setGenerationParameters(PasswordGenerationParameters generationParameters) {
+  public NamedPasswordSecret setGenerationParameters(PasswordGenerationParameters generationParameters) {
     SecretEncryptionHelperProvider.getInstance().refreshEncryptedGenerationParameters(this, generationParameters);
+    return this;
   }
 
   @Override

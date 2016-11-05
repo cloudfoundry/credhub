@@ -9,18 +9,23 @@ import java.security.NoSuchAlgorithmException;
 import java.util.function.Function;
 
 public interface SecretKindMappingFactory {
-  SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsed);
+  SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsedRequest);
 
-  default <Z extends NamedSecret> Z processSecret(Z existingNamedSecret, Function<String, Z> constructor, String secretPath, RequestTranslator<Z> requestTranslator, DocumentContext parsed) throws NoSuchAlgorithmException {
-    Z result = constructor.apply(secretPath);
+  default <Z extends NamedSecret> Z createNewSecret(
+      Z existingNamedSecret,
+      Function<String, Z> secretConstructor,
+      String secretPath,
+      RequestTranslator<Z> requestTranslator,
+      DocumentContext parsedRequest) throws NoSuchAlgorithmException {
+    Z result = secretConstructor.apply(secretPath);
 
     if (existingNamedSecret != null) {
       existingNamedSecret.copyInto(result);
     }
 
     requestTranslator.validatePathName(secretPath);
-    requestTranslator.validateJsonKeys(parsed);
-    requestTranslator.populateEntityFromJson(result, parsed);
+    requestTranslator.validateJsonKeys(parsedRequest);
+    requestTranslator.populateEntityFromJson(result, parsedRequest);
 
     return result;
   }
