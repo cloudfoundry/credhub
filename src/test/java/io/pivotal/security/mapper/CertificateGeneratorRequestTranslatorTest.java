@@ -87,10 +87,12 @@ public class CertificateGeneratorRequestTranslatorTest {
       when(certificateSecretParametersFactory.get()).thenCallRealMethod();
     });
 
-    it("ensures that all of the allowable parameters have been provided", () -> {
+    it("knows keys for all valid parameters", () -> {
       String json = "{" +
           "\"type\":\"certificate\"," +
+          "\"name\":\"My Name\"," +
           "\"regenerate\":false," +
+          "\"overwrite\":false," +
           "\"parameters\":{" +
           "\"common_name\":\"My Common Name\", " +
           "\"organization\": \"organization.io\"," +
@@ -101,6 +103,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"key_length\": 3072," +
           "\"duration\": 1000," +
           "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
+          "\"ca\": \"My Ca\"" +
           "}" +
           "}";
       CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
@@ -114,6 +117,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
       expectedParameters.addAlternativeNames("my-alternative-name-1", "my-alternative-name-2");
+      expectedParameters.setCaName("My Ca");
       DocumentContext parsed = jsonPath.parse(json);
 
       subject.validateJsonKeys(parsed);
@@ -369,7 +373,6 @@ public class CertificateGeneratorRequestTranslatorTest {
     itThrowsWithMessage("regeneration is not allowed if caName is not present", ParameterizedValidationException.class, "error.cannot_regenerated_non_generated_credentials", () -> {
       subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), new NamedCertificateSecret("foo", "", "", ""));
     });
-
   }
 
   private NamedCertificateAuthority setupCa() throws Exception {

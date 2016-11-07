@@ -59,6 +59,7 @@ public class SshGeneratorRequestTranslator
   public Set<String> getValidKeys() {
     return of(
         "$['type']",
+        "$['name']",
         "$['overwrite']",
         "$['regenerate']",
         "$['parameters']",

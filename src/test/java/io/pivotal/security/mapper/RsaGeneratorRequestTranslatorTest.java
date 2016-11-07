@@ -65,6 +65,7 @@ public class RsaGeneratorRequestTranslatorTest {
       it("accepts valid keys", () -> {
         String requestBody = "{" +
             "\"type\":\"rsa\"," +
+            "\"name\":\"plugh\"," +
             "\"regenerate\": true," +
             "\"overwrite\":false," +
             "\"parameters\":{" +

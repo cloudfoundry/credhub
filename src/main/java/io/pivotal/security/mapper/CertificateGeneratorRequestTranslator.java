@@ -92,6 +92,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Override
   public Set<String> getValidKeys() {
     return of("$['type']",
+        "$['name']",
         "$['overwrite']",
         "$['regenerate']",
         "$['parameters']",

@@ -61,6 +61,7 @@ public class SshGeneratorRequestTranslatorTest {
       it("accepts valid keys", () -> {
         String requestBody = "{" +
             "\"type\":\"ssh\"," +
+            "\"name\":\"xyzzy\"," +
             "\"overwrite\":false," +
             "\"regenerate\":true," +
             "\"parameters\":{" +

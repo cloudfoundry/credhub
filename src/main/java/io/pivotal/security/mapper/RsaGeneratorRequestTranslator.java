@@ -54,6 +54,7 @@ public class RsaGeneratorRequestTranslator
   public Set<String> getValidKeys() {
     return of(
         "$['type']",
+        "$['name']",
         "$['regenerate']",
         "$['overwrite']",
         "$['parameters']",
