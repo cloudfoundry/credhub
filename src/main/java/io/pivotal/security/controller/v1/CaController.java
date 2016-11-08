@@ -28,17 +28,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -92,9 +91,11 @@ public class CaController {
 
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
-    NamedCertificateAuthority namedCertificateAuthority = namedCertificateAuthorityDataService.find(caPath);
-    if (namedCertificateAuthority == null) {
-      namedCertificateAuthority = new NamedCertificateAuthority(caPath);
+    NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
+    NamedCertificateAuthority originalCertificateAuthority = namedCertificateAuthorityDataService.findMostRecentByName(caPath);
+
+    if (originalCertificateAuthority != null) {
+      originalCertificateAuthority.copyInto(namedCertificateAuthority);
     }
 
     try {
@@ -115,7 +116,7 @@ public class CaController {
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
     return retrieveAuthorityWithAuditing(
         caPath(request),
-        namedCertificateAuthorityDataService::find,
+        namedCertificateAuthorityDataService::findMostRecentByName,
         request,
         authentication);
   }

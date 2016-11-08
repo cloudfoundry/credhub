@@ -61,7 +61,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private NamedCertificateAuthority findCa(String caName) {
-    NamedCertificateAuthority ca = namedCertificateAuthorityDataService.find(caName);
+    NamedCertificateAuthority ca = namedCertificateAuthorityDataService.findMostRecentByName(caName);
 
     if (ca == null) {
       if ("default".equals(caName)) {

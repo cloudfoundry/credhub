@@ -119,4 +119,10 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   public void setEncryptedValue(byte[] encryptedValue) {
     this.encryptedValue = encryptedValue;
   }
+
+  public void copyInto(NamedCertificateAuthority copy) {
+    copy.setCertificate(certificate);
+    copy.setEncryptedValue(encryptedValue);
+    copy.setNonce(nonce);
+  }
 }

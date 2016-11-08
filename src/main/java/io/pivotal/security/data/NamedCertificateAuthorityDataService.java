@@ -25,8 +25,8 @@ public class NamedCertificateAuthorityDataService {
     return save;
   }
 
-  public NamedCertificateAuthority find(String name) {
-    return namedCertificateAuthorityRepository.findOneByNameIgnoreCase(name);
+  public NamedCertificateAuthority findMostRecentByName(String name) {
+    return namedCertificateAuthorityRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(name);
   }
 
   public NamedCertificateAuthority findOneByUuid(String uuid) {

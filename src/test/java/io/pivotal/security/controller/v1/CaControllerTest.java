@@ -28,19 +28,29 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,11 +58,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -79,7 +84,8 @@ public class CaControllerTest {
   @InjectMocks
   CAGeneratorRequestTranslator caGeneratorRequestTranslator;
 
-  @Mock
+  @Spy
+  @Autowired
   BCCertificateGenerator certificateGenerator;
 
   @Spy
@@ -96,6 +102,7 @@ public class CaControllerTest {
   private NamedCertificateAuthority fakeGeneratedCa;
 
   private ResultActions response;
+  private NamedCertificateAuthority originalCa;
 
   {
     wireAndUnwire(this);
@@ -109,50 +116,101 @@ public class CaControllerTest {
     });
 
     describe("generating a ca", () -> {
-      beforeEach(() -> {
-        uuid = UUID.randomUUID();
-        fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
-            .setType("root")
-            .setCertificate("my_cert")
-            .setUuid(uuid)
-            .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(new CertificateAuthority(fakeGeneratedCa, "private_key"))
-            .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
-        doReturn(
-            fakeGeneratedCa
-        ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-        doReturn(
-            "private_key"
-        ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
+      describe("when creating a new CA", () -> {
+        beforeEach(() -> {
+          uuid = UUID.randomUUID();
+          fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
+              .setType("root")
+              .setCertificate("my_cert")
+              .setUuid(uuid)
+              .setUpdatedAt(FROZEN_TIME_INSTANT);
+          doReturn(new CertificateAuthority(fakeGeneratedCa, "private_key"))
+              .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
+          doReturn(
+              fakeGeneratedCa
+          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+          doReturn(
+              "private_key"
+          ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
 
-        String requestJson = "{\"type\":\"root\",\"parameters\":{\"common_name\":\"test-ca\"}}";
+          String requestJson = "{\"type\":\"root\",\"parameters\":{\"common_name\":\"test-ca\"}}";
 
-        RequestBuilder requestBuilder = post(urlPath)
-            .content(requestJson)
-            .contentType(MediaType.APPLICATION_JSON_UTF8);
+          RequestBuilder requestBuilder = post(urlPath)
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8);
 
-        response = mockMvc.perform(requestBuilder);
+          response = mockMvc.perform(requestBuilder);
+        });
+
+        it("can generate a ca", () -> {
+          response
+              .andExpect(status().isOk())
+              .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+              .andExpect(content().json(CA_RESPONSE_JSON));
+        });
+
+        it("saves the generated ca in the DB", () -> {
+          ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+
+          verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+
+          NamedCertificateAuthority savedCa = argumentCaptor.getValue();
+          assertThat(savedCa.getName(), equalTo(uniqueName));
+          assertThat(savedCa.getCertificate(), equalTo("my_cert"));
+        });
+
+        it("creates an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
       });
 
-      it("can generate a ca", () -> {
-        response
-            .andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(content().json(CA_RESPONSE_JSON));
-      });
+      describe("when the CA already exists in the database", () -> {
+        beforeEach(() -> {
+          setUpExistingCa();
+          setUpCaSaving();
 
-      it("saves the generated ca in the DB", () -> {
-        ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+          String requestJson =
+            "{" +
+              "\"type\":\"root\"," +
+              "\"parameters\":{" +
+                "\"common_name\":\"test-ca\"" +
+              "}" +
+            "}";
 
-        verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+          RequestBuilder requestBuilder = post(urlPath)
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8);
 
-        NamedCertificateAuthority savedCa = argumentCaptor.getValue();
-        assertThat(savedCa.getName(), equalTo(uniqueName));
-        assertThat(savedCa.getCertificate(), equalTo("my_cert"));
-      });
+          response = mockMvc.perform(requestBuilder);
+        });
 
-      it("creates an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        it("should succeed", () -> {
+          response.andExpect(status().isOk())
+              .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+              .andExpect(jsonPath("$.value.certificate").isString())
+              .andExpect(jsonPath("$.value.private_key").value("new-private-key"))
+              .andExpect(jsonPath("$.type").value("root"))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.updated_at").value(FROZEN_TIME_INSTANT.toString()));
+        });
+
+        it("should generate the new certificate", () -> {
+          verify(certificateGenerator, times(1)).generateCertificateAuthority(any(CertificateSecretParameters.class));
+        });
+
+        it("should create a new entity for it", () -> {
+          ArgumentCaptor<NamedCertificateAuthority> copyArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+          ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+
+          verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
+
+          NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
+          assertNotNull(newCertificateAuthority.getUuid());
+          assertThat(newCertificateAuthority.getUuid(), not(equalTo(originalCa.getUuid())));
+          assertNotNull(newCertificateAuthority.getCertificate());
+          assertThat(newCertificateAuthority.getCertificate(), not(equalTo(originalCa.getCertificate())));
+        });
       });
     });
 
@@ -171,69 +229,95 @@ public class CaControllerTest {
     });
 
     describe("setting a ca", () -> {
-      beforeEach(() -> {
-        uuid = UUID.randomUUID();
-        doReturn(
-            new NamedCertificateAuthority(uniqueName)
-                .setType("root")
-                .setCertificate("my_cert")
-                .setUpdatedAt(FROZEN_TIME_INSTANT)
-                .setUuid(uuid)
-        ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-        doReturn(
-            "private_key"
-        ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
-        String requestJson = "{" + CA_CREATION_JSON + "}";
-        RequestBuilder requestBuilder = put(urlPath)
-            .content(requestJson)
-            .contentType(MediaType.APPLICATION_JSON_UTF8);
-        response = mockMvc.perform(requestBuilder);
-      });
-
-      it("returns the new root ca", () -> {
-        response.andExpect(status().isOk())
-            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(content().json(CA_RESPONSE_JSON));
-      });
-
-      it("writes the new root ca to the DB", () -> {
-        ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
-        verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
-
-        NamedCertificateAuthority actual = argumentCaptor.getValue();
-
-        assertThat(actual.getCertificate(), equalTo("my_cert"));
-      });
-
-      it("creates an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
-      });
-
-      describe("overwriting a root ca", () -> {
+      describe("when creating a new CA", () -> {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
           doReturn(
               new NamedCertificateAuthority(uniqueName)
                   .setType("root")
-                  .setCertificate("original_cert")
+                  .setCertificate("my_cert")
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
-          ).when(namedCertificateAuthorityDataService).find(eq(uniqueName));
+          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+          doReturn(
+              "private_key"
+          ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
+          String requestJson = "{" + CA_CREATION_JSON + "}";
+          RequestBuilder requestBuilder = put(urlPath)
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8);
+          response = mockMvc.perform(requestBuilder);
         });
 
-        it("returns the new CA in the response", () -> {
+        it("returns the new root ca", () -> {
           response.andExpect(status().isOk())
               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(content().json(CA_RESPONSE_JSON));
         });
 
-        it("stores the new ca in the database under the same name", () -> {
+        it("writes the new root ca to the DB", () -> {
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
           verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
 
           NamedCertificateAuthority actual = argumentCaptor.getValue();
 
           assertThat(actual.getCertificate(), equalTo("my_cert"));
+        });
+
+        it("creates an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
+      describe("when updating an existing CA", () -> {
+        beforeEach(() -> {
+          setUpExistingCa();
+          setUpCaSaving();
+
+          String requestJson =
+            "{" +
+              "\"type\":\"root\"," +
+              "\"value\":{" +
+                "\"certificate\":\"new-certificate\"," +
+                "\"private_key\":\"new-private-key\"" +
+              "}" +
+            "}";
+
+          RequestBuilder requestBuilder = put(urlPath)
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8);
+
+          response = mockMvc.perform(requestBuilder);
+        });
+
+        it("should succeed", () -> {
+          String expectedJson =
+            "{" +
+              "\"value\":{" +
+                "\"certificate\":\"new-certificate\"," +
+                "\"private_key\":\"new-private-key\"" +
+              "}," +
+              "\"type\":\"root\"," +
+              "\"id\":\"" + uuid.toString() + "\"," +
+              UPDATED_AT_JSON +
+            "}";
+
+          response
+              .andExpect(status().isOk())
+              .andExpect(content().json(expectedJson, true));
+        });
+
+        it("should create a new entity for it", () -> {
+          ArgumentCaptor<NamedCertificateAuthority> copyArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+          ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+
+          verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
+
+          NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
+          assertNotNull(newCertificateAuthority.getUuid());
+          assertThat(newCertificateAuthority.getUuid(), not(equalTo(originalCa.getUuid())));
+          assertThat(newCertificateAuthority.getCertificate(), equalTo("new-certificate"));
         });
 
         it("creates an audit record", () -> {
@@ -279,7 +363,7 @@ public class CaControllerTest {
             .setCertificate("my-certificate")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(storedCa).when(namedCertificateAuthorityDataService).find(eq(uniqueName));
+        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecentByName(eq(uniqueName));
         doReturn("my-priv").when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
         doReturn(storedCa).when(namedCertificateAuthorityDataService).findOneByUuid(eq("my-uuid"));
       });
@@ -294,8 +378,8 @@ public class CaControllerTest {
               + UPDATED_AT_JSON + "," +
               "\"type\":\"root\"," +
               "\"value\":{" +
-                "\"certificate\":\"my-certificate\"," +
-                "\"private_key\":\"my-priv\"}," +
+              "\"certificate\":\"my-certificate\"," +
+              "\"private_key\":\"my-priv\"}," +
               "\"id\":\"" + uuid.toString() +
               "\"}";
           response.andExpect(status().isOk())
@@ -321,8 +405,8 @@ public class CaControllerTest {
               UPDATED_AT_JSON + "," +
               "\"type\":\"root\"," +
               "\"value\":{" +
-                "\"certificate\":\"my-certificate\"," +
-                "\"private_key\":\"my-priv\"" +
+              "\"certificate\":\"my-certificate\"," +
+              "\"private_key\":\"my-priv\"" +
               "}," +
               "\"id\":\"" + uuid.toString() + "\"" +
               "}";
@@ -390,5 +474,31 @@ public class CaControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
         .andExpect(content().json(notFoundJson));
+  }
+
+  private void setUpExistingCa() {
+    originalCa = spy(new NamedCertificateAuthority(uniqueName));
+    originalCa.setUuid(UUID.randomUUID());
+    originalCa.setCertificate("original-certificate");
+
+    when(namedCertificateAuthorityDataService.findMostRecentByName(uniqueName)).thenReturn(originalCa);
+  }
+
+  private void setUpCaSaving() {
+    uuid = UUID.randomUUID();
+
+    doAnswer(invocation -> {
+      NamedCertificateAuthority certificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
+      certificateAuthority.setUpdatedAt(FROZEN_TIME_INSTANT);
+      if (certificateAuthority.getUuid() == null) {
+        certificateAuthority.setUuid(uuid);
+      }
+
+      doReturn(
+          "new-private-key"
+      ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(certificateAuthority);
+
+      return certificateAuthority;
+    }).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
   }
 }

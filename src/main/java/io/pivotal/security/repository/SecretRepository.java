@@ -13,8 +13,6 @@ public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
   NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
   NamedSecret findOneByUuid(UUID uuid);
   List<NamedSecret> deleteByNameIgnoreCase(String name);
-  List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String nameSubstring);
-  List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring);
   List<NamedSecret> findAllByName(String name);
 
   default List<String> findAllPaths(Boolean findPaths) {

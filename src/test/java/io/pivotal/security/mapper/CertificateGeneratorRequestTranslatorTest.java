@@ -385,7 +385,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
     certificateAuthorityDataService.updatePrivateKey(certificateAuthority, certificateSecret.getCertificateAuthorityBody().getPrivateKey());
 
-    when(certificateAuthorityDataService.find("my-root")).thenReturn(certificateAuthority);
+    when(certificateAuthorityDataService.findMostRecentByName("my-root")).thenReturn(certificateAuthority);
 
     return certificateAuthority;
   }

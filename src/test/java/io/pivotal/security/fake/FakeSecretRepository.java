@@ -77,16 +77,6 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findByNameIgnoreCaseContainingOrderByUpdatedAtDesc(String nameSubstring) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public List<NamedSecret> findByNameIgnoreCaseStartingWithOrderByUpdatedAtDesc(String nameSubstring) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public List<NamedSecret> findAllByName(String name) {
     throw new UnsupportedOperationException();
   }

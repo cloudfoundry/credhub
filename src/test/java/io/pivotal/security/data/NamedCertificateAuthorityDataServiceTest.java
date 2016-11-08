@@ -181,7 +181,7 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
     });
 
-    describe("#find", () -> {
+    describe("#findMostRecentByName", () -> {
       beforeEach(() -> {
         subject.save(createCertificateAuthority("test-ca", "fake-certificate"));
         subject.save(createCertificateAuthority("TEST", "fake-certificate"));
@@ -190,7 +190,7 @@ public class NamedCertificateAuthorityDataServiceTest {
 
       describe("when there is no entity with the name", () -> {
         it("should return null", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.find("this-entity-does-not-exist");
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecentByName("this-entity-does-not-exist");
 
           assertNull(certificateAuthority);
         });
@@ -198,7 +198,7 @@ public class NamedCertificateAuthorityDataServiceTest {
 
       describe("when given a name in the same case as the entity's name", () -> {
         it("should retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.find("test-ca");
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecentByName("test-ca");
 
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
@@ -207,7 +207,7 @@ public class NamedCertificateAuthorityDataServiceTest {
 
       describe("when given a name with a different case than the entity's name", () -> {
         it("should still retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.find("TEST-CA");
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecentByName("TEST-CA");
 
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
