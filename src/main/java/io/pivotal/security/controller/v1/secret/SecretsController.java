@@ -18,6 +18,7 @@ import io.pivotal.security.view.Secret;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
@@ -105,9 +106,21 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/**", method = RequestMethod.DELETE)
-  public ResponseEntity delete(HttpServletRequest request, Authentication authentication) throws Exception {
+  public ResponseEntity delete( @RequestParam(value = "name", required = false) String secretName,
+                                HttpServletRequest request,
+                                Authentication authentication) throws Exception {
     return audit(CREDENTIAL_DELETE, request, authentication, () -> {
-      List<NamedSecret> namedSecrets = secretDataService.delete(secretPath(request));
+      List<NamedSecret> namedSecrets;
+      String nameToDelete = secretName;
+      if (nameToDelete == null) {
+        nameToDelete = secretPath(request);
+      }
+
+      if (StringUtils.isEmpty(nameToDelete)) {
+        throw new ParameterizedValidationException("error.missing_name");
+      }
+
+      namedSecrets = secretDataService.delete(nameToDelete);
 
       if (namedSecrets.size() > 0) {
         return new ResponseEntity(HttpStatus.OK);
@@ -157,7 +170,7 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "/**", method = RequestMethod.GET)
-  public ResponseEntity getGetSecretByPath(HttpServletRequest request, Authentication authentication) throws Exception {
+  public ResponseEntity getSecretByPath(HttpServletRequest request, Authentication authentication) throws Exception {
     return retrieveSecretWithAuditing(secretPath(request), secretDataService::findMostRecentAsList, request, authentication, (namedSecrets) -> Secret
         .fromEntity(namedSecrets.get(0)));
   }

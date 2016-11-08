@@ -35,6 +35,8 @@ import java.util.function.Supplier;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fdescribe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -133,10 +135,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("asks data service to remove it from storage", () -> {
-          ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(String.class);
-          verify(secretDataService, times(1)).delete(argumentCaptor.capture());
-
-          assertThat(argumentCaptor.getValue(), equalTo(secretName.toUpperCase()));
+          verify(secretDataService, times(1)).delete(secretName.toUpperCase());
         });
 
         it("persists an audit entry", () -> {
@@ -144,7 +143,7 @@ public class SecretsControllerDeleteTest {
         });
       });
 
-      describe("when there are multiple secret with that name", () -> {
+      describe("when there are multiple secrets with that name", () -> {
         beforeEach(() -> {
           doReturn(Arrays.asList(new NamedValueSecret(secretName, "value1"), new NamedValueSecret(secretName, "value2")))
               .when(secretDataService).delete(secretName);
@@ -162,6 +161,30 @@ public class SecretsControllerDeleteTest {
 
         it("persists a single audit entry", () -> {
           verify(auditLogService, times(1)).performWithAuditing(eq("credential_delete"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
+      describe("name can come as a request parameter", () -> {
+        beforeEach(() -> {
+          doReturn(Arrays.asList(new NamedValueSecret(secretName, "value1"), new NamedValueSecret(secretName, "value2")))
+              .when(secretDataService).delete(secretName.toUpperCase());
+        });
+
+        it("can delete when the name is a query param", () -> {
+          mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()))
+            .andExpect(status().isOk());
+
+          verify(secretDataService, times(1)).delete(secretName.toUpperCase());
+        });
+
+        it("handles missing name", () -> {
+          mockMvc.perform(delete("/api/v1/data"))
+            .andExpect(status().isBadRequest());
+        });
+
+        it("handles empty name", () -> {
+          mockMvc.perform(delete("/api/v1/data?name="))
+              .andExpect(status().isBadRequest());
         });
       });
     });

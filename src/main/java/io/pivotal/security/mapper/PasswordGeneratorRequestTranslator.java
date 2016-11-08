@@ -33,7 +33,7 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
       }
       secretParameters = entity.getGenerationParameters();
       if (secretParameters == null) {
-        throw new ParameterizedValidationException("error.cannot_regenerated_non_generated_credentials");
+        throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_credentials");
       }
     } else {
       secretParameters = new PasswordGenerationParameters();
