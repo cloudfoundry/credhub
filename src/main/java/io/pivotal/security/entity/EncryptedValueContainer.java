@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-interface EncryptedValueContainer {
+public interface EncryptedValueContainer {
 
   byte[] getEncryptedValue();
   void setEncryptedValue(byte[] encryptedValue);

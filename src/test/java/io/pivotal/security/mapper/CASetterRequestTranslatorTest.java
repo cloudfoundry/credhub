@@ -5,21 +5,27 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
-import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -34,7 +40,7 @@ public class CASetterRequestTranslatorTest {
 
   private CASetterRequestTranslator subject;
 
-  private UUID uuid;
+  private NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
 
   {
     wireAndUnwire(this);
@@ -42,9 +48,8 @@ public class CASetterRequestTranslatorTest {
     describe("populating entity from json", () -> {
       beforeEach(() -> {
         entity = new NamedCertificateAuthority("foo");
-        uuid = UUID.randomUUID();
-        entity.setUuid(uuid);
-        subject = new CASetterRequestTranslator();
+        namedCertificateAuthorityDataService = mock(NamedCertificateAuthorityDataService.class);
+        subject = new CASetterRequestTranslator(namedCertificateAuthorityDataService);
       });
 
       it("validates the json keys", () -> {
@@ -59,13 +64,16 @@ public class CASetterRequestTranslatorTest {
       });
 
       it("populates CA entity for valid scenarios", () -> {
-        CertificateAuthority expected = new CertificateAuthority("root", "a", "b");
-        expected.setUuid(uuid);
+        ArgumentCaptor<NamedCertificateAuthority> caCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
         DocumentContext parsed = jsonPath.parse(requestJson);
+
         subject.populateEntityFromJson(entity, parsed);
 
-        assertThat(CertificateAuthority.fromEntity(entity), BeanMatchers.theSameAs(expected));
+        verify(namedCertificateAuthorityDataService).updatePrivateKey(caCaptor.capture(), eq("b"));
+        NamedCertificateAuthority updatedCA = caCaptor.getValue();
+        assertThat(updatedCA.getType(), equalTo("root"));
+        assertThat(updatedCA.getCertificate(), equalTo("a"));
       });
 
       itThrowsWithMessage("exception when certificate is missing", ParameterizedValidationException.class, "error.missing_ca_credentials", () -> {

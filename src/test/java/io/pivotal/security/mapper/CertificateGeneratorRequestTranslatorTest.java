@@ -28,8 +28,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.security.Security;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -49,6 +47,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.Security;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -73,7 +73,8 @@ public class CertificateGeneratorRequestTranslatorTest {
   @InjectMocks
   CertificateGeneratorRequestTranslator subject;
 
-  @Mock
+  @Spy
+  @Autowired
   NamedCertificateAuthorityDataService certificateAuthorityDataService;
 
   private DocumentContext parsed;
@@ -381,7 +382,8 @@ public class CertificateGeneratorRequestTranslatorTest {
     CertificateAuthority certificateSecret = secretGenerator.generateCertificateAuthority(authorityParameters);
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("my-root");
     certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate());
-    certificateAuthority.setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
+
+    certificateAuthorityDataService.updatePrivateKey(certificateAuthority, certificateSecret.getCertificateAuthorityBody().getPrivateKey());
 
     when(certificateAuthorityDataService.find("my-root")).thenReturn(certificateAuthority);
 

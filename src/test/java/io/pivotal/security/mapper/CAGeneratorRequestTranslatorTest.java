@@ -3,17 +3,19 @@ package io.pivotal.security.mapper;
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
+import com.jayway.jsonpath.internal.JsonContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -23,11 +25,9 @@ import org.springframework.test.context.BootstrapWith;
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.refEq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -45,6 +45,9 @@ public class CAGeneratorRequestTranslatorTest {
   @Mock
   BCCertificateGenerator certificateGenerator;
 
+  @Mock
+  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+
   @Autowired
   CertificateSecretParametersFactory parametersFactory;
 
@@ -52,7 +55,21 @@ public class CAGeneratorRequestTranslatorTest {
   @Spy
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
-  private DocumentContext parsed;
+  String requestJson = "{" +
+      "\"type\":\"root\"," +
+      "\"parameters\":{" +
+      "\"common_name\":\"My Common Name\", " +
+      "\"organization\": \"Organization\"," +
+      "\"organization_unit\": \"My Unit\"," +
+      "\"locality\": \"My Locality\"," +
+      "\"state\": \"My State\"," +
+      "\"country\": \"My Country\"," +
+      "\"key_length\": 2048," +
+      "\"duration\": 365" +
+      "}" +
+      "}";
+
+  private DocumentContext parsedRequest;
   private CertificateSecretParameters fullParams = new CertificateSecretParameters()
       .setCommonName("My Common Name")
       .setOrganization("Organization")
@@ -69,52 +86,25 @@ public class CAGeneratorRequestTranslatorTest {
 
     describe("when all parameters are provided", () -> {
       beforeEach(() -> {
-        String json = "{" +
-            "\"type\":\"root\"," +
-            "\"parameters\":{" +
-            "\"common_name\":\"My Common Name\", " +
-            "\"organization\": \"Organization\"," +
-            "\"organization_unit\": \"My Unit\"," +
-            "\"locality\": \"My Locality\"," +
-            "\"state\": \"My State\"," +
-            "\"country\": \"My Country\"," +
-            "\"key_length\": 2048," +
-            "\"duration\": 365" +
-            "}" +
-            "}";
-        parsed = jsonPath.parse(json);
+        subject.namedCertificateAuthorityDataService = namedCertificateAuthorityDataService;
+        parsedRequest = jsonPath.parse(requestJson);
       });
 
       it("validates the json keys", () -> {
-        subject.validateJsonKeys(parsed);
+        subject.validateJsonKeys(parsedRequest);
         // no exception
       });
+    });
 
-      it("creates view with specified parameters", () -> {
-        when(certificateGenerator.generateCertificateAuthority(refEq(fullParams)))
-            .thenReturn(new CertificateAuthority("root", "theCert", "thePrivateKey"));
+    describe("#populateEntityFromJson", () -> {
+      it("updates the entity with the encrypted private key for a new CA", () -> {
+        doReturn(new CertificateAuthority("root", "fake-certificate", "fake-private-key")).when(certificateGenerator).generateCertificateAuthority(any());
+        NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my-fake-ca");
+        DocumentContext documentContext = new JsonContext().parse(requestJson);
 
-        CertificateAuthority certificateAuthority = subject.createAuthorityFromJson(parsed);
+        subject.populateEntityFromJson(namedCertificateAuthority, documentContext);
 
-        assertThat(certificateAuthority.getType(), equalTo("root"));
-        assertThat(certificateAuthority.getCertificateAuthorityBody().getCertificate(), equalTo("theCert"));
-        assertThat(certificateAuthority.getCertificateAuthorityBody().getPrivateKey(), equalTo("thePrivateKey"));
-      });
-
-      it("validates parameters", () -> {
-        subject.createAuthorityFromJson(parsed);
-
-        Mockito.verify(certificateGeneratorRequestTranslator, times(1)).validCertificateAuthorityParameters(parsed);
-      });
-
-      itThrows("returns error when type is not 'root'", ParameterizedValidationException.class, () -> {
-        DocumentContext parsed = jsonPath.parse("{\"type\":\"notRoot\"}");
-        subject.createAuthorityFromJson(parsed);
-      });
-
-      itThrows("returns error when type is not provided", ParameterizedValidationException.class, () -> {
-        DocumentContext parsed = jsonPath.parse("{}");
-        subject.createAuthorityFromJson(parsed);
+        verify(namedCertificateAuthorityDataService).updatePrivateKey(namedCertificateAuthority, "fake-private-key");
       });
     });
 
@@ -125,8 +115,8 @@ public class CAGeneratorRequestTranslatorTest {
             "\"foo\":\"bar\"" +
             "}";
 
-        parsed = jsonPath.parse(json);
-        subject.validateJsonKeys(parsed);
+        parsedRequest = jsonPath.parse(json);
+        subject.validateJsonKeys(parsedRequest);
       });
     });
   }

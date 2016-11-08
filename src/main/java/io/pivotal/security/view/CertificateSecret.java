@@ -17,7 +17,11 @@ public class CertificateSecret extends Secret {
   }
 
   public CertificateSecret(NamedCertificateSecret namedCertificateSecret) {
-    this(namedCertificateSecret.getUpdatedAt(), namedCertificateSecret.getUuid(), namedCertificateSecret.getCa(), namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey());
+    this(namedCertificateSecret.getUpdatedAt(),
+        namedCertificateSecret.getUuid(),
+        namedCertificateSecret.getCa(),
+        namedCertificateSecret.getCertificate(),
+        namedCertificateSecret.getPrivateKey());
   }
 
   @Override

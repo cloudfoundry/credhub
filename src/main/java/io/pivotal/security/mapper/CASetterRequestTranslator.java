@@ -1,18 +1,26 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.view.ParameterizedValidationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import io.pivotal.security.view.ParameterizedValidationException;
+import static com.google.common.collect.ImmutableSet.of;
 
 import java.util.Set;
 
-import static com.google.common.collect.ImmutableSet.of;
-
 @Component
 public class CASetterRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
+
+  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+
+  @Autowired
+  public CASetterRequestTranslator(NamedCertificateAuthorityDataService namedCertificateAuthorityDataService) {
+    this.namedCertificateAuthorityDataService = namedCertificateAuthorityDataService;
+  }
 
   @Override
   public void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {
@@ -29,8 +37,9 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
     }
     namedCA
         .setType(type)
-        .setCertificate(certificate)
-        .setPrivateKey(privateKey);
+        .setCertificate(certificate);
+
+    namedCertificateAuthorityDataService.updatePrivateKey(namedCA, privateKey);
   }
 
   @Override

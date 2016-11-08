@@ -1,6 +1,7 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,19 +10,34 @@ import java.util.UUID;
 
 @Service
 public class NamedCertificateAuthorityDataService {
+  private final NamedCertificateAuthorityRepository namedCertificateAuthorityRepository;
+  private final SecretEncryptionHelper secretEncryptionHelper;
+
   @Autowired
-  NamedCertificateAuthorityRepository certificateAuthorityRepository;
+  public NamedCertificateAuthorityDataService(NamedCertificateAuthorityRepository namedCertificateAuthorityRepository,
+                                              SecretEncryptionHelper secretEncryptionHelper) {
+    this.namedCertificateAuthorityRepository = namedCertificateAuthorityRepository;
+    this.secretEncryptionHelper = secretEncryptionHelper;
+  }
 
   public NamedCertificateAuthority save(NamedCertificateAuthority certificateAuthority) {
-    NamedCertificateAuthority save = certificateAuthorityRepository.save(certificateAuthority);
+    NamedCertificateAuthority save = namedCertificateAuthorityRepository.save(certificateAuthority);
     return save;
   }
 
   public NamedCertificateAuthority find(String name) {
-    return certificateAuthorityRepository.findOneByNameIgnoreCase(name);
+    return namedCertificateAuthorityRepository.findOneByNameIgnoreCase(name);
   }
 
   public NamedCertificateAuthority findOneByUuid(String uuid) {
-    return certificateAuthorityRepository.findOneByUuid(UUID.fromString(uuid));
+    return namedCertificateAuthorityRepository.findOneByUuid(UUID.fromString(uuid));
+  }
+
+  public void updatePrivateKey(NamedCertificateAuthority certificateAuthority, String privateKey) {
+    secretEncryptionHelper.refreshEncryptedValue(certificateAuthority, privateKey);
+  }
+
+  public String getPrivateKeyClearText(NamedCertificateAuthority certificateAuthority) {
+    return secretEncryptionHelper.retrieveClearTextValue(certificateAuthority);
   }
 }

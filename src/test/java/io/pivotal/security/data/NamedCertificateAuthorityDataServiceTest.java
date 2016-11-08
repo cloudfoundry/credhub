@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
@@ -12,12 +13,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -29,15 +24,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
 public class NamedCertificateAuthorityDataServiceTest {
-  @Autowired
-  NamedCertificateAuthorityDataService subject;
-
   @Autowired
   JdbcTemplate jdbcTemplate;
 
@@ -50,11 +51,18 @@ public class NamedCertificateAuthorityDataServiceTest {
   private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
   private Consumer<Long> fakeTimeSetter;
 
+  private NamedCertificateAuthorityDataService subject;
+  private SecretEncryptionHelper secretEncryptionHelper;
+
   {
     wireAndUnwire(this);
+
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
+      secretEncryptionHelper = mock(SecretEncryptionHelper.class);
+      subject = new NamedCertificateAuthorityDataService(namedCertificateAuthorityRepository, secretEncryptionHelper);
+
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
     });
 
@@ -62,9 +70,18 @@ public class NamedCertificateAuthorityDataServiceTest {
       jdbcTemplate.execute("delete from named_certificate_authority");
     });
 
+    describe("#updatePrivateKey", () -> {
+      it("should use the EncryptionHelper to update nonce and encrypted value", () -> {
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("fake-cool-ca", "fake-awesome-certificate");
+        subject.updatePrivateKey(certificateAuthority, "fake-private-key");
+
+        verify(secretEncryptionHelper).refreshEncryptedValue(eq(certificateAuthority), eq("fake-private-key"));
+      });
+    });
+
     describe("#save", () -> {
       it("should create the entity in the database", () -> {
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", "fake-encrypted-value");
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate");
         certificateAuthority = subject.save(certificateAuthority);
 
         assertNotNull(certificateAuthority);
@@ -104,10 +121,8 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
 
       it("can store a CA with a certificate of length 7000", () -> {
-        final StringBuilder stringBuilder = new StringBuilder(7000);
-        Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-        String certificate = stringBuilder.toString();
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", certificate, "fake-encrypted-value");
+        String certificate = buildLargeString(7000);
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", certificate);
 
         certificateAuthority = subject.save(certificateAuthority);
 
@@ -126,10 +141,9 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
 
       it("can store a CA with a private key of length 7000", () -> {
-        final StringBuilder stringBuilder = new StringBuilder(7000);
-        Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-        String privateKey = stringBuilder.toString();
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", privateKey);
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate");
+        String largeString = buildLargeString(7000);
+        certificateAuthority.setEncryptedValue(largeString.getBytes());
 
         certificateAuthority = subject.save(certificateAuthority);
 
@@ -146,14 +160,12 @@ public class NamedCertificateAuthorityDataServiceTest {
 
         NamedCertificateAuthority actual = certificateAuthorities.get(0);
         assertThat(actual.getNonce(), equalTo(certificateAuthority.getNonce()));
-        assertThat(actual.getEncryptedValue(), equalTo(certificateAuthority.getEncryptedValue()));
-        assertThat(actual.getPrivateKey(), equalTo(certificateAuthority.getPrivateKey()));
-        assertThat(actual.getPrivateKey().length(), equalTo(7000));
+        assertThat(new String(actual.getEncryptedValue()).length(), equalTo(7000));
       });
 
       describe("when the entity already exists", () -> {
         it("should save the updated entity", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.save(createCertificateAuthority("test-name", "original-certificate", "test-private-key"));
+          NamedCertificateAuthority certificateAuthority = subject.save(createCertificateAuthority("test-name", "original-certificate"));
           String newCertificateValue = "new-certificate";
           certificateAuthority.setCertificate(newCertificateValue);
           certificateAuthority = subject.save(certificateAuthority);
@@ -171,9 +183,9 @@ public class NamedCertificateAuthorityDataServiceTest {
 
     describe("#find", () -> {
       beforeEach(() -> {
-        subject.save(createCertificateAuthority("test-ca", "fake-certificate", "fake-encrypted-value"));
-        subject.save(createCertificateAuthority("TEST", "fake-certificate", "fake-encrypted-value"));
-        subject.save(createCertificateAuthority("FOO", "fake-certificate", "fake-encrypted-value"));
+        subject.save(createCertificateAuthority("test-ca", "fake-certificate"));
+        subject.save(createCertificateAuthority("TEST", "fake-certificate"));
+        subject.save(createCertificateAuthority("FOO", "fake-certificate"));
       });
 
       describe("when there is no entity with the name", () -> {
@@ -205,23 +217,27 @@ public class NamedCertificateAuthorityDataServiceTest {
 
     describe("#findOneByUuid", () -> {
       it("should be able to find a CA by uuid", () -> {
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert", "my-priv");
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert");
         NamedCertificateAuthority savedSecret = subject.save(certificateAuthority);
 
         assertNotNull(savedSecret.getUuid());
         NamedCertificateAuthority oneByUuid = subject.findOneByUuid(savedSecret.getUuid().toString());
         assertThat(oneByUuid.getName(), equalTo("my-ca"));
         assertThat(oneByUuid.getCertificate(), equalTo("my-cert"));
-        assertThat(oneByUuid.getPrivateKey(), equalTo("my-priv"));
       });
     });
   }
 
-  NamedCertificateAuthority createCertificateAuthority(String name, String certificate, String privateKey) {
+  private String buildLargeString(int stringLength) {
+    final StringBuilder stringBuilder = new StringBuilder(stringLength);
+    Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
+    return stringBuilder.toString();
+  }
+
+  NamedCertificateAuthority createCertificateAuthority(String name, String certificate) {
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority(name);
 
     certificateAuthority.setCertificate(certificate);
-    certificateAuthority.setPrivateKey(privateKey);
     certificateAuthority.setType("test-ca-type");
 
     return certificateAuthority;

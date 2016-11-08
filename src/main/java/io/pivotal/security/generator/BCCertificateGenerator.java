@@ -75,7 +75,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-    PEMParser pemParser = new PEMParser(new StringReader(ca.getPrivateKey()));
+    PEMParser pemParser = new PEMParser(new StringReader(namedCertificateAuthorityDataService.getPrivateKeyClearText(ca)));
     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);

@@ -30,11 +30,11 @@ public class CertificateAuthority extends BaseView {
     setUuid(uuid);
   }
 
-  public CertificateAuthority(NamedCertificateAuthority namedCa) {
+  public CertificateAuthority(NamedCertificateAuthority namedCa, String privateKey) {
     this(namedCa.getUpdatedAt(),
         namedCa.getType(),
         namedCa.getCertificate(),
-        namedCa.getPrivateKey(),
+        privateKey,
         namedCa.getUuid());
   }
 
@@ -65,7 +65,7 @@ public class CertificateAuthority extends BaseView {
     this.uuid = uuid;
   }
 
-  public static CertificateAuthority fromEntity(NamedCertificateAuthority namedCertificateAuthority) {
-    return new CertificateAuthority(namedCertificateAuthority);
+  public static CertificateAuthority fromEntity(NamedCertificateAuthority namedCertificateAuthority, String privateKey) {
+    return new CertificateAuthority(namedCertificateAuthority, privateKey);
   }
 }

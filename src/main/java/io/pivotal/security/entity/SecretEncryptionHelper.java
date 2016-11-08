@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 @Component
-class SecretEncryptionHelper {
+public class SecretEncryptionHelper {
 
   @Autowired
   ObjectMapper objectMapper;
@@ -19,14 +19,16 @@ class SecretEncryptionHelper {
   @Autowired
   EncryptionService encryptionService;
 
-  void refreshEncryptedValue(EncryptedValueContainer encryptedValueContainer, String clearTextValue) {
+  public void refreshEncryptedValue(EncryptedValueContainer encryptedValueContainer, String clearTextValue) {
     if (clearTextValue == null) {
       encryptedValueContainer.setNonce(null);
       encryptedValueContainer.setEncryptedValue(null);
       return;
     }
     try {
-      if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null || !Objects.equals(clearTextValue, encryptionService.decrypt(encryptedValueContainer.getNonce(), encryptedValueContainer.getEncryptedValue()))) {
+      if (encryptedValueContainer.getNonce() == null ||
+          encryptedValueContainer.getEncryptedValue() == null ||
+          !Objects.equals(clearTextValue, encryptionService.decrypt(encryptedValueContainer.getNonce(), encryptedValueContainer.getEncryptedValue()))) {
         final EncryptionService.Encryption encryption = encryptionService.encrypt(clearTextValue);
         encryptedValueContainer.setNonce(encryption.nonce);
         encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
@@ -36,7 +38,7 @@ class SecretEncryptionHelper {
     }
   }
 
-  String retrieveClearTextValue(EncryptedValueContainer encryptedValueContainer) {
+  public String retrieveClearTextValue(EncryptedValueContainer encryptedValueContainer) {
     if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null) {return null;}
     try {
       return encryptionService.decrypt(encryptedValueContainer.getNonce(), encryptedValueContainer.getEncryptedValue());

@@ -28,11 +28,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -53,6 +48,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -114,14 +114,16 @@ public class CaControllerTest {
         fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
             .setType("root")
             .setCertificate("my_cert")
-            .setPrivateKey("private_key")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(new CertificateAuthority(fakeGeneratedCa))
+        doReturn(new CertificateAuthority(fakeGeneratedCa, "private_key"))
             .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
         doReturn(
             fakeGeneratedCa
         ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+        doReturn(
+            "private_key"
+        ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
 
         String requestJson = "{\"type\":\"root\",\"parameters\":{\"common_name\":\"test-ca\"}}";
 
@@ -145,9 +147,8 @@ public class CaControllerTest {
         verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
 
         NamedCertificateAuthority savedCa = argumentCaptor.getValue();
-        assertThat(savedCa.getName(), equalTo(fakeGeneratedCa.getName()));
-        assertThat(savedCa.getCertificate(), equalTo(fakeGeneratedCa.getCertificate()));
-        assertThat(savedCa.getPrivateKey(), equalTo(fakeGeneratedCa.getPrivateKey()));
+        assertThat(savedCa.getName(), equalTo(uniqueName));
+        assertThat(savedCa.getCertificate(), equalTo("my_cert"));
       });
 
       it("creates an audit entry", () -> {
@@ -176,11 +177,12 @@ public class CaControllerTest {
             new NamedCertificateAuthority(uniqueName)
                 .setType("root")
                 .setCertificate("my_cert")
-                .setPrivateKey("private_key")
                 .setUpdatedAt(FROZEN_TIME_INSTANT)
                 .setUuid(uuid)
         ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-
+        doReturn(
+            "private_key"
+        ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
         String requestJson = "{" + CA_CREATION_JSON + "}";
         RequestBuilder requestBuilder = put(urlPath)
             .content(requestJson)
@@ -189,10 +191,9 @@ public class CaControllerTest {
       });
 
       it("returns the new root ca", () -> {
-        String responseJson = "{" + UPDATED_AT_JSON + "," + CA_CREATION_JSON + "}";
         response.andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-            .andExpect(content().json(responseJson));
+            .andExpect(content().json(CA_RESPONSE_JSON));
       });
 
       it("writes the new root ca to the DB", () -> {
@@ -201,7 +202,6 @@ public class CaControllerTest {
 
         NamedCertificateAuthority actual = argumentCaptor.getValue();
 
-        assertThat(actual.getPrivateKey(), equalTo("private_key"));
         assertThat(actual.getCertificate(), equalTo("my_cert"));
       });
 
@@ -216,17 +216,15 @@ public class CaControllerTest {
               new NamedCertificateAuthority(uniqueName)
                   .setType("root")
                   .setCertificate("original_cert")
-                  .setPrivateKey("original_private_key")
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
           ).when(namedCertificateAuthorityDataService).find(eq(uniqueName));
         });
 
-        it("returns the new cain the response", () -> {
-          String responseJson = "{" + UPDATED_AT_JSON + "," + CA_CREATION_JSON + "}";
+        it("returns the new CA in the response", () -> {
           response.andExpect(status().isOk())
               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-              .andExpect(content().json(responseJson));
+              .andExpect(content().json(CA_RESPONSE_JSON));
         });
 
         it("stores the new ca in the database under the same name", () -> {
@@ -236,7 +234,6 @@ public class CaControllerTest {
           NamedCertificateAuthority actual = argumentCaptor.getValue();
 
           assertThat(actual.getCertificate(), equalTo("my_cert"));
-          assertThat(actual.getPrivateKey(), equalTo("private_key"));
         });
 
         it("creates an audit record", () -> {
@@ -280,10 +277,10 @@ public class CaControllerTest {
         NamedCertificateAuthority storedCa = new NamedCertificateAuthority(uniqueName)
             .setType("root")
             .setCertificate("my-certificate")
-            .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
         doReturn(storedCa).when(namedCertificateAuthorityDataService).find(eq(uniqueName));
+        doReturn("my-priv").when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
         doReturn(storedCa).when(namedCertificateAuthorityDataService).findOneByUuid(eq("my-uuid"));
       });
 

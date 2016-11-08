@@ -28,16 +28,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -90,21 +91,23 @@ public class CaController {
   }
 
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
-    DocumentContext parsed = jsonPath.parse(requestBody);
+    DocumentContext parsedRequest = jsonPath.parse(requestBody);
     NamedCertificateAuthority namedCertificateAuthority = namedCertificateAuthorityDataService.find(caPath);
     if (namedCertificateAuthority == null) {
       namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     }
 
     try {
-      requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsed);
-      requestTranslator.validateJsonKeys(parsed);
+      requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsedRequest);
+      requestTranslator.validateJsonKeys(parsedRequest);
     } catch (ParameterizedValidationException ve) {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
 
     NamedCertificateAuthority saved = namedCertificateAuthorityDataService.save(namedCertificateAuthority);
-    return new ResponseEntity<>(CertificateAuthority.fromEntity(saved), HttpStatus.OK);
+    String privateKey = namedCertificateAuthorityDataService.getPrivateKeyClearText(namedCertificateAuthority);
+
+    return new ResponseEntity<>(CertificateAuthority.fromEntity(saved, privateKey), HttpStatus.OK);
   }
 
   @SuppressWarnings("unused")
@@ -149,7 +152,9 @@ public class CaController {
           if (namedAuthority == null) {
             return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
           }
-          return new ResponseEntity<>(CertificateAuthority.fromEntity(namedAuthority), HttpStatus.OK);
+
+          String privateKeyClearText = namedCertificateAuthorityDataService.getPrivateKeyClearText(namedAuthority);
+          return new ResponseEntity<>(CertificateAuthority.fromEntity(namedAuthority, privateKeyClearText), HttpStatus.OK);
         });
   }
 
