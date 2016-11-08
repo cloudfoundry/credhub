@@ -6,6 +6,9 @@ import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -39,5 +42,9 @@ public class NamedCertificateAuthorityDataService {
 
   public String getPrivateKeyClearText(NamedCertificateAuthority certificateAuthority) {
     return secretEncryptionHelper.retrieveClearTextValue(certificateAuthority);
+  }
+
+  public List<NamedCertificateAuthority> findAllByName(String name) {
+    return newArrayList();
   }
 }

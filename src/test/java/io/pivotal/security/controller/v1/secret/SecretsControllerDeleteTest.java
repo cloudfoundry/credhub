@@ -171,7 +171,7 @@ public class SecretsControllerDeleteTest {
           verify(secretDataService, times(1)).delete(secretName.toUpperCase());
         });
 
-        it("handles missing name", () -> {
+        it("handles missing name parameter", () -> {
           mockMvc.perform(delete("/api/v1/data"))
             .andExpect(status().isBadRequest());
         });

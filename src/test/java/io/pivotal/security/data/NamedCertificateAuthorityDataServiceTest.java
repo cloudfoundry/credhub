@@ -18,6 +18,7 @@ import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.xdescribe;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -212,6 +213,20 @@ public class NamedCertificateAuthorityDataServiceTest {
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
         });
+      });
+    });
+
+    xdescribe("#findAllByName", () -> {
+      beforeEach(() -> {
+        subject.save(createCertificateAuthority("ca-with-versions", "fake-certificate"));
+        subject.save(createCertificateAuthority("ca-with-versions", "fake-certificate2"));
+        subject.save(createCertificateAuthority("ca-with-versions", "fake-certificate3"));
+        subject.save(createCertificateAuthority("test-ca", "fake-certificate"));
+      });
+
+      it("should find all versions given a name", () -> {
+        List<NamedCertificateAuthority> cas = subject.findAllByName("ca-with-versions");
+        assertThat(cas.size(), equalTo(3));
       });
     });
 

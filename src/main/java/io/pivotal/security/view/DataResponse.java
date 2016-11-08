@@ -1,30 +1,30 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.entity.NamedSecret;
 
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
-public class DataResponse {
-  private List<Secret> data;
+public class DataResponse<M, V> {
+  private List<V> data;
 
-  public DataResponse(List<Secret> data) {
+  public DataResponse(List<V> data) {
     this.data = data;
   }
 
-  public static DataResponse fromEntity(List<NamedSecret> secrets) {
-    ArrayList<Secret> secretsList = newArrayList();
-    for(NamedSecret s: secrets) {
-      secretsList.add(Secret.fromEntity(s));
+  public static <M, V> DataResponse fromEntity(List<M> models, Function<M, V> make) {
+    ArrayList<V> views = newArrayList();
+    for(M model: models) {
+      views.add(make.apply(model));
     }
-    return new DataResponse(secretsList);
+    return new DataResponse<M, V>(views);
   }
 
   @JsonProperty
-  public List<Secret> getData() {
+  public List<V> getData() {
     return data;
   }
 }

@@ -153,7 +153,7 @@ public class SecretsController {
     if (id != null) {
       return (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0));
     } else {
-      return (namedSecret) -> DataResponse.fromEntity(namedSecret);
+      return (namedSecrets) -> DataResponse.fromEntity(namedSecrets, Secret::fromEntity);
     }
   }
 

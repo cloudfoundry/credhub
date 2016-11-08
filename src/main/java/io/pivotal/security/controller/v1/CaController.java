@@ -11,7 +11,9 @@ import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -28,16 +30,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.function.Function;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -121,14 +125,23 @@ public class CaController {
         authentication);
   }
 
-  @RequestMapping(path = "", params = "id", method = RequestMethod.GET)
-  public ResponseEntity getById(
-      @RequestParam Map<String, String> params,
+  @RequestMapping(path = "", method = RequestMethod.GET)
+  public ResponseEntity getByIdOrName(
+      @RequestParam(name = "id", defaultValue="", required = false) String id,
+      @RequestParam(name = "name", defaultValue="", required = false) String name,
       HttpServletRequest request,
       Authentication authentication) throws Exception {
+
+    boolean byName = StringUtils.isEmpty(id);
+    if (byName && StringUtils.isEmpty(name)) {
+      return createErrorResponse("error.no_identifier", HttpStatus.BAD_REQUEST);
+    }
+
+    String identifier = byName ? name : id;
+
     return retrieveAuthorityWithAuditing(
-        params.get("id"),
-        namedCertificateAuthorityDataService::findOneByUuid,
+        identifier,
+        getFinder(byName),
         request,
         authentication);
   }
@@ -137,6 +150,14 @@ public class CaController {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleHttpMessageNotReadableException() throws IOException {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
+  }
+
+  private Function<String, NamedCertificateAuthority> getFinder(boolean byName) {
+    if (byName) {
+      return namedCertificateAuthorityDataService::findMostRecentByName;
+    } else {
+      return namedCertificateAuthorityDataService::findOneByUuid;
+    }
   }
 
   private ResponseEntity retrieveAuthorityWithAuditing(
@@ -154,8 +175,12 @@ public class CaController {
             return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
           }
 
+          // TODO: when we fetch multiple this will need to happen in a loop...
           String privateKeyClearText = namedCertificateAuthorityDataService.getPrivateKeyClearText(namedAuthority);
-          return new ResponseEntity<>(CertificateAuthority.fromEntity(namedAuthority, privateKeyClearText), HttpStatus.OK);
+          CertificateAuthority ca = new CertificateAuthority(namedAuthority, privateKeyClearText);
+          List<CertificateAuthority> caList = newArrayList(ca);
+
+          return new ResponseEntity<>(new DataResponse(caList), HttpStatus.OK);
         });
   }
 

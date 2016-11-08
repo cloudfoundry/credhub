@@ -28,17 +28,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.xdescribe;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -59,6 +57,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
@@ -68,7 +71,9 @@ public class CaControllerTest {
   private static final Instant FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1400000000L);
   private static final String UPDATED_AT_JSON = "\"updated_at\":\"" + FROZEN_TIME_INSTANT.toString() + "\"";
   private static final String CA_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
+  private static final String CA_NEW_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"new-certificate\",\"private_key\":\"new-private-key\"}";
   private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_JSON + "}";
+  private static final String CA_NEW_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_NEW_CREATION_JSON + "}";
 
   @Autowired
   protected WebApplicationContext context;
@@ -103,6 +108,8 @@ public class CaControllerTest {
 
   private ResultActions response;
   private NamedCertificateAuthority originalCa;
+  private String expectedJson;
+  private NamedCertificateAuthority storedCa;
 
   {
     wireAndUnwire(this);
@@ -292,16 +299,15 @@ public class CaControllerTest {
 
         it("should succeed", () -> {
           String expectedJson =
-            "{" +
-              "\"value\":{" +
-                "\"certificate\":\"new-certificate\"," +
-                "\"private_key\":\"new-private-key\"" +
-              "}," +
-              "\"type\":\"root\"," +
-              "\"id\":\"" + uuid.toString() + "\"," +
-              UPDATED_AT_JSON +
-            "}";
-
+              "{" +
+                "\"value\":{" +
+                  "\"certificate\":\"new-certificate\"," +
+                  "\"private_key\":\"new-private-key\"" +
+                "}," +
+                "\"type\":\"root\"," +
+                "\"id\":\"" + uuid.toString() + "\"," +
+                UPDATED_AT_JSON +
+              "}";
           response
               .andExpect(status().isOk())
               .andExpect(content().json(expectedJson, true));
@@ -358,7 +364,7 @@ public class CaControllerTest {
     describe("getting a ca", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        NamedCertificateAuthority storedCa = new NamedCertificateAuthority(uniqueName)
+        storedCa = new NamedCertificateAuthority(uniqueName)
             .setType("root")
             .setCertificate("my-certificate")
             .setUuid(uuid)
@@ -366,28 +372,50 @@ public class CaControllerTest {
         doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecentByName(eq(uniqueName));
         doReturn("my-priv").when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
         doReturn(storedCa).when(namedCertificateAuthorityDataService).findOneByUuid(eq("my-uuid"));
+
+        expectedJson = "{ \"data\": [" +
+            "{"
+            + UPDATED_AT_JSON + "," +
+            "\"type\":\"root\"," +
+            "\"value\":{" +
+              "\"certificate\":\"my-certificate\"," +
+              "\"private_key\":\"my-priv\"}," +
+            "\"id\":\"" + uuid.toString() +
+            "\"}" +
+            "]" +
+            "}";
       });
 
       describe("by name", () -> {
-        beforeEach(() -> {
-          response = mockMvc.perform(get(urlPath));
-        });
-
-        it("returns the ca", () -> {
-          String expectedJson = "{"
-              + UPDATED_AT_JSON + "," +
-              "\"type\":\"root\"," +
-              "\"value\":{" +
-              "\"certificate\":\"my-certificate\"," +
-              "\"private_key\":\"my-priv\"}," +
-              "\"id\":\"" + uuid.toString() +
-              "\"}";
-          response.andExpect(status().isOk())
+        it("returns the ca when the name is part of the path", () -> {
+          mockMvc.perform(get(urlPath))
+              .andExpect(status().isOk())
               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(content().json(expectedJson, true));
         });
 
+        it("returns the ca when the name is a request parameter", () -> {
+          mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
+              .andExpect(status().isOk())
+              .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+              .andExpect(content().json(expectedJson, true));
+        });
+
+        it("handles empty name", () -> {
+          mockMvc.perform(get("/api/v1/ca?name="))
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request.")); ;
+        });
+
+        it("handles missing name parameter", () -> {
+          mockMvc.perform(get("/api/v1/ca"))
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request."));
+        });
+
         it("persists an audit entry when getting a ca", () -> {
+          mockMvc.perform(get(urlPath))
+              .andExpect(status().isOk());
           verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
@@ -401,15 +429,6 @@ public class CaControllerTest {
         });
 
         it("returns the ca", () -> {
-          String expectedJson = "{" +
-              UPDATED_AT_JSON + "," +
-              "\"type\":\"root\"," +
-              "\"value\":{" +
-              "\"certificate\":\"my-certificate\"," +
-              "\"private_key\":\"my-priv\"" +
-              "}," +
-              "\"id\":\"" + uuid.toString() + "\"" +
-              "}";
           response.andExpect(status().isOk())
               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(content().json(expectedJson, true));
@@ -417,6 +436,18 @@ public class CaControllerTest {
 
         it("persists an audit entry when getting a ca", () -> {
           verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+        });
+      });
+
+      xdescribe("when there are previous versions of a named key", () -> {
+        it("returns all the versions", () -> {
+          doReturn(newArrayList(fakeGeneratedCa, storedCa)).when(namedCertificateAuthorityDataService).findAllByName(eq(uniqueName));
+          mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.data").value(hasSize(2)))
+              .andExpect(jsonPath("$.data[0].value.certificate").value("my-cert"))
+              .andExpect(jsonPath("$.data[1].value.certificate").value("my-certificate"));
+
         });
       });
     });
