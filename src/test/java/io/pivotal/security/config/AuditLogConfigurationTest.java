@@ -21,10 +21,14 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.Filter;
+import java.util.List;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
+import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,10 +39,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.List;
-
-import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(CredentialManagerApp.class)
@@ -67,6 +67,7 @@ public class AuditLogConfigurationTest {
 
   {
     wireAndUnwire(this);
+    cleanUpBeforeTests(this);
     cleanUpAfterTests(this);
 
     beforeEach(() -> {

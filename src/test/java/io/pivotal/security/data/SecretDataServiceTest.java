@@ -20,6 +20,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -29,6 +30,7 @@ import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -63,8 +65,8 @@ public class SecretDataServiceTest {
 
   {
     wireAndUnwire(this);
+    cleanUpAfterTests(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
-
 
     beforeEach(() -> {
       subject.secretRepository.deleteAll();
@@ -131,12 +133,24 @@ public class SecretDataServiceTest {
       });
     });
 
-    describe("#deleteByNameIgnoreCase", () -> {
+    describe("#delete", () -> {
       beforeEach(() -> {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       });
       afterEach(() -> {
         transactionManager.rollback(transaction);
+      });
+
+      it("should delete all secrets matching a name", () -> {
+        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
+        subject.save(secret);
+        secret = new NamedPasswordSecret("my-secret", "another password");
+        subject.save(secret);
+        assertThat(getSecretsFromDb().size(), equalTo(2));
+
+        subject.delete("my-secret");
+
+        assertThat(subject.findAllByName("my-secret"), empty());
       });
 
       it("should be able to delete a secret ignoring case", () -> {
@@ -179,17 +193,17 @@ public class SecretDataServiceTest {
 
     describe("#findContainingName", () -> {
       it("returns secrets in reverse chronological order", () -> {
-        fakeTimeSetter.accept(20000000L);
+        fakeTimeSetter.accept(2000000000L);
         String valueName = "value.Secret";
         subject.save(new NamedValueSecret(valueName));
         subject.save(new NamedPasswordSecret("mySe.cret"));
 
-        fakeTimeSetter.accept(10000000L);
+        fakeTimeSetter.accept(1000000000L);
         String passwordName = "password/Secret";
         subject.save(new NamedPasswordSecret(passwordName));
         subject.save(new NamedCertificateSecret("myseecret"));
 
-        fakeTimeSetter.accept(30000000L);
+        fakeTimeSetter.accept(3000000000L);
         String certificateName = "certif/ic/atesecret";
         subject.save(new NamedCertificateSecret(certificateName));
 
@@ -198,17 +212,42 @@ public class SecretDataServiceTest {
             hasProperty("name", equalTo(valueName)),
             hasProperty("name", equalTo(passwordName))
         ));
+      });
 
+      describe("when there are duplicate names", () -> {
+        beforeEach(() -> {
+          saveNamedPassword(20000000000L, "foo/DUPLICATE");
+          saveNamedPassword(10000000000L, "foo/DUPLICATE");
+          saveNamedPassword(30000000000L, "bar/duplicate");
+          saveNamedPassword(40000000000L, "bar/duplicate");
+        });
+
+        it("should not return duplicate secret names", () -> {
+          List<NamedSecret> secrets = subject.findContainingName("DUP");
+          assertThat(secrets.size(), equalTo(2));
+        });
+
+        it("should return the most recent secret", () -> {
+          List<NamedSecret> secrets = subject.findContainingName("DUP");
+
+          NamedSecret secret = secrets.get(0);
+          assertThat(secret.getName(), equalTo("bar/duplicate"));
+          assertThat(secret.getUpdatedAt(), equalTo(Instant.ofEpochMilli(40000000000L)));
+
+          secret = secrets.get(1);
+          assertThat(secret.getName(), equalTo("foo/DUPLICATE"));
+          assertThat(secret.getUpdatedAt(), equalTo(Instant.ofEpochMilli(20000000000L)));
+        });
       });
     });
 
     describe("#findStartingWithName", () -> {
       beforeEach(() -> {
-        saveNamedPassword(20000000L, "secret/1");
-        saveNamedPassword(30000000L, "Secret/2");
-        saveNamedPassword(10000000L, "SECRET/3");
-        saveNamedPassword(10000000L, "not/So/Secret");
-        saveNamedPassword(10000000L, "SECRETnotrailingslash");
+        saveNamedPassword(20000000000L, "secret/1");
+        saveNamedPassword(30000000000L, "Secret/2");
+        saveNamedPassword(10000000000L, "SECRET/3");
+        saveNamedPassword(10000000000L, "not/So/Secret");
+        saveNamedPassword(10000000000L, "SECRETnotrailingslash");
       });
 
       it("should return a list of secrets in chronological order that start with a given string", () -> {
@@ -221,6 +260,25 @@ public class SecretDataServiceTest {
             hasProperty("name", equalTo("SECRET/3"))
         ));
         assertThat(secrets, not(contains(hasProperty("notSoSecret"))));
+      });
+
+      describe("when there are duplicate names", () -> {
+        beforeEach(() -> {
+          saveNamedPassword(20000000000L, "DupSecret/1");
+          saveNamedPassword(30000000000L, "DupSecret/1");
+          saveNamedPassword(10000000000L, "DupSecret/1");
+        });
+
+        it("should not return duplicate secret names", () -> {
+          List<NamedSecret> secrets = subject.findStartingWithName("dupsecret/");
+          assertThat(secrets.size(), equalTo(1));
+        });
+
+        it("should return the most recent secret", () -> {
+          List<NamedSecret> secrets = subject.findStartingWithName("dupsecret/");
+          NamedSecret secret = secrets.get(0);
+          assertThat(secret.getUpdatedAt(), equalTo(Instant.ofEpochMilli(30000000000L)));
+        });
       });
 
       describe("when the path does not have a trailing slash", () -> {
@@ -252,9 +310,9 @@ public class SecretDataServiceTest {
 
     describe("#findAllByName", () -> {
       it("finds all by name", () -> {
-        NamedPasswordSecret secret1 = saveNamedPassword(20000000L, "secret1");
-        NamedPasswordSecret secret2 = saveNamedPassword(40000000L, "secret1");
-        saveNamedPassword(30000000L, "Secret2");
+        NamedPasswordSecret secret1 = saveNamedPassword(2000000000L, "secret1");
+        NamedPasswordSecret secret2 = saveNamedPassword(4000000000L, "secret1");
+        saveNamedPassword(3000000000L, "Secret2");
 
         List<NamedSecret> secrets = subject.findAllByName("secret1");
         assertThat(secrets, containsInAnyOrder(hasProperty("uuid", equalTo(secret1.getUuid())), hasProperty("uuid", equalTo(secret2.getUuid()))));
