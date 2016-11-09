@@ -77,7 +77,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findAllByName(String name) {
+  public List<NamedSecret> findAllByNameIgnoreCase(String name) {
     throw new UnsupportedOperationException();
   }
 

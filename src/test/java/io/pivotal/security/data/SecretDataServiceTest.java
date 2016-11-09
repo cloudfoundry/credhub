@@ -311,10 +311,10 @@ public class SecretDataServiceTest {
     describe("#findAllByName", () -> {
       it("finds all by name", () -> {
         NamedPasswordSecret secret1 = saveNamedPassword(2000000000L, "secret1");
-        NamedPasswordSecret secret2 = saveNamedPassword(4000000000L, "secret1");
+        NamedPasswordSecret secret2 = saveNamedPassword(4000000000L, "seCret1");
         saveNamedPassword(3000000000L, "Secret2");
 
-        List<NamedSecret> secrets = subject.findAllByName("secret1");
+        List<NamedSecret> secrets = subject.findAllByName("Secret1");
         assertThat(secrets, containsInAnyOrder(hasProperty("uuid", equalTo(secret1.getUuid())), hasProperty("uuid", equalTo(secret2.getUuid()))));
       });
     });

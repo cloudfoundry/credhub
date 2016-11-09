@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 public class SecretDataService {
@@ -88,7 +88,7 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> findAllByName(String name) {
-    return secretRepository.findAllByName(name);
+    return secretRepository.findAllByNameIgnoreCase(name);
   }
 
   private List<NamedSecret> findMostRecentLikeSubstring(String substring) {
