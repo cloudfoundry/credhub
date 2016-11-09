@@ -225,7 +225,7 @@ public class CaControllerTest {
       mockMvc.perform(put)
           .andExpect(status().isBadRequest())
           .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.error").value("All keys are required to set a CA. Please validate your input and retry your request."));
+          .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'bogus'. Please update or remove this parameter and retry your request."));
     });
 
     describe("setting a ca", () -> {
@@ -328,15 +328,15 @@ public class CaControllerTest {
 
     describe("errors when setting a CA", () -> {
       it("put with only a certificate returns an error", () -> {
-        requestWithError("{\"type\":\"root\",\"root\":{\"certificate\":\"my_certificate\"}}");
+        requestWithError("{\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\"}}");
       });
 
       it("put with only private returns an error", () -> {
-        requestWithError("{\"type\":\"root\",\"root\":{\"private_key\":\"my_private_key\"}}");
+        requestWithError("{\"type\":\"root\",\"value\":{\"private_key\":\"my_private_key\"}}");
       });
 
       it("put without keys returns an error", () -> {
-        requestWithError("{\"type\":\"root\",\"root\":{}}");
+        requestWithError("{\"type\":\"root\",\"value\":{}}");
       });
 
       it("put with empty request returns an error", () -> {
@@ -344,7 +344,7 @@ public class CaControllerTest {
       });
 
       it("put cert with garbage returns an error", () -> {
-        String requestJson = "{\"root\": }";
+        String requestJson = "{\"value\":\"\" }";
 
         RequestBuilder requestBuilder = put(urlPath)
             .content(requestJson)

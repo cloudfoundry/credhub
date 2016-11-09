@@ -99,8 +99,8 @@ public class CaController {
     }
 
     try {
-      requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsedRequest);
       requestTranslator.validateJsonKeys(parsedRequest);
+      requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsedRequest);
     } catch (ParameterizedValidationException ve) {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
