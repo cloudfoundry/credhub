@@ -20,7 +20,6 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 
@@ -35,8 +34,8 @@ public class AuthFailureAuditRecordDataServiceTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
 
-  private final Instant frozenTime = Instant.ofEpochSecond(1400000000L);
-  private final long tokenIssued = frozenTime.getEpochSecond();
+  private final Instant frozenTime = Instant.ofEpochMilli(1400000000123L);
+  private final long tokenIssued = frozenTime.toEpochMilli();
   private final long tokenExpires = tokenIssued + 10000;
 
   {
@@ -59,7 +58,7 @@ public class AuthFailureAuditRecordDataServiceTest {
           r.setId(rs.getLong("id"));
           r.setFailureDescription(rs.getString("failure_description"));
           r.setHostName(rs.getString("host_name"));
-          r.setNow(rs.getTimestamp("now").toInstant());
+          r.setNow(Instant.ofEpochMilli(rs.getLong("now")));
           r.setOperation(rs.getString("operation"));
           r.setPath(rs.getString("path"));
           r.setRequesterIp(rs.getString("requester_ip"));
