@@ -49,7 +49,7 @@ public class NamedCertificateAuthorityDataServiceTest {
   @Autowired
   NamedCertificateAuthorityRepository namedCertificateAuthorityRepository;
 
-  private Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+  private Instant frozenTime = Instant.ofEpochMilli(1400000000123L);
   private Consumer<Long> fakeTimeSetter;
 
   private NamedCertificateAuthorityDataService subject;
@@ -95,7 +95,7 @@ public class NamedCertificateAuthorityDataServiceTest {
           ca.setName(rs.getString("name"));
           ca.setNonce(rs.getBytes("nonce"));
           ca.setType(rs.getString("type"));
-          ca.setUpdatedAt(Instant.ofEpochSecond(rs.getLong("updated_at")));
+          ca.setUpdatedAt(Instant.ofEpochMilli(rs.getLong("updated_at")));
 
           return ca;
         });

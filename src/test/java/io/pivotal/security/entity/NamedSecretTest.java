@@ -11,6 +11,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.util.StringUtils;
 
+import java.time.Instant;
+import java.util.function.Consumer;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
@@ -19,8 +22,6 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -34,6 +35,8 @@ public class NamedSecretTest {
   private NamedCertificateSecret subject;
   private String secretName;
 
+  private final Instant FROZEN_TIME = Instant.ofEpochMilli(1400000000123L);
+
   {
     wireAndUnwire(this);
     cleanUpBeforeTests(this);
@@ -42,7 +45,7 @@ public class NamedSecretTest {
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      fakeTimeSetter.accept(345345L);
+      fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
       secretName = "foo";
       subject = new NamedCertificateSecret(secretName)
           .setCa("ca")
@@ -52,15 +55,16 @@ public class NamedSecretTest {
 
     it("returns date created", () -> {
       subject = (NamedCertificateSecret) secretDataService.save(subject);
-      assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt().toEpochMilli(), equalTo(345000L));
+      assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt(), equalTo(FROZEN_TIME));
     });
 
     it("returns date updated", () -> {
+      long updatedTime = FROZEN_TIME.toEpochMilli() + 1000;
       subject = (NamedCertificateSecret) secretDataService.save(subject);
-      fakeTimeSetter.accept(444444L);
+      fakeTimeSetter.accept(updatedTime);
       subject.setPrivateKey("new-priv");  // Change object so that Hibernate will update the database
       subject = (NamedCertificateSecret) secretDataService.save(subject);
-      assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt().toEpochMilli(), equalTo(444000L));
+      assertThat(secretDataService.findMostRecent(secretName).getUpdatedAt().toEpochMilli(), equalTo(updatedTime));
     });
 
     it("should have a consistent UUID", () -> {

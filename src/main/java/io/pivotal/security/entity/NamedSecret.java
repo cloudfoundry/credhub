@@ -52,7 +52,7 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @Column(length = NONCE_BYTES)
   private byte[] nonce;
 
-  @Convert(converter = InstantSecondsConverter.class)
+  @Convert(converter = InstantMillisecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
   @LastModifiedDate

@@ -102,7 +102,7 @@ public class SecretDataService {
         NamedSecret secret = new NamedSecretImpl();
 
         secret.setName(rowSet.getString("name"));
-        secret.setUpdatedAt(Instant.ofEpochSecond(rowSet.getLong("updated_at")));
+        secret.setUpdatedAt(Instant.ofEpochMilli(rowSet.getLong("updated_at")));
 
         return secret;
       }
