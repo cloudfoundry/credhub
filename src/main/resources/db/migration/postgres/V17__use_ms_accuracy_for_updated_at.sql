@@ -1,5 +1,5 @@
-UPDATE NAMED_CERTIFICATE_AUTHORITY
+UPDATE named_certificate_authority
   SET updated_at = updated_at * 1000;
 
-UPDATE NAMED_SECRET
+UPDATE named_secret
   SET updated_at = updated_at * 1000;
