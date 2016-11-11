@@ -37,7 +37,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static com.greghaskins.spectrum.Spectrum.xdescribe;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.not;
@@ -46,6 +45,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
@@ -53,7 +53,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -68,8 +67,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
 @ActiveProfiles("unit-test")
 public class CaControllerTest {
+  private static final Instant OLDER_FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1300000000L);
   private static final Instant FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1400000000L);
   private static final String UPDATED_AT_JSON = "\"updated_at\":\"" + FROZEN_TIME_INSTANT.toString() + "\"";
+  private static final String OLDER_UPDATED_AT_JSON = "\"updated_at\":\"" + OLDER_FROZEN_TIME_INSTANT.toString() + "\"";
   private static final String CA_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
   private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_JSON + "}";
 
@@ -106,7 +107,7 @@ public class CaControllerTest {
 
   private ResultActions response;
   private NamedCertificateAuthority originalCa;
-  private String expectedJson;
+  private NamedCertificateAuthority olderStoredCa;
   private NamedCertificateAuthority storedCa;
 
   {
@@ -118,23 +119,24 @@ public class CaControllerTest {
       fakeTimeSetter.accept(FROZEN_TIME_INSTANT.toEpochMilli());
       uniqueName = "my-folder/ca-identifier";
       urlPath = "/api/v1/ca/" + uniqueName;
+
+      uuid = UUID.randomUUID();
+      fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
+          .setType("root")
+          .setCertificate("my_cert")
+          .setPrivateKey("private_key")
+          .setUuid(uuid)
+          .setUpdatedAt(FROZEN_TIME_INSTANT);
     });
 
     describe("generating a ca", () -> {
       describe("when creating a new CA", () -> {
         beforeEach(() -> {
-          uuid = UUID.randomUUID();
-          fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
-              .setType("root")
-              .setCertificate("my_cert")
-              .setPrivateKey("private_key")
-              .setUuid(uuid)
-              .setUpdatedAt(FROZEN_TIME_INSTANT);
           doReturn(new CertificateAuthority(fakeGeneratedCa))
               .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
           doReturn(
               fakeGeneratedCa
-          ).when(namedCertificateAuthorityDataService).saveWithEncryption(any(NamedCertificateAuthority.class));
+          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
 
           String requestJson = "{\"type\":\"root\",\"parameters\":{\"common_name\":\"test-ca\"}}";
 
@@ -155,7 +157,7 @@ public class CaControllerTest {
         it("saves the generated ca in the DB", () -> {
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
-          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(argumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
 
           NamedCertificateAuthority savedCa = argumentCaptor.getValue();
           assertThat(savedCa.getName(), equalTo(uniqueName));
@@ -201,12 +203,12 @@ public class CaControllerTest {
           verify(certificateGenerator, times(1)).generateCertificateAuthority(any(CertificateSecretParameters.class));
         });
 
-        it("should create a new entity for it", () -> {
+        it("saves a new CA in the database", () -> {
           ArgumentCaptor<NamedCertificateAuthority> copyArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
           ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
           verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
-          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(saveArgumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
 
           NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
           assertNotNull(newCertificateAuthority.getUuid());
@@ -242,7 +244,7 @@ public class CaControllerTest {
                   .setPrivateKey("private_key")
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
-          ).when(namedCertificateAuthorityDataService).saveWithEncryption(any(NamedCertificateAuthority.class));
+          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
           String requestJson = "{" + CA_CREATION_JSON + "}";
           RequestBuilder requestBuilder = put(urlPath)
               .content(requestJson)
@@ -258,7 +260,7 @@ public class CaControllerTest {
 
         it("writes the new root ca to the DB", () -> {
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
-          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(argumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
 
           NamedCertificateAuthority actual = argumentCaptor.getValue();
 
@@ -312,7 +314,7 @@ public class CaControllerTest {
           ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
           verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
-          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(saveArgumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
 
           NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
           assertNotNull(newCertificateAuthority.getUuid());
@@ -358,91 +360,154 @@ public class CaControllerTest {
     describe("getting a ca", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
+        olderStoredCa = new NamedCertificateAuthority(uniqueName)
+            .setType("root")
+            .setCertificate("my-certificate-old")
+            .setPrivateKey("my-priv")
+            .setUuid(uuid)
+            .setUpdatedAt(OLDER_FROZEN_TIME_INSTANT);
+        uuid = UUID.randomUUID();
         storedCa = new NamedCertificateAuthority(uniqueName)
             .setType("root")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecentByNameWithDecryption(eq(uniqueName));
-        doReturn(storedCa).when(namedCertificateAuthorityDataService).findOneByUuidWithDecryption(eq("my-uuid"));
-
-        expectedJson = "{ \"data\": [" +
-            "{"
-            + UPDATED_AT_JSON + "," +
-            "\"type\":\"root\"," +
-            "\"value\":{" +
-              "\"certificate\":\"my-certificate\"," +
-              "\"private_key\":\"my-priv\"}," +
-            "\"id\":\"" + uuid.toString() +
-            "\"}" +
-            "]" +
-            "}";
+        doReturn(newArrayList(storedCa, olderStoredCa)).when(namedCertificateAuthorityDataService).findAllByName(eq(uniqueName));
+        doReturn(newArrayList(storedCa)).when(namedCertificateAuthorityDataService).findMostRecentAsList(eq(uniqueName));
       });
 
       describe("by name", () -> {
-        it("returns the ca when the name is part of the path", () -> {
-          mockMvc.perform(get(urlPath))
-              .andExpect(status().isOk())
-              .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-              .andExpect(content().json(expectedJson, true));
+        describe("as part of the path", () -> {
+          it("returns the ca when the name is part of the path", () -> {
+            String expectedJson = "{ \"data\": [" +
+                "{"
+                + UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+                "}" +
+                "]" +
+                "}";
+
+            mockMvc.perform(get(urlPath))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(expectedJson, true));
+          });
+
+          it("handles missing name parameter", () -> {
+            mockMvc.perform(get("/api/v1/ca"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request."));
+          });
+
+          it("persists an audit entry when getting a ca", () -> {
+            mockMvc.perform(get(urlPath))
+                .andExpect(status().isOk());
+            verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+          });
         });
 
-        it("returns the ca when the name is a request parameter", () -> {
-          mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
-              .andExpect(status().isOk())
-              .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-              .andExpect(content().json(expectedJson, true));
-        });
+        describe("as a query parameter", () -> {
+          it("returns the ca when the name is a request parameter", () -> {
+            String expectedJson = "{ \"data\": [" +
+                "{"
+                + UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+                "}," +
+                "{"
+                + OLDER_UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate-old\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + olderStoredCa.getUuid().toString() + "\"" +
+                "}" +
+                "]" +
+                "}";
 
-        it("handles empty name", () -> {
-          mockMvc.perform(get("/api/v1/ca?name="))
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request.")); ;
-        });
+            mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(expectedJson, true));
+          });
 
-        it("handles missing name parameter", () -> {
-          mockMvc.perform(get("/api/v1/ca"))
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request."));
-        });
+          it("handles empty name", () -> {
+            mockMvc.perform(get("/api/v1/ca?name="))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request.")); ;
+          });
 
-        it("persists an audit entry when getting a ca", () -> {
-          mockMvc.perform(get(urlPath))
-              .andExpect(status().isOk());
-          verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+          it("persists an audit entry when getting a ca", () -> {
+            mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
+                .andExpect(status().isOk());
+            verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+          });
         });
       });
 
-      describe("by id", () -> {
-        beforeEach(() -> {
-          MockHttpServletRequestBuilder get = get("/api/v1/ca?id=my-uuid")
-              .accept(APPLICATION_JSON);
-
-          response = mockMvc.perform(get);
-        });
-
-        it("returns the ca", () -> {
-          response.andExpect(status().isOk())
-              .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-              .andExpect(content().json(expectedJson, true));
-        });
-
-        it("persists an audit entry when getting a ca", () -> {
-          verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
-        });
-      });
-
-      xdescribe("when there are previous versions of a named key", () -> {
+      describe("when there are previous versions of a named key", () -> {
         it("returns all the versions", () -> {
-          doReturn(newArrayList(fakeGeneratedCa, storedCa)).when(namedCertificateAuthorityDataService).findAllByName(eq(uniqueName));
+          doReturn(newArrayList(fakeGeneratedCa, storedCa))
+              .when(namedCertificateAuthorityDataService).findAllByName(eq(uniqueName));
           mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.data").value(hasSize(2)))
-              .andExpect(jsonPath("$.data[0].value.certificate").value("my-cert"))
+              .andExpect(jsonPath("$.data[0].value.certificate").value("my_cert"))
               .andExpect(jsonPath("$.data[1].value.certificate").value("my-certificate"));
-
         });
+      });
+    });
+
+    describe("by id", () -> {
+      beforeEach(() -> {
+        storedCa = new NamedCertificateAuthority(uniqueName)
+            .setType("root")
+            .setCertificate("my-certificate")
+            .setPrivateKey("my-priv")
+            .setUuid(uuid)
+            .setUpdatedAt(FROZEN_TIME_INSTANT);
+        doReturn(newArrayList(storedCa))
+            .when(namedCertificateAuthorityDataService)
+            .findByUuidAsList(eq("my-uuid"));
+
+        MockHttpServletRequestBuilder get = get("/api/v1/ca?id=my-uuid")
+            .accept(APPLICATION_JSON);
+
+        response = mockMvc.perform(get);
+      });
+
+      it("returns the ca", () -> {
+        String expectedJson = "{ \"data\": [" +
+            "{"
+            + UPDATED_AT_JSON + "," +
+            "    \"type\":\"root\"," +
+            "    \"value\":{" +
+            "        \"certificate\":\"my-certificate\"," +
+            "        \"private_key\":\"my-priv\"" +
+            "    }," +
+            "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+            "}" +
+            "]" +
+            "}";
+
+        response.andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().json(expectedJson, true));
+      });
+
+      it("persists an audit entry when getting a ca", () -> {
+        verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
       });
     });
 
@@ -506,7 +571,8 @@ public class CaControllerTest {
     originalCa.setUuid(UUID.randomUUID());
     originalCa.setCertificate("original-certificate");
 
-    when(namedCertificateAuthorityDataService.findMostRecentByNameWithDecryption(uniqueName)).thenReturn(originalCa);
+    doReturn(newArrayList(originalCa))
+        .when(namedCertificateAuthorityDataService).findMostRecentAsList(anyString());
   }
 
   private void setUpCaSaving() {
@@ -519,6 +585,6 @@ public class CaControllerTest {
         certificateAuthority.setUuid(uuid);
       }
       return certificateAuthority.setPrivateKey("new-private-key");
-    }).when(namedCertificateAuthorityDataService).saveWithEncryption(any(NamedCertificateAuthority.class));
+    }).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
   }
 }

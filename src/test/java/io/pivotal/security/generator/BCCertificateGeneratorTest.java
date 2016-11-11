@@ -28,6 +28,7 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import static com.google.common.collect.Lists.newArrayList;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -112,7 +113,6 @@ public class BCCertificateGeneratorTest {
           .setCertificate(CertificateFormatter.pemOf(caX509Cert))
           .setPrivateKey(privateKey);
 
-
       inputParameters = new CertificateSecretParameters()
         .setOrganization("foo")
         .setState("bar")
@@ -161,7 +161,7 @@ public class BCCertificateGeneratorTest {
       beforeEach(() -> {
         childCertificateKeyPair = fakeKeyPairGenerator.generate();
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
-        when(namedCertificateAuthorityDataService.findMostRecentByNameWithDecryption("default")).thenReturn(defaultNamedCA);
+        when(namedCertificateAuthorityDataService.findMostRecentAsList("default")).thenReturn(newArrayList(defaultNamedCA));
         childCertificateHolder = generateChildCertificateSignedByCa(
             childCertificateKeyPair, caKeyPair.getPrivate(), caDn);
         childCertificate = new JcaX509CertificateConverter()

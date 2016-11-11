@@ -30,6 +30,7 @@ import org.springframework.test.context.BootstrapWith;
 
 import java.security.Security;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -383,7 +384,7 @@ public class CertificateGeneratorRequestTranslatorTest {
     certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate())
         .setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
 
-    when(certificateAuthorityDataService.findMostRecentByNameWithDecryption("my-root")).thenReturn(certificateAuthority);
+    when(certificateAuthorityDataService.findMostRecentAsList("my-root")).thenReturn(newArrayList(certificateAuthority));
 
     return certificateAuthority;
   }

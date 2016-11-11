@@ -14,7 +14,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -24,16 +23,13 @@ import java.util.stream.Stream;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static com.greghaskins.spectrum.Spectrum.xdescribe;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -79,7 +75,7 @@ public class NamedCertificateAuthorityDataServiceTest {
     describe("#saveWithEncryption", () -> {
       it("should create the entity in the database", () -> {
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key");
-        certificateAuthority = subject.saveWithEncryption(certificateAuthority);
+        certificateAuthority = subject.save(certificateAuthority);
 
         assertNotNull(certificateAuthority);
 
@@ -121,7 +117,7 @@ public class NamedCertificateAuthorityDataServiceTest {
         String certificate = buildLargeString(7000);
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", certificate, "test-private-key");
 
-        certificateAuthority = subject.saveWithEncryption(certificateAuthority);
+        certificateAuthority = subject.save(certificateAuthority);
 
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
@@ -142,7 +138,7 @@ public class NamedCertificateAuthorityDataServiceTest {
         String largeString = buildLargeString(7000);
         certificateAuthority.setEncryptedValue(largeString.getBytes());
 
-        certificateAuthority = subject.saveWithEncryption(certificateAuthority);
+        certificateAuthority = subject.save(certificateAuthority);
 
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
@@ -162,17 +158,17 @@ public class NamedCertificateAuthorityDataServiceTest {
 
       it("should encrypt private key", () -> {
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key");
-        subject.saveWithEncryption(certificateAuthority);
+        subject.save(certificateAuthority);
 
         verify(secretEncryptionHelper).refreshEncryptedValue(eq(certificateAuthority), eq("fake-private-key"));
       });
 
       describe("when the entity already exists", () -> {
         it("should save the updated entity", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.saveWithEncryption(createCertificateAuthority("test-name", "original-certificate", "fake-private-key"));
+          NamedCertificateAuthority certificateAuthority = subject.save(createCertificateAuthority("test-name", "original-certificate", "fake-private-key"));
           String newCertificateValue = "new-certificate";
           certificateAuthority.setCertificate(newCertificateValue);
-          certificateAuthority = subject.saveWithEncryption(certificateAuthority);
+          certificateAuthority = subject.save(certificateAuthority);
 
           List<NamedCertificateAuthority> certificateAuthorities = namedCertificateAuthorityRepository.findAll();
 
@@ -185,36 +181,37 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
     });
 
-    describe("#findMostRecentByNameWithEncryption", () -> {
+    describe("#findMostRecentAsList", () -> {
       beforeEach(() -> {
-        subject.saveWithEncryption(createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key"));
-        subject.saveWithEncryption(createCertificateAuthority("TEST", "fake-certificate", "fake-private-key"));
-        subject.saveWithEncryption(createCertificateAuthority("FOO", "fake-certificate", "fake-private-key"));
+        subject.save(createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key"));
+        subject.save(createCertificateAuthority("TEST", "fake-certificate", "fake-private-key"));
+        subject.save(createCertificateAuthority("FOO", "fake-certificate", "fake-private-key"));
       });
 
       describe("when there is no entity with the name", () -> {
-        it("should return null", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecentByNameWithDecryption("this-entity-does-not-exist");
-          assertNull(certificateAuthority);
+        it("should return empty list", () -> {
+          List<NamedCertificateAuthority> mostRecentCAAsList = subject.findMostRecentAsList("this-entity-does-not-exist");
+
+          assertTrue(mostRecentCAAsList.isEmpty());
         });
       });
 
       describe("when given a name in the same case as the entity's name", () -> {
         it("should retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecentByNameWithDecryption("test-ca");
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecentAsList("test-ca").get(0);
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
         });
 
         it("should decrypt private key of the returned CA", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecentByNameWithDecryption("test-ca");
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecentAsList("test-ca").get(0);
           verify(secretEncryptionHelper, times(1)).retrieveClearTextValue(eq(certificateAuthority));
         });
       });
 
       describe("when given a name with a different case than the entity's name", () -> {
         it("should still retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecentByNameWithDecryption("TEST-CA");
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecentAsList("TEST-CA").get(0);
 
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
@@ -222,41 +219,54 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
     });
 
-    xdescribe("#findAllByName", () -> {
-      beforeEach(() -> {
-        subject.saveWithEncryption(createCertificateAuthority("ca-with-versions", "fake-certificate", "fake-private-key"));
-        subject.saveWithEncryption(createCertificateAuthority("ca-with-versions", "fake-certificate2", "fake-private-key"));
-        subject.saveWithEncryption(createCertificateAuthority("ca-with-versions", "fake-certificate3", "fake-private-key"));
-        subject.saveWithEncryption(createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key"));
+    describe("#findAllByName", () -> {
+      it("finds all versions given a name in reverse chronological order", () -> {
+        fakeTimeSetter.accept(3000000000L);
+        subject.save(createCertificateAuthority("CA/with/versions", "fake-certificate1", "fake-private-key"));
+        fakeTimeSetter.accept(1000000000L);
+        subject.save(createCertificateAuthority("ca/WITH/versions", "fake-certificate2", "fake-private-key"));
+        fakeTimeSetter.accept(2000000000L);
+        subject.save(createCertificateAuthority("ca/with/VERSIONS", "fake-certificate3", "fake-private-key"));
+        subject.save(createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key"));
+
+        List<NamedCertificateAuthority> certificateAuthorities = subject.findAllByName("ca/with/versions");
+        assertThat(certificateAuthorities.size(), equalTo(3));
+        assertThat(certificateAuthorities.get(0).getCertificate(), equalTo("fake-certificate1"));
+        assertThat(certificateAuthorities.get(1).getCertificate(), equalTo("fake-certificate3"));
+        assertThat(certificateAuthorities.get(2).getCertificate(), equalTo("fake-certificate2"));
       });
 
-      it("should find all versions given a name", () -> {
-        List<NamedCertificateAuthority> cas = subject.findAllByName("ca-with-versions");
-        assertThat(cas.size(), equalTo(3));
+      it("returns empty list when none are found", () -> {
+        List<NamedCertificateAuthority> certificateAuthorities = subject.findAllByName("nonexistent-name");
+        assertNotNull(certificateAuthorities);
+        assertTrue(certificateAuthorities.isEmpty());
       });
     });
 
-    describe("#findOneByUuidWithDecryption", () -> {
+    describe("#findByUuidAsList", () -> {
       beforeEach(() -> {
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert", "my-priv");
-        savedSecret = subject.saveWithEncryption(certificateAuthority);
+        savedSecret = subject.save(certificateAuthority);
         assertNotNull(savedSecret.getUuid());
       });
 
-      it("should return null for non-existent uuid", () -> {
-        NamedCertificateAuthority certificateAuthority = subject.findOneByUuidWithDecryption(UUID.randomUUID().toString());
-        assertNull(certificateAuthority);
-      });
-
       it("should be able to find a CA by uuid", () -> {
-        NamedCertificateAuthority oneByUuid = subject.findOneByUuidWithDecryption(savedSecret.getUuid().toString());
+        NamedCertificateAuthority oneByUuid = subject.findByUuidAsList(savedSecret.getUuid().toString()).get(0);
         assertThat(oneByUuid.getName(), equalTo("my-ca"));
         assertThat(oneByUuid.getCertificate(), equalTo("my-cert"));
       });
 
       it("decrypts private key of the found CA", () -> {
-        NamedCertificateAuthority oneByUuid = subject.findOneByUuidWithDecryption(savedSecret.getUuid().toString());
+        NamedCertificateAuthority oneByUuid = subject.findByUuidAsList(savedSecret.getUuid().toString()).get(0);
         verify(secretEncryptionHelper, times(1)).retrieveClearTextValue(eq(oneByUuid));
+      });
+
+      describe("when no CA is found", () -> {
+        it("returns an empty list", () -> {
+          List<NamedCertificateAuthority> foundNamedCertificateAuthorities = subject.findByUuidAsList(UUID.randomUUID().toString());
+          assertNotNull(foundNamedCertificateAuthorities);
+          assertTrue(foundNamedCertificateAuthorities.isEmpty());
+        });
       });
     });
   }

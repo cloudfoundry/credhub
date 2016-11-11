@@ -37,8 +37,8 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
 import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
 
@@ -95,10 +95,10 @@ public class CaController {
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
-    NamedCertificateAuthority originalCertificateAuthority = namedCertificateAuthorityDataService.findMostRecentByNameWithDecryption(caPath);
+    List<NamedCertificateAuthority> mostRecentCAAsList = namedCertificateAuthorityDataService.findMostRecentAsList(caPath);
 
-    if (originalCertificateAuthority != null) {
-      originalCertificateAuthority.copyInto(namedCertificateAuthority);
+    if (!mostRecentCAAsList.isEmpty()) {
+      mostRecentCAAsList.get(0).copyInto(namedCertificateAuthority);
     }
 
     try {
@@ -108,7 +108,7 @@ public class CaController {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
 
-    NamedCertificateAuthority saved = namedCertificateAuthorityDataService.saveWithEncryption(namedCertificateAuthority);
+    NamedCertificateAuthority saved = namedCertificateAuthorityDataService.save(namedCertificateAuthority);
 
     return new ResponseEntity<>(CertificateAuthority.fromEntity(saved), HttpStatus.OK);
   }
@@ -118,7 +118,7 @@ public class CaController {
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
     return retrieveAuthorityWithAuditing(
         caPath(request),
-        namedCertificateAuthorityDataService::findMostRecentByNameWithDecryption,
+        namedCertificateAuthorityDataService::findMostRecentAsList,
         request,
         authentication);
   }
@@ -150,34 +150,34 @@ public class CaController {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
   }
 
-  private Function<String, NamedCertificateAuthority> getFinder(boolean byName) {
+  private Function<String, List<NamedCertificateAuthority>> getFinder(boolean byName) {
     if (byName) {
-      return namedCertificateAuthorityDataService::findMostRecentByNameWithDecryption;
+      return namedCertificateAuthorityDataService::findAllByName;
     } else {
-      return namedCertificateAuthorityDataService::findOneByUuidWithDecryption;
+      return namedCertificateAuthorityDataService::findByUuidAsList;
     }
   }
 
   private ResponseEntity retrieveAuthorityWithAuditing(
       String identifier,
-      Function<String, NamedCertificateAuthority> finder,
+      Function<String, List<NamedCertificateAuthority>> finder,
       HttpServletRequest request,
       Authentication authentication) throws Exception {
     return auditLogService.performWithAuditing(
         AUTHORITY_ACCESS,
         new AuditRecordParameters(request, authentication),
         () -> {
-          NamedCertificateAuthority namedAuthority = finder.apply(identifier);
+          List<NamedCertificateAuthority> namedAuthorityList = finder.apply(identifier);
 
-          if (namedAuthority == null) {
+          if (namedAuthorityList.isEmpty()) {
             return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
           }
 
-          // TODO: when we fetch multiple this will need to happen in a loop...
-          CertificateAuthority ca = new CertificateAuthority(namedAuthority);
-          List<CertificateAuthority> caList = newArrayList(ca);
+          List<CertificateAuthority> certificateAuthorities = namedAuthorityList.stream().map(
+              namedCertificateAuthority -> new CertificateAuthority(namedCertificateAuthority)
+          ).collect(Collectors.toList());
 
-          return new ResponseEntity<>(new DataResponse(caList), HttpStatus.OK);
+          return new ResponseEntity<>(new DataResponse(certificateAuthorities), HttpStatus.OK);
         });
   }
 
