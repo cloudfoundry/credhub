@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -23,6 +24,7 @@ import java.util.stream.Stream;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static com.greghaskins.spectrum.Spectrum.xdescribe;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
@@ -31,6 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -89,7 +92,6 @@ public class NamedCertificateAuthorityDataServiceTest {
           ca.setNonce(rs.getBytes("nonce"));
           ca.setType(rs.getString("type"));
           ca.setUpdatedAt(Instant.ofEpochMilli(rs.getLong("updated_at")));
-          ca.setUuid(convertFromBinaryUuid(rs.getString("uuid")));
 
           return ca;
         });
@@ -106,8 +108,13 @@ public class NamedCertificateAuthorityDataServiceTest {
         assertThat(actual.getType(), equalTo(expected.getType()));
         assertThat(actual.getUpdatedAt(), equalTo(expected.getUpdatedAt()));
         assertThat(actual.getUpdatedAt(), equalTo(frozenTime));
-        assertNotNull(actual.getUuid());
-        assertThat(actual.getUuid(), equalTo(expected.getUuid()));
+
+        // The Java UUID class doesn't let us convert to UUID type 4... so
+        // we must rely on Hibernate to do that for us.
+        certificateAuthorities = namedCertificateAuthorityRepository.findAll();
+        UUID actualUuid = certificateAuthorities.get(0).getUuid();
+        assertNotNull(actualUuid);
+        assertThat(actualUuid, equalTo(expected.getUuid()));
       });
 
       it("can store a CA with a certificate of length 7000", () -> {
@@ -269,16 +276,5 @@ public class NamedCertificateAuthorityDataServiceTest {
         .setPrivateKey(privateKey);
 
     return certificateAuthority;
-  }
-
-  private UUID convertFromBinaryUuid(String binaryUuid) {
-    // UUID: 8-4-4-4-12 characters
-    // v4 UUID format: xxxxxxxx-xxxx-4xxx-xxxx-xxxxxxxxxxxx
-    String uuidWithDashes =  binaryUuid.substring(0, 8) + "-" +
-        binaryUuid.substring(8, 12) + "-" +
-        binaryUuid.substring(12, 16) + "-" +
-        binaryUuid.substring(16, 20) + "-" +
-        binaryUuid.substring(20);
-    return UUID.fromString(uuidWithDashes);
   }
 }
