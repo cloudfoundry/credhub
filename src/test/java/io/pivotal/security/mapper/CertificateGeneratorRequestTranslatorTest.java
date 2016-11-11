@@ -28,9 +28,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.security.Security;
-
-import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -50,6 +47,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.Security;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -384,7 +383,7 @@ public class CertificateGeneratorRequestTranslatorTest {
     certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate())
         .setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
 
-    when(certificateAuthorityDataService.findMostRecentAsList("my-root")).thenReturn(newArrayList(certificateAuthority));
+    when(certificateAuthorityDataService.findMostRecent("my-root")).thenReturn(certificateAuthority);
 
     return certificateAuthority;
   }

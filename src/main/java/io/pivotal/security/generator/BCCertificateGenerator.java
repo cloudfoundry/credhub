@@ -26,7 +26,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.util.List;
 
 @Component
 public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateSecret> {
@@ -62,9 +61,9 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private NamedCertificateAuthority findCa(String caName) {
-    List<NamedCertificateAuthority> mostRecentCAAsList = namedCertificateAuthorityDataService.findMostRecentAsList(caName);
+    NamedCertificateAuthority mostRecentCA = namedCertificateAuthorityDataService.findMostRecent(caName);
 
-    if (mostRecentCAAsList.isEmpty()) {
+    if (mostRecentCA == null) {
       if ("default".equals(caName)) {
         throw new ParameterizedValidationException("error.default_ca_required");
       } else {
@@ -72,7 +71,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
       }
     }
 
-    return mostRecentCAAsList.get(0);
+    return mostRecentCA;
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {

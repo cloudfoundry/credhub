@@ -6,8 +6,6 @@ import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -27,14 +25,12 @@ public class NamedCertificateAuthorityDataService {
     return saveWithEncryption(certificateAuthority);
   }
 
-  public List<NamedCertificateAuthority> findMostRecentAsList(String name) {
-    NamedCertificateAuthority ca = findMostRecentByNameWithDecryption(name);
-    return ca == null ? newArrayList() : newArrayList(ca);
+  public NamedCertificateAuthority findMostRecent(String name) {
+    return findMostRecentByNameWithDecryption(name);
   }
 
-  public List<NamedCertificateAuthority> findByUuidAsList(String uuid) {
-    NamedCertificateAuthority ca = findOneByUuidWithDecryption(uuid);
-    return ca == null ? newArrayList() : newArrayList(ca);
+  public NamedCertificateAuthority findByUuid(String uuid) {
+    return findOneByUuidWithDecryption(uuid);
   }
 
   private NamedCertificateAuthority saveWithEncryption(NamedCertificateAuthority certificateAuthority) {

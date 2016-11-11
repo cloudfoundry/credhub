@@ -28,11 +28,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -60,6 +55,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -374,7 +374,7 @@ public class CaControllerTest {
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
         doReturn(newArrayList(storedCa, olderStoredCa)).when(namedCertificateAuthorityDataService).findAllByName(eq(uniqueName));
-        doReturn(newArrayList(storedCa)).when(namedCertificateAuthorityDataService).findMostRecentAsList(eq(uniqueName));
+        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecent(eq(uniqueName));
       });
 
       describe("by name", () -> {
@@ -477,9 +477,9 @@ public class CaControllerTest {
             .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(newArrayList(storedCa))
+        doReturn(storedCa)
             .when(namedCertificateAuthorityDataService)
-            .findByUuidAsList(eq("my-uuid"));
+            .findByUuid(eq("my-uuid"));
 
         MockHttpServletRequestBuilder get = get("/api/v1/ca?id=my-uuid")
             .accept(APPLICATION_JSON);
@@ -571,8 +571,8 @@ public class CaControllerTest {
     originalCa.setUuid(UUID.randomUUID());
     originalCa.setCertificate("original-certificate");
 
-    doReturn(newArrayList(originalCa))
-        .when(namedCertificateAuthorityDataService).findMostRecentAsList(anyString());
+    doReturn(originalCa)
+        .when(namedCertificateAuthorityDataService).findMostRecent(anyString());
   }
 
   private void setUpCaSaving() {

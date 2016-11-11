@@ -29,6 +29,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -181,7 +182,7 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
     });
 
-    describe("#findMostRecentAsList", () -> {
+    describe("#findMostRecent", () -> {
       beforeEach(() -> {
         subject.save(createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key"));
         subject.save(createCertificateAuthority("TEST", "fake-certificate", "fake-private-key"));
@@ -189,29 +190,29 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
 
       describe("when there is no entity with the name", () -> {
-        it("should return empty list", () -> {
-          List<NamedCertificateAuthority> mostRecentCAAsList = subject.findMostRecentAsList("this-entity-does-not-exist");
+        it("should return null", () -> {
+          NamedCertificateAuthority mostRecentCA = subject.findMostRecent("this-entity-does-not-exist");
 
-          assertTrue(mostRecentCAAsList.isEmpty());
+          assertNull(mostRecentCA);
         });
       });
 
       describe("when given a name in the same case as the entity's name", () -> {
         it("should retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecentAsList("test-ca").get(0);
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecent("test-ca");
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
         });
 
         it("should decrypt private key of the returned CA", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecentAsList("test-ca").get(0);
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecent("test-ca");
           verify(secretEncryptionHelper, times(1)).retrieveClearTextValue(eq(certificateAuthority));
         });
       });
 
       describe("when given a name with a different case than the entity's name", () -> {
         it("should still retrieve the entity from the database", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecentAsList("TEST-CA").get(0);
+          NamedCertificateAuthority certificateAuthority = subject.findMostRecent("TEST-CA");
 
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
@@ -243,7 +244,7 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
     });
 
-    describe("#findByUuidAsList", () -> {
+    describe("#findByUuid", () -> {
       beforeEach(() -> {
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert", "my-priv");
         savedSecret = subject.save(certificateAuthority);
@@ -251,21 +252,20 @@ public class NamedCertificateAuthorityDataServiceTest {
       });
 
       it("should be able to find a CA by uuid", () -> {
-        NamedCertificateAuthority oneByUuid = subject.findByUuidAsList(savedSecret.getUuid().toString()).get(0);
+        NamedCertificateAuthority oneByUuid = subject.findByUuid(savedSecret.getUuid().toString());
         assertThat(oneByUuid.getName(), equalTo("my-ca"));
         assertThat(oneByUuid.getCertificate(), equalTo("my-cert"));
       });
 
       it("decrypts private key of the found CA", () -> {
-        NamedCertificateAuthority oneByUuid = subject.findByUuidAsList(savedSecret.getUuid().toString()).get(0);
+        NamedCertificateAuthority oneByUuid = subject.findByUuid(savedSecret.getUuid().toString());
         verify(secretEncryptionHelper, times(1)).retrieveClearTextValue(eq(oneByUuid));
       });
 
       describe("when no CA is found", () -> {
-        it("returns an empty list", () -> {
-          List<NamedCertificateAuthority> foundNamedCertificateAuthorities = subject.findByUuidAsList(UUID.randomUUID().toString());
-          assertNotNull(foundNamedCertificateAuthorities);
-          assertTrue(foundNamedCertificateAuthorities.isEmpty());
+        it("returns null", () -> {
+          NamedCertificateAuthority foundNamedCertificateAuthority = subject.findByUuid(UUID.randomUUID().toString());
+          assertNull(foundNamedCertificateAuthority);
         });
       });
     });

@@ -30,8 +30,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -39,8 +41,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -95,10 +97,10 @@ public class CaController {
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
-    List<NamedCertificateAuthority> mostRecentCAAsList = namedCertificateAuthorityDataService.findMostRecentAsList(caPath);
+    NamedCertificateAuthority mostRecentCA = namedCertificateAuthorityDataService.findMostRecent(caPath);
 
-    if (!mostRecentCAAsList.isEmpty()) {
-      mostRecentCAAsList.get(0).copyInto(namedCertificateAuthority);
+    if (mostRecentCA != null) {
+      mostRecentCA.copyInto(namedCertificateAuthority);
     }
 
     try {
@@ -118,7 +120,7 @@ public class CaController {
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
     return retrieveAuthorityWithAuditing(
         caPath(request),
-        namedCertificateAuthorityDataService::findMostRecentAsList,
+        findAsList(namedCertificateAuthorityDataService::findMostRecent),
         request,
         authentication);
   }
@@ -154,8 +156,15 @@ public class CaController {
     if (byName) {
       return namedCertificateAuthorityDataService::findAllByName;
     } else {
-      return namedCertificateAuthorityDataService::findByUuidAsList;
+      return findAsList(namedCertificateAuthorityDataService::findByUuid);
     }
+  }
+
+  private Function<String, List<NamedCertificateAuthority>> findAsList(Function<String, NamedCertificateAuthority> finder) {
+    return (toFind) -> {
+      NamedCertificateAuthority certificateAuthority = finder.apply(toFind);
+      return certificateAuthority != null ? newArrayList(certificateAuthority) : newArrayList();
+    };
   }
 
   private ResponseEntity retrieveAuthorityWithAuditing(
