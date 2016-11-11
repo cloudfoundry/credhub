@@ -61,7 +61,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private NamedCertificateAuthority findCa(String caName) {
-    NamedCertificateAuthority ca = namedCertificateAuthorityDataService.findMostRecentByName(caName);
+    NamedCertificateAuthority ca = namedCertificateAuthorityDataService.findMostRecentByNameWithDecryption(caName);
 
     if (ca == null) {
       if ("default".equals(caName)) {
@@ -75,7 +75,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-    PEMParser pemParser = new PEMParser(new StringReader(namedCertificateAuthorityDataService.getPrivateKeyClearText(ca)));
+    PEMParser pemParser = new PEMParser(new StringReader(ca.getPrivateKey()));
     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);

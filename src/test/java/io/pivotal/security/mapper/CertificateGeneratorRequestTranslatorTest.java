@@ -28,6 +28,8 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
+import java.security.Security;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -47,8 +49,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.security.Security;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -248,7 +248,6 @@ public class CertificateGeneratorRequestTranslatorTest {
     });
 
     describe("validates the parameter holder at least once", () -> {
-
       beforeEach(() -> {
         mockParams = mock(CertificateSecretParameters.class);
         when(certificateSecretParametersFactory.get()).thenReturn(mockParams);
@@ -381,11 +380,10 @@ public class CertificateGeneratorRequestTranslatorTest {
     authorityParameters.setCommonName("my-root");
     CertificateAuthority certificateSecret = secretGenerator.generateCertificateAuthority(authorityParameters);
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("my-root");
-    certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate());
+    certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate())
+        .setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
 
-    certificateAuthorityDataService.updatePrivateKey(certificateAuthority, certificateSecret.getCertificateAuthorityBody().getPrivateKey());
-
-    when(certificateAuthorityDataService.findMostRecentByName("my-root")).thenReturn(certificateAuthority);
+    when(certificateAuthorityDataService.findMostRecentByNameWithDecryption("my-root")).thenReturn(certificateAuthority);
 
     return certificateAuthority;
   }

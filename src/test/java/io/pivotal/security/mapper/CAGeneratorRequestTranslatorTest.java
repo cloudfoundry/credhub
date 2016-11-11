@@ -1,9 +1,7 @@
 package io.pivotal.security.mapper;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
-import com.jayway.jsonpath.internal.JsonContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
@@ -22,11 +20,18 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.refEq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
@@ -55,7 +60,9 @@ public class CAGeneratorRequestTranslatorTest {
   @Spy
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
-  String requestJson = "{" +
+  private NamedCertificateAuthority certificateAuthority;
+
+  private final String requestJson = "{" +
       "\"type\":\"root\"," +
       "\"parameters\":{" +
       "\"common_name\":\"My Common Name\", " +
@@ -69,8 +76,7 @@ public class CAGeneratorRequestTranslatorTest {
       "}" +
       "}";
 
-  private DocumentContext parsedRequest;
-  private CertificateSecretParameters fullParams = new CertificateSecretParameters()
+  private final CertificateSecretParameters fullParams = new CertificateSecretParameters()
       .setCommonName("My Common Name")
       .setOrganization("Organization")
       .setOrganizationUnit("My Unit")
@@ -85,26 +91,9 @@ public class CAGeneratorRequestTranslatorTest {
     wireAndUnwire(this);
 
     describe("when all parameters are provided", () -> {
-      beforeEach(() -> {
-        subject.namedCertificateAuthorityDataService = namedCertificateAuthorityDataService;
-        parsedRequest = jsonPath.parse(requestJson);
-      });
-
       it("validates the json keys", () -> {
-        subject.validateJsonKeys(parsedRequest);
+        subject.validateJsonKeys(jsonPath.parse(requestJson));
         // no exception
-      });
-    });
-
-    describe("#populateEntityFromJson", () -> {
-      it("updates the entity with the encrypted private key for a new CA", () -> {
-        doReturn(new CertificateAuthority("root", "fake-certificate", "fake-private-key")).when(certificateGenerator).generateCertificateAuthority(any());
-        NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority("my-fake-ca");
-        DocumentContext documentContext = new JsonContext().parse(requestJson);
-
-        subject.populateEntityFromJson(namedCertificateAuthority, documentContext);
-
-        verify(namedCertificateAuthorityDataService).updatePrivateKey(namedCertificateAuthority, "fake-private-key");
       });
     });
 
@@ -114,9 +103,40 @@ public class CAGeneratorRequestTranslatorTest {
             "\"type\":\"root\"," +
             "\"foo\":\"bar\"" +
             "}";
+        subject.validateJsonKeys(jsonPath.parse(json));
+      });
+    });
 
-        parsedRequest = jsonPath.parse(json);
-        subject.validateJsonKeys(parsedRequest);
+    describe("#populateEntityFromJson", () -> {
+      beforeEach(() -> {
+        doReturn(
+            new CertificateAuthority("root", "fake-certificate", "fake-private-key")
+        ).when(certificateGenerator).generateCertificateAuthority(refEq(fullParams));
+        certificateAuthority = new NamedCertificateAuthority("fake-ca");
+        subject.populateEntityFromJson(certificateAuthority, jsonPath.parse(requestJson));
+      });
+
+      it("validates parameters", () -> {
+        verify(certificateGeneratorRequestTranslator, times(1))
+            .validCertificateAuthorityParameters(eq(jsonPath.parse(requestJson)));
+      });
+
+      it("generates new certificate authority as view", () -> {
+        verify(certificateGenerator, times(1)).generateCertificateAuthority(refEq(fullParams));
+      });
+
+      it("sets appropriate fields on the entity", () -> {
+        assertThat(certificateAuthority.getType(), equalTo("root"));
+        assertThat(certificateAuthority.getCertificate(), equalTo("fake-certificate"));
+        assertThat(certificateAuthority.getPrivateKey(), equalTo("fake-private-key"));
+      });
+
+      itThrowsWithMessage("when type is not root", ParameterizedValidationException.class, "error.bad_authority_type", () -> {
+        subject.populateEntityFromJson(new NamedCertificateAuthority("fake-ca"), jsonPath.parse("{\"type\":\"notRoot\"}"));
+      });
+
+      itThrowsWithMessage("when type is not provided", ParameterizedValidationException.class, "error.bad_authority_type", () -> {
+        subject.populateEntityFromJson(new NamedCertificateAuthority("fake-ca"), jsonPath.parse("{}"));
       });
     });
   }

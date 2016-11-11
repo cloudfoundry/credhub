@@ -50,6 +50,8 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @LastModifiedDate
   private Instant updatedAt;
 
+  transient private String privateKey;
+
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
   }
@@ -123,5 +125,14 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     copy.setCertificate(certificate);
     copy.setEncryptedValue(encryptedValue);
     copy.setNonce(nonce);
+  }
+
+  public String getPrivateKey() {
+    return privateKey;
+  }
+
+  public NamedCertificateAuthority setPrivateKey(String privateKey) {
+    this.privateKey = privateKey;
+    return this;
   }
 }

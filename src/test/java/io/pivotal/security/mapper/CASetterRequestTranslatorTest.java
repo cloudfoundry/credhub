@@ -9,7 +9,6 @@ import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,9 +22,7 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -64,16 +61,14 @@ public class CASetterRequestTranslatorTest {
       });
 
       it("populates CA entity for valid scenarios", () -> {
-        ArgumentCaptor<NamedCertificateAuthority> caCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
         String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"a\",\"private_key\":\"b\"}}";
         DocumentContext parsed = jsonPath.parse(requestJson);
 
         subject.populateEntityFromJson(entity, parsed);
 
-        verify(namedCertificateAuthorityDataService).updatePrivateKey(caCaptor.capture(), eq("b"));
-        NamedCertificateAuthority updatedCA = caCaptor.getValue();
-        assertThat(updatedCA.getType(), equalTo("root"));
-        assertThat(updatedCA.getCertificate(), equalTo("a"));
+        assertThat(entity.getType(), equalTo("root"));
+        assertThat(entity.getCertificate(), equalTo("a"));
+        assertThat(entity.getPrivateKey(), equalTo("b"));
       });
 
       itThrowsWithMessage("exception when certificate is missing", ParameterizedValidationException.class, "error.missing_ca_credentials", () -> {

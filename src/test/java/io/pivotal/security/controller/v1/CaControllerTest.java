@@ -28,6 +28,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -57,11 +62,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @WebAppConfiguration
@@ -71,9 +71,7 @@ public class CaControllerTest {
   private static final Instant FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1400000000L);
   private static final String UPDATED_AT_JSON = "\"updated_at\":\"" + FROZEN_TIME_INSTANT.toString() + "\"";
   private static final String CA_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
-  private static final String CA_NEW_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"new-certificate\",\"private_key\":\"new-private-key\"}";
   private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_JSON + "}";
-  private static final String CA_NEW_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_NEW_CREATION_JSON + "}";
 
   @Autowired
   protected WebApplicationContext context;
@@ -129,16 +127,14 @@ public class CaControllerTest {
           fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
               .setType("root")
               .setCertificate("my_cert")
+              .setPrivateKey("private_key")
               .setUuid(uuid)
               .setUpdatedAt(FROZEN_TIME_INSTANT);
-          doReturn(new CertificateAuthority(fakeGeneratedCa, "private_key"))
+          doReturn(new CertificateAuthority(fakeGeneratedCa))
               .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
           doReturn(
               fakeGeneratedCa
-          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-          doReturn(
-              "private_key"
-          ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
+          ).when(namedCertificateAuthorityDataService).saveWithEncryption(any(NamedCertificateAuthority.class));
 
           String requestJson = "{\"type\":\"root\",\"parameters\":{\"common_name\":\"test-ca\"}}";
 
@@ -159,7 +155,7 @@ public class CaControllerTest {
         it("saves the generated ca in the DB", () -> {
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
-          verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(argumentCaptor.capture());
 
           NamedCertificateAuthority savedCa = argumentCaptor.getValue();
           assertThat(savedCa.getName(), equalTo(uniqueName));
@@ -210,7 +206,7 @@ public class CaControllerTest {
           ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
           verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
-          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(saveArgumentCaptor.capture());
 
           NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
           assertNotNull(newCertificateAuthority.getUuid());
@@ -243,12 +239,10 @@ public class CaControllerTest {
               new NamedCertificateAuthority(uniqueName)
                   .setType("root")
                   .setCertificate("my_cert")
+                  .setPrivateKey("private_key")
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
-          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-          doReturn(
-              "private_key"
-          ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
+          ).when(namedCertificateAuthorityDataService).saveWithEncryption(any(NamedCertificateAuthority.class));
           String requestJson = "{" + CA_CREATION_JSON + "}";
           RequestBuilder requestBuilder = put(urlPath)
               .content(requestJson)
@@ -264,7 +258,7 @@ public class CaControllerTest {
 
         it("writes the new root ca to the DB", () -> {
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
-          verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(argumentCaptor.capture());
 
           NamedCertificateAuthority actual = argumentCaptor.getValue();
 
@@ -318,7 +312,7 @@ public class CaControllerTest {
           ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
           verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
-          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
+          verify(namedCertificateAuthorityDataService, times(1)).saveWithEncryption(saveArgumentCaptor.capture());
 
           NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
           assertNotNull(newCertificateAuthority.getUuid());
@@ -367,11 +361,11 @@ public class CaControllerTest {
         storedCa = new NamedCertificateAuthority(uniqueName)
             .setType("root")
             .setCertificate("my-certificate")
+            .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecentByName(eq(uniqueName));
-        doReturn("my-priv").when(namedCertificateAuthorityDataService).getPrivateKeyClearText(any(NamedCertificateAuthority.class));
-        doReturn(storedCa).when(namedCertificateAuthorityDataService).findOneByUuid(eq("my-uuid"));
+        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecentByNameWithDecryption(eq(uniqueName));
+        doReturn(storedCa).when(namedCertificateAuthorityDataService).findOneByUuidWithDecryption(eq("my-uuid"));
 
         expectedJson = "{ \"data\": [" +
             "{"
@@ -512,7 +506,7 @@ public class CaControllerTest {
     originalCa.setUuid(UUID.randomUUID());
     originalCa.setCertificate("original-certificate");
 
-    when(namedCertificateAuthorityDataService.findMostRecentByName(uniqueName)).thenReturn(originalCa);
+    when(namedCertificateAuthorityDataService.findMostRecentByNameWithDecryption(uniqueName)).thenReturn(originalCa);
   }
 
   private void setUpCaSaving() {
@@ -524,12 +518,7 @@ public class CaControllerTest {
       if (certificateAuthority.getUuid() == null) {
         certificateAuthority.setUuid(uuid);
       }
-
-      doReturn(
-          "new-private-key"
-      ).when(namedCertificateAuthorityDataService).getPrivateKeyClearText(certificateAuthority);
-
-      return certificateAuthority;
-    }).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+      return certificateAuthority.setPrivateKey("new-private-key");
+    }).when(namedCertificateAuthorityDataService).saveWithEncryption(any(NamedCertificateAuthority.class));
   }
 }

@@ -30,18 +30,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
+import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -96,7 +95,7 @@ public class CaController {
   private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
-    NamedCertificateAuthority originalCertificateAuthority = namedCertificateAuthorityDataService.findMostRecentByName(caPath);
+    NamedCertificateAuthority originalCertificateAuthority = namedCertificateAuthorityDataService.findMostRecentByNameWithDecryption(caPath);
 
     if (originalCertificateAuthority != null) {
       originalCertificateAuthority.copyInto(namedCertificateAuthority);
@@ -109,10 +108,9 @@ public class CaController {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
 
-    NamedCertificateAuthority saved = namedCertificateAuthorityDataService.save(namedCertificateAuthority);
-    String privateKey = namedCertificateAuthorityDataService.getPrivateKeyClearText(namedCertificateAuthority);
+    NamedCertificateAuthority saved = namedCertificateAuthorityDataService.saveWithEncryption(namedCertificateAuthority);
 
-    return new ResponseEntity<>(CertificateAuthority.fromEntity(saved, privateKey), HttpStatus.OK);
+    return new ResponseEntity<>(CertificateAuthority.fromEntity(saved), HttpStatus.OK);
   }
 
   @SuppressWarnings("unused")
@@ -120,7 +118,7 @@ public class CaController {
   public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
     return retrieveAuthorityWithAuditing(
         caPath(request),
-        namedCertificateAuthorityDataService::findMostRecentByName,
+        namedCertificateAuthorityDataService::findMostRecentByNameWithDecryption,
         request,
         authentication);
   }
@@ -154,9 +152,9 @@ public class CaController {
 
   private Function<String, NamedCertificateAuthority> getFinder(boolean byName) {
     if (byName) {
-      return namedCertificateAuthorityDataService::findMostRecentByName;
+      return namedCertificateAuthorityDataService::findMostRecentByNameWithDecryption;
     } else {
-      return namedCertificateAuthorityDataService::findOneByUuid;
+      return namedCertificateAuthorityDataService::findOneByUuidWithDecryption;
     }
   }
 
@@ -176,8 +174,7 @@ public class CaController {
           }
 
           // TODO: when we fetch multiple this will need to happen in a loop...
-          String privateKeyClearText = namedCertificateAuthorityDataService.getPrivateKeyClearText(namedAuthority);
-          CertificateAuthority ca = new CertificateAuthority(namedAuthority, privateKeyClearText);
+          CertificateAuthority ca = new CertificateAuthority(namedAuthority);
           List<CertificateAuthority> caList = newArrayList(ca);
 
           return new ResponseEntity<>(new DataResponse(caList), HttpStatus.OK);

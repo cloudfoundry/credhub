@@ -28,21 +28,6 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -53,6 +38,20 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -107,10 +106,12 @@ public class BCCertificateGeneratorTest {
       caKeyPair = fakeKeyPairGenerator.generate();
       X509CertificateHolder caX509CertHolder = generateX509CertificateAuthority();
       caX509Cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
-      defaultNamedCA = new NamedCertificateAuthority("default");
-      defaultNamedCA.setCertificate(CertificateFormatter.pemOf(caX509Cert));
-
       privateKey = CertificateFormatter.pemOf(caKeyPair.getPrivate());
+      defaultNamedCA = new NamedCertificateAuthority("default");
+      defaultNamedCA
+          .setCertificate(CertificateFormatter.pemOf(caX509Cert))
+          .setPrivateKey(privateKey);
+
 
       inputParameters = new CertificateSecretParameters()
         .setOrganization("foo")
@@ -160,8 +161,7 @@ public class BCCertificateGeneratorTest {
       beforeEach(() -> {
         childCertificateKeyPair = fakeKeyPairGenerator.generate();
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
-        when(namedCertificateAuthorityDataService.findMostRecentByName("default")).thenReturn(defaultNamedCA);
-        when(namedCertificateAuthorityDataService.getPrivateKeyClearText(eq(defaultNamedCA))).thenReturn(privateKey);
+        when(namedCertificateAuthorityDataService.findMostRecentByNameWithDecryption("default")).thenReturn(defaultNamedCA);
         childCertificateHolder = generateChildCertificateSignedByCa(
             childCertificateKeyPair, caKeyPair.getPrivate(), caDn);
         childCertificate = new JcaX509CertificateConverter()
@@ -180,7 +180,6 @@ public class BCCertificateGeneratorTest {
         assertThat(certificateSecret.getCertificateBody().getCertificate(),
             equalTo(CertificateFormatter.pemOf(childCertificate)));
         verify(keyGenerator, times(1)).generateKeyPair(2048);
-        verify(namedCertificateAuthorityDataService).getPrivateKeyClearText(defaultNamedCA);
       });
 
       describe("when a key length is given", () -> {

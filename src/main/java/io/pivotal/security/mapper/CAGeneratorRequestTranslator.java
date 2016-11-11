@@ -11,9 +11,9 @@ import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.google.common.collect.ImmutableSet.of;
-
 import java.util.Set;
+
+import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
@@ -36,7 +36,6 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
         certificateGeneratorRequestTranslator.validCertificateAuthorityParameters(documentContext);
 
     CertificateAuthority certificateAuthority;
-
     try {
       certificateAuthority = certificateGenerator.generateCertificateAuthority(parameters);
     } catch (Exception e) {
@@ -46,9 +45,8 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
     CertificateAuthorityBody caBody = certificateAuthority.getCertificateAuthorityBody();
     namedCA
         .setType(certificateAuthority.getType())
-        .setCertificate(caBody.getCertificate());
-
-    namedCertificateAuthorityDataService.updatePrivateKey(namedCA, caBody.getPrivateKey());
+        .setCertificate(caBody.getCertificate())
+        .setPrivateKey(caBody.getPrivateKey());
   }
 
   @Override
