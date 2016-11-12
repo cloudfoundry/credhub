@@ -12,46 +12,22 @@ import java.util.UUID;
 @Service
 public class NamedCertificateAuthorityDataService {
   private final NamedCertificateAuthorityRepository namedCertificateAuthorityRepository;
-  private final SecretEncryptionHelper secretEncryptionHelper;
 
   @Autowired
-  public NamedCertificateAuthorityDataService(NamedCertificateAuthorityRepository namedCertificateAuthorityRepository,
-                                              SecretEncryptionHelper secretEncryptionHelper) {
+  public NamedCertificateAuthorityDataService(NamedCertificateAuthorityRepository namedCertificateAuthorityRepository) {
     this.namedCertificateAuthorityRepository = namedCertificateAuthorityRepository;
-    this.secretEncryptionHelper = secretEncryptionHelper;
   }
 
   public NamedCertificateAuthority save(NamedCertificateAuthority certificateAuthority) {
-    return saveWithEncryption(certificateAuthority);
-  }
-
-  public NamedCertificateAuthority findMostRecent(String name) {
-    return findMostRecentByNameWithDecryption(name);
-  }
-
-  public NamedCertificateAuthority findByUuid(String uuid) {
-    return findOneByUuidWithDecryption(uuid);
-  }
-
-  private NamedCertificateAuthority saveWithEncryption(NamedCertificateAuthority certificateAuthority) {
-    secretEncryptionHelper.refreshEncryptedValue(certificateAuthority, certificateAuthority.getPrivateKey());
     return namedCertificateAuthorityRepository.save(certificateAuthority);
   }
 
-  private NamedCertificateAuthority findMostRecentByNameWithDecryption(String name) {
-    NamedCertificateAuthority foundCa = namedCertificateAuthorityRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(name);
-    if (foundCa != null) {
-      return foundCa.setPrivateKey(secretEncryptionHelper.retrieveClearTextValue(foundCa));
-    }
-    return foundCa;
+  public NamedCertificateAuthority findMostRecent(String name) {
+    return namedCertificateAuthorityRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(name);
   }
 
-  private NamedCertificateAuthority findOneByUuidWithDecryption(String uuid) {
-    NamedCertificateAuthority foundCa = namedCertificateAuthorityRepository.findOneByUuid(UUID.fromString(uuid));
-    if (foundCa != null) {
-      return foundCa.setPrivateKey(secretEncryptionHelper.retrieveClearTextValue(foundCa));
-    }
-    return foundCa;
+  public NamedCertificateAuthority findByUuid(String uuid) {
+    return namedCertificateAuthorityRepository.findOneByUuid(UUID.fromString(uuid));
   }
 
   public List<NamedCertificateAuthority> findAllByName(String name) {

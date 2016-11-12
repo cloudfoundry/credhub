@@ -54,7 +54,6 @@ public class NamedCertificateAuthorityDataServiceTest {
   private Consumer<Long> fakeTimeSetter;
 
   private NamedCertificateAuthorityDataService subject;
-  private SecretEncryptionHelper secretEncryptionHelper;
   private NamedCertificateAuthority savedSecret;
 
   {
@@ -63,8 +62,7 @@ public class NamedCertificateAuthorityDataServiceTest {
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      secretEncryptionHelper = mock(SecretEncryptionHelper.class);
-      subject = new NamedCertificateAuthorityDataService(namedCertificateAuthorityRepository, secretEncryptionHelper);
+      subject = new NamedCertificateAuthorityDataService(namedCertificateAuthorityRepository);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
     });
@@ -73,7 +71,7 @@ public class NamedCertificateAuthorityDataServiceTest {
       jdbcTemplate.execute("delete from named_certificate_authority");
     });
 
-    describe("#saveWithEncryption", () -> {
+    describe("#save", () -> {
       it("should create the entity in the database", () -> {
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key");
         certificateAuthority = subject.save(certificateAuthority);
@@ -157,13 +155,6 @@ public class NamedCertificateAuthorityDataServiceTest {
         assertThat(new String(actual.getEncryptedValue()).length(), equalTo(7000));
       });
 
-      it("should encrypt private key", () -> {
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key");
-        subject.save(certificateAuthority);
-
-        verify(secretEncryptionHelper).refreshEncryptedValue(eq(certificateAuthority), eq("fake-private-key"));
-      });
-
       describe("when the entity already exists", () -> {
         it("should save the updated entity", () -> {
           NamedCertificateAuthority certificateAuthority = subject.save(createCertificateAuthority("test-name", "original-certificate", "fake-private-key"));
@@ -203,11 +194,6 @@ public class NamedCertificateAuthorityDataServiceTest {
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
         });
-
-        it("should decrypt private key of the returned CA", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.findMostRecent("test-ca");
-          verify(secretEncryptionHelper, times(1)).retrieveClearTextValue(eq(certificateAuthority));
-        });
       });
 
       describe("when given a name with a different case than the entity's name", () -> {
@@ -245,28 +231,18 @@ public class NamedCertificateAuthorityDataServiceTest {
     });
 
     describe("#findByUuid", () -> {
-      beforeEach(() -> {
+      it("should be able to find a CA by uuid", () -> {
         NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert", "my-priv");
         savedSecret = subject.save(certificateAuthority);
         assertNotNull(savedSecret.getUuid());
-      });
-
-      it("should be able to find a CA by uuid", () -> {
         NamedCertificateAuthority oneByUuid = subject.findByUuid(savedSecret.getUuid().toString());
         assertThat(oneByUuid.getName(), equalTo("my-ca"));
         assertThat(oneByUuid.getCertificate(), equalTo("my-cert"));
       });
 
-      it("decrypts private key of the found CA", () -> {
-        NamedCertificateAuthority oneByUuid = subject.findByUuid(savedSecret.getUuid().toString());
-        verify(secretEncryptionHelper, times(1)).retrieveClearTextValue(eq(oneByUuid));
-      });
-
-      describe("when no CA is found", () -> {
-        it("returns null", () -> {
-          NamedCertificateAuthority foundNamedCertificateAuthority = subject.findByUuid(UUID.randomUUID().toString());
-          assertNull(foundNamedCertificateAuthority);
-        });
+      it("returns null when no CA is found", () -> {
+        NamedCertificateAuthority foundNamedCertificateAuthority = subject.findByUuid(UUID.randomUUID().toString());
+        assertNull(foundNamedCertificateAuthority);
       });
     });
   }
