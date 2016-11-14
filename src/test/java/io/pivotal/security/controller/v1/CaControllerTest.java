@@ -414,7 +414,7 @@ public class CaControllerTest {
 
         describe("as a query parameter", () -> {
           it("returns the ca when the name is a request parameter", () -> {
-            String expectedJson = "{ \"data\": [" +
+            String expectedJsonWithManyCAs = "{ \"data\": [" +
                 "{"
                 + UPDATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
@@ -439,13 +439,93 @@ public class CaControllerTest {
             mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(expectedJson, true));
+                .andExpect(content().json(expectedJsonWithManyCAs, true));
+          });
+
+          it("can limit results with the 'current' query parameter", () -> {
+            String jsonWithOnlyOneCA = "{ \"data\": [" +
+                "{"
+                + UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+                "}]" +
+                "}";
+
+            String requestUrl = String.format("/api/v1/ca?name=%s&current=true", uniqueName);
+            mockMvc.perform(get(requestUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(jsonWithOnlyOneCA, true));
+          });
+
+          it("returns the all results when the 'current' query parameter is false'", () -> {
+            String expectedJsonWithManyCAs = "{ \"data\": [" +
+                "{"
+                + UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+                "}," +
+                "{"
+                + OLDER_UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate-old\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + olderStoredCa.getUuid().toString() + "\"" +
+                "}" +
+                "]" +
+                "}";
+
+            String requestUrl = String.format("/api/v1/ca?name=%s&current=false", uniqueName);
+            mockMvc.perform(get(requestUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(expectedJsonWithManyCAs, true));
+          });
+
+          it("handles empty 'current' parameter as false", () -> {
+            String expectedJsonWithManyCAs = "{ \"data\": [" +
+                "{"
+                + UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+                "}," +
+                "{"
+                + OLDER_UPDATED_AT_JSON + "," +
+                "    \"type\":\"root\"," +
+                "    \"value\":{" +
+                "        \"certificate\":\"my-certificate-old\"," +
+                "        \"private_key\":\"my-priv\"" +
+                "    }," +
+                "    \"id\":\"" + olderStoredCa.getUuid().toString() + "\"" +
+                "}" +
+                "]" +
+                "}";
+
+            String requestUrl = String.format("/api/v1/ca?name=%s&current=", uniqueName);
+            mockMvc.perform(get(requestUrl))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(content().json(expectedJsonWithManyCAs, true));
           });
 
           it("handles empty name", () -> {
             mockMvc.perform(get("/api/v1/ca?name="))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request.")); ;
+                .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request."));
           });
 
           it("persists an audit entry when getting a ca", () -> {

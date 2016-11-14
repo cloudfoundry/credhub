@@ -129,6 +129,7 @@ public class CaController {
   public ResponseEntity getByIdOrName(
       @RequestParam(name = "id", defaultValue="", required = false) String id,
       @RequestParam(name = "name", defaultValue="", required = false) String name,
+      @RequestParam(name = "current", defaultValue="false", required = false) Boolean limitResults,
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
@@ -141,7 +142,7 @@ public class CaController {
 
     return retrieveAuthorityWithAuditing(
         identifier,
-        getFinder(byName),
+        getFinder(byName, limitResults),
         request,
         authentication);
   }
@@ -152,12 +153,14 @@ public class CaController {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
   }
 
-  private Function<String, List<NamedCertificateAuthority>> getFinder(boolean byName) {
-    if (byName) {
+  private Function<String, List<NamedCertificateAuthority>> getFinder(boolean byName, Boolean limitResults) {
+    if (byName && limitResults) {
+      return findAsList(namedCertificateAuthorityDataService::findMostRecent);
+    } else if (byName) {
       return namedCertificateAuthorityDataService::findAllByName;
-    } else {
-      return findAsList(namedCertificateAuthorityDataService::findByUuid);
     }
+
+    return findAsList(namedCertificateAuthorityDataService::findByUuid);
   }
 
   private Function<String, List<NamedCertificateAuthority>> findAsList(Function<String, NamedCertificateAuthority> finder) {
