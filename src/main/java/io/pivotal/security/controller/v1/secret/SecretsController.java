@@ -75,8 +75,6 @@ public class SecretsController {
   @Autowired
   ResourceServerTokenServices tokenServices;
 
-  private MessageSourceAccessor messageSourceAccessor;
-
   @Autowired
   private MessageSource messageSource;
 
@@ -89,6 +87,8 @@ public class SecretsController {
 
   @Autowired
   AuditLogService auditLogService;
+
+  private MessageSourceAccessor messageSourceAccessor;
 
   @PostConstruct
   public void init() {
@@ -246,14 +246,14 @@ public class SecretsController {
     boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
     boolean regenerate = BooleanUtils.isTrue(parsed.read("$.regenerate", Boolean.class));
 
-    if (regenerate && existingNamedSecret == null) {
-      return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
-    }
-
     boolean willWrite = willBeCreated || overwrite || regenerate;
     String operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
 
     return audit(operationCode, request, authentication, () -> {
+      if (regenerate && existingNamedSecret == null) {
+        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
+      }
+
       return storeSecret(secretName, handler, parsed, existingNamedSecret, willWrite);
     });
   }

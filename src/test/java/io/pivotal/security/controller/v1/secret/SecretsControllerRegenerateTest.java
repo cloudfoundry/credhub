@@ -16,6 +16,8 @@ import org.mockito.Mockito;
 import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -149,33 +151,61 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+        ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
+        verify(auditLogService, times(1)).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
+
+        Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
+        assertThat(action.get().getStatusCode(), equalTo(HttpStatus.OK));
       });
     });
 
     describe("regenerate request for a non-existent secret", () -> {
+      beforeEach(() -> {
+        response = mockMvc.perform(post("/api/v1/data/my-password")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"regenerate\":true}"));
+      });
+
       it("returns an error", () -> {
         String notFoundJson = "{\"error\": \"Credential not found. Please validate your input and retry your request.\"}";
 
-        mockMvc.perform(post("/api/v1/data/my-password")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{\"regenerate\":true}"))
-            .andExpect(content().json(notFoundJson));
+        response.andExpect(content().json(notFoundJson));
+      });
+
+      it("persists an audit entry", () -> {
+        ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
+        verify(auditLogService, times(1)).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
+
+        Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
+        assertThat(action.get().getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
       });
     });
 
-    it("should return an error when attempting to regenerate a non-regenerated password", () -> {
-      String cannotRegenerateJson = "{\"error\": \"The credential could not be regenerated because the value was statically set. Only generated credentials may be regenerated.\"}";
+    describe("when attempting to regenerate a non-regenerated password", () -> {
+      beforeEach(() -> {
+        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "abcde");
+        doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
-      NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "abcde");
-      doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
+        response = mockMvc.perform(post("/api/v1/data/my-password")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"regenerate\":true}"));
+      });
 
-      mockMvc.perform(post("/api/v1/data/my-password")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{\"regenerate\":true}"))
-              .andExpect(content().json(cannotRegenerateJson));
+      it("returns an error", () -> {
+        String cannotRegenerateJson = "{\"error\": \"The credential could not be regenerated because the value was statically set. Only generated credentials may be regenerated.\"}";
+
+        response.andExpect(content().json(cannotRegenerateJson));
+      });
+
+      it("persists an audit entry", () -> {
+        ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
+        verify(auditLogService, times(1)).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
+
+        Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
+        assertThat(action.get().getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
+      });
     });
   }
 
