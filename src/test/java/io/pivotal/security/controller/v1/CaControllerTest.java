@@ -586,6 +586,12 @@ public class CaControllerTest {
             .andExpect(content().json(expectedJson, true));
       });
 
+      it("handles empty id", () -> {
+        mockMvc.perform(get("/api/v1/ca?id="))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request."));
+      });
+
       it("persists an audit entry when getting a ca", () -> {
         verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
       });

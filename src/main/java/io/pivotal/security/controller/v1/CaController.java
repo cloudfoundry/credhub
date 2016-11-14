@@ -134,11 +134,11 @@ public class CaController {
       Authentication authentication) throws Exception {
 
     boolean byName = StringUtils.isEmpty(id);
-    if (byName && StringUtils.isEmpty(name)) {
+    String identifier = StringUtils.isEmpty(id) ? name : id;
+
+    if (StringUtils.isEmpty(identifier)) {
       return createErrorResponse("error.no_identifier", HttpStatus.BAD_REQUEST);
     }
-
-    String identifier = byName ? name : id;
 
     return retrieveAuthorityWithAuditing(
         identifier,
