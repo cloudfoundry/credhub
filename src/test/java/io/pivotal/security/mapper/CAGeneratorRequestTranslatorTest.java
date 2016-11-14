@@ -64,6 +64,7 @@ public class CAGeneratorRequestTranslatorTest {
 
   private final String requestJson = "{" +
       "\"type\":\"root\"," +
+      "\"name\":\"sailor-moon\"," +
       "\"parameters\":{" +
       "\"common_name\":\"My Common Name\", " +
       "\"organization\": \"Organization\"," +

@@ -52,6 +52,7 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
   @Override
   public Set<String> getValidKeys() {
     return of("$['type']",
+        "$['name']",
         "$['parameters']",
         "$['parameters']['common_name']",
         "$['parameters']['organization']",

@@ -118,7 +118,6 @@ public class CaControllerTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
       fakeTimeSetter.accept(FROZEN_TIME_INSTANT.toEpochMilli());
       uniqueName = "my-folder/ca-identifier";
-      urlPath = "/api/v1/ca/" + uniqueName;
 
       uuid = UUID.randomUUID();
       fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
@@ -137,24 +136,25 @@ public class CaControllerTest {
           doReturn(
               fakeGeneratedCa
           ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-
-          String requestJson = "{\"type\":\"root\",\"parameters\":{\"common_name\":\"test-ca\"}}";
-
-          RequestBuilder requestBuilder = post(urlPath)
-              .content(requestJson)
-              .contentType(MediaType.APPLICATION_JSON_UTF8);
-
-          response = mockMvc.perform(requestBuilder);
         });
 
         it("can generate a ca", () -> {
-          response
+          String requestJson = String.format("{\"type\":\"root\",\"name\":\"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", uniqueName);
+
+          mockMvc.perform(post("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(status().isOk())
               .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(content().json(CA_RESPONSE_JSON));
         });
 
         it("saves the generated ca in the DB", () -> {
+          String requestJson = String.format("{\"type\":\"root\",\"name\":\"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", uniqueName);
+          mockMvc.perform(post("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8));
+
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
           verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
@@ -165,6 +165,11 @@ public class CaControllerTest {
         });
 
         it("creates an audit entry", () -> {
+          String requestJson = String.format("{\"type\":\"root\",\"name\": \"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", uniqueName);
+          mockMvc.perform(post("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8));
+
           verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
@@ -182,7 +187,7 @@ public class CaControllerTest {
               "}" +
             "}";
 
-          RequestBuilder requestBuilder = post(urlPath)
+          RequestBuilder requestBuilder = post("/api/v1/ca/" + uniqueName)
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -246,7 +251,7 @@ public class CaControllerTest {
                   .setUuid(uuid)
           ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
           String requestJson = "{" + CA_CREATION_JSON + "}";
-          RequestBuilder requestBuilder = put(urlPath)
+          RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
           response = mockMvc.perform(requestBuilder);
@@ -286,7 +291,7 @@ public class CaControllerTest {
               "}" +
             "}";
 
-          RequestBuilder requestBuilder = put(urlPath)
+          RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -348,7 +353,7 @@ public class CaControllerTest {
       it("put cert with garbage returns an error", () -> {
         String requestJson = "{\"value\":\"\" }";
 
-        RequestBuilder requestBuilder = put(urlPath)
+        RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
             .content(requestJson)
             .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -393,7 +398,7 @@ public class CaControllerTest {
                 "]" +
                 "}";
 
-            mockMvc.perform(get(urlPath))
+            mockMvc.perform(get("/api/v1/ca/" + uniqueName))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(expectedJson, true));
@@ -406,7 +411,7 @@ public class CaControllerTest {
           });
 
           it("persists an audit entry when getting a ca", () -> {
-            mockMvc.perform(get(urlPath))
+            mockMvc.perform(get("/api/v1/ca/" + uniqueName))
                 .andExpect(status().isOk());
             verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
           });
@@ -602,7 +607,7 @@ public class CaControllerTest {
       String requestJson = "{\"type\":" + uuid + ",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
-      RequestBuilder requestBuilder = put(urlPath)
+      RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
           .content(requestJson)
           .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -616,7 +621,7 @@ public class CaControllerTest {
       String requestJson = "{\"type\":\"invalid-type\"}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
-      RequestBuilder requestBuilder = post(urlPath)
+      RequestBuilder requestBuilder = post("/api/v1/ca/" + uniqueName)
           .content(requestJson)
           .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -629,7 +634,7 @@ public class CaControllerTest {
     it("get returns 404 when not found", () -> {
       String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
 
-      RequestBuilder requestBuilder = get(urlPath)
+      RequestBuilder requestBuilder = get("/api/v1/ca/" + uniqueName)
           .contentType(MediaType.APPLICATION_JSON_UTF8);
 
       mockMvc.perform(requestBuilder)
@@ -642,7 +647,7 @@ public class CaControllerTest {
   private void requestWithError(String requestJson) throws Exception {
     String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
-    RequestBuilder requestBuilder = put(urlPath)
+    RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
         .content(requestJson)
         .contentType(MediaType.APPLICATION_JSON_UTF8);
 
