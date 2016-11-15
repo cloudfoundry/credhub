@@ -26,6 +26,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -47,6 +48,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration
@@ -79,6 +82,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   private MockMvc mockMvc;
 
   private Instant now;
+
+  private ResultActions response;
 
   private final String credentialUrlPath = "/api/v1/data/foo";
   private final String credentialUrlQueryParams = "?my_name=my_value";
@@ -122,7 +127,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(), equalTo(("Cannot convert access token to JSON")));
+        assertThat(auditRecord.getFailureDescription(), equalTo("Cannot convert access token to JSON"));
         assertThat(auditRecord.getUserId(), equalTo(null));
         assertThat(auditRecord.getUserName(), equalTo(null));
         assertThat(auditRecord.getUaaUrl(), equalTo(null));
@@ -132,6 +137,43 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getScope(), equalTo(null));
         assertThat(auditRecord.getGrantType(), equalTo(null));
         assertThat(auditRecord.getMethod(), equalTo("GET"));
+        assertThat(auditRecord.getStatusCode(), equalTo(401));
+      });
+    });
+
+    describe("when the token has been signed with a mismatched RSA key", () -> {
+      beforeEach(() -> {
+        get = get(credentialUrl)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SIGNATURE_JWT)
+            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(request -> {
+              request.setRemoteAddr("12346");
+              return request;
+            });
+        response = mockMvc.perform(get);
+      });
+
+      it("should provide a human-friendly response", () -> {
+        String errorMessage = "The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.";
+        response
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error").value("invalid_token"))
+            .andExpect(jsonPath("$.error_description").value(errorMessage));
+      });
+
+      it("logs the 'token_invalid' auth exception to the database", () -> {
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
+
+        AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
+        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
+        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
+        assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
+        assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
+        assertThat(auditRecord.getFailureDescription(), equalTo("The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub."));
         assertThat(auditRecord.getStatusCode(), equalTo(401));
       });
     });

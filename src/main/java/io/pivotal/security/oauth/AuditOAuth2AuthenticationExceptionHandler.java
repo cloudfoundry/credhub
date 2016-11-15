@@ -5,9 +5,13 @@ import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.jwt.Jwt;
 import org.springframework.security.jwt.JwtHelper;
+import org.springframework.security.jwt.crypto.sign.InvalidSignatureException;
+import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.security.oauth2.common.util.JsonParser;
 import org.springframework.security.oauth2.common.util.JsonParserFactory;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
@@ -17,6 +21,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,7 +50,17 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   @Autowired
   ResourceServerTokenServices tokenServices;
 
+  @Autowired
+  private MessageSource messageSource;
+
   private JsonParser objectMapper = JsonParserFactory.create();
+
+  private MessageSourceAccessor messageSourceAccessor;
+
+  @PostConstruct
+  public void init() {
+    messageSourceAccessor = new MessageSourceAccessor(messageSource);
+  }
 
   @Override
   public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
@@ -54,10 +69,18 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
     final Map<String, Object> tokenInformation = extractTokenInformation(token);
 
+    Exception exception = authException;
+    Throwable cause = authException.getCause() != null ? authException.getCause().getCause() : null;
+
+    if (cause instanceof InvalidSignatureException) {
+      exception = new InvalidTokenException(messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
+      exception.setStackTrace(authException.getStackTrace());
+    }
+
     try {
-      doHandle(request, response, authException);
+      doHandle(request, response, exception);
     } finally {
-      logAuthFailureToDb(token, tokenInformation, authException, new AuditRecordParameters(request, null), request.getMethod(), response.getStatus());
+      logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordParameters(request, null), request.getMethod(), response.getStatus());
     }
   }
 
@@ -77,7 +100,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
   }
 
-  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, AuthenticationException authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
+  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, Exception authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
     RequestToOperationTranslator requestToOperationTranslator = new RequestToOperationTranslator(parameters.getPath()).setMethod(requestMethod);
 
     final Instant now;
