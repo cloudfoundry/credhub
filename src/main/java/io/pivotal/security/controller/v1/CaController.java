@@ -23,7 +23,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -83,7 +82,7 @@ public class CaController {
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
     return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(caPath(request), parsedRequest, caSetterRequestTranslator);
+      return storeAuthority(parsedRequest, caSetterRequestTranslator);
     });
   }
 
@@ -91,14 +90,15 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.POST)
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
-    String name = parsedRequest.read("$.name");
 
     return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(name, parsedRequest, caGeneratorRequestTranslator);
+      return storeAuthority(parsedRequest, caGeneratorRequestTranslator);
     });
   }
 
-  private ResponseEntity storeAuthority(@PathVariable String caPath, DocumentContext parsedRequest, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
+  private ResponseEntity storeAuthority(DocumentContext parsedRequest, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
+    String caPath = parsedRequest.read("$.name");
+
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     NamedCertificateAuthority mostRecentCA = namedCertificateAuthorityDataService.findMostRecent(caPath);
 

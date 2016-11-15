@@ -61,7 +61,6 @@ public class AuditLogConfigurationTest {
 
   private MockMvc mockMvc;
   private String credentialUrlPath;
-  private String caUrlPath1;
 
   {
     wireAndUnwire(this);
@@ -73,7 +72,6 @@ public class AuditLogConfigurationTest {
           .addFilter(springSecurityFilterChain)
           .build();
       credentialUrlPath = "/api/v1/data/foo";
-      caUrlPath1 = "/api/v1/ca/bar";
     });
 
     describe("when a request to set credential is served", () -> {
@@ -191,11 +189,11 @@ public class AuditLogConfigurationTest {
 
     describe("when a request to set or generate a credential is served", () -> {
       it("when setting the CA, it logs an audit record for ca_update operation", () -> {
-        MockHttpServletRequestBuilder set = put(caUrlPath1)
+        MockHttpServletRequestBuilder set = put("/api/v1/ca")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
-            .content("{\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}")
+            .content("{\"type\":\"root\",\"name\":\"bar\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .with(request -> {
               request.setRemoteAddr("12345");
@@ -209,7 +207,7 @@ public class AuditLogConfigurationTest {
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
         OperationAuditRecord record = recordCaptor.getValue();
-        assertThat(record.getPath(), equalTo(caUrlPath1));
+        assertThat(record.getPath(), equalTo("/api/v1/ca"));
         assertThat(record.getOperation(), equalTo("ca_update"));
         assertThat(record.getRequesterIp(), equalTo("12345"));
         assertThat(record.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -246,7 +244,7 @@ public class AuditLogConfigurationTest {
 
     describe("when a request to retrieve a CA is served", () -> {
       beforeEach(() -> {
-        doUnsuccessfulFetch(caUrlPath1);
+        doUnsuccessfulFetch("/api/v1/ca?name=bar&current=true");
       });
 
       it("logs an audit record for ca_access operation", () -> {
@@ -256,7 +254,7 @@ public class AuditLogConfigurationTest {
 
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-        assertThat(auditRecord.getPath(), equalTo(caUrlPath1));
+        assertThat(auditRecord.getPath(), equalTo("/api/v1/ca"));
         assertThat(auditRecord.getOperation(), equalTo("ca_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));

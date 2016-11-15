@@ -51,7 +51,9 @@ public class CASetterRequestTranslatorTest {
 
       it("validates the json keys", () -> {
         String requestJson =
-            "{\"type\":\"root\"," +
+            "{" +
+                "\"type\":\"root\"," +
+                "\"name\":\"foo\"," +
                 "\"value\":{" +
                 "\"certificate\":\"a\"," +
                 "\"private_key\":\"b\"}}";

@@ -71,8 +71,9 @@ public class CaControllerTest {
   private static final Instant FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1400000000L);
   private static final String UPDATED_AT_JSON = "\"updated_at\":\"" + FROZEN_TIME_INSTANT.toString() + "\"";
   private static final String OLDER_UPDATED_AT_JSON = "\"updated_at\":\"" + OLDER_FROZEN_TIME_INSTANT.toString() + "\"";
-  private static final String CA_CREATION_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
-  private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_JSON + "}";
+  private static final String CA_CREATION_REQUEST_JSON = "\"type\":\"root\",\"name\":\"%s\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
+  private static final String CA_CREATION_RESPONSE_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
+  private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_RESPONSE_JSON + "}";
 
   @Autowired
   protected WebApplicationContext context;
@@ -225,11 +226,12 @@ public class CaControllerTest {
     });
 
     it("returns 400 when json keys are invalid", () -> {
-      final MockHttpServletRequestBuilder put = put("/api/v1/ca/test-ca")
+      final MockHttpServletRequestBuilder put = put("/api/v1/ca")
           .accept(APPLICATION_JSON)
           .contentType(APPLICATION_JSON)
           .content("{" +
               "  \"type\":\"root\"," +
+              "  \"name\":\"test-ca\"," +
               "  \"bogus\":\"value\"" +
               "}");
       mockMvc.perform(put)
@@ -250,8 +252,8 @@ public class CaControllerTest {
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
           ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-          String requestJson = "{" + CA_CREATION_JSON + "}";
-          RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
+          String requestJson = String.format("{" + CA_CREATION_REQUEST_JSON + "}", uniqueName);
+          RequestBuilder requestBuilder = put("/api/v1/ca")
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
           response = mockMvc.perform(requestBuilder);
@@ -285,13 +287,14 @@ public class CaControllerTest {
           String requestJson =
             "{" +
               "\"type\":\"root\"," +
+              "\"name\":\"" + uniqueName + "\"," +
               "\"value\":{" +
                 "\"certificate\":\"new-certificate\"," +
                 "\"private_key\":\"new-private-key\"" +
               "}" +
             "}";
 
-          RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
+          RequestBuilder requestBuilder = put("/api/v1/ca")
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -335,25 +338,29 @@ public class CaControllerTest {
 
     describe("errors when setting a CA", () -> {
       it("put with only a certificate returns an error", () -> {
-        requestWithError("{\"type\":\"root\",\"value\":{\"certificate\":\"my_certificate\"}}");
+        requestWithError("{\"type\":\"root\",\"name\":\"error1\",\"value\":{\"certificate\":\"my_certificate\"}}");
       });
 
       it("put with only private returns an error", () -> {
-        requestWithError("{\"type\":\"root\",\"value\":{\"private_key\":\"my_private_key\"}}");
+        requestWithError("{\"type\":\"root\",\"name\":\"error2\",\"value\":{\"private_key\":\"my_private_key\"}}");
       });
 
       it("put without keys returns an error", () -> {
-        requestWithError("{\"type\":\"root\",\"value\":{}}");
+        requestWithError("{\"type\":\"root\",\"name\":\"error3\",\"value\":{}}");
       });
 
       it("put with empty request returns an error", () -> {
+        requestWithError("{\"type\":\"root\",\"name\":\"error4\"}");
+      });
+
+      it("put with no name returns an error", () -> {
         requestWithError("{\"type\":\"root\"}");
       });
 
       it("put cert with garbage returns an error", () -> {
-        String requestJson = "{\"value\":\"\" }";
+        String requestJson = "{\"value\":\"\",\"name\":\"error5\"}";
 
-        RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
+        RequestBuilder requestBuilder = put("/api/v1/ca")
             .content(requestJson)
             .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -604,10 +611,10 @@ public class CaControllerTest {
 
     it("returns bad request for PUT with invalid type", () -> {
       String uuid = UUID.randomUUID().toString();
-      String requestJson = "{\"type\":" + uuid + ",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
+      String requestJson = "{\"type\":" + uuid + ",\"name\":\"" + uniqueName + "\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
-      RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
+      RequestBuilder requestBuilder = put("/api/v1/ca")
           .content(requestJson)
           .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -618,10 +625,10 @@ public class CaControllerTest {
     });
 
     it("returns bad request for generate POST with invalid type", () -> {
-      String requestJson = "{\"type\":\"invalid-type\"}";
+      String requestJson = "{\"name\":\"" + uniqueName + "\",\"type\":\"invalid-type\"}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
-      RequestBuilder requestBuilder = post("/api/v1/ca/" + uniqueName)
+      RequestBuilder requestBuilder = post("/api/v1/ca")
           .content(requestJson)
           .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -647,7 +654,7 @@ public class CaControllerTest {
   private void requestWithError(String requestJson) throws Exception {
     String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
-    RequestBuilder requestBuilder = put("/api/v1/ca/" + uniqueName)
+    RequestBuilder requestBuilder = put("/api/v1/ca")
         .content(requestJson)
         .contentType(MediaType.APPLICATION_JSON_UTF8);
 

@@ -8,9 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.Set;
-
 import static com.google.common.collect.ImmutableSet.of;
+
+import java.util.Set;
 
 @Component
 public class CASetterRequestTranslator implements RequestTranslator<NamedCertificateAuthority> {
@@ -43,7 +43,12 @@ public class CASetterRequestTranslator implements RequestTranslator<NamedCertifi
 
   @Override
   public Set<String> getValidKeys() {
-    return of("$['type']", "$['value']",
-       "$['value']['certificate']", "$['value']['private_key']");
+    return of(
+        "$['type']",
+        "$['name']",
+        "$['value']",
+        "$['value']['certificate']",
+        "$['value']['private_key']"
+    );
   }
 }
