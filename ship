@@ -11,13 +11,13 @@ function stop_dev_server() {
 }
 
 git pull -r &&
-./gradlew --no-daemon clean test 
+./gradlew --no-daemon clean test
 if [ $? -ne 0 ]; then
   echo "Unit tests failed."
   exit 1
 fi
 
-gradle --no-daemon bootRun 2>&1 > /dev/null &
+./gradlew --no-daemon bootRun 2>&1 > /dev/null &
 if [ $? -ne 0 ]; then
   echo "Dev server failed to start."
   exit 1
