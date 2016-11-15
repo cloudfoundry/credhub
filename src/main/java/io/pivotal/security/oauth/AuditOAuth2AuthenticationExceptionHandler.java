@@ -69,13 +69,16 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
     final Map<String, Object> tokenInformation = extractTokenInformation(token);
 
-    Exception exception = authException;
-    Throwable cause = authException.getCause() != null ? authException.getCause().getCause() : null;
+    Throwable outerCause = authException.getCause();
+    Throwable cause = outerCause != null ? outerCause.getCause() : null;
 
+    Exception exception;
     if (cause instanceof InvalidSignatureException) {
       exception = new InvalidTokenException(messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
-      exception.setStackTrace(authException.getStackTrace());
+    } else {
+      exception = new InvalidTokenException(removeTokenFromMessage(authException.getMessage(), token), outerCause);
     }
+    exception.setStackTrace(authException.getStackTrace());
 
     try {
       doHandle(request, response, exception);
@@ -134,7 +137,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
         .setNow(now)
         .setOperation(requestToOperationTranslator.translate())
-        .setFailureDescription(cleanMessage(authException.getMessage(), token))
+        .setFailureDescription(removeTokenFromMessage(authException.getMessage(), token))
         .setUserId(userId)
         .setUserName(userName)
         .setUaaUrl(iss)
@@ -153,7 +156,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     authFailureAuditRecordDataService.save(authFailureAuditRecord);
   }
 
-  private String cleanMessage(String message, String token) {
+  private String removeTokenFromMessage(String message, String token) {
     return message.replace(": " + token, "");
   }
 }

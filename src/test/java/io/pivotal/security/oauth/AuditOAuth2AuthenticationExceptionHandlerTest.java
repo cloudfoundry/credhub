@@ -26,8 +26,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -77,13 +75,9 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   @Mock
   InstantFactoryBean instantFactoryBean;
 
-  private MockHttpServletRequestBuilder get;
-
   private MockMvc mockMvc;
 
   private Instant now;
-
-  private ResultActions response;
 
   private final String credentialUrlPath = "/api/v1/data/foo";
   private final String credentialUrlQueryParams = "?my_name=my_value";
@@ -104,8 +98,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
     });
 
     describe("when the token is invalid", () -> {
-      beforeEach(() -> {
-        get = get(credentialUrl)
+      it("logs the 'token_invalid' auth exception to the database", () -> {
+        mockMvc.perform(get(credentialUrl)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
@@ -113,11 +107,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
             .with(request -> {
               request.setRemoteAddr("12346");
               return request;
-            });
-        mockMvc.perform(get);
-      });
+            }));
 
-      it("logs the 'token_invalid' auth exception to the database", () -> {
         ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
         verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
@@ -142,28 +133,29 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
     });
 
     describe("when the token has been signed with a mismatched RSA key", () -> {
-      beforeEach(() -> {
-        get = get(credentialUrl)
+      it("should provide a human-friendly response", () -> {
+        String errorMessage = "The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.";
+        mockMvc.perform(get(credentialUrl)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SIGNATURE_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .with(request -> {
-              request.setRemoteAddr("12346");
-              return request;
-            });
-        response = mockMvc.perform(get);
-      });
-
-      it("should provide a human-friendly response", () -> {
-        String errorMessage = "The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.";
-        response
+            .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.error").value("invalid_token"))
             .andExpect(jsonPath("$.error_description").value(errorMessage));
       });
 
       it("logs the 'token_invalid' auth exception to the database", () -> {
+        mockMvc.perform(get(credentialUrl)
+            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SIGNATURE_JWT)
+            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(request -> {
+              request.setRemoteAddr("99.99.99.99");
+              return request;
+            }));
+
         ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
         verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
@@ -171,7 +163,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
+        assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(), equalTo("The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub."));
         assertThat(auditRecord.getStatusCode(), equalTo(401));
@@ -179,20 +171,27 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
     });
 
     describe("when the token is expired", () -> {
-      beforeEach(() -> {
-        get = get(credentialUrl)
+      it("cleans the token from the error_description response field", () -> {
+        mockMvc.perform(get(credentialUrl)
+            .header("Authorization", "Bearer " + EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error_description").value("Access token expired"));
+      });
+
+      it("saves the 'token_expired' auth exception to the database", () -> {
+        mockMvc.perform(get(credentialUrl)
             .header("Authorization", "Bearer " + EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .with(request -> {
-              request.setRemoteAddr("12346");
+              request.setRemoteAddr("99.99.99.99");
               return request;
-            });
-        mockMvc.perform(get);
-      });
+            }));
 
-      it("logs the 'token_expired' auth exception to the database", () -> {
         OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_SYMMETRIC_KEY_JWT);
         Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
@@ -205,7 +204,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
+        assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(), equalTo("Access token expired"));
         assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
@@ -222,19 +221,16 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
     });
 
     describe("when there is no token provided", () -> {
-      beforeEach(() -> {
-        get = get(credentialUrl)
+      it("logs the 'no_token' auth exception to the database", () -> {
+        mockMvc.perform(get(credentialUrl)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .with(request -> {
               request.setRemoteAddr("12346");
               return request;
-            });
-        mockMvc.perform(get);
-      });
+            }));
 
-      it("logs the 'no_token' auth exception to the database", () -> {
         ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
         verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
