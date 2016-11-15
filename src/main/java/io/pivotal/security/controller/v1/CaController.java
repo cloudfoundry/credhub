@@ -24,7 +24,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -82,25 +81,24 @@ public class CaController {
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+    DocumentContext parsedRequest = jsonPath.parse(requestBody);
     return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(caPath(request), requestBody, caSetterRequestTranslator);
+      return storeAuthority(caPath(request), parsedRequest, caSetterRequestTranslator);
     });
   }
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.POST)
-  ResponseEntity generate(@RequestBody CaGenerateRequestBody parsedRequest,
-                          InputStream requestBody,
-                          HttpServletRequest request,
-                          Authentication authentication) throws Exception {
-    final String name = parsedRequest.getName();
+  ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+    DocumentContext parsedRequest = jsonPath.parse(requestBody);
+    String name = parsedRequest.read("$.name");
 
     return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
-      return storeAuthority(name, requestBody, caGeneratorRequestTranslator);
+      return storeAuthority(name, parsedRequest, caGeneratorRequestTranslator);
     });
   }
 
-  private ResponseEntity storeAuthority(@PathVariable String caPath, InputStream requestBody, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
+  private ResponseEntity storeAuthority(@PathVariable String caPath, DocumentContext parsedRequest, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     NamedCertificateAuthority mostRecentCA = namedCertificateAuthorityDataService.findMostRecent(caPath);
 
@@ -109,7 +107,6 @@ public class CaController {
     }
 
     try {
-      DocumentContext parsedRequest = jsonPath.parse(requestBody);
       requestTranslator.validateJsonKeys(parsedRequest);
       requestTranslator.populateEntityFromJson(namedCertificateAuthority, parsedRequest);
     } catch (ParameterizedValidationException ve) {
