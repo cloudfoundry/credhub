@@ -17,14 +17,14 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-./gradlew --no-daemon bootRun 2>&1 > /dev/null &
+./gradlew bootRun 2>&1 > /dev/null &
 if [ $? -ne 0 ]; then
   echo "Dev server failed to start."
   exit 1
 fi
 
 echo "Waiting for server to start."
-sleep 10
+sleep 20
 
 pushd ~/go/src/github.com/pivotal-cf/cred-hub-acceptance-tests
   if [ -e config.json ]; then
