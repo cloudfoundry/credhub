@@ -120,34 +120,27 @@ public class CaController {
 
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.GET)
-  public ResponseEntity getByName(HttpServletRequest request, Authentication authentication) throws Exception {
+  public ResponseEntity getById(HttpServletRequest request, Authentication authentication) throws Exception {
     return retrieveAuthorityWithAuditing(
         caPath(request),
-        findAsList(namedCertificateAuthorityDataService::findMostRecent),
+        findAsList(namedCertificateAuthorityDataService::findByUuid),
         request,
-        authentication);
+        authentication,
+        (caList) -> caList.get(0));
   }
 
   @RequestMapping(path = "", method = RequestMethod.GET)
-  public ResponseEntity getByIdOrName(
-      @RequestParam(name = "id", defaultValue="", required = false) String id,
+  public ResponseEntity getByName(
       @RequestParam(name = "name", defaultValue="", required = false) String name,
       @RequestParam(name = "current", defaultValue="false", required = false) Boolean limitResults,
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    boolean byName = StringUtils.isEmpty(id);
-    String identifier = StringUtils.isEmpty(id) ? name : id;
-
-    if (StringUtils.isEmpty(identifier)) {
+    if (StringUtils.isEmpty(name)) {
       return createErrorResponse("error.no_identifier", HttpStatus.BAD_REQUEST);
     }
 
-    return retrieveAuthorityWithAuditing(
-        identifier,
-        getFinder(byName, limitResults),
-        request,
-        authentication);
+    return retrieveAuthorityWithAuditing(name, getFinder(limitResults), request, authentication, (caList) -> new DataResponse(caList));
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
@@ -156,14 +149,12 @@ public class CaController {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
   }
 
-  private Function<String, List<NamedCertificateAuthority>> getFinder(boolean byName, Boolean limitResults) {
-    if (byName && limitResults) {
+  private Function<String, List<NamedCertificateAuthority>> getFinder(Boolean limitResults) {
+    if (limitResults) {
       return findAsList(namedCertificateAuthorityDataService::findMostRecent);
-    } else if (byName) {
+    } else {
       return namedCertificateAuthorityDataService::findAllByName;
     }
-
-    return findAsList(namedCertificateAuthorityDataService::findByUuid);
   }
 
   private Function<String, List<NamedCertificateAuthority>> findAsList(Function<String, NamedCertificateAuthority> finder) {
@@ -177,7 +168,8 @@ public class CaController {
       String identifier,
       Function<String, List<NamedCertificateAuthority>> finder,
       HttpServletRequest request,
-      Authentication authentication) throws Exception {
+      Authentication authentication,
+      Function<List<CertificateAuthority>, ?> presenter) throws Exception {
     return auditLogService.performWithAuditing(
         AUTHORITY_ACCESS,
         new AuditRecordParameters(request, authentication),
@@ -192,7 +184,7 @@ public class CaController {
               namedCertificateAuthority -> new CertificateAuthority(namedCertificateAuthority)
           ).collect(Collectors.toList());
 
-          return new ResponseEntity<>(new DataResponse(certificateAuthorities), HttpStatus.OK);
+          return new ResponseEntity<>(presenter.apply(certificateAuthorities), HttpStatus.OK);
         });
   }
 

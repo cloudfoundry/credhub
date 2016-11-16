@@ -390,40 +390,6 @@ public class CaControllerTest {
       });
 
       describe("by name", () -> {
-        describe("as part of the path", () -> {
-          it("returns the ca when the name is part of the path", () -> {
-            String expectedJson = "{ \"data\": [" +
-                "{"
-                + UPDATED_AT_JSON + "," +
-                "    \"type\":\"root\"," +
-                "    \"value\":{" +
-                "        \"certificate\":\"my-certificate\"," +
-                "        \"private_key\":\"my-priv\"" +
-                "    }," +
-                "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
-                "}" +
-                "]" +
-                "}";
-
-            mockMvc.perform(get("/api/v1/ca/" + uniqueName))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(content().json(expectedJson, true));
-          });
-
-          it("handles missing name parameter", () -> {
-            mockMvc.perform(get("/api/v1/ca"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request."));
-          });
-
-          it("persists an audit entry when getting a ca", () -> {
-            mockMvc.perform(get("/api/v1/ca/" + uniqueName))
-                .andExpect(status().isOk());
-            verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
-          });
-        });
-
         describe("as a query parameter", () -> {
           it("returns the ca when the name is a request parameter", () -> {
             String expectedJsonWithManyCAs = "{ \"data\": [" +
@@ -573,24 +539,20 @@ public class CaControllerTest {
             .when(namedCertificateAuthorityDataService)
             .findByUuid(eq("my-uuid"));
 
-        MockHttpServletRequestBuilder get = get("/api/v1/ca?id=my-uuid")
+        MockHttpServletRequestBuilder get = get("/api/v1/ca/my-uuid")
             .accept(APPLICATION_JSON);
 
         response = mockMvc.perform(get);
       });
 
       it("returns the ca", () -> {
-        String expectedJson = "{ \"data\": [" +
-            "{"
-            + UPDATED_AT_JSON + "," +
+        String expectedJson = "{" + UPDATED_AT_JSON + "," +
             "    \"type\":\"root\"," +
             "    \"value\":{" +
             "        \"certificate\":\"my-certificate\"," +
             "        \"private_key\":\"my-priv\"" +
             "    }," +
             "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
-            "}" +
-            "]" +
             "}";
 
         response.andExpect(status().isOk())
@@ -599,7 +561,7 @@ public class CaControllerTest {
       });
 
       it("handles empty id", () -> {
-        mockMvc.perform(get("/api/v1/ca?id="))
+        mockMvc.perform(get("/api/v1/ca/"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error").value("Missing identifier. Please validate your input and retry your request."));
       });
