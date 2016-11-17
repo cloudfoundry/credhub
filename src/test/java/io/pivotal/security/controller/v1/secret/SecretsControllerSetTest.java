@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
@@ -28,14 +29,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.entity.AuditingOperationCode.*;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -57,6 +54,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -240,7 +242,7 @@ public class SecretsControllerSetTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
 
@@ -263,7 +265,7 @@ public class SecretsControllerSetTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq("credential_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_ACCESS), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
 
@@ -306,7 +308,7 @@ public class SecretsControllerSetTest {
     });
 
     it("persists an audit entry", () -> {
-      verify(auditLogService).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+      verify(auditLogService).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
     });
 
     it("returns 400 when the handler raises an exception", () -> {
@@ -346,7 +348,7 @@ public class SecretsControllerSetTest {
 
     it("returns errors from the auditing service auditing fails", () -> {
       doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-          .when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+          .when(auditLogService).performWithAuditing(isA(AuditingOperationCode.class), isA(AuditRecordParameters.class), isA(Supplier.class));
 
       final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
           .accept(APPLICATION_JSON)
@@ -404,6 +406,6 @@ public class SecretsControllerSetTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(2, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditingOperationCode.class), isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }

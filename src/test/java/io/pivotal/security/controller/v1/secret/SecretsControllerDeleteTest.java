@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
@@ -34,6 +35,7 @@ import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.entity.AuditingOperationCode.*;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.mockito.Matchers.any;
@@ -133,7 +135,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq("credential_delete"), isA(AuditRecordParameters.class), any(Supplier.class));
+          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_DELETE), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
 
@@ -154,7 +156,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          verify(auditLogService, times(1)).performWithAuditing(eq("credential_delete"), isA(AuditRecordParameters.class), any(Supplier.class));
+          verify(auditLogService, times(1)).performWithAuditing(eq(CREDENTIAL_DELETE), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
 
@@ -189,6 +191,6 @@ public class SecretsControllerDeleteTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(2, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditingOperationCode.class), isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }

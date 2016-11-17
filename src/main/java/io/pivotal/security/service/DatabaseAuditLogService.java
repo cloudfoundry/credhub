@@ -1,6 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class DatabaseAuditLogService implements AuditLogService {
   }
 
   @Override
-  public ResponseEntity<?> performWithAuditing(String operation, AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws
+  public ResponseEntity<?> performWithAuditing(AuditingOperationCode operation, AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws
       Exception {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
@@ -96,7 +97,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     return responseEntity;
   }
 
-  private OperationAuditRecord getOperationAuditRecord(String operation, AuditRecordParameters auditRecordParameters, int statusCode, boolean success) throws Exception {
+  private OperationAuditRecord getOperationAuditRecord(AuditingOperationCode operation, AuditRecordParameters auditRecordParameters, int statusCode, boolean success) throws Exception {
     Authentication authentication = auditRecordParameters.getAuthentication();
     OAuth2Request oAuth2Request = ((OAuth2Authentication) authentication).getOAuth2Request();
     OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
@@ -106,7 +107,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     return new OperationAuditRecord(
         instantFactoryBean.getObject(),
         auditRecordParameters.getCredentialName(),
-        operation,
+        operation.toString(),
         (String) additionalInformation.get("user_id"),
         (String) additionalInformation.get("user_name"),
         (String) additionalInformation.get("iss"),

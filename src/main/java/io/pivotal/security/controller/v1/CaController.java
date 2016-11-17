@@ -30,8 +30,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.AUTHORITY_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -30,6 +30,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -90,7 +91,7 @@ public class DatabaseAuditLogServiceTest {
 
       auditRecordParameters = new AuditRecordParameters(
           "hostName",
-          "key",
+          "keyName",
           "GET",
           "requestURI",
           "foo=bar",
@@ -107,13 +108,17 @@ public class DatabaseAuditLogServiceTest {
     });
 
     describe("logging behavior", () -> {
-      describe("when the operation succeeds", () -> {
+      describe("when the action succeeds", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("key", "value"));
+            responseEntity = subject.performWithAuditing(CREDENTIAL_ACCESS, auditRecordParameters, () -> {
+              final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
+          });
+
+          it("performs the action", () -> {
+            assertThat(secretRepository.count(), equalTo(1L));
           });
 
           it("passes the request untouched", () -> {
@@ -122,7 +127,6 @@ public class DatabaseAuditLogServiceTest {
 
           it("logs audit entry", () -> {
             checkAuditRecord(true, HttpStatus.OK);
-            assertThat(secretRepository.count(), equalTo(1L));
           });
 
           it("logs in CEF format to file", () -> {
@@ -134,13 +138,13 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("key", "value"));
+            responseEntity = subject.performWithAuditing(CREDENTIAL_ACCESS, auditRecordParameters, () -> {
+              final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
           });
 
-          it("writes nothing to any database", () -> {
+          it("does not perform the action", () -> {
             assertThat(secretRepository.count(), equalTo(0L));
           });
 
@@ -155,15 +159,15 @@ public class DatabaseAuditLogServiceTest {
         });
       });
 
-      describe("when the operation fails with an exception", () -> {
+      describe("when the action fails with an exception", () -> {
         describe("when the audit succeeds", () -> {
           Spectrum.Value<Object> exception = Spectrum.value();
           RuntimeException re = new RuntimeException("controller method failed");
 
           beforeEach(() -> {
             try {
-              subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-                secretRepository.save(new NamedValueSecret("key", "value"));
+              subject.performWithAuditing(CREDENTIAL_ACCESS, auditRecordParameters, () -> {
+                secretRepository.save(new NamedValueSecret("keyName", "value"));
                 throw re;
               });
             } catch (Exception e) {
@@ -189,8 +193,8 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedValueSecret("key", "value"));
+            responseEntity = subject.performWithAuditing(CREDENTIAL_ACCESS, auditRecordParameters, () -> {
+              secretRepository.save(new NamedValueSecret("keyName", "value"));
               throw new RuntimeException("controller method failed");
             });
           });
@@ -210,11 +214,11 @@ public class DatabaseAuditLogServiceTest {
         });
       });
 
-      describe("when the operation fails with a non 200 status", () -> {
+      describe("when the action fails with a non 200 status", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedValueSecret("key", "value"));
+            responseEntity = subject.performWithAuditing(CREDENTIAL_ACCESS, auditRecordParameters, () -> {
+              secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
           });
@@ -237,8 +241,8 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedValueSecret("key", "value"));
+            responseEntity = subject.performWithAuditing(CREDENTIAL_ACCESS, auditRecordParameters, () -> {
+              secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
           });
@@ -261,8 +265,8 @@ public class DatabaseAuditLogServiceTest {
         describe("when audit transaction fails to commit", () -> {
           beforeEach(() -> {
             transactionManager.failOnCommit();
-            responseEntity = subject.performWithAuditing("credential_access", auditRecordParameters, () -> {
-              secretRepository.save(new NamedValueSecret("key", "value"));
+            responseEntity = subject.performWithAuditing(CREDENTIAL_ACCESS, auditRecordParameters, () -> {
+              secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
           });
@@ -291,8 +295,8 @@ public class DatabaseAuditLogServiceTest {
 
     OperationAuditRecord actual = recordCaptor.getValue();
     assertThat(actual.getNow(), equalTo(now));
-    assertThat(actual.getCredentialName(), equalTo("key"));
-    assertThat(actual.getOperation(), equalTo("credential_access"));
+    assertThat(actual.getCredentialName(), equalTo("keyName"));
+    assertThat(actual.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
     assertThat(actual.getUserId(), equalTo("1cc4972f-184c-4581-987b-85b7d97e909c"));
     assertThat(actual.getUserName(), equalTo("credhub_cli"));
     assertThat(actual.getUaaUrl(), equalTo("https://52.204.49.107:8443/oauth/token"));

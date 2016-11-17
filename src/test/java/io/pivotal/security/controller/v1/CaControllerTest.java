@@ -32,6 +32,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.not;
@@ -171,7 +173,7 @@ public class CaControllerTest {
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8));
 
-          verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+          verify(auditLogService).performWithAuditing(eq(AUTHORITY_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
 
@@ -275,7 +277,7 @@ public class CaControllerTest {
         });
 
         it("creates an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+          verify(auditLogService).performWithAuditing(eq(AUTHORITY_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
 
@@ -331,7 +333,7 @@ public class CaControllerTest {
         });
 
         it("creates an audit record", () -> {
-          verify(auditLogService).performWithAuditing(eq("ca_update"), isA(AuditRecordParameters.class), any(Supplier.class));
+          verify(auditLogService).performWithAuditing(eq(AUTHORITY_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
         });
       });
     });
@@ -509,7 +511,7 @@ public class CaControllerTest {
           it("persists an audit entry when getting a ca", () -> {
             mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
                 .andExpect(status().isOk());
-            verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+            verify(auditLogService).performWithAuditing(eq(AUTHORITY_ACCESS), isA(AuditRecordParameters.class), any(Supplier.class));
           });
         });
       });
@@ -567,7 +569,7 @@ public class CaControllerTest {
       });
 
       it("persists an audit entry when getting a ca", () -> {
-        verify(auditLogService).performWithAuditing(eq("ca_access"), isA(AuditRecordParameters.class), any(Supplier.class));
+        verify(auditLogService).performWithAuditing(eq(AUTHORITY_ACCESS), isA(AuditRecordParameters.class), any(Supplier.class));
       });
     });
 

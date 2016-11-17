@@ -6,6 +6,7 @@ import io.pivotal.security.controller.v1.ResponseError;
 import io.pivotal.security.controller.v1.ResponseErrorType;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
@@ -37,10 +38,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_ACCESS;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_DELETE;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_FIND;
-import static io.pivotal.security.constants.AuditingOperationCodes.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -247,7 +248,7 @@ public class SecretsController {
     boolean regenerate = BooleanUtils.isTrue(parsed.read("$.regenerate", Boolean.class));
 
     boolean willWrite = willBeCreated || overwrite || regenerate;
-    String operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+    AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
 
     return audit(secretName, operationCode, request, authentication, () -> {
       if (regenerate && existingNamedSecret == null) {
@@ -293,7 +294,7 @@ public class SecretsController {
     }
   }
 
-  private ResponseEntity audit(String credentialName, String operationCode, HttpServletRequest request, Authentication authentication, Supplier<ResponseEntity<?>> action) throws
+  private ResponseEntity audit(String credentialName, AuditingOperationCode operationCode, HttpServletRequest request, Authentication authentication, Supplier<ResponseEntity<?>> action) throws
       Exception {
     return auditLogService.performWithAuditing(operationCode, new AuditRecordParameters(credentialName, request, authentication), action);
   }

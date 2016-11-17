@@ -17,7 +17,9 @@ public class AuditRecordParameters {
   private final String queryParameters;
   private final String credentialName;
 
-  public AuditRecordParameters(String credentialName, HttpServletRequest request, Authentication authentication) {
+  public AuditRecordParameters(String credentialName,
+                               HttpServletRequest request,
+                               Authentication authentication) {
     this(
         request.getServerName(),
         credentialName,
@@ -30,7 +32,14 @@ public class AuditRecordParameters {
     );
   }
 
-  AuditRecordParameters(String hostName, String credentialName, String method, String path, String queryParameters, String requesterIp, String xForwardedFor, Authentication authentication) {
+  AuditRecordParameters(String hostName,
+                        String credentialName,
+                        String method,
+                        String path,
+                        String queryParameters,
+                        String requesterIp,
+                        String xForwardedFor,
+                        Authentication authentication) {
     this.hostName = hostName;
     this.credentialName = credentialName;
     this.method = method;
@@ -76,4 +85,5 @@ public class AuditRecordParameters {
   public String getCredentialName() {
     return credentialName;
   }
+
 }

@@ -5,6 +5,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakePasswordGenerator;
 import io.pivotal.security.service.AuditLogService;
@@ -26,14 +27,10 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.entity.AuditingOperationCode.*;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -50,6 +47,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -152,7 +154,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
-        verify(auditLogService, times(1)).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
+        verify(auditLogService, times(1)).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
 
         Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
         assertThat(action.get().getStatusCode(), equalTo(HttpStatus.OK));
@@ -175,7 +177,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
-        verify(auditLogService, times(1)).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
+        verify(auditLogService, times(1)).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
 
         Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
         assertThat(action.get().getStatusCode(), equalTo(HttpStatus.NOT_FOUND));
@@ -201,7 +203,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
-        verify(auditLogService, times(1)).performWithAuditing(eq("credential_update"), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
+        verify(auditLogService, times(1)).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), supplierArgumentCaptor.capture());
 
         Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
         assertThat(action.get().getStatusCode(), equalTo(HttpStatus.BAD_REQUEST));
@@ -214,6 +216,6 @@ public class SecretsControllerRegenerateTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(2, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(String.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditingOperationCode.class), isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }
