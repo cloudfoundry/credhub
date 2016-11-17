@@ -3,6 +3,7 @@ package io.pivotal.security.oauth;
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -53,6 +54,9 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   @Autowired
   private MessageSource messageSource;
 
+  @Autowired
+  private CurrentTimeProvider currentTimeProvider;
+
   private JsonParser objectMapper = JsonParserFactory.create();
 
   private MessageSourceAccessor messageSourceAccessor;
@@ -67,13 +71,16 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
       throws IOException, ServletException {
 
     String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
+
     final Map<String, Object> tokenInformation = extractTokenInformation(token);
 
     Throwable outerCause = authException.getCause();
     Throwable cause = outerCause != null ? outerCause.getCause() : null;
 
     Exception exception;
-    if (cause instanceof InvalidSignatureException) {
+    if (tokenIsExpired(tokenInformation)) {
+      exception = new AccessTokenExpiredException("Access token expired", cause);
+    } else if (cause instanceof InvalidSignatureException) {
       exception = new InvalidTokenException(messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
     } else {
       exception = new InvalidTokenException(removeTokenFromMessage(authException.getMessage(), token), outerCause);
@@ -85,6 +92,11 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     } finally {
       logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordParameters(request, null), request.getMethod(), response.getStatus());
     }
+  }
+
+  private boolean tokenIsExpired(Map<String, Object> tokenInformation) {
+    Long exp = tokenInformation != null ? (Long) tokenInformation.get(EXP) : null;
+    return exp != null && exp <= currentTimeProvider.getNow().getTimeInMillis() / 1000;
   }
 
   private Map<String, Object> extractTokenInformation(String token) {

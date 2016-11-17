@@ -6,6 +6,7 @@ import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.InstantFactoryBean;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -75,6 +76,9 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   @Mock
   InstantFactoryBean instantFactoryBean;
 
+  @Mock
+  CurrentTimeProvider currentTimeProvider;
+
   private MockMvc mockMvc;
 
   private Instant now;
@@ -90,6 +94,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
     beforeEach(() -> {
       now = Instant.now();
       when(instantFactoryBean.getObject()).thenReturn(now);
+      when(currentTimeProvider.getNow()).thenReturn(CurrentTimeProvider.makeCalendar(1469051824));
 
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
@@ -105,7 +110,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .with(request -> {
-              request.setRemoteAddr("12346");
+              request.setRemoteAddr("99.99.99.99");
               return request;
             }));
 
@@ -116,7 +121,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
+        assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(), equalTo("Cannot convert access token to JSON"));
         assertThat(auditRecord.getUserId(), equalTo(null));
@@ -171,13 +176,18 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
     });
 
     describe("when the token is expired", () -> {
-      it("cleans the token from the error_description response field", () -> {
+      beforeEach(() -> {
+        when(currentTimeProvider.getNow()).thenReturn(CurrentTimeProvider.makeCalendar(1489051824000L));
+      });
+
+      it("returns an 'access_token_expired' error and cleans the token from the error_description field", () -> {
         mockMvc.perform(get(credentialUrl)
             .header("Authorization", "Bearer " + EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.error").value("access_token_expired"))
             .andExpect(jsonPath("$.error_description").value("Access token expired"));
       });
 
