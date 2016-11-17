@@ -58,6 +58,7 @@ public class OperationAuditRecordDataServiceTest {
         List<OperationAuditRecord> records = jdbcTemplate.query("select * from operation_audit_record", (rs, rowCount) -> {
           OperationAuditRecord r = new OperationAuditRecord(
               new Timestamp(rs.getLong("now")).toInstant(),
+              rs.getString("credential_name"),
               rs.getString("operation"),
               rs.getString("user_id"),
               rs.getString("user_name"),
@@ -89,6 +90,7 @@ public class OperationAuditRecordDataServiceTest {
         assertThat(actual.getNow(), equalTo(expected.getNow()));
         assertThat(actual.getNow(), equalTo(frozenTime));
         assertThat(actual.getOperation(), equalTo(expected.getOperation()));
+        assertThat(actual.getCredentialName(), equalTo(expected.getCredentialName()));
         assertThat(actual.getUserId(), equalTo(expected.getUserId()));
         assertThat(actual.getUserName(), equalTo(expected.getUserName()));
         assertThat(actual.getUaaUrl(), equalTo(expected.getUaaUrl()));
@@ -116,6 +118,7 @@ public class OperationAuditRecordDataServiceTest {
 
     return new OperationAuditRecord(
         frozenTime,
+        "fake-credential-name",
         "test-operation",
         "test-user-id",
         "test-user-name",

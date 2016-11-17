@@ -24,17 +24,18 @@ public class AuditRecordParametersTest {
         request.setRemoteAddr("10.0.0.1");
         request.addHeader("X-Forwarded-For", "my-header");
         request.addHeader("X-Forwarded-For", "my-header2");
-        request.setQueryString("first=first_value&second=second_value");
+        request.setQueryString("name=foo&first=first_value&second=second_value");
         Authentication authentication = mock(Authentication.class);
-        subject = new AuditRecordParameters(request, authentication);
+        subject = new AuditRecordParameters("foo", request, authentication);
       });
 
       it("extracts relevant properties", () -> {
         assertThat(subject.getHostName(), equalTo("host-name"));
+        assertThat(subject.getCredentialName(), equalTo("foo"));
         assertThat(subject.getPath(), equalTo("/api/v1/data"));
         assertThat(subject.getRequesterIp(), equalTo("10.0.0.1"));
         assertThat(subject.getXForwardedFor(), equalTo("my-header,my-header2"));
-        assertThat(subject.getQueryParameters(), equalTo("first=first_value&second=second_value"));
+        assertThat(subject.getQueryParameters(), equalTo("name=foo&first=first_value&second=second_value"));
       });
     });
   }

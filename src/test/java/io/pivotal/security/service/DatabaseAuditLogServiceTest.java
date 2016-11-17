@@ -26,8 +26,6 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.time.Instant;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -43,6 +41,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -90,6 +90,7 @@ public class DatabaseAuditLogServiceTest {
 
       auditRecordParameters = new AuditRecordParameters(
           "hostName",
+          "key",
           "GET",
           "requestURI",
           "foo=bar",
@@ -290,6 +291,7 @@ public class DatabaseAuditLogServiceTest {
 
     OperationAuditRecord actual = recordCaptor.getValue();
     assertThat(actual.getNow(), equalTo(now));
+    assertThat(actual.getCredentialName(), equalTo("key"));
     assertThat(actual.getOperation(), equalTo("credential_access"));
     assertThat(actual.getUserId(), equalTo("1cc4972f-184c-4581-987b-85b7d97e909c"));
     assertThat(actual.getUserName(), equalTo("credhub_cli"));

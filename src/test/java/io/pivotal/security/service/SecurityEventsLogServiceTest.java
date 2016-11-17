@@ -15,9 +15,9 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.BootstrapWith;
 
-import java.time.Instant;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -25,6 +25,8 @@ import static org.hamcrest.number.OrderingComparison.greaterThan;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -59,6 +61,7 @@ public class SecurityEventsLogServiceTest {
       it("should log an operation audit record to the sys log", () -> {
         OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
             now,
+            "some-path",
             "some_operation",
             "user-id",
             "user-name",
@@ -107,6 +110,7 @@ public class SecurityEventsLogServiceTest {
         it("should specify only the path in the request", () -> {
           OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
               now,
+              "some-path",
               "some_operation",
               "user-id",
               "user-name",
@@ -138,6 +142,7 @@ public class SecurityEventsLogServiceTest {
         it("should specify only the path in the request", () -> {
           OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
               now,
+              "some-path",
               "some_operation",
               "user-id",
               "user-name",

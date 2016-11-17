@@ -105,6 +105,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     Set<String> scope = oAuth2Request.getScope();
     return new OperationAuditRecord(
         instantFactoryBean.getObject(),
+        auditRecordParameters.getCredentialName(),
         operation,
         (String) additionalInformation.get("user_id"),
         (String) additionalInformation.get("user_name"),

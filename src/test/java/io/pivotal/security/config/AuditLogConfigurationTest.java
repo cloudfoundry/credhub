@@ -100,6 +100,7 @@ public class AuditLogConfigurationTest {
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getCredentialName(), equalTo("foo"));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -131,6 +132,7 @@ public class AuditLogConfigurationTest {
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getCredentialName(), equalTo("foo"));
         assertThat(auditRecord.getOperation(), equalTo("credential_update"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));

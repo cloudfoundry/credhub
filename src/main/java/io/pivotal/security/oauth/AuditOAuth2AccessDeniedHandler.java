@@ -15,12 +15,13 @@ import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHand
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Set;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   @Autowired
@@ -44,7 +45,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       super.handle(request, response, authException);
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
-      OperationAuditRecord operationAuditRecord = createOperationAuditRecord(token, new AuditRecordParameters(request, null), response.getStatus());
+      OperationAuditRecord operationAuditRecord = createOperationAuditRecord(token, new AuditRecordParameters(null, request, null), response.getStatus());
       operationAuditRecordDataService.save(operationAuditRecord);
       securityEventsLogService.log(operationAuditRecord);
     }
@@ -72,6 +73,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
     return new OperationAuditRecord(
         now,
+        null,
         requestToOperationTranslator.translate(),
         (String) accessToken.getAdditionalInformation().get("user_id"),
         (String) accessToken.getAdditionalInformation().get("user_name"),

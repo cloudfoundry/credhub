@@ -26,6 +26,7 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
     transactionManager.currentTransaction.enqueue(() -> {
       OperationAuditRecord copy = new OperationAuditRecord(
           entity.getNow(),
+          entity.getCredentialName(),
           entity.getOperation(),
           entity.getUserId(),
           entity.getUserName(),

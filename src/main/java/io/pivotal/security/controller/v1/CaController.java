@@ -81,7 +81,7 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
-    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
+    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(null, request, authentication), () -> {
       return storeAuthority(parsedRequest, caSetterRequestTranslator);
     });
   }
@@ -91,7 +91,7 @@ public class CaController {
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
 
-    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(request, authentication), () -> {
+    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(null, request, authentication), () -> {
       return storeAuthority(parsedRequest, caGeneratorRequestTranslator);
     });
   }
@@ -172,7 +172,7 @@ public class CaController {
       Function<List<CertificateAuthority>, ?> presenter) throws Exception {
     return auditLogService.performWithAuditing(
         AUTHORITY_ACCESS,
-        new AuditRecordParameters(request, authentication),
+        new AuditRecordParameters(null, request, authentication),
         () -> {
           List<NamedCertificateAuthority> namedAuthorityList = finder.apply(identifier);
 

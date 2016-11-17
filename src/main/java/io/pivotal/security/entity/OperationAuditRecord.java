@@ -2,6 +2,8 @@ package io.pivotal.security.entity;
 
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -9,7 +11,6 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.Instant;
 
 @SuppressWarnings("unused")
 @Entity
@@ -24,6 +25,8 @@ public class OperationAuditRecord {
   @Convert(converter = InstantMillisecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   private Instant now;
+
+  private String credentialName;
   private String operation;
   private String path;
   private String queryParameters;
@@ -46,6 +49,7 @@ public class OperationAuditRecord {
 
   public OperationAuditRecord(
       Instant now,
+      String credentialName,
       String operation,
       String userId,
       String userName,
@@ -65,6 +69,7 @@ public class OperationAuditRecord {
       boolean success
   ) {
     this.now = now;
+    this.credentialName = credentialName;
     this.operation = operation;
     this.userId = userId;
     this.userName = userName;
@@ -160,6 +165,10 @@ public class OperationAuditRecord {
     return statusCode;
   }
 
+  public String getCredentialName() {
+    return credentialName;
+  }
+
   public void setRequesterIp(String requesterIp) {
     this.requesterIp = requesterIp;
   }
@@ -206,5 +215,9 @@ public class OperationAuditRecord {
 
   public void setStatusCode(int statusCode) {
     this.statusCode = statusCode;
+  }
+
+  public void setCredentialName(String credentialName) {
+    this.credentialName = credentialName;
   }
 }

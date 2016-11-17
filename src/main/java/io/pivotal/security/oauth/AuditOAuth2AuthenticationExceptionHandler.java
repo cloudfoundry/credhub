@@ -22,16 +22,17 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
+
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
@@ -90,7 +91,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     try {
       doHandle(request, response, exception);
     } finally {
-      logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordParameters(request, null), request.getMethod(), response.getStatus());
+      logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordParameters(null, request, null), request.getMethod(), response.getStatus());
     }
   }
 
