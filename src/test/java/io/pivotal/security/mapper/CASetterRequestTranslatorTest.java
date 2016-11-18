@@ -5,7 +5,6 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
@@ -22,7 +21,6 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -37,16 +35,13 @@ public class CASetterRequestTranslatorTest {
 
   private CASetterRequestTranslator subject;
 
-  private NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
-
   {
     wireAndUnwire(this);
 
     describe("populating entity from json", () -> {
       beforeEach(() -> {
         entity = new NamedCertificateAuthority("foo");
-        namedCertificateAuthorityDataService = mock(NamedCertificateAuthorityDataService.class);
-        subject = new CASetterRequestTranslator(namedCertificateAuthorityDataService);
+        subject = new CASetterRequestTranslator();
       });
 
       it("validates the json keys", () -> {
