@@ -4,11 +4,11 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -26,20 +26,16 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.*;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -50,6 +46,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
@@ -135,7 +136,10 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_DELETE), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> captor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService).performWithAuditing(captor.capture(), any(Supplier.class));
+          AuditRecordParameters parameters = captor.getValue();
+          assertThat(parameters.getOperationCode(), equalTo(CREDENTIAL_DELETE));
         });
       });
 
@@ -156,7 +160,10 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          verify(auditLogService, times(1)).performWithAuditing(eq(CREDENTIAL_DELETE), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> captor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService, times(1)).performWithAuditing(captor.capture(), any(Supplier.class));
+          AuditRecordParameters parameters = captor.getValue();
+          assertThat(parameters.getOperationCode(), equalTo(CREDENTIAL_DELETE));
         });
       });
 
@@ -189,8 +196,8 @@ public class SecretsControllerDeleteTest {
   private void resetAuditLogMock() throws Exception {
     Mockito.reset(auditLogService);
     doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(2, Supplier.class);
+      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditingOperationCode.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }

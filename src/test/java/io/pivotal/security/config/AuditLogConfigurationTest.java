@@ -24,6 +24,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -164,7 +165,7 @@ public class AuditLogConfigurationTest {
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getOperation(), equalTo("credential_delete"));
+        assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
       });

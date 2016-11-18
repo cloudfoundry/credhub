@@ -30,8 +30,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +79,7 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
-    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(null, request, authentication), () -> {
+    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
       return storeAuthority(parsedRequest, caSetterRequestTranslator);
     });
   }
@@ -91,7 +89,7 @@ public class CaController {
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
 
-    return auditLogService.performWithAuditing(AUTHORITY_UPDATE, new AuditRecordParameters(null, request, authentication), () -> {
+    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
       return storeAuthority(parsedRequest, caGeneratorRequestTranslator);
     });
   }
@@ -171,7 +169,6 @@ public class CaController {
       Authentication authentication,
       Function<List<CertificateAuthority>, ?> presenter) throws Exception {
     return auditLogService.performWithAuditing(
-        AUTHORITY_ACCESS,
         new AuditRecordParameters(null, request, authentication),
         () -> {
           List<NamedCertificateAuthority> namedAuthorityList = finder.apply(identifier);

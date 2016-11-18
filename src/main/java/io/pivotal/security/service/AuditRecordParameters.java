@@ -1,6 +1,15 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.entity.AuditingOperationCode;
 import org.springframework.security.core.Authentication;
+
+import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -16,6 +25,7 @@ public class AuditRecordParameters {
   private final Authentication authentication;
   private final String queryParameters;
   private final String credentialName;
+  private AuditingOperationCode operationCode;
 
   public AuditRecordParameters(String credentialName,
                                HttpServletRequest request,
@@ -48,6 +58,16 @@ public class AuditRecordParameters {
     this.requesterIp = requesterIp;
     this.xForwardedFor = xForwardedFor;
     this.authentication = authentication;
+    this.operationCode = computeOperationCode();
+  }
+
+  public AuditRecordParameters(AuditingOperationCode operationCode, String secretName, HttpServletRequest request, Authentication authentication) {
+    this(secretName, request, authentication);
+    this.operationCode = operationCode;
+  }
+
+  public AuditingOperationCode getOperationCode() {
+    return operationCode;
   }
 
   public String getHostName() {
@@ -86,4 +106,18 @@ public class AuditRecordParameters {
     return credentialName;
   }
 
+  private AuditingOperationCode computeOperationCode() {
+    boolean isCa = path.contains(API_V1_CA) ? true : false;
+    switch (method) {
+      case "GET":
+        return isCa ? AUTHORITY_ACCESS : CREDENTIAL_ACCESS;
+      case "POST":
+      case "PUT":
+        return isCa ? AUTHORITY_UPDATE : CREDENTIAL_UPDATE;
+      case "DELETE":
+        return isCa ? UNKNOWN_OPERATION : CREDENTIAL_DELETE;
+      default:
+        return UNKNOWN_OPERATION;
+    }
+  }
 }

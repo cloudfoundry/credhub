@@ -5,7 +5,6 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.fake.FakePasswordGenerator;
@@ -30,7 +29,8 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.*;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -167,7 +167,10 @@ public class SecretsControllerGenerateTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> captor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService, times(1)).performWithAuditing(captor.capture(), any(Supplier.class));
+          AuditRecordParameters parameters = captor.getValue();
+          assertThat(parameters.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
         });
       });
 
@@ -207,7 +210,10 @@ public class SecretsControllerGenerateTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> captor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService, times(1)).performWithAuditing(captor.capture(), any(Supplier.class));
+          AuditRecordParameters parameters = captor.getValue();
+          assertThat(parameters.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
         });
       });
 
@@ -254,7 +260,10 @@ public class SecretsControllerGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verify(auditLogService).performWithAuditing(eq(CREDENTIAL_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
+            ArgumentCaptor<AuditRecordParameters> captor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+            verify(auditLogService, times(1)).performWithAuditing(captor.capture(), any(Supplier.class));
+            AuditRecordParameters parameters = captor.getValue();
+            assertThat(parameters.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
           });
         });
 
@@ -286,7 +295,10 @@ public class SecretsControllerGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verify(auditLogService).performWithAuditing(eq(CREDENTIAL_ACCESS), isA(AuditRecordParameters.class), any(Supplier.class));
+            ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+            verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_ACCESS));
           });
         });
       });
@@ -301,8 +313,8 @@ public class SecretsControllerGenerateTest {
   private void resetAuditLogMock() throws Exception {
     Mockito.reset(auditLogService);
     doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(2, Supplier.class);
+      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditingOperationCode.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }

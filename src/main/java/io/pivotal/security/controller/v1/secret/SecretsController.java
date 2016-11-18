@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
@@ -50,7 +49,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -110,7 +108,7 @@ public class SecretsController {
   public ResponseEntity delete( @RequestParam(value = "name", required = false) String secretName,
                                 HttpServletRequest request,
                                 Authentication authentication) throws Exception {
-    return audit(null, CREDENTIAL_DELETE, request, authentication, () -> {
+    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
       List<NamedSecret> namedSecrets;
       String nameToDelete = secretName;
       if (nameToDelete == null) {
@@ -181,7 +179,7 @@ public class SecretsController {
                                                     HttpServletRequest request,
                                                     Authentication authentication,
                                                     Function<List<NamedSecret>, Object> secretPresenter) throws Exception {
-    return audit(null, CREDENTIAL_ACCESS, request, authentication, () -> {
+    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
@@ -212,16 +210,20 @@ public class SecretsController {
     return new ResponseError(ResponseErrorType.BAD_REQUEST);
   }
 
-  private ResponseEntity findWithAuditing(String nameSubstring, Function<String, List<NamedSecret>> finder, HttpServletRequest request, Authentication
-      authentication) throws Exception {
-    return audit(null, CREDENTIAL_FIND, request, authentication, () -> {
+  private ResponseEntity findWithAuditing(String nameSubstring,
+                                          Function<String, List<NamedSecret>> finder,
+                                          HttpServletRequest request,
+                                          Authentication authentication) throws Exception {
+    AuditRecordParameters auditParams = new AuditRecordParameters(CREDENTIAL_FIND, null, request, authentication);
+    return auditLogService.performWithAuditing(auditParams, () -> {
       List<NamedSecret> namedSecrets = finder.apply(nameSubstring);
       return new ResponseEntity<>(FindCredentialResults.fromEntity(namedSecrets), HttpStatus.OK);
     });
   }
 
   private ResponseEntity findPathsWithAuditing(HttpServletRequest request, Authentication authentication) throws Exception {
-    return audit(null, CREDENTIAL_FIND, request, authentication, () -> {
+    AuditRecordParameters auditParams = new AuditRecordParameters(CREDENTIAL_FIND, null, request, authentication);
+    return auditLogService.performWithAuditing(auditParams, () -> {
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
     });
@@ -249,8 +251,7 @@ public class SecretsController {
 
     boolean willWrite = willBeCreated || overwrite || regenerate;
     AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-
-    return audit(secretName, operationCode, request, authentication, () -> {
+    return auditLogService.performWithAuditing(new AuditRecordParameters(operationCode, secretName, request, authentication), () -> {
       if (regenerate && existingNamedSecret == null) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
@@ -292,11 +293,6 @@ public class SecretsController {
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private ResponseEntity audit(String credentialName, AuditingOperationCode operationCode, HttpServletRequest request, Authentication authentication, Supplier<ResponseEntity<?>> action) throws
-      Exception {
-    return auditLogService.performWithAuditing(operationCode, new AuditRecordParameters(credentialName, request, authentication), action);
   }
 
   private String secretPath(HttpServletRequest request) {

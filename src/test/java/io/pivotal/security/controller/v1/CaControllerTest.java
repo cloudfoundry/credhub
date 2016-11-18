@@ -44,7 +44,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -173,7 +172,10 @@ public class CaControllerTest {
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8));
 
-          verify(auditLogService).performWithAuditing(eq(AUTHORITY_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_UPDATE));
         });
       });
 
@@ -277,7 +279,9 @@ public class CaControllerTest {
         });
 
         it("creates an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq(AUTHORITY_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_UPDATE));
         });
       });
 
@@ -333,7 +337,10 @@ public class CaControllerTest {
         });
 
         it("creates an audit record", () -> {
-          verify(auditLogService).performWithAuditing(eq(AUTHORITY_UPDATE), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_UPDATE));
         });
       });
     });
@@ -511,7 +518,10 @@ public class CaControllerTest {
           it("persists an audit entry when getting a ca", () -> {
             mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
                 .andExpect(status().isOk());
-            verify(auditLogService).performWithAuditing(eq(AUTHORITY_ACCESS), isA(AuditRecordParameters.class), any(Supplier.class));
+            ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+            verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_ACCESS));
           });
         });
       });
@@ -569,7 +579,10 @@ public class CaControllerTest {
       });
 
       it("persists an audit entry when getting a ca", () -> {
-        verify(auditLogService).performWithAuditing(eq(AUTHORITY_ACCESS), isA(AuditRecordParameters.class), any(Supplier.class));
+        ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+        verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+        assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_ACCESS));
       });
     });
 

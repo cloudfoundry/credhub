@@ -4,11 +4,11 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.Spy;
@@ -27,12 +27,13 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
-import static io.pivotal.security.entity.AuditingOperationCode.*;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -113,7 +114,10 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_FIND), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
         });
       });
 
@@ -181,7 +185,10 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(eq(CREDENTIAL_FIND), isA(AuditRecordParameters.class), any(Supplier.class));
+          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
         });
       });
 
@@ -209,8 +216,8 @@ public class SecretsControllerFindTest {
   private void resetAuditLogMock() throws Exception {
     Mockito.reset(auditLogService);
     doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(2, Supplier.class);
+      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditingOperationCode.class), isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
   }
 }
