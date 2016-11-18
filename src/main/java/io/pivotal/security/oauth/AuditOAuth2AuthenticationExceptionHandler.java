@@ -117,8 +117,6 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   }
 
   private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, Exception authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
-    RequestToOperationTranslator requestToOperationTranslator = new RequestToOperationTranslator(parameters.getPath()).setMethod(requestMethod);
-
     final Instant now;
     try {
       now = instantFactoryBean.getObject();
@@ -149,7 +147,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
         .setNow(now)
-        .setOperation(requestToOperationTranslator.translate())
+        .setOperation(parameters.getOperationCode().toString())
         .setFailureDescription(removeTokenFromMessage(authException.getMessage(), token))
         .setUserId(userId)
         .setUserName(userName)

@@ -59,7 +59,6 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
     String path = auditRecordParameters.getPath();
     String method = auditRecordParameters.getMethod();
-    RequestToOperationTranslator requestToOperationTranslator = new RequestToOperationTranslator(path).setMethod(method);
 
     final Instant now;
     try {
@@ -74,7 +73,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     return new OperationAuditRecord(
         now,
         null,
-        requestToOperationTranslator.translate(),
+        auditRecordParameters.getOperationCode().toString(),
         (String) accessToken.getAdditionalInformation().get("user_id"),
         (String) accessToken.getAdditionalInformation().get("user_name"),
         (String) accessToken.getAdditionalInformation().get("iss"),
