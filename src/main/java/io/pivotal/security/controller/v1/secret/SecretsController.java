@@ -233,21 +233,13 @@ public class SecretsController {
                                                HttpServletRequest request,
                                                Authentication authentication,
                                                SecretKindMappingFactory handler) throws Exception {
-    final DocumentContext parsed = jsonPath.parse(requestBody);
-
-    String secretPath = secretPath(request);
-    final String secretName;
-    if (secretPath.isEmpty()) {
-      secretName = parsed.read("$.name", String.class);
-    } else {
-      secretName = secretPath;
-    }
-
+    final DocumentContext parsedRequestBody = jsonPath.parse(requestBody);
+    final String secretName = getSecretName(request, parsedRequestBody);
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
     boolean willBeCreated = existingNamedSecret == null;
-    boolean overwrite = BooleanUtils.isTrue(parsed.read("$.overwrite", Boolean.class));
-    boolean regenerate = BooleanUtils.isTrue(parsed.read("$.regenerate", Boolean.class));
+    boolean overwrite = BooleanUtils.isTrue(parsedRequestBody.read("$.overwrite", Boolean.class));
+    boolean regenerate = BooleanUtils.isTrue(parsedRequestBody.read("$.regenerate", Boolean.class));
 
     boolean willWrite = willBeCreated || overwrite || regenerate;
     AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
@@ -256,8 +248,19 @@ public class SecretsController {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
 
-      return storeSecret(secretName, handler, parsed, existingNamedSecret, willWrite);
+      return storeSecret(secretName, handler, parsedRequestBody, existingNamedSecret, willWrite);
     });
+  }
+
+  private String getSecretName(HttpServletRequest request, DocumentContext parsed) {
+    String secretPath = secretPath(request);
+    final String secretName;
+    if (secretPath.isEmpty()) {
+      secretName = parsed.read("$.name", String.class);
+    } else {
+      secretName = secretPath;
+    }
+    return secretName;
   }
 
   private ResponseEntity<?> storeSecret(String secretPath,
