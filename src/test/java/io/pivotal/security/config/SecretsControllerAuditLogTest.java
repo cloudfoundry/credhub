@@ -24,7 +24,10 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -61,7 +64,6 @@ public class SecretsControllerAuditLogTest {
   Filter springSecurityFilterChain;
 
   private MockMvc mockMvc;
-  private String credentialUrlPath;
 
   {
     wireAndUnwire(this);
@@ -72,18 +74,17 @@ public class SecretsControllerAuditLogTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
-      credentialUrlPath = "/api/v1/data/foo";
     });
 
     describe("when a request to set credential is served", () -> {
 
       beforeEach(() -> {
-        MockHttpServletRequestBuilder set = put(credentialUrlPath)
+        MockHttpServletRequestBuilder set = put(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .content("{\"type\":\"value\",\"value\":\"password\"}")
+            .content("{\"type\":\"value\",\"name\":\"foo\",\"value\":\"password\"}")
             .with(request -> {
               request.setRemoteAddr("12346");
               return request;
@@ -100,9 +101,9 @@ public class SecretsControllerAuditLogTest {
 
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getCredentialName(), equalTo("foo"));
-        assertThat(auditRecord.getOperation(), equalTo("credential_update"));
+        assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
       });
@@ -110,11 +111,11 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request to generate a credential is served", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder post = post(credentialUrlPath)
+        MockHttpServletRequestBuilder post = post(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
-            .content("{\"type\":\"password\"}")
+            .content("{\"type\":\"password\",\"name\":\"foo\"}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .with(request -> {
               request.setRemoteAddr("12345");
@@ -132,9 +133,9 @@ public class SecretsControllerAuditLogTest {
 
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getCredentialName(), equalTo("foo"));
-        assertThat(auditRecord.getOperation(), equalTo("credential_update"));
+        assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
       });
@@ -142,11 +143,10 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request to delete a credential is served", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder delete = delete(credentialUrlPath)
+        MockHttpServletRequestBuilder delete = delete(API_V1_DATA + "?name=foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
-            .content("{\"type\":\"value\"}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .with(request -> {
               request.setRemoteAddr("12345");
@@ -164,7 +164,7 @@ public class SecretsControllerAuditLogTest {
 
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
+        assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
@@ -173,7 +173,7 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request to retrieve a credential is served", () -> {
       beforeEach(() -> {
-        doUnsuccessfulFetch(credentialUrlPath);
+        doUnsuccessfulFetch("foo");
       });
 
       it("logs an audit record for credential_access operation", () -> {
@@ -183,8 +183,8 @@ public class SecretsControllerAuditLogTest {
 
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
+        assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
+        assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
       });
@@ -192,13 +192,13 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request has multiple X-Forwarded-For headers set", () -> {
       beforeEach(() -> {
-        MockHttpServletRequestBuilder set = put(credentialUrlPath)
+        MockHttpServletRequestBuilder set = put(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .header("X-Forwarded-For", "3.3.3.3")
-            .content("{\"type\":\"value\",\"value\":\"password\"}")
+            .content("{\"type\":\"value\",\"name\":\"foo\",\"value\":\"password\"}")
             .with(request -> {
               request.setRemoteAddr("12346");
               return request;
@@ -220,8 +220,8 @@ public class SecretsControllerAuditLogTest {
     });
   }
 
-  private void doUnsuccessfulFetch(String urlPath) throws Exception {
-    MockHttpServletRequestBuilder get = get(urlPath)
+  private void doUnsuccessfulFetch(String credentialName) throws Exception {
+    MockHttpServletRequestBuilder get = get(API_V1_DATA + "?name=" + credentialName)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
         .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)

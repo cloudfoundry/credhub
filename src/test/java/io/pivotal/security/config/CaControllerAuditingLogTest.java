@@ -24,6 +24,9 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -31,9 +34,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import javax.servlet.Filter;
@@ -85,8 +88,8 @@ public class CaControllerAuditingLogTest {
 
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/ca"));
-        assertThat(auditRecord.getOperation(), equalTo("ca_access"));
+        assertThat(auditRecord.getPath(), equalTo(API_V1_CA));
+        assertThat(auditRecord.getOperation(), equalTo(AUTHORITY_ACCESS.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
       });
@@ -94,7 +97,7 @@ public class CaControllerAuditingLogTest {
 
     describe("when a request to set or generate a credential is served", () -> {
       it("when setting the CA, it logs an audit record for ca_update operation", () -> {
-        MockHttpServletRequestBuilder set = put("/api/v1/ca")
+        MockHttpServletRequestBuilder set = put(API_V1_CA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -112,15 +115,15 @@ public class CaControllerAuditingLogTest {
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
         OperationAuditRecord record = recordCaptor.getValue();
-        assertThat(record.getPath(), equalTo("/api/v1/ca"));
-        assertThat(record.getOperation(), equalTo("ca_update"));
+        assertThat(record.getPath(), equalTo(API_V1_CA));
+        assertThat(record.getOperation(), equalTo(AUTHORITY_UPDATE.toString()));
         assertThat(record.getRequesterIp(), equalTo("12345"));
         assertThat(record.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 
       });
 
       it("when generating the CA, it logs an audit record for ca_update operation", () -> {
-        MockHttpServletRequestBuilder generate = post("/api/v1/ca")
+        MockHttpServletRequestBuilder generate = post(API_V1_CA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -139,8 +142,8 @@ public class CaControllerAuditingLogTest {
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
         OperationAuditRecord record = recordCaptor.getValue();
-        assertThat(record.getPath(), equalTo("/api/v1/ca"));
-        assertThat(record.getOperation(), equalTo("ca_update"));
+        assertThat(record.getPath(), equalTo(API_V1_CA));
+        assertThat(record.getOperation(), equalTo(AUTHORITY_UPDATE.toString()));
         assertThat(record.getRequesterIp(), equalTo("12345"));
         assertThat(record.getXForwardedFor(), equalTo("3.3.3.3,4.4.4.4"));
       });
