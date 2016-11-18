@@ -32,8 +32,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.not;
@@ -175,7 +175,7 @@ public class CaControllerTest {
           ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
-          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_UPDATE));
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_UPDATE));
         });
       });
 
@@ -281,7 +281,7 @@ public class CaControllerTest {
         it("creates an audit entry", () -> {
           ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
-          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_UPDATE));
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_UPDATE));
         });
       });
 
@@ -340,7 +340,7 @@ public class CaControllerTest {
           ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
-          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_UPDATE));
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_UPDATE));
         });
       });
     });
@@ -521,7 +521,7 @@ public class CaControllerTest {
             ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
             verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
-            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_ACCESS));
+            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_ACCESS));
           });
         });
       });
@@ -582,7 +582,7 @@ public class CaControllerTest {
         ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
         verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
-        assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(AUTHORITY_ACCESS));
+        assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_ACCESS));
       });
     });
 

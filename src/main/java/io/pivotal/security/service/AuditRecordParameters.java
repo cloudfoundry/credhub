@@ -4,8 +4,8 @@ import io.pivotal.security.entity.AuditingOperationCode;
 import org.springframework.security.core.Authentication;
 
 import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -110,10 +110,10 @@ public class AuditRecordParameters {
     boolean isCa = path.contains(API_V1_CA) ? true : false;
     switch (method) {
       case "GET":
-        return isCa ? AUTHORITY_ACCESS : CREDENTIAL_ACCESS;
+        return isCa ? CA_ACCESS : CREDENTIAL_ACCESS;
       case "POST":
       case "PUT":
-        return isCa ? AUTHORITY_UPDATE : CREDENTIAL_UPDATE;
+        return isCa ? CA_UPDATE : CREDENTIAL_UPDATE;
       case "DELETE":
         return isCa ? UNKNOWN_OPERATION : CREDENTIAL_DELETE;
       default:

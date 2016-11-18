@@ -8,8 +8,8 @@ import org.springframework.security.core.Authentication;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -74,19 +74,19 @@ public class AuditRecordParametersTest {
     it("sets operation code to be ca_access for a ca get request", () -> {
       MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/ca");
       subject = new AuditRecordParameters("foo", request, null);
-      assertThat(subject.getOperationCode(), equalTo(AUTHORITY_ACCESS));
+      assertThat(subject.getOperationCode(), equalTo(CA_ACCESS));
     });
 
     it("sets operation code to be ca_update for a ca post request", () -> {
       MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/ca");
       subject = new AuditRecordParameters("foo", request, null);
-      assertThat(subject.getOperationCode(), equalTo(AUTHORITY_UPDATE));
+      assertThat(subject.getOperationCode(), equalTo(CA_UPDATE));
     });
 
     it("sets operation code to be ca_update for a ca put request", () -> {
       MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/api/v1/ca");
       subject = new AuditRecordParameters("foo", request, null);
-      assertThat(subject.getOperationCode(), equalTo(AUTHORITY_UPDATE));
+      assertThat(subject.getOperationCode(), equalTo(CA_UPDATE));
     });
 
     it("sets operations code to be UNKNOWN_OPERATION for a ca delete request", () -> {

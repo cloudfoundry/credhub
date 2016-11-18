@@ -25,8 +25,8 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.AUTHORITY_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -89,7 +89,7 @@ public class CaControllerAuditingLogTest {
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(API_V1_CA));
-        assertThat(auditRecord.getOperation(), equalTo(AUTHORITY_ACCESS.toString()));
+        assertThat(auditRecord.getOperation(), equalTo(CA_ACCESS.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
       });
@@ -116,7 +116,7 @@ public class CaControllerAuditingLogTest {
 
         OperationAuditRecord record = recordCaptor.getValue();
         assertThat(record.getPath(), equalTo(API_V1_CA));
-        assertThat(record.getOperation(), equalTo(AUTHORITY_UPDATE.toString()));
+        assertThat(record.getOperation(), equalTo(CA_UPDATE.toString()));
         assertThat(record.getRequesterIp(), equalTo("12345"));
         assertThat(record.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 
@@ -143,7 +143,7 @@ public class CaControllerAuditingLogTest {
 
         OperationAuditRecord record = recordCaptor.getValue();
         assertThat(record.getPath(), equalTo(API_V1_CA));
-        assertThat(record.getOperation(), equalTo(AUTHORITY_UPDATE.toString()));
+        assertThat(record.getOperation(), equalTo(CA_UPDATE.toString()));
         assertThat(record.getRequesterIp(), equalTo("12345"));
         assertThat(record.getXForwardedFor(), equalTo("3.3.3.3,4.4.4.4"));
       });
