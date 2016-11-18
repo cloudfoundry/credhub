@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 @Component
 @Primary
-@ConditionalOnExpression("#{!environment.getProperty('spring.profiles.active').contains('AuditLogConfigurationTest')}")
+@ConditionalOnExpression("#{!environment.getProperty('spring.profiles.active').contains('ControllerAuditLogTest')}")
 public class FakeAuditLogService implements AuditLogService {
 
   @Override

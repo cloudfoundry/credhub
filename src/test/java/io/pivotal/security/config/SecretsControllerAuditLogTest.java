@@ -44,8 +44,8 @@ import javax.servlet.Filter;
 @SpringApplicationConfiguration(CredentialManagerApp.class)
 @WebAppConfiguration
 @BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "AuditLogConfigurationTest", "NoExpirationSymmetricKeySecurityConfiguration"})
-public class AuditLogConfigurationTest {
+@ActiveProfiles({"unit-test", "SecretsControllerAuditLogTest", "NoExpirationSymmetricKeySecurityConfiguration"})
+public class SecretsControllerAuditLogTest {
 
   @Autowired
   WebApplicationContext applicationContext;
@@ -185,80 +185,6 @@ public class AuditLogConfigurationTest {
 
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
-        assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-      });
-    });
-
-    describe("when a request to set or generate a credential is served", () -> {
-      it("when setting the CA, it logs an audit record for ca_update operation", () -> {
-        MockHttpServletRequestBuilder set = put("/api/v1/ca")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
-            .content("{\"type\":\"root\",\"name\":\"bar\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}")
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .with(request -> {
-              request.setRemoteAddr("12345");
-              return request;
-            });
-
-        mockMvc.perform(set)
-            .andExpect(status().isOk());
-
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
-
-        OperationAuditRecord record = recordCaptor.getValue();
-        assertThat(record.getPath(), equalTo("/api/v1/ca"));
-        assertThat(record.getOperation(), equalTo("ca_update"));
-        assertThat(record.getRequesterIp(), equalTo("12345"));
-        assertThat(record.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-
-      });
-
-      it("when generating the CA, it logs an audit record for ca_update operation", () -> {
-        MockHttpServletRequestBuilder generate = post("/api/v1/ca")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
-            .content("{\"type\":\"root\",\"name\":\"baz\",\"parameters\":{\"common_name\":\"baz.com\"}}")
-            .header("X-Forwarded-For", "3.3.3.3,4.4.4.4")
-            .with(request -> {
-              request.setRemoteAddr("12345");
-              return request;
-            });
-
-        mockMvc.perform(generate)
-            .andExpect(status().isOk());
-
-
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
-
-        OperationAuditRecord record = recordCaptor.getValue();
-        assertThat(record.getPath(), equalTo("/api/v1/ca"));
-        assertThat(record.getOperation(), equalTo("ca_update"));
-        assertThat(record.getRequesterIp(), equalTo("12345"));
-        assertThat(record.getXForwardedFor(), equalTo("3.3.3.3,4.4.4.4"));
-      });
-
-    });
-
-    describe("when a request to retrieve a CA is served", () -> {
-      beforeEach(() -> {
-        doUnsuccessfulFetch("/api/v1/ca?name=bar&current=true");
-      });
-
-      it("logs an audit record for ca_access operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
-
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
-
-        OperationAuditRecord auditRecord = recordCaptor.getValue();
-
-        assertThat(auditRecord.getPath(), equalTo("/api/v1/ca"));
-        assertThat(auditRecord.getOperation(), equalTo("ca_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
       });
