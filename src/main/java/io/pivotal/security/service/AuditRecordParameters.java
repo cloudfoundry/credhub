@@ -24,7 +24,7 @@ public class AuditRecordParameters {
   private final String xForwardedFor;
   private final Authentication authentication;
   private final String queryParameters;
-  private final String credentialName;
+  private String credentialName;
   private AuditingOperationCode operationCode;
 
   public AuditRecordParameters(String credentialName,
@@ -100,6 +100,10 @@ public class AuditRecordParameters {
 
   public String getQueryParameters() {
     return queryParameters;
+  }
+
+  public void setCredentialName(String credentialName) {
+    this.credentialName = credentialName;
   }
 
   public String getCredentialName() {

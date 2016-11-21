@@ -3,13 +3,17 @@ package io.pivotal.security.config;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.DatabaseAuditLogService;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
@@ -23,6 +27,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -33,6 +38,8 @@ import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -40,6 +47,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Arrays;
 
 import javax.servlet.Filter;
 
@@ -57,11 +66,19 @@ public class SecretsControllerAuditLogTest {
   @InjectMocks
   DatabaseAuditLogService auditLogService;
 
+  @Autowired
+  @InjectMocks
+  SecretsController secretsController;
+
   @Mock
   OperationAuditRecordDataService operationAuditRecordDataService;
 
   @Autowired
   Filter springSecurityFilterChain;
+
+  @Autowired
+  @Spy
+  SecretDataService secretDataService;
 
   private MockMvc mockMvc;
 
@@ -74,6 +91,50 @@ public class SecretsControllerAuditLogTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
+    });
+
+    describe("when getting a credential", () -> {
+      describe("by name", () -> {
+        it("makes a credential_access audit log entry", () -> {
+          doReturn(Arrays.asList(new NamedPasswordSecret("foo")))
+              .when(secretDataService).findAllByName(eq("foo"));
+
+          mockMvc.perform(get(API_V1_DATA + "?name=foo")
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+              .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
+
+          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+          verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+          OperationAuditRecord auditRecord = recordCaptor.getValue();
+
+          assertThat(auditRecord.getCredentialName(), equalTo("foo"));
+          assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
+        });
+      });
+
+      describe("by id", () -> {
+        it("makes a credential_access audit log entry", () -> {
+          doReturn(Arrays.asList(new NamedPasswordSecret("foo")))
+              .when(secretDataService).findByUuidAsList(eq("foo-id"));
+
+          mockMvc.perform(get(API_V1_DATA + "?id=foo-id")
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+              .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
+
+          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+          verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+
+          OperationAuditRecord auditRecord = recordCaptor.getValue();
+
+          assertThat(auditRecord.getCredentialName(), equalTo("foo"));
+          assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
+        });
+      });
     });
 
     describe("when a request to set credential is served", () -> {

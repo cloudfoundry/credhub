@@ -179,11 +179,13 @@ public class SecretsController {
                                                     HttpServletRequest request,
                                                     Authentication authentication,
                                                     Function<List<NamedSecret>, Object> secretPresenter) throws Exception {
-    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
+    final AuditRecordParameters auditRecordParameters = new AuditRecordParameters(null, request, authentication);
+    return auditLogService.performWithAuditing(auditRecordParameters, () -> {
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       } else {
+        auditRecordParameters.setCredentialName(namedSecrets.get(0).getName());
         return new ResponseEntity<>(secretPresenter.apply(namedSecrets), HttpStatus.OK);
       }
     });
