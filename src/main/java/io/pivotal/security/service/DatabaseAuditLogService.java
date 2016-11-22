@@ -54,7 +54,7 @@ public class DatabaseAuditLogService implements AuditLogService {
   }
 
   @Override
-  public ResponseEntity<?> performWithAuditing(AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws
+  public ResponseEntity<?> performWithAuditing(AuditRecordBuilder auditRecordBuilder, Supplier<ResponseEntity<?>> action) throws
       Exception {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
@@ -76,7 +76,7 @@ public class DatabaseAuditLogService implements AuditLogService {
       transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
 
-    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordParameters, responseEntity.getStatusCodeValue(), auditSuccess);
+    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder, responseEntity.getStatusCodeValue(), auditSuccess);
 
     try {
       operationAuditRecordDataService.save(auditRecord);
@@ -95,34 +95,12 @@ public class DatabaseAuditLogService implements AuditLogService {
     return responseEntity;
   }
 
-  private OperationAuditRecord getOperationAuditRecord(AuditRecordParameters auditRecordParameters, int statusCode, boolean success) throws Exception {
-    Authentication authentication = auditRecordParameters.getAuthentication();
-    OAuth2Request oAuth2Request = ((OAuth2Authentication) authentication).getOAuth2Request();
-    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
-    OAuth2AccessToken accessToken = tokenServices.readAccessToken(authenticationDetails.getTokenValue());
-    Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
-    Set<String> scope = oAuth2Request.getScope();
-    return new OperationAuditRecord(
-        currentTimeProvider.getInstant(),
-        auditRecordParameters.getCredentialName(),
-        auditRecordParameters.getOperationCode().toString(),
-        (String) additionalInformation.get("user_id"),
-        (String) additionalInformation.get("user_name"),
-        (String) additionalInformation.get("iss"),
-        claimValueAsLong(additionalInformation, "iat"),
-        accessToken.getExpiration().getTime() / 1000,
-        auditRecordParameters.getHostName(),
-        auditRecordParameters.getMethod(),
-        auditRecordParameters.getPath(),
-        auditRecordParameters.getQueryParameters(),
-        statusCode,
-        auditRecordParameters.getRequesterIp(),
-        auditRecordParameters.getXForwardedFor(),
-        oAuth2Request.getClientId(),
-        scope == null ? "" : String.join(",", scope),
-        oAuth2Request.getGrantType(),
-        success
-    );
+  private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder, int statusCode, boolean success) throws Exception {
+    return auditRecordBuilder
+        .computeAccessToken(tokenServices)
+        .setRequestStatus(statusCode)
+        .setIsSuccess(success)
+        .build(currentTimeProvider.getInstant());
   }
 
   /*

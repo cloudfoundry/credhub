@@ -9,7 +9,7 @@ import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.mapper.CASetterRequestTranslator;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -79,7 +79,7 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
-    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
+    return auditLogService.performWithAuditing(new AuditRecordBuilder(null, request, authentication), () -> {
       return storeAuthority(parsedRequest, caSetterRequestTranslator);
     });
   }
@@ -89,7 +89,7 @@ public class CaController {
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
 
-    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
+    return auditLogService.performWithAuditing(new AuditRecordBuilder(null, request, authentication), () -> {
       return storeAuthority(parsedRequest, caGeneratorRequestTranslator);
     });
   }
@@ -169,7 +169,7 @@ public class CaController {
       Authentication authentication,
       Function<List<CertificateAuthority>, ?> presenter) throws Exception {
     return auditLogService.performWithAuditing(
-        new AuditRecordParameters(null, request, authentication),
+        new AuditRecordBuilder(null, request, authentication),
         () -> {
           List<NamedCertificateAuthority> namedAuthorityList = finder.apply(identifier);
 

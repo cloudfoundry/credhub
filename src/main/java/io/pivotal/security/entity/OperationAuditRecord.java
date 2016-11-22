@@ -68,25 +68,25 @@ public class OperationAuditRecord {
       String grantType,
       boolean success
   ) {
-    this.now = now;
-    this.credentialName = credentialName;
-    this.operation = operation;
-    this.userId = userId;
-    this.userName = userName;
-    this.uaaUrl = uaaUrl;
-    this.tokenIssued = tokenIssued;
-    this.tokenExpires = tokenExpires;
-    this.hostName = hostName;
-    this.method = method;
-    this.path = path;
-    this.queryParameters = queryParameters;
-    this.statusCode = statusCode;
-    this.requesterIp = requesterIp;
-    this.xForwardedFor = xForwardedFor;
-    this.clientId = clientId;
-    this.scope = scope;
-    this.grantType = grantType;
-    this.success = success;
+    setNow(now);
+    setCredentialName(credentialName);
+    setOperation(operation);
+    setUserId(userId);
+    setUserName(userName);
+    setUaaUrl(uaaUrl);
+    setTokenIssued(tokenIssued);
+    setTokenExpires(tokenExpires);
+    setHostName(hostName);
+    setMethod(method);
+    setPath(path);
+    setQueryParameters(queryParameters);
+    setStatusCode(statusCode);
+    setRequesterIp(requesterIp);
+    setXForwardedFor(xForwardedFor);
+    setClientId(clientId);
+    setScope(scope);
+    setGrantType(grantType);
+    setSuccess(success);
   }
 
   public long getId() {
@@ -219,5 +219,37 @@ public class OperationAuditRecord {
 
   public void setCredentialName(String credentialName) {
     this.credentialName = credentialName;
+  }
+
+  public void setNow(Instant now) {
+    this.now = now;
+  }
+
+  public void setUserId(String userId) {
+    this.userId = userId;
+  }
+
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
+
+  public void setUaaUrl(String uaaUrl) {
+    this.uaaUrl = uaaUrl;
+  }
+
+  public void setTokenIssued(long tokenIssued) {
+    this.tokenIssued = tokenIssued;
+  }
+
+  public void setTokenExpires(long tokenExpires) {
+    this.tokenExpires = tokenExpires;
+  }
+
+  public void setHostName(String hostName) {
+    this.hostName = hostName;
+  }
+
+  public void setSuccess(boolean success) {
+    this.success = success;
   }
 }

@@ -9,7 +9,7 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
@@ -108,7 +108,7 @@ public class SecretsController {
   public ResponseEntity delete( @RequestParam(value = "name", required = false) String secretName,
                                 HttpServletRequest request,
                                 Authentication authentication) throws Exception {
-    return auditLogService.performWithAuditing(new AuditRecordParameters(null, request, authentication), () -> {
+    return auditLogService.performWithAuditing(new AuditRecordBuilder(null, request, authentication), () -> {
       List<NamedSecret> namedSecrets;
       String nameToDelete = secretName;
       if (nameToDelete == null) {
@@ -179,13 +179,13 @@ public class SecretsController {
                                                     HttpServletRequest request,
                                                     Authentication authentication,
                                                     Function<List<NamedSecret>, Object> secretPresenter) throws Exception {
-    final AuditRecordParameters auditRecordParameters = new AuditRecordParameters(null, request, authentication);
-    return auditLogService.performWithAuditing(auditRecordParameters, () -> {
+    final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
+    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       } else {
-        auditRecordParameters.setCredentialName(namedSecrets.get(0).getName());
+        auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
         return new ResponseEntity<>(secretPresenter.apply(namedSecrets), HttpStatus.OK);
       }
     });
@@ -216,7 +216,7 @@ public class SecretsController {
                                           Function<String, List<NamedSecret>> finder,
                                           HttpServletRequest request,
                                           Authentication authentication) throws Exception {
-    AuditRecordParameters auditParams = new AuditRecordParameters(CREDENTIAL_FIND, null, request, authentication);
+    AuditRecordBuilder auditParams = new AuditRecordBuilder(CREDENTIAL_FIND, null, request, authentication);
     return auditLogService.performWithAuditing(auditParams, () -> {
       List<NamedSecret> namedSecrets = finder.apply(nameSubstring);
       return new ResponseEntity<>(FindCredentialResults.fromEntity(namedSecrets), HttpStatus.OK);
@@ -224,7 +224,7 @@ public class SecretsController {
   }
 
   private ResponseEntity findPathsWithAuditing(HttpServletRequest request, Authentication authentication) throws Exception {
-    AuditRecordParameters auditParams = new AuditRecordParameters(CREDENTIAL_FIND, null, request, authentication);
+    AuditRecordBuilder auditParams = new AuditRecordBuilder(CREDENTIAL_FIND, null, request, authentication);
     return auditLogService.performWithAuditing(auditParams, () -> {
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
@@ -245,7 +245,7 @@ public class SecretsController {
 
     boolean willWrite = willBeCreated || overwrite || regenerate;
     AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    return auditLogService.performWithAuditing(new AuditRecordParameters(operationCode, secretName, request, authentication), () -> {
+    return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
       if (regenerate && existingNamedSecret == null) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }

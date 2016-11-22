@@ -2,22 +2,17 @@ package io.pivotal.security.oauth;
 
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -45,51 +40,17 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       super.handle(request, response, authException);
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
-      OperationAuditRecord operationAuditRecord = createOperationAuditRecord(token, new AuditRecordParameters(null, request, null), response.getStatus());
+      OperationAuditRecord operationAuditRecord = createOperationAuditRecord(token, new AuditRecordBuilder(null, request, null), response.getStatus());
       operationAuditRecordDataService.save(operationAuditRecord);
       securityEventsLogService.log(operationAuditRecord);
     }
   }
 
-  private OperationAuditRecord createOperationAuditRecord(String token, AuditRecordParameters auditRecordParameters, int status) {
-    OAuth2Authentication authentication = tokenStore.readAuthentication(token);
-    OAuth2Request oAuth2Request = authentication.getOAuth2Request();
-
-    OAuth2AccessToken accessToken = tokenServices.readAccessToken(token);
-
-    String path = auditRecordParameters.getPath();
-    String method = auditRecordParameters.getMethod();
-
-    final Instant now;
-    try {
-      now = currentTimeProvider.getInstant();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    Set<String> scopes = accessToken.getScope();
-    String scope = scopes == null ? null : String.join(",", scopes);
-
-    return new OperationAuditRecord(
-        now,
-        null,
-        auditRecordParameters.getOperationCode().toString(),
-        (String) accessToken.getAdditionalInformation().get("user_id"),
-        (String) accessToken.getAdditionalInformation().get("user_name"),
-        (String) accessToken.getAdditionalInformation().get("iss"),
-        ((Number) accessToken.getAdditionalInformation().get("iat")).longValue(),
-        accessToken.getExpiration().toInstant().getEpochSecond(),
-        auditRecordParameters.getHostName(),
-        method,
-        path,
-        auditRecordParameters.getQueryParameters(),
-        status,
-        auditRecordParameters.getRequesterIp(),
-        auditRecordParameters.getXForwardedFor(),
-        oAuth2Request.getClientId(),
-        scope,
-        oAuth2Request.getGrantType(),
-        false
-    );
+  private OperationAuditRecord createOperationAuditRecord(String token, AuditRecordBuilder auditRecordBuilder, int status) {
+    return auditRecordBuilder
+        .setRequestStatus(status)
+        .setAuthentication(tokenStore.readAuthentication(token))
+        .setAccessToken(tokenServices.readAccessToken(token))
+        .build(currentTimeProvider.getInstant());
   }
 }

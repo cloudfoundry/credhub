@@ -1,7 +1,7 @@
 package io.pivotal.security.fake;
 
 import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.service.AuditRecordBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 public class FakeAuditLogService implements AuditLogService {
 
   @Override
-  public ResponseEntity<?> performWithAuditing(AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws Exception {
+  public ResponseEntity<?> performWithAuditing(AuditRecordBuilder auditRecordBuilder, Supplier<ResponseEntity<?>> action) throws Exception {
     return action.get();
   }
 }

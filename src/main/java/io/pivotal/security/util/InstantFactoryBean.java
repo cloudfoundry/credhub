@@ -9,8 +9,12 @@ import java.time.Instant;
 public class InstantFactoryBean implements FactoryBean<Instant> {
 
   @Override
-  public Instant getObject() throws Exception {
-    return Instant.now();
+  public Instant getObject() {
+    try {
+      return Instant.now();
+    } catch (Exception e){
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

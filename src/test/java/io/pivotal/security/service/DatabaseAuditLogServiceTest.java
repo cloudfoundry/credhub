@@ -69,7 +69,7 @@ public class DatabaseAuditLogServiceTest {
   @MockBean
   SecurityEventsLogService securityEventsLogService;
 
-  AuditRecordParameters auditRecordParameters;
+  AuditRecordBuilder auditRecordBuilder;
 
   private Instant now;
 
@@ -84,7 +84,7 @@ public class DatabaseAuditLogServiceTest {
       when(mockDetails.getTokenValue()).thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
       authentication.setDetails(mockDetails);
 
-      auditRecordParameters = new AuditRecordParameters(
+      auditRecordBuilder = new AuditRecordBuilder(
           "hostName",
           "keyName",
           "GET",
@@ -106,7 +106,7 @@ public class DatabaseAuditLogServiceTest {
       describe("when the action succeeds", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing(auditRecordParameters, () -> {
+            responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
@@ -133,7 +133,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing(auditRecordParameters, () -> {
+            responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               final NamedStringSecret secret = secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
@@ -161,7 +161,7 @@ public class DatabaseAuditLogServiceTest {
 
           beforeEach(() -> {
             try {
-              subject.performWithAuditing(auditRecordParameters, () -> {
+              subject.performWithAuditing(auditRecordBuilder, () -> {
                 secretRepository.save(new NamedValueSecret("keyName", "value"));
                 throw re;
               });
@@ -188,7 +188,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing(auditRecordParameters, () -> {
+            responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               secretRepository.save(new NamedValueSecret("keyName", "value"));
               throw new RuntimeException("controller method failed");
             });
@@ -212,7 +212,7 @@ public class DatabaseAuditLogServiceTest {
       describe("when the action fails with a non 200 status", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing(auditRecordParameters, () -> {
+            responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
@@ -236,7 +236,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing(auditRecordParameters, () -> {
+            responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });
@@ -260,7 +260,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when audit transaction fails to commit", () -> {
           beforeEach(() -> {
             transactionManager.failOnCommit();
-            responseEntity = subject.performWithAuditing(auditRecordParameters, () -> {
+            responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               secretRepository.save(new NamedValueSecret("keyName", "value"));
               return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
             });

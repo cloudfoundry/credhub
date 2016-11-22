@@ -5,5 +5,5 @@ import org.springframework.http.ResponseEntity;
 import java.util.function.Supplier;
 
 public interface AuditLogService {
-  ResponseEntity<?> performWithAuditing(AuditRecordParameters auditRecordParameters, Supplier<ResponseEntity<?>> action) throws Exception;
+  ResponseEntity<?> performWithAuditing(AuditRecordBuilder auditRecordBuilder, Supplier<ResponseEntity<?>> action) throws Exception;
 }

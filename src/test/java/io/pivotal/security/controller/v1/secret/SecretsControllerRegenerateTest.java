@@ -5,9 +5,10 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
-import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.StringSecret;
 import org.junit.runner.RunWith;
@@ -143,7 +144,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
-        ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+        ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
         verify(auditLogService, times(1)).performWithAuditing(auditRecordParamsCaptor.capture(), supplierArgumentCaptor.capture());
 
         Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
@@ -169,7 +170,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
-        ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+        ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
         verify(auditLogService, times(1)).performWithAuditing(auditRecordParamsCaptor.capture(), supplierArgumentCaptor.capture());
 
         Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
@@ -197,7 +198,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         ArgumentCaptor<Supplier> supplierArgumentCaptor = ArgumentCaptor.forClass(Supplier.class);
-        ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+        ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
         verify(auditLogService, times(1)).performWithAuditing(auditRecordParamsCaptor.capture(), supplierArgumentCaptor.capture());
 
         Supplier<ResponseEntity<?>> action = supplierArgumentCaptor.getValue();
@@ -212,6 +213,6 @@ public class SecretsControllerRegenerateTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }

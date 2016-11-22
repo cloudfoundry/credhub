@@ -7,7 +7,8 @@ import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
-import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -162,7 +163,7 @@ public class CaControllerTest {
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8));
 
-          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_UPDATE));
@@ -269,7 +270,7 @@ public class CaControllerTest {
         });
 
         it("creates an audit entry", () -> {
-          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_UPDATE));
         });
@@ -327,7 +328,7 @@ public class CaControllerTest {
         });
 
         it("creates an audit record", () -> {
-          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_UPDATE));
@@ -508,7 +509,7 @@ public class CaControllerTest {
           it("persists an audit entry when getting a ca", () -> {
             mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
                 .andExpect(status().isOk());
-            ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+            ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
             verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
             assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_ACCESS));
@@ -569,7 +570,7 @@ public class CaControllerTest {
       });
 
       it("persists an audit entry when getting a ca", () -> {
-        ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+        ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
         verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
         assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_ACCESS));

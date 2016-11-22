@@ -4,8 +4,9 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.fake.FakeAuditLogService;
-import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -127,10 +128,10 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordParameters> captor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> captor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(captor.capture(), any(Supplier.class));
-          AuditRecordParameters parameters = captor.getValue();
-          assertThat(parameters.getOperationCode(), equalTo(CREDENTIAL_DELETE));
+          AuditRecordBuilder auditRecorder = captor.getValue();
+          assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_DELETE));
         });
       });
 
@@ -151,10 +152,10 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          ArgumentCaptor<AuditRecordParameters> captor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> captor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService, times(1)).performWithAuditing(captor.capture(), any(Supplier.class));
-          AuditRecordParameters parameters = captor.getValue();
-          assertThat(parameters.getOperationCode(), equalTo(CREDENTIAL_DELETE));
+          AuditRecordBuilder auditRecorder = captor.getValue();
+          assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_DELETE));
         });
       });
 
@@ -189,6 +190,6 @@ public class SecretsControllerDeleteTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }

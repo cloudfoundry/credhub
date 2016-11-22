@@ -4,8 +4,9 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.fake.FakeAuditLogService;
-import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -105,7 +106,7 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
@@ -176,7 +177,7 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
@@ -209,6 +210,6 @@ public class SecretsControllerFindTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }

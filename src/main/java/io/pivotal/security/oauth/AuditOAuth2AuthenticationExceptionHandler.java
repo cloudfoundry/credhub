@@ -2,7 +2,7 @@ package io.pivotal.security.oauth;
 
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
-import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -87,7 +87,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     try {
       doHandle(request, response, exception);
     } finally {
-      logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordParameters(null, request, null), request.getMethod(), response.getStatus());
+      logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordBuilder(null, request, null), request.getMethod(), response.getStatus());
     }
   }
 
@@ -112,13 +112,8 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
   }
 
-  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, Exception authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
-    final Instant now;
-    try {
-      now = currentTimeProvider.getInstant();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, Exception authException, AuditRecordBuilder auditRecorder, String requestMethod, int statusCode) {
+    final Instant now = currentTimeProvider.getInstant();
 
     String userId = null;
     String userName = null;
@@ -143,18 +138,18 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
         .setNow(now)
-        .setOperation(parameters.getOperationCode().toString())
+        .setOperation(auditRecorder.getOperationCode().toString())
         .setFailureDescription(removeTokenFromMessage(authException.getMessage(), token))
         .setUserId(userId)
         .setUserName(userName)
         .setUaaUrl(iss)
         .setTokenIssued(issued)
         .setTokenExpires(expires)
-        .setHostName(parameters.getHostName())
-        .setPath(parameters.getPath())
-        .setQueryParameters(parameters.getQueryParameters())
-        .setRequesterIp(parameters.getRequesterIp())
-        .setXForwardedFor(parameters.getXForwardedFor())
+        .setHostName(auditRecorder.getHostName())
+        .setPath(auditRecorder.getPath())
+        .setQueryParameters(auditRecorder.getQueryParameters())
+        .setRequesterIp(auditRecorder.getRequesterIp())
+        .setXForwardedFor(auditRecorder.getXForwardedFor())
         .setClientId(clientId)
         .setScope(scope)
         .setGrantType(grantType)

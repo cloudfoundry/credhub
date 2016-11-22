@@ -6,8 +6,9 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.fake.FakeAuditLogService;
-import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -229,7 +230,7 @@ public class SecretsControllerSetTest {
         });
 
         it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_UPDATE));
@@ -255,7 +256,7 @@ public class SecretsControllerSetTest {
         });
 
         it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_ACCESS));
@@ -301,7 +302,7 @@ public class SecretsControllerSetTest {
     });
 
     it("persists an audit entry", () -> {
-      ArgumentCaptor<AuditRecordParameters> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordParameters.class);
+      ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
       verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
       assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_UPDATE));
@@ -344,7 +345,7 @@ public class SecretsControllerSetTest {
 
     it("returns errors from the auditing service auditing fails", () -> {
       doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-          .when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
+          .when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
 
       final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
           .accept(APPLICATION_JSON)
@@ -402,6 +403,6 @@ public class SecretsControllerSetTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordParameters.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }
