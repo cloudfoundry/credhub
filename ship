@@ -10,8 +10,7 @@ function stop_dev_server() {
   jps | grep GradleMain | awk '{print $1}' | xargs kill -9
 }
 
-git pull -r &&
-./gradlew --no-daemon clean test
+git pull -r && ./run_tests.sh
 if [ $? -ne 0 ]; then
   echo "Unit tests failed."
   exit 1
