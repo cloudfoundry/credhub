@@ -132,6 +132,7 @@ public class SecretsControllerDeleteTest {
           verify(auditLogService).performWithAuditing(captor.capture(), any(Supplier.class));
           AuditRecordBuilder auditRecorder = captor.getValue();
           assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_DELETE));
+          assertThat(auditRecorder.getCredentialName(), equalTo(secretName));
         });
       });
 
@@ -156,6 +157,7 @@ public class SecretsControllerDeleteTest {
           verify(auditLogService, times(1)).performWithAuditing(captor.capture(), any(Supplier.class));
           AuditRecordBuilder auditRecorder = captor.getValue();
           assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_DELETE));
+          assertThat(auditRecorder.getCredentialName(), equalTo(secretName));
         });
       });
 

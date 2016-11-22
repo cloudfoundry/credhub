@@ -108,12 +108,10 @@ public class SecretsController {
   public ResponseEntity delete( @RequestParam(value = "name", required = false) String secretName,
                                 HttpServletRequest request,
                                 Authentication authentication) throws Exception {
-    return auditLogService.performWithAuditing(new AuditRecordBuilder(null, request, authentication), () -> {
+    AuditRecordBuilder auditRecorder = new AuditRecordBuilder(null, request, authentication);
+    return auditLogService.performWithAuditing(auditRecorder, () -> {
       List<NamedSecret> namedSecrets;
-      String nameToDelete = secretName;
-      if (nameToDelete == null) {
-        nameToDelete = secretPath(request);
-      }
+      final String nameToDelete = nameToDelete(secretName, request);
 
       if (StringUtils.isEmpty(nameToDelete)) {
         throw new ParameterizedValidationException("error.missing_name");
@@ -122,11 +120,19 @@ public class SecretsController {
       namedSecrets = secretDataService.delete(nameToDelete);
 
       if (namedSecrets.size() > 0) {
+        auditRecorder.setCredentialName(namedSecrets.get(0).getName());
         return new ResponseEntity(HttpStatus.OK);
       } else {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
     });
+  }
+
+  private String nameToDelete(String secretName, HttpServletRequest request) {
+    if (secretName != null) {
+      return secretName;
+    }
+    return secretPath(request);
   }
 
   @RequestMapping(path = "", method = RequestMethod.GET)
