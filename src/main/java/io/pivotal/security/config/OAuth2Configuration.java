@@ -2,6 +2,7 @@ package io.pivotal.security.config;
 
 import io.pivotal.security.oauth.AuditOAuth2AccessDeniedHandler;
 import io.pivotal.security.oauth.AuditOAuth2AuthenticationExceptionHandler;
+import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
@@ -41,14 +42,10 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   @Autowired
   AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
 
-  @Autowired
-  GuidProvider guidProvider;
-
   @PostConstruct
   public void init() {
     Assert.notNull(resourceServerProperties.getJwt().getKeyValue(), "Configuration property security.oauth2.resource.jwt.key-value must be set.");
-    securityProperties.getUser().setName(guidProvider.getUUID());
-    securityProperties.getUser().setPassword(guidProvider.getUUID());
+    securityProperties.getUser().setName(RandomStringUtils.random(12));
     securityProperties.getUser().setRole(new ArrayList<>());
   }
 

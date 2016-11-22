@@ -12,7 +12,11 @@ public class CurrentTimeProvider implements DateTimeProvider {
 
   @Override
   public Calendar getNow() {
-    return makeCalendar(Instant.now().toEpochMilli());
+    return makeCalendar(getInstant().toEpochMilli());
+  }
+
+  public Instant getInstant() {
+    return Instant.now();
   }
 
   public static Calendar makeCalendar(long epochMilli) {

@@ -2,22 +2,20 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.util.InstantFactoryBean;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import java.time.Instant;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -29,19 +27,17 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test"})
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class SecurityEventsLogServiceTest {
-  @Mock
+  @MockBean
   Logger securityEventsLoggerMock;
 
   @Autowired
-  @InjectMocks
   SecurityEventsLogService subject;
 
-  @Mock
-  InstantFactoryBean instantFactoryBean;
+  @MockBean
+  CurrentTimeProvider currentTimeProvider;
 
   @Value("${info.app.version}")
   String version;
@@ -49,12 +45,12 @@ public class SecurityEventsLogServiceTest {
   private Instant now;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       now = Instant.now();
 
-      when(instantFactoryBean.getObject()).thenReturn(now);
+      when(currentTimeProvider.getInstant()).thenReturn(now);
     });
 
     describe("log", () -> {

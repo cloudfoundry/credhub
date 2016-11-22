@@ -3,14 +3,13 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
@@ -25,9 +24,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "FakeEncryptionService"})
+@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class CertificateSecretTest {
 
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
@@ -45,7 +43,7 @@ public class CertificateSecretTest {
   private UUID uuid;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       secretName = "foo";

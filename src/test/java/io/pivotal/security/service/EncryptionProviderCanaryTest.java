@@ -2,21 +2,20 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.CanaryDataService;
 import io.pivotal.security.entity.NamedCanary;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -26,32 +25,30 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class EncryptionProviderCanaryTest {
 
-  @Mock
+  @MockBean
   CanaryDataService canaryDataService;
 
-  @Spy
-  @Autowired
+  @SpyBean
   EncryptionService encryptionService;
 
   @Autowired
-  @InjectMocks
   EncryptionProviderCanary subject;
 
   @Autowired
   EncryptionConfiguration encryptionConfiguration;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     describe("#checkForDataCorruption", () -> {
       describe("when there is no existing canary", () -> {
@@ -64,6 +61,7 @@ public class EncryptionProviderCanaryTest {
           EncryptionService.Encryption encryptedValue = new EncryptionService.Encryption("test-nonce".getBytes(), "test-encrypted-value".getBytes());
           doReturn(encryptedValue).when(encryptionService).encrypt(expectedCanaryValue);
 
+          reset(canaryDataService);
           subject.checkForDataCorruption();
 
           ArgumentCaptor<NamedCanary> argumentCaptor = ArgumentCaptor.forClass(NamedCanary.class);

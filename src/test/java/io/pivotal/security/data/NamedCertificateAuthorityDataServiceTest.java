@@ -2,17 +2,15 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,15 +29,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedCertificateAuthorityDataServiceTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
@@ -57,7 +50,7 @@ public class NamedCertificateAuthorityDataServiceTest {
   private NamedCertificateAuthority savedSecret;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 

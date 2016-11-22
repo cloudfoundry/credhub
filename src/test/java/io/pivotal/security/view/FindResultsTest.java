@@ -2,28 +2,27 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(Spectrum.class)
 @SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 public class FindResultsTest {
   private FindCredentialResults expectedResults;
 

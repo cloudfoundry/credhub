@@ -3,22 +3,20 @@ package io.pivotal.security.mapper;
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -35,29 +33,26 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class CAGeneratorRequestTranslatorTest {
 
   @Autowired
   ParseContext jsonPath;
 
-  @InjectMocks
   @Autowired
   CAGeneratorRequestTranslator subject;
 
-  @Mock
+  @MockBean
   BCCertificateGenerator certificateGenerator;
 
-  @Mock
+  @MockBean
   NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
 
   @Autowired
   CertificateSecretParametersFactory parametersFactory;
 
-  @InjectMocks
-  @Spy
+  @SpyBean
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
   private NamedCertificateAuthority certificateAuthority;
@@ -89,7 +84,7 @@ public class CAGeneratorRequestTranslatorTest {
       .setType("root");
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     describe("when all parameters are provided", () -> {
       it("validates the json keys", () -> {

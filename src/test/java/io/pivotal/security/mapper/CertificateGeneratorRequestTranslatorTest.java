@@ -4,13 +4,13 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -20,13 +20,13 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
+
+import java.security.Security;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -48,40 +48,31 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.security.Security;
-
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class CertificateGeneratorRequestTranslatorTest {
 
   @Autowired
   ParseContext jsonPath;
 
-  @Autowired
-  @InjectMocks
-  @Spy
+  @SpyBean
   BCCertificateGenerator secretGenerator;
 
-  @Mock
-  CertificateSecretParameters certificateSecretParameters;
-
-  @Mock
+  @MockBean
   CertificateSecretParametersFactory certificateSecretParametersFactory;
 
-  @InjectMocks
+  @Autowired
   CertificateGeneratorRequestTranslator subject;
 
-  @Spy
-  @Autowired
+  @SpyBean
   NamedCertificateAuthorityDataService certificateAuthorityDataService;
 
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       Security.addProvider(new BouncyCastleProvider());

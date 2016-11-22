@@ -2,14 +2,13 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.NamedCanary;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import java.util.List;
 
@@ -23,9 +22,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNull;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test"})
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class CanaryDataServiceTest {
   @Autowired
   CanaryDataService subject;
@@ -34,7 +32,7 @@ public class CanaryDataServiceTest {
   JdbcTemplate jdbcTemplate;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       jdbcTemplate.execute("delete from named_canary");

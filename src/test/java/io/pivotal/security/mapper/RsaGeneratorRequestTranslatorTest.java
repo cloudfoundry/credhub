@@ -4,21 +4,19 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
 import io.pivotal.security.entity.NamedRsaSecret;
 import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.RsaSecret;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -34,27 +32,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class RsaGeneratorRequestTranslatorTest {
 
   @Autowired
   ParseContext jsonPath;
 
-  @Mock
+  @MockBean
   RsaGenerator secretGenerator;
 
-  @Mock
+  @MockBean
   RsaSecretParametersFactory rsaSecretParametersFactory;
 
-  @InjectMocks
+  @Autowired
   private RsaGeneratorRequestTranslator subject;
 
   private RsaSecretParameters mockParams;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       mockParams = spy(RsaSecretParameters.class);

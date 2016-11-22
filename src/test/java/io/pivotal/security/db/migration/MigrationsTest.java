@@ -2,18 +2,16 @@ package io.pivotal.security.db.migration;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.UUID;
 
@@ -21,10 +19,8 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test"})
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class MigrationsTest {
 
   private long id = 0;
@@ -39,7 +35,7 @@ public class MigrationsTest {
   NamedParameterJdbcTemplate jdbcTemplate;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     it("should apply the migration successfully", () -> {
       flyway.clean();

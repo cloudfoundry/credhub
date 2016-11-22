@@ -1,8 +1,6 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.NamedStringSecret;
@@ -10,13 +8,13 @@ import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.fake.FakeSecretRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
-import io.pivotal.security.util.InstantFactoryBean;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -24,7 +22,6 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -46,24 +43,22 @@ import static org.mockito.Mockito.when;
 import java.time.Instant;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"})
+@ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest
 public class DatabaseAuditLogServiceTest {
 
   @Autowired
-  @InjectMocks
   DatabaseAuditLogService subject;
 
-  @Mock
+  @MockBean
   OperationAuditRecordDataService operationAuditRecordDataService;
 
   FakeSecretRepository secretRepository;
 
   FakeTransactionManager transactionManager;
 
-  @Mock
-  InstantFactoryBean instantFactoryBean;
+  @MockBean
+  CurrentTimeProvider currentTimeProvider;
 
   @Autowired
   TokenStore tokenStore;
@@ -71,7 +66,7 @@ public class DatabaseAuditLogServiceTest {
   @Autowired
   ResourceServerTokenServices tokenServices;
 
-  @Mock
+  @MockBean
   SecurityEventsLogService securityEventsLogService;
 
   AuditRecordParameters auditRecordParameters;
@@ -81,7 +76,7 @@ public class DatabaseAuditLogServiceTest {
   private ResponseEntity<?> responseEntity;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       OAuth2Authentication authentication = tokenStore.readAuthentication(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
@@ -104,7 +99,7 @@ public class DatabaseAuditLogServiceTest {
       subject.transactionManager = transactionManager;
 
       now = Instant.now();
-      when(instantFactoryBean.getObject()).thenReturn(now);
+      when(currentTimeProvider.getInstant()).thenReturn(now);
     });
 
     describe("logging behavior", () -> {

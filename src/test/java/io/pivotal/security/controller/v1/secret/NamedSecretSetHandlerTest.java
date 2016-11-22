@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
@@ -14,14 +13,13 @@ import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
 import io.pivotal.security.mapper.StringSetRequestTranslator;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -34,30 +32,28 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
 
-  @InjectMocks
-  NamedSecretSetHandler subject;
-
   @Autowired
-  NamedSecretSetHandler realSubject;
+  NamedSecretSetHandler subject;
 
   @Autowired
   ParseContext jsonPath;
 
-  @Mock
-  StringSetRequestTranslator stringSetRequestTranslator;
+  @MockBean
+  private StringSetRequestTranslator stringSetRequestTranslator;
 
-  @Mock
-  CertificateSetRequestTranslator certificateSetRequestTranslator;
+  @MockBean
+  private CertificateSetRequestTranslator certificateSetRequestTranslator;
 
-  @Mock
-  RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
+  @MockBean
+  private RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
 
   {
+    wireAndUnwire(this, false);
+
     describe("it verifies the secret type and secret creation for", () -> {
       beforeEach(injectMocks(this));
 
@@ -113,7 +109,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     });
 
     describe("verifies full set of keys for", () -> {
-      wireAndUnwire(this);
 
       it("value", () -> {
         stringSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));

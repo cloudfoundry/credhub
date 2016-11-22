@@ -4,7 +4,7 @@ import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.service.SecurityEventsLogService;
-import io.pivotal.security.util.InstantFactoryBean;
+import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -31,7 +31,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   JwtTokenStore tokenStore;
 
   @Autowired
-  InstantFactoryBean instantFactoryBean;
+  CurrentTimeProvider currentTimeProvider;
 
   @Autowired
   OperationAuditRecordDataService operationAuditRecordDataService;
@@ -62,7 +62,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
     final Instant now;
     try {
-      now = instantFactoryBean.getObject();
+      now = currentTimeProvider.getInstant();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

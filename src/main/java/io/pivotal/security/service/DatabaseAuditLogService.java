@@ -2,7 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.util.InstantFactoryBean;
+import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -19,18 +19,17 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import javax.annotation.PostConstruct;
-
 @Service
 public class DatabaseAuditLogService implements AuditLogService {
 
   @Autowired
-  InstantFactoryBean instantFactoryBean;
+  CurrentTimeProvider currentTimeProvider;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
@@ -104,7 +103,7 @@ public class DatabaseAuditLogService implements AuditLogService {
     Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
     Set<String> scope = oAuth2Request.getScope();
     return new OperationAuditRecord(
-        instantFactoryBean.getObject(),
+        currentTimeProvider.getInstant(),
         auditRecordParameters.getCredentialName(),
         auditRecordParameters.getOperationCode().toString(),
         (String) additionalInformation.get("user_id"),

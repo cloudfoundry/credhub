@@ -2,31 +2,33 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.NamedCertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
-import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -57,16 +59,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class CaControllerTest {
   private static final Instant OLDER_FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1300000000L);
   private static final Instant FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1400000000L);
@@ -79,25 +74,20 @@ public class CaControllerTest {
   @Autowired
   protected WebApplicationContext context;
 
-  @Mock
+  @MockBean
   private NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
 
-  @InjectMocks
   @Autowired
   private CaController caController;
 
   @Autowired
-  @InjectMocks
   CAGeneratorRequestTranslator caGeneratorRequestTranslator;
 
-  @Spy
-  @Autowired
+  @SpyBean
   BCCertificateGenerator certificateGenerator;
 
-  @Spy
-  @Autowired
-  @InjectMocks
-  AuditLogService auditLogService;
+  @SpyBean
+  FakeAuditLogService auditLogService;
 
   private MockMvc mockMvc;
   private Consumer<Long> fakeTimeSetter;
@@ -113,7 +103,7 @@ public class CaControllerTest {
   private NamedCertificateAuthority storedCa;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {

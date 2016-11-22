@@ -7,6 +7,7 @@ import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Supplier;

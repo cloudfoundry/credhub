@@ -2,20 +2,18 @@ package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.StringSecret;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,31 +22,31 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.when;
 
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class PasseyStringSecretGeneratorTest {
 
-  @InjectMocks
   @Autowired
   private PasseyStringSecretGenerator subject;
 
-  @Mock
+  @MockBean
   private CharacterRuleProvider characterRuleProvider;
 
-  @Mock
+  @MockBean
   private PasswordGenerator passwordGenerator;
 
   @Captor
   private ArgumentCaptor<List<CharacterRule>> captor;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     it("can generate secret", () -> {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();

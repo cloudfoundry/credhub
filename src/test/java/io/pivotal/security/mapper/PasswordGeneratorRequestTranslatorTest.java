@@ -5,21 +5,18 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.generator.PasseyStringSecretGenerator;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.StringSecret;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -33,25 +30,24 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class PasswordGeneratorRequestTranslatorTest {
 
   @Autowired
   ParseContext jsonPath;
 
-  @Mock
-  SecretGenerator secretGenerator;
+  @MockBean
+  PasseyStringSecretGenerator secretGenerator;
 
-  @InjectMocks
+  @Autowired
   private PasswordGeneratorRequestTranslator subject;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      when(secretGenerator.generateSecret(any(RequestParameters.class))).thenReturn(new StringSecret("password", "my-password"));
+      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new StringSecret("password", "my-password"));
     });
 
     it("returns a StringGeneratorRequest for valid json", () -> {

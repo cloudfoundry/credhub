@@ -2,14 +2,13 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,16 +16,14 @@ import java.util.List;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test"})
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class AuthFailureAuditRecordDataServiceTest {
   @Autowired
   AuthFailureAuditRecordDataService subject;
@@ -39,8 +36,7 @@ public class AuthFailureAuditRecordDataServiceTest {
   private final long tokenExpires = tokenIssued + 10000;
 
   {
-    wireAndUnwire(this);
-    cleanUpAfterTests(this);
+    wireAndUnwire(this, false);
 
     afterEach(() -> {
       jdbcTemplate.execute("delete from auth_failure_audit_record");

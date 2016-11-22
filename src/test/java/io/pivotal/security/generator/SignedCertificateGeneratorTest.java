@@ -75,7 +75,7 @@ public class SignedCertificateGeneratorTest {
   private CertificateSecretParameters inputParameters;
   private String isCA;
 
-  @InjectMocks
+    @InjectMocks
   SignedCertificateGenerator subject;
 
   {

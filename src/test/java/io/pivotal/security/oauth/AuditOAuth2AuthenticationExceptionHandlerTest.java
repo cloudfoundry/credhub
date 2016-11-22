@@ -2,18 +2,16 @@ package io.pivotal.security.oauth;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.InstantFactoryBean;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -24,8 +22,6 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -38,7 +34,6 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
-import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -51,10 +46,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "AuditOAuth2AuthenticationEntryPointTest"})
+@ActiveProfiles(value = {"unit-test", "AuditOAuth2AuthenticationEntryPointTest"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest
 public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
   @Autowired
@@ -64,19 +57,15 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   Filter springSecurityFilterChain;
 
   @Autowired
-  @InjectMocks
   AuditOAuth2AuthenticationExceptionHandler subject;
 
-  @Mock
+  @MockBean
   AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
 
-  @Mock
-  InstantFactoryBean instantFactoryBean;
-
-  @Mock
+  @MockBean
   CurrentTimeProvider currentTimeProvider;
 
   private MockMvc mockMvc;
@@ -88,12 +77,11 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
 
   {
-    wireAndUnwire(this);
-    cleanUpAfterTests(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       now = Instant.now();
-      when(instantFactoryBean.getObject()).thenReturn(now);
+      when(currentTimeProvider.getInstant()).thenReturn(now);
       when(currentTimeProvider.getNow()).thenReturn(CurrentTimeProvider.makeCalendar(1469051824));
 
       mockMvc = MockMvcBuilders

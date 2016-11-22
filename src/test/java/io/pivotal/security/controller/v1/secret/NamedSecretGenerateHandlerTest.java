@@ -4,7 +4,6 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedCertificateSecret;
@@ -16,15 +15,14 @@ import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -37,16 +35,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
 
-  @InjectMocks
-  NamedSecretGenerateHandler subject;
-
   @Autowired
-  NamedSecretGenerateHandler realSubject;
+  NamedSecretGenerateHandler subject;
 
   @Autowired
   ParseContext jsonPath;
@@ -54,22 +48,24 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
   @Autowired
   SecretDataService secretDataService;
 
-  @Mock
+  @MockBean
   PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
 
-  @Mock
+  @MockBean
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
-  @Mock
+  @MockBean
   SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
 
-  @Mock
+  @MockBean
   RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
 
-  @Mock
+  @MockBean
   DocumentContext documentContext;
 
   {
+    wireAndUnwire(this, false);
+
     describe("it verifies the secret type and secret creation for", () -> {
       beforeEach(injectMocks(this));
 
@@ -125,7 +121,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
     });
 
     describe("verifies full set of keys for", () -> {
-      wireAndUnwire(this);
 
       it("password", () -> {
             passwordGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\"," +

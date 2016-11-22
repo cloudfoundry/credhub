@@ -2,25 +2,24 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.fake.FakePasswordGenerator;
-import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.fake.FakeAuditLogService;
+import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.StringSecret;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -40,6 +39,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -52,38 +52,30 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerRegenerateTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
 
   @Autowired
-  @InjectMocks
   SecretsController subject;
 
-  @Spy
-  @Autowired
+  @SpyBean
   NamedSecretGenerateHandler namedSecretGenerateHandler;
 
-  @Spy
-  @Autowired
+  @SpyBean
   NamedSecretSetHandler namedSecretSetHandler;
 
-  @Spy
-  @Autowired
-  @InjectMocks
-  AuditLogService auditLogService;
+  @SpyBean
+  FakeAuditLogService auditLogService;
 
-  @Spy
-  @Autowired
+  @SpyBean
   SecretDataService secretDataService;
 
-  @Autowired
-  FakePasswordGenerator fakePasswordGenerator;
+  @MockBean
+  PasseyStringSecretGenerator passwordGenerator;
 
   private MockMvc mockMvc;
 
@@ -96,14 +88,13 @@ public class SecretsControllerRegenerateTest {
   private UUID uuid;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-
-      resetAuditLogMock();
+      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new StringSecret("password", "generated-secret"));
     });
 
     describe("regenerating a password", () -> {
@@ -146,7 +137,7 @@ public class SecretsControllerRegenerateTest {
 
         NamedPasswordSecret newPassword = argumentCaptor.getValue();
 
-        assertThat(newPassword.getValue(), equalTo(fakePasswordGenerator.getFakePassword()));
+        assertThat(newPassword.getValue(), equalTo("generated-secret"));
         assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
       });
 

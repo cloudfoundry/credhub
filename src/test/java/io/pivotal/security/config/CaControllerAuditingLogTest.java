@@ -2,24 +2,24 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.DatabaseAuditLogService;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.Filter;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -27,8 +27,6 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
-import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
-import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -39,13 +37,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import javax.servlet.Filter;
-
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(CredentialManagerApp.class)
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "CaControllerAuditLogTest", "NoExpirationSymmetricKeySecurityConfiguration"})
+@ActiveProfiles(value = {"unit-test", "CaControllerAuditLogTest", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class CaControllerAuditingLogTest {
 
   @Mock
@@ -64,9 +58,7 @@ public class CaControllerAuditingLogTest {
   private MockMvc mockMvc;
 
   {
-    wireAndUnwire(this);
-    cleanUpBeforeTests(this);
-    cleanUpAfterTests(this);
+    wireAndUnwire(this, true);
 
 
     beforeEach(() -> {

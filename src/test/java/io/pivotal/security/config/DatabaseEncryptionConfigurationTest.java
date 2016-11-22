@@ -2,17 +2,16 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedStringSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
 
 import java.util.Collections;
 import java.util.Map;
@@ -30,9 +29,8 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class DatabaseEncryptionConfigurationTest {
 
   @Autowired
@@ -47,7 +45,7 @@ public class DatabaseEncryptionConfigurationTest {
   private String secretName;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     describe("when a value has been written to the database", () -> {
       beforeEach(() -> {

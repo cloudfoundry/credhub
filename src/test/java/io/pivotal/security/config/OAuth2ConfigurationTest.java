@@ -2,13 +2,11 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -17,24 +15,20 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.lang.reflect.Field;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.when;
-
-import java.lang.reflect.Field;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "OAuth2ConfigurationTest"})
+@ActiveProfiles(value = {"unit-test", "OAuth2ConfigurationTest"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest
 public class OAuth2ConfigurationTest {
 
   @Autowired
@@ -43,12 +37,6 @@ public class OAuth2ConfigurationTest {
   @Autowired
   SecurityAutoConfiguration securityAutoConfiguration;
 
-  @Mock
-  GuidProvider guidProvider;
-
-  @Mock
-  ResourceServerProperties resourceServerProperties;
-
   @Autowired
   OAuth2Configuration oAuth2Configuration;
 
@@ -56,18 +44,16 @@ public class OAuth2ConfigurationTest {
   JwtAccessTokenConverter accessTokenConverter;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      when(guidProvider.getUUID()).thenReturn("my guid");
-
-      oAuth2Configuration.guidProvider = guidProvider;
+      oAuth2Configuration.init();
     });
 
-    it("should have obscure user/pass populated", () -> {
+    it("should have obscure user populated", () -> {
       oAuth2Configuration.init();
-      assertThat(oAuth2Configuration.securityProperties.getUser().getName(), equalTo("my guid"));
-      assertThat(oAuth2Configuration.securityProperties.getUser().getPassword(), equalTo("my guid"));
+      assertThat(oAuth2Configuration.securityProperties.getUser().getName().length(), equalTo(12));
+      assertThat(oAuth2Configuration.securityProperties.getUser().getName(), not(equalTo("user")));
       assertThat(oAuth2Configuration.securityProperties.getUser().getRole().size(), equalTo(0));
     });
 

@@ -3,23 +3,23 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.StringSecret;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.google.common.collect.ImmutableSet.of;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class PasswordGeneratorRequestTranslator implements RequestTranslator<NamedPasswordSecret>, SecretGeneratorRequestTranslator<PasswordGenerationParameters, NamedPasswordSecret> {
 
   @Autowired
-  SecretGenerator<PasswordGenerationParameters, StringSecret> stringSecretGenerator;
+  PasseyStringSecretGenerator stringSecretGenerator;
 
   @Override
   public PasswordGenerationParameters validRequestParameters(DocumentContext parsed, NamedPasswordSecret entity) {

@@ -2,26 +2,28 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.service.AuditRecordParameters;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -44,32 +46,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerFindTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
 
   @Autowired
-  @InjectMocks
   SecretsController subject;
 
-  @Spy
-  @Autowired
-  @InjectMocks
-  AuditLogService auditLogService;
+  @SpyBean
+  FakeAuditLogService auditLogService;
 
-  @Spy
-  @Autowired
+  @SpyBean
   SecretDataService secretDataService;
 
   private MockMvc mockMvc;
@@ -83,7 +74,7 @@ public class SecretsControllerFindTest {
   private ResultActions response;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {

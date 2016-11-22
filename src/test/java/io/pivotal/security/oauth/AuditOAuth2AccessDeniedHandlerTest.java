@@ -2,23 +2,20 @@ package io.pivotal.security.oauth;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
-import io.pivotal.security.util.InstantFactoryBean;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -42,10 +39,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"})
+@ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class AuditOAuth2AccessDeniedHandlerTest {
 
   @Autowired
@@ -55,19 +50,18 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   Filter springSecurityFilterChain;
 
   @Autowired
-  @InjectMocks
   AuditOAuth2AccessDeniedHandler subject;
 
-  @Mock
+  @MockBean
   OperationAuditRecordDataService operationAuditRecordDataService;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
 
-  @Mock
-  InstantFactoryBean instantFactoryBean;
+  @MockBean
+  CurrentTimeProvider currentTimeProvider;
 
-  @Mock
+  @MockBean
   SecurityEventsLogService securityEventsLogService;
 
   private MockHttpServletRequestBuilder get;
@@ -81,11 +75,11 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       now = Instant.now();
-      when(instantFactoryBean.getObject()).thenReturn(now);
+      when(currentTimeProvider.getInstant()).thenReturn(now);
 
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)

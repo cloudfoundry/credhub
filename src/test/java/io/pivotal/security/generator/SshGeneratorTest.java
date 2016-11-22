@@ -2,19 +2,21 @@ package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.SshSecret;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.data.auditing.DateTimeProvider;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
+
+import java.security.KeyPair;
+import java.security.Security;
+import java.security.interfaces.RSAPublicKey;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -27,26 +29,21 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.security.KeyPair;
-import java.security.Security;
-import java.security.interfaces.RSAPublicKey;
-
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles("unit-test")
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class SshGeneratorTest {
-  @InjectMocks
+
   @Autowired
   SshGenerator subject;
 
-  @Mock
-  DateTimeProvider dateTimeProvider;
+  @MockBean
+  CurrentTimeProvider currentTimeProvider;
 
-  @Mock
+  @MockBean
   RandomSerialNumberGenerator randomSerialNumberGenerator;
 
-  @Mock
+  @MockBean
   LibcryptoRsaKeyPairGenerator keyPairGeneratorMock;
 
   @Autowired
@@ -55,7 +52,7 @@ public class SshGeneratorTest {
   private KeyPair keyPair;
 
   {
-    wireAndUnwire(this);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       Security.addProvider(new BouncyCastleProvider());

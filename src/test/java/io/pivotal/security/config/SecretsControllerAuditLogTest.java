@@ -2,39 +2,35 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.CredentialManagerTestContextBootstrapper;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.DatabaseAuditLogService;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Spy;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.BootstrapWith;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.Filter;
+import java.util.Arrays;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.SpectrumHelper.cleanUpAfterTests;
-import static io.pivotal.security.helper.SpectrumHelper.cleanUpBeforeTests;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,44 +44,30 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-
-import javax.servlet.Filter;
-
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(CredentialManagerApp.class)
-@WebAppConfiguration
-@BootstrapWith(CredentialManagerTestContextBootstrapper.class)
-@ActiveProfiles({"unit-test", "SecretsControllerAuditLogTest", "NoExpirationSymmetricKeySecurityConfiguration"})
+@ActiveProfiles(profiles = {"unit-test", "AuditLogConfigurationTest", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerAuditLogTest {
 
   @Autowired
   WebApplicationContext applicationContext;
 
   @Autowired
-  @InjectMocks
   DatabaseAuditLogService auditLogService;
 
-  @Autowired
-  @InjectMocks
-  SecretsController secretsController;
-
-  @Mock
+  @MockBean
   OperationAuditRecordDataService operationAuditRecordDataService;
 
   @Autowired
   Filter springSecurityFilterChain;
 
-  @Autowired
-  @Spy
+  @SpyBean
   SecretDataService secretDataService;
 
   private MockMvc mockMvc;
 
   {
-    wireAndUnwire(this);
-    cleanUpBeforeTests(this);
-    cleanUpAfterTests(this);
+    wireAndUnwire(this, true);
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)

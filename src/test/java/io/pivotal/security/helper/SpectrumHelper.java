@@ -7,20 +7,16 @@ import io.pivotal.security.entity.JpaAuditingHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.flywaydb.core.Flyway;
-import org.mockito.InjectMocks;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.TestContextManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -32,8 +28,18 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 
 public class SpectrumHelper {
+
+  private static final String MOCK_BEAN_SIMPLE_NAME = MockBean.class.getSimpleName();
+  private static final String SPY_BEAN_SIMPLE_NAME = SpyBean.class.getSimpleName();
+
   public static <T extends Throwable> void itThrows(final String behavior, final Class<T> throwableClass, final Spectrum.Block block) {
     Spectrum.it(behavior, () -> {
       try {
@@ -61,8 +67,7 @@ public class SpectrumHelper {
     });
   }
 
-  public static void cleanUpBeforeTests(final Object testInstance) {
-    Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
+  private static void cleanUpBeforeTests(final Object testInstance, Supplier<MyTestContextManager> myTestContextManagerSupplier) {
     beforeEach(() -> {
       Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
       flyway.clean();
@@ -70,22 +75,15 @@ public class SpectrumHelper {
     });
   }
 
-  public static void cleanUpAfterTests(final Object testInstance) {
+  public static void wireAndUnwire(final Object testInstance, boolean cleanUpBeforeTests) {
     Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
+    if (cleanUpBeforeTests) {
+      cleanUpBeforeTests(testInstance, myTestContextManagerSupplier);
+    }
+    beforeEach(() -> myTestContextManagerSupplier.get().prepareTestInstance(testInstance));
+    afterEach(cleanMockBeans(testInstance, myTestContextManagerSupplier));
     afterEach(() -> {
-      Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
-      flyway.clean();
-      flyway.migrate();
-    });
-  }
-
-  public static void wireAndUnwire(final Object testInstance) {
-    Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
-    beforeEach(injectMocksAndBeans(testInstance, myTestContextManagerSupplier));
-    afterEach(cleanInjectedBeans(testInstance, myTestContextManagerSupplier));
-    afterEach(() -> {
-      DataSource dataSource = myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class);
-      dataSource.purge();
+      myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class).purge();
     });
   }
 
@@ -130,21 +128,16 @@ public class SpectrumHelper {
     return (epochMillis) -> { when(mockCurrentTimeProvider.getNow()).thenReturn(getNow(epochMillis)); };
   }
 
-  private static Spectrum.Block injectMocksAndBeans(Object testInstance, Supplier<MyTestContextManager> testContextManager) {
-    return () -> {
-      testContextManager.get().prepareTestInstance(testInstance);
-      injectMocks(testInstance).run();
-    };
-  }
-
-  private static Spectrum.Block cleanInjectedBeans(Object testInstance, Supplier<MyTestContextManager> testContextManager) {
+  private static Spectrum.Block cleanMockBeans(Object testInstance, Supplier<MyTestContextManager> testContextManager) {
     return () -> {
       Class klazz = testInstance.getClass();
       for (Field field : klazz.getDeclaredFields()) {
         for (Annotation annotation : field.getAnnotations()) {
-          if (annotation.annotationType().getSimpleName().equals(InjectMocks.class.getSimpleName())) {
+          String simpleName = annotation.annotationType().getSimpleName();
+          if (simpleName.equals(MOCK_BEAN_SIMPLE_NAME) || simpleName.equals(SPY_BEAN_SIMPLE_NAME)) {
             field.setAccessible(true);
-            testContextManager.get().autowireBean(field.get(testInstance));
+            Mockito.reset(field.get(testInstance));
+            field.set(testInstance, null);
           }
         }
       }

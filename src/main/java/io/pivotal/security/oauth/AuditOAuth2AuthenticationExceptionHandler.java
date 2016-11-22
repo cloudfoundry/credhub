@@ -4,7 +4,6 @@ import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.service.AuditRecordParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.InstantFactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -38,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
 
   @Autowired
-  InstantFactoryBean instantFactoryBean;
+  CurrentTimeProvider currentTimeProvider;
 
   @Autowired
   AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
@@ -54,9 +53,6 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
   @Autowired
   private MessageSource messageSource;
-
-  @Autowired
-  private CurrentTimeProvider currentTimeProvider;
 
   private JsonParser objectMapper = JsonParserFactory.create();
 
@@ -119,7 +115,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, Exception authException, AuditRecordParameters parameters, String requestMethod, int statusCode) {
     final Instant now;
     try {
-      now = instantFactoryBean.getObject();
+      now = currentTimeProvider.getInstant();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
