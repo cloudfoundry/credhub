@@ -23,6 +23,7 @@ import javax.servlet.Filter;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
@@ -107,6 +108,7 @@ public class CaControllerAuditingLogTest {
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
         OperationAuditRecord record = recordCaptor.getValue();
+        assertThat(record.getCredentialName(), equalTo("bar"));
         assertThat(record.getPath(), equalTo(API_V1_CA));
         assertThat(record.getOperation(), equalTo(CA_UPDATE.toString()));
         assertThat(record.getRequesterIp(), equalTo("12345"));
