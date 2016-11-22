@@ -89,8 +89,8 @@ public class CaController {
   @RequestMapping(path = "/**", method = RequestMethod.POST)
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
-
-    return auditLogService.performWithAuditing(new AuditRecordBuilder(null, request, authentication), () -> {
+    final String caName = parsedRequest.read("$.name");
+    return auditLogService.performWithAuditing(new AuditRecordBuilder(caName, request, authentication), () -> {
       return storeAuthority(parsedRequest, caGeneratorRequestTranslator);
     });
   }

@@ -137,6 +137,7 @@ public class CaControllerAuditingLogTest {
 
         OperationAuditRecord record = recordCaptor.getValue();
         assertThat(record.getPath(), equalTo(API_V1_CA));
+        assertThat(record.getCredentialName(), equalTo("baz"));
         assertThat(record.getOperation(), equalTo(CA_UPDATE.toString()));
         assertThat(record.getRequesterIp(), equalTo("12345"));
         assertThat(record.getXForwardedFor(), equalTo("3.3.3.3,4.4.4.4"));
