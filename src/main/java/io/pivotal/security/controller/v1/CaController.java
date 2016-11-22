@@ -164,13 +164,13 @@ public class CaController {
   }
 
   private ResponseEntity retrieveAuthorityWithAuditing(
-      String identifier,
+      final String identifier,
       Function<String, List<NamedCertificateAuthority>> finder,
       HttpServletRequest request,
       Authentication authentication,
       Function<List<CertificateAuthority>, ?> presenter) throws Exception {
     return auditLogService.performWithAuditing(
-        new AuditRecordBuilder(null, request, authentication),
+        new AuditRecordBuilder(identifier, request, authentication),
         () -> {
           List<NamedCertificateAuthority> namedAuthorityList = finder.apply(identifier);
 

@@ -71,7 +71,7 @@ public class CaControllerAuditingLogTest {
 
     describe("when a request to retrieve a CA is served", () -> {
       beforeEach(() -> {
-        doUnsuccessfulFetch("/api/v1/ca?name=bar&current=true");
+        doUnsuccessfulFetch("/api/v1/ca?name=qux&current=true");
       });
 
       it("logs an audit record for ca_access operation", () -> {
@@ -82,6 +82,7 @@ public class CaControllerAuditingLogTest {
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(API_V1_CA));
+        assertThat(auditRecord.getCredentialName(), equalTo("qux"));
         assertThat(auditRecord.getOperation(), equalTo(CA_ACCESS.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
