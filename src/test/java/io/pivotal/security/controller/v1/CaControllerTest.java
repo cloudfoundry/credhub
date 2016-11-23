@@ -7,7 +7,6 @@ import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
-import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
@@ -44,6 +43,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -71,6 +71,7 @@ public class CaControllerTest {
   private static final String CA_CREATION_REQUEST_JSON = "\"type\":\"root\",\"name\":\"%s\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
   private static final String CA_CREATION_RESPONSE_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
   private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_RESPONSE_JSON + "}";
+  private static final String UNIQUE_NAME = "my-folder/ca-identifier";
 
   @Autowired
   protected WebApplicationContext context;
@@ -89,11 +90,9 @@ public class CaControllerTest {
 
   @SpyBean
   FakeAuditLogService auditLogService;
-
   private MockMvc mockMvc;
-  private Consumer<Long> fakeTimeSetter;
 
-  private String uniqueName;
+  private Consumer<Long> fakeTimeSetter;
   private String urlPath;
   private UUID uuid;
   private NamedCertificateAuthority fakeGeneratedCa;
@@ -110,10 +109,9 @@ public class CaControllerTest {
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
       fakeTimeSetter.accept(FROZEN_TIME_INSTANT.toEpochMilli());
-      uniqueName = "my-folder/ca-identifier";
 
       uuid = UUID.randomUUID();
-      fakeGeneratedCa = new NamedCertificateAuthority(uniqueName)
+      fakeGeneratedCa = new NamedCertificateAuthority(UNIQUE_NAME)
           .setType("root")
           .setCertificate("my_cert")
           .setPrivateKey("private_key")
@@ -132,7 +130,7 @@ public class CaControllerTest {
         });
 
         it("can generate a ca", () -> {
-          String requestJson = String.format("{\"type\":\"root\",\"name\":\"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", uniqueName);
+          String requestJson = String.format("{\"type\":\"root\",\"name\":\"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", UNIQUE_NAME);
 
           mockMvc.perform(post("/api/v1/ca")
               .content(requestJson)
@@ -143,7 +141,7 @@ public class CaControllerTest {
         });
 
         it("saves the generated ca in the DB", () -> {
-          String requestJson = String.format("{\"type\":\"root\",\"name\":\"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", uniqueName);
+          String requestJson = String.format("{\"type\":\"root\",\"name\":\"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", UNIQUE_NAME);
           mockMvc.perform(post("/api/v1/ca")
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8));
@@ -153,12 +151,30 @@ public class CaControllerTest {
           verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
 
           NamedCertificateAuthority savedCa = argumentCaptor.getValue();
-          assertThat(savedCa.getName(), equalTo(uniqueName));
+          assertThat(savedCa.getName(), equalTo(UNIQUE_NAME));
           assertThat(savedCa.getCertificate(), equalTo("my_cert"));
         });
 
+        it("returns an error if name is omitted from request body", () -> {
+          String requestJson = "{\"type\":\"root\",\"parameters\":{\"common_name\":\"test-ca\"}}";
+          mockMvc.perform(post("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8))
+              .andExpect(status().isBadRequest())
+              .andExpect(content().json("{\"error\":\"A CA name must be provided. Please validate your input and retry your request.\"}"));
+        });
+
+        it("returns an error if name is empty in request body", () -> {
+          String requestJson = "{\"type\":\"root\",\"name\":\"\",\"parameters\":{\"common_name\":\"test-ca\"}}";
+          mockMvc.perform(post("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8))
+              .andExpect(status().isBadRequest())
+              .andExpect(content().json("{\"error\":\"A CA name must be provided. Please validate your input and retry your request.\"}"));
+        });
+
         it("creates an audit entry", () -> {
-          String requestJson = String.format("{\"type\":\"root\",\"name\": \"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", uniqueName);
+          String requestJson = String.format("{\"type\":\"root\",\"name\": \"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}", UNIQUE_NAME);
           mockMvc.perform(post("/api/v1/ca")
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8));
@@ -176,14 +192,15 @@ public class CaControllerTest {
           setUpCaSaving();
 
           String requestJson =
-            "{" +
-              "\"type\":\"root\"," +
-              "\"parameters\":{" +
-                "\"common_name\":\"test-ca\"" +
-              "}" +
-            "}";
+              "{" +
+                  "\"name\":\"" + UNIQUE_NAME + "\"," +
+                  "\"type\":\"root\"," +
+                  "\"parameters\":{" +
+                  "\"common_name\":\"test-ca\"" +
+                  "}" +
+                  "}";
 
-          RequestBuilder requestBuilder = post("/api/v1/ca/" + uniqueName)
+          RequestBuilder requestBuilder = post("/api/v1/ca/" + UNIQUE_NAME)
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -240,14 +257,14 @@ public class CaControllerTest {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
           doReturn(
-              new NamedCertificateAuthority(uniqueName)
+              new NamedCertificateAuthority(UNIQUE_NAME)
                   .setType("root")
                   .setCertificate("my_cert")
                   .setPrivateKey("private_key")
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
           ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
-          String requestJson = String.format("{" + CA_CREATION_REQUEST_JSON + "}", uniqueName);
+          String requestJson = String.format("{" + CA_CREATION_REQUEST_JSON + "}", UNIQUE_NAME);
           RequestBuilder requestBuilder = put("/api/v1/ca")
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
@@ -269,6 +286,26 @@ public class CaControllerTest {
           assertThat(actual.getCertificate(), equalTo("my_cert"));
         });
 
+        it("returns an error if name is omitted from request body", () -> {
+          String requestJson = "{\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
+          RequestBuilder requestBuilder = put("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8);
+          response = mockMvc.perform(requestBuilder)
+              .andExpect(status().isBadRequest())
+              .andExpect(content().json("{\"error\":\"A CA name must be provided. Please validate your input and retry your request.\"}"));
+        });
+
+        it("returns an error if name is empty in request body", () -> {
+          String requestJson = String.format("{" + CA_CREATION_REQUEST_JSON + "}", "");
+          RequestBuilder requestBuilder = put("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8);
+          response = mockMvc.perform(requestBuilder)
+              .andExpect(status().isBadRequest())
+              .andExpect(content().json("{\"error\":\"A CA name must be provided. Please validate your input and retry your request.\"}"));
+        });
+
         it("creates an audit entry", () -> {
           ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
           verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
@@ -282,14 +319,14 @@ public class CaControllerTest {
           setUpCaSaving();
 
           String requestJson =
-            "{" +
-              "\"type\":\"root\"," +
-              "\"name\":\"" + uniqueName + "\"," +
-              "\"value\":{" +
-                "\"certificate\":\"new-certificate\"," +
-                "\"private_key\":\"new-private-key\"" +
-              "}" +
-            "}";
+              "{" +
+                  "\"type\":\"root\"," +
+                  "\"name\":\"" + UNIQUE_NAME + "\"," +
+                  "\"value\":{" +
+                  "\"certificate\":\"new-certificate\"," +
+                  "\"private_key\":\"new-private-key\"" +
+                  "}" +
+                  "}";
 
           RequestBuilder requestBuilder = put("/api/v1/ca")
               .content(requestJson)
@@ -301,14 +338,14 @@ public class CaControllerTest {
         it("should succeed", () -> {
           String expectedJson =
               "{" +
-                "\"value\":{" +
+                  "\"value\":{" +
                   "\"certificate\":\"new-certificate\"," +
                   "\"private_key\":\"new-private-key\"" +
-                "}," +
-                "\"type\":\"root\"," +
-                "\"id\":\"" + uuid.toString() + "\"," +
-                UPDATED_AT_JSON +
-              "}";
+                  "}," +
+                  "\"type\":\"root\"," +
+                  "\"id\":\"" + uuid.toString() + "\"," +
+                  UPDATED_AT_JSON +
+                  "}";
           response
               .andExpect(status().isOk())
               .andExpect(content().json(expectedJson, true));
@@ -353,10 +390,6 @@ public class CaControllerTest {
         requestWithError("{\"type\":\"root\",\"name\":\"error4\"}");
       });
 
-      it("put with no name returns an error", () -> {
-        requestWithError("{\"type\":\"root\"}");
-      });
-
       it("put cert with garbage returns an error", () -> {
         String requestJson = "{\"value\":\"\",\"name\":\"error5\"}";
 
@@ -372,21 +405,21 @@ public class CaControllerTest {
     describe("getting a ca", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        olderStoredCa = new NamedCertificateAuthority(uniqueName)
+        olderStoredCa = new NamedCertificateAuthority(UNIQUE_NAME)
             .setType("root")
             .setCertificate("my-certificate-old")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setUpdatedAt(OLDER_FROZEN_TIME_INSTANT);
         uuid = UUID.randomUUID();
-        storedCa = new NamedCertificateAuthority(uniqueName)
+        storedCa = new NamedCertificateAuthority(UNIQUE_NAME)
             .setType("root")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(newArrayList(storedCa, olderStoredCa)).when(namedCertificateAuthorityDataService).findAllByName(eq(uniqueName));
-        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecent(eq(uniqueName));
+        doReturn(newArrayList(storedCa, olderStoredCa)).when(namedCertificateAuthorityDataService).findAllByName(eq(UNIQUE_NAME));
+        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecent(eq(UNIQUE_NAME));
       });
 
       describe("by name", () -> {
@@ -414,7 +447,7 @@ public class CaControllerTest {
                 "]" +
                 "}";
 
-            mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
+            mockMvc.perform(get("/api/v1/ca?name=" + UNIQUE_NAME))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(expectedJsonWithManyCAs, true));
@@ -433,7 +466,7 @@ public class CaControllerTest {
                 "}]" +
                 "}";
 
-            String requestUrl = String.format("/api/v1/ca?name=%s&current=true", uniqueName);
+            String requestUrl = String.format("/api/v1/ca?name=%s&current=true", UNIQUE_NAME);
             mockMvc.perform(get(requestUrl))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -463,7 +496,7 @@ public class CaControllerTest {
                 "]" +
                 "}";
 
-            String requestUrl = String.format("/api/v1/ca?name=%s&current=false", uniqueName);
+            String requestUrl = String.format("/api/v1/ca?name=%s&current=false", UNIQUE_NAME);
             mockMvc.perform(get(requestUrl))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -493,7 +526,7 @@ public class CaControllerTest {
                 "]" +
                 "}";
 
-            String requestUrl = String.format("/api/v1/ca?name=%s&current=", uniqueName);
+            String requestUrl = String.format("/api/v1/ca?name=%s&current=", UNIQUE_NAME);
             mockMvc.perform(get(requestUrl))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -507,7 +540,7 @@ public class CaControllerTest {
           });
 
           it("persists an audit entry when getting a ca", () -> {
-            mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
+            mockMvc.perform(get("/api/v1/ca?name=" + UNIQUE_NAME))
                 .andExpect(status().isOk());
             ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
             verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
@@ -520,8 +553,8 @@ public class CaControllerTest {
       describe("when there are previous versions of a named key", () -> {
         it("returns all the versions", () -> {
           doReturn(newArrayList(fakeGeneratedCa, storedCa))
-              .when(namedCertificateAuthorityDataService).findAllByName(eq(uniqueName));
-          mockMvc.perform(get("/api/v1/ca?name=" + uniqueName))
+              .when(namedCertificateAuthorityDataService).findAllByName(eq(UNIQUE_NAME));
+          mockMvc.perform(get("/api/v1/ca?name=" + UNIQUE_NAME))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.data").value(hasSize(2)))
               .andExpect(jsonPath("$.data[0].value.certificate").value("my_cert"))
@@ -532,7 +565,7 @@ public class CaControllerTest {
 
     describe("by id", () -> {
       beforeEach(() -> {
-        storedCa = new NamedCertificateAuthority(uniqueName)
+        storedCa = new NamedCertificateAuthority(UNIQUE_NAME)
             .setType("root")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
@@ -579,7 +612,7 @@ public class CaControllerTest {
 
     it("returns bad request for PUT with invalid type", () -> {
       String uuid = UUID.randomUUID().toString();
-      String requestJson = "{\"type\":" + uuid + ",\"name\":\"" + uniqueName + "\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
+      String requestJson = "{\"type\":" + uuid + ",\"name\":\"" + UNIQUE_NAME + "\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
       RequestBuilder requestBuilder = put("/api/v1/ca")
@@ -593,7 +626,7 @@ public class CaControllerTest {
     });
 
     it("returns bad request for generate POST with invalid type", () -> {
-      String requestJson = "{\"name\":\"" + uniqueName + "\",\"type\":\"invalid-type\"}";
+      String requestJson = "{\"name\":\"" + UNIQUE_NAME + "\",\"type\":\"invalid-type\"}";
 
       String invalidTypeJson = "{\"error\": \"The request does not include a valid type. Please validate your input and retry your request.\"}";
       RequestBuilder requestBuilder = post("/api/v1/ca")
@@ -609,7 +642,7 @@ public class CaControllerTest {
     it("get returns 404 when not found", () -> {
       String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
 
-      RequestBuilder requestBuilder = get("/api/v1/ca/" + uniqueName)
+      RequestBuilder requestBuilder = get("/api/v1/ca/" + UNIQUE_NAME)
           .contentType(MediaType.APPLICATION_JSON_UTF8);
 
       mockMvc.perform(requestBuilder)
@@ -620,7 +653,7 @@ public class CaControllerTest {
   }
 
   private void requestWithError(String requestJson) throws Exception {
-    String notFoundJson = "{\"error\": \"All keys are required to set a CA. Please validate your input and retry your request.\"}";
+    String notFoundJson = "{\"error\":\"All keys are required to set a CA. Please validate your input and retry your request.\"}";
 
     RequestBuilder requestBuilder = put("/api/v1/ca")
         .content(requestJson)
@@ -633,7 +666,7 @@ public class CaControllerTest {
   }
 
   private void setUpExistingCa() {
-    originalCa = spy(new NamedCertificateAuthority(uniqueName));
+    originalCa = spy(new NamedCertificateAuthority(UNIQUE_NAME));
     originalCa.setUuid(UUID.randomUUID());
     originalCa.setCertificate("original-certificate");
 

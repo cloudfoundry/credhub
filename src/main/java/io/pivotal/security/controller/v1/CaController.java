@@ -10,6 +10,7 @@ import io.pivotal.security.mapper.CASetterRequestTranslator;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.util.StringUtil.isBlank;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -80,6 +82,9 @@ public class CaController {
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
     final String caName = parsedRequest.read("$.name");
+    if(isBlank(caName)) {
+      return createErrorResponse("error.ca_name_missing", HttpStatus.BAD_REQUEST);
+    }
     return auditLogService.performWithAuditing(new AuditRecordBuilder(caName, request, authentication), () -> {
       return storeAuthority(parsedRequest, caSetterRequestTranslator);
     });
@@ -90,6 +95,9 @@ public class CaController {
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonPath.parse(requestBody);
     final String caName = parsedRequest.read("$.name");
+    if(isBlank(caName)) {
+      return createErrorResponse("error.ca_name_missing", HttpStatus.BAD_REQUEST);
+    }
     return auditLogService.performWithAuditing(new AuditRecordBuilder(caName, request, authentication), () -> {
       return storeAuthority(parsedRequest, caGeneratorRequestTranslator);
     });

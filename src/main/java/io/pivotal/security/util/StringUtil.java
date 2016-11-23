@@ -22,4 +22,8 @@ public class StringUtil {
   public static String emptyToNull(String val) {
     return isEmpty(val) ? null : val;
   }
+
+  public static boolean isBlank(String caName) {
+    return caName == null || caName.isEmpty();
+  }
 }
