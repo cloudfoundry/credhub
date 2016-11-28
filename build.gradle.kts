@@ -112,6 +112,13 @@ getTask<BootRunTask>("bootRun").apply {
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev")
 }
 
+task("cleanAndAssemble") {
+    dependsOn("clean")
+    dependsOn("assemble")
+}
+
+getTask<Task>("assemble").mustRunAfter("clean")
+
 getTask<Test>("test").apply {
     val jacoco = extensions.findByName("jacoco") as JacocoTaskExtension
     jacoco.apply {
