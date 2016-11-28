@@ -23,6 +23,9 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -39,8 +42,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.time.Instant;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
@@ -156,22 +157,23 @@ public class DatabaseAuditLogServiceTest {
 
       describe("when the action fails with an exception", () -> {
         describe("when the audit succeeds", () -> {
-          Spectrum.Value<Object> exception = Spectrum.value();
+          AtomicReference<Exception> exception = new AtomicReference<>();
           RuntimeException re = new RuntimeException("controller method failed");
 
           beforeEach(() -> {
+            exception.set(null);
             try {
               subject.performWithAuditing(auditRecordBuilder, () -> {
                 secretRepository.save(new NamedValueSecret("keyName", "value"));
                 throw re;
               });
             } catch (Exception e) {
-              exception.value = e;
+              exception.set(e);
             }
           });
 
           it("leaves the 500 response from the controller alone", () -> {
-            assertThat(exception.value, equalTo(re));
+            assertThat(exception.get(), equalTo(re));
           });
 
           it("logs failed audit entry", () -> {

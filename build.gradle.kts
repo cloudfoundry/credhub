@@ -78,7 +78,7 @@ dependencies {
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.skyscreamer:jsonassert")
     testCompile("com.jayway.jsonpath:json-path-assert:2.2.0")
-    testCompile("com.greghaskins:spectrum:0.7.1")
+    testCompile("com.greghaskins:spectrum:1.0.0")
     testCompile("org.apache.commons:commons-lang3:3.4")
 }
 
