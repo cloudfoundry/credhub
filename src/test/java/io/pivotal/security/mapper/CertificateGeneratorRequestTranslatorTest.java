@@ -6,7 +6,7 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.BCCertificateGenerator;
@@ -66,7 +66,7 @@ public class CertificateGeneratorRequestTranslatorTest {
   CertificateGeneratorRequestTranslator subject;
 
   @SpyBean
-  NamedCertificateAuthorityDataService certificateAuthorityDataService;
+  CertificateAuthorityDataService certificateAuthorityDataService;
 
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;

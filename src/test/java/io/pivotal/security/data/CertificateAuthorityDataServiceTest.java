@@ -3,7 +3,7 @@ package io.pivotal.security.data;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.repository.NamedCertificateAuthorityRepository;
+import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class NamedCertificateAuthorityDataServiceTest {
+public class CertificateAuthorityDataServiceTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
 
@@ -41,12 +41,12 @@ public class NamedCertificateAuthorityDataServiceTest {
   EncryptionService encryptionService;
 
   @Autowired
-  NamedCertificateAuthorityRepository namedCertificateAuthorityRepository;
+  CertificateAuthorityRepository certificateAuthorityRepository;
 
   private Instant frozenTime = Instant.ofEpochMilli(1400000000123L);
   private Consumer<Long> fakeTimeSetter;
 
-  private NamedCertificateAuthorityDataService subject;
+  private CertificateAuthorityDataService subject;
   private NamedCertificateAuthority savedSecret;
 
   {
@@ -55,7 +55,7 @@ public class NamedCertificateAuthorityDataServiceTest {
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      subject = new NamedCertificateAuthorityDataService(namedCertificateAuthorityRepository);
+      subject = new CertificateAuthorityDataService(certificateAuthorityRepository);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
     });
@@ -99,7 +99,7 @@ public class NamedCertificateAuthorityDataServiceTest {
 
         // The Java UUID class doesn't let us convert to UUID type 4... so
         // we must rely on Hibernate to do that for us.
-        certificateAuthorities = namedCertificateAuthorityRepository.findAll();
+        certificateAuthorities = certificateAuthorityRepository.findAll();
         UUID actualUuid = certificateAuthorities.get(0).getUuid();
         assertNotNull(actualUuid);
         assertThat(actualUuid, equalTo(expected.getUuid()));
@@ -155,7 +155,7 @@ public class NamedCertificateAuthorityDataServiceTest {
           certificateAuthority.setCertificate(newCertificateValue);
           certificateAuthority = subject.save(certificateAuthority);
 
-          List<NamedCertificateAuthority> certificateAuthorities = namedCertificateAuthorityRepository.findAll();
+          List<NamedCertificateAuthority> certificateAuthorities = certificateAuthorityRepository.findAll();
 
           assertThat(certificateAuthorities.size(), equalTo(1));
           NamedCertificateAuthority actual = certificateAuthorities.get(0);

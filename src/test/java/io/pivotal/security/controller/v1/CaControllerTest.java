@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.BCCertificateGenerator;
@@ -43,7 +43,6 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -77,7 +76,7 @@ public class CaControllerTest {
   protected WebApplicationContext context;
 
   @MockBean
-  private NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+  private CertificateAuthorityDataService certificateAuthorityDataService;
 
   @Autowired
   private CaController caController;
@@ -126,7 +125,7 @@ public class CaControllerTest {
               .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
           doReturn(
               fakeGeneratedCa
-          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+          ).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
         });
 
         it("can generate a ca", () -> {
@@ -148,7 +147,7 @@ public class CaControllerTest {
 
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
-          verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+          verify(certificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
 
           NamedCertificateAuthority savedCa = argumentCaptor.getValue();
           assertThat(savedCa.getName(), equalTo(UNIQUE_NAME));
@@ -226,7 +225,7 @@ public class CaControllerTest {
           ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
           verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
-          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
+          verify(certificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
 
           NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
           assertNotNull(newCertificateAuthority.getUuid());
@@ -263,7 +262,7 @@ public class CaControllerTest {
                   .setPrivateKey("private_key")
                   .setUpdatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
-          ).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+          ).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
           String requestJson = String.format("{" + CA_CREATION_REQUEST_JSON + "}", UNIQUE_NAME);
           RequestBuilder requestBuilder = put("/api/v1/ca")
               .content(requestJson)
@@ -279,7 +278,7 @@ public class CaControllerTest {
 
         it("writes the new root ca to the DB", () -> {
           ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
-          verify(namedCertificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+          verify(certificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
 
           NamedCertificateAuthority actual = argumentCaptor.getValue();
 
@@ -356,7 +355,7 @@ public class CaControllerTest {
           ArgumentCaptor<NamedCertificateAuthority> saveArgumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
 
           verify(originalCa, times(1)).copyInto(copyArgumentCaptor.capture());
-          verify(namedCertificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
+          verify(certificateAuthorityDataService, times(1)).save(saveArgumentCaptor.capture());
 
           NamedCertificateAuthority newCertificateAuthority = saveArgumentCaptor.getValue();
           assertNotNull(newCertificateAuthority.getUuid());
@@ -418,8 +417,8 @@ public class CaControllerTest {
             .setPrivateKey("my-priv")
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
-        doReturn(newArrayList(storedCa, olderStoredCa)).when(namedCertificateAuthorityDataService).findAllByName(eq(UNIQUE_NAME));
-        doReturn(storedCa).when(namedCertificateAuthorityDataService).findMostRecent(eq(UNIQUE_NAME));
+        doReturn(newArrayList(storedCa, olderStoredCa)).when(certificateAuthorityDataService).findAllByName(eq(UNIQUE_NAME));
+        doReturn(storedCa).when(certificateAuthorityDataService).findMostRecent(eq(UNIQUE_NAME));
       });
 
       describe("by name", () -> {
@@ -553,7 +552,7 @@ public class CaControllerTest {
       describe("when there are previous versions of a named key", () -> {
         it("returns all the versions", () -> {
           doReturn(newArrayList(fakeGeneratedCa, storedCa))
-              .when(namedCertificateAuthorityDataService).findAllByName(eq(UNIQUE_NAME));
+              .when(certificateAuthorityDataService).findAllByName(eq(UNIQUE_NAME));
           mockMvc.perform(get("/api/v1/ca?name=" + UNIQUE_NAME))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.data").value(hasSize(2)))
@@ -572,7 +571,7 @@ public class CaControllerTest {
             .setUuid(uuid)
             .setUpdatedAt(FROZEN_TIME_INSTANT);
         doReturn(storedCa)
-            .when(namedCertificateAuthorityDataService)
+            .when(certificateAuthorityDataService)
             .findByUuid(eq("my-uuid"));
 
         MockHttpServletRequestBuilder get = get("/api/v1/ca/my-uuid")
@@ -671,7 +670,7 @@ public class CaControllerTest {
     originalCa.setCertificate("original-certificate");
 
     doReturn(originalCa)
-        .when(namedCertificateAuthorityDataService).findMostRecent(anyString());
+        .when(certificateAuthorityDataService).findMostRecent(anyString());
   }
 
   private void setUpCaSaving() {
@@ -684,6 +683,6 @@ public class CaControllerTest {
         certificateAuthority.setUuid(uuid);
       }
       return certificateAuthority.setPrivateKey("new-private-key");
-    }).when(namedCertificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+    }).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
   }
 }

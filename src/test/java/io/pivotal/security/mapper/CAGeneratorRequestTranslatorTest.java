@@ -5,7 +5,7 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -47,7 +47,7 @@ public class CAGeneratorRequestTranslatorTest {
   BCCertificateGenerator certificateGenerator;
 
   @MockBean
-  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+  CertificateAuthorityDataService certificateAuthorityDataService;
 
   @Autowired
   CertificateSecretParametersFactory parametersFactory;

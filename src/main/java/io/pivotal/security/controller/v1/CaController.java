@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
@@ -10,7 +10,6 @@ import io.pivotal.security.mapper.CASetterRequestTranslator;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -30,9 +29,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.util.StringUtil.isBlank;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -40,8 +38,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.util.StringUtil.isBlank;
 
 @RestController
 @RequestMapping(path = CaController.API_V1_CA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -53,7 +51,7 @@ public class CaController {
   ParseContext jsonPath;
 
   @Autowired
-  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+  CertificateAuthorityDataService certificateAuthorityDataService;
 
   private MessageSourceAccessor messageSourceAccessor;
 
@@ -107,7 +105,7 @@ public class CaController {
     String caPath = parsedRequest.read("$.name");
 
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
-    NamedCertificateAuthority mostRecentCA = namedCertificateAuthorityDataService.findMostRecent(caPath);
+    NamedCertificateAuthority mostRecentCA = certificateAuthorityDataService.findMostRecent(caPath);
 
     if (mostRecentCA != null) {
       mostRecentCA.copyInto(namedCertificateAuthority);
@@ -120,7 +118,7 @@ public class CaController {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     }
 
-    NamedCertificateAuthority saved = namedCertificateAuthorityDataService.save(namedCertificateAuthority);
+    NamedCertificateAuthority saved = certificateAuthorityDataService.save(namedCertificateAuthority);
 
     return new ResponseEntity<>(CertificateAuthority.fromEntity(saved), HttpStatus.OK);
   }
@@ -130,7 +128,7 @@ public class CaController {
   public ResponseEntity getById(HttpServletRequest request, Authentication authentication) throws Exception {
     return retrieveAuthorityWithAuditing(
         caPath(request),
-        findAsList(namedCertificateAuthorityDataService::findByUuid),
+        findAsList(certificateAuthorityDataService::findByUuid),
         request,
         authentication,
         (caList) -> caList.get(0));
@@ -158,9 +156,9 @@ public class CaController {
 
   private Function<String, List<NamedCertificateAuthority>> getFinder(Boolean limitResults) {
     if (limitResults) {
-      return findAsList(namedCertificateAuthorityDataService::findMostRecent);
+      return findAsList(certificateAuthorityDataService::findMostRecent);
     } else {
-      return namedCertificateAuthorityDataService::findAllByName;
+      return certificateAuthorityDataService::findAllByName;
     }
   }
 

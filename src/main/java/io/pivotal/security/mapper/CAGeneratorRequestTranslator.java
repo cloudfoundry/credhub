@@ -2,7 +2,7 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.view.CertificateAuthority;
@@ -24,7 +24,7 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
   CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
 
   @Autowired
-  public NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+  public CertificateAuthorityDataService certificateAuthorityDataService;
 
   @Override
   public void populateEntityFromJson(NamedCertificateAuthority namedCA, DocumentContext documentContext) {

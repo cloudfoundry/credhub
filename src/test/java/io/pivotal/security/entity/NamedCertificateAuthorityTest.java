@@ -3,7 +3,7 @@ package io.pivotal.security.entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -31,7 +31,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 public class NamedCertificateAuthorityTest {
 
   @Autowired
-  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+  CertificateAuthorityDataService certificateAuthorityDataService;
 
   @Autowired
   EncryptionService encryptionService;
@@ -77,13 +77,13 @@ public class NamedCertificateAuthorityTest {
 
     it("updates the secret value with the same name when overwritten", () -> {
       subject.setPrivateKey("first");
-      namedCertificateAuthorityDataService.save(subject);
+      certificateAuthorityDataService.save(subject);
       byte[] firstNonce = subject.getNonce();
 
       subject.setPrivateKey("second");
-      namedCertificateAuthorityDataService.save(subject);
+      certificateAuthorityDataService.save(subject);
 
-      NamedCertificateAuthority second = namedCertificateAuthorityDataService.findMostRecent(subject.getName());
+      NamedCertificateAuthority second = certificateAuthorityDataService.findMostRecent(subject.getName());
       assertThat(second.getPrivateKey(), equalTo("second"));
       assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
     });
@@ -109,23 +109,23 @@ public class NamedCertificateAuthorityTest {
 
     it("allows a null private key", () -> {
       subject.setPrivateKey(null);
-      namedCertificateAuthorityDataService.save(subject);
-      NamedCertificateAuthority secret = namedCertificateAuthorityDataService.findMostRecent(subject.getName());
+      certificateAuthorityDataService.save(subject);
+      NamedCertificateAuthority secret = certificateAuthorityDataService.findMostRecent(subject.getName());
       assertThat(secret.getPrivateKey(), equalTo(null));
       assertThat(secret.getNonce(), equalTo(null));
     });
 
     it("allows an empty private key", () -> {
       subject.setPrivateKey("");
-      namedCertificateAuthorityDataService.save(subject);
-      NamedCertificateAuthority secret = namedCertificateAuthorityDataService.findMostRecent(subject.getName());
+      certificateAuthorityDataService.save(subject);
+      NamedCertificateAuthority secret = certificateAuthorityDataService.findMostRecent(subject.getName());
       assertThat(secret.getPrivateKey(), equalTo(""));
     });
 
     it("generateView tells HSM to decrypt the private key", () -> {
       subject.setPrivateKey("abc");
-      namedCertificateAuthorityDataService.save(subject);
-      NamedCertificateAuthority secret = namedCertificateAuthorityDataService.findMostRecent(subject.getName());
+      certificateAuthorityDataService.save(subject);
+      NamedCertificateAuthority secret = certificateAuthorityDataService.findMostRecent(subject.getName());
       assertThat(secret.getPrivateKey(), equalTo("abc"));
     });
   }

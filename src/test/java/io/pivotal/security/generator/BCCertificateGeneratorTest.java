@@ -3,7 +3,7 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.data.NamedCertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -71,7 +71,7 @@ public class BCCertificateGeneratorTest {
   FakeKeyPairGenerator fakeKeyPairGenerator;
 
   @MockBean
-  NamedCertificateAuthorityDataService namedCertificateAuthorityDataService;
+  CertificateAuthorityDataService certificateAuthorityDataService;
 
   @MockBean
   CurrentTimeProvider currentTimeProvider;
@@ -156,7 +156,7 @@ public class BCCertificateGeneratorTest {
       beforeEach(() -> {
         childCertificateKeyPair = fakeKeyPairGenerator.generate();
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
-        when(namedCertificateAuthorityDataService.findMostRecent("default")).thenReturn(defaultNamedCA);
+        when(certificateAuthorityDataService.findMostRecent("default")).thenReturn(defaultNamedCA);
         childCertificateHolder = generateChildCertificateSignedByCa(
             childCertificateKeyPair, caKeyPair.getPrivate(), caDn);
         childCertificate = new JcaX509CertificateConverter()
