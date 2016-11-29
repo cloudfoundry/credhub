@@ -8,11 +8,8 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.time.Instant;
-import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -20,9 +17,12 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static org.exparity.hamcrest.BeanMatchers.theSameAs;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.time.Instant;
+import java.util.List;
+
 @RunWith(Spectrum.class)
-@SpringApplicationConfiguration(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 public class FindResultsTest {
   private FindCredentialResults expectedResults;
 
