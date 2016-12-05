@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -33,6 +34,7 @@ import java.util.function.Supplier;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
@@ -68,6 +70,7 @@ public class CaControllerTest {
   private static final String UPDATED_AT_JSON = "\"updated_at\":\"" + FROZEN_TIME_INSTANT.toString() + "\"";
   private static final String OLDER_UPDATED_AT_JSON = "\"updated_at\":\"" + OLDER_FROZEN_TIME_INSTANT.toString() + "\"";
   private static final String CA_CREATION_REQUEST_JSON = "\"type\":\"root\",\"name\":\"%s\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
+  private static final String ANOTHER_CA_CREATION_REQUEST_JSON = "\"type\":\"root\",\"name\":\"%s\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"different_private_key\"}";
   private static final String CA_CREATION_RESPONSE_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
   private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_RESPONSE_JSON + "}";
   private static final String UNIQUE_NAME = "my-folder/ca-identifier";
@@ -77,9 +80,6 @@ public class CaControllerTest {
 
   @MockBean
   private CertificateAuthorityDataService certificateAuthorityDataService;
-
-  @Autowired
-  private CaController caController;
 
   @Autowired
   CAGeneratorRequestTranslator caGeneratorRequestTranslator;
@@ -92,7 +92,6 @@ public class CaControllerTest {
   private MockMvc mockMvc;
 
   private Consumer<Long> fakeTimeSetter;
-  private String urlPath;
   private UUID uuid;
   private NamedCertificateAuthority fakeGeneratedCa;
 
@@ -100,6 +99,8 @@ public class CaControllerTest {
   private NamedCertificateAuthority originalCa;
   private NamedCertificateAuthority olderStoredCa;
   private NamedCertificateAuthority storedCa;
+
+  private ResultActions[] responses;
 
   {
     wireAndUnwire(this, false);
@@ -249,6 +250,65 @@ public class CaControllerTest {
           .andExpect(status().isBadRequest())
           .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
           .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'bogus'. Please update or remove this parameter and retry your request."));
+    });
+
+    describe("setting CAs in parallel", () -> {
+      beforeEach(()->{
+        responses = new ResultActions[2];
+        uuid = UUID.randomUUID();
+
+        doAnswer(invocation -> {
+          NamedCertificateAuthority certificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
+          return new NamedCertificateAuthority(certificateAuthority.getName())
+              .setType("root")
+              .setCertificate("my_cert")
+              .setPrivateKey(certificateAuthority.getPrivateKey())
+              .setUpdatedAt(FROZEN_TIME_INSTANT)
+              .setUuid(uuid);
+        }).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+
+        Thread thread1 = new Thread("thread 1") {
+          @Override
+          public void run() {
+            String requestJson = String.format("{" + CA_CREATION_REQUEST_JSON + "}", UNIQUE_NAME + "1");
+            RequestBuilder requestBuilder = put("/api/v1/ca")
+                .content(requestJson)
+                .contentType(MediaType.APPLICATION_JSON_UTF8);
+
+            try {
+              responses[0] = mockMvc.perform(requestBuilder);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          }
+        };
+
+        Thread thread2 = new Thread("thread 2") {
+          @Override
+          public void run() {
+            String requestJson = String.format("{" + ANOTHER_CA_CREATION_REQUEST_JSON + "}", UNIQUE_NAME + "2");
+            RequestBuilder requestBuilder = put("/api/v1/ca")
+                .content(requestJson)
+                .contentType(MediaType.APPLICATION_JSON_UTF8);
+
+            try {
+              responses[1] = mockMvc.perform(requestBuilder);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
+          }
+        };
+
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+      });
+
+      it("test", () -> {
+        responses[0].andExpect(jsonPath("$.value.private_key").value("private_key"));
+        responses[1].andExpect(jsonPath("$.value.private_key").value("different_private_key"));
+      });
     });
 
     describe("setting a ca", () -> {

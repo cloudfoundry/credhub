@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.ResponseError;
 import io.pivotal.security.controller.v1.ResponseErrorType;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
@@ -38,10 +38,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -50,8 +48,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -69,7 +68,7 @@ public class SecretsController {
   NamedSecretSetHandler namedSecretSetHandler;
 
   @Autowired
-  ParseContext jsonPath;
+  JsonContextFactory jsonContextFactory;
 
   @Autowired
   ResourceServerTokenServices tokenServices;
@@ -241,7 +240,7 @@ public class SecretsController {
                                                HttpServletRequest request,
                                                Authentication authentication,
                                                SecretKindMappingFactory handler) throws Exception {
-    final DocumentContext parsedRequestBody = jsonPath.parse(requestBody);
+    final DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestBody);
     final String secretName = getSecretName(request, parsedRequestBody);
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 

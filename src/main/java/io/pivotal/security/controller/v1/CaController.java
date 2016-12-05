@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
@@ -48,7 +48,7 @@ public class CaController {
   public static final String API_V1_CA = "/api/v1/ca";
 
   @Autowired
-  ParseContext jsonPath;
+  JsonContextFactory jsonContextFactory;
 
   @Autowired
   CertificateAuthorityDataService certificateAuthorityDataService;
@@ -78,7 +78,7 @@ public class CaController {
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    DocumentContext parsedRequest = jsonPath.parse(requestBody);
+    DocumentContext parsedRequest = jsonContextFactory.getObject().parse(requestBody);
     final String caName = parsedRequest.read("$.name");
     if(isBlank(caName)) {
       return createErrorResponse("error.ca_name_missing", HttpStatus.BAD_REQUEST);
@@ -91,7 +91,7 @@ public class CaController {
   @SuppressWarnings("unused")
   @RequestMapping(path = "/**", method = RequestMethod.POST)
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    DocumentContext parsedRequest = jsonPath.parse(requestBody);
+    DocumentContext parsedRequest = jsonContextFactory.getObject().parse(requestBody);
     final String caName = parsedRequest.read("$.name");
     if(isBlank(caName)) {
       return createErrorResponse("error.ca_name_missing", HttpStatus.BAD_REQUEST);

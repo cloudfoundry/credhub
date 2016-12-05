@@ -6,9 +6,9 @@ import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import static com.google.common.collect.ImmutableSet.of;
-
 import java.util.Set;
+
+import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class StringSetRequestTranslator implements RequestTranslator<NamedStringSecret> {
