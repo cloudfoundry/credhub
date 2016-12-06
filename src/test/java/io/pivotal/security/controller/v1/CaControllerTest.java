@@ -200,7 +200,7 @@ public class CaControllerTest {
                   "}" +
                   "}";
 
-          RequestBuilder requestBuilder = post("/api/v1/ca/" + UNIQUE_NAME)
+          RequestBuilder requestBuilder = post("/api/v1/ca")
               .content(requestJson)
               .contentType(MediaType.APPLICATION_JSON_UTF8);
 
@@ -701,8 +701,7 @@ public class CaControllerTest {
     it("get returns 404 when not found", () -> {
       String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
 
-      RequestBuilder requestBuilder = get("/api/v1/ca/" + UNIQUE_NAME)
-          .contentType(MediaType.APPLICATION_JSON_UTF8);
+      RequestBuilder requestBuilder = get("/api/v1/ca/some-id");
 
       mockMvc.perform(requestBuilder)
           .andExpect(status().isNotFound())

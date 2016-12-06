@@ -13,7 +13,6 @@ import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.ParameterizedValidationException;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -22,7 +21,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -76,7 +77,7 @@ public class CaController {
   }
 
   @SuppressWarnings("unused")
-  @RequestMapping(path = "/**", method = RequestMethod.PUT)
+  @RequestMapping(path = "", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonContextFactory.getObject().parse(requestBody);
     final String caName = parsedRequest.read("$.name");
@@ -89,7 +90,7 @@ public class CaController {
   }
 
   @SuppressWarnings("unused")
-  @RequestMapping(path = "/**", method = RequestMethod.POST)
+  @RequestMapping(path = "", method = RequestMethod.POST)
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonContextFactory.getObject().parse(requestBody);
     final String caName = parsedRequest.read("$.name");
@@ -124,10 +125,12 @@ public class CaController {
   }
 
   @SuppressWarnings("unused")
-  @RequestMapping(path = "/**", method = RequestMethod.GET)
-  public ResponseEntity getById(HttpServletRequest request, Authentication authentication) throws Exception {
+  @RequestMapping(path = "/{id}", method = RequestMethod.GET)
+  public ResponseEntity getById(@PathVariable("id") String uuid,
+                                HttpServletRequest request,
+                                Authentication authentication) throws Exception {
     return retrieveAuthorityWithAuditing(
-        caPath(request),
+        uuid,
         findAsList(certificateAuthorityDataService::findByUuid),
         request,
         authentication,
@@ -190,10 +193,6 @@ public class CaController {
 
           return new ResponseEntity<>(presenter.apply(certificateAuthorities), HttpStatus.OK);
         });
-  }
-
-  private String caPath(HttpServletRequest request) {
-    return request.getRequestURI().replace(API_V1_CA + "/", "");
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
