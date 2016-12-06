@@ -31,6 +31,7 @@ import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -82,7 +83,7 @@ public class CaControllerAuditingLogTest {
         OperationAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(API_V1_CA));
-        assertThat(auditRecord.getCredentialName(), equalTo("qux"));
+        assertNull(auditRecord.getCredentialName());
         assertThat(auditRecord.getOperation(), equalTo(CA_ACCESS.toString()));
         assertThat(auditRecord.getRequesterIp(), equalTo("12345"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));

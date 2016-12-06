@@ -178,14 +178,17 @@ public class CaController {
       HttpServletRequest request,
       Authentication authentication,
       Function<List<CertificateAuthority>, ?> presenter) throws Exception {
+    final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(
-        new AuditRecordBuilder(identifier, request, authentication),
+        auditRecordBuilder,
         () -> {
           List<NamedCertificateAuthority> namedAuthorityList = finder.apply(identifier);
 
           if (namedAuthorityList.isEmpty()) {
             return createErrorResponse("error.ca_not_found", HttpStatus.NOT_FOUND);
           }
+
+          auditRecordBuilder.setCredentialName(namedAuthorityList.get(0).getName());
 
           List<CertificateAuthority> certificateAuthorities = namedAuthorityList.stream().map(
               namedCertificateAuthority -> new CertificateAuthority(namedCertificateAuthority)

@@ -44,6 +44,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -666,6 +667,7 @@ public class CaControllerTest {
         verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
         assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CA_ACCESS));
+        assertThat(auditRecordParamsCaptor.getValue().getCredentialName(), equalTo(UNIQUE_NAME));
       });
     });
 
@@ -698,15 +700,26 @@ public class CaControllerTest {
           .andExpect(content().json(invalidTypeJson));
     });
 
-    it("get returns 404 when not found", () -> {
-      String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
+    describe("when CA does not exist", () -> {
+      beforeEach(() -> {
+        RequestBuilder get = get("/api/v1/ca/some-id");
+        response = mockMvc.perform(get);
+      });
 
-      RequestBuilder requestBuilder = get("/api/v1/ca/some-id");
+      it("get returns 404 when not found", () -> {
+        String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
+        response
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andExpect(content().json(notFoundJson));
+      });
 
-      mockMvc.perform(requestBuilder)
-          .andExpect(status().isNotFound())
-          .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
-          .andExpect(content().json(notFoundJson));
+      it("does not record name in the audit log table", () -> {
+        ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
+        verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+        assertNull(auditRecordParamsCaptor.getValue().getCredentialName());
+      });
     });
   }
 
