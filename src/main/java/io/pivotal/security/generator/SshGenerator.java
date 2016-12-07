@@ -26,7 +26,7 @@ public class SshGenerator implements SecretGenerator<SshSecretParameters, SshSec
       String publicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + sshCommentMessage;
       String privateKey = CertificateFormatter.pemOf(keyPair.getPrivate());
 
-      return new SshSecret(null, null, publicKey, privateKey);
+      return new SshSecret(null, null, null, publicKey, privateKey);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

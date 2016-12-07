@@ -18,7 +18,7 @@ public class RsaGenerator implements SecretGenerator<RsaSecretParameters, RsaSec
   public RsaSecret generateSecret(RsaSecretParameters parameters) {
     try {
       final KeyPair keyPair = keyGenerator.generateKeyPair(parameters.getKeyLength());
-      return new RsaSecret(null, null, CertificateFormatter.pemOf(keyPair.getPublic()), CertificateFormatter.pemOf(keyPair.getPrivate()));
+      return new RsaSecret(null, null, null, CertificateFormatter.pemOf(keyPair.getPublic()), CertificateFormatter.pemOf(keyPair.getPrivate()));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

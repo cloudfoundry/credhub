@@ -12,9 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.JsonExpectationsHelper;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
@@ -22,6 +19,9 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
@@ -59,6 +59,7 @@ public class SshSecretTest {
       jsonExpectationsHelper.assertJsonEqual("{" +
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"type\":\"ssh\"," +
+          "\"name\":\"foo\"," +
           "\"updated_at\":null," +
           "\"value\":{" +
             "\"public_key\":\"my-public-key\"," +

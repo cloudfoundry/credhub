@@ -89,7 +89,7 @@ public class SshGeneratorRequestTranslatorTest {
       beforeEach(() -> {
         secretParameterCaptor = ArgumentCaptor.forClass(SshSecretParameters.class);
         when(secretGenerator.generateSecret(secretParameterCaptor.capture()))
-            .thenReturn(new SshSecret(null, null, "my-public", "my-private"));
+            .thenReturn(new SshSecret(null, null, null, "my-public", "my-private"));
       });
 
       it("populates an entity", () -> {

@@ -86,7 +86,7 @@ public class RsaGeneratorRequestTranslatorTest {
     describe("populateEntityFromJson", () -> {
       beforeEach(() -> {
         when(secretGenerator.generateSecret(any(RsaSecretParameters.class)))
-            .thenReturn(new RsaSecret(null, null, "my-public", "my-private"));
+            .thenReturn(new RsaSecret(null, null, null, "my-public", "my-private"));
       });
 
       it("populates an entity", () -> {
@@ -136,7 +136,7 @@ public class RsaGeneratorRequestTranslatorTest {
 
         ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor.forClass(RsaSecretParameters.class);
         when(secretGenerator.generateSecret(parameterCaptor.capture()))
-            .thenReturn(new RsaSecret(null, null, "my-new-pub", "my-new-priv"));
+            .thenReturn(new RsaSecret(null, null, null, "my-new-pub", "my-new-priv"));
 
         subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
 

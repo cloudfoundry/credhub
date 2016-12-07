@@ -3,9 +3,10 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedStringSecret;
 
-import javax.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.UUID;
+
+import javax.validation.constraints.NotNull;
 
 public class StringSecret extends Secret {
 
@@ -17,15 +18,11 @@ public class StringSecret extends Secret {
   private String type;
 
   public StringSecret(String type, String value) {
-    this(null, null, type, value);
+    this(null, null, null, type, value);
   }
 
-  public StringSecret(Instant updatedAt, UUID uuid, String type) {
-    this(updatedAt, uuid, type, null);
-  }
-
-  public StringSecret(Instant updatedAt, UUID uuid, String type, String value) {
-    super(updatedAt, uuid);
+  public StringSecret(Instant updatedAt, UUID uuid, String name, String type, String value) {
+    super(updatedAt, uuid, name);
     if (type == null) {
       throw new IllegalArgumentException("'value' must not be null");
     }
@@ -34,7 +31,13 @@ public class StringSecret extends Secret {
   }
 
   public StringSecret(NamedStringSecret namedStringSecret) {
-    this(namedStringSecret.getUpdatedAt(), namedStringSecret.getUuid(), namedStringSecret.getSecretType(), namedStringSecret.getValue());
+    this(
+        namedStringSecret.getUpdatedAt(),
+        namedStringSecret.getUuid(),
+        namedStringSecret.getName(),
+        namedStringSecret.getSecretType(),
+        namedStringSecret.getValue()
+    );
   }
 
   public StringSecret setValue(String value) {

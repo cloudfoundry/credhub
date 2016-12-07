@@ -13,10 +13,12 @@ import java.util.UUID;
 public class Secret extends BaseView {
 
   private UUID uuid;
+  private String name;
 
-  protected Secret(Instant updatedAt, UUID uuid) {
+  protected Secret(Instant updatedAt, UUID uuid, String name) {
     super(updatedAt);
     this.uuid = uuid;
+    this.name = name;
   }
 
   @JsonProperty
@@ -29,8 +31,17 @@ public class Secret extends BaseView {
     return uuid.toString();
   }
 
+  @JsonProperty("name")
+  public String getName() {
+    return name;
+  }
+
   public void setUuid(UUID uuid) {
     this.uuid = uuid;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   public static Secret fromEntity(NamedSecret namedSecret) {

@@ -57,7 +57,17 @@ public class CertificateSecretTest {
 
     it("creates a view from entity", () -> {
       final Secret subject = CertificateSecret.fromEntity(entity);
-      jsonExpectationsHelper.assertJsonEqual("{\"id\":\"" + uuid.toString() + "\",\"type\":\"certificate\",\"updated_at\":null,\"value\":{\"ca\":\"ca\",\"certificate\":\"cert\",\"private_key\":\"priv\"}}", json(subject), true);
+      jsonExpectationsHelper.assertJsonEqual("{" +
+          "\"id\":\"" + uuid.toString() + "\"," +
+          "\"name\":\"" + secretName + "\"," +
+          "\"type\":\"certificate\"," +
+          "\"updated_at\":null," +
+          "\"value\":{" +
+              "\"ca\":\"ca\"," +
+              "\"certificate\":\"cert\"," +
+              "\"private_key\":\"priv\"" +
+            "}" +
+          "}", json(subject), true);
     });
 
     it("sets updated-at time on generated view", () -> {
@@ -79,6 +89,7 @@ public class CertificateSecretTest {
           "\"type\":\"certificate\"," +
           "\"updated_at\":null," +
           "\"id\":\"" + uuid.toString() + "\"," +
+          "\"name\":\"" + secretName + "\"," +
           "\"value\":{" +
             "\"ca\":null," +
             "\"certificate\":null," +

@@ -26,8 +26,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.security.Security;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -47,6 +45,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.Security;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -282,7 +282,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       final NamedCertificateSecret secret = new NamedCertificateSecret("abc");
 
       beforeEach(() -> {
-        doReturn(new CertificateSecret(null, null, "my-root", "my-cert", "my-priv"))
+        doReturn(new CertificateSecret(null, null, null, "my-root", "my-cert", "my-priv"))
             .when(secretGenerator)
             .generateSecret(any(CertificateSecretParameters.class));
       });
