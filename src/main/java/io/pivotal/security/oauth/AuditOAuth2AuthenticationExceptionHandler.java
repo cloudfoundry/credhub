@@ -82,15 +82,21 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     if (tokenIsExpired(tokenInformation)) {
       exception = new AccessTokenExpiredException("Access token expired", cause);
 
-      securityEventsLogger.error("ACCESS TOKEN EXPIRED");
+      securityEventsLogger.error("ACCESS TOKEN EXPIRED:  outerCause = " + outerCause +
+          "; cause = " + cause +
+          "; message = Access token expired");
     } else if (cause instanceof InvalidSignatureException) {
       exception = new InvalidTokenException(messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
 
-      securityEventsLogger.error("INVALID TOKEN");
+      securityEventsLogger.error("INVALID TOKEN:  outerCause = " + outerCause +
+          "; cause = " + cause +
+          "; message = " + messageSourceAccessor.getMessage("error.invalid_token_signature"));
     } else {
       exception = new InvalidTokenException(removeTokenFromMessage(authException.getMessage(), token), outerCause);
 
-      securityEventsLogger.error("OTHER SECURITY EXCEPTION");
+      securityEventsLogger.error("OTHER SECURITY EXCEPTION:  outerCause = " + outerCause +
+          "; cause = " + cause +
+          "; message = " + authException.getMessage());
     }
     exception.setStackTrace(authException.getStackTrace());
 
