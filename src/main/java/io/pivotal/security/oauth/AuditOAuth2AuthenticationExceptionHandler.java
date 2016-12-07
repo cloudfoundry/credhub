@@ -4,6 +4,7 @@ import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -35,6 +36,9 @@ import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
+
+  @Autowired
+  Logger securityEventsLogger;
 
   @Autowired
   CurrentTimeProvider currentTimeProvider;
@@ -77,10 +81,16 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     Exception exception;
     if (tokenIsExpired(tokenInformation)) {
       exception = new AccessTokenExpiredException("Access token expired", cause);
+
+      securityEventsLogger.error("ACCESS TOKEN EXPIRED");
     } else if (cause instanceof InvalidSignatureException) {
       exception = new InvalidTokenException(messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
+
+      securityEventsLogger.error("INVALID TOKEN");
     } else {
       exception = new InvalidTokenException(removeTokenFromMessage(authException.getMessage(), token), outerCause);
+
+      securityEventsLogger.error("OTHER SECURITY EXCEPTION");
     }
     exception.setStackTrace(authException.getStackTrace());
 
