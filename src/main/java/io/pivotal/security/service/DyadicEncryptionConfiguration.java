@@ -11,6 +11,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
+import java.lang.reflect.Constructor;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -78,7 +79,8 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
   public IvParameterSpec generateParameterSpec(byte[] nonce) {
     int numBytes = nonce != null ? nonce.length : 0;
     try {
-      return (IvParameterSpec) Class.forName("com.dyadicsec.provider.CcmParameterSpec").getDeclaredMethod("getInstance").invoke(nonce, numBytes, null);
+      Constructor constructor = Class.forName("com.dyadicsec.provider.CcmParameterSpec").getConstructor(byte[].class, int.class, byte[].class);
+      return (IvParameterSpec) constructor.newInstance(nonce, numBytes, null);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
