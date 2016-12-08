@@ -16,6 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.service.EncryptionProviderCanary.CANARY_NAME;
@@ -72,8 +73,8 @@ public class EncryptionProviderCanaryTest {
           assertThat(canary.getEncryptedValue(), equalTo("test-encrypted-value".getBytes()));
         });
 
-        itThrowsWithMessage("raises an error if it can't save the canary", RuntimeException.class, "Failed to create encryption canary value.", () -> {
-          doThrow(RuntimeException.class).when(encryptionService).encrypt(any(String.class));
+        itThrows("an error if it can't encrypt the canary", RuntimeException.class, () -> {
+          doThrow(Exception.class).when(encryptionService).encrypt(any(String.class));
 
           subject.checkForDataCorruption();
         });

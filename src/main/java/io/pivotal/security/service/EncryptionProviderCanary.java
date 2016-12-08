@@ -34,7 +34,7 @@ public class EncryptionProviderCanary {
         canary.setNonce(encryptedCanary.nonce);
         birdCage.save(canary);
       } catch (Exception e) {
-        throw new RuntimeException("Failed to create encryption canary value.");
+        throw new RuntimeException(e);
       }
     } else {
       String decryptedResult;
