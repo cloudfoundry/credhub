@@ -18,6 +18,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
@@ -26,12 +28,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
-import java.time.Instant;
-import java.util.Map;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fdescribe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -44,6 +44,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.Map;
+
+import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "AuditOAuth2AuthenticationEntryPointTest"}, resolver = DatabaseProfileResolver.class)
@@ -251,6 +256,25 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getGrantType(), equalTo(null));
         assertThat(auditRecord.getMethod(), equalTo("GET"));
         assertThat(auditRecord.getStatusCode(), equalTo(401));
+      });
+    });
+
+    describe("#extractCause", () -> {
+      it("extracts a cause from an AuthenticationException", () -> {
+        Throwable cause = new Throwable("foo");
+        AuthenticationException e = new BadCredentialsException("test", cause);
+        assertThat(subject.extractCause(e), equalTo(cause));
+      });
+
+      it("extracts the ultimate cause from an AuthenticationException", () -> {
+        Throwable cause = new Throwable("foo");
+        AuthenticationException e = new BadCredentialsException("test", new Exception(new Exception(cause)));
+        assertThat(subject.extractCause(e), equalTo(cause));
+      });
+
+      it("extracts the ultimate cause from an AuthenticationException", () -> {
+        AuthenticationException e = new BadCredentialsException("test");
+        assertThat(subject.extractCause(e), equalTo(null));
       });
     });
   }

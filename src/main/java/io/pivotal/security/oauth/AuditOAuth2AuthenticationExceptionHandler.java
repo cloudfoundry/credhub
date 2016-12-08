@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
 
 import java.io.IOException;
+import java.security.SignatureException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -71,16 +72,15 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
     final Map<String, Object> tokenInformation = extractTokenInformation(token);
 
-    Throwable outerCause = authException.getCause();
-    Throwable cause = outerCause != null ? outerCause.getCause() : null;
+    Throwable cause = extractCause(authException);
 
     Exception exception;
     if (tokenIsExpired(tokenInformation)) {
       exception = new AccessTokenExpiredException("Access token expired", cause);
-    } else if (cause instanceof InvalidSignatureException) {
+    } else if (cause instanceof InvalidSignatureException || cause instanceof SignatureException) {
       exception = new InvalidTokenException(messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
     } else {
-      exception = new InvalidTokenException(removeTokenFromMessage(authException.getMessage(), token), outerCause);
+      exception = new InvalidTokenException(removeTokenFromMessage(authException.getMessage(), token), cause);
     }
     exception.setStackTrace(authException.getStackTrace());
 
@@ -89,6 +89,16 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     } finally {
       logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordBuilder(null, request, null), request.getMethod(), response.getStatus());
     }
+  }
+
+  public Throwable extractCause(AuthenticationException e) {
+    Throwable cause = e.getCause();
+    Throwable nextCause = cause == null ? null : cause.getCause();
+    while(nextCause != null && nextCause != cause) {
+      cause = nextCause;
+      nextCause = cause.getCause();
+    }
+    return cause;
   }
 
   private boolean tokenIsExpired(Map<String, Object> tokenInformation) {
