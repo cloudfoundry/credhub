@@ -5,12 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +14,12 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 
-import static io.pivotal.security.constants.EncryptionConstants.GCM_NONCE_BYTES;
+import javax.annotation.PostConstruct;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 @SuppressWarnings("unused")
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
@@ -88,6 +89,6 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
 
   @Override
   public int getNonceLength() {
-    return GCM_NONCE_BYTES;
+    return NONCE;
   }
 }

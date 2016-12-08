@@ -5,12 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+
 import java.lang.reflect.Constructor;
 import java.security.Key;
 import java.security.KeyStore;
@@ -19,7 +15,12 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 
-import static io.pivotal.security.constants.EncryptionConstants.CCM_IV_BYTES;
+import javax.annotation.PostConstruct;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 @SuppressWarnings("unused")
 @Component
@@ -88,6 +89,6 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
 
   @Override
   public int getNonceLength() {
-    return CCM_IV_BYTES;
+    return NONCE;
   }
 }

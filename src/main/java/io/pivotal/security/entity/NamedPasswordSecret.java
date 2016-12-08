@@ -8,17 +8,17 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-import static io.pivotal.security.constants.EncryptionConstants.GCM_NONCE_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE;
 
 @Entity
 @Table(name = "PasswordSecret")
 @DiscriminatorValue("password")
 public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> {
 
-  @Column(length = 255 + GCM_NONCE_BYTES)
+  @Column(length = 255 + NONCE)
   private byte[] encryptedGenerationParameters;
 
-  @Column(length = GCM_NONCE_BYTES)
+  @Column(length = NONCE)
   private byte[] parametersNonce;
 
   @SuppressWarnings("unused")

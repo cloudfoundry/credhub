@@ -24,7 +24,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.GCM_NONCE_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
@@ -46,10 +46,10 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Column(length = ENCRYPTED_BYTES + GCM_NONCE_BYTES, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES + NONCE, name = "encrypted_value")
   private byte[] encryptedValue;
 
-  @Column(length = GCM_NONCE_BYTES)
+  @Column(length = NONCE)
   private byte[] nonce;
 
   @Convert(converter = InstantMillisecondsConverter.class)

@@ -7,13 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+
 import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -23,7 +18,13 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 
-import static io.pivotal.security.constants.EncryptionConstants.GCM_NONCE_BYTES;
+import javax.annotation.PostConstruct;
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
@@ -74,6 +75,6 @@ public class BCEncryptionConfiguration implements EncryptionConfiguration {
 
   @Override
   public int getNonceLength() {
-    return GCM_NONCE_BYTES;
+    return NONCE;
   }
 }
