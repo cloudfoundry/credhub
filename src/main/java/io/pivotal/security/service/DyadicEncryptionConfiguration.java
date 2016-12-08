@@ -47,7 +47,7 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
 
     if (!keyStore.containsAlias(encryptionKeyAlias)) {
       KeyGenerator aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
-      aesKeyGenerator.init(256);
+      aesKeyGenerator.init(128);
 
       SecretKey aesKey = aesKeyGenerator.generateKey();
       keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
