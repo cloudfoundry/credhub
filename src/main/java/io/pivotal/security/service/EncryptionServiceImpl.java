@@ -3,12 +3,17 @@ package io.pivotal.security.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.*;
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
-import java.nio.charset.Charset;
-import java.security.*;
-
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
 
 @Service
 public class EncryptionServiceImpl implements EncryptionService {
@@ -22,12 +27,11 @@ public class EncryptionServiceImpl implements EncryptionService {
 
   @Override
   public Encryption encrypt(String value) throws InvalidAlgorithmParameterException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException {
-    byte[] nonce = new byte[NONCE_BYTES];
-    encryptionConfiguration.getSecureRandom().nextBytes(nonce);
+    byte[] nonce = generateNonce();
+    IvParameterSpec parameterSpec = encryptionConfiguration.generateParameterSpec(nonce);
+    Cipher encryptionCipher = encryptionConfiguration.getCipher();
 
-    IvParameterSpec ivSpec = new IvParameterSpec(nonce);
-    Cipher encryptionCipher = Cipher.getInstance("AES/GCM/NoPadding", encryptionConfiguration.getProvider());
-    encryptionCipher.init(Cipher.ENCRYPT_MODE, encryptionConfiguration.getKey(), ivSpec);
+    encryptionCipher.init(Cipher.ENCRYPT_MODE, encryptionConfiguration.getKey(), parameterSpec);
 
     byte[] encrypted = encryptionCipher.doFinal(value.getBytes(charset()));
 
@@ -36,10 +40,17 @@ public class EncryptionServiceImpl implements EncryptionService {
 
   @Override
   public String decrypt(byte[] nonce, byte[] encryptedValue) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
-    Cipher decryptionCipher = Cipher.getInstance("AES/GCM/NoPadding", encryptionConfiguration.getProvider());
-    IvParameterSpec ivSpec = new IvParameterSpec(nonce);
-    decryptionCipher.init(Cipher.DECRYPT_MODE, encryptionConfiguration.getKey(), ivSpec);
+    Cipher decryptionCipher = encryptionConfiguration.getCipher();
+    IvParameterSpec ccmParameterSpec = encryptionConfiguration.generateParameterSpec(nonce);
+    decryptionCipher.init(Cipher.DECRYPT_MODE, encryptionConfiguration.getKey(), ccmParameterSpec);
 
     return new String(decryptionCipher.doFinal(encryptedValue), charset());
+  }
+
+  private byte[] generateNonce() {
+    SecureRandom secureRandom = encryptionConfiguration.getSecureRandom();
+    byte[] nonce = new byte[encryptionConfiguration.getNonceLength()];
+    secureRandom.nextBytes(nonce);
+    return nonce;
   }
 }

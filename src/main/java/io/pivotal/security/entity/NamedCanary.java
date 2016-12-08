@@ -3,7 +3,7 @@ package io.pivotal.security.entity;
 import javax.persistence.*;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.GCM_NONCE_BYTES;
 
 @Entity
 @Table(name = "NamedCanary")
@@ -15,10 +15,10 @@ public class NamedCanary implements EncryptedValueContainer {
   @Column(unique = true, nullable = false)
   private String name;
 
-  @Column(length = ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES + GCM_NONCE_BYTES, name = "encrypted_value")
   private byte[] encryptedValue;
 
-  @Column(length = NONCE_BYTES)
+  @Column(length = GCM_NONCE_BYTES)
   private byte[] nonce;
 
   public NamedCanary() {

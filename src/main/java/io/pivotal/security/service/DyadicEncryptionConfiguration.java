@@ -18,46 +18,39 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 
-import static io.pivotal.security.constants.EncryptionConstants.GCM_NONCE_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.CCM_IV_BYTES;
 
 @SuppressWarnings("unused")
-@ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
 @Component
-public class LunaEncryptionConfiguration implements EncryptionConfiguration {
+@ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
+public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
 
-  @Value("${hsm.partition}")
-  String partitionName;
-
-  @Value("${hsm.partition-password}")
-  String partitionPassword;
-
-  @Value("${hsm.encryption-key-name}")
+  @Value("${dsm.encryption-key-name}")
   String encryptionKeyAlias;
 
   private Provider provider;
-  private SecureRandom secureRandom;
   private Key key;
+  private SecureRandom secureRandom;
 
-  public LunaEncryptionConfiguration() throws Exception {
-    provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
+  public DyadicEncryptionConfiguration() throws Exception {
+    provider = (Provider) Class.forName("com.dyadicsec.provider.DYCryptoProvider").newInstance();
     Security.addProvider(provider);
   }
 
   @PostConstruct
   public void getEncryptionKey() throws Exception {
-    Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").getDeclaredMethod("getInstance").invoke(null);
-    lunaSlotManager.getClass().getMethod("login", String.class, String.class).invoke(lunaSlotManager, partitionName, partitionPassword);
-
-    KeyStore keyStore = KeyStore.getInstance("Luna", provider);
-    keyStore.load(null, null);
-    secureRandom = SecureRandom.getInstance("LunaRNG");
-    KeyGenerator aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
-    aesKeyGenerator.init(128);
+    KeyStore keyStore = KeyStore.getInstance("PKCS11", provider);
+    keyStore.load(null);
+    secureRandom = new SecureRandom();
 
     if (!keyStore.containsAlias(encryptionKeyAlias)) {
+      KeyGenerator aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
+      aesKeyGenerator.init(256);
+
       SecretKey aesKey = aesKeyGenerator.generateKey();
       keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
     }
+
     key = keyStore.getKey(encryptionKeyAlias, null);
   }
 
@@ -78,16 +71,21 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
 
   @Override
   public Cipher getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return Cipher.getInstance(CipherTypes.GCM.toString(), provider);
+    return Cipher.getInstance(CipherTypes.CCM.toString(), provider);
   }
 
   @Override
   public IvParameterSpec generateParameterSpec(byte[] nonce) {
-    return new IvParameterSpec(nonce);
+    int numBytes = nonce != null ? nonce.length : 0;
+    try {
+      return (IvParameterSpec) Class.forName("com.dyadicsec.provider.CcmParameterSpec").getDeclaredMethod("getInstance").invoke(nonce, numBytes, null);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
   public int getNonceLength() {
-    return GCM_NONCE_BYTES;
+    return CCM_IV_BYTES;
   }
 }

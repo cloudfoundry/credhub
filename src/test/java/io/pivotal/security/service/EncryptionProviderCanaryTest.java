@@ -15,7 +15,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -57,7 +56,7 @@ public class EncryptionProviderCanaryTest {
         });
 
         it("should create a new canary", () -> {
-          String expectedCanaryValue = new String(new byte[128], "UTF-8");
+          String expectedCanaryValue = new String(new byte[256], "UTF-8");
           EncryptionService.Encryption encryptedValue = new EncryptionService.Encryption("test-nonce".getBytes(), "test-encrypted-value".getBytes());
           doReturn(encryptedValue).when(encryptionService).encrypt(expectedCanaryValue);
 
@@ -90,7 +89,7 @@ public class EncryptionProviderCanaryTest {
         });
 
         it("should not fail if the decrypted value matches the expected value", () -> {
-          String canaryValue = new String(new byte[128], "UTF-8");
+          String canaryValue = new String(new byte[256], "UTF-8");
           doReturn(canaryValue).when(encryptionService).decrypt("test-nonce".getBytes(), "fake-encrypted-value".getBytes());
 
           subject.checkForDataCorruption();

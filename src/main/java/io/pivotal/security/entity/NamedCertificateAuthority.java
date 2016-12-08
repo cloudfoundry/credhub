@@ -16,7 +16,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.GCM_NONCE_BYTES;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
@@ -38,10 +38,10 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @Column(length = 7000)
   private String certificate;
 
-  @Column(length = ENCRYPTED_BYTES + NONCE_BYTES, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES + GCM_NONCE_BYTES, name = "encrypted_value")
   private byte[] encryptedValue;
 
-  @Column(length = NONCE_BYTES)
+  @Column(length = GCM_NONCE_BYTES)
   private byte[] nonce;
 
   @Convert(converter = InstantMillisecondsConverter.class)

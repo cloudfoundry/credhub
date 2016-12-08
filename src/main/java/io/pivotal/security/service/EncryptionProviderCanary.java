@@ -23,7 +23,7 @@ public class EncryptionProviderCanary {
 
   @PostConstruct
   public void checkForDataCorruption() {
-    String canaryValue = new String(new byte[encryptionConfiguration.getKey().getEncoded().length * 8], encryptionService.charset());
+    String canaryValue = new String(new byte[256], encryptionService.charset());
 
     NamedCanary canary = birdCage.find(CANARY_NAME);
     if (canary == null) {
