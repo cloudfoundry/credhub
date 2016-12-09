@@ -20,6 +20,7 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.service.EncryptionProviderCanary.CANARY_NAME;
+import static javax.xml.bind.DatatypeConverter.printHexBinary;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -47,6 +48,11 @@ public class EncryptionProviderCanaryTest {
   @Autowired
   EncryptionConfiguration encryptionConfiguration;
 
+  final String TAMPER_ERROR = "Canary value is incorrect. Database has been tampered with. Expected\n" +
+      printHexBinary(new byte[128]) +
+      " but was\n" +
+      printHexBinary("TAMPERED".getBytes());
+
   {
     wireAndUnwire(this, false);
 
@@ -57,7 +63,7 @@ public class EncryptionProviderCanaryTest {
         });
 
         it("should create a new canary", () -> {
-          String expectedCanaryValue = new String(new byte[256], "UTF-8");
+          String expectedCanaryValue = new String(new byte[128], "UTF-8");
           EncryptionService.Encryption encryptedValue = new EncryptionService.Encryption("test-nonce".getBytes(), "test-encrypted-value".getBytes());
           doReturn(encryptedValue).when(encryptionService).encrypt(expectedCanaryValue);
 
@@ -90,7 +96,7 @@ public class EncryptionProviderCanaryTest {
         });
 
         it("should not fail if the decrypted value matches the expected value", () -> {
-          String canaryValue = new String(new byte[256], "UTF-8");
+          String canaryValue = new String(new byte[128], "UTF-8");
           doReturn(canaryValue).when(encryptionService).decrypt("test-nonce".getBytes(), "fake-encrypted-value".getBytes());
 
           subject.checkForDataCorruption();
@@ -98,7 +104,7 @@ public class EncryptionProviderCanaryTest {
           // pass
         });
 
-        itThrowsWithMessage("raises an error if the decrypted canary value does not match the excepted value", RuntimeException.class, "Canary value is incorrect. Database has been tampered with.", () -> {
+        itThrowsWithMessage("raises an error if the decrypted canary value does not match the excepted value", RuntimeException.class, TAMPER_ERROR, () -> {
           String canaryValue = "TAMPERED";
           doReturn(canaryValue).when(encryptionService).decrypt("test-nonce".getBytes(), "fake-encrypted-value".getBytes());
 

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
+import static javax.xml.bind.DatatypeConverter.printHexBinary;
+
 @Component
 public class EncryptionProviderCanary {
 
@@ -23,7 +25,7 @@ public class EncryptionProviderCanary {
 
   @PostConstruct
   public void checkForDataCorruption() {
-    String canaryValue = new String(new byte[256], encryptionService.charset());
+    String canaryValue = new String(new byte[128], encryptionService.charset());
 
     NamedCanary canary = birdCage.find(CANARY_NAME);
     if (canary == null) {
@@ -44,7 +46,11 @@ public class EncryptionProviderCanary {
         throw new RuntimeException("Encryption key is mismatched with database. Please check your configuration.");
       }
       if (!canaryValue.equals(decryptedResult)) {
-        throw new RuntimeException("Canary value is incorrect. Database has been tampered with.");
+        throw new RuntimeException(
+            "Canary value is incorrect. Database has been tampered with. Expected\n" +
+                printHexBinary(canaryValue.getBytes()) + " but was\n" +
+                printHexBinary(decryptedResult.getBytes())
+        );
       }
     }
   }
