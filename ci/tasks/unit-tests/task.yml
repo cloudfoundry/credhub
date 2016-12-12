@@ -7,10 +7,10 @@ image_resource:
     repository: pcfseceng/credhub-unit-tests
 
 inputs:
-  - name: sec-eng-credential-manager
+  - name: credhub-src
 
 run:
-  path: sec-eng-credential-manager/ci/tasks/unit-tests/task.sh
+  path: credhub-src/ci/tasks/unit-tests/task.sh
 
 params:
   DATABASE_PROFILE:

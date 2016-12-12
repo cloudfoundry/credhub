@@ -8,13 +8,13 @@ image_resource:
     tag: '3.1-jdk8'
 
 inputs:
-  - name: sec-eng-credential-manager
+  - name: credhub-src
 
 outputs:
   - name: check-report-output
 
 run:
-  path: sec-eng-credential-manager/ci/tasks/owasp-check/task.sh
+  path: credhub-src/ci/tasks/owasp-check/task.sh
 
 params:
   OUTPUT_PATH: check-report-output

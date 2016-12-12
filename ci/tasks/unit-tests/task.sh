@@ -14,10 +14,10 @@ su - postgres -c "createuser -l -d -c 1000 root"
 createdb credhub_test
 psql -d credhub_test -c "ALTER USER root WITH PASSWORD 'root';"
 
-pushd sec-eng-credential-manager
-set +e
-gradle --no-daemon -Dspring.profiles.active=${DATABASE_PROFILE} clean test
-exit_code=$?
+pushd credhub-src
+    set +e
+    gradle --no-daemon -Dspring.profiles.active=${DATABASE_PROFILE} clean test
+    exit_code=$?
 popd
 
 service mysql stop
