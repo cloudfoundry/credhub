@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedRsaSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedValueSecret;
@@ -159,6 +160,20 @@ public class SecretDataServiceTest {
         subject.delete("MY-SECRET");
 
         assertThat(subject.findContainingName("my-secret"), empty());
+      });
+
+      it("should cascade correctly", () -> {
+        subject.save(new NamedPasswordSecret("test-password"));
+        subject.save(new NamedValueSecret("test-value"));
+        subject.save(new NamedCertificateSecret("test-certificate"));
+        subject.save(new NamedSshSecret("test-ssh"));
+        subject.save(new NamedRsaSecret("test-rsa"));
+
+        assertThat(getSecretsFromDb().size(), equalTo(5));
+
+        jdbcTemplate.execute("delete from named_secret");
+
+        assertThat(getSecretsFromDb().size(), equalTo(0));
       });
     });
 
