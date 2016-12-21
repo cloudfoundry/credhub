@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public interface SecretRepository extends JpaRepository<NamedSecret, Long> {
+public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
   NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
   NamedSecret findOneByUuid(UUID uuid);
   List<NamedSecret> deleteByNameIgnoreCase(String name);

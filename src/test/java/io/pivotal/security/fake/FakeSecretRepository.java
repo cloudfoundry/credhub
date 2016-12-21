@@ -47,12 +47,12 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findOne(Long aLong) {
+  public NamedSecret findOne(UUID aLong) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public boolean exists(Long aLong) {
+  public boolean exists(UUID aLong) {
     throw new UnsupportedOperationException();
   }
 
@@ -72,7 +72,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findAll(Iterable<Long> longs) {
+  public List<NamedSecret> findAll(Iterable<UUID> longs) {
     throw new UnsupportedOperationException();
   }
 
@@ -87,7 +87,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public void delete(Long aLong) {
+  public void delete(UUID aLong) {
     throw new UnsupportedOperationException();
   }
 
@@ -122,7 +122,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret getOne(Long aLong) {
+  public NamedSecret getOne(UUID aLong) {
     throw new UnsupportedOperationException();
   }
 
