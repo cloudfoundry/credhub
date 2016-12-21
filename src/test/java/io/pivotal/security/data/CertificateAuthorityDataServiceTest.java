@@ -12,12 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -29,6 +23,13 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -72,8 +73,10 @@ public class CertificateAuthorityDataServiceTest {
         assertNotNull(certificateAuthority);
 
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
+          ByteBuffer byteBuffer = ByteBuffer.wrap(rs.getBytes("uuid"));
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
 
+          ca.setUuid(new UUID(byteBuffer.getLong(), byteBuffer.getLong()));
           ca.setCertificate(rs.getString("certificate"));
           ca.setEncryptedValue(rs.getBytes("encrypted_value"));
           ca.setName(rs.getString("name"));
@@ -96,13 +99,8 @@ public class CertificateAuthorityDataServiceTest {
         assertThat(actual.getType(), equalTo(expected.getType()));
         assertThat(actual.getUpdatedAt(), equalTo(expected.getUpdatedAt()));
         assertThat(actual.getUpdatedAt(), equalTo(frozenTime));
-
-        // The Java UUID class doesn't let us convert to UUID type 4... so
-        // we must rely on Hibernate to do that for us.
-        certificateAuthorities = certificateAuthorityRepository.findAll();
-        UUID actualUuid = certificateAuthorities.get(0).getUuid();
-        assertNotNull(actualUuid);
-        assertThat(actualUuid, equalTo(expected.getUuid()));
+        assertNotNull(actual.getUuid());
+        assertThat(actual.getUuid(), equalTo(expected.getUuid()));
       });
 
       it("can store a CA with a certificate of length 7000", () -> {

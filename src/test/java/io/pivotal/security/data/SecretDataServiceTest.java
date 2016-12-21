@@ -20,11 +20,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -40,6 +35,12 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+
+import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -89,13 +90,10 @@ public class SecretDataServiceTest {
 
         assertThat(passwordSecrets.size(), equalTo(1));
         NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
+        assertNotNull(passwordSecret.getUuid());
+        assertThat(passwordSecret.getUuid(), equalTo(secret.getUuid()));
         assertThat(passwordSecret.getName(), equalTo("my-secret"));
         assertThat(passwordSecret.getValue(), equalTo("secret-password"));
-
-        // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
-        // we need to use Hibernate to check the UUID :(
-        passwordSecret = (NamedPasswordSecret) (secretRepository.findAll().get(0));
-        assertThat(passwordSecret.getUuid(), equalTo(secret.getUuid()));
       });
 
       it("should update a secret", () -> {
@@ -111,8 +109,7 @@ public class SecretDataServiceTest {
         NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
         assertThat(passwordSecret.getName(), equalTo("my-secret-2"));
         assertThat(passwordSecret.getValue(), equalTo("irynas-ninja-skills"));
-
-        passwordSecret = (NamedPasswordSecret) (secretRepository.findAll().get(0));
+        assertNotNull(passwordSecret.getUuid());
         assertThat(passwordSecret.getUuid(), equalTo(secret.getUuid()));
       });
 
@@ -339,13 +336,14 @@ public class SecretDataServiceTest {
 
   private List<NamedPasswordSecret> getSecretsFromDb() {
     return jdbcTemplate.query("select * from named_secret", (rowSet, rowNum) -> {
-            NamedPasswordSecret passwordSecret = new NamedPasswordSecret(rowSet.getString("name"));
+      ByteBuffer byteBuffer = ByteBuffer.wrap(rowSet.getBytes("uuid"));
+      NamedPasswordSecret passwordSecret = new NamedPasswordSecret(rowSet.getString("name"));
 
-            passwordSecret.setUuid(UUID.nameUUIDFromBytes(rowSet.getBytes("uuid")));
-            passwordSecret.setNonce(rowSet.getBytes("nonce"));
-            passwordSecret.setEncryptedValue(rowSet.getBytes("encrypted_value"));
+      passwordSecret.setUuid(new UUID(byteBuffer.getLong(), byteBuffer.getLong()));
+      passwordSecret.setNonce(rowSet.getBytes("nonce"));
+      passwordSecret.setEncryptedValue(rowSet.getBytes("encrypted_value"));
 
-            return passwordSecret;
-          });
+      return passwordSecret;
+    });
   }
 }
