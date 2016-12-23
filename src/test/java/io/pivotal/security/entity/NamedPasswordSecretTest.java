@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -12,10 +11,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -25,17 +20,15 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedPasswordSecretTest {
-
-  @Autowired
-  SecretDataService secretDataService;
-
   @Autowired
   ObjectMapper objectMapper;
 
@@ -68,19 +61,6 @@ public class NamedPasswordSecretTest {
         subject = new NamedPasswordSecret("foo");
       });
 
-      it("updates the secret value with the same name when overwritten", () -> {
-        subject.setValue("my-value1");
-        subject = (NamedPasswordSecret) secretDataService.save(subject);
-        byte[] firstNonce = subject.getNonce();
-
-        subject.setValue("my-value2");
-        subject = (NamedPasswordSecret) secretDataService.save(subject);
-
-        NamedPasswordSecret second = (NamedPasswordSecret) secretDataService.findByUuid(subject.getUuid().toString());
-        assertThat(second.getValue(), equalTo("my-value2"));
-        assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
-      });
-
       it("only encrypts the value once for the same secret", () -> {
         subject.setValue("my-value");
         assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
@@ -102,12 +82,6 @@ public class NamedPasswordSecretTest {
 
       itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
         subject.setValue(null);
-      });
-
-      it("sets UUID when Hibernate stores the object", () -> {
-        subject.setValue("my-value");
-        secretDataService.save(subject);
-        assertThat(subject.getUuid().toString().length(), equalTo(36));
       });
 
       it("only encrypts the generationParameters once for the same secret", () -> {

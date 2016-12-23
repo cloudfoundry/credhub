@@ -2,16 +2,19 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.controller.v1.CaController;
+import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.DatabaseAuditLogService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,11 +22,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
@@ -32,20 +32,29 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.UUID;
+
+import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "CaControllerAuditLogTest", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class CaControllerAuditingLogTest {
 
-  @Mock
+  @MockBean
   OperationAuditRecordDataService operationAuditRecordDataService;
+
+  @MockBean
+  CertificateAuthorityDataService certificateAuthorityDataService;
 
   @Autowired
   WebApplicationContext applicationContext;
@@ -57,6 +66,10 @@ public class CaControllerAuditingLogTest {
   @Autowired
   Filter springSecurityFilterChain;
 
+  @InjectMocks
+  @Autowired
+  CaController caController;
+
   private MockMvc mockMvc;
 
   {
@@ -64,6 +77,11 @@ public class CaControllerAuditingLogTest {
 
 
     beforeEach(() -> {
+      when(certificateAuthorityDataService.save(any())).thenAnswer(invocation -> {
+        NamedCertificateAuthority namedCertificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
+        namedCertificateAuthority.setUuid(UUID.randomUUID());
+        return namedCertificateAuthority;
+      });
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();

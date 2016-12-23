@@ -2,7 +2,6 @@ package io.pivotal.security.entity;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -11,9 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -21,16 +17,20 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedRsaSecretTest {
   @Autowired
-  SecretDataService secretDataService;
+  EncryptionService encryptionService;
 
   @Autowired
-  EncryptionService encryptionService;
+  SecretEncryptionHelper secretEncryptionHelper;
 
   private NamedRsaSecret subject;
 
@@ -46,33 +46,12 @@ public class NamedRsaSecretTest {
       assertThat(subject.getSecretType(), equalTo("rsa"));
     });
 
-    it("sets a public key", () -> {
-      subject
-          .setPublicKey("my-public-key");
-      secretDataService.save(subject);
-      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findByUuid(subject.getUuid().toString());
-      assertThat(result.getPublicKey(), equalTo("my-public-key"));
-    });
-
     it("sets an encrypted private key", () -> {
-      subject
-          .setPrivateKey("some-private-value");
-      secretDataService.save(subject);
+      subject.setPrivateKey("some-private-value");
 
-      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findByUuid(subject.getUuid().toString());
-
-      assertThat(result.getPrivateKey(), equalTo("some-private-value"));
-    });
-
-    it("updates the private key value with the same name when overwritten", () -> {
-      subject.setPrivateKey("first");
-      subject = (NamedRsaSecret) secretDataService.save(subject);
-
-      subject.setPrivateKey("second");
-      subject = (NamedRsaSecret) secretDataService.save(subject);
-
-      NamedRsaSecret result = (NamedRsaSecret) secretDataService.findByUuid(subject.getUuid().toString());
-      assertThat(result.getPrivateKey(), equalTo("second"));
+      assertNotNull(subject.getEncryptedValue());
+      assertNotNull(subject.getNonce());
+      assertThat(secretEncryptionHelper.retrieveClearTextValue(subject), equalTo("some-private-value"));
     });
 
     describe("#getKeyLength", () -> {

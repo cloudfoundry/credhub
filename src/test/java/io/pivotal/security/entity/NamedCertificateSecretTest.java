@@ -2,7 +2,6 @@ package io.pivotal.security.entity;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.fake.FakeEncryptionService;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -14,10 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -26,17 +21,15 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedCertificateSecretTest {
-
-  @Autowired
-  SecretDataService secretDataService;
-
   @Autowired
   EncryptionService encryptionService;
 
@@ -57,19 +50,6 @@ public class NamedCertificateSecretTest {
       assertThat(subject.getSecretType(), equalTo("certificate"));
     });
 
-    it("updates the secret value with the same name when overwritten", () -> {
-      subject.setPrivateKey("first");
-      subject = (NamedCertificateSecret) secretDataService.save(subject);
-      byte[] firstNonce = subject.getNonce();
-
-      subject.setPrivateKey("second");
-      subject = (NamedCertificateSecret) secretDataService.save(subject);
-
-      NamedCertificateSecret second = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid().toString());
-      assertThat(second.getPrivateKey(), equalTo("second"));
-      assertThat(Arrays.equals(firstNonce, second.getNonce()), is(false));
-    });
-
     it("only encrypts the value once for the same secret", () -> {
       subject.setPrivateKey("first");
       assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
@@ -87,21 +67,6 @@ public class NamedCertificateSecretTest {
     it("can decrypt the private key", () -> {
       subject.setPrivateKey("my-priv");
       assertThat(subject.getPrivateKey(), equalTo("my-priv"));
-    });
-
-    it("allows a null private key", () -> {
-      subject.setPrivateKey(null);
-      secretDataService.save(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid().toString());
-      assertThat(secret.getPrivateKey(), equalTo(null));
-      assertThat(secret.getNonce(), equalTo(null));
-    });
-
-    it("allows an empty private key", () -> {
-      subject.setPrivateKey("");
-      secretDataService.save(subject);
-      NamedCertificateSecret secret = (NamedCertificateSecret) secretDataService.findByUuid(subject.getUuid().toString());
-      assertThat(secret.getPrivateKey(), equalTo(""));
     });
 
     describe("#getKeyLength", () -> {

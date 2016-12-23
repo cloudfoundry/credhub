@@ -3,10 +3,15 @@ package io.pivotal.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.controller.v1.secret.SecretsController;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,16 +19,22 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.Collections;
+import java.util.UUID;
+
+import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
@@ -38,6 +49,13 @@ public class SecurityConfigurationTest {
 
   @Autowired
   ObjectMapper serializingObjectMapper;
+
+  @MockBean
+  SecretDataService secretDataService;
+
+  @InjectMocks
+  @Autowired
+  SecretsController secretsController;
 
   private MockMvc mockMvc;
 
@@ -71,6 +89,13 @@ public class SecurityConfigurationTest {
 
     describe("with a token accepted by our security config", () -> {
       it("allows access", () -> {
+        when(secretDataService.save(any())).thenAnswer(invocation -> {
+          NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
+          namedPasswordSecret.setUuid(UUID.randomUUID());
+          namedPasswordSecret.setUpdatedAt(Instant.now());
+          return namedPasswordSecret;
+        });
+
         final MockHttpServletRequestBuilder post = post(urlPath)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
             .accept(MediaType.APPLICATION_JSON)

@@ -2,27 +2,26 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.DatabaseAuditLogService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.Filter;
-import java.util.Arrays;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -34,15 +33,22 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Arrays;
+import java.util.UUID;
+
+import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test", "ControllerAuditLogTest", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
@@ -61,8 +67,12 @@ public class SecretsControllerAuditLogTest {
   @Autowired
   Filter springSecurityFilterChain;
 
-  @SpyBean
+  @MockBean
   SecretDataService secretDataService;
+
+  @InjectMocks
+  @Autowired
+  SecretsController secretsController;
 
   private MockMvc mockMvc;
 
@@ -121,12 +131,18 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request to set credential is served", () -> {
       beforeEach(() -> {
+        when(secretDataService.save(any())).thenAnswer(invocation -> {
+          NamedValueSecret namedValueSecret = invocation.getArgumentAt(0, NamedValueSecret.class);
+          namedValueSecret.setUuid(UUID.randomUUID());
+          return namedValueSecret;
+        });
+
         MockHttpServletRequestBuilder set = put(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .content("{\"type\":\"value\",\"name\":\"foo\",\"value\":\"password\"}")
+            .content("{\"type\":\"value\",\"name\":\"foo\",\"value\":\"secret\"}")
             .with(request -> {
               request.setRemoteAddr("12346");
               return request;
@@ -153,6 +169,12 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request to generate a credential is served", () -> {
       beforeEach(() -> {
+        when(secretDataService.save(any())).thenAnswer(invocation -> {
+          NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
+          namedPasswordSecret.setUuid(UUID.randomUUID());
+          return namedPasswordSecret;
+        });
+
         MockHttpServletRequestBuilder post = post(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
@@ -234,6 +256,12 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request has multiple X-Forwarded-For headers set", () -> {
       beforeEach(() -> {
+        when(secretDataService.save(any())).thenAnswer(invocation -> {
+          NamedValueSecret namedValueSecret = invocation.getArgumentAt(0, NamedValueSecret.class);
+          namedValueSecret.setUuid(UUID.randomUUID());
+          return namedValueSecret;
+        });
+
         MockHttpServletRequestBuilder set = put(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)

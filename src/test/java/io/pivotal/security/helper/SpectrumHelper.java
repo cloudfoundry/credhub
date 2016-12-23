@@ -12,11 +12,16 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.test.context.TestContextManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -27,12 +32,6 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 public class SpectrumHelper {
@@ -67,7 +66,7 @@ public class SpectrumHelper {
     });
   }
 
-  private static void cleanUpBeforeTests(final Object testInstance, Supplier<MyTestContextManager> myTestContextManagerSupplier) {
+  private static void cleanUpBeforeTests(Supplier<MyTestContextManager> myTestContextManagerSupplier) {
     beforeEach(() -> {
       Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
       flyway.clean();
@@ -78,7 +77,7 @@ public class SpectrumHelper {
   public static void wireAndUnwire(final Object testInstance, boolean cleanUpBeforeTests) {
     Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
     if (cleanUpBeforeTests) {
-      cleanUpBeforeTests(testInstance, myTestContextManagerSupplier);
+      cleanUpBeforeTests(myTestContextManagerSupplier);
     }
     beforeEach(() -> myTestContextManagerSupplier.get().prepareTestInstance(testInstance));
     afterEach(cleanMockBeans(testInstance, myTestContextManagerSupplier));
@@ -146,10 +145,6 @@ public class SpectrumHelper {
 
   public static Spectrum.Block injectMocks(Object testInstance) {
     return () -> MockitoAnnotations.initMocks(testInstance);
-  }
-
-  public static CountMemo markRepository(CrudRepository crudRepository) {
-    return new CountMemo(crudRepository).mark();
   }
 
   private static class MyTestContextManager extends TestContextManager {
