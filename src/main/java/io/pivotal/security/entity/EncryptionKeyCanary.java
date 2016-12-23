@@ -11,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "NamedCanary")
-public class NamedCanary implements EncryptedValueContainer {
+public class EncryptionKeyCanary implements EncryptedValueContainer {
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
@@ -25,11 +25,11 @@ public class NamedCanary implements EncryptedValueContainer {
   @Column(length = NONCE)
   private byte[] nonce;
 
-  public NamedCanary() {
+  public EncryptionKeyCanary() {
     this(null);
   }
 
-  public NamedCanary(String name) {
+  public EncryptionKeyCanary(String name) {
     this.name = name;
   }
 

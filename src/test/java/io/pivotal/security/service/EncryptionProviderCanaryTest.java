@@ -2,8 +2,8 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.CanaryDataService;
-import io.pivotal.security.entity.NamedCanary;
+import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 public class EncryptionProviderCanaryTest {
 
   @MockBean
-  CanaryDataService canaryDataService;
+  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @SpyBean
   EncryptionService encryptionService;
@@ -59,7 +59,7 @@ public class EncryptionProviderCanaryTest {
     describe("#checkForDataCorruption", () -> {
       describe("when there is no existing canary", () -> {
         beforeEach(() -> {
-          when(canaryDataService.find(CANARY_NAME)).thenReturn(null);
+          when(encryptionKeyCanaryDataService.find(CANARY_NAME)).thenReturn(null);
         });
 
         it("should create a new canary", () -> {
@@ -67,13 +67,13 @@ public class EncryptionProviderCanaryTest {
           EncryptionService.Encryption encryptedValue = new EncryptionService.Encryption("test-nonce".getBytes(), "test-encrypted-value".getBytes());
           doReturn(encryptedValue).when(encryptionService).encrypt(expectedCanaryValue);
 
-          reset(canaryDataService);
+          reset(encryptionKeyCanaryDataService);
           subject.checkForDataCorruption();
 
-          ArgumentCaptor<NamedCanary> argumentCaptor = ArgumentCaptor.forClass(NamedCanary.class);
-          verify(canaryDataService, times(1)).save(argumentCaptor.capture());
+          ArgumentCaptor<EncryptionKeyCanary> argumentCaptor = ArgumentCaptor.forClass(EncryptionKeyCanary.class);
+          verify(encryptionKeyCanaryDataService, times(1)).save(argumentCaptor.capture());
 
-          NamedCanary canary = argumentCaptor.getValue();
+          EncryptionKeyCanary canary = argumentCaptor.getValue();
 
           assertThat(canary.getNonce(), equalTo("test-nonce".getBytes()));
           assertThat(canary.getEncryptedValue(), equalTo("test-encrypted-value".getBytes()));
@@ -88,11 +88,11 @@ public class EncryptionProviderCanaryTest {
 
       describe("when there is an existing canary", () -> {
         beforeEach(() -> {
-          NamedCanary canary = new NamedCanary();
+          EncryptionKeyCanary canary = new EncryptionKeyCanary();
           canary.setNonce("test-nonce".getBytes());
           canary.setEncryptedValue("fake-encrypted-value".getBytes());
 
-          when(canaryDataService.find(CANARY_NAME)).thenReturn(canary);
+          when(encryptionKeyCanaryDataService.find(CANARY_NAME)).thenReturn(canary);
         });
 
         it("should not fail if the decrypted value matches the expected value", () -> {

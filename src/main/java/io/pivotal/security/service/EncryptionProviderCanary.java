@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.data.CanaryDataService;
-import io.pivotal.security.entity.NamedCanary;
+import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,15 +21,15 @@ public class EncryptionProviderCanary {
   EncryptionConfiguration encryptionConfiguration;
 
   @Autowired
-  CanaryDataService birdCage;
+  EncryptionKeyCanaryDataService birdCage;
 
   @PostConstruct
   public void checkForDataCorruption() {
     String canaryValue = new String(new byte[128], encryptionService.charset());
 
-    NamedCanary canary = birdCage.find(CANARY_NAME);
+    EncryptionKeyCanary canary = birdCage.find(CANARY_NAME);
     if (canary == null) {
-      canary = new NamedCanary(CANARY_NAME);
+      canary = new EncryptionKeyCanary(CANARY_NAME);
       try {
         EncryptionService.Encryption encryptedCanary = encryptionService.encrypt(canaryValue);
         canary.setEncryptedValue(encryptedCanary.encryptedValue);

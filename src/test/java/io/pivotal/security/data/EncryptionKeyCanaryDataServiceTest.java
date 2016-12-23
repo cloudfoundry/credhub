@@ -2,7 +2,7 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.NamedCanary;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,9 +24,9 @@ import static org.junit.Assert.assertNull;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class CanaryDataServiceTest {
+public class EncryptionKeyCanaryDataServiceTest {
   @Autowired
-  CanaryDataService subject;
+  EncryptionKeyCanaryDataService subject;
 
   @Autowired
   JdbcTemplate jdbcTemplate;
@@ -44,24 +44,24 @@ public class CanaryDataServiceTest {
 
     describe("#save", () -> {
       it("should save the canary in the database", () -> {
-        NamedCanary canary = new NamedCanary("test-canary");
+        EncryptionKeyCanary canary = new EncryptionKeyCanary("test-canary");
         canary.setNonce("test-nonce".getBytes());
         canary.setEncryptedValue("test-value".getBytes());
         subject.save(canary);
 
-        List<NamedCanary> canaries = jdbcTemplate.query("select * from named_canary", (rowSet, rowNum) -> {
-          NamedCanary namedCanary = new NamedCanary(rowSet.getString("name"));
+        List<EncryptionKeyCanary> canaries = jdbcTemplate.query("select * from named_canary", (rowSet, rowNum) -> {
+          EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary(rowSet.getString("name"));
 
-          namedCanary.setId(rowSet.getLong("id"));
-          namedCanary.setNonce(rowSet.getBytes("nonce"));
-          namedCanary.setEncryptedValue(rowSet.getBytes("encrypted_value"));
+          encryptionKeyCanary.setId(rowSet.getLong("id"));
+          encryptionKeyCanary.setNonce(rowSet.getBytes("nonce"));
+          encryptionKeyCanary.setEncryptedValue(rowSet.getBytes("encrypted_value"));
 
-          return namedCanary;
+          return encryptionKeyCanary;
         });
 
         assertThat(canaries.size(), equalTo(1));
 
-        NamedCanary actual = canaries.get(0);
+        EncryptionKeyCanary actual = canaries.get(0);
 
         assertThat(actual.getId(), equalTo(canary.getId()));
         assertThat(actual.getName(), equalTo("test-canary"));
@@ -73,13 +73,13 @@ public class CanaryDataServiceTest {
     describe("#find", () -> {
       describe("when there is a canary with that name in the database", () -> {
         it("should return the canary", () -> {
-          NamedCanary expected = new NamedCanary("test-canary");
+          EncryptionKeyCanary expected = new EncryptionKeyCanary("test-canary");
           expected.setEncryptedValue("test-value".getBytes());
 
           subject.save(expected);
-          subject.save(new NamedCanary("foo"));
+          subject.save(new EncryptionKeyCanary("foo"));
 
-          NamedCanary actual = subject.find("test-canary");
+          EncryptionKeyCanary actual = subject.find("test-canary");
 
           assertThat(actual.getId(), equalTo(expected.getId()));
           assertThat(actual.getEncryptedValue(), equalTo(expected.getEncryptedValue()));
@@ -88,8 +88,8 @@ public class CanaryDataServiceTest {
 
       describe("when there is not a canary with that name", () -> {
         it("should return null", () -> {
-          subject.save(new NamedCanary("foo"));
-          subject.save(new NamedCanary("test"));
+          subject.save(new EncryptionKeyCanary("foo"));
+          subject.save(new EncryptionKeyCanary("test"));
 
           assertNull(subject.find("does-not-exist"));
         });
