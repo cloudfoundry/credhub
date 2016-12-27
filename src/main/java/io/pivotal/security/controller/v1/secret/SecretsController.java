@@ -129,7 +129,7 @@ public class SecretsController {
 
   private String nameToDelete(String secretName, HttpServletRequest request) {
     if (secretName != null) {
-      return secretName;
+      return StringUtils.stripStart(secretName, "/");
     }
     return secretPath(request);
   }
@@ -142,7 +142,7 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    String secretIdentifier = id != null ? id : secretName;
+    String secretIdentifier = id != null ? id : StringUtils.stripStart(secretName, "/");
 
     return retrieveSecretWithAuditing(
         secretIdentifier,
@@ -261,9 +261,9 @@ public class SecretsController {
 
   private String getSecretName(HttpServletRequest request, DocumentContext parsed) {
     String secretPath = secretPath(request);
-    final String secretName;
+    String secretName;
     if (secretPath.isEmpty()) {
-      secretName = parsed.read("$.name", String.class);
+      secretName = StringUtils.stripStart(parsed.read("$.name", String.class), "/");
     } else {
       secretName = secretPath;
     }
@@ -306,12 +306,8 @@ public class SecretsController {
   }
 
   private String secretPath(HttpServletRequest request) {
-    String requestURI = request.getRequestURI();
-    String path = requestURI.replace(API_V1_DATA, "");
-    if (path.startsWith("/")) {
-      path = path.substring(1);
-    }
-    return path;
+    String path = request.getRequestURI().replaceAll(API_V1_DATA, "");
+    return StringUtils.stripStart(path, "/");
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
@@ -324,6 +320,6 @@ public class SecretsController {
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findWithAuditing(path, secretDataService::findStartingWithName, request, authentication);
+    return findWithAuditing(StringUtils.stripStart(path, "/"), secretDataService::findStartingWithName, request, authentication);
   }
 }

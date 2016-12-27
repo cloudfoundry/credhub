@@ -7,10 +7,9 @@ import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.StringSecret;
 import org.junit.runner.RunWith;
@@ -35,6 +34,7 @@ import java.util.function.Supplier;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
@@ -125,6 +125,18 @@ public class SecretsControllerGenerateTest {
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+      });
+
+      describe("when name has a leading slash in the request json", () -> {
+        it("should return 200", () -> {
+          final MockHttpServletRequestBuilder post = post(API_V1_DATA)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"" + "/" + secretName + "\"}");
+
+          mockMvc.perform(post)
+              .andExpect(status().is2xxSuccessful());
+        });
       });
 
       describe("for a new non-value secret, name in path", () -> {

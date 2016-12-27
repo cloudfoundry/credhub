@@ -5,9 +5,8 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -112,6 +111,8 @@ public class SecretsControllerGetTest {
       describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name", "$"));
 
       describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
+
+      describe("getting a secret by name when name has a leading slash", makeGetByNameBlock(secretValue, "/api/v1/data?name=/" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
 
       describe("when passing a 'current' query parameter", () -> {
         it("when true should return only the most recent version", () -> {

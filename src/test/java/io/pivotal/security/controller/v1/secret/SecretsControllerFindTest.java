@@ -3,10 +3,10 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.fake.FakeAuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -87,29 +87,49 @@ public class SecretsControllerFindTest {
 
     describe("finding secret", () -> {
       describe("finding credentials by name-like, i.e. partial names, case-insensitively", () -> {
-        beforeEach(() -> {
-          String substring = secretName.substring(4).toUpperCase();
+        describe("when search term does not include a leading slash", () -> {
+          beforeEach(() -> {
+            String substring = secretName.substring(4).toUpperCase();
+            doReturn(
+                Arrays.asList(new NamedValueSecret(secretName, "some value").setUpdatedAt(frozenTime))
+            ).when(secretDataService).findContainingName(substring);
+            final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
+                .accept(APPLICATION_JSON);
+
+            this.response = mockMvc.perform(get);
+          });
+
+          it("should return the secret metadata", () -> {
+            this.response.andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.credentials[0].name").value(secretName))
+                .andExpect(jsonPath("$.credentials[0].updated_at").value(frozenTime.toString()));
+          });
+
+          it("persists an audit entry", () -> {
+            ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
+            verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+
+            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
+          });
+        });
+      });
+
+      describe("when path has a leading slash", () -> {
+        it("strips the leading slash and returns the list of credentials", () -> {
+          String path = secretName.substring(0, secretName.lastIndexOf("/"));
           doReturn(
-              Arrays.asList(new NamedValueSecret(secretName, "some value").setUpdatedAt(frozenTime))
-          ).when(secretDataService).findContainingName(substring);
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
+              Arrays.asList(new NamedPasswordSecret(secretName, "some value").setUpdatedAt(frozenTime))
+          ).when(secretDataService).findStartingWithName(path);
+
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=/" + path)
               .accept(APPLICATION_JSON);
 
-          this.response = mockMvc.perform(get);
-        });
-
-        it("should return the secret metadata", () -> {
-          this.response.andExpect(status().isOk())
+          mockMvc.perform(get)
+              .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.credentials[0].name").value(secretName))
               .andExpect(jsonPath("$.credentials[0].updated_at").value(frozenTime.toString()));
-        });
-
-        it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
-          verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
-
-          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
         });
       });
 

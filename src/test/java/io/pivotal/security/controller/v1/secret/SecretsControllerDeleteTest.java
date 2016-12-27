@@ -184,6 +184,15 @@ public class SecretsControllerDeleteTest {
               .andExpect(status().isBadRequest());
         });
       });
+
+      describe("when name has a leading slash", () -> {
+        it("should strip the leading slash and delete credential(s)", () -> {
+          doReturn(Arrays.asList(new NamedValueSecret(secretName, "value1"), new NamedValueSecret(secretName, "value2")))
+              .when(secretDataService).delete(secretName.toUpperCase());
+          mockMvc.perform(delete("/api/v1/data?name=/" + secretName.toUpperCase()))
+              .andExpect(status().isOk());
+        });
+      });
     });
   }
 

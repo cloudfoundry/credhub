@@ -32,7 +32,6 @@ import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -198,6 +197,24 @@ public class SecretsControllerSetTest {
 
         setSecretBehavior();
       });
+
+      describe("when name has a leading slash", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"type\":\"value\"," +
+                  "  \"name\":\"" + "/" + secretName + "\"," +
+                  "  \"value\":\"" + secretValue + "\"" +
+                  "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        setSecretBehavior();
+      });
+
     });
 
     describe("updating a secret", () -> {

@@ -3,15 +3,16 @@ package io.pivotal.security.data;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSecretImpl;
 import io.pivotal.security.repository.SecretRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @Service
 public class SecretDataService {
@@ -35,7 +36,7 @@ public class SecretDataService {
     "AND " +
       "UPPER(named_secret.name) = most_recent.inner_name " +
     "WHERE " +
-      "UPPER(named_secret.name) LIKE UPPER(?) " +
+      "UPPER(named_secret.name) LIKE UPPER(?) OR UPPER(named_secret.name) LIKE UPPER(?) " +
     "ORDER BY updated_at DESC";
 
   @Autowired
@@ -71,7 +72,7 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> findContainingName(String name) {
-    return findMostRecentLikeSubstring('%' + name + '%');
+    return findMostRecentLikeSubstring('%' + name + '%', StringUtils.stripStart(name, "/") + '%');
   }
 
   public List<NamedSecret> findStartingWithName(String name) {
@@ -80,7 +81,7 @@ public class SecretDataService {
     }
     name += '%';
 
-    return findMostRecentLikeSubstring(name);
+    return findMostRecentLikeSubstring(name, name);
   }
 
   public List<NamedSecret> delete(String name) {
@@ -91,13 +92,13 @@ public class SecretDataService {
     return secretRepository.findAllByNameIgnoreCase(name);
   }
 
-  private List<NamedSecret> findMostRecentLikeSubstring(String substring) {
+  private List<NamedSecret> findMostRecentLikeSubstring(String substring1, String substring2) {
     secretRepository.flush();
 
     // The subquery gets us the right name/updated_at pairs, but changes the capitalization of the names.
     return jdbcTemplate.query(
         FIND_MOST_RECENT_BY_SUBSTRING_QUERY,
-      new Object[] {substring},
+      new Object[] {substring1, substring2},
       (rowSet, rowNum) -> {
         NamedSecret secret = new NamedSecretImpl();
 

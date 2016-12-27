@@ -203,26 +203,41 @@ public class SecretDataServiceTest {
     });
 
     describe("#findContainingName", () -> {
-      it("returns secrets in reverse chronological order", () -> {
+      String valueName = "value.Secret";
+      String passwordName = "password/Secret";
+      String certificateName = "certif/ic/atesecret";
+
+      beforeEach(() -> {
         fakeTimeSetter.accept(2000000000123L);
-        String valueName = "value.Secret";
         subject.save(new NamedValueSecret(valueName));
         subject.save(new NamedPasswordSecret("mySe.cret"));
 
         fakeTimeSetter.accept(1000000000123L);
-        String passwordName = "password/Secret";
         subject.save(new NamedPasswordSecret(passwordName));
         subject.save(new NamedCertificateSecret("myseecret"));
 
         fakeTimeSetter.accept(3000000000123L);
-        String certificateName = "certif/ic/atesecret";
         subject.save(new NamedCertificateSecret(certificateName));
+      });
 
+      it("returns secrets in reverse chronological order", () -> {
         assertThat(subject.findContainingName("SECRET"), IsIterableContainingInOrder.contains(
             hasProperty("name", equalTo(certificateName)),
             hasProperty("name", equalTo(valueName)),
             hasProperty("name", equalTo(passwordName))
         ));
+      });
+
+      it("should return a credential ignoring leading slash at the start of credential name", () -> {
+        fakeTimeSetter.accept(4000000000123L);
+        subject.save(new NamedPasswordSecret("my/password/secret"));
+        fakeTimeSetter.accept(5000000000123L);
+        subject.save(new NamedPasswordSecret("mypassword/secret"));
+        List<NamedSecret> containingName = subject.findContainingName("/password");
+        assertThat(containingName, IsIterableContainingInOrder.contains(
+            hasProperty("name", equalTo("my/password/secret")),
+            hasProperty("name", equalTo(passwordName))
+            ));
       });
 
       describe("when there are duplicate names", () -> {
