@@ -129,7 +129,7 @@ public class SecretsController {
 
   private String nameToDelete(String secretName, HttpServletRequest request) {
     if (secretName != null) {
-      return StringUtils.stripStart(secretName, "/");
+      return sanitizedName(secretName);
     }
     return secretPath(request);
   }
@@ -142,7 +142,7 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    String secretIdentifier = id != null ? id : StringUtils.stripStart(secretName, "/");
+    String secretIdentifier = id != null ? id : sanitizedName(secretName);
 
     return retrieveSecretWithAuditing(
         secretIdentifier,
@@ -151,6 +151,10 @@ public class SecretsController {
         authentication,
         selectPresenterFunction(id)
     );
+  }
+
+  public String sanitizedName(@RequestParam(value = "name", required = false) String secretName) {
+    return StringUtils.stripStart(secretName, "/");
   }
 
   private Function<List<NamedSecret>, Object> selectPresenterFunction(String id) {
@@ -263,7 +267,7 @@ public class SecretsController {
     String secretPath = secretPath(request);
     String secretName;
     if (secretPath.isEmpty()) {
-      secretName = StringUtils.stripStart(parsed.read("$.name", String.class), "/");
+      secretName = sanitizedName(parsed.read("$.name", String.class));
     } else {
       secretName = secretPath;
     }
@@ -307,7 +311,7 @@ public class SecretsController {
 
   private String secretPath(HttpServletRequest request) {
     String path = request.getRequestURI().replaceAll(API_V1_DATA, "");
-    return StringUtils.stripStart(path, "/");
+    return sanitizedName(path);
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
@@ -320,6 +324,6 @@ public class SecretsController {
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findWithAuditing(StringUtils.stripStart(path, "/"), secretDataService::findStartingWithName, request, authentication);
+    return findWithAuditing(sanitizedName(path), secretDataService::findStartingWithName, request, authentication);
   }
 }
