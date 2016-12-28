@@ -13,6 +13,7 @@ import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -21,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -80,7 +80,7 @@ public class CaController {
   @RequestMapping(path = "", method = RequestMethod.PUT)
   ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonContextFactory.getObject().parse(requestBody);
-    final String caName = parsedRequest.read("$.name");
+    final String caName = sanitizedName(parsedRequest);
     if(isBlank(caName)) {
       return createErrorResponse("error.ca_name_missing", HttpStatus.BAD_REQUEST);
     }
@@ -93,7 +93,7 @@ public class CaController {
   @RequestMapping(path = "", method = RequestMethod.POST)
   ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     DocumentContext parsedRequest = jsonContextFactory.getObject().parse(requestBody);
-    final String caName = parsedRequest.read("$.name");
+    final String caName = sanitizedName(parsedRequest);
     if(isBlank(caName)) {
       return createErrorResponse("error.ca_name_missing", HttpStatus.BAD_REQUEST);
     }
@@ -103,7 +103,7 @@ public class CaController {
   }
 
   private ResponseEntity storeAuthority(DocumentContext parsedRequest, RequestTranslator<NamedCertificateAuthority> requestTranslator) {
-    String caPath = parsedRequest.read("$.name");
+    String caPath = sanitizedName(parsedRequest);
 
     NamedCertificateAuthority namedCertificateAuthority = new NamedCertificateAuthority(caPath);
     NamedCertificateAuthority mostRecentCA = certificateAuthorityDataService.findMostRecent(caPath);
@@ -144,11 +144,11 @@ public class CaController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    if (StringUtils.isEmpty(name)) {
+    if (StringUtils.isEmpty(sanitizedName(name))) {
       return createErrorResponse("error.no_identifier", HttpStatus.BAD_REQUEST);
     }
 
-    return retrieveAuthorityWithAuditing(name, getFinder(limitResults), request, authentication, (caList) -> new DataResponse(caList));
+    return retrieveAuthorityWithAuditing(sanitizedName(name), getFinder(limitResults), request, authentication, (caList) -> new DataResponse(caList));
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
@@ -163,6 +163,14 @@ public class CaController {
     } else {
       return certificateAuthorityDataService::findAllByName;
     }
+  }
+
+  private String sanitizedName(String name) {
+    return StringUtils.stripStart(name, "/");
+  }
+
+  private String sanitizedName(DocumentContext parsedRequest) {
+    return StringUtils.stripStart(parsedRequest.read("$.name"), "/");
   }
 
   private Function<String, List<NamedCertificateAuthority>> findAsList(Function<String, NamedCertificateAuthority> finder) {

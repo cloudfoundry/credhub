@@ -17,7 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -34,7 +33,6 @@ import java.util.function.Supplier;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
@@ -154,6 +152,25 @@ public class CaControllerTest {
           NamedCertificateAuthority savedCa = argumentCaptor.getValue();
           assertThat(savedCa.getName(), equalTo(UNIQUE_NAME));
           assertThat(savedCa.getCertificate(), equalTo("my_cert"));
+        });
+
+        it("ignores the leading slash in the CA name", () -> {
+          String requestJson = String.format(
+              "{\"type\":\"root\",\"name\":\"%s\",\"parameters\":{\"common_name\":\"test-ca\"}}",
+              "/" + UNIQUE_NAME);
+
+          mockMvc.perform(post("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8))
+              .andExpect(status().isOk())
+              .andExpect(content().json(CA_RESPONSE_JSON));
+
+          ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+
+          verify(certificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+
+          NamedCertificateAuthority savedCa = argumentCaptor.getValue();
+          assertThat(savedCa.getName(), equalTo(UNIQUE_NAME));
         });
 
         it("returns an error if name is omitted from request body", () -> {
@@ -313,6 +330,44 @@ public class CaControllerTest {
     });
 
     describe("setting a ca", () -> {
+      describe("and a name is given with a leading slash", () -> {
+        it("should ignore the leading slash", () -> {
+          uuid = UUID.randomUUID();
+          doReturn(
+              new NamedCertificateAuthority(UNIQUE_NAME)
+                  .setType("root")
+                  .setCertificate("my_cert")
+                  .setPrivateKey("private_key")
+                  .setUpdatedAt(FROZEN_TIME_INSTANT)
+                  .setUuid(uuid)
+          ).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
+
+          String requestJson = String.format(
+              "{" +
+                  "\"type\":\"root\"," +
+                  "\"name\":\"%s\"," +
+                  "\"value\":{" +
+                    "\"certificate\":\"my_cert\"," +
+                    "\"private_key\":\"private_key\"" +
+                  "}" +
+              "}",
+              "/" + UNIQUE_NAME);
+
+          mockMvc.perform(put("/api/v1/ca")
+              .content(requestJson)
+              .contentType(MediaType.APPLICATION_JSON_UTF8))
+              .andExpect(status().isOk())
+              .andExpect(content().json(CA_RESPONSE_JSON));
+
+          ArgumentCaptor<NamedCertificateAuthority> argumentCaptor = ArgumentCaptor.forClass(NamedCertificateAuthority.class);
+
+          verify(certificateAuthorityDataService, times(1)).save(argumentCaptor.capture());
+
+          NamedCertificateAuthority savedCa = argumentCaptor.getValue();
+          assertThat(savedCa.getName(), equalTo(UNIQUE_NAME));
+        });
+      });
+
       describe("when creating a new CA", () -> {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
@@ -511,6 +566,58 @@ public class CaControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(content().json(expectedJsonWithManyCAs, true));
+          });
+
+          describe("ignoring a leading slash in the name of the CA", () -> {
+
+            it("returns the ca when the name is a request parameter", () -> {
+              String expectedJsonWithManyCAs = "{ \"data\": [" +
+                  "{"
+                  + UPDATED_AT_JSON + "," +
+                  "    \"type\":\"root\"," +
+                  "    \"value\":{" +
+                  "        \"certificate\":\"my-certificate\"," +
+                  "        \"private_key\":\"my-priv\"" +
+                  "    }," +
+                  "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+                  "}," +
+                  "{"
+                  + OLDER_UPDATED_AT_JSON + "," +
+                  "    \"type\":\"root\"," +
+                  "    \"value\":{" +
+                  "        \"certificate\":\"my-certificate-old\"," +
+                  "        \"private_key\":\"my-priv\"" +
+                  "    }," +
+                  "    \"id\":\"" + olderStoredCa.getUuid().toString() + "\"" +
+                  "}" +
+                  "]" +
+                  "}";
+
+              mockMvc.perform(get("/api/v1/ca?name=" + "/" + UNIQUE_NAME))
+                  .andExpect(status().isOk())
+                  .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                  .andExpect(content().json(expectedJsonWithManyCAs, true));
+            });
+
+            it("can limit results with the 'current' query parameter", () -> {
+              String jsonWithOnlyOneCA = "{ \"data\": [" +
+                  "{"
+                  + UPDATED_AT_JSON + "," +
+                  "    \"type\":\"root\"," +
+                  "    \"value\":{" +
+                  "        \"certificate\":\"my-certificate\"," +
+                  "        \"private_key\":\"my-priv\"" +
+                  "    }," +
+                  "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
+                  "}]" +
+                  "}";
+
+              String requestUrl = "/api/v1/ca?name=" + "/" + UNIQUE_NAME + "&current=true";
+              mockMvc.perform(get(requestUrl))
+                  .andExpect(status().isOk())
+                  .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))
+                  .andExpect(content().json(jsonWithOnlyOneCA, true));
+            });
           });
 
           it("can limit results with the 'current' query parameter", () -> {
