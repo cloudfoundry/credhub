@@ -72,7 +72,7 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> findContainingName(String name) {
-    return findMostRecentLikeSubstring('%' + name + '%', StringUtils.stripStart(name, "/") + '%');
+    return findMostRecentLikeSubstrings('%' + name + '%', StringUtils.stripStart(name, "/") + '%');
   }
 
   public List<NamedSecret> findStartingWithName(String name) {
@@ -81,7 +81,7 @@ public class SecretDataService {
     }
     name += '%';
 
-    return findMostRecentLikeSubstring(name, name);
+    return findMostRecentLikeSubstrings(name, name);
   }
 
   public List<NamedSecret> delete(String name) {
@@ -92,7 +92,7 @@ public class SecretDataService {
     return secretRepository.findAllByNameIgnoreCase(name);
   }
 
-  private List<NamedSecret> findMostRecentLikeSubstring(String substring1, String substring2) {
+  private List<NamedSecret> findMostRecentLikeSubstrings(String substring1, String substring2) {
     secretRepository.flush();
 
     // The subquery gets us the right name/updated_at pairs, but changes the capitalization of the names.
