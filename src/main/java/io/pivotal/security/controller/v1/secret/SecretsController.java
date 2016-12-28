@@ -32,6 +32,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -134,22 +135,36 @@ public class SecretsController {
     return secretPath(request);
   }
 
+  @RequestMapping(path = "/{id}", method = RequestMethod.GET)
+  public ResponseEntity getSecretById(
+      @PathVariable String id,
+      HttpServletRequest request,
+      Authentication authentication) throws Exception {
+
+    return retrieveSecretWithAuditing(
+        id,
+        secretDataService::findByUuidAsList,
+        request,
+        authentication,
+        (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0))
+    );
+  }
+
   @RequestMapping(path = "", method = RequestMethod.GET)
   public ResponseEntity getSecret(
       @RequestParam(value = "name", required = false) String secretName,
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
-      @RequestParam(value = "id", required = false) String id,
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    String secretIdentifier = id != null ? id : sanitizedName(secretName);
+    String secretIdentifier = sanitizedName(secretName);
 
     return retrieveSecretWithAuditing(
         secretIdentifier,
-        selectLookupFunction(current, id),
+        selectLookupFunction(current),
         request,
         authentication,
-        selectPresenterFunction(id)
+        (namedSecrets) -> DataResponse.fromEntity(namedSecrets, Secret::fromEntity)
     );
   }
 
@@ -157,30 +172,12 @@ public class SecretsController {
     return StringUtils.stripStart(secretName, "/");
   }
 
-  private Function<List<NamedSecret>, Object> selectPresenterFunction(String id) {
-    if (id != null) {
-      return (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0));
+  private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
+    if (current) {
+      return secretDataService::findMostRecentAsList;
     } else {
-      return (namedSecrets) -> DataResponse.fromEntity(namedSecrets, Secret::fromEntity);
+      return secretDataService::findAllByName;
     }
-  }
-
-  private Function<String, List<NamedSecret>> selectLookupFunction(boolean current, String id) {
-    if (id != null) {
-      return secretDataService::findByUuidAsList;
-    } else {
-      if (current) {
-        return secretDataService::findMostRecentAsList;
-      } else {
-        return secretDataService::findAllByName;
-      }
-    }
-  }
-
-  @RequestMapping(path = "/**", method = RequestMethod.GET)
-  public ResponseEntity getSecretByPath(HttpServletRequest request, Authentication authentication) throws Exception {
-    return retrieveSecretWithAuditing(secretPath(request), secretDataService::findMostRecentAsList, request, authentication, (namedSecrets) -> Secret
-        .fromEntity(namedSecrets.get(0)));
   }
 
   private ResponseEntity retrieveSecretWithAuditing(String identifier,

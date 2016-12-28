@@ -108,8 +108,6 @@ public class SecretsControllerGetTest {
         ).when(secretDataService).findByUuid(uuid.toString());
       });
 
-      describe("getting a secret by name case-insensitively (with old-style URLs)", makeGetByNameBlock(secretValue, "/api/v1/data/" + secretName.toUpperCase(), "/api/v1/data/invalid_name", "$"));
-
       describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
 
       describe("getting a secret by name when name has a leading slash", makeGetByNameBlock(secretValue, "/api/v1/data?name=/" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
@@ -144,7 +142,7 @@ public class SecretsControllerGetTest {
 
       describe("getting a secret by id", () -> {
         beforeEach(() -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?id=" + uuid)
+          final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
               .accept(APPLICATION_JSON);
 
           this.response = mockMvc.perform(get);

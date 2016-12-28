@@ -293,7 +293,7 @@ public class SecretsControllerSetTest {
         });
 
         it("should retain the previous value at the previous id", () -> {
-          mockMvc.perform(get("/api/v1/data?id=" + uuid.toString()))
+          mockMvc.perform(get("/api/v1/data/" + uuid.toString()))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value("original value"))
               .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));

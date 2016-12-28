@@ -26,7 +26,6 @@ import java.util.Arrays;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -103,7 +102,7 @@ public class SecretsControllerAuditLogTest {
           doReturn(Arrays.asList(new NamedPasswordSecret("foo")))
               .when(secretDataService).findByUuidAsList(eq("foo-id"));
 
-          mockMvc.perform(get(API_V1_DATA + "?id=foo-id")
+          mockMvc.perform(get(API_V1_DATA + "/foo-id")
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
@@ -121,7 +120,6 @@ public class SecretsControllerAuditLogTest {
     });
 
     describe("when a request to set credential is served", () -> {
-
       beforeEach(() -> {
         MockHttpServletRequestBuilder set = put(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
