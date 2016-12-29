@@ -5,11 +5,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotNull;
+import java.util.HashMap;
+import java.util.Map;
 
 @ConfigurationProperties("auth-server")
 public class AuthServerProperties {
@@ -20,7 +19,7 @@ public class AuthServerProperties {
   @NotNull(message = "The auth-server.url configuration property is required.")
   private String url;
 
-  private final String client = "credhub";
+  private final String client = "credhub_cli";
   private final String clientSecret = "";
 
   public String getUrl() {
