@@ -367,58 +367,91 @@ public class SecretsControllerSetTest {
       assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_UPDATE));
     });
 
-    it("returns 400 when the handler raises an exception", () -> {
-      doReturn(
-          new NamedValueSecret(secretName, secretValue)
-      ).when(secretDataService).findMostRecent(secretName);
+    describe("error handling", () -> {
+      it("returns 400 when the handler raises an exception", () -> {
+        doReturn(
+            new NamedValueSecret(secretName, secretValue)
+        ).when(secretDataService).findMostRecent(secretName);
 
-      final MockHttpServletRequestBuilder put = put("/api/v1/data")
-          .accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content("{" +
-              "  \"type\":\"password\"," +
-              "  \"name\":\"" + secretName + "\"," +
-              "  \"value\":\"some password\"" +
-              "}");
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"name\":\"" + secretName + "\"," +
+                "  \"value\":\"some password\"" +
+                "}");
 
-      mockMvc.perform(put)
-          .andExpect(status().isBadRequest())
-          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
-    });
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
+      });
 
-    it("returns a parameterized error message when json key is invalid", () -> {
-      final MockHttpServletRequestBuilder put = put("/api/v1/data")
-          .accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content("{" +
-              "  \"type\":\"value\"," +
-              "  \"name\":\"" + secretName + "\"," +
-              "  \"response error\":\"invalid key\"," +
-              "  \"value\":\"some value\"" +
-              "}");
+      it("returns 400 when name is empty", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"name\":\"\"," +
+                "  \"value\":\"some password\"" +
+                "}");
 
-      mockMvc.perform(put)
-          .andExpect(status().isBadRequest())
-          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'response error'. Please update or remove this parameter and retry your request."));
-    });
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+      });
 
-    it("returns errors from the auditing service auditing fails", () -> {
-      doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-          .when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+      it("returns 400 when name is missing", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"value\":\"some password\"" +
+                "}");
 
-      final MockHttpServletRequestBuilder put = put("/api/v1/data")
-          .accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content("{" +
-              "  \"type\":\"value\"," +
-              "  \"name\":\"" + secretName + "\"," +
-              "  \"value\":\"some value\"" +
-              "}");
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+      });
 
-      mockMvc.perform(put)
-          .andExpect(status().isInternalServerError());
+      it("returns a parameterized error message when json key is invalid", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"value\"," +
+                "  \"name\":\"" + secretName + "\"," +
+                "  \"response error\":\"invalid key\"," +
+                "  \"value\":\"some value\"" +
+                "}");
+
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'response error'. Please update or remove this parameter and retry your request."));
+      });
+
+      it("returns errors from the auditing service auditing fails", () -> {
+        doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
+            .when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"value\"," +
+                "  \"name\":\"" + secretName + "\"," +
+                "  \"value\":\"some value\"" +
+                "}");
+
+        mockMvc.perform(put)
+            .andExpect(status().isInternalServerError());
+      });
     });
 
     it("allows secret with '.' in the name", () -> {
