@@ -116,10 +116,10 @@ public class SecretsControllerGenerateTest {
       });
 
       it("for a new value secret should return an error message", () -> {
-        final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
+        final MockHttpServletRequestBuilder post = post("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
-            .content("{\"type\":\"value\"}");
+            .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
 
         mockMvc.perform(post)
             .andExpect(status().isBadRequest())
@@ -269,10 +269,11 @@ public class SecretsControllerGenerateTest {
         });
       });
 
-      // TODO: this might be passing for the wrong reason
       it("returns 400 when type is not present", () -> {
-        mockMvc.perform(post("/api/v1/data/" + secretName).accept(APPLICATION_JSON))
-            .andExpect(status().isBadRequest());
+        mockMvc.perform(post("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .content("{\"name\":\"" + secretName+ "\"}")
+        ).andExpect(status().isBadRequest());
       });
     });
   }

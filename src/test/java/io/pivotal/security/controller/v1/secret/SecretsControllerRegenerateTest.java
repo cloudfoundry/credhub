@@ -155,10 +155,10 @@ public class SecretsControllerRegenerateTest {
 
     describe("regenerate request for a non-existent secret", () -> {
       beforeEach(() -> {
-        response = mockMvc.perform(post("/api/v1/data/my-password")
+        response = mockMvc.perform(post("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
-            .content("{\"regenerate\":true}"));
+            .content("{\"regenerate\":true,\"name\":\"my-password\"}"));
       });
 
       it("returns an error", () -> {

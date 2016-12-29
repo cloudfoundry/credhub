@@ -29,6 +29,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
+import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -70,8 +71,8 @@ public class AuditOAuth2AccessDeniedHandlerTest {
 
   private Instant now;
 
-  private final String credentialUrlPath = "/api/v1/data/foo";
-  private final String credentialUrlQueryParams = "?query=value";
+  private final String credentialUrlPath = "/api/v1/data?name=foo";
+  private final String credentialUrlQueryParams = "&query=value";
   private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
 
   {
@@ -113,8 +114,8 @@ public class AuditOAuth2AccessDeniedHandlerTest {
 
         assertThat(auditRecord.isSuccess(), equalTo(false));
         assertThat(auditRecord.getNow(), equalTo(now));
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getQueryParameters(), equalTo("query=value"));
+        assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
+        assertThat(auditRecord.getQueryParameters(), equalTo("name=foo&query=value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));

@@ -94,13 +94,12 @@ public class SecretsController {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
-  // TODO: update path?
-  @RequestMapping(path = "/**", method = RequestMethod.POST)
+  @RequestMapping(path = "", method = RequestMethod.POST)
   public ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditedStoreSecret(requestBody, request, authentication, namedSecretGenerateHandler);
   }
-  // TODO: update path?
-  @RequestMapping(path = "/**", method = RequestMethod.PUT)
+
+  @RequestMapping(path = "", method = RequestMethod.PUT)
   public ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditedStoreSecret(requestBody, request, authentication, namedSecretSetHandler);
   }
