@@ -239,6 +239,9 @@ public class SecretsController {
                                                SecretKindMappingFactory handler) throws Exception {
     final DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestBody);
     final String secretName = getSecretName(parsedRequestBody);
+    if (StringUtils.isEmpty(secretName)) {
+      return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
+    }
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
     boolean willBeCreated = existingNamedSecret == null;

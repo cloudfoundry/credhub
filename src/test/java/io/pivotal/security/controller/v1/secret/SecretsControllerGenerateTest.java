@@ -269,11 +269,33 @@ public class SecretsControllerGenerateTest {
         });
       });
 
-      it("returns 400 when type is not present", () -> {
-        mockMvc.perform(post("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .content("{\"name\":\"" + secretName+ "\"}")
-        ).andExpect(status().isBadRequest());
+      describe("error handling", () -> {
+        it("returns 400 when type is not present", () -> {
+          mockMvc.perform(post("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .content("{\"name\":\"" + secretName+ "\"}")
+          )
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.error").value("The request does not include a valid type. Please validate your input and retry your request."));
+        });
+
+        it("returns 400 when name is empty", () -> {
+          mockMvc.perform(post("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"\"}")
+          )
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+        });
+
+        it("returns 400 when name is missing", () -> {
+          mockMvc.perform(post("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .content("{\"type\":\"password\"}")
+          )
+              .andExpect(status().isBadRequest())
+              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+        });
       });
     });
   }
