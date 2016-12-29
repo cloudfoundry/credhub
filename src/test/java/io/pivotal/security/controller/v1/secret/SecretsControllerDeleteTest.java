@@ -102,7 +102,7 @@ public class SecretsControllerDeleteTest {
       });
 
       it("should return NOT_FOUND when there is no secret with that name", () -> {
-        final MockHttpServletRequestBuilder delete = delete("/api/v1/data/invalid_name")
+        final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
             .accept(APPLICATION_JSON);
 
         mockMvc.perform(delete)
@@ -116,7 +116,7 @@ public class SecretsControllerDeleteTest {
           doReturn(Arrays.asList(new NamedValueSecret(secretName)))
               .when(secretDataService).delete(secretName.toUpperCase());
 
-          response = mockMvc.perform(delete("/api/v1/data/" + secretName.toUpperCase()));
+          response = mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()));
         });
 
         it("should return a 200 status", () -> {
@@ -141,7 +141,7 @@ public class SecretsControllerDeleteTest {
           doReturn(Arrays.asList(new NamedValueSecret(secretName, "value1"), new NamedValueSecret(secretName, "value2")))
               .when(secretDataService).delete(secretName);
 
-          response = mockMvc.perform(delete("/api/v1/data/" + secretName));
+          response = mockMvc.perform(delete("/api/v1/data?name=" + secretName));
         });
 
         it("should succeed", () -> {

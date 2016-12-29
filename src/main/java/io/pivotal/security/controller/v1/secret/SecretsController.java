@@ -94,24 +94,25 @@ public class SecretsController {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
+  // TODO: update path?
   @RequestMapping(path = "/**", method = RequestMethod.POST)
   public ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditedStoreSecret(requestBody, request, authentication, namedSecretGenerateHandler);
   }
-
+  // TODO: update path?
   @RequestMapping(path = "/**", method = RequestMethod.PUT)
   public ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
     return auditedStoreSecret(requestBody, request, authentication, namedSecretSetHandler);
   }
 
-  @RequestMapping(path = "/**", method = RequestMethod.DELETE)
+  @RequestMapping(path = "", method = RequestMethod.DELETE)
   public ResponseEntity delete( @RequestParam(value = "name", required = false) String secretName,
                                 HttpServletRequest request,
                                 Authentication authentication) throws Exception {
     AuditRecordBuilder auditRecorder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(auditRecorder, () -> {
       List<NamedSecret> namedSecrets;
-      final String nameToDelete = nameToDelete(secretName, request);
+      final String nameToDelete = sanitizedName(secretName);
 
       if (StringUtils.isEmpty(nameToDelete)) {
         throw new ParameterizedValidationException("error.missing_name");
@@ -126,13 +127,6 @@ public class SecretsController {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
     });
-  }
-
-  private String nameToDelete(String secretName, HttpServletRequest request) {
-    if (secretName != null) {
-      return sanitizedName(secretName);
-    }
-    return secretPath(request);
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
@@ -297,11 +291,6 @@ public class SecretsController {
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private String secretPath(HttpServletRequest request) {
-    String path = request.getRequestURI().replaceAll(API_V1_DATA, "");
-    return sanitizedName(path);
   }
 
   private ResponseEntity createErrorResponse(String key, HttpStatus status) {
