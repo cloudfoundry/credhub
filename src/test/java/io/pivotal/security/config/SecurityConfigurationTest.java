@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
-import java.util.Collections;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -44,11 +43,14 @@ public class SecurityConfigurationTest {
 
   private String urlPath;
 
+  private String secretName;
+
   {
     wireAndUnwire(this, true);
 
     beforeEach(() -> {
-      urlPath = "/api/v1/data/test";
+      urlPath = "/api/v1/data";
+      secretName = "test";
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
@@ -60,8 +62,11 @@ public class SecurityConfigurationTest {
     it("/health can be accessed without authentication", withoutAuthCheck("/health", "$.db.status"));
 
     it("denies other endpoints", () -> {
-      mockMvc.perform(post(urlPath))
-          .andExpect(status().isUnauthorized());
+      mockMvc.perform(post(urlPath)
+          .accept(MediaType.APPLICATION_JSON)
+          .contentType(MediaType.APPLICATION_JSON)
+          .content("{\"type\":\"password\",\"name\":\""+ secretName + "\"}")
+          ).andExpect(status().isUnauthorized());
     });
 
     describe("with a token accepted by our security config", () -> {
@@ -70,7 +75,7 @@ public class SecurityConfigurationTest {
             .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(serializingObjectMapper.writeValueAsBytes(Collections.singletonMap("type", "password")));
+            .content("{\"type\":\"password\",\"name\":\""+ secretName + "\"}");
 
         mockMvc.perform(post)
             .andExpect(status().isOk())

@@ -182,22 +182,6 @@ public class SecretsControllerSetTest {
         setSecretBehavior();
       });
 
-      describe("via path", () -> {
-        beforeEach(() -> {
-          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "  \"type\":\"value\"," +
-                  "  \"value\":\"" + secretValue + "\"" +
-                  "}");
-
-          response = mockMvc.perform(put);
-        });
-
-        setSecretBehavior();
-      });
-
       describe("when name has a leading slash", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -224,11 +208,12 @@ public class SecretsControllerSetTest {
       });
 
       it("should validate requests", () -> {
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{" +
                 "  \"type\":\"value\"," +
+                "  \"name\":\"" + secretName + "\"," +
                 "  \"value\":\"original value\"," +
                 "  \"bogus\":\"yargablabla\"" +
                 "}");
@@ -240,11 +225,12 @@ public class SecretsControllerSetTest {
       });
 
       it("should return 400 when trying to update a secret with a mismatching type", () -> {
-        final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName.toUpperCase())
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{" +
                 "  \"type\":\"password\"," +
+                "  \"name\":\"" + secretName.toUpperCase() + "\"," +
                 "  \"value\":\"my-password\"," +
                 "  \"overwrite\":true" +
                 "}");
@@ -260,11 +246,12 @@ public class SecretsControllerSetTest {
         beforeEach(() -> {
           fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
-          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName.toUpperCase())
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{" +
                   "  \"type\":\"value\"," +
+                  "  \"name\":\"" + secretName.toUpperCase() + "\"," +
                   "  \"value\":\"" + specialValue + "\"," +
                   "  \"overwrite\":true" +
                   "}");
@@ -309,11 +296,12 @@ public class SecretsControllerSetTest {
 
       describe("with the overwrite flag set to false", () -> {
         beforeEach(() -> {
-          final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{" +
                   "  \"type\":\"value\"," +
+                  "  \"name\":\"" + secretName + "\"," +
                   "  \"value\":\"special value\"" +
                   "}");
 
@@ -335,11 +323,12 @@ public class SecretsControllerSetTest {
 
       it("does not copy values from existing secret to new secret", () -> {
         doReturn(new NamedPasswordSecret("foo").setEncryptedGenerationParameters(new byte[1])).when(secretDataService).findMostRecent("foo");
-        mockMvc.perform(put("/api/v1/data/foo")
+        mockMvc.perform(put("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{" +
                 "  \"type\":\"password\"," +
+                "  \"name\":\"foo\"," +
                 "  \"value\":\"my-password\"," +
                 "  \"overwrite\":true" +
                 "}"))
@@ -383,11 +372,12 @@ public class SecretsControllerSetTest {
           new NamedValueSecret(secretName, secretValue)
       ).when(secretDataService).findMostRecent(secretName);
 
-      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+      final MockHttpServletRequestBuilder put = put("/api/v1/data")
           .accept(APPLICATION_JSON)
           .contentType(APPLICATION_JSON)
           .content("{" +
               "  \"type\":\"password\"," +
+              "  \"name\":\"" + secretName + "\"," +
               "  \"value\":\"some password\"" +
               "}");
 
@@ -398,11 +388,12 @@ public class SecretsControllerSetTest {
     });
 
     it("returns a parameterized error message when json key is invalid", () -> {
-      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+      final MockHttpServletRequestBuilder put = put("/api/v1/data")
           .accept(APPLICATION_JSON)
           .contentType(APPLICATION_JSON)
           .content("{" +
               "  \"type\":\"value\"," +
+              "  \"name\":\"" + secretName + "\"," +
               "  \"response error\":\"invalid key\"," +
               "  \"value\":\"some value\"" +
               "}");
@@ -417,11 +408,12 @@ public class SecretsControllerSetTest {
       doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
           .when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
 
-      final MockHttpServletRequestBuilder put = put("/api/v1/data/" + secretName)
+      final MockHttpServletRequestBuilder put = put("/api/v1/data")
           .accept(APPLICATION_JSON)
           .contentType(APPLICATION_JSON)
           .content("{" +
               "  \"type\":\"value\"," +
+              "  \"name\":\"" + secretName + "\"," +
               "  \"value\":\"some value\"" +
               "}");
 
@@ -432,8 +424,8 @@ public class SecretsControllerSetTest {
     it("allows secret with '.' in the name", () -> {
       final String testSecretNameWithDot = "test.response";
 
-      mockMvc.perform(put("/api/v1/data/" + testSecretNameWithDot)
-          .content("{\"type\":\"value\",\"value\":\"" + "def" + "\"}")
+      mockMvc.perform(put("/api/v1/data")
+          .content("{\"type\":\"value\",\"name\":\"" + testSecretNameWithDot + "\",\"value\":\"" + "def" + "\"}")
           .contentType(MediaType.APPLICATION_JSON_UTF8))
           .andExpect(status().isOk());
     });
@@ -446,11 +438,12 @@ public class SecretsControllerSetTest {
         valueSecret
     ).when(secretDataService).save(any(NamedValueSecret.class));
 
-    final MockHttpServletRequestBuilder put = put("/api/v1/data/" + name)
+    final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
             "  \"type\":\"value\"," +
+            "  \"name\":\"" + name + "\"," +
             "  \"value\":\"" + value + "\"" +
             "}");
 

@@ -139,48 +139,6 @@ public class SecretsControllerGenerateTest {
         });
       });
 
-      describe("for a new non-value secret, name in path", () -> {
-        beforeEach(() -> {
-          final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "\"type\":\"password\"," +
-                  "\"parameters\":{" +
-                  "\"exclude_number\": true" +
-                  "}" +
-                  "}");
-
-          response = mockMvc.perform(post);
-        });
-
-        it("should return the expected response", () -> {
-          response.andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.type").value("password"))
-              .andExpect(jsonPath("$.value").value(fakePassword))
-              .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
-        });
-
-        it("asks the data service to persist the secret", () -> {
-          ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-          verify(secretDataService, times(1)).save(argumentCaptor.capture());
-
-          NamedPasswordSecret newPassword = argumentCaptor.getValue();
-
-          assertThat(newPassword.getValue(), equalTo(fakePassword));
-          assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
-        });
-
-        it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordBuilder> captor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
-          verify(auditLogService, times(1)).performWithAuditing(captor.capture(), any(Supplier.class));
-          AuditRecordBuilder auditRecorder = captor.getValue();
-          assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
-        });
-      });
-
       describe("for a new non-value secret, name in body, not in path", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
@@ -237,11 +195,12 @@ public class SecretsControllerGenerateTest {
 
         describe("with the overwrite flag set to true", () -> {
           beforeEach(() -> {
-            final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
+            final MockHttpServletRequestBuilder post = post("/api/v1/data")
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
                     "  \"type\":\"password\"," +
+                    "  \"name\":\"" + secretName + "\"," +
                     "  \"overwrite\":true" +
                     "}");
 
@@ -276,10 +235,10 @@ public class SecretsControllerGenerateTest {
 
         describe("with the overwrite flag set to false", () -> {
           beforeEach(() -> {
-            final MockHttpServletRequestBuilder post = post("/api/v1/data/" + secretName)
+            final MockHttpServletRequestBuilder post = post("/api/v1/data")
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content("{\"type\":\"password\"}");
+                .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
 
             response = mockMvc.perform(post);
           });
@@ -310,6 +269,7 @@ public class SecretsControllerGenerateTest {
         });
       });
 
+      // TODO: this might be passing for the wrong reason
       it("returns 400 when type is not present", () -> {
         mockMvc.perform(post("/api/v1/data/" + secretName).accept(APPLICATION_JSON))
             .andExpect(status().isBadRequest());

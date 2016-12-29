@@ -72,13 +72,16 @@ public class PasswordGeneratorRequestTranslatorTest {
       subject.validRequestParameters(jsonPath.parse(json), null);
     });
 
-    itThrowsWithMessage("rejects any parameters given in addition to regenerate", ParameterizedValidationException.class, "error.invalid_regenerate_parameters", () -> {
+
+    itThrowsWithMessage("rejects any parameters given in addition to name and regenerate", ParameterizedValidationException.class, "error.invalid_regenerate_parameters", () -> {
       String json = "{" +
           "  \"type\":\"password\"," +
+          "  \"name\":\"foo\"," +
           "  \"regenerate\":true" +
           "}";
       subject.validRequestParameters(jsonPath.parse(json), null);
     });
+
 
     it("can populate an entity from JSON", () -> {
       final NamedPasswordSecret secret = new NamedPasswordSecret("abc");

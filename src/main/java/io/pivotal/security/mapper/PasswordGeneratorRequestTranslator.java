@@ -28,7 +28,7 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
     Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
     if (Boolean.TRUE.equals(regenerate)) {
       List<Object> values = parsed.read("$..*");
-      if (values.size() > 1) {
+      if (values.size() > 2) {
         throw new ParameterizedValidationException("error.invalid_regenerate_parameters");
       }
       secretParameters = entity.getGenerationParameters();

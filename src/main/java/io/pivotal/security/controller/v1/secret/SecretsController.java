@@ -242,7 +242,7 @@ public class SecretsController {
                                                Authentication authentication,
                                                SecretKindMappingFactory handler) throws Exception {
     final DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestBody);
-    final String secretName = getSecretName(request, parsedRequestBody);
+    final String secretName = getSecretName(parsedRequestBody);
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
     boolean willBeCreated = existingNamedSecret == null;
@@ -260,15 +260,8 @@ public class SecretsController {
     });
   }
 
-  private String getSecretName(HttpServletRequest request, DocumentContext parsed) {
-    String secretPath = secretPath(request);
-    String secretName;
-    if (secretPath.isEmpty()) {
-      secretName = sanitizedName(parsed.read("$.name", String.class));
-    } else {
-      secretName = secretPath;
-    }
-    return secretName;
+  private String getSecretName(DocumentContext parsed) {
+    return sanitizedName(parsed.read("$.name", String.class));
   }
 
   private ResponseEntity<?> storeSecret(String secretPath,

@@ -5,10 +5,9 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
+import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.StringSecret;
 import org.junit.runner.RunWith;
@@ -25,6 +24,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -46,11 +50,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -120,10 +119,10 @@ public class SecretsControllerRegenerateTest {
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
-        response = mockMvc.perform(post("/api/v1/data/my-password")
+        response = mockMvc.perform(post("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
-            .content("{\"regenerate\":true}"));
+            .content("{\"regenerate\":true,\"name\":\"my-password\"}"));
       });
 
       it("should regenerate the secret", () -> {
@@ -184,10 +183,10 @@ public class SecretsControllerRegenerateTest {
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "abcde");
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
-        response = mockMvc.perform(post("/api/v1/data/my-password")
+        response = mockMvc.perform(post("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
-            .content("{\"regenerate\":true}"));
+            .content("{\"regenerate\":true,\"name\":\"my-password\"}"));
       });
 
       it("returns an error", () -> {
