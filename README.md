@@ -1,8 +1,10 @@
-# PCF CredHub
+# PCF CredHub 
 
 The CredHub server manages secrets like passwords, certificates, ssh keys, rsa keys, strings 
 (arbitrary values) and CAs. CredHub provides a REST API to get, set, or generate and securely store
 such secrets.
+
+In other words, if someone asks you "what does CredHub do?" simply answer "it hubs creds, duh!".
  
 See additional repos for more info:
 
