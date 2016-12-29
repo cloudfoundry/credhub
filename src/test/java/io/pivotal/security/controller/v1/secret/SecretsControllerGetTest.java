@@ -138,6 +138,16 @@ public class SecretsControllerGetTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.data", hasSize(greaterThan(1))));
         });
+
+        it("returns an error when name is not given", () -> {
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?name=")
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get)
+              .andExpect(status().is4xxClientError())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+        });
       });
 
       describe("getting a secret by id", () -> {

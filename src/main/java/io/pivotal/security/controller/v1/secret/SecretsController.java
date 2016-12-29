@@ -180,6 +180,9 @@ public class SecretsController {
                                                     Function<List<NamedSecret>, Object> secretPresenter) throws Exception {
     final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
+      if(StringUtils.isEmpty(identifier)) {
+        return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
+      }
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
