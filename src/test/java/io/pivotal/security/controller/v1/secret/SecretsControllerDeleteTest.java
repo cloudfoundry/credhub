@@ -101,14 +101,36 @@ public class SecretsControllerDeleteTest {
         transactionManager.rollback(transaction);
       });
 
-      it("should return NOT_FOUND when there is no secret with that name", () -> {
-        final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
-            .accept(APPLICATION_JSON);
+      describe("error handling", () -> {
+        it("should return NOT_FOUND when there is no secret with that name", () -> {
+          final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
+              .accept(APPLICATION_JSON);
 
-        mockMvc.perform(delete)
-            .andExpect(status().isNotFound())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
+          mockMvc.perform(delete)
+              .andExpect(status().isNotFound())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
+        });
+
+        it("should return an error when name is empty", () -> {
+          final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=")
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(delete)
+              .andExpect(status().is4xxClientError())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+        });
+
+        it("should return an error when name is missing", () -> {
+          final MockHttpServletRequestBuilder delete = delete("/api/v1/data")
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(delete)
+              .andExpect(status().is4xxClientError())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+        });
       });
 
       describe("when there is one secret with the name (case-insensitive)", () -> {

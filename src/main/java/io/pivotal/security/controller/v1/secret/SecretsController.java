@@ -114,7 +114,7 @@ public class SecretsController {
       final String nameToDelete = sanitizedName(secretName);
 
       if (StringUtils.isEmpty(nameToDelete)) {
-        throw new ParameterizedValidationException("error.missing_name");
+        return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
       }
 
       namedSecrets = secretDataService.delete(nameToDelete);
