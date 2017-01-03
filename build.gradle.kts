@@ -87,7 +87,7 @@ task<Wrapper>("wrapper") {
 }
 
 getTask<ProcessResources>("processResources").apply {
-    expand(mapOf("buildVersion" to "${jar.version} build ${System.getenv("BUILD_NUMBER") ?: "DEV"}").toSortedMap())
+    expand(mapOf("buildVersion" to "${jar.version} ${if (System.getenv("BUILD_NUMBER") != null) "build ${System.getenv("BUILD_NUMBER")}" else ""}").toSortedMap())
     outputs.upToDateWhen { false }
 }
 
