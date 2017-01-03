@@ -44,7 +44,7 @@ public class InfoEndpointTest {
           .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
           .andExpect(jsonPath("$.auth-server.url").value(startsWith("http")))
           .andExpect(jsonPath("$.app.version").isNotEmpty())
-          .andExpect(jsonPath("$.app.name").value("CredHub for PCF"));
+          .andExpect(jsonPath("$.app.name").value("CredHub"));
     });
   }
 }
