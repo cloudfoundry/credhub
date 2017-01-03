@@ -1,6 +1,6 @@
 info:
   app:
-    name: CredHub for PCF
+    name: CredHub
     version: ${buildVersion}
 
 security:
