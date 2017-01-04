@@ -12,8 +12,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 @Service
 public class SecretDataService {
   private static final String FIND_MOST_RECENT_BY_SUBSTRING_QUERY =
@@ -51,16 +49,6 @@ public class SecretDataService {
 
   public List<String> findAllPaths() {
     return secretRepository.findAllPaths(true);
-  }
-
-  public List<NamedSecret> findMostRecentAsList(String name) {
-    NamedSecret foundSecret = findMostRecent(name);
-    return foundSecret == null ? newArrayList() : newArrayList(foundSecret);
-  }
-
-  public List<NamedSecret> findByUuidAsList(String uuid) {
-    NamedSecret foundSecret = findByUuid(uuid);
-    return foundSecret == null ? newArrayList() : newArrayList(foundSecret);
   }
 
   public NamedSecret findMostRecent(String name) {

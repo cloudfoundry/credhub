@@ -109,8 +109,8 @@ public class SecretsControllerAuditLogTest {
 
       describe("by id", () -> {
         it("makes a credential_access audit log entry", () -> {
-          doReturn(Arrays.asList(new NamedPasswordSecret("foo")))
-              .when(secretDataService).findByUuidAsList(eq("foo-id"));
+          doReturn(new NamedPasswordSecret("foo"))
+              .when(secretDataService).findByUuid(eq("foo-id"));
 
           mockMvc.perform(get(API_V1_DATA + "/foo-id")
               .accept(MediaType.APPLICATION_JSON)

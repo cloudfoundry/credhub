@@ -39,8 +39,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -49,9 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -136,7 +138,7 @@ public class SecretsController {
 
     return retrieveSecretWithAuditing(
         id,
-        secretDataService::findByUuidAsList,
+        findAsList(secretDataService::findByUuid),
         request,
         authentication,
         (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0))
@@ -167,10 +169,17 @@ public class SecretsController {
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
     if (current) {
-      return secretDataService::findMostRecentAsList;
+      return findAsList(secretDataService::findMostRecent);
     } else {
       return secretDataService::findAllByName;
     }
+  }
+
+  private Function<String, List<NamedSecret>> findAsList(Function<String, NamedSecret> finder) {
+    return (toFind) -> {
+      NamedSecret namedSecret = finder.apply(toFind);
+      return namedSecret != null ? newArrayList(namedSecret) : newArrayList();
+    };
   }
 
   private ResponseEntity retrieveSecretWithAuditing(String identifier,
