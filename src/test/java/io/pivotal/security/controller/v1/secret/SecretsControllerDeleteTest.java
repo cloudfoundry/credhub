@@ -24,11 +24,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -49,6 +44,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -160,7 +160,11 @@ public class SecretsControllerDeleteTest {
 
       describe("when there are multiple secrets with that name", () -> {
         beforeEach(() -> {
-          doReturn(Arrays.asList(new NamedValueSecret(secretName, "value1"), new NamedValueSecret(secretName, "value2")))
+          NamedValueSecret value1 = new NamedValueSecret(secretName);
+          value1.setValue("value1");
+          NamedValueSecret value2 = new NamedValueSecret(secretName);
+          value2.setValue("value2");
+          doReturn(Arrays.asList(value1, value2))
               .when(secretDataService).delete(secretName);
 
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName));
@@ -185,7 +189,11 @@ public class SecretsControllerDeleteTest {
 
       describe("name can come as a request parameter", () -> {
         beforeEach(() -> {
-          doReturn(Arrays.asList(new NamedValueSecret(secretName, "value1"), new NamedValueSecret(secretName, "value2")))
+          NamedValueSecret value1 = new NamedValueSecret(secretName);
+          value1.setValue("value1");
+          NamedValueSecret value2 = new NamedValueSecret(secretName);
+          value2.setValue("value2");
+          doReturn(Arrays.asList(value1, value2))
               .when(secretDataService).delete(secretName.toUpperCase());
         });
 
@@ -209,7 +217,11 @@ public class SecretsControllerDeleteTest {
 
       describe("when name has a leading slash", () -> {
         it("should strip the leading slash and delete credential(s)", () -> {
-          doReturn(Arrays.asList(new NamedValueSecret(secretName, "value1"), new NamedValueSecret(secretName, "value2")))
+          NamedValueSecret value1 = new NamedValueSecret(secretName);
+          value1.setValue("value1");
+          NamedValueSecret value2 = new NamedValueSecret(secretName);
+          value2.setValue("value2");
+          doReturn(Arrays.asList(value1, value2))
               .when(secretDataService).delete(secretName.toUpperCase());
           mockMvc.perform(delete("/api/v1/data?name=/" + secretName.toUpperCase()))
               .andExpect(status().isOk());

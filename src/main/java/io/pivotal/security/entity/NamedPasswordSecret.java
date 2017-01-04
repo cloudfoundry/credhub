@@ -3,12 +3,12 @@ package io.pivotal.security.entity;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.view.SecretKind;
 
+import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
-import static io.pivotal.security.constants.EncryptionConstants.NONCE;
 
 @Entity
 @Table(name = "PasswordSecret")
@@ -27,15 +27,6 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
 
   public NamedPasswordSecret(String name) {
     super(name);
-  }
-
-  public NamedPasswordSecret(String name, String value) {
-    super(name, value);
-  }
-
-  public NamedPasswordSecret(String name, String value, PasswordGenerationParameters generationParameters) {
-    super(name, value);
-    setGenerationParameters(generationParameters);
   }
 
   public byte[] getEncryptedGenerationParameters() {

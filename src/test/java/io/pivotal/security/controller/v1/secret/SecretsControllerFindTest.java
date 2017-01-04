@@ -21,11 +21,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -46,6 +41,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -90,8 +90,10 @@ public class SecretsControllerFindTest {
         describe("when search term does not include a leading slash", () -> {
           beforeEach(() -> {
             String substring = secretName.substring(4).toUpperCase();
+            NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
+            namedValueSecret.setValue("some value");
             doReturn(
-                Arrays.asList(new NamedValueSecret(secretName, "some value").setUpdatedAt(frozenTime))
+                Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
             ).when(secretDataService).findContainingName(substring);
             final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
                 .accept(APPLICATION_JSON);
@@ -118,8 +120,10 @@ public class SecretsControllerFindTest {
       describe("when path has a leading slash", () -> {
         it("strips the leading slash and returns the list of credentials", () -> {
           String path = secretName.substring(0, secretName.lastIndexOf("/"));
+          NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret(secretName);
+          namedPasswordSecret.setValue("some value");
           doReturn(
-              Arrays.asList(new NamedPasswordSecret(secretName, "some value").setUpdatedAt(frozenTime))
+              Arrays.asList(namedPasswordSecret.setUpdatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(path);
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=/" + path)
@@ -136,8 +140,10 @@ public class SecretsControllerFindTest {
       describe("finding credentials by path", () -> {
         beforeEach(() -> {
           String substring = secretName.substring(0, secretName.lastIndexOf("/"));
+          NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
+          namedValueSecret.setValue("some value");
           doReturn(
-              Arrays.asList(new NamedValueSecret(secretName, "some value").setUpdatedAt(frozenTime))
+              Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(substring);
 
           final String path = substring;
@@ -169,8 +175,10 @@ public class SecretsControllerFindTest {
 
         it("should return all children which are prefixed with the path case-independently", () -> {
           final String path = "my-namespace";
+          NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
+          namedValueSecret.setValue("some value");
           doReturn(
-              Arrays.asList(new NamedValueSecret(secretName, "some value").setUpdatedAt(frozenTime))
+              Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(path.toUpperCase());
 
           assertTrue(secretName.startsWith(path));

@@ -25,11 +25,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -50,6 +45,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -99,7 +99,8 @@ public class SecretsControllerRegenerateTest {
 
     describe("regenerating a password", () -> {
       beforeEach(() -> {
-        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "original-password");
+        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+        originalSecret.setValue("original-password");
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
 
         generationParameters.setExcludeNumber(true);
@@ -180,7 +181,8 @@ public class SecretsControllerRegenerateTest {
 
     describe("when attempting to regenerate a non-regenerated password", () -> {
       beforeEach(() -> {
-        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password", "abcde");
+        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+        originalSecret.setValue("abcde");
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
         response = mockMvc.perform(post("/api/v1/data")

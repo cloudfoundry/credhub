@@ -122,7 +122,9 @@ public class PasswordGeneratorRequestTranslatorTest {
     it("can regenerate using the existing entity and json", () -> {
       PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
 
-      NamedPasswordSecret secret = new NamedPasswordSecret("test", "old-password", generationParameters);
+      NamedPasswordSecret secret = new NamedPasswordSecret("test");
+      secret.setValue("old-password");
+      secret.setGenerationParameters(generationParameters);
 
       subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
 
@@ -162,7 +164,8 @@ public class PasswordGeneratorRequestTranslatorTest {
     });
 
     itThrowsWithMessage("rejects generation unless generation parameters are present in the existing entity", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
-      NamedPasswordSecret secretWithoutGenerationParameters = new NamedPasswordSecret("test", "old-passwword");
+      NamedPasswordSecret secretWithoutGenerationParameters = new NamedPasswordSecret("test");
+      secretWithoutGenerationParameters.setValue("old-password");
 
       subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), secretWithoutGenerationParameters);
     });

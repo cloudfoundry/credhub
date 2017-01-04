@@ -362,7 +362,8 @@ public class CertificateGeneratorRequestTranslatorTest {
 
 
     itThrowsWithMessage("regeneration is not allowed if caName is not present", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
-      subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), new NamedCertificateSecret("foo", "", "", ""));
+      NamedCertificateSecret entity = new NamedCertificateSecret("foo");
+      subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
     });
   }
 

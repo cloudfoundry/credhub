@@ -7,10 +7,8 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -20,7 +18,10 @@ import java.security.cert.CertificateFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
-import static java.time.temporal.ChronoUnit.DAYS;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "CertificateSecret")
@@ -44,13 +45,6 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
 
   public NamedCertificateSecret(String name) {
     super(name);
-  }
-
-  public NamedCertificateSecret(String name, String ca, String certificate, String privateKey) {
-    super(name);
-    this.ca = ca;
-    this.certificate = certificate;
-    setPrivateKey(privateKey);
   }
 
   public String getCa() {

@@ -121,7 +121,9 @@ public class NamedPasswordSecretTest {
         parameters.setExcludeLower(true);
         parameters.setExcludeUpper(false);
 
-        subject = new NamedPasswordSecret("foo", "value", parameters);
+        subject = new NamedPasswordSecret("foo");
+        subject.setValue( "value");
+        subject.setGenerationParameters(parameters);
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
 

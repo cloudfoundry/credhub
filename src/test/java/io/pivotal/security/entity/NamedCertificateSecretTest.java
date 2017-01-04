@@ -179,7 +179,10 @@ public class NamedCertificateSecretTest {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
 
-        subject = new NamedCertificateSecret("name", "fake-ca", "fake-certificate", "fake-private-key");
+        subject = new NamedCertificateSecret("name");
+        subject.setCa("fake-ca");
+        subject.setCertificate("fake-certificate");
+        subject.setPrivateKey("fake-private-key");
         subject.setCaName("ca-name");
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);

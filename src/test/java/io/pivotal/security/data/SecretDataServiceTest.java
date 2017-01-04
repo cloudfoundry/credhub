@@ -20,11 +20,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -40,6 +35,11 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -80,7 +80,8 @@ public class SecretDataServiceTest {
 
     describe("#save", () -> {
       it("should save a secret", () -> {
-        NamedSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
+        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        secret.setValue("secret-password");
         NamedSecret savedSecret = subject.save(secret);
 
         assertNotNull(savedSecret);
@@ -99,7 +100,8 @@ public class SecretDataServiceTest {
       });
 
       it("should update a secret", () -> {
-        NamedSecret secret = new NamedPasswordSecret("my-secret-2", "secret-password");
+        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret-2");
+        secret.setValue("secret-password");
         NamedPasswordSecret savedSecret = (NamedPasswordSecret) subject.save(secret);
         savedSecret.setValue("irynas-ninja-skills");
 
@@ -139,9 +141,11 @@ public class SecretDataServiceTest {
       });
 
       it("should delete all secrets matching a name", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
+        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        secret.setValue("secret-password");
         subject.save(secret);
-        secret = new NamedPasswordSecret("my-secret", "another password");
+        secret = new NamedPasswordSecret("my-secret");
+        secret.setValue("another password");
         subject.save(secret);
         assertThat(getSecretsFromDb().size(), equalTo(2));
 
@@ -151,9 +155,11 @@ public class SecretDataServiceTest {
       });
 
       it("should be able to delete a secret ignoring case", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
+        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        secret.setValue("secret-password");
         subject.save(secret);
-        secret = new NamedPasswordSecret("my-secret", "another password");
+        secret = new NamedPasswordSecret("my-secret");
+        secret.setValue("another password");
         subject.save(secret);
         assertThat(getSecretsFromDb().size(), equalTo(2));
 
@@ -179,8 +185,10 @@ public class SecretDataServiceTest {
 
     describe("#findMostRecent", () -> {
       it("returns all secrets ignoring case", () -> {
-        NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret("my-SECRET", "my-password");
-        NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret("MY-SECRET-2", "my-password");
+        NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret("my-SECRET");
+        namedPasswordSecret1.setValue("my-password");
+        NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret("MY-SECRET-2");
+        namedPasswordSecret2.setValue("my-password");
         subject.save(namedPasswordSecret1);
         subject.save(namedPasswordSecret2);
 
@@ -192,7 +200,8 @@ public class SecretDataServiceTest {
 
     describe("#findByUuid", () -> {
       it("should be able to find secret by uuid", () -> {
-        NamedSecret secret = new NamedPasswordSecret("my-secret", "secret-password");
+        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        secret.setValue("secret-password");
         NamedPasswordSecret savedSecret = (NamedPasswordSecret) subject.save(secret);
 
         assertNotNull(savedSecret.getUuid());

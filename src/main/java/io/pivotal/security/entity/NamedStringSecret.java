@@ -9,11 +9,6 @@ public abstract class NamedStringSecret<T extends NamedStringSecret> extends Nam
     super(name);
   }
 
-  public NamedStringSecret(String name, String value) {
-    super(name);
-    setValue(value);
-  }
-
   public String getValue() {
     return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }

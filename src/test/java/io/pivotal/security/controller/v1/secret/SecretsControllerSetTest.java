@@ -25,11 +25,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -54,6 +49,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -158,7 +158,8 @@ public class SecretsControllerSetTest {
     describe("setting a secret", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        valueSecret = new NamedValueSecret(secretName, secretValue).setUuid(uuid).setUpdatedAt(frozenTime);
+        valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setUpdatedAt(frozenTime);
+        valueSecret.setValue(secretValue);
 
         doReturn(
             valueSecret
@@ -369,8 +370,10 @@ public class SecretsControllerSetTest {
 
     describe("error handling", () -> {
       it("returns 400 when the handler raises an exception", () -> {
+        NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
+        namedValueSecret.setValue(secretValue);
         doReturn(
-            new NamedValueSecret(secretName, secretValue)
+            namedValueSecret
         ).when(secretDataService).findMostRecent(secretName);
 
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -466,7 +469,8 @@ public class SecretsControllerSetTest {
 
   private void putSecretInDatabase(String name, String value) throws Exception {
     uuid = UUID.randomUUID();
-    NamedValueSecret valueSecret = new NamedValueSecret(name, value).setUuid(uuid).setUpdatedAt(frozenTime);
+    NamedValueSecret valueSecret = new NamedValueSecret(name).setUuid(uuid).setUpdatedAt(frozenTime);
+    valueSecret.setValue(value);
     doReturn(
         valueSecret
     ).when(secretDataService).save(any(NamedValueSecret.class));

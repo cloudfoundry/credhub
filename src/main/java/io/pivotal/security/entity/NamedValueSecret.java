@@ -18,10 +18,6 @@ public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
     super(name);
   }
 
-  public NamedValueSecret(String name, String value) {
-    super(name, value);
-  }
-
   @Override
   public String getSecretType() {
     return "value";
