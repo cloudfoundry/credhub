@@ -3,7 +3,9 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -66,6 +68,53 @@ public class CertificateSecretParametersTest {
     params2.setState("My State");
     params2.setOrganization("My Organization");
     params2.addAlternativeNames("alternative-name-1-foobar", "alternative-name-2");
+
+    assertThat(isEqual(params, params2), is(false));
+  }
+
+  @Test
+  public void canAddExtendedKeyUsages() throws IOException {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    params.addExtendedKeyUsages("server_auth", "client_auth", "code_signing", "email_protection", "time_stamping");
+
+    ExtendedKeyUsage extendedKeyUsages = ExtendedKeyUsage.getInstance(params.getExtendedKeyUsages());
+    assertThat(extendedKeyUsages.getUsages()[0], equalTo(KeyPurposeId.id_kp_serverAuth));
+    assertThat(extendedKeyUsages.getUsages()[1], equalTo(KeyPurposeId.id_kp_clientAuth));
+    assertThat(extendedKeyUsages.getUsages()[2], equalTo(KeyPurposeId.id_kp_codeSigning));
+    assertThat(extendedKeyUsages.getUsages()[3], equalTo(KeyPurposeId.id_kp_emailProtection));
+    assertThat(extendedKeyUsages.getUsages()[4], equalTo(KeyPurposeId.id_kp_timeStamping));
+  }
+
+  @Test
+  public void validatesExtendedKeyUsages() {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    try {
+      params.addExtendedKeyUsages("client_auth", "server_off");
+    } catch (ParameterizedValidationException pve) {
+      assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
+      assertThat(pve.getParameters()[0], equalTo("server_off"));
+    }
+  }
+
+  @Test
+  public void extendedKeyUsagesConsideredForInequality() {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    params.addExtendedKeyUsages("server_auth", "client_auth");
+
+    CertificateSecretParameters params2 = new CertificateSecretParameters();
+    params2.setCountry("My Country");
+    params2.setState("My State");
+    params2.setOrganization("My Organization");
+    params2.addExtendedKeyUsages("server_auth", "code_signing");
 
     assertThat(isEqual(params, params2), is(false));
   }

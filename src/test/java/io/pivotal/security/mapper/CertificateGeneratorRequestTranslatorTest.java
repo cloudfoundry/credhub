@@ -26,6 +26,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.security.Security;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -45,8 +47,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.security.Security;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -95,6 +95,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"key_length\": 3072," +
           "\"duration\": 1000," +
           "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
+          "\"extended_key_usage\": [\"server_auth\", \"client_auth\"]," +
           "\"ca\": \"My Ca\"" +
           "}" +
           "}";
@@ -109,6 +110,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
       expectedParameters.addAlternativeNames("my-alternative-name-1", "my-alternative-name-2");
+      expectedParameters.addExtendedKeyUsages("server_auth", "client_auth");
       expectedParameters.setCaName("My Ca");
       DocumentContext parsed = jsonPath.parse(json);
 
@@ -191,6 +193,30 @@ public class CertificateGeneratorRequestTranslatorTest {
       DocumentContext parsed = jsonPath.parse(json);
       subject.validateJsonKeys(parsed);
       CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
+      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
+    });
+
+    it("ensures that extended key usage extensions are added as necessary", () -> {
+      String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"state\": \"My State\"," +
+          "\"country\": \"My Country\"," +
+          "\"extended_key_usage\": [\"server_auth\", \"client_auth\"]" +
+          "}" +
+          "}";
+
+      DocumentContext parsed = jsonPath.parse(json);
+      subject.validateJsonKeys(parsed);
+      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
+
+      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
+      expectedParameters.setOrganization("organization.io");
+      expectedParameters.setState("My State");
+      expectedParameters.setCountry("My Country");
+      expectedParameters.setType("certificate");
+      expectedParameters.addExtendedKeyUsages("server_auth", "client_auth");
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 

@@ -6,6 +6,8 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
@@ -17,6 +19,7 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 public class CertificateSecretParameters implements RequestParameters {
@@ -42,6 +45,8 @@ public class CertificateSecretParameters implements RequestParameters {
   // Used for regen; contains RDN (NOT key length, duration days, or alternative names)
   private X500Name x500Name;
   private GeneralNames alternativeNames;
+
+  private ExtendedKeyUsage extendedKeyUsages;
 
   public CertificateSecretParameters() {
   }
@@ -165,9 +170,38 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
+  public CertificateSecretParameters addExtendedKeyUsages(String... extendedKeyUsages) {
+    KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsages.length];
+    for (int i = 0; i < extendedKeyUsages.length; i++) {
+      switch(extendedKeyUsages[i]) {
+        case "server_auth":
+          keyPurposeIds[i] = KeyPurposeId.id_kp_serverAuth;
+          break;
+        case "client_auth":
+          keyPurposeIds[i] = KeyPurposeId.id_kp_clientAuth;
+          break;
+        case "code_signing":
+          keyPurposeIds[i] = KeyPurposeId.id_kp_codeSigning;
+          break;
+        case "email_protection":
+          keyPurposeIds[i] = KeyPurposeId.id_kp_emailProtection;
+          break;
+        case "time_stamping":
+          keyPurposeIds[i] = KeyPurposeId.id_kp_timeStamping;
+          break;
+        default:
+          throw new ParameterizedValidationException("error.invalid_extended_key_usage", Arrays.asList(extendedKeyUsages[i]));
+      }
+    }
+    this.extendedKeyUsages = new ExtendedKeyUsage(keyPurposeIds);
+    return this;
+  }
+
   public ASN1Object getAlternativeNames() {
     return alternativeNames;
   }
+
+  public ASN1Object getExtendedKeyUsages() { return extendedKeyUsages; }
 
   public CertificateSecretParameters setKeyLength(int keyLength) {
     this.keyLength = keyLength;
