@@ -1,6 +1,6 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.constants.KeyUsageExtensions;
+import io.pivotal.security.constants.KeyPurposeTranslator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -15,7 +15,6 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -27,10 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 public class CertificateSecretParameters implements RequestParameters {
   private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
@@ -184,31 +180,17 @@ public class CertificateSecretParameters implements RequestParameters {
   public CertificateSecretParameters addExtendedKeyUsages(Extension encodedExtendedKeyUsages) {
     if (encodedExtendedKeyUsages != null) {
       DLSequence parsedValue = (DLSequence) encodedExtendedKeyUsages.getParsedValue();
-      final ArrayList<ASN1ObjectIdentifier> objectIdentifiers = Collections.list(parsedValue.getObjects());
-      List<KeyPurposeId> keyList = newArrayList();
-      for (ASN1ObjectIdentifier oid: objectIdentifiers) {
-        final KeyUsageExtensions extension = KeyUsageExtensions.getExtension(oid.getId());
-        switch(extension.name().toLowerCase()) {
-          case "server_auth":
-            keyList.add(KeyPurposeId.id_kp_serverAuth);
-            break;
-          case "client_auth":
-            keyList.add(KeyPurposeId.id_kp_clientAuth);
-            break;
-          case "code_signing":
-            keyList.add(KeyPurposeId.id_kp_codeSigning);
-            break;
-          case "email_protection":
-            keyList.add(KeyPurposeId.id_kp_emailProtection);
-            break;
-          case "time_stamping":
-            keyList.add(KeyPurposeId.id_kp_timeStamping);
-            break;
-          default:
-            throw new ParameterizedValidationException("error.invalid_extended_key_usage", Arrays.asList(extension.toString()));
+      final ArrayList<ASN1ObjectIdentifier> oids = Collections.list(parsedValue.getObjects());
+      KeyPurposeId[] keyList = new KeyPurposeId[oids.size()];
+      for (int i = 0; i < oids.size(); i++) {
+        ASN1ObjectIdentifier oid = oids.get(i);
+        KeyPurposeId keyPurposeId = KeyPurposeTranslator.keyPurposeForOid(oid);
+        if (keyPurposeId == null) {
+          throw new ParameterizedValidationException("error.invalid_extended_key_usage", Arrays.asList(oid.getId()));
         }
+        keyList[i] = keyPurposeId;
       }
-      this.extendedKeyUsages = new ExtendedKeyUsage(keyList.toArray(new KeyPurposeId[0]));
+      this.extendedKeyUsages = new ExtendedKeyUsage(keyList);
     }
     return this;
   }
@@ -216,7 +198,7 @@ public class CertificateSecretParameters implements RequestParameters {
   public CertificateSecretParameters addExtendedKeyUsages(String... extendedKeyUsages) {
     KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsages.length];
     for (int i = 0; i < extendedKeyUsages.length; i++) {
-      switch(extendedKeyUsages[i]) {
+      switch (extendedKeyUsages[i]) {
         case "server_auth":
           keyPurposeIds[i] = KeyPurposeId.id_kp_serverAuth;
           break;
@@ -243,7 +225,7 @@ public class CertificateSecretParameters implements RequestParameters {
   public CertificateSecretParameters addKeyUsages(String... keyUsages) {
     int bitmask = 0;
     for (String keyUsage : keyUsages) {
-      switch(keyUsage) {
+      switch (keyUsage) {
         case "digital_signature":
           bitmask |= KeyUsage.digitalSignature;
           break;
@@ -283,9 +265,13 @@ public class CertificateSecretParameters implements RequestParameters {
     return alternativeNames;
   }
 
-  public ASN1Object getExtendedKeyUsages() { return extendedKeyUsages; }
+  public ASN1Object getExtendedKeyUsages() {
+    return extendedKeyUsages;
+  }
 
-  public ASN1Object getKeyUsages() { return keyUsages; }
+  public ASN1Object getKeyUsages() {
+    return keyUsages;
+  }
 
   public CertificateSecretParameters setKeyLength(int keyLength) {
     this.keyLength = keyLength;
