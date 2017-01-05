@@ -7,7 +7,6 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
-import org.bouncycastle.asn1.x509.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +39,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
           .setDurationDays(entity.getDurationDays())
           .setKeyLength(entity.getKeyLength())
           .addAlternativeNames(entity.getAlternativeNames())
-          .addExtendedKeyUsages(entity.getExtendedKeyUsages());
+          .addKeyUsage(entity.getKeyUsage())
+          .addExtendedKeyUsage(entity.getExtendedKeyUsage());
     }
 
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
@@ -48,9 +48,9 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
         .ifPresent(secretParameters::addAlternativeNames);
     Optional.ofNullable(parsed.read("$.parameters.key_usage", String[].class))
-        .ifPresent(secretParameters::addKeyUsages);
+        .ifPresent(secretParameters::addKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.extended_key_usage", String[].class))
-        .ifPresent(secretParameters::addExtendedKeyUsages);
+        .ifPresent(secretParameters::addExtendedKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
         .ifPresent(secretParameters::setCaName);
 

@@ -1,11 +1,8 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.constants.KeyPurposeTranslator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1Object;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -23,9 +20,7 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.regex.Pattern;
 
 public class CertificateSecretParameters implements RequestParameters {
@@ -52,8 +47,8 @@ public class CertificateSecretParameters implements RequestParameters {
   private X500Name x500Name;
   private GeneralNames alternativeNames;
 
-  private ExtendedKeyUsage extendedKeyUsages;
-  private KeyUsage keyUsages;
+  private ExtendedKeyUsage extendedKeyUsage;
+  private KeyUsage keyUsage;
 
   public CertificateSecretParameters() {
   }
@@ -177,28 +172,15 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  public CertificateSecretParameters addExtendedKeyUsages(Extension encodedExtendedKeyUsages) {
-    if (encodedExtendedKeyUsages != null) {
-      DLSequence parsedValue = (DLSequence) encodedExtendedKeyUsages.getParsedValue();
-      final ArrayList<ASN1ObjectIdentifier> oids = Collections.list(parsedValue.getObjects());
-      KeyPurposeId[] keyList = new KeyPurposeId[oids.size()];
-      for (int i = 0; i < oids.size(); i++) {
-        ASN1ObjectIdentifier oid = oids.get(i);
-        KeyPurposeId keyPurposeId = KeyPurposeTranslator.keyPurposeForOid(oid);
-        if (keyPurposeId == null) {
-          throw new ParameterizedValidationException("error.invalid_extended_key_usage", Arrays.asList(oid.getId()));
-        }
-        keyList[i] = keyPurposeId;
-      }
-      this.extendedKeyUsages = new ExtendedKeyUsage(keyList);
-    }
+  public CertificateSecretParameters addExtendedKeyUsage(ExtendedKeyUsage extendedKeyUsage) {
+    this.extendedKeyUsage = extendedKeyUsage;
     return this;
   }
 
-  public CertificateSecretParameters addExtendedKeyUsages(String... extendedKeyUsages) {
-    KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsages.length];
-    for (int i = 0; i < extendedKeyUsages.length; i++) {
-      switch (extendedKeyUsages[i]) {
+  public CertificateSecretParameters addExtendedKeyUsage(String... extendedKeyUsageList) {
+    KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsageList.length];
+    for (int i = 0; i < extendedKeyUsageList.length; i++) {
+      switch (extendedKeyUsageList[i]) {
         case "server_auth":
           keyPurposeIds[i] = KeyPurposeId.id_kp_serverAuth;
           break;
@@ -215,16 +197,21 @@ public class CertificateSecretParameters implements RequestParameters {
           keyPurposeIds[i] = KeyPurposeId.id_kp_timeStamping;
           break;
         default:
-          throw new ParameterizedValidationException("error.invalid_extended_key_usage", Arrays.asList(extendedKeyUsages[i]));
+          throw new ParameterizedValidationException("error.invalid_extended_key_usage", Arrays.asList(extendedKeyUsageList[i]));
       }
     }
-    this.extendedKeyUsages = new ExtendedKeyUsage(keyPurposeIds);
+    this.extendedKeyUsage = new ExtendedKeyUsage(keyPurposeIds);
     return this;
   }
 
-  public CertificateSecretParameters addKeyUsages(String... keyUsages) {
+  public CertificateSecretParameters addKeyUsage(KeyUsage keyUsage) {
+    this.keyUsage = keyUsage;
+    return this;
+  }
+
+  public CertificateSecretParameters addKeyUsage(String... keyUsageList) {
     int bitmask = 0;
-    for (String keyUsage : keyUsages) {
+    for (String keyUsage : keyUsageList) {
       switch (keyUsage) {
         case "digital_signature":
           bitmask |= KeyUsage.digitalSignature;
@@ -257,7 +244,7 @@ public class CertificateSecretParameters implements RequestParameters {
           throw new ParameterizedValidationException("error.invalid_key_usage", Arrays.asList(keyUsage));
       }
     }
-    this.keyUsages = new KeyUsage(bitmask);
+    this.keyUsage = new KeyUsage(bitmask);
     return this;
   }
 
@@ -265,12 +252,12 @@ public class CertificateSecretParameters implements RequestParameters {
     return alternativeNames;
   }
 
-  public ASN1Object getExtendedKeyUsages() {
-    return extendedKeyUsages;
+  public ASN1Object getExtendedKeyUsage() {
+    return extendedKeyUsage;
   }
 
-  public ASN1Object getKeyUsages() {
-    return keyUsages;
+  public ASN1Object getKeyUsage() {
+    return keyUsage;
   }
 
   public CertificateSecretParameters setKeyLength(int keyLength) {

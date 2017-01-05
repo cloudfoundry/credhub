@@ -62,9 +62,9 @@ public class CertificateSecretParametersTest {
     params.setCountry("My Country");
     params.setState("My State");
     params.setOrganization("My Organization");
-    params.addExtendedKeyUsages("server_auth", "client_auth", "code_signing", "email_protection", "time_stamping");
+    params.addExtendedKeyUsage("server_auth", "client_auth", "code_signing", "email_protection", "time_stamping");
 
-    ExtendedKeyUsage extendedKeyUsages = ExtendedKeyUsage.getInstance(params.getExtendedKeyUsages());
+    ExtendedKeyUsage extendedKeyUsages = ExtendedKeyUsage.getInstance(params.getExtendedKeyUsage());
     assertThat(extendedKeyUsages.getUsages()[0], equalTo(KeyPurposeId.id_kp_serverAuth));
     assertThat(extendedKeyUsages.getUsages()[1], equalTo(KeyPurposeId.id_kp_clientAuth));
     assertThat(extendedKeyUsages.getUsages()[2], equalTo(KeyPurposeId.id_kp_codeSigning));
@@ -79,7 +79,7 @@ public class CertificateSecretParametersTest {
     params.setState("My State");
     params.setOrganization("My Organization");
     try {
-      params.addExtendedKeyUsages("client_auth", "server_off");
+      params.addExtendedKeyUsage("client_auth", "server_off");
       fail();
     } catch (ParameterizedValidationException pve) {
       assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
@@ -93,9 +93,9 @@ public class CertificateSecretParametersTest {
     params.setCountry("My Country");
     params.setState("My State");
     params.setOrganization("My Organization");
-    params.addKeyUsages("digital_signature", "non_repudiation", "key_encipherment", "data_encipherment", "key_agreement", "key_cert_sign", "crl_sign", "encipher_only", "decipher_only");
+    params.addKeyUsage("digital_signature", "non_repudiation", "key_encipherment", "data_encipherment", "key_agreement", "key_cert_sign", "crl_sign", "encipher_only", "decipher_only");
 
-    KeyUsage keyUsages = KeyUsage.getInstance(params.getKeyUsages());
+    KeyUsage keyUsages = KeyUsage.getInstance(params.getKeyUsage());
     assertThat(keyUsages.hasUsages(KeyUsage.digitalSignature), equalTo(true));
     assertThat(keyUsages.hasUsages(KeyUsage.nonRepudiation), equalTo(true));
     assertThat(keyUsages.hasUsages(KeyUsage.keyEncipherment), equalTo(true));
@@ -110,9 +110,9 @@ public class CertificateSecretParametersTest {
     params.setCountry("My Country");
     params.setState("My State");
     params.setOrganization("My Organization");
-    params.addKeyUsages("digital_signature", "non_repudiation", "decipher_only");
+    params.addKeyUsage("digital_signature", "non_repudiation", "decipher_only");
 
-    keyUsages = KeyUsage.getInstance(params.getKeyUsages());
+    keyUsages = KeyUsage.getInstance(params.getKeyUsage());
     assertThat(keyUsages.hasUsages(KeyUsage.digitalSignature), equalTo(true));
     assertThat(keyUsages.hasUsages(KeyUsage.nonRepudiation), equalTo(true));
     assertThat(keyUsages.hasUsages(KeyUsage.keyEncipherment), equalTo(false));
@@ -131,7 +131,7 @@ public class CertificateSecretParametersTest {
     params.setState("My State");
     params.setOrganization("My Organization");
     try {
-      params.addKeyUsages("key_agreement", "digital_sinnature");
+      params.addKeyUsage("key_agreement", "digital_sinnature");
       fail();
     } catch (ParameterizedValidationException pve) {
       assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_key_usage"));

@@ -61,12 +61,12 @@ public class SignedCertificateGenerator {
       certificateBuilder.addExtension(Extension.subjectAlternativeName, false, params.getAlternativeNames());
     }
 
-    if (params.getKeyUsages() != null) {
-      certificateBuilder.addExtension(Extension.keyUsage, true, params.getKeyUsages());
+    if (params.getKeyUsage() != null) {
+      certificateBuilder.addExtension(Extension.keyUsage, true, params.getKeyUsage());
     }
 
-    if (params.getExtendedKeyUsages() != null) {
-      certificateBuilder.addExtension(Extension.extendedKeyUsage, false, params.getExtendedKeyUsages());
+    if (params.getExtendedKeyUsage() != null) {
+      certificateBuilder.addExtension(Extension.extendedKeyUsage, false, params.getExtendedKeyUsage());
     }
 
     certificateBuilder.addExtension(Extension.basicConstraints, true,

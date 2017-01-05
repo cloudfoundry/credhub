@@ -146,7 +146,7 @@ public class SignedCertificateGeneratorTest {
         });
 
         it("are supported", () -> {
-          inputParameters.addKeyUsages("data_encipherment", "crl_sign");
+          inputParameters.addKeyUsage("data_encipherment", "crl_sign");
 
           makeCert.run();
 
@@ -172,7 +172,7 @@ public class SignedCertificateGeneratorTest {
         });
 
         it("are supported", () -> {
-          inputParameters.addExtendedKeyUsages("server_auth", "client_auth");
+          inputParameters.addExtendedKeyUsage("server_auth", "client_auth");
 
           makeCert.run();
 

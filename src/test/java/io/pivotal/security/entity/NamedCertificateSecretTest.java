@@ -8,10 +8,16 @@ import io.pivotal.security.util.DatabaseProfileResolver;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -20,11 +26,9 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
@@ -171,6 +175,44 @@ public class NamedCertificateSecretTest {
         ASN1Sequence sequence = (ASN1Sequence) subject.getAlternativeNames().getParsedValue();
         assertThat(((DERTaggedObject) sequence.getObjectAt(0)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "some-alternative-name").getEncoded()));
         assertThat(((DERTaggedObject) sequence.getObjectAt(1)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "another-alternative-name").getEncoded()));
+      });
+    });
+
+    describe("getting key usages and extended key usages", () -> {
+      it("should return null if there is no certificate", () -> {
+        subject = new NamedCertificateSecret("no-alternative-names");
+
+        assertThat(subject.getKeyUsage(), nullValue());
+        assertThat(subject.getExtendedKeyUsage(), nullValue());
+      });
+
+      it("should return the key usages if the certificate has any", () -> {
+        subject = new NamedCertificateSecret("cert-with-extensions");
+        String certificate = "-----BEGIN CERTIFICATE-----\n" +
+            "MIIC/TCCAeWgAwIBAgIUec/ef30N/nuZEqNk1CSQ5Rk3v9cwDQYJKoZIhvcNAQEL\n" +
+            "BQAwDzENMAsGA1UEAwwEcm9vdDAeFw0xNzAxMDUxOTI2MTdaFw0xODAxMDUxOTI2\n" +
+            "MTdaMCExHzAdBgNVBAMMFmNlcnRpZmljYXRlLTE0ODM2NDQzNzcwggEiMA0GCSqG\n" +
+            "SIb3DQEBAQUAA4IBDwAwggEKAoIBAQCej4HhEvVStRZ9MIo7LDaAY8Z1ol8QY47U\n" +
+            "iKKBNFHV70BY5z2tHGnl49uscxJL4LUjGM3zrCNq9v0yee5+Cfgmx1CN5InFclf6\n" +
+            "pVDcg8cxDJpJkvkUE/nUHWgBdUE9fMpHunrD+iPDioAUfY6C16V1UfWEEh82mQOB\n" +
+            "RZTl4M8X1s9BZf1SqNJ6lwwG9ay8+Cu2H7RnYTI14LX4yCyJBazmf1jMXSgi0gCD\n" +
+            "NbQtVusWotFGZ/sYgfrYLf6QkZsnFkcK6cqoAA7PfaOeppGn/J5b6Y293OOcaF9a\n" +
+            "hmKN1Zi5k4YUxl6SS2gwR2yq6VmkcDsmC/eYTG77VE3uAzoFl8bdAgMBAAGjPzA9\n" +
+            "MA4GA1UdDwEB/wQEAwIDiDAdBgNVHSUEFjAUBggrBgEFBQcDAwYIKwYBBQUHAwQw\n" +
+            "DAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAQEAzGGF5BATBy0oi6D+seiK\n" +
+            "yyd0Jfgeop1/ZHwAGgpKQNvOJBVKqiIgcQ1HMKD+/NK1EPa2KqecNw/9I+e33mWU\n" +
+            "IZzWCHEptA/yc832e+/SemwhhTUBjIvEGL6NfpUkHr+HU/2yzYXe+1J3LVYGFlgu\n" +
+            "t78E3cx+oAXCEZcV1Rj8A+GgVt6njZ/Im/RMRbo2MRu1fsNmMtblMtZu7rRiOy+w\n" +
+            "+wAR4fzJHYBgC1DpXLtQfIvNa3dVTDzcyI4ZSSavA1+jKY1E56dqzVAxUqpC08JO\n" +
+            "Iespiiwpu8czdIVF2LX8bv83uqyueVPQiaBCgkochrDVu1FErxqU0FmiaTYvpz8D\n" +
+            "Tg==\n" +
+            "-----END CERTIFICATE-----";
+        subject.setCertificate(certificate);
+
+        assertThat(subject.getKeyUsage().hasUsages(KeyUsage.digitalSignature | KeyUsage.keyAgreement), equalTo(true));
+        assertThat(subject.getKeyUsage().hasUsages(KeyUsage.digitalSignature | KeyUsage.encipherOnly), equalTo(false));
+
+        assertThat(Arrays.asList(subject.getExtendedKeyUsage().getUsages()), containsInAnyOrder(KeyPurposeId.id_kp_codeSigning, KeyPurposeId.id_kp_emailProtection));
       });
     });
 

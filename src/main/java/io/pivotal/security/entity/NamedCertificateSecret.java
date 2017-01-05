@@ -2,13 +2,17 @@ package io.pivotal.security.entity;
 
 import io.pivotal.security.view.SecretKind;
 import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.openssl.PEMParser;
 import org.springframework.util.StringUtils;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -18,10 +22,7 @@ import java.security.cert.CertificateFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Entity
 @Table(name = "CertificateSecret")
@@ -163,13 +164,15 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     }
   }
 
-  public Extension getExtendedKeyUsages() {
+  public ExtendedKeyUsage getExtendedKeyUsage() {
     X509CertificateHolder certificateHolder = getCertificateHolder();
 
-    if (certificateHolder == null) {
-      return null;
-    } else {
-      return certificateHolder.getExtension(Extension.extendedKeyUsage);
-    }
+    return certificateHolder == null ? null : ExtendedKeyUsage.fromExtensions(certificateHolder.getExtensions());
+  }
+
+  public KeyUsage getKeyUsage() {
+    X509CertificateHolder certificateHolder = getCertificateHolder();
+
+    return certificateHolder == null ? null : KeyUsage.fromExtensions(certificateHolder.getExtensions());
   }
 }
