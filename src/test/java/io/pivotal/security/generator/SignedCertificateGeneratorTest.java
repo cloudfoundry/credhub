@@ -40,10 +40,10 @@ import java.util.Date;
 import static com.greghaskins.spectrum.Spectrum.beforeAll;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -137,6 +137,32 @@ public class SignedCertificateGeneratorTest {
         });
       });
 
+      describe("with key usages", () -> {
+        beforeEach(() -> {
+          inputParameters = new CertificateSecretParameters();
+          inputParameters.setOrganization("my-org");
+          inputParameters.setState("NY");
+          inputParameters.setCountry("USA");
+        });
+
+        it("are supported", () -> {
+          inputParameters.addKeyUsages("data_encipherment", "crl_sign");
+
+          makeCert.run();
+
+          // Booleans 3 and 6 should be on, everything else off. See getKeyUsage in X509Certificate.
+          assertThat(generatedCert.getKeyUsage(), equalTo(new boolean[] {false, false, false, true, false, false, true, false, false}));
+
+          assertThat(generatedCert.getCriticalExtensionOIDs(), hasItem(Extension.keyUsage.getId()));
+        });
+
+        it("has no key usage settings when no keys are provided", () -> {
+          makeCert.run();
+
+          assertThat(generatedCert.getExtensionValue(Extension.keyUsage.getId()), nullValue());
+        });
+      });
+
       describe("with extended key usages", () -> {
         beforeEach(() -> {
           inputParameters = new CertificateSecretParameters();
@@ -157,6 +183,8 @@ public class SignedCertificateGeneratorTest {
               serverAuthOid,
               clientAuthOid
           ));
+
+          assertThat(generatedCert.getNonCriticalExtensionOIDs(), hasItem(Extension.extendedKeyUsage.getId()));
         });
 
         it("has no extended key usage extension when no keys are provided", () -> {

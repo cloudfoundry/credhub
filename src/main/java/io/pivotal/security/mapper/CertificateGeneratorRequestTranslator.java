@@ -47,6 +47,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
 
     Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
         .ifPresent(secretParameters::addAlternativeNames);
+    Optional.ofNullable(parsed.read("$.parameters.key_usage", String[].class))
+        .ifPresent(secretParameters::addKeyUsages);
     Optional.ofNullable(parsed.read("$.parameters.extended_key_usage", String[].class))
         .ifPresent(secretParameters::addExtendedKeyUsages);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
@@ -102,6 +104,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         "$['parameters']",
         "$['parameters']['alternative_names']",
         "$['parameters']['alternative_names']"  + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS,
+        "$['parameters']['key_usage']",
+        "$['parameters']['key_usage']" + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS,
         "$['parameters']['extended_key_usage']",
         "$['parameters']['extended_key_usage']" + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS,
         "$['parameters']['ca']",

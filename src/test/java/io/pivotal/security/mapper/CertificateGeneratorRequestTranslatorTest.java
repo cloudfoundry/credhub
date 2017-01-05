@@ -101,6 +101,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"duration\": 1000," +
           "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
           "\"extended_key_usage\": [\"server_auth\", \"client_auth\"]," +
+          "\"key_usage\": [\"data_encipherment\", \"non_repudiation\"]," +
           "\"ca\": \"My Ca\"" +
           "}" +
           "}";
@@ -116,6 +117,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setKeyLength(3072);
       expectedParameters.addAlternativeNames("my-alternative-name-1", "my-alternative-name-2");
       expectedParameters.addExtendedKeyUsages("server_auth", "client_auth");
+      expectedParameters.addKeyUsages("data_encipherment", "non_repudiation");
       expectedParameters.setCaName("My Ca");
       DocumentContext parsed = jsonPath.parse(json);
 
@@ -175,54 +177,6 @@ public class CertificateGeneratorRequestTranslatorTest {
           assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
         }
       });
-    });
-
-    it("ensures that alternative names are added as necessary", () -> {
-      String json = "{" +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"," +
-          "\"alternative_names\": [\"foo\", \"bar\"]" +
-          "}" +
-          "}";
-
-      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
-      expectedParameters.setOrganization("organization.io");
-      expectedParameters.setState("My State");
-      expectedParameters.setCountry("My Country");
-      expectedParameters.setType("certificate");
-      expectedParameters.addAlternativeNames("foo", "bar");
-
-      DocumentContext parsed = jsonPath.parse(json);
-      subject.validateJsonKeys(parsed);
-      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
-      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
-    });
-
-    it("ensures that extended key usage extensions are added as necessary", () -> {
-      String json = "{" +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"," +
-          "\"extended_key_usage\": [\"server_auth\", \"client_auth\"]" +
-          "}" +
-          "}";
-
-      DocumentContext parsed = jsonPath.parse(json);
-      subject.validateJsonKeys(parsed);
-      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
-
-      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
-      expectedParameters.setOrganization("organization.io");
-      expectedParameters.setState("My State");
-      expectedParameters.setCountry("My Country");
-      expectedParameters.setType("certificate");
-      expectedParameters.addExtendedKeyUsages("server_auth", "client_auth");
-      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
     it("ensures that key length is set to default", () -> {
