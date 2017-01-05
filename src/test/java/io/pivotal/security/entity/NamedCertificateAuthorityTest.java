@@ -94,7 +94,8 @@ public class NamedCertificateAuthorityTest {
 
         subject = new NamedCertificateAuthority("name");
         subject.setCertificate("fake-certificate");
-        subject.setPrivateKey("fake-private-key");
+        subject.setEncryptedValue("fake-private-key".getBytes());
+        subject.setNonce("fake-nonce".getBytes());
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
@@ -103,7 +104,8 @@ public class NamedCertificateAuthorityTest {
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("name"));
-        assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+        assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
+        assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));

@@ -126,9 +126,12 @@ public class NamedPasswordSecretTest {
         parameters.setExcludeLower(true);
         parameters.setExcludeUpper(false);
 
+        String stringifiedParameters = new ObjectMapper().writeValueAsString(parameters);
+
         subject = new NamedPasswordSecret("foo");
-        subject.setValue("value");
-        subject.setGenerationParameters(parameters);
+        subject.setEncryptedValue("value".getBytes());
+        subject.setNonce("nonce".getBytes());
+        subject.setEncryptedGenerationParameters(stringifiedParameters.getBytes());
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
@@ -137,15 +140,12 @@ public class NamedPasswordSecretTest {
         NamedPasswordSecret copy = new NamedPasswordSecret();
         subject.copyInto(copy);
 
-        PasswordGenerationParameters copyParameters = copy.getGenerationParameters();
-
         assertThat(copy.getName(), equalTo("foo"));
-        assertThat(copy.getValue(), equalTo("value"));
+        assertThat(copy.getEncryptedValue(), equalTo("value".getBytes()));
+        assertThat(copy.getNonce(), equalTo("nonce".getBytes()));
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
         assertThat(copy.getParameterEncryptionKeyUuid(), equalTo(parameterEncryptionKeyUuid));
-        assertThat(copyParameters.isExcludeNumber(), equalTo(true));
-        assertThat(copyParameters.isExcludeLower(), equalTo(true));
-        assertThat(copyParameters.isExcludeUpper(), equalTo(false));
+        assertThat(copy.getEncryptedGenerationParameters(), equalTo(stringifiedParameters.getBytes()));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));

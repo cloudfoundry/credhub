@@ -5,17 +5,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+import static java.util.Arrays.asList;
 
 import java.lang.reflect.Constructor;
-import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.List;
 
-import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
@@ -26,34 +25,21 @@ import javax.crypto.spec.IvParameterSpec;
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
 public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
-
+  private List<EncryptionKey> keys;
   @Value("${dsm.encryption-key-name}")
   String encryptionKeyAlias;
 
   private Provider provider;
-  private Key key;
+  private EncryptionKey key;
   private SecureRandom secureRandom;
 
   public DyadicEncryptionConfiguration() throws Exception {
     provider = (Provider) Class.forName("com.dyadicsec.provider.DYCryptoProvider").newInstance();
     Security.addProvider(provider);
-  }
 
-  @PostConstruct
-  public void getEncryptionKey() throws Exception {
-    KeyStore keyStore = KeyStore.getInstance("PKCS11", provider);
-    keyStore.load(null);
-    secureRandom = new SecureRandom();
+    initializeKeys();
 
-    if (!keyStore.containsAlias(encryptionKeyAlias)) {
-      KeyGenerator aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
-      aesKeyGenerator.init(128);
-
-      SecretKey aesKey = aesKeyGenerator.generateKey();
-      keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
-    }
-
-    key = keyStore.getKey(encryptionKeyAlias, null);
+    keys = asList(key);
   }
 
   @Override
@@ -67,8 +53,13 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
   }
 
   @Override
-  public Key getKey() {
+  public EncryptionKey getActiveKey() {
     return key;
+  }
+
+  @Override
+  public List<EncryptionKey> getKeys() {
+    return keys;
   }
 
   @Override
@@ -87,8 +78,19 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
     }
   }
 
-  @Override
-  public int getNonceLength() {
-    return NONCE;
+  private void initializeKeys() throws Exception {
+    KeyStore keyStore = KeyStore.getInstance("PKCS11", provider);
+    keyStore.load(null);
+    secureRandom = new SecureRandom();
+
+    if (!keyStore.containsAlias(encryptionKeyAlias)) {
+      KeyGenerator aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
+      aesKeyGenerator.init(128);
+
+      SecretKey aesKey = aesKeyGenerator.generateKey();
+      keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
+    }
+
+    key = new EncryptionKey(this, keyStore.getKey(encryptionKeyAlias, null));
   }
 }

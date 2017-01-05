@@ -40,7 +40,6 @@ public class AuthFailureAuditRecordDataServiceTest {
 
     afterEach(() -> {
       jdbcTemplate.execute("delete from auth_failure_audit_record");
-      jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
     describe("#save", () -> {

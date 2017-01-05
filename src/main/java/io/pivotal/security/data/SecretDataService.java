@@ -3,6 +3,7 @@ package io.pivotal.security.data;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSecretImpl;
 import io.pivotal.security.repository.SecretRepository;
+import io.pivotal.security.service.EncryptionKeyService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,18 +38,24 @@ public class SecretDataService {
       "UPPER(named_secret.name) LIKE UPPER(?) OR UPPER(named_secret.name) LIKE UPPER(?) " +
     "ORDER BY updated_at DESC";
 
-  @Autowired
-  private SecretRepository secretRepository;
+  private final SecretRepository secretRepository;
+  private final JdbcTemplate jdbcTemplate;
+  private final EncryptionKeyService encryptionKeyService;
 
   @Autowired
-  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-
-  @Autowired
-  JdbcTemplate jdbcTemplate;
+  SecretDataService(
+      SecretRepository secretRepository,
+      JdbcTemplate jdbcTemplate,
+      EncryptionKeyService encryptionKeyService
+  ) {
+    this.secretRepository = secretRepository;
+    this.jdbcTemplate = jdbcTemplate;
+    this.encryptionKeyService = encryptionKeyService;
+  }
 
   public NamedSecret save(NamedSecret namedSecret) {
     if (namedSecret.getEncryptionKeyUuid() == null) {
-      namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryDataService.getOne().getUuid());
+      namedSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
     }
     return secretRepository.saveAndFlush(namedSecret);
   }

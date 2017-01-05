@@ -15,7 +15,6 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -40,15 +39,6 @@ public class NamedSshSecretTest {
 
     it("returns type ssh", () -> {
       assertThat(subject.getSecretType(), equalTo("ssh"));
-    });
-
-    it("sets an encrypted private key", () -> {
-      subject.setPrivateKey("some-private-value");
-
-      assertNotNull(subject.getEncryptedValue());
-      assertNotNull(subject.getNonce());
-
-      assertThat(secretEncryptionHelper.retrieveClearTextValue(subject), equalTo("some-private-value"));
     });
 
     describe("#getKeyLength", () -> {
@@ -107,7 +97,8 @@ public class NamedSshSecretTest {
 
         subject = new NamedSshSecret("foo");
         subject.setPublicKey("fake-public-key");
-        subject.setPrivateKey("fake-private-key");
+        subject.setEncryptedValue("fake-private-key".getBytes());
+        subject.setNonce("fake-nonce".getBytes());
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
@@ -117,7 +108,8 @@ public class NamedSshSecretTest {
 
         assertThat(copy.getName(), equalTo("foo"));
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
-        assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+        assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
+        assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));

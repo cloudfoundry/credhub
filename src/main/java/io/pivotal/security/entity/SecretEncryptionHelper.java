@@ -2,8 +2,10 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.service.Encryption;
+import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKey;
 import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.service.Encryption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -14,29 +16,43 @@ import java.util.UUID;
 
 @Component
 public class SecretEncryptionHelper {
+
   private final ObjectMapper objectMapper;
+
+  private final EncryptionKeyService encryptionKeyService;
   private final EncryptionService encryptionService;
-  private String plaintextValue;
+  private String clearTextValue;
 
   @Autowired
-  SecretEncryptionHelper(EncryptionService encryptionService) {
+  SecretEncryptionHelper(EncryptionKeyService encryptionKeyService, EncryptionService encryptionService) {
+    this.encryptionKeyService = encryptionKeyService;
     this.encryptionService = encryptionService;
-    objectMapper = new ObjectMapper();
+    this.objectMapper = new ObjectMapper();
   }
 
   public void refreshEncryptedValue(EncryptedValueContainer encryptedValueContainer, String clearTextValue) {
+    UUID activeEncryptionKeyUuid = encryptionKeyService.getActiveEncryptionKeyUuid();
+
     if (clearTextValue == null) {
       encryptedValueContainer.setNonce(null);
       encryptedValueContainer.setEncryptedValue(null);
+      encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
       return;
     }
     try {
+      EncryptionKey usedEncryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
+
       if (encryptedValueContainer.getNonce() == null ||
           encryptedValueContainer.getEncryptedValue() == null ||
-          !Objects.equals(clearTextValue, encryptionService.decrypt(encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce()))) {
-        final Encryption encryption = encryptionService.encrypt(clearTextValue);
-        encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
+          encryptedValueContainer.getEncryptionKeyUuid() != activeEncryptionKeyUuid ||
+          !Objects.equals(clearTextValue, encryptionService.decrypt(
+              usedEncryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce()
+          ))) {
+        EncryptionKey activeEncryptionKey = encryptionKeyService.getActiveEncryptionKey();
+        final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
         encryptedValueContainer.setNonce(encryption.nonce);
+        encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
+        encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -44,9 +60,12 @@ public class SecretEncryptionHelper {
   }
 
   public String retrieveClearTextValue(EncryptedValueContainer encryptedValueContainer) {
-    if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null) {return null;}
+    if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null) {
+      return null;
+    }
     try {
-      return encryptionService.decrypt(encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
+      EncryptionKey encryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
+      return encryptionService.decrypt(encryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -54,8 +73,8 @@ public class SecretEncryptionHelper {
 
   public void refreshEncryptedGenerationParameters(NamedPasswordSecret namedPasswordSecret, PasswordGenerationParameters generationParameters) {
     try {
-      plaintextValue = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
-      refreshEncryptedValue(new ParametersAdapter(namedPasswordSecret), plaintextValue);
+      clearTextValue = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
+      refreshEncryptedValue(new ParametersAdapter(namedPasswordSecret), clearTextValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

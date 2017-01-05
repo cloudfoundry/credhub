@@ -5,6 +5,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
+import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -45,6 +46,9 @@ public class CertificateAuthorityDataServiceTest {
   CertificateAuthorityRepository certificateAuthorityRepository;
 
   @Autowired
+  EncryptionKeyService encryptionKeyService;
+
+  @Autowired
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   private Instant frozenTime = Instant.ofEpochMilli(1400000000123L);
@@ -52,6 +56,8 @@ public class CertificateAuthorityDataServiceTest {
 
   private CertificateAuthorityDataService subject;
   private NamedCertificateAuthority savedSecret;
+
+  private UUID canaryUuid;
 
   {
     wireAndUnwire(this, false);
@@ -62,11 +68,11 @@ public class CertificateAuthorityDataServiceTest {
       jdbcTemplate.execute("delete from named_certificate_authority");
       jdbcTemplate.execute("delete from encryption_key_canary");
 
-      subject = new CertificateAuthorityDataService(certificateAuthorityRepository, encryptionKeyCanaryDataService);
+      subject = new CertificateAuthorityDataService(certificateAuthorityRepository, encryptionKeyService);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
 
-      EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService);
+      canaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
     });
 
     afterEach(() -> {
@@ -76,7 +82,7 @@ public class CertificateAuthorityDataServiceTest {
 
     describe("#save", () -> {
       it("should create the entity in the database", () -> {
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key");
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate");
         certificateAuthority = subject.save(certificateAuthority);
 
         assertNotNull(certificateAuthority);
@@ -84,6 +90,7 @@ public class CertificateAuthorityDataServiceTest {
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
 
+          ca.setEncryptionKeyUuid(canaryUuid);
           ca.setCertificate(rs.getString("certificate"));
           ca.setEncryptedValue(rs.getBytes("encrypted_value"));
           ca.setName(rs.getString("name"));
@@ -117,12 +124,13 @@ public class CertificateAuthorityDataServiceTest {
 
       it("can store a CA with a certificate of length 7000", () -> {
         String certificate = buildLargeString(7000);
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", certificate, "test-private-key");
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", certificate);
 
         certificateAuthority = subject.save(certificateAuthority);
 
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
+          ca.setEncryptionKeyUuid(canaryUuid);
 
           ca.setCertificate(rs.getString("certificate"));
 
@@ -136,7 +144,7 @@ public class CertificateAuthorityDataServiceTest {
       });
 
       it("can store a CA with a private key of length 7000", () -> {
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key");
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("test-ca", "fake-certificate");
         String largeString = buildLargeString(7000);
         certificateAuthority.setEncryptedValue(largeString.getBytes());
 
@@ -145,6 +153,7 @@ public class CertificateAuthorityDataServiceTest {
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
 
+          ca.setEncryptionKeyUuid(canaryUuid);
           ca.setNonce(rs.getBytes("nonce"));
           ca.setEncryptedValue(rs.getBytes("encrypted_value"));
 
@@ -160,7 +169,7 @@ public class CertificateAuthorityDataServiceTest {
 
       describe("when the entity already exists", () -> {
         it("should save the updated entity", () -> {
-          NamedCertificateAuthority certificateAuthority = subject.save(createCertificateAuthority("test-name", "original-certificate", "fake-private-key"));
+          NamedCertificateAuthority certificateAuthority = subject.save(createCertificateAuthority("test-name", "original-certificate"));
           String newCertificateValue = "new-certificate";
           certificateAuthority.setCertificate(newCertificateValue);
           certificateAuthority = subject.save(certificateAuthority);
@@ -178,9 +187,9 @@ public class CertificateAuthorityDataServiceTest {
 
     describe("#findMostRecent", () -> {
       beforeEach(() -> {
-        subject.save(createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key"));
-        subject.save(createCertificateAuthority("TEST", "fake-certificate", "fake-private-key"));
-        subject.save(createCertificateAuthority("FOO", "fake-certificate", "fake-private-key"));
+        subject.save(createCertificateAuthority("test-ca", "fake-certificate"));
+        subject.save(createCertificateAuthority("TEST", "fake-certificate"));
+        subject.save(createCertificateAuthority("FOO", "fake-certificate"));
       });
 
       describe("when there is no entity with the name", () -> {
@@ -212,12 +221,12 @@ public class CertificateAuthorityDataServiceTest {
     describe("#findAllByName", () -> {
       it("finds all versions given a name in reverse chronological order", () -> {
         fakeTimeSetter.accept(3000000000L);
-        subject.save(createCertificateAuthority("CA/with/versions", "fake-certificate1", "fake-private-key"));
+        subject.save(createCertificateAuthority("CA/with/versions", "fake-certificate1"));
         fakeTimeSetter.accept(1000000000L);
-        subject.save(createCertificateAuthority("ca/WITH/versions", "fake-certificate2", "fake-private-key"));
+        subject.save(createCertificateAuthority("ca/WITH/versions", "fake-certificate2"));
         fakeTimeSetter.accept(2000000000L);
-        subject.save(createCertificateAuthority("ca/with/VERSIONS", "fake-certificate3", "fake-private-key"));
-        subject.save(createCertificateAuthority("test-ca", "fake-certificate", "fake-private-key"));
+        subject.save(createCertificateAuthority("ca/with/VERSIONS", "fake-certificate3"));
+        subject.save(createCertificateAuthority("test-ca", "fake-certificate"));
 
         List<NamedCertificateAuthority> certificateAuthorities = subject.findAllByName("ca/with/versions");
         assertThat(certificateAuthorities.size(), equalTo(3));
@@ -235,7 +244,7 @@ public class CertificateAuthorityDataServiceTest {
 
     describe("#findByUuid", () -> {
       it("should be able to find a CA by uuid", () -> {
-        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert", "my-priv");
+        NamedCertificateAuthority certificateAuthority = createCertificateAuthority("my-ca", "my-cert");
         savedSecret = subject.save(certificateAuthority);
         assertNotNull(savedSecret.getUuid());
         NamedCertificateAuthority oneByUuid = subject.findByUuid(savedSecret.getUuid().toString());
@@ -256,13 +265,13 @@ public class CertificateAuthorityDataServiceTest {
     return stringBuilder.toString();
   }
 
-  NamedCertificateAuthority createCertificateAuthority(String name, String certificate, String privateKey) {
+  NamedCertificateAuthority createCertificateAuthority(String name, String certificate) {
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority(name);
+    certificateAuthority.setEncryptionKeyUuid(canaryUuid);
 
     certificateAuthority
         .setType("test-ca-type")
-        .setCertificate(certificate)
-        .setPrivateKey(privateKey);
+        .setCertificate(certificate);
 
     return certificateAuthority;
   }

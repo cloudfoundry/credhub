@@ -16,13 +16,14 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -80,47 +81,26 @@ public class EncryptionKeyCanaryDataServiceTest {
       });
     });
 
-    describe("#getOne", () -> {
-      describe("when there is one encryption key in the database", () -> {
-        it("should return that encryption key", () -> {
-          EncryptionKeyCanary expected = new EncryptionKeyCanary();
-          expected.setEncryptedValue("test-value".getBytes());
-          expected.setNonce("test-nonce".getBytes());
-
-          subject.save(expected);
-
-          EncryptionKeyCanary actual = subject.getOne();
-
-          assertNotNull(actual.getUuid());
-          assertThat(actual.getUuid(), equalTo(expected.getUuid()));
-          assertThat(actual.getEncryptedValue(), equalTo(expected.getEncryptedValue()));
+    describe("#findAll", () -> {
+      describe("when there are no canaries", () -> {
+        it("should return an empty list", () -> {
+          assertThat(subject.findAll().size(), equalTo(0));
         });
       });
 
-      describe("when there are multiple canaries in the database", () -> {
-        it("should return a canary", () -> {
-          EncryptionKeyCanary expected = new EncryptionKeyCanary();
-          expected.setEncryptedValue("test-value".getBytes());
-          expected.setNonce("test-nonce".getBytes());
-
+      describe("when there are canaries", () -> {
+        it("should return them as a list", () -> {
+          EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
           EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
-          secondCanary.setEncryptedValue("second-test-value".getBytes());
-          secondCanary.setNonce("second-nonce".getBytes());
 
-          subject.save(expected);
+          subject.save(firstCanary);
           subject.save(secondCanary);
 
-          EncryptionKeyCanary actual = subject.getOne();
+          List<EncryptionKeyCanary> canaries = subject.findAll();
+          List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid()).collect(Collectors.toList());
 
-          assertNotNull(actual.getUuid());
-          assertNotNull(actual.getEncryptedValue());
-          assertNotNull(actual.getNonce());
-        });
-      });
-
-      describe("when there is no canary in the database", () -> {
-        it("should return null", () -> {
-          assertNull(subject.getOne());
+          assertThat(canaries.size(), equalTo(2));
+          assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
         });
       });
     });

@@ -8,6 +8,7 @@ import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.StringSecret;
 import org.junit.runner.RunWith;
@@ -77,6 +78,9 @@ public class SecretsControllerRegenerateTest {
   @MockBean
   PasseyStringSecretGenerator passwordGenerator;
 
+  @Autowired
+  EncryptionKeyService encryptionKeyService;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -100,6 +104,7 @@ public class SecretsControllerRegenerateTest {
     describe("regenerating a password", () -> {
       beforeEach(() -> {
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+        originalSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
         originalSecret.setValue("original-password");
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
 

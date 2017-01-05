@@ -8,6 +8,7 @@ import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -24,11 +25,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -60,6 +56,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -85,6 +86,9 @@ public class CaControllerTest {
 
   @SpyBean
   BCCertificateGenerator certificateGenerator;
+
+  @Autowired
+  EncryptionKeyService encryptionKeyService;
 
   @SpyBean
   FakeAuditLogService auditLogService;
@@ -116,6 +120,7 @@ public class CaControllerTest {
           .setPrivateKey("private_key")
           .setUuid(uuid)
           .setUpdatedAt(FROZEN_TIME_INSTANT);
+      fakeGeneratedCa.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
     });
 
     describe("generating a ca", () -> {
@@ -847,6 +852,7 @@ public class CaControllerTest {
     originalCa = spy(new NamedCertificateAuthority(UNIQUE_NAME));
     originalCa.setUuid(UUID.randomUUID());
     originalCa.setCertificate("original-certificate");
+    originalCa.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
 
     doReturn(originalCa)
         .when(certificateAuthorityDataService).findMostRecent(anyString());
@@ -857,6 +863,7 @@ public class CaControllerTest {
 
     doAnswer(invocation -> {
       NamedCertificateAuthority certificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
+      certificateAuthority.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
       certificateAuthority.setUpdatedAt(FROZEN_TIME_INSTANT);
       if (certificateAuthority.getUuid() == null) {
         certificateAuthority.setUuid(uuid);

@@ -10,6 +10,7 @@ import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
@@ -69,6 +70,9 @@ public class CertificateGeneratorRequestTranslatorTest {
 
   @SpyBean
   CertificateAuthorityDataService certificateAuthorityDataService;
+
+  @Autowired
+  EncryptionKeyService encryptionKeyService;
 
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
@@ -300,6 +304,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       String originalCertificate = secret.getCertificateBody().getCertificate();
 
       NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
+      namedCertificateSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
       namedCertificateSecret.setCaName("my-root");
       namedCertificateSecret.setCa(secret.getCertificateBody().getCa());
       namedCertificateSecret.setCertificate(originalCertificate);
@@ -339,6 +344,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       String originalCertificate = secret.getCertificateBody().getCertificate();
 
       NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
+      namedCertificateSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
       namedCertificateSecret.setCaName("my-root");
       namedCertificateSecret.setCa(secret.getCertificateBody().getCa());
       namedCertificateSecret.setCertificate(originalCertificate);
@@ -361,6 +367,7 @@ public class CertificateGeneratorRequestTranslatorTest {
     authorityParameters.setCommonName("my-root");
     CertificateAuthority certificateSecret = secretGenerator.generateCertificateAuthority(authorityParameters);
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("my-root");
+    certificateAuthority.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
     certificateAuthority.setCertificate(certificateSecret.getCertificateAuthorityBody().getCertificate())
         .setPrivateKey(certificateSecret.getCertificateAuthorityBody().getPrivateKey());
 

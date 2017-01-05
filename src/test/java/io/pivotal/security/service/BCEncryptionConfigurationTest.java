@@ -1,50 +1,58 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.DevKeyProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.config.EncryptionKeysConfiguration;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.DatatypeConverter;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.when;
-
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "BCEncryptionConfigurationTest"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class BCEncryptionConfigurationTest {
-  @Autowired
   private BCEncryptionConfiguration subject;
 
   {
-    wireAndUnwire(this, false);
+    beforeEach(() -> {
+      DevKeyProvider devKeyProvider = mock(DevKeyProvider.class);
+      when(devKeyProvider.getDevKey()).thenReturn("0123456789ABCDEF0123456789ABCDEF");
 
-    describe("getKey", () -> {
+      EncryptionKeysConfiguration encryptionKeysConfiguration = mock(EncryptionKeysConfiguration.class);
+      when(encryptionKeysConfiguration.getKeys()).thenReturn(asList("0123456789ABCDEF0123456789ABCDEF", "5555556789ABCDEF0123456789ABCDEF"));
+      subject = new BCEncryptionConfiguration(new BouncyCastleProvider(), devKeyProvider, encryptionKeysConfiguration);
+    });
+
+    describe("#getActiveKey", () -> {
       it("should use the correct algorithm", () -> {
-        assertThat(subject.getKey().getAlgorithm(), equalTo("AES"));
+        assertThat(subject.getActiveKey().getKey().getAlgorithm(), equalTo("AES"));
       });
 
       it("should use key of length 128 bits", () -> {
-        assertThat(subject.getKey().getEncoded().length, equalTo(16));
+        assertThat(subject.getActiveKey().getKey().getEncoded().length, equalTo(16));
       });
 
       it("should create a key using the provided dev key value", () -> {
-        // this line is needed to ensure that a new key will be initialized
-        ReflectionTestUtils.setField(subject, "key", null);
-        subject.devKeyProvider = Mockito.mock(DevKeyProvider.class);
-        when(subject.devKeyProvider.getDevKey()).thenReturn("0123456789ABCDEF0123456789ABCDEF");
-        assertThat(DatatypeConverter.printHexBinary(subject.getKey().getEncoded()), equalTo("0123456789ABCDEF0123456789ABCDEF"));
+        assertThat(DatatypeConverter.printHexBinary(subject.getActiveKey().getKey().getEncoded()), equalTo("0123456789ABCDEF0123456789ABCDEF"));
+      });
+    });
+
+    describe("#getKeys", () -> {
+      it("should return the keys", () -> {
+        List<String> plaintextKeys = subject.getKeys().stream().map(key -> DatatypeConverter.printHexBinary(key.getKey().getEncoded())).collect(Collectors.toList());
+        assertThat(plaintextKeys, containsInAnyOrder("0123456789ABCDEF0123456789ABCDEF", "5555556789ABCDEF0123456789ABCDEF"));
       });
     });
   }

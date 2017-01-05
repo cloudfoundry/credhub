@@ -2,6 +2,7 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
+import io.pivotal.security.service.EncryptionKeyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,20 +12,20 @@ import java.util.UUID;
 @Service
 public class CertificateAuthorityDataService {
   private final CertificateAuthorityRepository certificateAuthorityRepository;
-  private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
+  private final EncryptionKeyService encryptionKeyService;
 
   @Autowired
   public CertificateAuthorityDataService(
       CertificateAuthorityRepository certificateAuthorityRepository,
-      EncryptionKeyCanaryDataService encryptionKeyCanaryDataService
+      EncryptionKeyService encryptionKeyService
   ) {
     this.certificateAuthorityRepository = certificateAuthorityRepository;
-    this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
+    this.encryptionKeyService = encryptionKeyService;
   }
 
   public NamedCertificateAuthority save(NamedCertificateAuthority certificateAuthority) {
     if (certificateAuthority.getEncryptionKeyUuid() == null) {
-      certificateAuthority.setEncryptionKeyUuid(encryptionKeyCanaryDataService.getOne().getUuid());
+      certificateAuthority.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
     }
     return certificateAuthorityRepository.save(certificateAuthority);
   }

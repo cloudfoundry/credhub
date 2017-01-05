@@ -22,6 +22,8 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -42,6 +44,8 @@ public class SecretRepositoryTest {
   private Consumer<Long> fakeTimeSetter;
   private String secretName;
 
+  private UUID canaryUuid;
+
   {
     wireAndUnwire(this, true);
 
@@ -53,7 +57,7 @@ public class SecretRepositoryTest {
       secretName = "my-secret";
       fakeTimeSetter.accept(345345L);
 
-      EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService);
+      canaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
     });
 
     afterEach(() -> {
@@ -62,31 +66,37 @@ public class SecretRepositoryTest {
     });
 
     it("can store certificates of length 7000 which means 7016 for GCM", () -> {
+      byte[] encryptedValue = new byte[7016];
+      Arrays.fill(encryptedValue, (byte) 'A');
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
       NamedCertificateSecret entity = new NamedCertificateSecret(secretName);
       final String longString = stringBuilder.toString();
       entity.setCa(longString);
       entity.setCertificate(longString);
-      entity.setPrivateKey(longString);
-      entity.setEncryptionKeyUuid(encryptionKeyCanaryDataService.getOne().getUuid());
+      entity.setEncryptedValue(encryptedValue);
+      entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
       NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName);
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
-      assertThat(certificateSecret.getPrivateKey().length(), equalTo(7000));
+      assertThat(certificateSecret.getEncryptedValue(), equalTo(encryptedValue));
+      assertThat(certificateSecret.getEncryptedValue().length, equalTo(7016));
     });
 
     it("can store strings of length 7000, which means 7016 for GCM", ()-> {
+      byte[] encryptedValue = new byte[7016];
+      Arrays.fill(encryptedValue, (byte) 'A');
+
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
       NamedStringSecret entity = new NamedValueSecret(secretName);
-      entity.setValue(stringBuilder.toString());
-      entity.setEncryptionKeyUuid(encryptionKeyCanaryDataService.getOne().getUuid());
+      entity.setEncryptedValue(encryptedValue);
+      entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      assertThat(((NamedStringSecret) subject.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName)).getValue().length(), equalTo(7000));
+      assertThat((subject.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(secretName)).getEncryptedValue().length, equalTo(7016));
     });
   }
 }

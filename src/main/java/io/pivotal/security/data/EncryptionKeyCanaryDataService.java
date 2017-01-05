@@ -20,9 +20,7 @@ public class EncryptionKeyCanaryDataService {
     return encryptionKeyCanaryRepository.save(canary);
   }
 
-  public EncryptionKeyCanary getOne() {
-    List<EncryptionKeyCanary> canaries = encryptionKeyCanaryRepository.findAll();
-
-    return canaries.isEmpty() ? null : canaries.get(0);
+  public List<EncryptionKeyCanary> findAll() {
+    return encryptionKeyCanaryRepository.findAll();
   }
 }
