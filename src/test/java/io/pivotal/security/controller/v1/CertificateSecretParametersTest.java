@@ -6,6 +6,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class CertificateSecretParametersTest {
 
@@ -96,6 +98,7 @@ public class CertificateSecretParametersTest {
     params.setOrganization("My Organization");
     try {
       params.addExtendedKeyUsages("client_auth", "server_off");
+      fail();
     } catch (ParameterizedValidationException pve) {
       assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
       assertThat(pve.getParameters()[0], equalTo("server_off"));
@@ -115,6 +118,75 @@ public class CertificateSecretParametersTest {
     params2.setState("My State");
     params2.setOrganization("My Organization");
     params2.addExtendedKeyUsages("server_auth", "code_signing");
+
+    assertThat(isEqual(params, params2), is(false));
+  }
+
+  @Test
+  public void canAddKeyUsages() throws IOException {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    params.addKeyUsages("digital_signature", "non_repudiation", "key_encipherment", "data_encipherment", "key_agreement", "key_cert_sign", "crl_sign", "encipher_only", "decipher_only");
+
+    KeyUsage keyUsages = KeyUsage.getInstance(params.getKeyUsages());
+    assertThat(keyUsages.hasUsages(KeyUsage.digitalSignature), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.nonRepudiation), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.keyEncipherment), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.dataEncipherment), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.keyAgreement), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.keyCertSign), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.cRLSign), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.encipherOnly), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.decipherOnly), equalTo(true));
+
+    params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    params.addKeyUsages("digital_signature", "non_repudiation", "decipher_only");
+
+    keyUsages = KeyUsage.getInstance(params.getKeyUsages());
+    assertThat(keyUsages.hasUsages(KeyUsage.digitalSignature), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.nonRepudiation), equalTo(true));
+    assertThat(keyUsages.hasUsages(KeyUsage.keyEncipherment), equalTo(false));
+    assertThat(keyUsages.hasUsages(KeyUsage.dataEncipherment), equalTo(false));
+    assertThat(keyUsages.hasUsages(KeyUsage.keyAgreement), equalTo(false));
+    assertThat(keyUsages.hasUsages(KeyUsage.keyCertSign), equalTo(false));
+    assertThat(keyUsages.hasUsages(KeyUsage.cRLSign), equalTo(false));
+    assertThat(keyUsages.hasUsages(KeyUsage.encipherOnly), equalTo(false));
+    assertThat(keyUsages.hasUsages(KeyUsage.decipherOnly), equalTo(true));
+  }
+
+  @Test
+  public void validatesKeyUsages() {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    try {
+      params.addKeyUsages("key_agreement", "digital_sinnature");
+      fail();
+    } catch (ParameterizedValidationException pve) {
+      assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_key_usage"));
+      assertThat(pve.getParameters()[0], equalTo("digital_sinnature"));
+    }
+  }
+
+  @Test
+  public void keyUsagesConsideredForInequality() {
+    CertificateSecretParameters params = new CertificateSecretParameters();
+    params.setCountry("My Country");
+    params.setState("My State");
+    params.setOrganization("My Organization");
+    params.addKeyUsages("key_agreement");
+
+    CertificateSecretParameters params2 = new CertificateSecretParameters();
+    params2.setCountry("My Country");
+    params2.setState("My State");
+    params2.setOrganization("My Organization");
+    params2.addKeyUsages("key_agreement", "data_encipherment");
 
     assertThat(isEqual(params, params2), is(false));
   }

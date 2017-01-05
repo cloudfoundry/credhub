@@ -14,6 +14,8 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -55,6 +57,7 @@ public class CertificateSecretParameters implements RequestParameters {
   private GeneralNames alternativeNames;
 
   private ExtendedKeyUsage extendedKeyUsages;
+  private KeyUsage keyUsages;
 
   public CertificateSecretParameters() {
   }
@@ -237,11 +240,52 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
+  public CertificateSecretParameters addKeyUsages(String... keyUsages) {
+    int bitmask = 0;
+    for (String keyUsage : keyUsages) {
+      switch(keyUsage) {
+        case "digital_signature":
+          bitmask |= KeyUsage.digitalSignature;
+          break;
+        case "non_repudiation":
+          bitmask |= KeyUsage.nonRepudiation;
+          break;
+        case "key_encipherment":
+          bitmask |= KeyUsage.keyEncipherment;
+          break;
+        case "data_encipherment":
+          bitmask |= KeyUsage.dataEncipherment;
+          break;
+        case "key_agreement":
+          bitmask |= KeyUsage.keyAgreement;
+          break;
+        case "key_cert_sign":
+          bitmask |= KeyUsage.keyCertSign;
+          break;
+        case "crl_sign":
+          bitmask |= KeyUsage.cRLSign;
+          break;
+        case "encipher_only":
+          bitmask |= KeyUsage.encipherOnly;
+          break;
+        case "decipher_only":
+          bitmask |= KeyUsage.decipherOnly;
+          break;
+        default:
+          throw new ParameterizedValidationException("error.invalid_key_usage", Arrays.asList(keyUsage));
+      }
+    }
+    this.keyUsages = new KeyUsage(bitmask);
+    return this;
+  }
+
   public ASN1Object getAlternativeNames() {
     return alternativeNames;
   }
 
   public ASN1Object getExtendedKeyUsages() { return extendedKeyUsages; }
+
+  public ASN1Object getKeyUsages() { return keyUsages; }
 
   public CertificateSecretParameters setKeyLength(int keyLength) {
     this.keyLength = keyLength;
