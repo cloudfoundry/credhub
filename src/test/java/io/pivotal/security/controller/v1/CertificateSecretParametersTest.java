@@ -13,7 +13,6 @@ import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -58,23 +57,6 @@ public class CertificateSecretParametersTest {
   }
 
   @Test
-  public void alternativeNamesConsideredForInequality() {
-    CertificateSecretParameters params = new CertificateSecretParameters();
-    params.setCountry("My Country");
-    params.setState("My State");
-    params.setOrganization("My Organization");
-    params.addAlternativeNames("alternative-name-1", "alternative-name-2");
-
-    CertificateSecretParameters params2 = new CertificateSecretParameters();
-    params2.setCountry("My Country");
-    params2.setState("My State");
-    params2.setOrganization("My Organization");
-    params2.addAlternativeNames("alternative-name-1-foobar", "alternative-name-2");
-
-    assertThat(isEqual(params, params2), is(false));
-  }
-
-  @Test
   public void canAddExtendedKeyUsages() throws IOException {
     CertificateSecretParameters params = new CertificateSecretParameters();
     params.setCountry("My Country");
@@ -103,23 +85,6 @@ public class CertificateSecretParametersTest {
       assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
       assertThat(pve.getParameters()[0], equalTo("server_off"));
     }
-  }
-
-  @Test
-  public void extendedKeyUsagesConsideredForInequality() {
-    CertificateSecretParameters params = new CertificateSecretParameters();
-    params.setCountry("My Country");
-    params.setState("My State");
-    params.setOrganization("My Organization");
-    params.addExtendedKeyUsages("server_auth", "client_auth");
-
-    CertificateSecretParameters params2 = new CertificateSecretParameters();
-    params2.setCountry("My Country");
-    params2.setState("My State");
-    params2.setOrganization("My Organization");
-    params2.addExtendedKeyUsages("server_auth", "code_signing");
-
-    assertThat(isEqual(params, params2), is(false));
   }
 
   @Test
@@ -172,23 +137,6 @@ public class CertificateSecretParametersTest {
       assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_key_usage"));
       assertThat(pve.getParameters()[0], equalTo("digital_sinnature"));
     }
-  }
-
-  @Test
-  public void keyUsagesConsideredForInequality() {
-    CertificateSecretParameters params = new CertificateSecretParameters();
-    params.setCountry("My Country");
-    params.setState("My State");
-    params.setOrganization("My Organization");
-    params.addKeyUsages("key_agreement");
-
-    CertificateSecretParameters params2 = new CertificateSecretParameters();
-    params2.setCountry("My Country");
-    params2.setState("My State");
-    params2.setOrganization("My Organization");
-    params2.addKeyUsages("key_agreement", "data_encipherment");
-
-    assertThat(isEqual(params, params2), is(false));
   }
 
   @Test
