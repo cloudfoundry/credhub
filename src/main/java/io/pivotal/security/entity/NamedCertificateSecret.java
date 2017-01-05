@@ -162,4 +162,14 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
       throw new RuntimeException(e);
     }
   }
+
+  public Extension getExtendedKeyUsages() {
+    X509CertificateHolder certificateHolder = getCertificateHolder();
+
+    if (certificateHolder == null) {
+      return null;
+    } else {
+      return certificateHolder.getExtension(Extension.extendedKeyUsage);
+    }
+  }
 }

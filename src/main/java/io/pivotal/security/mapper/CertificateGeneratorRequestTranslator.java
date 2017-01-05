@@ -7,6 +7,7 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.bouncycastle.asn1.x509.Extension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +39,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
           .setCaName(entity.getCaName())
           .setDurationDays(entity.getDurationDays())
           .setKeyLength(entity.getKeyLength())
-          .addAlternativeNames(entity.getAlternativeNames());
+          .addAlternativeNames(entity.getAlternativeNames())
+          .addExtendedKeyUsages(entity.getExtendedKeyUsages());
     }
 
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);

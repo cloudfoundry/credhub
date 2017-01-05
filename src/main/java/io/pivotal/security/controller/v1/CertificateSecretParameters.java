@@ -1,16 +1,19 @@
 package io.pivotal.security.controller.v1;
 
+import io.pivotal.security.constants.KeyUsageExtensions;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -19,8 +22,13 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 public class CertificateSecretParameters implements RequestParameters {
   private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
@@ -167,6 +175,38 @@ public class CertificateSecretParameters implements RequestParameters {
 
     this.alternativeNames = new GeneralNames(genNames);
 
+    return this;
+  }
+
+  public CertificateSecretParameters addExtendedKeyUsages(Extension encodedExtendedKeyUsages) {
+    if (encodedExtendedKeyUsages != null) {
+      DLSequence parsedValue = (DLSequence) encodedExtendedKeyUsages.getParsedValue();
+      final ArrayList<ASN1ObjectIdentifier> objectIdentifiers = Collections.list(parsedValue.getObjects());
+      List<KeyPurposeId> keyList = newArrayList();
+      for (ASN1ObjectIdentifier oid: objectIdentifiers) {
+        final KeyUsageExtensions extension = KeyUsageExtensions.getExtension(oid.getId());
+        switch(extension.name().toLowerCase()) {
+          case "server_auth":
+            keyList.add(KeyPurposeId.id_kp_serverAuth);
+            break;
+          case "client_auth":
+            keyList.add(KeyPurposeId.id_kp_clientAuth);
+            break;
+          case "code_signing":
+            keyList.add(KeyPurposeId.id_kp_codeSigning);
+            break;
+          case "email_protection":
+            keyList.add(KeyPurposeId.id_kp_emailProtection);
+            break;
+          case "time_stamping":
+            keyList.add(KeyPurposeId.id_kp_timeStamping);
+            break;
+          default:
+            throw new ParameterizedValidationException("error.invalid_extended_key_usage", Arrays.asList(extension.toString()));
+        }
+      }
+      this.extendedKeyUsages = new ExtendedKeyUsage(keyList.toArray(new KeyPurposeId[0]));
+    }
     return this;
   }
 

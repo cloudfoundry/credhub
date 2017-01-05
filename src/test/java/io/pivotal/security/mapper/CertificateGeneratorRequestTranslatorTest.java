@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.constants.KeyUsageExtensions;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.data.CertificateAuthorityDataService;
@@ -14,8 +15,10 @@ import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import io.pivotal.security.view.CertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
@@ -27,9 +30,11 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.security.Security;
+import java.util.Collections;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
@@ -336,6 +341,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       parameters.setKeyLength(1024);
       parameters.setDurationDays(30);
       parameters.addAlternativeNames("another-name");
+      parameters.addExtendedKeyUsages("code_signing");
       CertificateSecret secret = secretGenerator.generateSecret(parameters);
 
       String originalPrivateKey = secret.getCertificateBody().getPrivateKey();
@@ -360,8 +366,11 @@ public class CertificateGeneratorRequestTranslatorTest {
       assertThat(namedCertificateSecret.getKeyLength(), equalTo(1024));
       assertThat(namedCertificateSecret.getDurationDays(), equalTo(30));
 
-      ASN1Sequence sequence = (ASN1Sequence) namedCertificateSecret.getAlternativeNames().getParsedValue();
-      assertThat(((DERTaggedObject) sequence.getObjectAt(0)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "another-name").getEncoded()));
+      ASN1Sequence alternativeNameSequence = (ASN1Sequence) namedCertificateSecret.getAlternativeNames().getParsedValue();
+      assertThat(((DERTaggedObject) alternativeNameSequence.getObjectAt(0)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "another-name").getEncoded()));
+
+      final DLSequence extendedKeyUsageSequence = (DLSequence) namedCertificateSecret.getExtendedKeyUsages().getParsedValue();
+      assertThat(((ASN1ObjectIdentifier) Collections.list(extendedKeyUsageSequence.getObjects()).get(0)).getId(), equalTo(KeyUsageExtensions.CODE_SIGNING.toString()));
     });
 
     it("can regenerate using the existing entity and json when there are no alternative names", () -> {
