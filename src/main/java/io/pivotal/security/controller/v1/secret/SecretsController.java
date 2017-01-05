@@ -39,11 +39,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -52,8 +49,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -107,9 +106,9 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
-  public ResponseEntity delete( @RequestParam(value = "name", required = false) String secretName,
-                                HttpServletRequest request,
-                                Authentication authentication) throws Exception {
+  public ResponseEntity delete(@RequestParam(value = "name", required = false) String secretName,
+                               HttpServletRequest request,
+                               Authentication authentication) throws Exception {
     AuditRecordBuilder auditRecorder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(auditRecorder, () -> {
       List<NamedSecret> namedSecrets;
@@ -164,7 +163,11 @@ public class SecretsController {
   }
 
   public String sanitizedName(@RequestParam(value = "name", required = false) String secretName) {
-    return StringUtils.stripStart(secretName, "/");
+    if (secretName != null && secretName.startsWith("/")) {
+      secretName = secretName.substring(1);
+    }
+
+    return secretName;
   }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
@@ -189,7 +192,7 @@ public class SecretsController {
                                                     Function<List<NamedSecret>, Object> secretPresenter) throws Exception {
     final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
-      if(StringUtils.isEmpty(identifier)) {
+      if (StringUtils.isEmpty(identifier)) {
         return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
       }
       List<NamedSecret> namedSecrets = finder.apply(identifier);

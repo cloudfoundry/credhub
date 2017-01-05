@@ -110,9 +110,21 @@ public class SecretsControllerGetTest {
         ).when(secretDataService).findByUuid(uuid.toString());
       });
 
-      describe("getting a secret by name case-insensitively (with name query param)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
+      describe("getting a secret by name case-insensitively (with name query param, and no leading slash)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
 
       describe("getting a secret by name when name has a leading slash", makeGetByNameBlock(secretValue, "/api/v1/data?name=/" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
+
+      describe("getting a secret by name when name has multiple leading slashes", () -> {
+        it("returns NOT_FOUND", () -> {
+          final MockHttpServletRequestBuilder get = get("/api/v1/data?name=//" + secretName.toUpperCase())
+              .accept(APPLICATION_JSON);
+
+          mockMvc.perform(get)
+              .andExpect(status().isNotFound())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
+        });
+      });
 
       describe("when passing a 'current' query parameter", () -> {
         it("when true should return only the most recent version", () -> {
