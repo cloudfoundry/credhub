@@ -3,8 +3,6 @@ package io.pivotal.security.entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
@@ -27,12 +25,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedCertificateAuthorityTest {
-  @Autowired
-  EncryptionService encryptionService;
-
   @Autowired
   private ObjectMapper objectMapper;
 
@@ -49,7 +44,6 @@ public class NamedCertificateAuthorityTest {
       subject.setCertificate("cert");
       subject.setPrivateKey("priv");
       subject.setType("root");
-      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     afterEach(() -> {
@@ -79,14 +73,6 @@ public class NamedCertificateAuthorityTest {
       subject.setUpdatedAt(now);
       CertificateAuthority actual = CertificateAuthority.fromEntity(subject);
       assertThat(actual.getUpdatedAt(), equalTo(now));
-    });
-
-    it("only encrypts the value once for the same secret", () -> {
-      subject.setPrivateKey("first");
-      assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
-
-      subject.setPrivateKey("first");
-      assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
     });
 
     it("sets the nonce and the encrypted private key", () -> {

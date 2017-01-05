@@ -2,8 +2,6 @@ package io.pivotal.security.entity;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +21,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedSshSecretTest {
-  @Autowired
-  EncryptionService encryptionService;
-
   @Autowired
   SecretEncryptionHelper secretEncryptionHelper;
 
@@ -41,7 +36,6 @@ public class NamedSshSecretTest {
 
     beforeEach(() -> {
       subject = new NamedSshSecret("Foo");
-      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     it("returns type ssh", () -> {

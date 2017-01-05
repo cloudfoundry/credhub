@@ -2,6 +2,7 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -13,12 +14,15 @@ import java.util.UUID;
 
 @Component
 public class SecretEncryptionHelper {
+  private final ObjectMapper objectMapper;
+  private final EncryptionService encryptionService;
+  private String plaintextValue;
 
   @Autowired
-  ObjectMapper objectMapper;
-
-  @Autowired
-  EncryptionService encryptionService;
+  SecretEncryptionHelper(EncryptionService encryptionService) {
+    this.encryptionService = encryptionService;
+    objectMapper = new ObjectMapper();
+  }
 
   public void refreshEncryptedValue(EncryptedValueContainer encryptedValueContainer, String clearTextValue) {
     if (clearTextValue == null) {
@@ -29,10 +33,10 @@ public class SecretEncryptionHelper {
     try {
       if (encryptedValueContainer.getNonce() == null ||
           encryptedValueContainer.getEncryptedValue() == null ||
-          !Objects.equals(clearTextValue, encryptionService.decrypt(encryptedValueContainer.getNonce(), encryptedValueContainer.getEncryptedValue()))) {
-        final EncryptionService.Encryption encryption = encryptionService.encrypt(clearTextValue);
-        encryptedValueContainer.setNonce(encryption.nonce);
+          !Objects.equals(clearTextValue, encryptionService.decrypt(encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce()))) {
+        final Encryption encryption = encryptionService.encrypt(clearTextValue);
         encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
+        encryptedValueContainer.setNonce(encryption.nonce);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -42,7 +46,7 @@ public class SecretEncryptionHelper {
   public String retrieveClearTextValue(EncryptedValueContainer encryptedValueContainer) {
     if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null) {return null;}
     try {
-      return encryptionService.decrypt(encryptedValueContainer.getNonce(), encryptedValueContainer.getEncryptedValue());
+      return encryptionService.decrypt(encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -50,7 +54,8 @@ public class SecretEncryptionHelper {
 
   public void refreshEncryptedGenerationParameters(NamedPasswordSecret namedPasswordSecret, PasswordGenerationParameters generationParameters) {
     try {
-      refreshEncryptedValue(new ParametersAdapter(namedPasswordSecret), objectMapper.writeValueAsString(generationParameters));
+      plaintextValue = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
+      refreshEncryptedValue(new ParametersAdapter(namedPasswordSecret), plaintextValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

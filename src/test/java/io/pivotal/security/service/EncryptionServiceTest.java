@@ -11,14 +11,14 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
-public class EncryptionServiceImplTest {
+public class EncryptionServiceTest {
 
   private final String plaintext = "this is a string";
 
   BCEncryptionConfiguration bcEncryptionConfiguration;
-  EncryptionServiceImpl subject;
+  EncryptionService subject;
 
-  private EncryptionService.Encryption encryption;
+  private Encryption encryption;
 
   {
     beforeEach(() -> {
@@ -32,7 +32,7 @@ public class EncryptionServiceImplTest {
       };
       bcEncryptionConfiguration.postConstruct();
 
-      subject = new EncryptionServiceImpl(bcEncryptionConfiguration);
+      subject = new EncryptionService(bcEncryptionConfiguration);
       encryption = subject.encrypt(plaintext);
     });
 
@@ -42,7 +42,7 @@ public class EncryptionServiceImplTest {
     });
 
     it("can decrypt values", () -> {
-      assertThat(subject.decrypt(encryption.nonce, encryption.encryptedValue), equalTo(plaintext));
+      assertThat(subject.decrypt(encryption.encryptedValue, encryption.nonce), equalTo(plaintext));
     });
 
     it("does not reuse nonces", () -> {

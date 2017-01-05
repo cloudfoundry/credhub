@@ -2,12 +2,9 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
-import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -16,22 +13,15 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class StringSecretTest {
-
-  @Autowired
-  SecretDataService secretDataService;
-
-  @Autowired
-  BCCertificateGenerator bcCertificateGenerator;
 
   private NamedValueSecret entity;
 
@@ -76,11 +66,10 @@ public class StringSecretTest {
 
     it("has a uuid in the view", () -> {
       entity.setValue("my-value");
-      entity = (NamedValueSecret) secretDataService.save(entity);
 
       StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
 
-      assertThat(actual.getUuid(), notNullValue());
+      assertThat(actual.getUuid(), equalTo(uuid.toString()));
     });
   }
 }

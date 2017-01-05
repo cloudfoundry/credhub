@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +24,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedPasswordSecretTest {
   @Autowired
   ObjectMapper objectMapper;
-
-  @Autowired
-  EncryptionService encryptionService;
 
   NamedPasswordSecret subject;
 
@@ -46,7 +41,6 @@ public class NamedPasswordSecretTest {
 
     beforeEach(() -> {
       subject = new NamedPasswordSecret("Foo");
-      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
 
       generationParameters = new PasswordGenerationParameters();
       generationParameters.setExcludeLower(true);
@@ -90,14 +84,6 @@ public class NamedPasswordSecretTest {
         subject = new NamedPasswordSecret("foo");
       });
 
-      it("only encrypts the value once for the same secret", () -> {
-        subject.setValue("my-value");
-        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
-
-        subject.setValue("my-value");
-        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
-      });
-
       it("sets the nonce and the encrypted value", () -> {
         subject.setValue("my-value");
         assertThat(subject.getEncryptedValue(), notNullValue());
@@ -111,18 +97,6 @@ public class NamedPasswordSecretTest {
 
       itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
         subject.setValue(null);
-      });
-
-      it("only encrypts the generationParameters once for the same secret", () -> {
-        subject.setGenerationParameters(generationParameters);
-        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
-
-        PasswordGenerationParameters generationParameters2 = new PasswordGenerationParameters();
-        generationParameters2.setExcludeLower(true);
-        generationParameters2.setExcludeSpecial(true);
-        generationParameters2.setLength(10);
-        subject.setGenerationParameters(generationParameters2);
-        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
       });
 
       it("sets the parametersNonce and the encryptedGenerationParameters", () -> {
@@ -153,7 +127,7 @@ public class NamedPasswordSecretTest {
         parameters.setExcludeUpper(false);
 
         subject = new NamedPasswordSecret("foo");
-        subject.setValue( "value");
+        subject.setValue("value");
         subject.setGenerationParameters(parameters);
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);

@@ -3,8 +3,6 @@ package io.pivotal.security.entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +19,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedValueSecretTest {
   @Autowired
   public ObjectMapper objectMapper;
-
-  @Autowired
-  EncryptionService encryptionService;
 
   NamedStringSecret subject;
 
@@ -37,7 +32,6 @@ public class NamedValueSecretTest {
 
     beforeEach(() -> {
       subject = new NamedValueSecret("Foo");
-      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     it("returns type value", () -> {
@@ -47,14 +41,6 @@ public class NamedValueSecretTest {
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
         subject = new NamedValueSecret("foo");
-      });
-
-      it("only encrypts the value once for the same secret", () -> {
-        subject.setValue("my-value");
-        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
-
-        subject.setValue("my-value");
-        assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
       });
 
       it("sets the nonce and the encrypted value", () -> {

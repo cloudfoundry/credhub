@@ -3,38 +3,31 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.JsonExpectationsHelper;
-
-import java.time.Instant;
-import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import java.time.Instant;
+import java.util.UUID;
+
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class CertificateSecretTest {
 
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
 
-  @Autowired
-  SecretDataService secretDataService;
-
-  @Autowired
-  ObjectMapper serializingObjectMapper;
+  private ObjectMapper serializingObjectMapper;
 
   private NamedCertificateSecret entity;
 
@@ -46,6 +39,7 @@ public class CertificateSecretTest {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
+      serializingObjectMapper = new ObjectMapper();
       secretName = "foo";
       uuid = UUID.randomUUID();
       entity = new NamedCertificateSecret(secretName)
@@ -78,9 +72,8 @@ public class CertificateSecretTest {
     });
 
     it("sets uuid on generated view", () -> {
-      entity = (NamedCertificateSecret) secretDataService.save(entity);
       CertificateSecret subject = (CertificateSecret) CertificateSecret.fromEntity(entity);
-      assertThat(subject.getUuid(), notNullValue());
+      assertThat(subject.getUuid(), equalTo(uuid.toString()));
     });
 
     it("includes keys with null values", () -> {

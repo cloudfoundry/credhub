@@ -2,8 +2,6 @@ package io.pivotal.security.entity;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +15,14 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedRsaSecretTest {
-  @Autowired
-  EncryptionService encryptionService;
-
   @Autowired
   SecretEncryptionHelper secretEncryptionHelper;
 
@@ -39,19 +33,10 @@ public class NamedRsaSecretTest {
 
     beforeEach(() -> {
       subject = new NamedRsaSecret("Foo");
-      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     it("returns type rsa", () -> {
       assertThat(subject.getSecretType(), equalTo("rsa"));
-    });
-
-    it("sets an encrypted private key", () -> {
-      subject.setPrivateKey("some-private-value");
-
-      assertNotNull(subject.getEncryptedValue());
-      assertNotNull(subject.getNonce());
-      assertThat(secretEncryptionHelper.retrieveClearTextValue(subject), equalTo("some-private-value"));
     });
 
     describe("#getKeyLength", () -> {

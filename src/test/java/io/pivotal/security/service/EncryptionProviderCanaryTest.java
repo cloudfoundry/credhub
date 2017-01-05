@@ -63,7 +63,7 @@ public class EncryptionProviderCanaryTest {
 
         it("should create a new canary", () -> {
           String expectedCanaryValue = new String(new byte[128], "UTF-8");
-          EncryptionService.Encryption encryptedValue = new EncryptionService.Encryption("test-nonce".getBytes(), "test-encrypted-value".getBytes());
+          Encryption encryptedValue = new Encryption("test-encrypted-value".getBytes(), "test-nonce".getBytes());
           doReturn(encryptedValue).when(encryptionService).encrypt(expectedCanaryValue);
 
           reset(encryptionKeyCanaryDataService);
@@ -96,7 +96,7 @@ public class EncryptionProviderCanaryTest {
 
         it("should not fail if the decrypted value matches the expected value", () -> {
           String canaryValue = new String(new byte[128], "UTF-8");
-          doReturn(canaryValue).when(encryptionService).decrypt("test-nonce".getBytes(), "fake-encrypted-value".getBytes());
+          doReturn(canaryValue).when(encryptionService).decrypt("fake-encrypted-value".getBytes(), "test-nonce".getBytes());
 
           subject.checkForDataCorruption();
 
@@ -105,7 +105,7 @@ public class EncryptionProviderCanaryTest {
 
         itThrowsWithMessage("raises an error if the decrypted canary value does not match the excepted value", RuntimeException.class, TAMPER_ERROR, () -> {
           String canaryValue = "TAMPERED";
-          doReturn(canaryValue).when(encryptionService).decrypt("test-nonce".getBytes(), "fake-encrypted-value".getBytes());
+          doReturn(canaryValue).when(encryptionService).decrypt("fake-encrypted-value".getBytes(), "test-nonce".getBytes());
 
           subject.checkForDataCorruption();
         });

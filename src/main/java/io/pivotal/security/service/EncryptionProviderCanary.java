@@ -23,13 +23,13 @@ public class EncryptionProviderCanary {
 
   @PostConstruct
   public void checkForDataCorruption() {
-    String canaryValue = new String(new byte[128], encryptionService.charset());
+    String canaryValue = new String(new byte[128], EncryptionService.CHARSET);
 
     EncryptionKeyCanary canary = birdCage.getOne();
     if (canary == null) {
       canary = new EncryptionKeyCanary();
       try {
-        EncryptionService.Encryption encryptedCanary = encryptionService.encrypt(canaryValue);
+        Encryption encryptedCanary = encryptionService.encrypt(canaryValue);
         canary.setEncryptedValue(encryptedCanary.encryptedValue);
         canary.setNonce(encryptedCanary.nonce);
         birdCage.save(canary);
@@ -39,7 +39,7 @@ public class EncryptionProviderCanary {
     } else {
       String decryptedResult;
       try {
-        decryptedResult = encryptionService.decrypt(canary.getNonce(), canary.getEncryptedValue());
+        decryptedResult = encryptionService.decrypt(canary.getEncryptedValue(), canary.getNonce());
       } catch (Exception e) {
         throw new RuntimeException("Encryption key is mismatched with database. Please check your configuration.");
       }

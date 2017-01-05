@@ -2,8 +2,6 @@ package io.pivotal.security.entity;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.fake.FakeEncryptionService;
-import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -32,12 +30,9 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "FakeEncryptionService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedCertificateSecretTest {
-  @Autowired
-  EncryptionService encryptionService;
-
   @Autowired
   JdbcTemplate jdbcTemplate;
 
@@ -51,19 +46,10 @@ public class NamedCertificateSecretTest {
           .setCa("my-ca")
           .setCertificate("my-cert")
           .setPrivateKey("my-priv");
-      ((FakeEncryptionService) encryptionService).resetEncryptionCount();
     });
 
     it("returns type certificate", () -> {
       assertThat(subject.getSecretType(), equalTo("certificate"));
-    });
-
-    it("only encrypts the value once for the same secret", () -> {
-      subject.setPrivateKey("first");
-      assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
-
-      subject.setPrivateKey("first");
-      assertThat(((FakeEncryptionService) encryptionService).getEncryptionCount(), equalTo(1));
     });
 
     it("sets the nonce and the encrypted private key", () -> {
