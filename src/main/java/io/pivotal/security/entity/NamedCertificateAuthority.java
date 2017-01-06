@@ -51,6 +51,9 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @LastModifiedDate
   private Instant updatedAt;
 
+  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  private UUID encryptionKeyUuid;
+
   @SuppressWarnings("unused")
   public NamedCertificateAuthority() {
   }
@@ -120,12 +123,6 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
     this.encryptedValue = encryptedValue;
   }
 
-  public void copyInto(NamedCertificateAuthority copy) {
-    copy.setCertificate(certificate);
-    copy.setEncryptedValue(encryptedValue);
-    copy.setNonce(nonce);
-  }
-
   public String getPrivateKey() {
     return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }
@@ -133,5 +130,21 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   public NamedCertificateAuthority setPrivateKey(String privateKey) {
     SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, privateKey);
     return this;
+  }
+
+  public UUID getEncryptionKeyUuid() {
+    return encryptionKeyUuid;
+  }
+
+  public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+    this.encryptionKeyUuid = encryptionKeyUuid;
+  }
+
+  public void copyInto(NamedCertificateAuthority copy) {
+    copy.setName(name);
+    copy.setCertificate(certificate);
+    copy.setEncryptedValue(encryptedValue);
+    copy.setNonce(nonce);
+    copy.setEncryptionKeyUuid(encryptionKeyUuid);
   }
 }

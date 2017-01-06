@@ -84,12 +84,14 @@ public class NamedRsaSecretTest {
       it("should copy the correct properties into the other object", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
+        UUID encryptionKeyUuid = UUID.randomUUID();
 
         subject = new NamedRsaSecret("foo");
         subject.setPublicKey("fake-public-key");
         subject.setPrivateKey("fake-private-key");
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
+        subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
         NamedRsaSecret copy = new NamedRsaSecret();
         subject.copyInto(copy);
@@ -97,6 +99,7 @@ public class NamedRsaSecretTest {
         assertThat(copy.getName(), equalTo("foo"));
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
         assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));

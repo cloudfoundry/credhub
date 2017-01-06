@@ -32,7 +32,6 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
 
   @Column(length = NONCE)
   private byte[] nonce;
-  private String name;
 
   public UUID getUuid() {
     return uuid;
@@ -62,11 +61,13 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
     this.nonce = nonce;
   }
 
-  public String getName() {
-    return name;
+  @Override
+  public UUID getEncryptionKeyUuid() {
+    return uuid;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  @Override
+  public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+    setUuid(encryptionKeyUuid);
   }
 }

@@ -10,9 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.List;
-
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -20,6 +17,9 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
+
+import java.time.Instant;
+import java.util.List;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -36,10 +36,11 @@ public class AuthFailureAuditRecordDataServiceTest {
   private final long tokenExpires = tokenIssued + 10000;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this, true);
 
     afterEach(() -> {
       jdbcTemplate.execute("delete from auth_failure_audit_record");
+      jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
     describe("#save", () -> {

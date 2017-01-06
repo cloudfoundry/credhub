@@ -39,6 +39,8 @@ public class NamedPasswordSecretTest {
 
   PasswordGenerationParameters generationParameters;
 
+  private UUID encryptionKeyUuid;
+
   {
     wireAndUnwire(this, false);
 
@@ -54,6 +56,33 @@ public class NamedPasswordSecretTest {
 
     it("returns type password", () -> {
       assertThat(subject.getSecretType(), equalTo("password"));
+    });
+
+    describe("#setEncryptionKeyUuid", () -> {
+      describe("when there is no parameter encryption key UUID", () -> {
+        it("should also set the parameter encryption key UUID", () -> {
+          subject = new NamedPasswordSecret("foo");
+          encryptionKeyUuid = UUID.randomUUID();
+          subject.setEncryptionKeyUuid(encryptionKeyUuid);
+
+          assertThat(subject.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
+          assertThat(subject.getParameterEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
+        });
+      });
+
+      describe("when there is a parameter encryption key UUID", () -> {
+        it("should should not override the existing parameter encryption key UUID", () -> {
+          subject = new NamedPasswordSecret("foo");
+          UUID parameterEncryptionKeyUuid = UUID.randomUUID();
+          subject.setParameterEncryptionKeyUuid(parameterEncryptionKeyUuid);
+
+          encryptionKeyUuid = UUID.randomUUID();
+          subject.setEncryptionKeyUuid(encryptionKeyUuid);
+
+          assertThat(subject.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
+          assertThat(subject.getParameterEncryptionKeyUuid(), equalTo(parameterEncryptionKeyUuid));
+        });
+      });
     });
 
     describe("with or without alternative names", () -> {
@@ -115,6 +144,8 @@ public class NamedPasswordSecretTest {
       it("should copy the correct properties into the other object", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
+        UUID encryptionKeyUuid = UUID.randomUUID();
+        UUID parameterEncryptionKeyUuid = UUID.randomUUID();
 
         PasswordGenerationParameters parameters = new PasswordGenerationParameters();
         parameters.setExcludeNumber(true);
@@ -126,6 +157,8 @@ public class NamedPasswordSecretTest {
         subject.setGenerationParameters(parameters);
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
+        subject.setEncryptionKeyUuid(encryptionKeyUuid);
+        subject.setParameterEncryptionKeyUuid(parameterEncryptionKeyUuid);
 
         NamedPasswordSecret copy = new NamedPasswordSecret();
         subject.copyInto(copy);
@@ -134,6 +167,8 @@ public class NamedPasswordSecretTest {
 
         assertThat(copy.getName(), equalTo("foo"));
         assertThat(copy.getValue(), equalTo("value"));
+        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
+        assertThat(copy.getParameterEncryptionKeyUuid(), equalTo(parameterEncryptionKeyUuid));
         assertThat(copyParameters.isExcludeNumber(), equalTo(true));
         assertThat(copyParameters.isExcludeLower(), equalTo(true));
         assertThat(copyParameters.isExcludeUpper(), equalTo(false));

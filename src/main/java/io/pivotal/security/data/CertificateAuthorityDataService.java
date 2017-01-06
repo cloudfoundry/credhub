@@ -11,13 +11,21 @@ import java.util.UUID;
 @Service
 public class CertificateAuthorityDataService {
   private final CertificateAuthorityRepository certificateAuthorityRepository;
+  private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @Autowired
-  public CertificateAuthorityDataService(CertificateAuthorityRepository certificateAuthorityRepository) {
+  public CertificateAuthorityDataService(
+      CertificateAuthorityRepository certificateAuthorityRepository,
+      EncryptionKeyCanaryDataService encryptionKeyCanaryDataService
+  ) {
     this.certificateAuthorityRepository = certificateAuthorityRepository;
+    this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
   }
 
   public NamedCertificateAuthority save(NamedCertificateAuthority certificateAuthority) {
+    if (certificateAuthority.getEncryptionKeyUuid() == null) {
+      certificateAuthority.setEncryptionKeyUuid(encryptionKeyCanaryDataService.getOne().getUuid());
+    }
     return certificateAuthorityRepository.save(certificateAuthority);
   }
 

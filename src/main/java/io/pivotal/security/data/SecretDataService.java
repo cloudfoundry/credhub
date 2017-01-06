@@ -38,12 +38,18 @@ public class SecretDataService {
     "ORDER BY updated_at DESC";
 
   @Autowired
-  public SecretRepository secretRepository;
+  private SecretRepository secretRepository;
+
+  @Autowired
+  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @Autowired
   JdbcTemplate jdbcTemplate;
 
   public NamedSecret save(NamedSecret namedSecret) {
+    if (namedSecret.getEncryptionKeyUuid() == null) {
+      namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryDataService.getOne().getUuid());
+    }
     return secretRepository.saveAndFlush(namedSecret);
   }
 

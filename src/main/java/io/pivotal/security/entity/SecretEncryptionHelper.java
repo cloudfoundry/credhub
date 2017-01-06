@@ -9,6 +9,7 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.UUID;
 
 @Component
 public class SecretEncryptionHelper {
@@ -94,6 +95,16 @@ public class SecretEncryptionHelper {
     @Override
     public void setNonce(byte[] nonce) {
       namedPasswordSecret.setParametersNonce(nonce);
+    }
+
+    @Override
+    public UUID getEncryptionKeyUuid() {
+      return namedPasswordSecret.getParameterEncryptionKeyUuid();
+    }
+
+    @Override
+    public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+      namedPasswordSecret.setParameterEncryptionKeyUuid(encryptionKeyUuid);
     }
   }
 }

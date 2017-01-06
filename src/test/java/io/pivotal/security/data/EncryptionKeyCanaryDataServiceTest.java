@@ -48,7 +48,6 @@ public class EncryptionKeyCanaryDataServiceTest {
     describe("#save", () -> {
       it("should save the encryption key in the database", () -> {
         EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
-        encryptionKeyCanary.setName("some-name");
         encryptionKeyCanary.setNonce("test-nonce".getBytes());
         encryptionKeyCanary.setEncryptedValue("test-value".getBytes());
         subject.save(encryptionKeyCanary);
@@ -85,7 +84,6 @@ public class EncryptionKeyCanaryDataServiceTest {
       describe("when there is one encryption key in the database", () -> {
         it("should return that encryption key", () -> {
           EncryptionKeyCanary expected = new EncryptionKeyCanary();
-          expected.setName("canary-name");
           expected.setEncryptedValue("test-value".getBytes());
           expected.setNonce("test-nonce".getBytes());
 
@@ -102,12 +100,10 @@ public class EncryptionKeyCanaryDataServiceTest {
       describe("when there are multiple canaries in the database", () -> {
         it("should return a canary", () -> {
           EncryptionKeyCanary expected = new EncryptionKeyCanary();
-          expected.setName("canary1");
           expected.setEncryptedValue("test-value".getBytes());
           expected.setNonce("test-nonce".getBytes());
 
           EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
-          secondCanary.setName("canary2");
           secondCanary.setEncryptedValue("second-test-value".getBytes());
           secondCanary.setNonce("second-nonce".getBytes());
 

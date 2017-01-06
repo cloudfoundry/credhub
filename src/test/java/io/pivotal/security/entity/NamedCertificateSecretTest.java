@@ -13,6 +13,7 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -36,6 +37,9 @@ import static org.hamcrest.core.IsNull.notNullValue;
 public class NamedCertificateSecretTest {
   @Autowired
   EncryptionService encryptionService;
+
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
   private NamedCertificateSecret subject;
 
@@ -220,6 +224,7 @@ public class NamedCertificateSecretTest {
       it("should copy the correct values", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
+        UUID encryptionKeyUuid = UUID.randomUUID();
 
         subject = new NamedCertificateSecret("name");
         subject.setCa("fake-ca");
@@ -228,6 +233,7 @@ public class NamedCertificateSecretTest {
         subject.setCaName("ca-name");
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
+        subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
         NamedCertificateSecret copy = new NamedCertificateSecret();
         subject.copyInto(copy);
@@ -236,6 +242,7 @@ public class NamedCertificateSecretTest {
         assertThat(copy.getCaName(), equalTo("ca-name"));
         assertThat(copy.getCa(), equalTo("fake-ca"));
         assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));

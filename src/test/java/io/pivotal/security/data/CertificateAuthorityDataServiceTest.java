@@ -3,6 +3,7 @@ package io.pivotal.security.data;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -11,12 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -29,6 +24,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -43,6 +44,9 @@ public class CertificateAuthorityDataServiceTest {
   @Autowired
   CertificateAuthorityRepository certificateAuthorityRepository;
 
+  @Autowired
+  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
+
   private Instant frozenTime = Instant.ofEpochMilli(1400000000123L);
   private Consumer<Long> fakeTimeSetter;
 
@@ -55,13 +59,19 @@ public class CertificateAuthorityDataServiceTest {
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      subject = new CertificateAuthorityDataService(certificateAuthorityRepository);
+      jdbcTemplate.execute("delete from named_certificate_authority");
+      jdbcTemplate.execute("delete from encryption_key_canary");
+
+      subject = new CertificateAuthorityDataService(certificateAuthorityRepository, encryptionKeyCanaryDataService);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
+
+      EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService);
     });
 
     afterEach(() -> {
       jdbcTemplate.execute("delete from named_certificate_authority");
+      jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
     describe("#save", () -> {

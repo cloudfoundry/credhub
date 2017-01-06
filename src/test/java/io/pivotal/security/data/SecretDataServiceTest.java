@@ -8,6 +8,7 @@ import io.pivotal.security.entity.NamedRsaSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.hamcrest.collection.IsIterableContainingInOrder;
@@ -59,23 +60,27 @@ public class SecretDataServiceTest {
   PlatformTransactionManager transactionManager;
   TransactionStatus transaction;
 
+  @Autowired
+  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
+
   private final Consumer<Long> fakeTimeSetter;
+
 
   {
     wireAndUnwire(this, false);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      subject.secretRepository.deleteAll();
+      jdbcTemplate.execute("delete from named_secret");
+      jdbcTemplate.execute("delete from encryption_key_canary");
       fakeTimeSetter.accept(345345L);
+
+      EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService);
     });
 
     afterEach(() -> {
-      subject.secretRepository.deleteAll();
-    });
-
-    it("should have a secret repository", () -> {
-      assertNotNull(subject.secretRepository);
+      jdbcTemplate.execute("delete from named_secret");
+      jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
     describe("#save", () -> {

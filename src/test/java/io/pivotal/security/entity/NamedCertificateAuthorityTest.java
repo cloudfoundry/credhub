@@ -10,13 +10,17 @@ import io.pivotal.security.view.CertificateAuthority;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 import java.time.Instant;
@@ -32,10 +36,13 @@ public class NamedCertificateAuthorityTest {
   @Autowired
   private ObjectMapper objectMapper;
 
+  @Autowired
+  JdbcTemplate jdbcTemplate;
+
   private NamedCertificateAuthority subject;
 
   {
-    wireAndUnwire(this, true);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       subject = new NamedCertificateAuthority("Foo");
@@ -43,6 +50,12 @@ public class NamedCertificateAuthorityTest {
       subject.setPrivateKey("priv");
       subject.setType("root");
       ((FakeEncryptionService) encryptionService).resetEncryptionCount();
+    });
+
+    afterEach(() -> {
+      jdbcTemplate.execute("delete from named_secret");
+      jdbcTemplate.execute("delete from named_certificate_authority");
+      jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
     it("creates a model from entity", () -> {
@@ -85,6 +98,31 @@ public class NamedCertificateAuthorityTest {
     it("can decrypt the private key", () -> {
       subject.setPrivateKey("my-priv");
       assertThat(subject.getPrivateKey(), equalTo("my-priv"));
+    });
+
+    describe("#copyInto", () -> {
+      it("should copy the correct values", () -> {
+        Instant frozenTime = Instant.ofEpochSecond(1400000000L);
+        UUID uuid = UUID.randomUUID();
+        UUID encryptionKeyUuid = UUID.randomUUID();
+
+        subject = new NamedCertificateAuthority("name");
+        subject.setCertificate("fake-certificate");
+        subject.setPrivateKey("fake-private-key");
+        subject.setUuid(uuid);
+        subject.setUpdatedAt(frozenTime);
+        subject.setEncryptionKeyUuid(encryptionKeyUuid);
+
+        NamedCertificateAuthority copy = new NamedCertificateAuthority();
+        subject.copyInto(copy);
+
+        assertThat(copy.getName(), equalTo("name"));
+        assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
+
+        assertThat(copy.getUuid(), not(equalTo(uuid)));
+        assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
+      });
     });
   }
 }

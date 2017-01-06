@@ -30,7 +30,6 @@ public class EncryptionProviderCanary {
       canary = new EncryptionKeyCanary();
       try {
         EncryptionService.Encryption encryptedCanary = encryptionService.encrypt(canaryValue);
-        canary.setName("canary");
         canary.setEncryptedValue(encryptedCanary.encryptedValue);
         canary.setNonce(encryptedCanary.nonce);
         birdCage.save(canary);

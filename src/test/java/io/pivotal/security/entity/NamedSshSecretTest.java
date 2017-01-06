@@ -34,6 +34,8 @@ public class NamedSshSecretTest {
 
   private NamedSshSecret subject;
 
+  private UUID encryptionKeyUuid;
+
   {
     wireAndUnwire(this, false);
 
@@ -107,12 +109,14 @@ public class NamedSshSecretTest {
       it("should copy the correct properties into the other object", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
+        encryptionKeyUuid = UUID.randomUUID();
 
         subject = new NamedSshSecret("foo");
         subject.setPublicKey("fake-public-key");
         subject.setPrivateKey("fake-private-key");
         subject.setUuid(uuid);
         subject.setUpdatedAt(frozenTime);
+        subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
         NamedSshSecret copy = new NamedSshSecret();
         subject.copyInto(copy);
@@ -120,6 +124,7 @@ public class NamedSshSecretTest {
         assertThat(copy.getName(), equalTo("foo"));
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
         assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
+        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
