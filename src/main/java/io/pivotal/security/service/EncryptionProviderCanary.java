@@ -5,14 +5,12 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-
 import static javax.xml.bind.DatatypeConverter.printHexBinary;
+
+import javax.annotation.PostConstruct;
 
 @Component
 public class EncryptionProviderCanary {
-
-  static final String CANARY_NAME = "canary";
 
   @Autowired
   EncryptionService encryptionService;
@@ -27,11 +25,12 @@ public class EncryptionProviderCanary {
   public void checkForDataCorruption() {
     String canaryValue = new String(new byte[128], encryptionService.charset());
 
-    EncryptionKeyCanary canary = birdCage.find(CANARY_NAME);
+    EncryptionKeyCanary canary = birdCage.getOne();
     if (canary == null) {
-      canary = new EncryptionKeyCanary(CANARY_NAME);
+      canary = new EncryptionKeyCanary();
       try {
         EncryptionService.Encryption encryptedCanary = encryptionService.encrypt(canaryValue);
+        canary.setName("canary");
         canary.setEncryptedValue(encryptedCanary.encryptedValue);
         canary.setNonce(encryptedCanary.nonce);
         birdCage.save(canary);

@@ -1,7 +1,12 @@
 package io.pivotal.security.entity;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+
+import java.util.UUID;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,27 +15,31 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "NamedCanary")
+@Table(name = "EncryptionKeyCanary")
 public class EncryptionKeyCanary implements EncryptedValueContainer {
+  // Use VARBINARY to make all 3 DB types happy.
+  // H2 doesn't distinguish between "binary" and "varbinary" - see
+  // https://hibernate.atlassian.net/browse/HHH-9835 and
+  // https://github.com/h2database/h2database/issues/345
   @Id
-  @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
-  private long id;
-
-  @Column(unique = true, nullable = false)
-  private String name;
+  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
+  private UUID uuid;
 
   @Column(length = ENCRYPTED_BYTES + NONCE, name = "encrypted_value")
   private byte[] encryptedValue;
 
   @Column(length = NONCE)
   private byte[] nonce;
+  private String name;
 
-  public EncryptionKeyCanary() {
-    this(null);
+  public UUID getUuid() {
+    return uuid;
   }
 
-  public EncryptionKeyCanary(String name) {
-    this.name = name;
+  public void setUuid(UUID uuid) {
+    this.uuid = uuid;
   }
 
   @Override
@@ -51,14 +60,6 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
   @Override
   public void setNonce(byte[] nonce) {
     this.nonce = nonce;
-  }
-
-  public long getId() {
-    return id;
-  }
-
-  public void setId(long id) {
-    this.id = id;
   }
 
   public String getName() {

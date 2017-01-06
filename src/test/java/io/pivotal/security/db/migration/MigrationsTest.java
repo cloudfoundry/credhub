@@ -2,6 +2,7 @@ package io.pivotal.security.db.migration;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
@@ -9,14 +10,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -32,15 +34,26 @@ public class MigrationsTest {
   Environment environment;
 
   @Autowired
-  NamedParameterJdbcTemplate jdbcTemplate;
+  NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+  @Autowired
+  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
+
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
   {
     wireAndUnwire(this, false);
 
-    it("should apply the migration successfully", () -> {
+    it("should apply the latest migration successfully", () -> {
       flyway.clean();
-      flyway.setTarget(MigrationVersion.fromVersion("1"));
+      flyway.setTarget(MigrationVersion.fromVersion("4"));
       flyway.migrate();
+
+      jdbcTemplate.update(
+          "insert into named_canary (id, name, encrypted_value, nonce) values (?, ?, ?, ?)",
+          10, "canary", "encrypted-value".getBytes(), "nonce".getBytes()
+      );
 
       // we use raw sql because the entities assume the latest version
       storeValueSecret("test");
@@ -49,6 +62,10 @@ public class MigrationsTest {
 
       flyway.setTarget(MigrationVersion.LATEST);
       flyway.migrate();
+
+      jdbcTemplate.execute("delete from named_secret");
+      jdbcTemplate.execute("delete from named_certificate_authority");
+      jdbcTemplate.execute("delete from encryption_key_canary");
     });
   }
 
@@ -70,11 +87,11 @@ public class MigrationsTest {
         "type, encrypted_value, name, nonce, updated_at, uuid) values (" +
         (isPostgres ? ":id, " : "") +
         ":type, :encrypted_value, :name, :nonce, :updated_at, :uuid)";
-    jdbcTemplate.update(sql, paramSource);
+    namedParameterJdbcTemplate.update(sql, paramSource);
 
-    long id = jdbcTemplate.queryForObject("SELECT id FROM named_secret WHERE name = :name", new MapSqlParameterSource("name", secretName), Long.class);
+    long id = namedParameterJdbcTemplate.queryForObject("SELECT id FROM named_secret WHERE name = :name", new MapSqlParameterSource("name", secretName), Long.class);
 
-    jdbcTemplate.update("INSERT INTO value_secret" +
+    namedParameterJdbcTemplate.update("INSERT INTO value_secret" +
         "(id) values (:id)", new MapSqlParameterSource("id", id));
   }
 }

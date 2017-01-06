@@ -19,7 +19,6 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.service.EncryptionProviderCanary.CANARY_NAME;
 import static javax.xml.bind.DatatypeConverter.printHexBinary;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -59,7 +58,7 @@ public class EncryptionProviderCanaryTest {
     describe("#checkForDataCorruption", () -> {
       describe("when there is no existing canary", () -> {
         beforeEach(() -> {
-          when(encryptionKeyCanaryDataService.find(CANARY_NAME)).thenReturn(null);
+          when(encryptionKeyCanaryDataService.getOne()).thenReturn(null);
         });
 
         it("should create a new canary", () -> {
@@ -92,7 +91,7 @@ public class EncryptionProviderCanaryTest {
           canary.setNonce("test-nonce".getBytes());
           canary.setEncryptedValue("fake-encrypted-value".getBytes());
 
-          when(encryptionKeyCanaryDataService.find(CANARY_NAME)).thenReturn(canary);
+          when(encryptionKeyCanaryDataService.getOne()).thenReturn(canary);
         });
 
         it("should not fail if the decrypted value matches the expected value", () -> {
