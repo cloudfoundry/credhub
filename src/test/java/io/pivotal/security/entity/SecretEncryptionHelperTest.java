@@ -3,10 +3,10 @@ package io.pivotal.security.entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKey;
 import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.service.EncryptionService;
-import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -226,6 +226,142 @@ public class SecretEncryptionHelperTest {
 
               verify(encryptionService, times(1)).encrypt(any(EncryptionKey.class), any(String.class));
             });
+          });
+        });
+      });
+    });
+
+    describe("#rotate", () -> {
+      describe("when given a non-password NamedSecret", () -> {
+        describe("when the secret was encrypted with the current active encryption key", () -> {
+          it("should do nothing", () -> {
+            NamedSecret secret = new NamedCertificateSecret("some-name");
+            secret.setEncryptionKeyUuid(activeEncryptionKeyUuid);
+            secret.setEncryptedValue("fake-encrypted-value".getBytes());
+            secret.setNonce("fake-nonce".getBytes());
+
+            subject.rotate(secret);
+
+            assertThat(secret.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+            assertThat(secret.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+            assertThat(secret.getNonce(), equalTo("fake-nonce".getBytes()));
+
+            verify(encryptionService, times(0)).encrypt(any(EncryptionKey.class), any(String.class));
+          });
+        });
+
+        describe("when the secret was encrypted with an old encryption key", () -> {
+          it("should re-encrypt with the active encryption key", () -> {
+            NamedSecret secret = new NamedCertificateSecret("some-name");
+            secret.setEncryptionKeyUuid(oldEncryptionKeyUuid);
+            secret.setEncryptedValue("old-encrypted-value".getBytes());
+            secret.setNonce("old-nonce".getBytes());
+
+            when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
+                .thenReturn("plaintext");
+            when(encryptionService.encrypt(activeEncryptionKey, "plaintext"))
+                .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
+
+            subject.rotate(secret);
+
+            assertThat(secret.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+            assertThat(secret.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
+            assertThat(secret.getNonce(), equalTo("new-nonce".getBytes()));
+          });
+        });
+      });
+
+      describe("when given a NamedPasswordSecret", () -> {
+        describe("when the password was encrypted with the current active encryption key", () -> {
+          it("should do nothing", () -> {
+            NamedPasswordSecret password = new NamedPasswordSecret("some-name");
+            password.setEncryptionKeyUuid(activeEncryptionKeyUuid);
+            password.setEncryptedValue("fake-encrypted-value".getBytes());
+            password.setNonce("fake-nonce".getBytes());
+
+            password.setParameterEncryptionKeyUuid(activeEncryptionKeyUuid);
+            password.setEncryptedGenerationParameters("fake-encrypted-parameters".getBytes());
+            password.setParametersNonce("fake-parameters-nonce".getBytes());
+
+            subject.rotate(password);
+
+            assertThat(password.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+            assertThat(password.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+            assertThat(password.getNonce(), equalTo("fake-nonce".getBytes()));
+
+            assertThat(password.getParameterEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+            assertThat(password.getEncryptedGenerationParameters(), equalTo("fake-encrypted-parameters".getBytes()));
+            assertThat(password.getParametersNonce(), equalTo("fake-parameters-nonce".getBytes()));
+
+            verify(encryptionService, times(0)).encrypt(any(EncryptionKey.class), any(String.class));
+          });
+        });
+
+        describe("when the password was encrypted with an old encryption key", () -> {
+          it("should re-encrypt with the active encryption key", () -> {
+            NamedPasswordSecret password = new NamedPasswordSecret("some-name");
+
+            password.setEncryptionKeyUuid(activeEncryptionKeyUuid);
+            password.setEncryptedValue("fake-encrypted-value".getBytes());
+            password.setNonce("fake-nonce".getBytes());
+
+            password.setParameterEncryptionKeyUuid(oldEncryptionKeyUuid);
+            password.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
+            password.setParametersNonce("old-parameters-nonce".getBytes());
+
+            stringifiedParameters = new ObjectMapper().writeValueAsString(new PasswordGenerationParameters());
+
+            when(encryptionService.decrypt(activeEncryptionKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+                .thenReturn("plaintext-password");
+            when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
+                .thenReturn(stringifiedParameters);
+            when(encryptionService.encrypt(activeEncryptionKey, stringifiedParameters))
+                .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
+
+            subject.rotate(password);
+
+            assertThat(password.getParameterEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+            assertThat(password.getEncryptedGenerationParameters(), equalTo("new-encrypted-value".getBytes()));
+            assertThat(password.getParametersNonce(), equalTo("new-nonce".getBytes()));
+          });
+        });
+      });
+
+      describe("when given a NamedCertificateAuthority", () -> {
+        describe("when the CA was encrypted with the current active encryption key", () -> {
+          it("should do nothing", () -> {
+            NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("some-name");
+            certificateAuthority.setEncryptionKeyUuid(activeEncryptionKeyUuid);
+            certificateAuthority.setEncryptedValue("fake-encrypted-value".getBytes());
+            certificateAuthority.setNonce("fake-nonce".getBytes());
+
+            subject.rotate(certificateAuthority);
+
+            assertThat(certificateAuthority.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+            assertThat(certificateAuthority.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+            assertThat(certificateAuthority.getNonce(), equalTo("fake-nonce".getBytes()));
+
+            verify(encryptionService, times(0)).encrypt(any(EncryptionKey.class), any(String.class));
+          });
+        });
+
+        describe("when the CA was encrypted with an old encryption key", () -> {
+          it("should re-encrypt with the active encryption key", () -> {
+            NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("some-name");
+            certificateAuthority.setEncryptionKeyUuid(oldEncryptionKeyUuid);
+            certificateAuthority.setEncryptedValue("old-encrypted-value".getBytes());
+            certificateAuthority.setNonce("old-nonce".getBytes());
+
+            when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
+                .thenReturn("plaintext");
+            when(encryptionService.encrypt(activeEncryptionKey, "plaintext"))
+                .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
+
+            subject.rotate(certificateAuthority);
+
+            assertThat(certificateAuthority.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+            assertThat(certificateAuthority.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
+            assertThat(certificateAuthority.getNonce(), equalTo("new-nonce".getBytes()));
           });
         });
       });

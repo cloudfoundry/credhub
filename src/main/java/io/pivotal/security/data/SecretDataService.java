@@ -110,4 +110,8 @@ public class SecretDataService {
       }
     );
   }
+
+  public List<NamedSecret> findAll() {
+    return secretRepository.findAll();
+  }
 }

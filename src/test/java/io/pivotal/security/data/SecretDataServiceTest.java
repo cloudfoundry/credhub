@@ -41,6 +41,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -400,6 +401,20 @@ public class SecretDataServiceTest {
 
         List<NamedSecret> secrets = subject.findAllByName("Secret1");
         assertThat(secrets, containsInAnyOrder(hasProperty("uuid", equalTo(secret1.getUuid())), hasProperty("uuid", equalTo(secret2.getUuid()))));
+      });
+    });
+
+    describe("#findAll", () -> {
+      it("should return all versions of all secrets", () -> {
+        NamedPasswordSecret secret1 = saveNamedPassword(2000000000123L, "secret");
+        NamedPasswordSecret secret2 = saveNamedPassword(3000000000123L, "ANOTHER");
+        NamedPasswordSecret secret3 = saveNamedPassword(4000000000123L, "password");
+        NamedPasswordSecret secret1Newer = saveNamedPassword(5000000000123L, "secret");
+
+        List<NamedSecret> secrets = subject.findAll();
+        List<UUID> secretUuids = secrets.stream().map(secret -> secret.getUuid()).collect(Collectors.toList());
+
+        assertThat(secretUuids, containsInAnyOrder(secret1.getUuid(), secret2.getUuid(), secret3.getUuid(), secret1Newer.getUuid()));
       });
     });
   }

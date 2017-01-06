@@ -27,6 +27,8 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
   private UUID parameterEncryptionKeyUuid;
 
+  public static final String SECRET_TYPE = "password";
+
   @SuppressWarnings("unused")
   public NamedPasswordSecret() {
   }
@@ -64,7 +66,7 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
 
   @Override
   public String getSecretType() {
-    return "password";
+    return SECRET_TYPE;
   }
 
   @Override

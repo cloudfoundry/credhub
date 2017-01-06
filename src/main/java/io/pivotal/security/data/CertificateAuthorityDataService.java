@@ -41,4 +41,8 @@ public class CertificateAuthorityDataService {
   public List<NamedCertificateAuthority> findAllByName(String name) {
     return certificateAuthorityRepository.findAllByNameIgnoreCaseOrderByUpdatedAtDesc(name);
   }
+
+  public List<NamedCertificateAuthority> findAll() {
+    return certificateAuthorityRepository.findAll();
+  }
 }

@@ -39,6 +39,7 @@ public class SecretEncryptionHelper {
       encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
       return;
     }
+
     try {
       EncryptionKey usedEncryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
 
@@ -91,6 +92,27 @@ public class SecretEncryptionHelper {
       return objectMapper.readValue(json, PasswordGenerationParameters.class).setLength(password.length());
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public void rotate(NamedSecret secret) {
+    UUID activeEncryptionKeyUuid = encryptionKeyService.getActiveEncryptionKeyUuid();
+    if (secret.getEncryptionKeyUuid() != activeEncryptionKeyUuid) {
+      refreshEncryptedValue(secret, retrieveClearTextValue(secret));
+    }
+
+    if (NamedPasswordSecret.SECRET_TYPE.equals(secret.getSecretType())) {
+      NamedPasswordSecret password = (NamedPasswordSecret) secret;
+
+      if (password.getParameterEncryptionKeyUuid() != activeEncryptionKeyUuid) {
+        refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
+      }
+    }
+  }
+
+  public void rotate(NamedCertificateAuthority certificateAuthority) {
+    if (certificateAuthority.getEncryptionKeyUuid() != encryptionKeyService.getActiveEncryptionKeyUuid()) {
+      refreshEncryptedValue(certificateAuthority, retrieveClearTextValue(certificateAuthority));
     }
   }
 
