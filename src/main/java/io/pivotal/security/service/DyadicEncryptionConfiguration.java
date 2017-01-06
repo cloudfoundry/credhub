@@ -15,6 +15,7 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
@@ -36,9 +37,11 @@ public class DyadicEncryptionConfiguration implements EncryptionConfiguration {
   public DyadicEncryptionConfiguration() throws Exception {
     provider = (Provider) Class.forName("com.dyadicsec.provider.DYCryptoProvider").newInstance();
     Security.addProvider(provider);
+  }
 
+  @PostConstruct
+  private void initialize() throws Exception {
     initializeKeys();
-
     keys = asList(key);
   }
 

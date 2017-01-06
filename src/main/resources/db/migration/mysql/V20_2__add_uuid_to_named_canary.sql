@@ -1,5 +1,5 @@
 ALTER TABLE encryption_key_canary MODIFY COLUMN uuid BINARY(16) NOT NULL;
-ALTER TABLE encryption_key_canary MODIFY id BIGINT(2) NOT NULL;
+ALTER TABLE encryption_key_canary MODIFY id BIGINT(20) NOT NULL;
 ALTER TABLE encryption_key_canary DROP PRIMARY KEY;
 ALTER TABLE encryption_key_canary ADD PRIMARY KEY (uuid);
 ALTER TABLE encryption_key_canary DROP COLUMN id;

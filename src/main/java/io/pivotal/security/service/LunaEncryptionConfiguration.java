@@ -14,6 +14,7 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
@@ -42,7 +43,10 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
   public LunaEncryptionConfiguration() throws Exception {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
+  }
 
+  @PostConstruct
+  private void initialize() throws Exception {
     initializeKeys();
     keys = asList(key);
   }
