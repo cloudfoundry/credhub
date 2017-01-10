@@ -1,6 +1,6 @@
 package io.pivotal.security.data;
 
-8import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSecretImpl;
 import io.pivotal.security.repository.PasswordRepository;
