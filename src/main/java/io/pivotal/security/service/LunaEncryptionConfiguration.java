@@ -82,8 +82,8 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
   }
 
   private void initializeKeys() throws Exception {
-    Object lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").getDeclaredMethod("getInstance").invoke(null);
-    lunaSlotManager.getClass().getMethod("login", String.class, String.class).invoke(lunaSlotManager, partitionName, partitionPassword);
+    LunaSlotManagerProxy lunaSlotManager = LunaSlotManagerProxy.getInstance();
+    lunaSlotManager.login(partitionName, partitionPassword);
 
     KeyStore keyStore = KeyStore.getInstance("Luna", provider);
     keyStore.load(null, null);
@@ -97,5 +97,28 @@ public class LunaEncryptionConfiguration implements EncryptionConfiguration {
     }
 
     key = new EncryptionKey(this, keyStore.getKey(encryptionKeyAlias, null));
+  }
+
+  private static class LunaSlotManagerProxy {
+    private static LunaSlotManagerProxy instance;
+    private Object proxiedSlotManager;
+    private final Method loginMethod;
+
+    public static LunaSlotManagerProxy getInstance() throws Exception {
+      if (instance == null) {
+        final Object proxiedSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").getDeclaredMethod("getInstance").invoke(null);
+        instance = new LunaSlotManagerProxy(proxiedSlotManager);
+      }
+      return instance;
+    }
+
+    public LunaSlotManagerProxy(Object proxiedSlotManager) throws Exception {
+      this.proxiedSlotManager = proxiedSlotManager;
+      loginMethod = proxiedSlotManager.getClass().getMethod("login", String.class, String.class);
+    }
+
+    public void login(String partitionName, String partitionPassword) throws Exception {
+      loginMethod.invoke(proxiedSlotManager, partitionName, partitionPassword);
+    }
   }
 }
