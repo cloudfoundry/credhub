@@ -24,7 +24,7 @@ import static java.util.Arrays.asList;
 @SuppressWarnings("unused")
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
 @Component
-public class LunaEncryptionConfiguration implements EncryptionConfiguration {
+public class LunaEncryptionConfiguration extends EncryptionConfiguration {
 
   @Value("${hsm.partition}")
   String partitionName;
