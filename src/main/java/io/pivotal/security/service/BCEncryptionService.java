@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -28,12 +29,12 @@ import javax.xml.bind.DatatypeConverter;
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
 public class BCEncryptionService extends EncryptionService {
   private SecureRandom secureRandom;
-  private EncryptionKey activeKey;
+  private Key activeKey;
 
   private final BouncyCastleProvider provider;
   private final DevKeyProvider devKeyProvider;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
-  private List<EncryptionKey> keys;
+  private List<Key> keys;
 
   @Autowired
   BCEncryptionService(
@@ -67,12 +68,12 @@ public class BCEncryptionService extends EncryptionService {
   }
 
   @Override
-  public EncryptionKey getActiveKey() {
+  public Key getActiveKey() {
     return activeKey;
   }
 
   @Override
-  public List<EncryptionKey> getKeys() {
+  public List<Key> getKeys() {
     return keys;
   }
 
@@ -86,8 +87,8 @@ public class BCEncryptionService extends EncryptionService {
     return new IvParameterSpec(nonce);
   }
 
-  private EncryptionKey createKey(String plaintextKey) {
-    EncryptionKey encryptionKey = new EncryptionKey(this, new SecretKeySpec(DatatypeConverter.parseHexBinary(plaintextKey), 0, 16, "AES"));
+  private Key createKey(String plaintextKey) {
+    Key encryptionKey = new SecretKeySpec(DatatypeConverter.parseHexBinary(plaintextKey), 0, 16, "AES");
 
     // The list of keys must include the same instance as the active key in order to facilitate key comparison,
     // since we don't know that we can check key1.equals(key2) for all key types :(

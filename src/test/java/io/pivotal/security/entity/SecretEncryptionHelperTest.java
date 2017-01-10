@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.service.EncryptionKey;
 import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 
+import java.security.Key;
 import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -16,6 +17,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -26,9 +28,9 @@ public class SecretEncryptionHelperTest {
 
   private SecretEncryptionHelper subject;
   private EncryptionKeyService encryptionKeyService;
-  private EncryptionKey activeEncryptionKey;
+  private Key activeEncryptionKey;
 
-  private EncryptionKey oldEncryptionKey;
+  private Key oldEncryptionKey;
 
   private UUID activeEncryptionKeyUuid;
   private UUID oldEncryptionKeyUuid;
@@ -36,13 +38,16 @@ public class SecretEncryptionHelperTest {
 
   private String stringifiedParameters;
 
+  private EncryptionService encryptionService;
+
   {
     beforeEach(() -> {
       encryptionKeyService = mock(EncryptionKeyService.class);
-      subject = new SecretEncryptionHelper(encryptionKeyService);
+      encryptionService = mock(EncryptionService.class);
+      subject = new SecretEncryptionHelper(encryptionKeyService, encryptionService);
 
-      activeEncryptionKey = mock(EncryptionKey.class);
-      oldEncryptionKey = mock(EncryptionKey.class);
+      activeEncryptionKey = mock(Key.class);
+      oldEncryptionKey = mock(Key.class);
 
       oldEncryptionKeyUuid = UUID.randomUUID();
       activeEncryptionKeyUuid = UUID.randomUUID();
@@ -55,7 +60,7 @@ public class SecretEncryptionHelperTest {
 
     describe("#refreshEncryptedValue", () -> {
       beforeEach(() -> {
-        when(activeEncryptionKey.encrypt("fake-plaintext"))
+        when(encryptionService.encrypt(activeEncryptionKey, "fake-plaintext"))
             .thenReturn(new Encryption("some-encrypted-value".getBytes(), "some-nonce".getBytes()));
       });
 
@@ -84,7 +89,7 @@ public class SecretEncryptionHelperTest {
           describe("when the secret was encrypted with the active encryption key", () -> {
             it("should only encrypt the value once", () -> {
               when(
-                  activeEncryptionKey.decrypt(
+                  encryptionService.decrypt(activeEncryptionKey,
                       "fake-encrypted-value".getBytes(),
                       "fake-nonce".getBytes()
                   )
@@ -97,14 +102,14 @@ public class SecretEncryptionHelperTest {
 
               subject.refreshEncryptedValue(valueContainer, "fake-plaintext");
 
-              verify(activeEncryptionKey, times(0)).encrypt(any(String.class));
+              verify(encryptionService, times(0)).encrypt(eq(activeEncryptionKey), any(String.class));
             });
           });
 
           describe("when the encryption key has changed", () -> {
             it("should re-encrypt the value with the active key", () -> {
               when(
-                  oldEncryptionKey.decrypt(
+                  encryptionService.decrypt(oldEncryptionKey,
                       "fake-old-encrypted-value".getBytes(),
                       "fake-old-nonce".getBytes()
                   )
@@ -117,7 +122,7 @@ public class SecretEncryptionHelperTest {
 
               subject.refreshEncryptedValue(valueContainer, "fake-plaintext");
 
-              verify(activeEncryptionKey, times(1)).encrypt(any(String.class));
+              verify(encryptionService, times(1)).encrypt(eq(activeEncryptionKey), any(String.class));
             });
           });
         });
@@ -135,7 +140,7 @@ public class SecretEncryptionHelperTest {
 
       describe("when there is an encrypted value", () -> {
         beforeEach(() -> {
-          when(oldEncryptionKey.decrypt("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+          when(encryptionService.decrypt(oldEncryptionKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
               .thenReturn("fake-plaintext-value");
         });
 
@@ -155,7 +160,7 @@ public class SecretEncryptionHelperTest {
         passwordGenerationParameters = new PasswordGenerationParameters().setExcludeSpecial(true);
         stringifiedParameters = new ObjectMapper().writeValueAsString(passwordGenerationParameters);
 
-        when(activeEncryptionKey.encrypt(stringifiedParameters))
+        when(encryptionService.encrypt(activeEncryptionKey, stringifiedParameters))
             .thenReturn(new Encryption("parameters-encrypted-value".getBytes(), "parameters-nonce".getBytes()));
       });
 
@@ -184,7 +189,7 @@ public class SecretEncryptionHelperTest {
           describe("when the parameters were encrypted with the active encryption key", () -> {
             it("should only encrypt the parameters once", () -> {
               when(
-                  activeEncryptionKey.decrypt("parameters-encrypted-value".getBytes(), "parameters-nonce".getBytes())
+                  encryptionService.decrypt(activeEncryptionKey ,"parameters-encrypted-value".getBytes(), "parameters-nonce".getBytes())
               ).thenReturn(stringifiedParameters);
 
               NamedPasswordSecret valueContainer = new NamedPasswordSecret("my-password");
@@ -194,14 +199,14 @@ public class SecretEncryptionHelperTest {
 
               subject.refreshEncryptedGenerationParameters(valueContainer, passwordGenerationParameters);
 
-              verify(activeEncryptionKey, times(0)).encrypt(any(String.class));
+              verify(encryptionService, times(0)).encrypt(eq(activeEncryptionKey), any(String.class));
             });
           });
 
           describe("when the encryption key has changed", () -> {
             it("should re-encrypt the parameters with the active key", () -> {
               when(
-                  oldEncryptionKey.decrypt("parameters-old-encrypted-value".getBytes(), "parameters-old-nonce".getBytes())
+                  encryptionService.decrypt(oldEncryptionKey ,"parameters-old-encrypted-value".getBytes(), "parameters-old-nonce".getBytes())
               ).thenReturn("parameters-plaintext");
 
               NamedPasswordSecret valueContainer = new NamedPasswordSecret("my-password");
@@ -211,7 +216,7 @@ public class SecretEncryptionHelperTest {
 
               subject.refreshEncryptedGenerationParameters(valueContainer, passwordGenerationParameters);
 
-              verify(activeEncryptionKey, times(1)).encrypt(any(String.class));
+              verify(encryptionService, times(1)).encrypt(eq(activeEncryptionKey), any(String.class));
             });
           });
         });
@@ -226,9 +231,9 @@ public class SecretEncryptionHelperTest {
           secret.setEncryptedValue("old-encrypted-value".getBytes());
           secret.setNonce("old-nonce".getBytes());
 
-          when(oldEncryptionKey.decrypt("old-encrypted-value".getBytes(), "old-nonce".getBytes()))
+          when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
               .thenReturn("plaintext");
-          when(activeEncryptionKey.encrypt("plaintext"))
+          when(encryptionService.encrypt(activeEncryptionKey ,"plaintext"))
               .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
 
           subject.rotate(secret);
@@ -253,11 +258,11 @@ public class SecretEncryptionHelperTest {
 
           stringifiedParameters = new ObjectMapper().writeValueAsString(new PasswordGenerationParameters());
 
-          when(activeEncryptionKey.decrypt("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+          when(encryptionService.decrypt(activeEncryptionKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
               .thenReturn("plaintext-password");
-          when(oldEncryptionKey.decrypt("old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
+          when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
               .thenReturn(stringifiedParameters);
-          when(activeEncryptionKey.encrypt( stringifiedParameters))
+          when(encryptionService.encrypt(activeEncryptionKey, stringifiedParameters))
               .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
 
           subject.rotate(password);
@@ -275,9 +280,9 @@ public class SecretEncryptionHelperTest {
           certificateAuthority.setEncryptedValue("old-encrypted-value".getBytes());
           certificateAuthority.setNonce("old-nonce".getBytes());
 
-          when(oldEncryptionKey.decrypt("old-encrypted-value".getBytes(), "old-nonce".getBytes()))
+          when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
               .thenReturn("plaintext");
-          when(activeEncryptionKey.encrypt("plaintext"))
+          when(encryptionService.encrypt(activeEncryptionKey, "plaintext"))
               .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
 
           subject.rotate(certificateAuthority);

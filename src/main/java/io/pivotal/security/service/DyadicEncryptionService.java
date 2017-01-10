@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import static java.util.Arrays.asList;
 
 import java.lang.reflect.Constructor;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -26,12 +27,12 @@ import javax.crypto.spec.IvParameterSpec;
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
 public class DyadicEncryptionService extends EncryptionService {
-  private List<EncryptionKey> keys;
+  private List<Key> keys;
   @Value("${dsm.encryption-key-name}")
   String encryptionKeyAlias;
 
   private Provider provider;
-  private EncryptionKey key;
+  private Key key;
   private SecureRandom secureRandom;
 
   public DyadicEncryptionService() throws Exception {
@@ -56,12 +57,12 @@ public class DyadicEncryptionService extends EncryptionService {
   }
 
   @Override
-  public EncryptionKey getActiveKey() {
+  public Key getActiveKey() {
     return key;
   }
 
   @Override
-  public List<EncryptionKey> getKeys() {
+  public List<Key> getKeys() {
     return keys;
   }
 
@@ -94,6 +95,6 @@ public class DyadicEncryptionService extends EncryptionService {
       keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
     }
 
-    key = new EncryptionKey(this, keyStore.getKey(encryptionKeyAlias, null));
+    key = keyStore.getKey(encryptionKeyAlias, null);
   }
 }

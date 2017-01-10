@@ -11,6 +11,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.security.Key;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -19,24 +20,24 @@ import java.util.UUID;
 public class EncryptionKeyServiceTest {
   private EncryptionKeyService subject;
 
-  private EncryptionKey activeEncryptionKey;
+  private Key activeEncryptionKey;
 
   private UUID activeEncryptionKeyUuid;
 
-  private EncryptionKey anotherEncryptionKey;
+  private Key anotherEncryptionKey;
 
   private UUID anotherEncryptionKeyUuid;
 
   {
     beforeEach(() -> {
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
-      activeEncryptionKey = mock(EncryptionKey.class);
+      activeEncryptionKey = mock(Key.class);
       activeEncryptionKeyUuid = UUID.randomUUID();
 
-      anotherEncryptionKey = mock(EncryptionKey.class);
+      anotherEncryptionKey = mock(Key.class);
       anotherEncryptionKeyUuid = UUID.randomUUID();
 
-      Map<UUID, EncryptionKey> encryptionKeys = new HashMap<>();
+      Map<UUID, Key> encryptionKeys = new HashMap<>();
       encryptionKeys.put(activeEncryptionKeyUuid, activeEncryptionKey);
       encryptionKeys.put(anotherEncryptionKeyUuid, anotherEncryptionKey);
 

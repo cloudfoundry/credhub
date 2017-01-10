@@ -5,14 +5,14 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static io.pivotal.security.service.EncryptionKey.CHARSET;
-
+import javax.crypto.AEADBadTagException;
+import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.crypto.AEADBadTagException;
+import static io.pivotal.security.service.EncryptionKeyService.CHARSET;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -20,7 +20,7 @@ public class EncryptionKeyCanaryMapper {
   private final EncryptionService encryptionService;
   static final String CANARY_VALUE = new String(new byte[128], CHARSET);
   private static final String WRONG_CANARY_PLAINTEXT = "WRONG KEY FOR CANARY";
-  private final Map<UUID, EncryptionKey> encryptionKeyMap;
+  private final Map<UUID, Key> encryptionKeyMap;
 
   private UUID activeUuid;
 
@@ -37,7 +37,7 @@ public class EncryptionKeyCanaryMapper {
     mapCanariesToKeys();
   }
 
-  public Map<UUID, EncryptionKey> getEncryptionKeyMap() {
+  public Map<UUID, Key> getEncryptionKeyMap() {
     return encryptionKeyMap;
   }
 
@@ -47,10 +47,10 @@ public class EncryptionKeyCanaryMapper {
 
   private void mapCanariesToKeys() {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
-    EncryptionKey activeEncryptionKey = encryptionService.getActiveKey();
-    List<EncryptionKey> encryptionKeys = encryptionService.getKeys();
+    Key activeEncryptionKey = encryptionService.getActiveKey();
+    List<Key> encryptionKeys = encryptionService.getKeys();
 
-    for (EncryptionKey encryptionKey : encryptionKeys) {
+    for (Key encryptionKey : encryptionKeys) {
       boolean isActiveEncryptionKey = activeEncryptionKey.equals(encryptionKey);
       EncryptionKeyCanary matchingCanary = findMatchingCanary(encryptionKey, encryptionKeyCanaries);
 
@@ -68,11 +68,11 @@ public class EncryptionKeyCanaryMapper {
     }
   }
 
-  private EncryptionKeyCanary createCanary(EncryptionKey encryptionKey) {
+  private EncryptionKeyCanary createCanary(Key encryptionKey) {
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
     try {
-      Encryption encryptionData = encryptionKey.encrypt(CANARY_VALUE);
+      Encryption encryptionData = encryptionService.encrypt(encryptionKey, CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
     } catch (Exception e) {
@@ -82,11 +82,11 @@ public class EncryptionKeyCanaryMapper {
     return encryptionKeyCanaryDataService.save(canary);
   }
 
-  private boolean isMatchingCanary(EncryptionKey encryptionKey, EncryptionKeyCanary canary) {
+  private boolean isMatchingCanary(Key encryptionKey, EncryptionKeyCanary canary) {
     String plaintext;
 
     try {
-      plaintext = encryptionKey.decrypt(canary.getEncryptedValue(), canary.getNonce());
+      plaintext = encryptionService.decrypt(encryptionKey, canary.getEncryptedValue(), canary.getNonce());
     } catch (AEADBadTagException e) {
       plaintext = WRONG_CANARY_PLAINTEXT;
     } catch (Exception e) {
@@ -96,7 +96,7 @@ public class EncryptionKeyCanaryMapper {
     return CANARY_VALUE.equals(plaintext);
   }
 
-  private EncryptionKeyCanary findMatchingCanary(EncryptionKey encryptionKey, List<EncryptionKeyCanary> canaries) {
+  private EncryptionKeyCanary findMatchingCanary(Key encryptionKey, List<EncryptionKeyCanary> canaries) {
     for (EncryptionKeyCanary canary : canaries) {
       if (isMatchingCanary(encryptionKey, canary)) {
         return canary;

@@ -12,6 +12,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import java.lang.reflect.Method;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
@@ -37,8 +38,8 @@ public class LunaEncryptionService extends EncryptionService {
 
   private Provider provider;
   private SecureRandom secureRandom;
-  private EncryptionKey key;
-  private List<EncryptionKey> keys;
+  private Key key;
+  private List<Key> keys;
 
   public LunaEncryptionService() throws Exception {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
@@ -62,12 +63,12 @@ public class LunaEncryptionService extends EncryptionService {
   }
 
   @Override
-  public EncryptionKey getActiveKey() {
+  public Key getActiveKey() {
     return key;
   }
 
   @Override
-  public List<EncryptionKey> getKeys() {
+  public List<Key> getKeys() {
     return keys;
   }
 
@@ -96,7 +97,7 @@ public class LunaEncryptionService extends EncryptionService {
       keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
     }
 
-    key = new EncryptionKey(this, keyStore.getKey(encryptionKeyAlias, null));
+    key = keyStore.getKey(encryptionKeyAlias, null);
   }
 
   private static class LunaSlotManagerProxy {

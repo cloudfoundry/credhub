@@ -3,10 +3,13 @@ package io.pivotal.security.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.Charset;
+import java.security.Key;
 import java.util.UUID;
 
 @Service
 public class EncryptionKeyService {
+  public static final Charset CHARSET = Charset.defaultCharset();
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
@@ -14,7 +17,7 @@ public class EncryptionKeyService {
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
-  public EncryptionKey getEncryptionKey(UUID encryptionKeyCanaryUuid) {
+  public Key getEncryptionKey(UUID encryptionKeyCanaryUuid) {
     return encryptionKeyCanaryMapper.getEncryptionKeyMap().get(encryptionKeyCanaryUuid);
   }
 
@@ -22,7 +25,7 @@ public class EncryptionKeyService {
     return encryptionKeyCanaryMapper.getActiveUuid();
   }
 
-  public EncryptionKey getActiveEncryptionKey() {
+  public Key getActiveEncryptionKey() {
     return encryptionKeyCanaryMapper.getEncryptionKeyMap().get(getActiveEncryptionKeyUuid());
   }
 }

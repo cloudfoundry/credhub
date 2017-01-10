@@ -11,13 +11,13 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.service.EncryptionKey.CHARSET;
+import static io.pivotal.security.service.EncryptionKeyService.CHARSET;
 
 public abstract class EncryptionService {
   protected abstract Provider getProvider();
   protected abstract SecureRandom getSecureRandom();
-  protected abstract EncryptionKey getActiveKey();
-  protected abstract List<EncryptionKey> getKeys();
+  protected abstract Key getActiveKey();
+  protected abstract List<Key> getKeys();
   protected abstract Cipher getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
   protected abstract IvParameterSpec generateParameterSpec(byte[] nonce);
 
