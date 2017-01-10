@@ -14,6 +14,7 @@ public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
   NamedSecret findOneByUuid(UUID uuid);
   List<NamedSecret> deleteByNameIgnoreCase(String name);
   List<NamedSecret> findAllByNameIgnoreCase(String name);
+  List<NamedSecret> findByEncryptionKeyUuidNot(UUID encryptionKeyUuid);
 
   default List<String> findAllPaths(Boolean findPaths) {
     if (!findPaths) {

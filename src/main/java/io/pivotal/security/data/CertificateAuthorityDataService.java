@@ -42,7 +42,7 @@ public class CertificateAuthorityDataService {
     return certificateAuthorityRepository.findAllByNameIgnoreCaseOrderByUpdatedAtDesc(name);
   }
 
-  public List<NamedCertificateAuthority> findAll() {
-    return certificateAuthorityRepository.findAll();
+  public List<NamedCertificateAuthority> findAllNotEncryptedByActiveKey() {
+    return certificateAuthorityRepository.findByEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid());
   }
 }

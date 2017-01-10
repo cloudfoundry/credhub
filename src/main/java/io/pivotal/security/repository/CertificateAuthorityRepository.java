@@ -10,4 +10,5 @@ public interface CertificateAuthorityRepository extends JpaRepository<NamedCerti
   List<NamedCertificateAuthority> findAllByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
   NamedCertificateAuthority findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
   NamedCertificateAuthority findOneByUuid(UUID uuid);
+  List<NamedCertificateAuthority> findByEncryptionKeyUuidNot(UUID uuid);
 }

@@ -45,7 +45,7 @@ public class SecretEncryptionHelper {
 
       if (encryptedValueContainer.getNonce() == null ||
           encryptedValueContainer.getEncryptedValue() == null ||
-          encryptedValueContainer.getEncryptionKeyUuid() != activeEncryptionKeyUuid ||
+          !encryptedValueContainer.getEncryptionKeyUuid().equals(activeEncryptionKeyUuid) ||
           !Objects.equals(clearTextValue, encryptionService.decrypt(
               usedEncryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce()
           ))) {
@@ -96,24 +96,15 @@ public class SecretEncryptionHelper {
   }
 
   public void rotate(NamedSecret secret) {
-    UUID activeEncryptionKeyUuid = encryptionKeyService.getActiveEncryptionKeyUuid();
-    if (secret.getEncryptionKeyUuid() != activeEncryptionKeyUuid) {
-      refreshEncryptedValue(secret, retrieveClearTextValue(secret));
-    }
+    refreshEncryptedValue(secret, retrieveClearTextValue(secret));
+  }
 
-    if (NamedPasswordSecret.SECRET_TYPE.equals(secret.getSecretType())) {
-      NamedPasswordSecret password = (NamedPasswordSecret) secret;
-
-      if (password.getParameterEncryptionKeyUuid() != activeEncryptionKeyUuid) {
-        refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
-      }
-    }
+  public void rotate(NamedPasswordSecret password) {
+    refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
   }
 
   public void rotate(NamedCertificateAuthority certificateAuthority) {
-    if (certificateAuthority.getEncryptionKeyUuid() != encryptionKeyService.getActiveEncryptionKeyUuid()) {
-      refreshEncryptedValue(certificateAuthority, retrieveClearTextValue(certificateAuthority));
-    }
+    refreshEncryptedValue(certificateAuthority, retrieveClearTextValue(certificateAuthority));
   }
 
   private static class ParametersAdapter implements EncryptedValueContainer {

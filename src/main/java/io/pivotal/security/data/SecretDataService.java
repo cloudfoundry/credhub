@@ -1,7 +1,9 @@
 package io.pivotal.security.data;
 
+8import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSecretImpl;
+import io.pivotal.security.repository.PasswordRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyService;
 import org.apache.commons.lang3.StringUtils;
@@ -41,16 +43,19 @@ public class SecretDataService {
   private final SecretRepository secretRepository;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyService encryptionKeyService;
+  private final PasswordRepository passwordRepository;
 
   @Autowired
   SecretDataService(
       SecretRepository secretRepository,
+      PasswordRepository passwordRepository,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyService encryptionKeyService
   ) {
     this.secretRepository = secretRepository;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyService = encryptionKeyService;
+    this.passwordRepository = passwordRepository;
   }
 
   public NamedSecret save(NamedSecret namedSecret) {
@@ -111,7 +116,11 @@ public class SecretDataService {
     );
   }
 
-  public List<NamedSecret> findAll() {
-    return secretRepository.findAll();
+  public List<NamedSecret> findAllNotEncryptedByActiveKey() {
+    return secretRepository.findByEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid());
+  }
+
+  public List<NamedPasswordSecret> findAllPasswordsWithParametersNotEncryptedByActiveKey() {
+    return passwordRepository.findByParameterEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid());
   }
 }

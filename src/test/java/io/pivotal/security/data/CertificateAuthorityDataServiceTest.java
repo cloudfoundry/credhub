@@ -11,6 +11,7 @@ import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -21,11 +22,14 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
@@ -47,7 +51,7 @@ public class CertificateAuthorityDataServiceTest {
   @Autowired
   CertificateAuthorityRepository certificateAuthorityRepository;
 
-  @Autowired
+  @SpyBean
   EncryptionKeyService encryptionKeyService;
 
   @Autowired
@@ -59,7 +63,7 @@ public class CertificateAuthorityDataServiceTest {
   private CertificateAuthorityDataService subject;
   private NamedCertificateAuthority savedSecret;
 
-  private UUID canaryUuid;
+  private UUID activeCanaryUuid;
 
   {
     wireAndUnwire(this, false);
@@ -74,7 +78,9 @@ public class CertificateAuthorityDataServiceTest {
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
 
-      canaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
+      activeCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
+
+      when(encryptionKeyService.getActiveEncryptionKeyUuid()).thenReturn(activeCanaryUuid);
     });
 
     afterEach(() -> {
@@ -92,7 +98,7 @@ public class CertificateAuthorityDataServiceTest {
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
 
-          ca.setEncryptionKeyUuid(canaryUuid);
+          ca.setEncryptionKeyUuid(activeCanaryUuid);
           ca.setCertificate(rs.getString("certificate"));
           ca.setEncryptedValue(rs.getBytes("encrypted_value"));
           ca.setName(rs.getString("name"));
@@ -132,7 +138,7 @@ public class CertificateAuthorityDataServiceTest {
 
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
-          ca.setEncryptionKeyUuid(canaryUuid);
+          ca.setEncryptionKeyUuid(activeCanaryUuid);
 
           ca.setCertificate(rs.getString("certificate"));
 
@@ -155,7 +161,7 @@ public class CertificateAuthorityDataServiceTest {
         List<NamedCertificateAuthority> certificateAuthorities = jdbcTemplate.query("select * from named_certificate_authority", (rs, rowCount) -> {
           NamedCertificateAuthority ca = new NamedCertificateAuthority();
 
-          ca.setEncryptionKeyUuid(canaryUuid);
+          ca.setEncryptionKeyUuid(activeCanaryUuid);
           ca.setNonce(rs.getBytes("nonce"));
           ca.setEncryptedValue(rs.getBytes("encrypted_value"));
 
@@ -260,15 +266,23 @@ public class CertificateAuthorityDataServiceTest {
       });
     });
 
-    describe("#findAll", () -> {
-      it("should return all versions of all certificate authorities", () -> {
-        NamedCertificateAuthority certificateAuthority1 = subject.save(createCertificateAuthority("my-ca", "my-cert1"));
-        NamedCertificateAuthority certificateAuthority1v2 = subject.save(createCertificateAuthority("my-ca", "my-cert2"));
-        NamedCertificateAuthority certificateAuthority2 = subject.save(createCertificateAuthority("another-ca", "another-cert"));
-        NamedCertificateAuthority certificateAuthority3 = subject.save(createCertificateAuthority("a-third-ca", "a-third-cert"));
+    describe("#findAllNotEncryptedByActiveKey", () -> {
+      it("should return all versions of all certificate authorities not encrypted by the active key", () -> {
+        UUID oldCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
 
-        List<NamedCertificateAuthority> certificateAuthorities = subject.findAll();
+        NamedCertificateAuthority certificateAuthority1 = subject.save(createCertificateAuthority("my-ca", "my-cert1", oldCanaryUuid));
+        NamedCertificateAuthority certificateAuthority1v2 = subject.save(createCertificateAuthority("my-ca", "my-cert2", oldCanaryUuid));
+        NamedCertificateAuthority certificateAuthority2 = subject.save(createCertificateAuthority("another-ca", "another-cert", oldCanaryUuid));
+        NamedCertificateAuthority certificateAuthority3 = subject.save(createCertificateAuthority("a-third-ca", "a-third-cert", oldCanaryUuid));
+
+        NamedCertificateAuthority certificateAuthoritySavedWithActiveKey1 = subject.save(createCertificateAuthority("active-ca-2", "active-cert-1", activeCanaryUuid));
+        NamedCertificateAuthority certificateAuthoritySavedWithActiveKey2 = subject.save(createCertificateAuthority("active-ca-2", "active-cert-2", activeCanaryUuid));
+
+        List<NamedCertificateAuthority> certificateAuthorities = subject.findAllNotEncryptedByActiveKey();
         List<UUID> uuids = certificateAuthorities.stream().map(certificateAuthority -> certificateAuthority.getUuid()).collect(Collectors.toList());
+
+        assertThat(uuids, not(contains(certificateAuthoritySavedWithActiveKey1.getUuid())));
+        assertThat(uuids, not(contains(certificateAuthoritySavedWithActiveKey2.getUuid())));
 
         assertThat(
             uuids,
@@ -289,7 +303,7 @@ public class CertificateAuthorityDataServiceTest {
     return stringBuilder.toString();
   }
 
-  NamedCertificateAuthority createCertificateAuthority(String name, String certificate) {
+  NamedCertificateAuthority createCertificateAuthority(String name, String certificate, UUID canaryUuid) {
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority(name);
     certificateAuthority.setEncryptionKeyUuid(canaryUuid);
 
@@ -298,5 +312,9 @@ public class CertificateAuthorityDataServiceTest {
         .setCertificate(certificate);
 
     return certificateAuthority;
+  }
+
+  NamedCertificateAuthority createCertificateAuthority(String name, String certificate) {
+    return createCertificateAuthority(name, certificate, activeCanaryUuid);
   }
 }

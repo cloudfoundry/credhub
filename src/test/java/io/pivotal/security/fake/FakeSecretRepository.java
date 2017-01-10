@@ -82,6 +82,11 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
+  public List<NamedSecret> findByEncryptionKeyUuidNot(UUID encrytionKeyUuid) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public long count() {
     return count;
   }
