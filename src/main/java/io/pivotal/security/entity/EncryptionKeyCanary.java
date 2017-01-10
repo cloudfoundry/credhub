@@ -3,7 +3,7 @@ package io.pivotal.security.entity;
 import org.hibernate.annotations.GenericGenerator;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 import java.util.UUID;
@@ -27,10 +27,10 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
-  @Column(length = ENCRYPTED_BYTES + NONCE, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
   private byte[] encryptedValue;
 
-  @Column(length = NONCE)
+  @Column(length = NONCE_SIZE)
   private byte[] nonce;
 
   public UUID getUuid() {

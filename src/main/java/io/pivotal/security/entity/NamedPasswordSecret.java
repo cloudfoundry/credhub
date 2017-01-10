@@ -3,7 +3,7 @@ package io.pivotal.security.entity;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.view.SecretKind;
 
-import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 import java.util.UUID;
@@ -18,10 +18,10 @@ import javax.persistence.Table;
 @DiscriminatorValue("password")
 public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> {
 
-  @Column(length = 255 + NONCE)
+  @Column(length = 255 + NONCE_SIZE)
   private byte[] encryptedGenerationParameters;
 
-  @Column(length = NONCE)
+  @Column(length = NONCE_SIZE)
   private byte[] parametersNonce;
 
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")

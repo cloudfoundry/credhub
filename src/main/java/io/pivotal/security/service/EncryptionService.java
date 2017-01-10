@@ -2,7 +2,7 @@ package io.pivotal.security.service;
 
 import org.springframework.stereotype.Service;
 
-import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 
 import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
@@ -42,7 +42,7 @@ public class EncryptionService {
 
   private byte[] generateNonce(EncryptionKey encryptionKey) {
     SecureRandom secureRandom = encryptionKey.getSecureRandom();
-    byte[] nonce = new byte[NONCE];
+    byte[] nonce = new byte[NONCE_SIZE];
     secureRandom.nextBytes(nonce);
     return nonce;
   }

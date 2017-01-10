@@ -6,7 +6,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 import java.time.Instant;
@@ -39,10 +39,10 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @Column(length = 7000)
   private String certificate;
 
-  @Column(length = ENCRYPTED_BYTES + NONCE, name = "encrypted_value")
+  @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
   private byte[] encryptedValue;
 
-  @Column(length = NONCE)
+  @Column(length = NONCE_SIZE)
   private byte[] nonce;
 
   @Convert(converter = InstantMillisecondsConverter.class)
