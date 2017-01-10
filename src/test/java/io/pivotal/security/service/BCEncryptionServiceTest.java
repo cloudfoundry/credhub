@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 import javax.xml.bind.DatatypeConverter;
 
 @RunWith(Spectrum.class)
-public class BCEncryptionConfigurationTest {
-  private BCEncryptionConfiguration subject;
+public class BCEncryptionServiceTest {
+  private BCEncryptionService subject;
 
   {
     beforeEach(() -> {
@@ -32,7 +32,7 @@ public class BCEncryptionConfigurationTest {
 
       EncryptionKeysConfiguration encryptionKeysConfiguration = mock(EncryptionKeysConfiguration.class);
       when(encryptionKeysConfiguration.getKeys()).thenReturn(asList("0123456789ABCDEF0123456789ABCDEF", "5555556789ABCDEF0123456789ABCDEF"));
-      subject = new BCEncryptionConfiguration(new BouncyCastleProvider(), devKeyProvider, encryptionKeysConfiguration);
+      subject = new BCEncryptionService(new BouncyCastleProvider(), devKeyProvider, encryptionKeysConfiguration);
     });
 
     describe("#getActiveKey", () -> {

@@ -17,7 +17,7 @@ import javax.crypto.AEADBadTagException;
 @Component
 public class EncryptionKeyCanaryMapper {
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-  private final EncryptionConfiguration encryptionConfiguration;
+  private final EncryptionService encryptionService;
   static final String CANARY_VALUE = new String(new byte[128], CHARSET);
   private static final String WRONG_CANARY_PLAINTEXT = "WRONG KEY FOR CANARY";
   private final Map<UUID, EncryptionKey> encryptionKeyMap;
@@ -27,10 +27,10 @@ public class EncryptionKeyCanaryMapper {
   @Autowired
   EncryptionKeyCanaryMapper(
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
-      EncryptionConfiguration encryptionConfiguration
+      EncryptionService encryptionService
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
-    this.encryptionConfiguration = encryptionConfiguration;
+    this.encryptionService = encryptionService;
 
     encryptionKeyMap = new HashMap<>();
 
@@ -47,8 +47,8 @@ public class EncryptionKeyCanaryMapper {
 
   private void mapCanariesToKeys() {
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
-    EncryptionKey activeEncryptionKey = encryptionConfiguration.getActiveKey();
-    List<EncryptionKey> encryptionKeys = encryptionConfiguration.getKeys();
+    EncryptionKey activeEncryptionKey = encryptionService.getActiveKey();
+    List<EncryptionKey> encryptionKeys = encryptionService.getKeys();
 
     for (EncryptionKey encryptionKey : encryptionKeys) {
       boolean isActiveEncryptionKey = activeEncryptionKey.equals(encryptionKey);

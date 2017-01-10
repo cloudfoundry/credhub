@@ -13,7 +13,7 @@ import javax.crypto.spec.IvParameterSpec;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.service.EncryptionKey.CHARSET;
 
-public abstract class EncryptionConfiguration {
+public abstract class EncryptionService {
   protected abstract Provider getProvider();
   protected abstract SecureRandom getSecureRandom();
   protected abstract EncryptionKey getActiveKey();

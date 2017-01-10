@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class EncryptionKeyTest {
   private final String plaintext = "this is a string";
-  private BCEncryptionConfiguration bcEncryptionConfiguration;
+  private BCEncryptionService bcEncryptionConfiguration;
   private Encryption encryption;
   private EncryptionKey subject;
 
@@ -35,7 +35,7 @@ public class EncryptionKeyTest {
       };
       EncryptionKeysConfiguration encryptionKeysConfiguration = mock(EncryptionKeysConfiguration.class);
       when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(activeKey));
-      bcEncryptionConfiguration = new BCEncryptionConfiguration(bouncyCastleProvider, devKeyProvider, encryptionKeysConfiguration);
+      bcEncryptionConfiguration = new BCEncryptionService(bouncyCastleProvider, devKeyProvider, encryptionKeysConfiguration);
       subject = bcEncryptionConfiguration.getActiveKey();
 
       encryption = subject.encrypt(plaintext);

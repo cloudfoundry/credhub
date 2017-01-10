@@ -26,7 +26,7 @@ import javax.xml.bind.DatatypeConverter;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
-public class BCEncryptionConfiguration extends EncryptionConfiguration {
+public class BCEncryptionService extends EncryptionService {
   private SecureRandom secureRandom;
   private EncryptionKey activeKey;
 
@@ -36,7 +36,7 @@ public class BCEncryptionConfiguration extends EncryptionConfiguration {
   private List<EncryptionKey> keys;
 
   @Autowired
-  BCEncryptionConfiguration(
+  BCEncryptionService(
       BouncyCastleProvider provider,
       DevKeyProvider devKeyProvider,
       EncryptionKeysConfiguration encryptionKeysConfiguration

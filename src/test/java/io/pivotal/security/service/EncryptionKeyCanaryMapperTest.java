@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 public class EncryptionKeyCanaryMapperTest {
   private EncryptionKeyCanaryMapper subject;
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-  private EncryptionConfiguration encryptionConfiguration;
+  private EncryptionService encryptionService;
   private UUID activeCanaryUUID;
   private UUID existingCanaryUUID1;
   private UUID existingCanaryUUID2;
@@ -42,12 +42,12 @@ public class EncryptionKeyCanaryMapperTest {
   {
     beforeEach(() -> {
       encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
-      encryptionConfiguration = mock(EncryptionConfiguration.class);
+      encryptionService = mock(EncryptionService.class);
 
       activeCanaryUUID = UUID.randomUUID();
 
       activeEncryptionKey = mock(EncryptionKey.class);
-      when(encryptionConfiguration.getActiveKey()).thenReturn(activeEncryptionKey);
+      when(encryptionService.getActiveKey()).thenReturn(activeEncryptionKey);
 
       activeEncryptionKeyCanary = createEncryptionCanary(activeCanaryUUID, "fake-active-encrypted-value", "fake-active-nonce", activeEncryptionKey);
 
@@ -57,7 +57,7 @@ public class EncryptionKeyCanaryMapperTest {
 
     describe("when the active key is the only key", () -> {
       beforeEach(() -> {
-        when(encryptionConfiguration.getKeys()).thenReturn(asList(activeEncryptionKey));
+        when(encryptionService.getKeys()).thenReturn(asList(activeEncryptionKey));
       });
 
       describe("when there are no canaries in the database", () -> {
@@ -67,7 +67,7 @@ public class EncryptionKeyCanaryMapperTest {
           when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
               .thenReturn(activeEncryptionKeyCanary);
 
-          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
         });
 
         it("creates and saves canary to the database", () -> {
@@ -105,7 +105,7 @@ public class EncryptionKeyCanaryMapperTest {
           when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
               .thenReturn(activeEncryptionKeyCanary);
 
-          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
         });
 
         it("should create a canary for the key", () -> {
@@ -125,7 +125,7 @@ public class EncryptionKeyCanaryMapperTest {
           when(activeEncryptionKey.decrypt(activeEncryptionKeyCanary.getEncryptedValue(), activeEncryptionKeyCanary.getNonce()))
               .thenReturn(CANARY_VALUE);
 
-          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
         });
 
         it("should map the key to the matching canary", () -> {
@@ -153,7 +153,7 @@ public class EncryptionKeyCanaryMapperTest {
         existingEncryptionKey1 = mock(EncryptionKey.class);
         existingEncryptionKey2 = mock(EncryptionKey.class);
 
-        when(encryptionConfiguration.getKeys()).thenReturn(asList(existingEncryptionKey1, activeEncryptionKey, existingEncryptionKey2));
+        when(encryptionService.getKeys()).thenReturn(asList(existingEncryptionKey1, activeEncryptionKey, existingEncryptionKey2));
 
         existingEncryptionKeyCanary1 = new EncryptionKeyCanary();
         existingEncryptionKeyCanary1.setUuid(existingCanaryUUID1);
@@ -174,7 +174,7 @@ public class EncryptionKeyCanaryMapperTest {
         beforeEach(() -> {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(existingEncryptionKeyCanary1, activeEncryptionKeyCanary, existingEncryptionKeyCanary2));
 
-          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
         });
 
         it("should return a map between the matching canaries and keys", () -> {
@@ -195,7 +195,7 @@ public class EncryptionKeyCanaryMapperTest {
         beforeEach(() -> {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(existingEncryptionKeyCanary1, activeEncryptionKeyCanary));
 
-          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
         });
 
         it("should not create a canary for the key", () -> {

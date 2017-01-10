@@ -24,7 +24,7 @@ import static java.util.Arrays.asList;
 @SuppressWarnings("unused")
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
 @Component
-public class LunaEncryptionConfiguration extends EncryptionConfiguration {
+public class LunaEncryptionService extends EncryptionService {
 
   @Value("${hsm.partition}")
   String partitionName;
@@ -40,7 +40,7 @@ public class LunaEncryptionConfiguration extends EncryptionConfiguration {
   private EncryptionKey key;
   private List<EncryptionKey> keys;
 
-  public LunaEncryptionConfiguration() throws Exception {
+  public LunaEncryptionService() throws Exception {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
   }
