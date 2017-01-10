@@ -6,6 +6,11 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -19,25 +24,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-
 @RunWith(Spectrum.class)
 public class EncryptionKeyCanaryMapperTest {
   private EncryptionKeyCanaryMapper subject;
-  private EncryptionService encryptionService;
   private EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private EncryptionConfiguration encryptionConfiguration;
   private UUID activeCanaryUUID;
@@ -52,19 +41,17 @@ public class EncryptionKeyCanaryMapperTest {
 
   {
     beforeEach(() -> {
-      encryptionService = mock(EncryptionService.class);
       encryptionKeyCanaryDataService = mock(EncryptionKeyCanaryDataService.class);
       encryptionConfiguration = mock(EncryptionConfiguration.class);
 
       activeCanaryUUID = UUID.randomUUID();
 
-      Key activeKey = new SecretKeySpec(DatatypeConverter.parseHexBinary("1123456789ABCDEF0123456789ABCDEF"), 0, 16, "AES");
-      activeEncryptionKey = new EncryptionKey(encryptionConfiguration, activeKey);
+      activeEncryptionKey = mock(EncryptionKey.class);
       when(encryptionConfiguration.getActiveKey()).thenReturn(activeEncryptionKey);
 
       activeEncryptionKeyCanary = createEncryptionCanary(activeCanaryUUID, "fake-active-encrypted-value", "fake-active-nonce", activeEncryptionKey);
 
-      when(encryptionService.encrypt(activeEncryptionKey, CANARY_VALUE))
+      when(activeEncryptionKey.encrypt(CANARY_VALUE))
           .thenReturn(new Encryption("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
     });
 
@@ -80,7 +67,7 @@ public class EncryptionKeyCanaryMapperTest {
           when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
               .thenReturn(activeEncryptionKeyCanary);
 
-          subject = new EncryptionKeyCanaryMapper(encryptionService, encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
         });
 
         it("creates and saves canary to the database", () -> {
@@ -90,7 +77,7 @@ public class EncryptionKeyCanaryMapperTest {
           EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
           assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
           assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
-          verify(encryptionService, times(1)).encrypt(activeEncryptionKey, CANARY_VALUE);
+          verify(activeEncryptionKey, times(1)).encrypt(CANARY_VALUE);
         });
 
         it("returns a map between the new canary and the active key", () -> {
@@ -113,12 +100,12 @@ public class EncryptionKeyCanaryMapperTest {
           nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
 
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(Arrays.asList(nonMatchingCanary));
-          when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
+          when(activeEncryptionKey.decrypt(nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
               .thenReturn("different-canary-value");
           when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
               .thenReturn(activeEncryptionKeyCanary);
 
-          subject = new EncryptionKeyCanaryMapper(encryptionService, encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
         });
 
         it("should create a canary for the key", () -> {
@@ -128,17 +115,17 @@ public class EncryptionKeyCanaryMapperTest {
           EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
           assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
           assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
-          verify(encryptionService, times(1)).encrypt(activeEncryptionKey, CANARY_VALUE);
+          verify(activeEncryptionKey, times(1)).encrypt(CANARY_VALUE);
         });
       });
 
       describe("when there is a matching canary in the database", () -> {
         beforeEach(() -> {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(activeEncryptionKeyCanary));
-          when(encryptionService.decrypt(activeEncryptionKey, activeEncryptionKeyCanary.getEncryptedValue(), activeEncryptionKeyCanary.getNonce()))
+          when(activeEncryptionKey.decrypt(activeEncryptionKeyCanary.getEncryptedValue(), activeEncryptionKeyCanary.getNonce()))
               .thenReturn(CANARY_VALUE);
 
-          subject = new EncryptionKeyCanaryMapper(encryptionService, encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
         });
 
         it("should map the key to the matching canary", () -> {
@@ -149,7 +136,7 @@ public class EncryptionKeyCanaryMapperTest {
         });
 
         it("should not re-encrypt the canary value", () -> {
-          verify(encryptionService, times(0)).encrypt(any(EncryptionKey.class), any(String.class));
+          verify(activeEncryptionKey, times(0)).encrypt(any(String.class));
         });
 
         it("sets the matching canary's UUID as active", () -> {
@@ -163,11 +150,8 @@ public class EncryptionKeyCanaryMapperTest {
         existingCanaryUUID1 = UUID.randomUUID();
         existingCanaryUUID2 = UUID.randomUUID();
 
-        Key existingKey1 = new SecretKeySpec(DatatypeConverter.parseHexBinary("0123456789ABCDEF0123456789ABCDEF"), 0, 16, "AES");
-        existingEncryptionKey1 = new EncryptionKey(encryptionConfiguration, existingKey1);
-
-        Key existingKey2 = new SecretKeySpec(DatatypeConverter.parseHexBinary("8123456789ABCDEF0123456789ABCDEF"), 0, 16, "AES");
-        existingEncryptionKey2 = new EncryptionKey(encryptionConfiguration, existingKey2);
+        existingEncryptionKey1 = mock(EncryptionKey.class);
+        existingEncryptionKey2 = mock(EncryptionKey.class);
 
         when(encryptionConfiguration.getKeys()).thenReturn(asList(existingEncryptionKey1, activeEncryptionKey, existingEncryptionKey2));
 
@@ -175,14 +159,14 @@ public class EncryptionKeyCanaryMapperTest {
         existingEncryptionKeyCanary1.setUuid(existingCanaryUUID1);
         existingEncryptionKeyCanary1.setEncryptedValue("fake-existing-encrypted-value1".getBytes());
         existingEncryptionKeyCanary1.setNonce("fake-existing-nonce1".getBytes());
-        when(encryptionService.decrypt(existingEncryptionKey1, "fake-existing-encrypted-value1".getBytes(), "fake-existing-nonce1".getBytes()))
+        when(existingEncryptionKey1.decrypt("fake-existing-encrypted-value1".getBytes(), "fake-existing-nonce1".getBytes()))
             .thenReturn(CANARY_VALUE);
         
         existingEncryptionKeyCanary2 = new EncryptionKeyCanary();
         existingEncryptionKeyCanary2.setUuid(existingCanaryUUID2);
         existingEncryptionKeyCanary2.setEncryptedValue("fake-existing-encrypted-value2".getBytes());
         existingEncryptionKeyCanary2.setNonce("fake-existing-nonce2".getBytes());
-        when(encryptionService.decrypt(existingEncryptionKey2, "fake-existing-encrypted-value2".getBytes(), "fake-existing-nonce2".getBytes()))
+        when(existingEncryptionKey2.decrypt("fake-existing-encrypted-value2".getBytes(), "fake-existing-nonce2".getBytes()))
             .thenReturn(CANARY_VALUE);
       });
 
@@ -190,7 +174,7 @@ public class EncryptionKeyCanaryMapperTest {
         beforeEach(() -> {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(existingEncryptionKeyCanary1, activeEncryptionKeyCanary, existingEncryptionKeyCanary2));
 
-          subject = new EncryptionKeyCanaryMapper(encryptionService, encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
         });
 
         it("should return a map between the matching canaries and keys", () -> {
@@ -211,7 +195,7 @@ public class EncryptionKeyCanaryMapperTest {
         beforeEach(() -> {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(existingEncryptionKeyCanary1, activeEncryptionKeyCanary));
 
-          subject = new EncryptionKeyCanaryMapper(encryptionService, encryptionKeyCanaryDataService, encryptionConfiguration);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionConfiguration);
         });
 
         it("should not create a canary for the key", () -> {
@@ -234,12 +218,12 @@ public class EncryptionKeyCanaryMapperTest {
   }
 
   private EncryptionKeyCanary createEncryptionCanary(UUID activeCanaryUUID, String encryptedValue, String nonce, EncryptionKey encryptionKey)
-      throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
+      throws Exception {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     encryptionKeyCanary.setUuid(activeCanaryUUID);
     encryptionKeyCanary.setEncryptedValue(encryptedValue.getBytes());
     encryptionKeyCanary.setNonce(nonce.getBytes());
-    when(encryptionService.decrypt(encryptionKey, encryptedValue.getBytes(), nonce.getBytes()))
+    when(encryptionKey.decrypt(encryptedValue.getBytes(), nonce.getBytes()))
         .thenReturn(CANARY_VALUE);
     return encryptionKeyCanary;
   }

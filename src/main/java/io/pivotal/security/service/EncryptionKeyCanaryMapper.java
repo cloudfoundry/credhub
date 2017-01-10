@@ -5,7 +5,7 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static io.pivotal.security.service.EncryptionService.CHARSET;
+import static io.pivotal.security.service.EncryptionKey.CHARSET;
 
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +16,6 @@ import javax.crypto.AEADBadTagException;
 
 @Component
 public class EncryptionKeyCanaryMapper {
-  private final EncryptionService encryptionService;
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionConfiguration encryptionConfiguration;
   static final String CANARY_VALUE = new String(new byte[128], CHARSET);
@@ -27,11 +26,9 @@ public class EncryptionKeyCanaryMapper {
 
   @Autowired
   EncryptionKeyCanaryMapper(
-      EncryptionService encryptionService,
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
       EncryptionConfiguration encryptionConfiguration
   ) {
-    this.encryptionService = encryptionService;
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionConfiguration = encryptionConfiguration;
 
@@ -75,7 +72,7 @@ public class EncryptionKeyCanaryMapper {
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
     try {
-      Encryption encryptionData = encryptionService.encrypt(encryptionKey, CANARY_VALUE);
+      Encryption encryptionData = encryptionKey.encrypt(CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
     } catch (Exception e) {
@@ -89,7 +86,7 @@ public class EncryptionKeyCanaryMapper {
     String plaintext;
 
     try {
-      plaintext = encryptionService.decrypt(encryptionKey, canary.getEncryptedValue(), canary.getNonce());
+      plaintext = encryptionKey.decrypt(canary.getEncryptedValue(), canary.getNonce());
     } catch (AEADBadTagException e) {
       plaintext = WRONG_CANARY_PLAINTEXT;
     } catch (Exception e) {

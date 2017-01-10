@@ -17,13 +17,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-public class EncryptionServiceTest {
-
+public class EncryptionKeyTest {
   private final String plaintext = "this is a string";
   private BCEncryptionConfiguration bcEncryptionConfiguration;
-  private EncryptionService subject;
   private Encryption encryption;
-  private EncryptionKey encryptionKey;
+  private EncryptionKey subject;
 
   {
     beforeEach(() -> {
@@ -38,10 +36,9 @@ public class EncryptionServiceTest {
       EncryptionKeysConfiguration encryptionKeysConfiguration = mock(EncryptionKeysConfiguration.class);
       when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(activeKey));
       bcEncryptionConfiguration = new BCEncryptionConfiguration(bouncyCastleProvider, devKeyProvider, encryptionKeysConfiguration);
-      encryptionKey = bcEncryptionConfiguration.getActiveKey();
+      subject = bcEncryptionConfiguration.getActiveKey();
 
-      subject = new EncryptionService();
-      encryption = subject.encrypt(encryptionKey, plaintext);
+      encryption = subject.encrypt(plaintext);
     });
 
     it("can encrypt values", () -> {
@@ -50,11 +47,11 @@ public class EncryptionServiceTest {
     });
 
     it("can decrypt values", () -> {
-      assertThat(subject.decrypt(encryptionKey, encryption.encryptedValue, encryption.nonce), equalTo(plaintext));
+      assertThat(subject.decrypt(encryption.encryptedValue, encryption.nonce), equalTo(plaintext));
     });
 
     it("does not reuse nonces", () -> {
-      assertThat(subject.encrypt(encryptionKey, plaintext).nonce, not(equalTo(encryption.nonce)));
+      assertThat(subject.encrypt(plaintext).nonce, not(equalTo(encryption.nonce)));
     });
   }
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.service.EncryptionKey;
-import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.service.Encryption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,13 +19,11 @@ public class SecretEncryptionHelper {
   private final ObjectMapper objectMapper;
 
   private final EncryptionKeyService encryptionKeyService;
-  private final EncryptionService encryptionService;
   private String clearTextValue;
 
   @Autowired
-  SecretEncryptionHelper(EncryptionKeyService encryptionKeyService, EncryptionService encryptionService) {
+  SecretEncryptionHelper(EncryptionKeyService encryptionKeyService) {
     this.encryptionKeyService = encryptionKeyService;
-    this.encryptionService = encryptionService;
     this.objectMapper = new ObjectMapper();
   }
 
@@ -46,11 +43,11 @@ public class SecretEncryptionHelper {
       if (encryptedValueContainer.getNonce() == null ||
           encryptedValueContainer.getEncryptedValue() == null ||
           !encryptedValueContainer.getEncryptionKeyUuid().equals(activeEncryptionKeyUuid) ||
-          !Objects.equals(clearTextValue, encryptionService.decrypt(
-              usedEncryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce()
+          !Objects.equals(clearTextValue, usedEncryptionKey.decrypt(
+              encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce()
           ))) {
         EncryptionKey activeEncryptionKey = encryptionKeyService.getActiveEncryptionKey();
-        final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
+        final Encryption encryption = activeEncryptionKey.encrypt(clearTextValue);
         encryptedValueContainer.setNonce(encryption.nonce);
         encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
         encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
@@ -66,7 +63,7 @@ public class SecretEncryptionHelper {
     }
     try {
       EncryptionKey encryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
-      return encryptionService.decrypt(encryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
+      return encryptionKey.decrypt(encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
