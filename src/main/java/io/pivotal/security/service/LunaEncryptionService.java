@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
@@ -36,13 +37,22 @@ public class LunaEncryptionService extends EncryptionService {
   @Value("${hsm.encryption-key-name}")
   String encryptionKeyAlias;
 
-  private Provider provider;
+  private final Provider provider;
   private SecureRandom secureRandom;
   private Key key;
   private List<Key> keys;
+  private LunaSlotManagerProxy lunaSlotManager;
 
   public LunaEncryptionService() throws Exception {
-    provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
+    this(
+        (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance(),
+        LunaSlotManagerProxy.getInstance()
+    );
+  }
+
+  public LunaEncryptionService(Provider provider, LunaSlotManagerProxy lunaSlotManager) {
+    this.provider = provider;
+    this.lunaSlotManager = lunaSlotManager;
     Security.addProvider(provider);
   }
 
@@ -73,8 +83,28 @@ public class LunaEncryptionService extends EncryptionService {
   }
 
   @Override
-  public Cipher getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return Cipher.getInstance(CipherTypes.GCM.toString(), provider);
+  public CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
+    return new CipherWrapper(Cipher.getInstance(CipherTypes.GCM.toString(), provider));
+  }
+
+  @Override
+  public Encryption encrypt(Key key, String value) throws Exception {
+    try {
+      return super.encrypt(key, value);
+    } catch(IllegalBlockSizeException e) {
+      reconnect();
+      return super.encrypt(key, value);
+    }
+  }
+
+  @Override
+  public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
+    try {
+      return super.decrypt(key, encryptedValue, nonce);
+    } catch(IllegalBlockSizeException e) {
+      reconnect();
+      return super.decrypt(key, encryptedValue, nonce);
+    }
   }
 
   @Override
@@ -82,9 +112,8 @@ public class LunaEncryptionService extends EncryptionService {
     return new IvParameterSpec(nonce);
   }
 
-  private void initializeKeys() throws Exception {
-    LunaSlotManagerProxy lunaSlotManager = LunaSlotManagerProxy.getInstance();
-    lunaSlotManager.login(partitionName, partitionPassword);
+  protected void initializeKeys() throws Exception {
+    login();
 
     KeyStore keyStore = KeyStore.getInstance("Luna", provider);
     keyStore.load(null, null);
@@ -100,10 +129,20 @@ public class LunaEncryptionService extends EncryptionService {
     key = keyStore.getKey(encryptionKeyAlias, null);
   }
 
-  private static class LunaSlotManagerProxy {
+  protected void login() throws Exception {
+    lunaSlotManager.login(partitionName, partitionPassword);
+  }
+
+  private void reconnect() throws Exception {
+    lunaSlotManager.reinitialize();
+    initializeKeys();
+  }
+
+  protected static class LunaSlotManagerProxy {
     private static LunaSlotManagerProxy instance;
     private Object proxiedSlotManager;
     private final Method loginMethod;
+    private final Method reinitializeMethod;
 
     public static LunaSlotManagerProxy getInstance() throws Exception {
       if (instance == null) {
@@ -116,10 +155,15 @@ public class LunaEncryptionService extends EncryptionService {
     public LunaSlotManagerProxy(Object proxiedSlotManager) throws Exception {
       this.proxiedSlotManager = proxiedSlotManager;
       loginMethod = proxiedSlotManager.getClass().getMethod("login", String.class, String.class);
+      reinitializeMethod = proxiedSlotManager.getClass().getMethod("reinitialize");
     }
 
     public void login(String partitionName, String partitionPassword) throws Exception {
       loginMethod.invoke(proxiedSlotManager, partitionName, partitionPassword);
+    }
+
+    public void reinitialize() throws Exception {
+      reinitializeMethod.invoke(proxiedSlotManager);
     }
   }
 }

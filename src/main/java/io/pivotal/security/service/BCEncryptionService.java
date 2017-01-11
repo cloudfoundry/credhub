@@ -8,6 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -18,12 +23,6 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
@@ -78,8 +77,8 @@ public class BCEncryptionService extends EncryptionService {
   }
 
   @Override
-  public Cipher getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return Cipher.getInstance(CipherTypes.GCM.toString(), provider);
+  public CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
+    return new CipherWrapper(Cipher.getInstance(CipherTypes.GCM.toString(), provider));
   }
 
   @Override

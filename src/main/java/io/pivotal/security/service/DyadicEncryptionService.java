@@ -5,8 +5,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import static java.util.Arrays.asList;
-
+import javax.annotation.PostConstruct;
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 import java.lang.reflect.Constructor;
 import java.security.Key;
 import java.security.KeyStore;
@@ -16,12 +20,7 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+import static java.util.Arrays.asList;
 
 @SuppressWarnings("unused")
 @Component
@@ -67,8 +66,8 @@ public class DyadicEncryptionService extends EncryptionService {
   }
 
   @Override
-  public Cipher getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return Cipher.getInstance(CipherTypes.CCM.toString(), provider);
+  public CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
+    return new CipherWrapper(Cipher.getInstance(CipherTypes.CCM.toString(), provider));
   }
 
   @Override
