@@ -3,8 +3,8 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.secret.Password;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.StringView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -57,8 +57,8 @@ public class PasseyStringSecretGeneratorTest {
 
       when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
 
-      StringView secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getValue(), equalTo("very-secret"));
+      Password secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getPassword(), equalTo("very-secret"));
     });
 
     it("can generate secret with specific length", () -> {
@@ -67,8 +67,8 @@ public class PasseyStringSecretGeneratorTest {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(42);
 
-      StringView secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getValue(), equalTo("very-secret"));
+      Password secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getPassword(), equalTo("very-secret"));
     });
 
     it("ignores too-small length values", () -> {
@@ -77,8 +77,8 @@ public class PasseyStringSecretGeneratorTest {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(3);
 
-      StringView secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getValue(), equalTo("very-secret"));
+      Password secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getPassword(), equalTo("very-secret"));
     });
 
     it("ignores too-large length values", () -> {
@@ -87,8 +87,8 @@ public class PasseyStringSecretGeneratorTest {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(201);
 
-      StringView secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getValue(), equalTo("very-secret"));
+      Password secretValue = subject.generateSecret(secretParameters);
+      assertThat(secretValue.getPassword(), equalTo("very-secret"));
     });
   }
 }

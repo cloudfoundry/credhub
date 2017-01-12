@@ -3,10 +3,9 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityDataService;
+import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
-import io.pivotal.security.view.CertificateAuthorityView;
-import io.pivotal.security.view.CertificateAuthorityBody;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,18 +34,17 @@ public class CAGeneratorRequestTranslator implements RequestTranslator<NamedCert
     CertificateSecretParameters parameters =
         certificateGeneratorRequestTranslator.validCertificateAuthorityParameters(documentContext);
 
-    CertificateAuthorityView certificateAuthorityView;
+    CertificateAuthority certificateAuthority;
     try {
-      certificateAuthorityView = certificateGenerator.generateCertificateAuthority(parameters);
+      certificateAuthority = certificateGenerator.generateCertificateAuthority(parameters);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
 
-    CertificateAuthorityBody caBody = certificateAuthorityView.getCertificateAuthorityBody();
     namedCA
-        .setType(certificateAuthorityView.getType())
-        .setCertificate(caBody.getCertificate())
-        .setPrivateKey(caBody.getPrivateKey());
+        .setType(certificateAuthority.getType())
+        .setCertificate(certificateAuthority.getCertificate())
+        .setPrivateKey(certificateAuthority.getPrivateKey());
   }
 
   @Override

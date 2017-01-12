@@ -6,12 +6,12 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
+import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.SshView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,7 +93,7 @@ public class SshGeneratorRequestTranslatorTest {
       beforeEach(() -> {
         secretParameterCaptor = ArgumentCaptor.forClass(SshSecretParameters.class);
         when(secretGenerator.generateSecret(secretParameterCaptor.capture()))
-            .thenReturn(new SshView(null, null, null, "my-public", "my-private"));
+            .thenReturn(new SshKey("my-public", "my-private"));
       });
 
       it("populates an entity", () -> {

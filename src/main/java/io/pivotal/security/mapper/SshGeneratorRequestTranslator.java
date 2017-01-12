@@ -3,9 +3,9 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
+import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.view.SshView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -49,10 +49,10 @@ public class SshGeneratorRequestTranslator
   @Override
   public void populateEntityFromJson(NamedSshSecret namedSshSecret, DocumentContext documentContext) {
     SshSecretParameters sshSecretParameters = validRequestParameters(documentContext, namedSshSecret);
-    final SshView sshSecret = sshGenerator.generateSecret(sshSecretParameters);
+    final SshKey sshSecret = sshGenerator.generateSecret(sshSecretParameters);
 
-    namedSshSecret.setPublicKey(sshSecret.getSshBody().getPublicKey());
-    namedSshSecret.setPrivateKey(sshSecret.getSshBody().getPrivateKey());
+    namedSshSecret.setPublicKey(sshSecret.getPublicKey());
+    namedSshSecret.setPrivateKey(sshSecret.getPrivateKey());
   }
 
   @Override

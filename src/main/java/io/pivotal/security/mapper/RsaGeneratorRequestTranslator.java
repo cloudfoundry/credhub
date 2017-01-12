@@ -3,9 +3,9 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
+import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.entity.NamedRsaSecret;
 import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.view.RsaView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,10 +44,10 @@ public class RsaGeneratorRequestTranslator
   @Override
   public void populateEntityFromJson(NamedRsaSecret namedRsaSecret, DocumentContext documentContext) {
     RsaSecretParameters rsaSecretParameters = validRequestParameters(documentContext, namedRsaSecret);
-    final RsaView rsaSecret = rsaGenerator.generateSecret(rsaSecretParameters);
+    final RsaKey rsaSecret = rsaGenerator.generateSecret(rsaSecretParameters);
 
-    namedRsaSecret.setPrivateKey(rsaSecret.getRsaBody().getPrivateKey());
-    namedRsaSecret.setPublicKey(rsaSecret.getRsaBody().getPublicKey());
+    namedRsaSecret.setPrivateKey(rsaSecret.getPrivateKey());
+    namedRsaSecret.setPublicKey(rsaSecret.getPublicKey());
   }
 
   @Override

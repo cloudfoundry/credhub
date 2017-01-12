@@ -6,12 +6,12 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.secret.Password;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.StringView;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ public class PasswordGeneratorRequestTranslatorTest {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new StringView("password", "my-password"));
+      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new Password("my-password"));
     });
 
     it("returns a StringGeneratorRequest for valid json", () -> {
@@ -134,7 +134,7 @@ public class PasswordGeneratorRequestTranslatorTest {
 
       subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
 
-      when(secretGenerator.generateSecret(generationParameters)).thenReturn(new StringView("password", "my-password"));
+      when(secretGenerator.generateSecret(generationParameters)).thenReturn(new Password("my-password"));
 
       assertThat(secret.getValue(), equalTo("my-password"));
     });

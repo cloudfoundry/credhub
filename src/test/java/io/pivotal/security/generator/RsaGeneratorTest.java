@@ -3,10 +3,10 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
+import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.RsaView;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,12 +63,12 @@ public class RsaGeneratorTest {
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {
-        final RsaView rsa = subject.generateSecret(new RsaSecretParameters());
+        final RsaKey rsa = subject.generateSecret(new RsaSecretParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
-        assertThat(rsa.getRsaBody().getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
-        assertThat(rsa.getRsaBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
+        assertThat(rsa.getPublicKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPublic())));
+        assertThat(rsa.getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
       });
 
       it("should use the provided key length", () -> {

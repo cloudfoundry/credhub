@@ -3,10 +3,10 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.SshSecretParameters;
+import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.SshView;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,12 +65,12 @@ public class SshGeneratorTest {
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {
-        final SshView ssh = subject.generateSecret(new SshSecretParameters());
+        final SshKey ssh = subject.generateSecret(new SshSecretParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
-        assertThat(ssh.getSshBody().getPublicKey(), equalTo(CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())));
-        assertThat(ssh.getSshBody().getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
+        assertThat(ssh.getPublicKey(), equalTo(CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())));
+        assertThat(ssh.getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
       });
 
       it("should use the provided key length", () -> {
@@ -86,11 +86,11 @@ public class SshGeneratorTest {
         SshSecretParameters sshSecretParameters = new SshSecretParameters();
         sshSecretParameters.setSshComment("this is an ssh comment");
 
-        final SshView ssh = subject.generateSecret(sshSecretParameters);
+        final SshKey ssh = subject.generateSecret(sshSecretParameters);
 
         String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + " this is an ssh comment";
 
-        assertThat(ssh.getSshBody().getPublicKey(), equalTo(expectedPublicKey));
+        assertThat(ssh.getPublicKey(), equalTo(expectedPublicKey));
       });
     });
   }

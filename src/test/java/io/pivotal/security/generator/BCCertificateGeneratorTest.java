@@ -4,13 +4,13 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityDataService;
+import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.CertificateAuthorityView;
-import io.pivotal.security.view.CertificateView;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -28,6 +28,17 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
+
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -42,17 +53,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -176,13 +176,13 @@ public class BCCertificateGeneratorTest {
       });
 
       it("generates a valid childCertificate", () -> {
-        CertificateView certificateSecret = subject.generateSecret(inputParameters);
+        Certificate certificateSecret = subject.generateSecret(inputParameters);
 
-        assertThat(certificateSecret.getCertificateBody().getCa(),
+        assertThat(certificateSecret.getCaCertificate(),
             equalTo(defaultNamedCA.getCertificate()));
-        assertThat(certificateSecret.getCertificateBody().getPrivateKey(),
+        assertThat(certificateSecret.getPrivateKey(),
             equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
-        assertThat(certificateSecret.getCertificateBody().getCertificate(),
+        assertThat(certificateSecret.getCertificate(),
             equalTo(CertificateFormatter.pemOf(childCertificate)));
         verify(keyGenerator, times(1)).generateKeyPair(2048);
       });
@@ -191,7 +191,7 @@ public class BCCertificateGeneratorTest {
         beforeEach(() -> inputParameters.setKeyLength(4096));
 
         it("generates a valid childCertificate", () -> {
-          CertificateView certificateSecret = subject.generateSecret(inputParameters);
+          Certificate certificateSecret = subject.generateSecret(inputParameters);
 
           assertThat(certificateSecret, notNullValue());
           verify(keyGenerator, times(1)).generateKeyPair(4096);
@@ -205,12 +205,12 @@ public class BCCertificateGeneratorTest {
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(caKeyPair);
         when(signedCertificateGenerator.getSelfSigned(caKeyPair, inputParameters)).thenReturn(caX509Cert);
 
-        CertificateAuthorityView certificateAuthorityView = subject.generateCertificateAuthority(inputParameters);
+        CertificateAuthority certificateAuthority = subject.generateCertificateAuthority(inputParameters);
         verify(keyGenerator, times(1)).generateKeyPair(KEY_LENGTH_FOR_TESTING);
 
-        assertThat(certificateAuthorityView.getCertificateAuthorityBody().getCertificate(),
+        assertThat(certificateAuthority.getCertificate(),
             equalTo(defaultNamedCA.getCertificate()));
-        assertThat(certificateAuthorityView.getCertificateAuthorityBody().getPrivateKey(),
+        assertThat(certificateAuthority.getPrivateKey(),
             equalTo(privateKey));
       });
     });

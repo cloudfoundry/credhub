@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.view.StringView;
+import io.pivotal.security.secret.Password;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PasseyStringSecretGenerator implements SecretGenerator<PasswordGenerationParameters, StringView> {
+public class PasseyStringSecretGenerator implements SecretGenerator<PasswordGenerationParameters, Password> {
 
   public static final int DEFAULT_LENGTH = 20;
   public static final int MIN_LENGTH = 4;
@@ -23,12 +23,12 @@ public class PasseyStringSecretGenerator implements SecretGenerator<PasswordGene
   PasswordGenerator passwordGenerator;
 
   @Override
-  public StringView generateSecret(PasswordGenerationParameters parameters) {
+  public Password generateSecret(PasswordGenerationParameters parameters) {
     int passwordLength = normalizedSecretLength(parameters.getLength());
 
     List<CharacterRule> characterRules = characterRuleProvider.getCharacterRules(parameters);
 
-    return new StringView(parameters.getType(), passwordGenerator.generatePassword(passwordLength, characterRules));
+    return new Password(passwordGenerator.generatePassword(passwordLength, characterRules));
   }
 
   private int normalizedSecretLength(int length) {

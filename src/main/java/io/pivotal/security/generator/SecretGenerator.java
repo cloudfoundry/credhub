@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.view.SecretView;
+import io.pivotal.security.secret.Secret;
 
-public interface SecretGenerator<T, R extends SecretView> {
+public interface SecretGenerator<T, R extends Secret> {
   R generateSecret(T parameters);
 }

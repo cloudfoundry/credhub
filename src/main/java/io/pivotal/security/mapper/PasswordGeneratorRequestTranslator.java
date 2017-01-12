@@ -2,10 +2,10 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.secret.Password;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.StringView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -60,8 +60,8 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
   @Override
   public void populateEntityFromJson(NamedPasswordSecret entity, DocumentContext documentContext) {
     PasswordGenerationParameters requestParameters = validRequestParameters(documentContext, entity);
-    StringView secret = stringSecretGenerator.generateSecret(requestParameters);
-    entity.setValue(secret.getValue());
+    Password secret = stringSecretGenerator.generateSecret(requestParameters);
+    entity.setValue(secret.getPassword());
     entity.setGenerationParameters(requestParameters);
   }
 
