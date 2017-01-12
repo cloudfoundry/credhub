@@ -6,15 +6,10 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -25,6 +20,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 public class EncryptionKeyCanaryMapperTest {
@@ -55,6 +56,16 @@ public class EncryptionKeyCanaryMapperTest {
 
       when(encryptionService.encrypt(activeEncryptionKey, CANARY_VALUE))
           .thenReturn(new Encryption("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
+    });
+
+    describe("when there is no active key", () -> {
+      beforeEach(() -> {
+        when(encryptionService.getKeys()).thenReturn(asList());
+      });
+
+      itThrowsWithMessage("a warning about no active key", RuntimeException.class, "No active key was found", () -> {
+        new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
+      });
     });
 
     describe("when the active key is the only key", () -> {

@@ -5,14 +5,15 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.AEADBadTagException;
+import static io.pivotal.security.service.EncryptionKeyService.CHARSET;
+
 import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static io.pivotal.security.service.EncryptionKeyService.CHARSET;
+import javax.crypto.AEADBadTagException;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -50,8 +51,11 @@ public class EncryptionKeyCanaryMapper {
     Key activeEncryptionKey = encryptionService.getActiveKey();
     List<Key> encryptionKeys = encryptionService.getKeys();
 
+    boolean foundActiveKey = false;
+
     for (Key encryptionKey : encryptionKeys) {
       boolean isActiveEncryptionKey = activeEncryptionKey.equals(encryptionKey);
+      foundActiveKey = foundActiveKey || isActiveEncryptionKey;
       EncryptionKeyCanary matchingCanary = findMatchingCanary(encryptionKey, encryptionKeyCanaries);
 
       if (matchingCanary == null && isActiveEncryptionKey) {
@@ -65,6 +69,10 @@ public class EncryptionKeyCanaryMapper {
           activeUuid = matchingCanary.getUuid();
         }
       }
+    }
+
+    if (!foundActiveKey) {
+      throw new RuntimeException("No active key was found");
     }
   }
 
