@@ -17,10 +17,11 @@ import static io.pivotal.security.entity.NamedCertificateSecret.NEW_LINE;
 
 @Entity
 @Table(name = "RsaSecret")
-@DiscriminatorValue("rsa")
+@DiscriminatorValue(NamedRsaSecret.SECRET_TYPE)
 public class NamedRsaSecret extends NamedRsaSshSecret {
   static private final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
   static private final String RSA_END = "\n-----END PUBLIC KEY-----";
+  public static final String SECRET_TYPE = "rsa";
 
   public NamedRsaSecret() {
     this(null);
@@ -36,7 +37,7 @@ public class NamedRsaSecret extends NamedRsaSshSecret {
 
   @Override
   public String getSecretType() {
-    return "rsa";
+    return SECRET_TYPE;
   }
 
   public int getKeyLength() {

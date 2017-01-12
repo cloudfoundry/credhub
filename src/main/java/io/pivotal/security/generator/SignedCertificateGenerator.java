@@ -1,6 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.entity.NamedCertificateSecret;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -70,7 +71,7 @@ public class SignedCertificateGenerator {
     }
 
     certificateBuilder.addExtension(Extension.basicConstraints, true,
-        new BasicConstraints(!"certificate".equals(params.getType())));
+        new BasicConstraints(!NamedCertificateSecret.SECRET_TYPE.equals(params.getType())));
 
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 

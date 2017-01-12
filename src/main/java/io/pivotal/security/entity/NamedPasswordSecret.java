@@ -3,19 +3,18 @@ package io.pivotal.security.entity;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.view.SecretKind;
 
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.util.UUID;
+
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "PasswordSecret")
-@DiscriminatorValue("password")
+@DiscriminatorValue(NamedPasswordSecret.SECRET_TYPE)
 public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> {
 
   @Column(length = 255 + NONCE_SIZE)

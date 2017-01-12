@@ -31,6 +31,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   private static final String RSA_START = "-----BEGIN CERTIFICATE-----";
   private static final String RSA_END = "-----END CERTIFICATE-----";
   public static final String NEW_LINE = "\n";
+  public static final String SECRET_TYPE = "certificate";
 
   @Column(length = 7000)
   private String ca;
@@ -82,7 +83,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
 
   @Override
   public String getSecretType() {
-    return "certificate";
+    return SECRET_TYPE;
   }
 
   @Override

@@ -13,10 +13,11 @@ import java.util.Arrays;
 
 @Entity
 @Table(name = "SshSecret")
-@DiscriminatorValue("ssh")
+@DiscriminatorValue(NamedSshSecret.SECRET_TYPE)
 public class NamedSshSecret extends NamedRsaSshSecret {
   private final static String SSH_PREFIX = "ssh-rsa ";
   public static final int SMALL_BUFFER_SIZE = 10;
+  public static final String SECRET_TYPE = "ssh";
 
   public NamedSshSecret() {
     this(null);
@@ -32,7 +33,7 @@ public class NamedSshSecret extends NamedRsaSshSecret {
 
   @Override
   public String getSecretType() {
-    return "ssh";
+    return SECRET_TYPE;
   }
 
   public int getKeyLength() {

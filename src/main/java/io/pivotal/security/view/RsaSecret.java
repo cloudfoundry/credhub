@@ -27,7 +27,7 @@ public class RsaSecret extends Secret {
 
   @Override
   public String getType() {
-    return "rsa";
+    return NamedRsaSecret.SECRET_TYPE;
   }
 
   public RsaBody getRsaBody() {

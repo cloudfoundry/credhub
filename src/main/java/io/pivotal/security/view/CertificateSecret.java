@@ -27,7 +27,7 @@ public class CertificateSecret extends Secret {
 
   @Override
   public String getType() {
-    return "certificate";
+    return NamedCertificateSecret.SECRET_TYPE;
   }
 
   public CertificateBody getCertificateBody() {

@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.pivotal.security.entity.NamedPasswordSecret;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
@@ -94,6 +95,6 @@ public class PasswordGenerationParameters implements RequestParameters {
 
   @JsonIgnore
   public String getType() {
-    return "password";
+    return NamedPasswordSecret.SECRET_TYPE;
   }
 }

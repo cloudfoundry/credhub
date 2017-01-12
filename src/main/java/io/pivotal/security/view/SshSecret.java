@@ -3,8 +3,6 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.entity.NamedSshSecret;
 
-import static org.bouncycastle.asn1.x509.ObjectDigestInfo.publicKey;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -29,7 +27,7 @@ public class SshSecret extends Secret {
 
   @Override
   public String getType() {
-    return "ssh";
+    return NamedSshSecret.SECRET_TYPE;
   }
 
   public SshBody getSshBody() {
