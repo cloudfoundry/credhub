@@ -12,18 +12,22 @@ import java.util.UUID;
 
 public class SecretView extends BaseView {
 
-  private UUID uuid;
-  private String name;
+  private final UUID uuid;
+  private final String name;
+  private final String type;
+  private final Object value;
 
-  protected SecretView(Instant versionCreatedAt, UUID uuid, String name) {
+  SecretView(Instant versionCreatedAt, UUID uuid, String name, String type, Object value) {
     super(versionCreatedAt);
     this.uuid = uuid;
     this.name = name;
+    this.type = type;
+    this.value = value;
   }
 
   @JsonProperty
   public String getType() {
-    throw new UnsupportedOperationException();
+    return type;
   }
 
   @JsonProperty("id")
@@ -36,12 +40,9 @@ public class SecretView extends BaseView {
     return name;
   }
 
-  public void setUuid(UUID uuid) {
-    this.uuid = uuid;
-  }
-
-  public void setName(String name) {
-    this.name = name;
+  @JsonProperty("value")
+  public Object getValue() {
+    return value;
   }
 
   public static SecretView fromEntity(NamedSecret namedSecret) {
@@ -57,8 +58,6 @@ public class SecretView extends BaseView {
     } else {
       throw new IllegalArgumentException();
     }
-    result.setVersionCreatedAt(namedSecret.getVersionCreatedAt());
-    result.setUuid(namedSecret.getUuid());
     return result;
   }
 }
