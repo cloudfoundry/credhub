@@ -1,5 +1,7 @@
 package io.pivotal.security.secret;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class RsaKey implements Secret {
   private final String publicKey;
   private final String privateKey;
@@ -9,10 +11,12 @@ public class RsaKey implements Secret {
     this.privateKey = privateKey;
   }
 
+  @JsonProperty("public_key")
   public String getPublicKey() {
     return publicKey;
   }
 
+  @JsonProperty("private_key")
   public String getPrivateKey() {
     return privateKey;
   }

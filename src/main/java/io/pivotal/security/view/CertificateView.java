@@ -1,6 +1,7 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.secret.Certificate;
 
 class CertificateView extends SecretView {
   CertificateView(NamedCertificateSecret namedCertificateSecret) {
@@ -9,7 +10,7 @@ class CertificateView extends SecretView {
         namedCertificateSecret.getUuid(),
         namedCertificateSecret.getName(),
         namedCertificateSecret.getSecretType(),
-        new CertificateBody(namedCertificateSecret.getCa(), namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey())
+        new Certificate(namedCertificateSecret.getCa(), namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey())
     );
   }
 }

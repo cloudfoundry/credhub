@@ -1,6 +1,7 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.entity.NamedRsaSecret;
+import io.pivotal.security.secret.RsaKey;
 
 public class RsaView extends SecretView {
   RsaView(NamedRsaSecret namedRsaSecret) {
@@ -9,7 +10,7 @@ public class RsaView extends SecretView {
         namedRsaSecret.getUuid(),
         namedRsaSecret.getName(),
         namedRsaSecret.getSecretType(),
-        new RsaBody(namedRsaSecret.getPublicKey(), namedRsaSecret.getPrivateKey())
+        new RsaKey(namedRsaSecret.getPublicKey(), namedRsaSecret.getPrivateKey())
     );
   }
 }

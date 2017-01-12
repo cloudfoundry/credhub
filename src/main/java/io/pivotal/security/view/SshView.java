@@ -1,6 +1,7 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.secret.SshKey;
 
 class SshView extends SecretView {
   SshView(NamedSshSecret namedSshSecret) {
@@ -9,7 +10,7 @@ class SshView extends SecretView {
         namedSshSecret.getUuid(),
         namedSshSecret.getName(),
         namedSshSecret.getSecretType(),
-        new SshBody(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey())
+        new SshKey(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey())
     );
   }
 }
