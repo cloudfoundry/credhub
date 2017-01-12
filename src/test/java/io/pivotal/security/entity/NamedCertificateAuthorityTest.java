@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.CertificateAuthorityView;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,7 +55,7 @@ public class NamedCertificateAuthorityTest {
     it("creates a model from entity", () -> {
       UUID uuid = UUID.randomUUID();
       subject.setUuid(uuid);
-      CertificateAuthority certificateAuthority = CertificateAuthority.fromEntity(subject);
+      CertificateAuthorityView certificateAuthorityView = CertificateAuthorityView.fromEntity(subject);
       String expectedJson = "{" +
           "\"version_created_at\":null," +
           "\"type\":\"root\"," +
@@ -65,13 +65,13 @@ public class NamedCertificateAuthorityTest {
           "}," +
           "\"id\":\"" + uuid.toString() + "\"" +
           "}";
-      assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo(expectedJson));
+      assertThat(objectMapper.writer().writeValueAsString(certificateAuthorityView), equalTo(expectedJson));
     });
 
     it("set version-created-at time on generated view", () -> {
       Instant now = Instant.now();
       subject.setVersionCreatedAt(now);
-      CertificateAuthority actual = CertificateAuthority.fromEntity(subject);
+      CertificateAuthorityView actual = CertificateAuthorityView.fromEntity(subject);
       assertThat(actual.getVersionCreatedAt(), equalTo(now));
     });
 

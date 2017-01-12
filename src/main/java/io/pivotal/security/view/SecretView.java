@@ -10,12 +10,12 @@ import io.pivotal.security.entity.NamedStringSecret;
 import java.time.Instant;
 import java.util.UUID;
 
-public class Secret extends BaseView {
+public class SecretView extends BaseView {
 
   private UUID uuid;
   private String name;
 
-  protected Secret(Instant versionCreatedAt, UUID uuid, String name) {
+  protected SecretView(Instant versionCreatedAt, UUID uuid, String name) {
     super(versionCreatedAt);
     this.uuid = uuid;
     this.name = name;
@@ -44,16 +44,16 @@ public class Secret extends BaseView {
     this.name = name;
   }
 
-  public static Secret fromEntity(NamedSecret namedSecret) {
-    Secret result;
+  public static SecretView fromEntity(NamedSecret namedSecret) {
+    SecretView result;
     if (NamedStringSecret.class.isInstance(namedSecret)) {
-      result =  new StringSecret((NamedStringSecret) namedSecret);
+      result =  new StringView((NamedStringSecret) namedSecret);
     } else if (NamedCertificateSecret.class.isInstance(namedSecret)) {
-      result = new CertificateSecret((NamedCertificateSecret) namedSecret);
+      result = new CertificateView((NamedCertificateSecret) namedSecret);
     } else if (NamedSshSecret.class.isInstance(namedSecret)) {
-      result = new SshSecret((NamedSshSecret) namedSecret);
+      result = new SshView((NamedSshSecret) namedSecret);
     } else if (NamedRsaSecret.class.isInstance(namedSecret)) {
-      result = new RsaSecret((NamedRsaSecret) namedSecret);
+      result = new RsaView((NamedRsaSecret) namedSecret);
     } else {
       throw new IllegalArgumentException();
     }

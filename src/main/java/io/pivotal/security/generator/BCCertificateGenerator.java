@@ -4,8 +4,8 @@ import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.util.CertificateFormatter;
-import io.pivotal.security.view.CertificateAuthority;
-import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.CertificateAuthorityView;
+import io.pivotal.security.view.CertificateView;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -28,7 +28,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
 @Component
-public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateSecret> {
+public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, CertificateView> {
 
   @Autowired
   LibcryptoRsaKeyPairGenerator keyGenerator;
@@ -43,7 +43,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   BouncyCastleProvider provider;
 
   @Override
-  public CertificateSecret generateSecret(CertificateSecretParameters params) {
+  public CertificateView generateSecret(CertificateSecretParameters params) {
     NamedCertificateAuthority ca = findCa(params.getCaName());
     try {
       KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
@@ -54,7 +54,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
       String certPem = CertificateFormatter.pemOf(cert);
       String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-      return new CertificateSecret(null, null, null, ca.getCertificate(), certPem, privatePem);
+      return new CertificateView(null, null, null, ca.getCertificate(), certPem, privatePem);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -87,11 +87,11 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     return new X500Name(certificate.getIssuerDN().getName());
   }
 
-  public CertificateAuthority generateCertificateAuthority(CertificateSecretParameters params) throws Exception {
+  public CertificateAuthorityView generateCertificateAuthority(CertificateSecretParameters params) throws Exception {
     KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
     X509Certificate ca = signedCertificateGenerator.getSelfSigned(keyPair, params);
     String certPem = CertificateFormatter.pemOf(ca);
     String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-    return new CertificateAuthority("root", certPem, privatePem);
+    return new CertificateAuthorityView("root", certPem, privatePem);
   }
 }

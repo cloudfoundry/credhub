@@ -10,7 +10,7 @@ import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.CertificateAuthorityView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,7 +126,7 @@ public class CaControllerTest {
     describe("generating a ca", () -> {
       describe("when creating a new CA", () -> {
         beforeEach(() -> {
-          doReturn(new CertificateAuthority(fakeGeneratedCa))
+          doReturn(new CertificateAuthorityView(fakeGeneratedCa))
               .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
           doReturn(
               fakeGeneratedCa

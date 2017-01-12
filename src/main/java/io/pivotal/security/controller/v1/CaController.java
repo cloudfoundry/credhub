@@ -10,7 +10,7 @@ import io.pivotal.security.mapper.CASetterRequestTranslator;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.CertificateAuthorityView;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.apache.commons.lang3.StringUtils;
@@ -121,7 +121,7 @@ public class CaController {
 
     NamedCertificateAuthority saved = certificateAuthorityDataService.save(namedCertificateAuthority);
 
-    return new ResponseEntity<>(CertificateAuthority.fromEntity(saved), HttpStatus.OK);
+    return new ResponseEntity<>(CertificateAuthorityView.fromEntity(saved), HttpStatus.OK);
   }
 
   @SuppressWarnings("unused")
@@ -185,7 +185,7 @@ public class CaController {
       Function<String, List<NamedCertificateAuthority>> finder,
       HttpServletRequest request,
       Authentication authentication,
-      Function<List<CertificateAuthority>, ?> presenter) throws Exception {
+      Function<List<CertificateAuthorityView>, ?> presenter) throws Exception {
     final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(
         auditRecordBuilder,
@@ -198,8 +198,8 @@ public class CaController {
 
           auditRecordBuilder.setCredentialName(namedAuthorityList.get(0).getName());
 
-          List<CertificateAuthority> certificateAuthorities = namedAuthorityList.stream().map(
-              namedCertificateAuthority -> new CertificateAuthority(namedCertificateAuthority)
+          List<CertificateAuthorityView> certificateAuthorities = namedAuthorityList.stream().map(
+              namedCertificateAuthority -> new CertificateAuthorityView(namedCertificateAuthority)
           ).collect(Collectors.toList());
 
           return new ResponseEntity<>(presenter.apply(certificateAuthorities), HttpStatus.OK);

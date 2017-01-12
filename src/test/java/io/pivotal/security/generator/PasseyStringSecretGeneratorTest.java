@@ -4,7 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.StringSecret;
+import io.pivotal.security.view.StringView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -57,7 +57,7 @@ public class PasseyStringSecretGeneratorTest {
 
       when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
 
-      StringSecret secretValue = subject.generateSecret(secretParameters);
+      StringView secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getValue(), equalTo("very-secret"));
     });
 
@@ -67,7 +67,7 @@ public class PasseyStringSecretGeneratorTest {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(42);
 
-      StringSecret secretValue = subject.generateSecret(secretParameters);
+      StringView secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getValue(), equalTo("very-secret"));
     });
 
@@ -77,7 +77,7 @@ public class PasseyStringSecretGeneratorTest {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(3);
 
-      StringSecret secretValue = subject.generateSecret(secretParameters);
+      StringView secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getValue(), equalTo("very-secret"));
     });
 
@@ -87,7 +87,7 @@ public class PasseyStringSecretGeneratorTest {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(201);
 
-      StringSecret secretValue = subject.generateSecret(secretParameters);
+      StringView secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getValue(), equalTo("very-secret"));
     });
   }

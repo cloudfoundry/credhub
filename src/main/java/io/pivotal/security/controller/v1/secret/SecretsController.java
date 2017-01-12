@@ -15,7 +15,7 @@ import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.Secret;
+import io.pivotal.security.view.SecretView;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import org.apache.commons.lang.BooleanUtils;
@@ -140,7 +140,7 @@ public class SecretsController {
         findAsList(secretDataService::findByUuid),
         request,
         authentication,
-        (namedSecrets) -> Secret.fromEntity(namedSecrets.get(0))
+        (namedSecrets) -> SecretView.fromEntity(namedSecrets.get(0))
     );
   }
 
@@ -158,7 +158,7 @@ public class SecretsController {
         selectLookupFunction(current),
         request,
         authentication,
-        (namedSecrets) -> DataResponse.fromEntity(namedSecrets, Secret::fromEntity)
+        (namedSecrets) -> DataResponse.fromEntity(namedSecrets, SecretView::fromEntity)
     );
   }
 
@@ -301,8 +301,8 @@ public class SecretsController {
         secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(null);
       }
 
-      Secret secret = Secret.fromEntity(storedNamedSecret);
-      return new ResponseEntity<>(secret, HttpStatus.OK);
+      SecretView secretView = SecretView.fromEntity(storedNamedSecret);
+      return new ResponseEntity<>(secretView, HttpStatus.OK);
     } catch (ParameterizedValidationException ve) {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     } catch (NoSuchAlgorithmException e) {

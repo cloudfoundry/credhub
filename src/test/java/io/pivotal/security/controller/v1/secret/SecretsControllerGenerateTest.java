@@ -12,7 +12,7 @@ import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.StringSecret;
+import io.pivotal.security.view.StringView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -102,7 +102,7 @@ public class SecretsControllerGenerateTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new StringSecret("password", fakePassword));
+      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new StringView("password", fakePassword));
 
       resetAuditLogMock();
     });

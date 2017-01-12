@@ -6,17 +6,17 @@ import io.pivotal.security.entity.NamedCertificateSecret;
 import java.time.Instant;
 import java.util.UUID;
 
-public class CertificateSecret extends Secret {
+public class CertificateView extends SecretView {
 
   @JsonProperty("value")
   private CertificateBody certificateBody;
 
-  public CertificateSecret(Instant versionCreatedAt, UUID uuid, String name, String ca, String certificate, String privateKey) {
+  public CertificateView(Instant versionCreatedAt, UUID uuid, String name, String ca, String certificate, String privateKey) {
     super(versionCreatedAt, uuid, name);
     setCertificateBody(new CertificateBody(ca, certificate, privateKey));
   }
 
-  public CertificateSecret(NamedCertificateSecret namedCertificateSecret) {
+  public CertificateView(NamedCertificateSecret namedCertificateSecret) {
     this(namedCertificateSecret.getVersionCreatedAt(),
         namedCertificateSecret.getUuid(),
         namedCertificateSecret.getName(),
@@ -34,7 +34,7 @@ public class CertificateSecret extends Secret {
     return certificateBody;
   }
 
-  public CertificateSecret setCertificateBody(CertificateBody certificateBody) {
+  public CertificateView setCertificateBody(CertificateBody certificateBody) {
     this.certificateBody = certificateBody;
     return this;
   }

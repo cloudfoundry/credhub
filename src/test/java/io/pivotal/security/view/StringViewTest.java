@@ -10,6 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
@@ -18,13 +21,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class StringSecretTest {
+public class StringViewTest {
   @MockBean
   SecretEncryptionHelper secretEncryptionHelper;
 
@@ -46,7 +46,7 @@ public class StringSecretTest {
     });
 
     it("can create view from entity", () -> {
-      StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
+      StringView actual = (StringView) StringView.fromEntity(entity);
       assertThat(json(actual), equalTo("{" +
           "\"type\":\"value\"," +
           "\"version_created_at\":null," +
@@ -60,19 +60,19 @@ public class StringSecretTest {
       Instant now = Instant.now();
       entity.setVersionCreatedAt(now);
 
-      StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
+      StringView actual = (StringView) StringView.fromEntity(entity);
 
       assertThat(actual.getVersionCreatedAt(), equalTo(now));
     });
 
     it("has type in the view", () -> {
-      StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
+      StringView actual = (StringView) StringView.fromEntity(entity);
 
       assertThat(actual.getType(), equalTo("value"));
     });
 
     it("has a uuid in the view", () -> {
-      StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
+      StringView actual = (StringView) StringView.fromEntity(entity);
 
       assertThat(actual.getUuid(), equalTo(uuid.toString()));
     });

@@ -50,7 +50,7 @@ public class CertificateSecretTest {
     });
 
     it("creates a view from entity", () -> {
-      final Secret subject = CertificateSecret.fromEntity(entity);
+      final SecretView subject = CertificateView.fromEntity(entity);
       jsonExpectationsHelper.assertJsonEqual("{" +
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"name\":\"" + secretName + "\"," +
@@ -67,17 +67,17 @@ public class CertificateSecretTest {
     it("sets updated-at time on generated view", () -> {
       Instant now = Instant.now();
       entity.setVersionCreatedAt(now);
-      final CertificateSecret subject = (CertificateSecret) CertificateSecret.fromEntity(entity);
+      final CertificateView subject = (CertificateView) CertificateView.fromEntity(entity);
       assertThat(subject.getVersionCreatedAt(), equalTo(now));
     });
 
     it("sets uuid on generated view", () -> {
-      CertificateSecret subject = (CertificateSecret) CertificateSecret.fromEntity(entity);
+      CertificateView subject = (CertificateView) CertificateView.fromEntity(entity);
       assertThat(subject.getUuid(), equalTo(uuid.toString()));
     });
 
     it("includes keys with null values", () -> {
-      final Secret subject = CertificateSecret.fromEntity(new NamedCertificateSecret(secretName).setUuid(uuid));
+      final SecretView subject = CertificateView.fromEntity(new NamedCertificateSecret(secretName).setUuid(uuid));
       assertThat(serializingObjectMapper.writeValueAsString(subject), equalTo("{" +
           "\"type\":\"certificate\"," +
           "\"version_created_at\":null," +

@@ -9,8 +9,8 @@ import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.CertificateAuthority;
-import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.CertificateAuthorityView;
+import io.pivotal.security.view.CertificateView;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -176,7 +176,7 @@ public class BCCertificateGeneratorTest {
       });
 
       it("generates a valid childCertificate", () -> {
-        CertificateSecret certificateSecret = subject.generateSecret(inputParameters);
+        CertificateView certificateSecret = subject.generateSecret(inputParameters);
 
         assertThat(certificateSecret.getCertificateBody().getCa(),
             equalTo(defaultNamedCA.getCertificate()));
@@ -191,7 +191,7 @@ public class BCCertificateGeneratorTest {
         beforeEach(() -> inputParameters.setKeyLength(4096));
 
         it("generates a valid childCertificate", () -> {
-          CertificateSecret certificateSecret = subject.generateSecret(inputParameters);
+          CertificateView certificateSecret = subject.generateSecret(inputParameters);
 
           assertThat(certificateSecret, notNullValue());
           verify(keyGenerator, times(1)).generateKeyPair(4096);
@@ -205,12 +205,12 @@ public class BCCertificateGeneratorTest {
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(caKeyPair);
         when(signedCertificateGenerator.getSelfSigned(caKeyPair, inputParameters)).thenReturn(caX509Cert);
 
-        CertificateAuthority certificateAuthority = subject.generateCertificateAuthority(inputParameters);
+        CertificateAuthorityView certificateAuthorityView = subject.generateCertificateAuthority(inputParameters);
         verify(keyGenerator, times(1)).generateKeyPair(KEY_LENGTH_FOR_TESTING);
 
-        assertThat(certificateAuthority.getCertificateAuthorityBody().getCertificate(),
+        assertThat(certificateAuthorityView.getCertificateAuthorityBody().getCertificate(),
             equalTo(defaultNamedCA.getCertificate()));
-        assertThat(certificateAuthority.getCertificateAuthorityBody().getPrivateKey(),
+        assertThat(certificateAuthorityView.getCertificateAuthorityBody().getPrivateKey(),
             equalTo(privateKey));
       });
     });

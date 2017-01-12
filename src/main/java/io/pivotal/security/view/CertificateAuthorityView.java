@@ -6,7 +6,7 @@ import io.pivotal.security.entity.NamedCertificateAuthority;
 import java.time.Instant;
 import java.util.UUID;
 
-public class CertificateAuthority extends BaseView {
+public class CertificateAuthorityView extends BaseView {
 
   @JsonProperty("type")
   private String type;
@@ -15,22 +15,22 @@ public class CertificateAuthority extends BaseView {
   private CertificateAuthorityBody certificateAuthorityBody;
   private UUID uuid;
 
-  public CertificateAuthority(String type, String certificate, String privateKey) {
+  public CertificateAuthorityView(String type, String certificate, String privateKey) {
     this(null, type, certificate, privateKey, null);
   }
 
-  public CertificateAuthority(Instant versionCreatedAt,
-                              String type,
-                              String certificate,
-                              String privateKey,
-                              UUID uuid) {
+  public CertificateAuthorityView(Instant versionCreatedAt,
+                                  String type,
+                                  String certificate,
+                                  String privateKey,
+                                  UUID uuid) {
     super(versionCreatedAt);
     setType(type);
     setCertificateBody(new CertificateAuthorityBody(certificate, privateKey));
     setUuid(uuid);
   }
 
-  public CertificateAuthority(NamedCertificateAuthority namedCa) {
+  public CertificateAuthorityView(NamedCertificateAuthority namedCa) {
     this(namedCa.getVersionCreatedAt(),
         namedCa.getType(),
         namedCa.getCertificate(),
@@ -42,12 +42,12 @@ public class CertificateAuthority extends BaseView {
     return certificateAuthorityBody;
   }
 
-  public CertificateAuthority setCertificateBody(CertificateAuthorityBody certificateAuthorityBody) {
+  public CertificateAuthorityView setCertificateBody(CertificateAuthorityBody certificateAuthorityBody) {
     this.certificateAuthorityBody = certificateAuthorityBody;
     return this;
   }
 
-  public CertificateAuthority setType(String type) {
+  public CertificateAuthorityView setType(String type) {
     this.type = type;
     return this;
   }
@@ -65,7 +65,7 @@ public class CertificateAuthority extends BaseView {
     this.uuid = uuid;
   }
 
-  public static CertificateAuthority fromEntity(NamedCertificateAuthority namedCertificateAuthority) {
-    return new CertificateAuthority(namedCertificateAuthority);
+  public static CertificateAuthorityView fromEntity(NamedCertificateAuthority namedCertificateAuthority) {
+    return new CertificateAuthorityView(namedCertificateAuthority);
   }
 }

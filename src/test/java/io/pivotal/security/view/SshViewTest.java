@@ -9,6 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.JsonExpectationsHelper;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
@@ -16,13 +19,10 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class SshSecretTest {
+public class SshViewTest {
 
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
 
@@ -45,7 +45,7 @@ public class SshSecretTest {
     });
 
     it("creates a view from entity", () -> {
-      final Secret subject = SshSecret.fromEntity(entity);
+      final SecretView subject = SshView.fromEntity(entity);
       jsonExpectationsHelper.assertJsonEqual("{" +
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"type\":\"ssh\"," +
@@ -61,12 +61,12 @@ public class SshSecretTest {
     it("sets updated-at time on generated view", () -> {
       Instant now = Instant.now();
       entity.setVersionCreatedAt(now);
-      final SshSecret subject = (SshSecret) SshSecret.fromEntity(entity);
+      final SshView subject = (SshView) SshView.fromEntity(entity);
       assertThat(subject.getVersionCreatedAt(), equalTo(now));
     });
 
     it("sets uuid on generated view", () -> {
-      SshSecret subject = (SshSecret) SshSecret.fromEntity(entity);
+      SshView subject = (SshView) SshView.fromEntity(entity);
       assertThat(subject.getUuid(), equalTo(uuid.toString()));
     });
   }

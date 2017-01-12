@@ -6,7 +6,7 @@ import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.SshSecret;
+import io.pivotal.security.view.SshView;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +65,7 @@ public class SshGeneratorTest {
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {
-        final SshSecret ssh = subject.generateSecret(new SshSecretParameters());
+        final SshView ssh = subject.generateSecret(new SshSecretParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
@@ -86,7 +86,7 @@ public class SshGeneratorTest {
         SshSecretParameters sshSecretParameters = new SshSecretParameters();
         sshSecretParameters.setSshComment("this is an ssh comment");
 
-        final SshSecret ssh = subject.generateSecret(sshSecretParameters);
+        final SshView ssh = subject.generateSecret(sshSecretParameters);
 
         String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + " this is an ssh comment";
 

@@ -9,7 +9,7 @@ import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.CertificateAuthority;
+import io.pivotal.security.view.CertificateAuthorityView;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +106,7 @@ public class CAGeneratorRequestTranslatorTest {
     describe("#populateEntityFromJson", () -> {
       beforeEach(() -> {
         doReturn(
-            new CertificateAuthority("root", "fake-certificate", "fake-private-key")
+            new CertificateAuthorityView("root", "fake-certificate", "fake-private-key")
         ).when(certificateGenerator).generateCertificateAuthority(refEq(fullParams));
         certificateAuthority = new NamedCertificateAuthority("fake-ca");
         subject.populateEntityFromJson(certificateAuthority, jsonPath.parse(requestJson));

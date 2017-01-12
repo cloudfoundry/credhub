@@ -10,7 +10,7 @@ import io.pivotal.security.entity.NamedRsaSecret;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.RsaSecret;
+import io.pivotal.security.view.RsaView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +86,7 @@ public class RsaGeneratorRequestTranslatorTest {
     describe("populateEntityFromJson", () -> {
       beforeEach(() -> {
         when(secretGenerator.generateSecret(any(RsaSecretParameters.class)))
-            .thenReturn(new RsaSecret(null, null, null, "my-public", "my-private"));
+            .thenReturn(new RsaView(null, null, null, "my-public", "my-private"));
       });
 
       it("populates an entity", () -> {
@@ -136,7 +136,7 @@ public class RsaGeneratorRequestTranslatorTest {
 
         ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor.forClass(RsaSecretParameters.class);
         when(secretGenerator.generateSecret(parameterCaptor.capture()))
-            .thenReturn(new RsaSecret(null, null, null, "my-new-pub", "my-new-priv"));
+            .thenReturn(new RsaView(null, null, null, "my-new-pub", "my-new-priv"));
 
         subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
 

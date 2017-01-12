@@ -6,16 +6,16 @@ import io.pivotal.security.entity.NamedRsaSecret;
 import java.time.Instant;
 import java.util.UUID;
 
-public class RsaSecret extends Secret {
+public class RsaView extends SecretView {
   @JsonProperty("value")
   private RsaBody rsaBody;
 
-  public RsaSecret(Instant versionCreatedAt, UUID uuid, String name, String publicKey, String privateKey) {
+  public RsaView(Instant versionCreatedAt, UUID uuid, String name, String publicKey, String privateKey) {
     super(versionCreatedAt, uuid, name);
     setRsaBody(new RsaBody(publicKey, privateKey));
   }
 
-  public RsaSecret(NamedRsaSecret namedRsaSecret) {
+  public RsaView(NamedRsaSecret namedRsaSecret) {
     this(
         namedRsaSecret.getVersionCreatedAt(),
         namedRsaSecret.getUuid(),
@@ -34,7 +34,7 @@ public class RsaSecret extends Secret {
     return rsaBody;
   }
 
-  public RsaSecret setRsaBody(RsaBody rsaBody) {
+  public RsaView setRsaBody(RsaBody rsaBody) {
     this.rsaBody = rsaBody;
     return this;
   }

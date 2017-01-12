@@ -6,16 +6,16 @@ import io.pivotal.security.entity.NamedSshSecret;
 import java.time.Instant;
 import java.util.UUID;
 
-public class SshSecret extends Secret {
+public class SshView extends SecretView {
   @JsonProperty("value")
   private SshBody sshBody;
 
-  public SshSecret(Instant versionCreatedAt, UUID uuid, String name, String publicKey, String privateKey) {
+  public SshView(Instant versionCreatedAt, UUID uuid, String name, String publicKey, String privateKey) {
     super(versionCreatedAt, uuid, name);
     setSshBody(new SshBody(publicKey, privateKey));
   }
 
-  public SshSecret(NamedSshSecret namedSshSecret) {
+  public SshView(NamedSshSecret namedSshSecret) {
     this(
         namedSshSecret.getVersionCreatedAt(),
         namedSshSecret.getUuid(),
@@ -34,7 +34,7 @@ public class SshSecret extends Secret {
     return sshBody;
   }
 
-  public SshSecret setSshBody(SshBody sshBody) {
+  public SshView setSshBody(SshBody sshBody) {
     this.sshBody = sshBody;
     return this;
   }

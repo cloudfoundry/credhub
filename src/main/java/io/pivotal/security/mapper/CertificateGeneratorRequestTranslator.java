@@ -5,7 +5,7 @@ import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.view.CertificateSecret;
+import io.pivotal.security.view.CertificateView;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {
 
   @Autowired
-  SecretGenerator<CertificateSecretParameters, CertificateSecret> certificateSecretGenerator;
+  SecretGenerator<CertificateSecretParameters, CertificateView> certificateSecretGenerator;
 
   @Autowired
   CertificateSecretParametersFactory parametersFactory;
@@ -88,7 +88,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Override
   public void populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
     CertificateSecretParameters requestParameters = validRequestParameters(documentContext, entity);
-    CertificateSecret secret = certificateSecretGenerator.generateSecret(requestParameters);
+    CertificateView secret = certificateSecretGenerator.generateSecret(requestParameters);
     entity.setCa(secret.getCertificateBody().getCa());
     entity.setCertificate(secret.getCertificateBody().getCertificate());
     entity.setPrivateKey(secret.getCertificateBody().getPrivateKey());
