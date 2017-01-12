@@ -5,6 +5,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -24,18 +25,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -47,9 +38,21 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -79,6 +82,9 @@ public class BCCertificateGeneratorTest {
   @MockBean
   RandomSerialNumberGenerator randomSerialNumberGenerator;
 
+  @SpyBean
+  SecretEncryptionHelper secretEncryptionHelper;
+
   private KeyPair childCertificateKeyPair;
   private X500Name caDn;
   private KeyPair caKeyPair;
@@ -105,8 +111,12 @@ public class BCCertificateGeneratorTest {
       privateKey = CertificateFormatter.pemOf(caKeyPair.getPrivate());
       defaultNamedCA = new NamedCertificateAuthority("default");
       defaultNamedCA
-          .setCertificate(CertificateFormatter.pemOf(caX509Cert))
-          .setPrivateKey(privateKey);
+          .setCertificate(CertificateFormatter.pemOf(caX509Cert));
+
+      defaultNamedCA.setEncryptedValue("fake-encrypted-value".getBytes());
+      defaultNamedCA.setNonce("fake-nonce".getBytes());
+
+      doReturn(privateKey).when(secretEncryptionHelper).retrieveClearTextValue(defaultNamedCA);
 
       inputParameters = new CertificateSecretParameters()
         .setOrganization("foo")

@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -65,6 +66,9 @@ public class SecretsControllerGetTest {
   @SpyBean
   SecretDataService secretDataService;
 
+  @SpyBean
+  SecretEncryptionHelper secretEncryptionHelper;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -93,9 +97,15 @@ public class SecretsControllerGetTest {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
         NamedValueSecret valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setUpdatedAt(frozenTime);
-        valueSecret.setValue(secretValue);
+        valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
+        valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
         NamedValueSecret valueSecret2 = new NamedValueSecret(secretName).setUuid(uuid).setUpdatedAt(frozenTime);
-        valueSecret2.setValue(secretValue);
+        valueSecret2.setEncryptedValue("fake-encrypted-value2".getBytes());
+        valueSecret2.setNonce("fake-nonce2".getBytes());
+
+        doReturn(secretValue).when(secretEncryptionHelper).retrieveClearTextValue(valueSecret);
+        doReturn(secretValue).when(secretEncryptionHelper).retrieveClearTextValue(valueSecret2);
+
         doReturn(
             valueSecret
         ).when(secretDataService).findMostRecent(secretName);

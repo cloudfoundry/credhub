@@ -91,7 +91,7 @@ public class SecretsControllerFindTest {
           beforeEach(() -> {
             String substring = secretName.substring(4).toUpperCase();
             NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
-            namedValueSecret.setValue("some value");
+            namedValueSecret.setEncryptedValue("some value".getBytes());
             doReturn(
                 Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
             ).when(secretDataService).findContainingName(substring);
@@ -121,7 +121,7 @@ public class SecretsControllerFindTest {
         it("strips the leading slash and returns the list of credentials", () -> {
           String path = secretName.substring(0, secretName.lastIndexOf("/"));
           NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret(secretName);
-          namedPasswordSecret.setValue("some value");
+          namedPasswordSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedPasswordSecret.setUpdatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(path);
@@ -141,7 +141,7 @@ public class SecretsControllerFindTest {
         beforeEach(() -> {
           String substring = secretName.substring(0, secretName.lastIndexOf("/"));
           NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
-          namedValueSecret.setValue("some value");
+          namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(substring);
@@ -176,7 +176,7 @@ public class SecretsControllerFindTest {
         it("should return all children which are prefixed with the path case-independently", () -> {
           final String path = "my-namespace";
           NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
-          namedValueSecret.setValue("some value");
+          namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(path.toUpperCase());
