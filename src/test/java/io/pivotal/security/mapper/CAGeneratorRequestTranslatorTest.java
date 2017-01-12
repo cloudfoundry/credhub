@@ -6,9 +6,9 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.data.CertificateAuthorityDataService;
-import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
-import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.generator.BCCertificateAuthorityGenerator;
+import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
@@ -44,7 +44,7 @@ public class CAGeneratorRequestTranslatorTest {
   CAGeneratorRequestTranslator subject;
 
   @MockBean
-  BCCertificateGenerator certificateGenerator;
+  BCCertificateAuthorityGenerator certificateAuthorityGenerator;
 
   @MockBean
   CertificateAuthorityDataService certificateAuthorityDataService;
@@ -107,7 +107,7 @@ public class CAGeneratorRequestTranslatorTest {
       beforeEach(() -> {
         doReturn(
             new CertificateAuthority("root", "fake-certificate", "fake-private-key")
-        ).when(certificateGenerator).generateCertificateAuthority(refEq(fullParams));
+        ).when(certificateAuthorityGenerator).generateSecret(refEq(fullParams));
         certificateAuthority = new NamedCertificateAuthority("fake-ca");
         subject.populateEntityFromJson(certificateAuthority, jsonPath.parse(requestJson));
       });
@@ -118,7 +118,7 @@ public class CAGeneratorRequestTranslatorTest {
       });
 
       it("generates new certificate authority as view", () -> {
-        verify(certificateGenerator, times(1)).generateCertificateAuthority(refEq(fullParams));
+        verify(certificateAuthorityGenerator, times(1)).generateSecret(refEq(fullParams));
       });
 
       it("sets appropriate fields on the entity", () -> {

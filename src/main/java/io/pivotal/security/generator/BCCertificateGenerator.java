@@ -2,9 +2,8 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityDataService;
-import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
+import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -81,17 +80,9 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 
-  public X500Name getIssuer(String ca) throws IOException, CertificateException {
+  private X500Name getIssuer(String ca) throws IOException, CertificateException {
     X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", provider)
         .generateCertificate(new ByteArrayInputStream(ca.getBytes()));
     return new X500Name(certificate.getIssuerDN().getName());
-  }
-
-  public CertificateAuthority generateCertificateAuthority(CertificateSecretParameters params) throws Exception {
-    KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
-    X509Certificate ca = signedCertificateGenerator.getSelfSigned(keyPair, params);
-    String certPem = CertificateFormatter.pemOf(ca);
-    String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-    return new CertificateAuthority("root", certPem, privatePem);
   }
 }

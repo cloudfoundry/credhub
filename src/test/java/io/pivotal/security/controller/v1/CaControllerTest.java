@@ -3,11 +3,11 @@ package io.pivotal.security.controller.v1;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CertificateAuthorityDataService;
-import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.fake.FakeAuditLogService;
-import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.generator.BCCertificateAuthorityGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
+import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -85,7 +85,7 @@ public class CaControllerTest {
   CAGeneratorRequestTranslator caGeneratorRequestTranslator;
 
   @SpyBean
-  BCCertificateGenerator certificateGenerator;
+  BCCertificateAuthorityGenerator certificateAuthorityGenerator;
 
   @Autowired
   EncryptionKeyService encryptionKeyService;
@@ -127,7 +127,7 @@ public class CaControllerTest {
       describe("when creating a new CA", () -> {
         beforeEach(() -> {
           doReturn(new CertificateAuthority(fakeGeneratedCa.getType(), fakeGeneratedCa.getCertificate(), fakeGeneratedCa.getPrivateKey()))
-              .when(certificateGenerator).generateCertificateAuthority(any(CertificateSecretParameters.class));
+              .when(certificateAuthorityGenerator).generateSecret(any(CertificateSecretParameters.class));
           doReturn(
               fakeGeneratedCa
           ).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
@@ -241,7 +241,7 @@ public class CaControllerTest {
         });
 
         it("should generate the new certificate", () -> {
-          verify(certificateGenerator, times(1)).generateCertificateAuthority(any(CertificateSecretParameters.class));
+          verify(certificateAuthorityGenerator, times(1)).generateSecret(any(CertificateSecretParameters.class));
         });
 
         it("saves a new CA in the database", () -> {

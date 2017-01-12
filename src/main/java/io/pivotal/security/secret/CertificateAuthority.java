@@ -1,6 +1,6 @@
 package io.pivotal.security.secret;
 
-public class CertificateAuthority {
+public class CertificateAuthority implements Secret {
   private final String type;
   private final String certificate;
   private final String privateKey;

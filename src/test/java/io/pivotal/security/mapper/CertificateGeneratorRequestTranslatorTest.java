@@ -7,6 +7,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.data.CertificateAuthorityDataService;
+import io.pivotal.security.generator.BCCertificateAuthorityGenerator;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
@@ -60,7 +61,10 @@ public class CertificateGeneratorRequestTranslatorTest {
   ParseContext jsonPath;
 
   @SpyBean
-  BCCertificateGenerator secretGenerator;
+  BCCertificateGenerator certificateGenerator;
+
+  @SpyBean
+  BCCertificateAuthorityGenerator certificateAuthorityGenerator;
 
   @MockBean
   CertificateSecretParametersFactory certificateSecretParametersFactory;
@@ -269,7 +273,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       beforeEach(() -> {
         doReturn(new Certificate("my-root", "my-cert", "my-priv"))
-            .when(secretGenerator)
+            .when(certificateGenerator)
             .generateSecret(any(CertificateSecretParameters.class));
       });
 
@@ -278,7 +282,7 @@ public class CertificateGeneratorRequestTranslatorTest {
         parsed = jsonPath.parse(requestJson);
         subject.populateEntityFromJson(secret, parsed);
 
-        verify(secretGenerator).generateSecret(isA(CertificateSecretParameters.class));
+        verify(certificateGenerator).generateSecret(isA(CertificateSecretParameters.class));
 
         assertThat(secret.getCa(), equalTo("my-root"));
         assertThat(secret.getCertificate(), equalTo("my-cert"));
@@ -298,7 +302,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       parameters.addAlternativeNames("another-name");
       parameters.addExtendedKeyUsage("code_signing");
       parameters.addKeyUsage("digital_signature", "non_repudiation");
-      Certificate secret = secretGenerator.generateSecret(parameters);
+      Certificate secret = certificateGenerator.generateSecret(parameters);
 
       String originalPrivateKey = secret.getPrivateKey();
       String originalCertificate = secret.getCertificate();
@@ -338,7 +342,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       CertificateSecretParameters parameters = new CertificateSecretParameters();
       parameters.setCaName("my-root");
       parameters.setCommonName("Credhub Unit Tests");
-      Certificate secret = secretGenerator.generateSecret(parameters);
+      Certificate secret = certificateGenerator.generateSecret(parameters);
 
       String originalPrivateKey = secret.getPrivateKey();
       String originalCertificate = secret.getCertificate();
@@ -365,7 +369,7 @@ public class CertificateGeneratorRequestTranslatorTest {
   private NamedCertificateAuthority setupCa() throws Exception {
     CertificateSecretParameters authorityParameters = new CertificateSecretParameters();
     authorityParameters.setCommonName("my-root");
-    CertificateAuthority certificateSecret = secretGenerator.generateCertificateAuthority(authorityParameters);
+    CertificateAuthority certificateSecret = certificateAuthorityGenerator.generateSecret(authorityParameters);
     NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("my-root");
     certificateAuthority.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
     certificateAuthority.setCertificate(certificateSecret.getCertificate())
