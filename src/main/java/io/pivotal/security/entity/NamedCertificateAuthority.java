@@ -5,13 +5,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -19,6 +12,12 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.time.Instant;
+import java.util.UUID;
+
+import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "NamedCertificateAuthority")
@@ -54,6 +53,7 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
   @LastModifiedDate
+  @SuppressWarnings("unused")
   private Instant updatedAt;
 
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
@@ -82,15 +82,6 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
 
   public NamedCertificateAuthority setName(String name) {
     this.name = name;
-    return this;
-  }
-
-  public Instant getUpdatedAt() {
-    return updatedAt;
-  }
-
-  public NamedCertificateAuthority setUpdatedAt(Instant updatedAt) {
-    this.updatedAt = updatedAt;
     return this;
   }
 
