@@ -118,7 +118,7 @@ public class SecretDataServiceTest {
         NamedPasswordSecret secret = new NamedPasswordSecret("my-secret-2");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
-        NamedPasswordSecret savedSecret = (NamedPasswordSecret) subject.save(secret);
+        NamedPasswordSecret savedSecret = subject.save(secret);
         savedSecret.setEncryptionKeyUuid(activeCanaryUuid);
         savedSecret.setEncryptedValue("irynas-ninja-skills".getBytes());
 
@@ -136,22 +136,22 @@ public class SecretDataServiceTest {
       });
 
       it("should generate a uuid when creating", () -> {
-        NamedSecret secret = new NamedSshSecret("my-secret-2").setPublicKey("fake-public-key");
-        NamedSshSecret savedSecret = (NamedSshSecret) subject.save(secret);
+        NamedSshSecret secret = new NamedSshSecret("my-secret-2").setPublicKey("fake-public-key");
+        NamedSshSecret savedSecret = subject.save(secret);
 
         UUID generatedUuid = savedSecret.getUuid();
         assertNotNull(generatedUuid);
 
         savedSecret.setPublicKey("updated-fake-public-key");
-        savedSecret = (NamedSshSecret) subject.save(savedSecret);
+        savedSecret = subject.save(savedSecret);
 
         assertThat(savedSecret.getUuid(), equalTo(generatedUuid));
       });
 
       describe("when the secret has no encrypted value", () -> {
         it("should set the default encryption key UUID", () -> {
-          NamedSecret secret = new NamedSshSecret("my-secret").setPublicKey("fake-public-key");
-          NamedSshSecret savedSecret = (NamedSshSecret) subject.save(secret);
+          NamedSshSecret secret = new NamedSshSecret("my-secret").setPublicKey("fake-public-key");
+          NamedSshSecret savedSecret = subject.save(secret);
 
           assertThat(savedSecret.getEncryptionKeyUuid(), equalTo(activeCanaryUuid));
         });
@@ -271,7 +271,7 @@ public class SecretDataServiceTest {
         NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
-        NamedPasswordSecret savedSecret = (NamedPasswordSecret) subject.save(secret);
+        NamedPasswordSecret savedSecret = subject.save(secret);
 
         assertNotNull(savedSecret.getUuid());
         NamedPasswordSecret oneByUuid = (NamedPasswordSecret) subject.findByUuid(savedSecret.getUuid().toString());
@@ -524,7 +524,7 @@ public class SecretDataServiceTest {
     fakeTimeSetter.accept(timeMillis);
     NamedPasswordSecret secretObject = new NamedPasswordSecret(secretName);
     secretObject.setEncryptionKeyUuid(canaryUuid);
-    return (NamedPasswordSecret) subject.save(secretObject);
+    return subject.save(secretObject);
   }
 
   private NamedPasswordSecret saveNamedPassword(long timeMillis, String secretName) {

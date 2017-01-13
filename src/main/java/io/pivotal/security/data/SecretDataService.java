@@ -58,7 +58,7 @@ public class SecretDataService {
     this.passwordRepository = passwordRepository;
   }
 
-  public NamedSecret save(NamedSecret namedSecret) {
+  public <Z extends NamedSecret> Z save(Z namedSecret) {
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
     }
