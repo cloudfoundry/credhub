@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface CertificateAuthorityRepository extends JpaRepository<NamedCertificateAuthority, UUID> {
-  List<NamedCertificateAuthority> findAllByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
-  NamedCertificateAuthority findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
+  List<NamedCertificateAuthority> findAllByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name);
+  NamedCertificateAuthority findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name);
   NamedCertificateAuthority findOneByUuid(UUID uuid);
   List<NamedCertificateAuthority> findByEncryptionKeyUuidNot(UUID uuid);
 }

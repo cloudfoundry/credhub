@@ -57,7 +57,7 @@ public class NamedCertificateAuthorityTest {
       subject.setUuid(uuid);
       CertificateAuthority certificateAuthority = CertificateAuthority.fromEntity(subject);
       String expectedJson = "{" +
-          "\"updated_at\":null," +
+          "\"version_created_at\":null," +
           "\"type\":\"root\"," +
           "\"value\":{" +
           "\"certificate\":\"cert\"," +
@@ -68,11 +68,11 @@ public class NamedCertificateAuthorityTest {
       assertThat(objectMapper.writer().writeValueAsString(certificateAuthority), equalTo(expectedJson));
     });
 
-    it("set updated-at time on generated view", () -> {
+    it("set version-created-at time on generated view", () -> {
       Instant now = Instant.now();
-      subject.setUpdatedAt(now);
+      subject.setVersionCreatedAt(now);
       CertificateAuthority actual = CertificateAuthority.fromEntity(subject);
-      assertThat(actual.getUpdatedAt(), equalTo(now));
+      assertThat(actual.getVersionCreatedAt(), equalTo(now));
     });
 
     it("sets the nonce and the encrypted private key", () -> {
@@ -97,7 +97,7 @@ public class NamedCertificateAuthorityTest {
         subject.setEncryptedValue("fake-private-key".getBytes());
         subject.setNonce("fake-nonce".getBytes());
         subject.setUuid(uuid);
-        subject.setUpdatedAt(frozenTime);
+        subject.setVersionCreatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
         NamedCertificateAuthority copy = new NamedCertificateAuthority();
@@ -109,7 +109,7 @@ public class NamedCertificateAuthorityTest {
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
-        assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
+        assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
       });
     });
   }

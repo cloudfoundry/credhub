@@ -31,7 +31,7 @@ public class CertificateAuthorityDataService {
   }
 
   public NamedCertificateAuthority findMostRecent(String name) {
-    return certificateAuthorityRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(name);
+    return certificateAuthorityRepository.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
   }
 
   public NamedCertificateAuthority findByUuid(String uuid) {
@@ -39,7 +39,7 @@ public class CertificateAuthorityDataService {
   }
 
   public List<NamedCertificateAuthority> findAllByName(String name) {
-    return certificateAuthorityRepository.findAllByNameIgnoreCaseOrderByUpdatedAtDesc(name);
+    return certificateAuthorityRepository.findAllByNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
   }
 
   public List<NamedCertificateAuthority> findAllNotEncryptedByActiveKey() {

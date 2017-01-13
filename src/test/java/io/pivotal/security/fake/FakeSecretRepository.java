@@ -24,7 +24,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name) {
+  public NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name) {
     throw new UnsupportedOperationException();
   }
 

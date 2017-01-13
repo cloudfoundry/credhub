@@ -117,7 +117,7 @@ public class SecretsControllerRegenerateTest {
           NamedPasswordSecret newSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
           uuid = UUID.randomUUID();
           newSecret.setUuid(uuid);
-          newSecret.setUpdatedAt(frozenTime.plusSeconds(10));
+          newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
           return newSecret;
         }).when(secretDataService).save(any(NamedPasswordSecret.class));
 
@@ -136,7 +136,7 @@ public class SecretsControllerRegenerateTest {
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.type").value("password"))
             .andExpect(jsonPath("$.id").value(uuid.toString()))
-            .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
+            .andExpect(jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
 
         ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
         verify(secretDataService, times(1)).save(argumentCaptor.capture());

@@ -229,15 +229,40 @@ public class SecretDataServiceTest {
         NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret("my-SECRET");
         namedPasswordSecret1.setEncryptionKeyUuid(activeCanaryUuid);
         namedPasswordSecret1.setEncryptedValue("my-password".getBytes());
-        NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret("MY-SECRET-2");
+        NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret("MY-SECRET");
         namedPasswordSecret2.setEncryptionKeyUuid(activeCanaryUuid);
         namedPasswordSecret2.setEncryptedValue("my-password".getBytes());
         subject.save(namedPasswordSecret1);
+        fakeTimeSetter.accept(345346L); // 1 second later
         subject.save(namedPasswordSecret2);
 
         NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findMostRecent("my-secret");
-        assertThat(passwordSecret.getName(), equalTo("my-SECRET"));
+        assertThat(passwordSecret.getName(), equalTo("MY-SECRET"));
         assertThat(passwordSecret.getEncryptedValue(), equalTo("my-password".getBytes()));
+      });
+
+      it("finds most recent based on version_created_at date, not updated_at", () -> {
+        NamedCertificateSecret firstCertificate = new NamedCertificateSecret("my-certificate");
+        firstCertificate.setEncryptionKeyUuid(activeCanaryUuid);
+        firstCertificate.setCertificate("first-certificate");
+
+        NamedCertificateSecret secondCertificate = new NamedCertificateSecret("my-certificate");
+        secondCertificate.setEncryptionKeyUuid(activeCanaryUuid);
+        secondCertificate.setCertificate("second-certificate");
+
+        firstCertificate = (NamedCertificateSecret) subject.save(firstCertificate);
+        fakeTimeSetter.accept(345346L);
+        secondCertificate = (NamedCertificateSecret) subject.save(secondCertificate);
+
+        NamedCertificateSecret mostRecent = (NamedCertificateSecret) subject.findMostRecent("my-certificate");
+        assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
+
+        firstCertificate.setCertificate("updated-first-certificate");
+        fakeTimeSetter.accept(345347L);
+        subject.save(firstCertificate);
+
+        mostRecent = (NamedCertificateSecret) subject.findMostRecent("my-certificate");
+        assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
       });
     });
 
@@ -291,6 +316,17 @@ public class SecretDataServiceTest {
         ));
       });
 
+      it("should return secrets in order by version_created_at, not updated_at", () -> {
+        NamedValueSecret valueSecret = (NamedValueSecret) subject.findMostRecent("value.Secret");
+        valueSecret.setEncryptedValue("new-encrypted-value".getBytes());
+        subject.save(valueSecret);
+        assertThat(subject.findContainingName("SECRET"), IsIterableContainingInOrder.contains(
+            hasProperty("name", equalTo(certificateName)),
+            hasProperty("name", equalTo(valueName)),
+            hasProperty("name", equalTo(passwordName))
+        ));
+      });
+
       it("should return a credential ignoring leading slash at the start of credential name", () -> {
         fakeTimeSetter.accept(4000000000123L);
         NamedPasswordSecret namedSecret = new NamedPasswordSecret("my/password/secret");
@@ -325,11 +361,11 @@ public class SecretDataServiceTest {
 
           NamedSecret secret = secrets.get(0);
           assertThat(secret.getName(), equalTo("bar/duplicate"));
-          assertThat(secret.getUpdatedAt(), equalTo(Instant.ofEpochMilli(4000000000123L)));
+          assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(4000000000123L)));
 
           secret = secrets.get(1);
           assertThat(secret.getName(), equalTo("foo/DUPLICATE"));
-          assertThat(secret.getUpdatedAt(), equalTo(Instant.ofEpochMilli(2000000000123L)));
+          assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(2000000000123L)));
         });
       });
     });
@@ -355,6 +391,18 @@ public class SecretDataServiceTest {
         assertThat(secrets, not(contains(hasProperty("notSoSecret"))));
       });
 
+      it("should return secrets in order by version_created_at, not updated_at", () -> {
+        NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findMostRecent("secret/1");
+        passwordSecret.setEncryptedValue("new-encrypted-value".getBytes());
+        subject.save(passwordSecret);
+        List<NamedSecret> secrets = subject.findStartingWithName("Secret/");
+        assertThat(secrets, IsIterableContainingInOrder.contains(
+            hasProperty("name", equalTo("Secret/2")),
+            hasProperty("name", equalTo("secret/1")),
+            hasProperty("name", equalTo("SECRET/3"))
+        ));
+      });
+
       describe("when there are duplicate names", () -> {
         beforeEach(() -> {
           saveNamedPassword(2000000000123L, "DupSecret/1");
@@ -370,7 +418,7 @@ public class SecretDataServiceTest {
         it("should return the most recent secret", () -> {
           List<NamedSecret> secrets = subject.findStartingWithName("dupsecret/");
           NamedSecret secret = secrets.get(0);
-          assertThat(secret.getUpdatedAt(), equalTo(Instant.ofEpochMilli(3000000000123L)));
+          assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(3000000000123L)));
         });
       });
 

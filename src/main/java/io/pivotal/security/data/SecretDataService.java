@@ -20,25 +20,25 @@ public class SecretDataService {
   private static final String FIND_MOST_RECENT_BY_SUBSTRING_QUERY =
     "SELECT DISTINCT " +
       "name, " +
-      "updated_at " +
+      "version_created_at " +
     "FROM " +
       "named_secret " +
     "INNER JOIN ( " +
       "SELECT " +
         "UPPER(name) AS inner_name, " +
-        "MAX(updated_at) AS inner_updated_at " +
+        "MAX(version_created_at) AS inner_version_created_at " +
       "FROM " +
         "named_secret " +
       "GROUP BY " +
         "UPPER(name) " +
     ") AS most_recent " +
     "ON " +
-      "named_secret.updated_at = most_recent.inner_updated_at " +
+      "named_secret.version_created_at = most_recent.inner_version_created_at " +
     "AND " +
       "UPPER(named_secret.name) = most_recent.inner_name " +
     "WHERE " +
       "UPPER(named_secret.name) LIKE UPPER(?) OR UPPER(named_secret.name) LIKE UPPER(?) " +
-    "ORDER BY updated_at DESC";
+    "ORDER BY version_created_at DESC";
 
   private final SecretRepository secretRepository;
   private final JdbcTemplate jdbcTemplate;
@@ -70,7 +70,7 @@ public class SecretDataService {
   }
 
   public NamedSecret findMostRecent(String name) {
-    return secretRepository.findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(name);
+    return secretRepository.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
   }
 
   public NamedSecret findByUuid(String uuid) {
@@ -101,7 +101,7 @@ public class SecretDataService {
   private List<NamedSecret> findMostRecentLikeSubstrings(String substring1, String substring2) {
     secretRepository.flush();
 
-    // The subquery gets us the right name/updated_at pairs, but changes the capitalization of the names.
+    // The subquery gets us the right name/version_created_at pairs, but changes the capitalization of the names.
     return jdbcTemplate.query(
         FIND_MOST_RECENT_BY_SUBSTRING_QUERY,
       new Object[] {substring1, substring2},
@@ -109,7 +109,7 @@ public class SecretDataService {
         NamedSecret secret = new NamedSecretImpl();
 
         secret.setName(rowSet.getString("name"));
-        secret.setUpdatedAt(Instant.ofEpochMilli(rowSet.getLong("updated_at")));
+        secret.setVersionCreatedAt(Instant.ofEpochMilli(rowSet.getLong("version_created_at")));
 
         return secret;
       }

@@ -14,13 +14,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -36,6 +29,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -100,7 +100,7 @@ public class CertificateAuthorityDataServiceTest {
           ca.setName(rs.getString("name"));
           ca.setNonce(rs.getBytes("nonce"));
           ca.setType(rs.getString("type"));
-          ca.setUpdatedAt(Instant.ofEpochMilli(rs.getLong("updated_at")));
+          ca.setVersionCreatedAt(Instant.ofEpochMilli(rs.getLong("version_created_at")));
 
           return ca;
         });
@@ -115,8 +115,8 @@ public class CertificateAuthorityDataServiceTest {
         assertThat(actual.getName(), equalTo(expected.getName()));
         assertThat(actual.getNonce(), equalTo(expected.getNonce()));
         assertThat(actual.getType(), equalTo(expected.getType()));
-        assertThat(actual.getUpdatedAt(), equalTo(expected.getUpdatedAt()));
-        assertThat(actual.getUpdatedAt(), equalTo(frozenTime));
+        assertThat(actual.getVersionCreatedAt(), equalTo(expected.getVersionCreatedAt()));
+        assertThat(actual.getVersionCreatedAt(), equalTo(frozenTime));
 
         // The Java UUID class doesn't let us convert to UUID type 4... so
         // we must rely on Hibernate to do that for us.
@@ -219,6 +219,28 @@ public class CertificateAuthorityDataServiceTest {
           assertNotNull(certificateAuthority);
           assertThat(certificateAuthority.getName(), equalTo("test-ca"));
         });
+      });
+
+      it("finds most recent based on version_created_at date, not updated_at", () -> {
+        NamedCertificateAuthority firstCertificate = new NamedCertificateAuthority("my-certificate");
+        firstCertificate.setCertificate("first-certificate");
+
+        NamedCertificateAuthority secondCertificate = new NamedCertificateAuthority("my-certificate");
+        secondCertificate.setCertificate("second-certificate");
+
+        firstCertificate = subject.save(firstCertificate);
+        fakeTimeSetter.accept(1400000000124L);
+        secondCertificate = subject.save(secondCertificate);
+
+        NamedCertificateAuthority mostRecent = subject.findMostRecent("my-certificate");
+        assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
+
+        firstCertificate.setCertificate("updated-first-certificate");
+        fakeTimeSetter.accept(1400000000125L);
+        subject.save(firstCertificate);
+
+        mostRecent = subject.findMostRecent("my-certificate");
+        assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
       });
     });
 

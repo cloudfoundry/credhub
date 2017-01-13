@@ -19,19 +19,19 @@ public class CertificateAuthority extends BaseView {
     this(null, type, certificate, privateKey, null);
   }
 
-  public CertificateAuthority(Instant updatedAt,
+  public CertificateAuthority(Instant versionCreatedAt,
                               String type,
                               String certificate,
                               String privateKey,
                               UUID uuid) {
-    super(updatedAt);
+    super(versionCreatedAt);
     setType(type);
     setCertificateBody(new CertificateAuthorityBody(certificate, privateKey));
     setUuid(uuid);
   }
 
   public CertificateAuthority(NamedCertificateAuthority namedCa) {
-    this(namedCa.getUpdatedAt(),
+    this(namedCa.getVersionCreatedAt(),
         namedCa.getType(),
         namedCa.getCertificate(),
         namedCa.getPrivateKey(),

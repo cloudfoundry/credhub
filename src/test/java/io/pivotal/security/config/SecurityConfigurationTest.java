@@ -31,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.UUID;
 
 import javax.servlet.Filter;
@@ -92,7 +91,7 @@ public class SecurityConfigurationTest {
         when(secretDataService.save(any())).thenAnswer(invocation -> {
           NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
           namedPasswordSecret.setUuid(UUID.randomUUID());
-          namedPasswordSecret.setUpdatedAt(Instant.now());
+          namedPasswordSecret.setVersionCreatedAt(Instant.now());
           return namedPasswordSecret;
         });
 
@@ -105,7 +104,7 @@ public class SecurityConfigurationTest {
         mockMvc.perform(post)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.type").value("password"))
-            .andExpect(jsonPath("$.updated_at").exists())
+            .andExpect(jsonPath("$.version_created_at").exists())
             .andExpect(jsonPath("$.value").exists());
       });
     });

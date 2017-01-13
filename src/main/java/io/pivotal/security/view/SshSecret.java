@@ -10,14 +10,14 @@ public class SshSecret extends Secret {
   @JsonProperty("value")
   private SshBody sshBody;
 
-  public SshSecret(Instant updatedAt, UUID uuid, String name, String publicKey, String privateKey) {
-    super(updatedAt, uuid, name);
+  public SshSecret(Instant versionCreatedAt, UUID uuid, String name, String publicKey, String privateKey) {
+    super(versionCreatedAt, uuid, name);
     setSshBody(new SshBody(publicKey, privateKey));
   }
 
   public SshSecret(NamedSshSecret namedSshSecret) {
     this(
-        namedSshSecret.getUpdatedAt(),
+        namedSshSecret.getVersionCreatedAt(),
         namedSshSecret.getUuid(),
         namedSshSecret.getName(),
         namedSshSecret.getPublicKey(),

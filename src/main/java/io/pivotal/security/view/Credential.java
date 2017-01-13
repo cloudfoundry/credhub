@@ -6,11 +6,11 @@ import java.time.Instant;
 
 public class Credential {
   private String name;
-  private Instant updatedAt;
+  private Instant versionCreatedAt;
 
-  public Credential(String name, Instant updatedAt) {
+  public Credential(String name, Instant versionCreatedAt) {
     this.name = name;
-    this.updatedAt = updatedAt;
+    this.versionCreatedAt = versionCreatedAt;
   }
 
   @JsonProperty
@@ -18,8 +18,8 @@ public class Credential {
     return name;
   }
 
-  @JsonProperty("updated_at")
-  public Instant getUpdatedAt() {
-    return updatedAt;
+  @JsonProperty("version_created_at")
+  public Instant getVersionCreatedAt() {
+    return versionCreatedAt;
   }
 }

@@ -49,20 +49,20 @@ public class StringSecretTest {
       StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
       assertThat(json(actual), equalTo("{" +
           "\"type\":\"value\"," +
-          "\"updated_at\":null," +
+          "\"version_created_at\":null," +
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"name\":\"foo\"," +
           "\"value\":\"fake-plaintext-value\"" +
           "}"));
     });
 
-    it("has updated_at in the view", () -> {
+    it("has version_created_at in the view", () -> {
       Instant now = Instant.now();
-      entity.setUpdatedAt(now);
+      entity.setVersionCreatedAt(now);
 
       StringSecret actual = (StringSecret) StringSecret.fromEntity(entity);
 
-      assertThat(actual.getUpdatedAt(), equalTo(now));
+      assertThat(actual.getVersionCreatedAt(), equalTo(now));
     });
 
     it("has type in the view", () -> {

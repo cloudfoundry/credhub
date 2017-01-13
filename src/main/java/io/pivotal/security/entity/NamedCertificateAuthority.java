@@ -48,6 +48,11 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
   @Convert(converter = InstantMillisecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   @CreatedDate
+  private Instant versionCreatedAt;
+
+  @Convert(converter = InstantMillisecondsConverter.class)
+  @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
+  @CreatedDate
   @LastModifiedDate
   private Instant updatedAt;
 
@@ -138,6 +143,15 @@ public class NamedCertificateAuthority implements EncryptedValueContainer {
 
   public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
     this.encryptionKeyUuid = encryptionKeyUuid;
+  }
+
+  public Instant getVersionCreatedAt() {
+    return versionCreatedAt;
+  }
+
+  public NamedCertificateAuthority setVersionCreatedAt(Instant versionCreatedAt) {
+    this.versionCreatedAt = versionCreatedAt;
+    return this;
   }
 
   public void copyInto(NamedCertificateAuthority copy) {

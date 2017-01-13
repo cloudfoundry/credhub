@@ -93,7 +93,7 @@ public class SecretsControllerFindTest {
             NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
             namedValueSecret.setEncryptedValue("some value".getBytes());
             doReturn(
-                Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
+                Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
             ).when(secretDataService).findContainingName(substring);
             final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
                 .accept(APPLICATION_JSON);
@@ -105,7 +105,7 @@ public class SecretsControllerFindTest {
             this.response.andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.credentials[0].name").value(secretName))
-                .andExpect(jsonPath("$.credentials[0].updated_at").value(frozenTime.toString()));
+                .andExpect(jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
           });
 
           it("persists an audit entry", () -> {
@@ -123,7 +123,7 @@ public class SecretsControllerFindTest {
           NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret(secretName);
           namedPasswordSecret.setEncryptedValue("some value".getBytes());
           doReturn(
-              Arrays.asList(namedPasswordSecret.setUpdatedAt(frozenTime))
+              Arrays.asList(namedPasswordSecret.setVersionCreatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(path);
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=/" + path)
@@ -133,7 +133,7 @@ public class SecretsControllerFindTest {
               .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.credentials[0].name").value(secretName))
-              .andExpect(jsonPath("$.credentials[0].updated_at").value(frozenTime.toString()));
+              .andExpect(jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
         });
       });
 
@@ -143,7 +143,7 @@ public class SecretsControllerFindTest {
           NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
           namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
-              Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
+              Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(substring);
 
           final String path = substring;
@@ -157,7 +157,7 @@ public class SecretsControllerFindTest {
           this.response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.credentials[0].name").value(secretName))
-              .andExpect(jsonPath("$.credentials[0].updated_at").value(frozenTime.toString()));
+              .andExpect(jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
         });
 
         it("should only find paths that start with the specified substring case-independently", () -> {
@@ -178,7 +178,7 @@ public class SecretsControllerFindTest {
           NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
           namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
-              Arrays.asList(namedValueSecret.setUpdatedAt(frozenTime))
+              Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
           ).when(secretDataService).findStartingWithName(path.toUpperCase());
 
           assertTrue(secretName.startsWith(path));

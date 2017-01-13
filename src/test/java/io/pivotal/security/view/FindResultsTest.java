@@ -32,21 +32,21 @@ public class FindResultsTest {
         List<NamedSecret> namedSecretList = newArrayList();
 
         it("creates an object with a list of results containing credential names and updated times", () -> {
-          Instant updatedAt1 = Instant.ofEpochSecond(10000L, 0);
-          Instant updatedAt2 = Instant.ofEpochSecond(20000L, 0);
-          Instant updatedAt3 = Instant.ofEpochSecond(30000L, 0);
+          Instant versionCreatedAt1 = Instant.ofEpochSecond(10000L, 0);
+          Instant versionCreatedAt2 = Instant.ofEpochSecond(20000L, 0);
+          Instant versionCreatedAt3 = Instant.ofEpochSecond(30000L, 0);
           namedSecretList.clear();
           String valueName = "valueSecret";
           String passwordName = "passwordSecret";
           String certificateName = "certificateSecret";
-          namedSecretList.add(new NamedValueSecret(valueName).setUpdatedAt(updatedAt2));
-          namedSecretList.add(new NamedPasswordSecret(passwordName).setUpdatedAt(updatedAt1));
-          namedSecretList.add(new NamedCertificateSecret(certificateName).setUpdatedAt(updatedAt3));
+          namedSecretList.add(new NamedValueSecret(valueName).setVersionCreatedAt(versionCreatedAt2));
+          namedSecretList.add(new NamedPasswordSecret(passwordName).setVersionCreatedAt(versionCreatedAt1));
+          namedSecretList.add(new NamedCertificateSecret(certificateName).setVersionCreatedAt(versionCreatedAt3));
 
           expectedResults = new FindCredentialResults(newArrayList(
-              new Credential(certificateName, updatedAt3),
-              new Credential(valueName, updatedAt2),
-              new Credential(passwordName, updatedAt1)));
+              new Credential(certificateName, versionCreatedAt3),
+              new Credential(valueName, versionCreatedAt2),
+              new Credential(passwordName, versionCreatedAt1)));
 
           FindCredentialResults results = FindCredentialResults.fromEntity(namedSecretList);
           assertThat(results, theSameAs(expectedResults));

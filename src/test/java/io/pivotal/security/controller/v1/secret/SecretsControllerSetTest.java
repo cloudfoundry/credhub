@@ -158,7 +158,7 @@ public class SecretsControllerSetTest {
     describe("setting a secret", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setUpdatedAt(frozenTime);
+        valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret.setValue(secretValue);
 
         doReturn(
@@ -274,7 +274,7 @@ public class SecretsControllerSetTest {
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value(specialValue))
               .andExpect(jsonPath("$.id").value(expectedUuid.toString()))
-              .andExpect(jsonPath("$.updated_at").value(frozenTime.plusSeconds(10).toString()));
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
 
           assertNotNull(expectedUuid);
           assertThat(expectedUuid, not(equalTo(originalUuid)));
@@ -284,7 +284,7 @@ public class SecretsControllerSetTest {
           mockMvc.perform(get("/api/v1/data/" + uuid.toString()))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value("original value"))
-              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
 
         it("persists an audit entry", () -> {
@@ -349,7 +349,7 @@ public class SecretsControllerSetTest {
           .andExpect(jsonPath("$.type").value("value"))
           .andExpect(jsonPath("$.value").value(secretValue))
           .andExpect(jsonPath("$.id").value(uuid.toString()))
-          .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+          .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
     });
 
     it("asks the data service to persist the secret", () -> {
@@ -469,7 +469,7 @@ public class SecretsControllerSetTest {
 
   private void putSecretInDatabase(String name, String value) throws Exception {
     uuid = UUID.randomUUID();
-    NamedValueSecret valueSecret = new NamedValueSecret(name).setUuid(uuid).setUpdatedAt(frozenTime);
+    NamedValueSecret valueSecret = new NamedValueSecret(name).setUuid(uuid).setVersionCreatedAt(frozenTime);
     valueSecret.setValue(value);
     doReturn(
         valueSecret

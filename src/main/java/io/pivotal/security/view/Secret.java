@@ -15,8 +15,8 @@ public class Secret extends BaseView {
   private UUID uuid;
   private String name;
 
-  protected Secret(Instant updatedAt, UUID uuid, String name) {
-    super(updatedAt);
+  protected Secret(Instant versionCreatedAt, UUID uuid, String name) {
+    super(versionCreatedAt);
     this.uuid = uuid;
     this.name = name;
   }
@@ -57,7 +57,7 @@ public class Secret extends BaseView {
     } else {
       throw new IllegalArgumentException();
     }
-    result.setUpdatedAt(namedSecret.getUpdatedAt());
+    result.setVersionCreatedAt(namedSecret.getVersionCreatedAt());
     result.setUuid(namedSecret.getUuid());
     return result;
   }

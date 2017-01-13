@@ -76,7 +76,7 @@ public class NamedRsaSecretTest {
         subject.setEncryptedValue("fake-private-key".getBytes());
         subject.setNonce("fake-nonce".getBytes());
         subject.setUuid(uuid);
-        subject.setUpdatedAt(frozenTime);
+        subject.setVersionCreatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
         NamedRsaSecret copy = new NamedRsaSecret();
@@ -89,7 +89,7 @@ public class NamedRsaSecretTest {
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
-        assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
+        assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
       });
     });
   }

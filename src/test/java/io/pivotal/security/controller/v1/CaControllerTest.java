@@ -67,12 +67,12 @@ import java.util.function.Supplier;
 public class CaControllerTest {
   private static final Instant OLDER_FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1300000000L);
   private static final Instant FROZEN_TIME_INSTANT = Instant.ofEpochSecond(1400000000L);
-  private static final String UPDATED_AT_JSON = "\"updated_at\":\"" + FROZEN_TIME_INSTANT.toString() + "\"";
-  private static final String OLDER_UPDATED_AT_JSON = "\"updated_at\":\"" + OLDER_FROZEN_TIME_INSTANT.toString() + "\"";
+  private static final String VERSION_CREATED_AT_JSON = "\"version_created_at\":\"" + FROZEN_TIME_INSTANT.toString() + "\"";
+  private static final String OLDER_VERSION_CREATED_AT_JSON = "\"version_created_at\":\"" + OLDER_FROZEN_TIME_INSTANT.toString() + "\"";
   private static final String CA_CREATION_REQUEST_JSON = "\"type\":\"root\",\"name\":\"%s\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
   private static final String ANOTHER_CA_CREATION_REQUEST_JSON = "\"type\":\"root\",\"name\":\"%s\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"different_private_key\"}";
   private static final String CA_CREATION_RESPONSE_JSON = "\"type\":\"root\",\"value\":{\"certificate\":\"my_cert\",\"private_key\":\"private_key\"}";
-  private static final String CA_RESPONSE_JSON = "{" + UPDATED_AT_JSON + "," + CA_CREATION_RESPONSE_JSON + "}";
+  private static final String CA_RESPONSE_JSON = "{" + VERSION_CREATED_AT_JSON + "," + CA_CREATION_RESPONSE_JSON + "}";
   private static final String UNIQUE_NAME = "my-folder/ca-identifier";
 
   @Autowired
@@ -119,7 +119,7 @@ public class CaControllerTest {
           .setCertificate("my_cert")
           .setPrivateKey("private_key")
           .setUuid(uuid)
-          .setUpdatedAt(FROZEN_TIME_INSTANT);
+          .setVersionCreatedAt(FROZEN_TIME_INSTANT);
       fakeGeneratedCa.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
     });
 
@@ -237,7 +237,7 @@ public class CaControllerTest {
               .andExpect(jsonPath("$.value.private_key").value("new-private-key"))
               .andExpect(jsonPath("$.type").value("root"))
               .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(jsonPath("$.updated_at").value(FROZEN_TIME_INSTANT.toString()));
+              .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME_INSTANT.toString()));
         });
 
         it("should generate the new certificate", () -> {
@@ -286,7 +286,7 @@ public class CaControllerTest {
               .setType("root")
               .setCertificate("my_cert")
               .setPrivateKey(certificateAuthority.getPrivateKey())
-              .setUpdatedAt(FROZEN_TIME_INSTANT)
+              .setVersionCreatedAt(FROZEN_TIME_INSTANT)
               .setUuid(uuid);
         }).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
 
@@ -343,7 +343,7 @@ public class CaControllerTest {
                   .setType("root")
                   .setCertificate("my_cert")
                   .setPrivateKey("private_key")
-                  .setUpdatedAt(FROZEN_TIME_INSTANT)
+                  .setVersionCreatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
           ).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
 
@@ -381,7 +381,7 @@ public class CaControllerTest {
                   .setType("root")
                   .setCertificate("my_cert")
                   .setPrivateKey("private_key")
-                  .setUpdatedAt(FROZEN_TIME_INSTANT)
+                  .setVersionCreatedAt(FROZEN_TIME_INSTANT)
                   .setUuid(uuid)
           ).when(certificateAuthorityDataService).save(any(NamedCertificateAuthority.class));
           String requestJson = String.format("{" + CA_CREATION_REQUEST_JSON + "}", UNIQUE_NAME);
@@ -464,7 +464,7 @@ public class CaControllerTest {
                   "}," +
                   "\"type\":\"root\"," +
                   "\"id\":\"" + uuid.toString() + "\"," +
-                  UPDATED_AT_JSON +
+                  VERSION_CREATED_AT_JSON +
                   "}";
           response
               .andExpect(status().isOk())
@@ -530,14 +530,14 @@ public class CaControllerTest {
             .setCertificate("my-certificate-old")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
-            .setUpdatedAt(OLDER_FROZEN_TIME_INSTANT);
+            .setVersionCreatedAt(OLDER_FROZEN_TIME_INSTANT);
         uuid = UUID.randomUUID();
         storedCa = new NamedCertificateAuthority(UNIQUE_NAME)
             .setType("root")
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
-            .setUpdatedAt(FROZEN_TIME_INSTANT);
+            .setVersionCreatedAt(FROZEN_TIME_INSTANT);
         doReturn(newArrayList(storedCa, olderStoredCa)).when(certificateAuthorityDataService).findAllByName(eq(UNIQUE_NAME));
         doReturn(storedCa).when(certificateAuthorityDataService).findMostRecent(eq(UNIQUE_NAME));
       });
@@ -547,7 +547,7 @@ public class CaControllerTest {
           it("returns the ca when the name is a request parameter", () -> {
             String expectedJsonWithManyCAs = "{ \"data\": [" +
                 "{"
-                + UPDATED_AT_JSON + "," +
+                + VERSION_CREATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
                 "    \"value\":{" +
                 "        \"certificate\":\"my-certificate\"," +
@@ -556,7 +556,7 @@ public class CaControllerTest {
                 "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
                 "}," +
                 "{"
-                + OLDER_UPDATED_AT_JSON + "," +
+                + OLDER_VERSION_CREATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
                 "    \"value\":{" +
                 "        \"certificate\":\"my-certificate-old\"," +
@@ -578,7 +578,7 @@ public class CaControllerTest {
             it("returns the ca when the name is a request parameter", () -> {
               String expectedJsonWithManyCAs = "{ \"data\": [" +
                   "{"
-                  + UPDATED_AT_JSON + "," +
+                  + VERSION_CREATED_AT_JSON + "," +
                   "    \"type\":\"root\"," +
                   "    \"value\":{" +
                   "        \"certificate\":\"my-certificate\"," +
@@ -587,7 +587,7 @@ public class CaControllerTest {
                   "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
                   "}," +
                   "{"
-                  + OLDER_UPDATED_AT_JSON + "," +
+                  + OLDER_VERSION_CREATED_AT_JSON + "," +
                   "    \"type\":\"root\"," +
                   "    \"value\":{" +
                   "        \"certificate\":\"my-certificate-old\"," +
@@ -607,7 +607,7 @@ public class CaControllerTest {
             it("can limit results with the 'current' query parameter", () -> {
               String jsonWithOnlyOneCA = "{ \"data\": [" +
                   "{"
-                  + UPDATED_AT_JSON + "," +
+                  + VERSION_CREATED_AT_JSON + "," +
                   "    \"type\":\"root\"," +
                   "    \"value\":{" +
                   "        \"certificate\":\"my-certificate\"," +
@@ -628,7 +628,7 @@ public class CaControllerTest {
           it("can limit results with the 'current' query parameter", () -> {
             String jsonWithOnlyOneCA = "{ \"data\": [" +
                 "{"
-                + UPDATED_AT_JSON + "," +
+                + VERSION_CREATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
                 "    \"value\":{" +
                 "        \"certificate\":\"my-certificate\"," +
@@ -648,7 +648,7 @@ public class CaControllerTest {
           it("returns the all results when the 'current' query parameter is false'", () -> {
             String expectedJsonWithManyCAs = "{ \"data\": [" +
                 "{"
-                + UPDATED_AT_JSON + "," +
+                + VERSION_CREATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
                 "    \"value\":{" +
                 "        \"certificate\":\"my-certificate\"," +
@@ -657,7 +657,7 @@ public class CaControllerTest {
                 "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
                 "}," +
                 "{"
-                + OLDER_UPDATED_AT_JSON + "," +
+                + OLDER_VERSION_CREATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
                 "    \"value\":{" +
                 "        \"certificate\":\"my-certificate-old\"," +
@@ -678,7 +678,7 @@ public class CaControllerTest {
           it("handles empty 'current' parameter as false", () -> {
             String expectedJsonWithManyCAs = "{ \"data\": [" +
                 "{"
-                + UPDATED_AT_JSON + "," +
+                + VERSION_CREATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
                 "    \"value\":{" +
                 "        \"certificate\":\"my-certificate\"," +
@@ -687,7 +687,7 @@ public class CaControllerTest {
                 "    \"id\":\"" + storedCa.getUuid().toString() + "\"" +
                 "}," +
                 "{"
-                + OLDER_UPDATED_AT_JSON + "," +
+                + OLDER_VERSION_CREATED_AT_JSON + "," +
                 "    \"type\":\"root\"," +
                 "    \"value\":{" +
                 "        \"certificate\":\"my-certificate-old\"," +
@@ -742,7 +742,7 @@ public class CaControllerTest {
             .setCertificate("my-certificate")
             .setPrivateKey("my-priv")
             .setUuid(uuid)
-            .setUpdatedAt(FROZEN_TIME_INSTANT);
+            .setVersionCreatedAt(FROZEN_TIME_INSTANT);
         doReturn(storedCa)
             .when(certificateAuthorityDataService)
             .findByUuid(eq("my-uuid"));
@@ -754,7 +754,7 @@ public class CaControllerTest {
       });
 
       it("returns the ca", () -> {
-        String expectedJson = "{" + UPDATED_AT_JSON + "," +
+        String expectedJson = "{" + VERSION_CREATED_AT_JSON + "," +
             "    \"type\":\"root\"," +
             "    \"value\":{" +
             "        \"certificate\":\"my-certificate\"," +
@@ -864,7 +864,7 @@ public class CaControllerTest {
     doAnswer(invocation -> {
       NamedCertificateAuthority certificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
       certificateAuthority.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
-      certificateAuthority.setUpdatedAt(FROZEN_TIME_INSTANT);
+      certificateAuthority.setVersionCreatedAt(FROZEN_TIME_INSTANT);
       if (certificateAuthority.getUuid() == null) {
         certificateAuthority.setUuid(uuid);
       }

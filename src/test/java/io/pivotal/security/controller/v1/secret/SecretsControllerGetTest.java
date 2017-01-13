@@ -96,10 +96,10 @@ public class SecretsControllerGetTest {
 
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        NamedValueSecret valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setUpdatedAt(frozenTime);
+        NamedValueSecret valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
         valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
-        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName).setUuid(uuid).setUpdatedAt(frozenTime);
+        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret2.setEncryptedValue("fake-encrypted-value2".getBytes());
         valueSecret2.setNonce("fake-nonce2".getBytes());
 
@@ -188,7 +188,7 @@ public class SecretsControllerGetTest {
               .andExpect(jsonPath("$.type").value("value"))
               .andExpect(jsonPath("$.value").value(secretValue))
               .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
 
         it("persists an audit entry", () -> {
@@ -216,7 +216,7 @@ public class SecretsControllerGetTest {
             .andExpect(jsonPath(jsonPathPrefix + ".type").value("value"))
             .andExpect(jsonPath(jsonPathPrefix + ".value").value(secretValue))
             .andExpect(jsonPath(jsonPathPrefix + ".id").value(uuid.toString()))
-            .andExpect(jsonPath(jsonPathPrefix + ".updated_at").value(frozenTime.toString()));
+            .andExpect(jsonPath(jsonPathPrefix + ".version_created_at").value(frozenTime.toString()));
       });
 
       it("persists an audit entry", () -> {

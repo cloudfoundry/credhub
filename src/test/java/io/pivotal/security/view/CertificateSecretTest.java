@@ -55,7 +55,7 @@ public class CertificateSecretTest {
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"name\":\"" + secretName + "\"," +
           "\"type\":\"certificate\"," +
-          "\"updated_at\":null," +
+          "\"version_created_at\":null," +
           "\"value\":{" +
               "\"ca\":\"ca\"," +
               "\"certificate\":\"cert\"," +
@@ -66,9 +66,9 @@ public class CertificateSecretTest {
 
     it("sets updated-at time on generated view", () -> {
       Instant now = Instant.now();
-      entity.setUpdatedAt(now);
+      entity.setVersionCreatedAt(now);
       final CertificateSecret subject = (CertificateSecret) CertificateSecret.fromEntity(entity);
-      assertThat(subject.getUpdatedAt(), equalTo(now));
+      assertThat(subject.getVersionCreatedAt(), equalTo(now));
     });
 
     it("sets uuid on generated view", () -> {
@@ -80,7 +80,7 @@ public class CertificateSecretTest {
       final Secret subject = CertificateSecret.fromEntity(new NamedCertificateSecret(secretName).setUuid(uuid));
       assertThat(serializingObjectMapper.writeValueAsString(subject), equalTo("{" +
           "\"type\":\"certificate\"," +
-          "\"updated_at\":null," +
+          "\"version_created_at\":null," +
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"name\":\"" + secretName + "\"," +
           "\"value\":{" +

@@ -50,7 +50,7 @@ public class SshSecretTest {
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"type\":\"ssh\"," +
           "\"name\":\"foo\"," +
-          "\"updated_at\":null," +
+          "\"version_created_at\":null," +
           "\"value\":{" +
             "\"public_key\":\"my-public-key\"," +
             "\"private_key\":\"my-private-key\"" +
@@ -60,9 +60,9 @@ public class SshSecretTest {
 
     it("sets updated-at time on generated view", () -> {
       Instant now = Instant.now();
-      entity.setUpdatedAt(now);
+      entity.setVersionCreatedAt(now);
       final SshSecret subject = (SshSecret) SshSecret.fromEntity(entity);
-      assertThat(subject.getUpdatedAt(), equalTo(now));
+      assertThat(subject.getVersionCreatedAt(), equalTo(now));
     });
 
     it("sets uuid on generated view", () -> {

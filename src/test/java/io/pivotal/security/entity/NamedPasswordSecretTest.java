@@ -133,7 +133,7 @@ public class NamedPasswordSecretTest {
         subject.setNonce("nonce".getBytes());
         subject.setEncryptedGenerationParameters(stringifiedParameters.getBytes());
         subject.setUuid(uuid);
-        subject.setUpdatedAt(frozenTime);
+        subject.setVersionCreatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
         subject.setParameterEncryptionKeyUuid(parameterEncryptionKeyUuid);
 
@@ -148,7 +148,7 @@ public class NamedPasswordSecretTest {
         assertThat(copy.getEncryptedGenerationParameters(), equalTo(stringifiedParameters.getBytes()));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
-        assertThat(copy.getUpdatedAt(), not(equalTo(frozenTime)));
+        assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
       });
     });
   }

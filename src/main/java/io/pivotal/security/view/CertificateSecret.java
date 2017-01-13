@@ -11,13 +11,13 @@ public class CertificateSecret extends Secret {
   @JsonProperty("value")
   private CertificateBody certificateBody;
 
-  public CertificateSecret(Instant updatedAt, UUID uuid, String name, String ca, String certificate, String privateKey) {
-    super(updatedAt, uuid, name);
+  public CertificateSecret(Instant versionCreatedAt, UUID uuid, String name, String ca, String certificate, String privateKey) {
+    super(versionCreatedAt, uuid, name);
     setCertificateBody(new CertificateBody(ca, certificate, privateKey));
   }
 
   public CertificateSecret(NamedCertificateSecret namedCertificateSecret) {
-    this(namedCertificateSecret.getUpdatedAt(),
+    this(namedCertificateSecret.getVersionCreatedAt(),
         namedCertificateSecret.getUuid(),
         namedCertificateSecret.getName(),
         namedCertificateSecret.getCa(),

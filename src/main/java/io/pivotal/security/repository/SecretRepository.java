@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
-  NamedSecret findFirstByNameIgnoreCaseOrderByUpdatedAtDesc(String name);
+  NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name);
   NamedSecret findOneByUuid(UUID uuid);
   List<NamedSecret> deleteByNameIgnoreCase(String name);
   List<NamedSecret> findAllByNameIgnoreCase(String name);

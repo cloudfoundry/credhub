@@ -114,7 +114,7 @@ public class SecretsControllerGenerateTest {
         doAnswer(invocation -> {
           NamedSecret secret = invocation.getArgumentAt(0, NamedSecret.class);
           secret.setUuid(uuid);
-          secret.setUpdatedAt(frozenTime);
+          secret.setVersionCreatedAt(frozenTime);
           return secret;
         }).when(secretDataService).save(any(NamedSecret.class));
       });
@@ -165,7 +165,7 @@ public class SecretsControllerGenerateTest {
               .andExpect(jsonPath("$.type").value("password"))
               .andExpect(jsonPath("$.value").value(fakePassword))
               .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
 
         it("asks the data service to persist the secret", () -> {
@@ -194,7 +194,7 @@ public class SecretsControllerGenerateTest {
           expectedSecret.setValue(fakePassword);
           doReturn(expectedSecret
               .setUuid(uuid)
-              .setUpdatedAt(frozenTime))
+              .setVersionCreatedAt(frozenTime))
               .when(secretDataService).findMostRecent(secretName);
           resetAuditLogMock();
         });
@@ -219,7 +219,7 @@ public class SecretsControllerGenerateTest {
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePassword))
                 .andExpect(jsonPath("$.id").value(uuid.toString()))
-                .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+                .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
           });
 
           it("validates parameters", () -> {
@@ -255,7 +255,7 @@ public class SecretsControllerGenerateTest {
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePassword))
                 .andExpect(jsonPath("$.id").value(uuid.toString()))
-                .andExpect(jsonPath("$.updated_at").value(frozenTime.toString()));
+                .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
           });
 
           it("validates parameters", () -> {

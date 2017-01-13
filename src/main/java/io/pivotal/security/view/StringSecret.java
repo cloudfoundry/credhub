@@ -21,8 +21,8 @@ public class StringSecret extends Secret {
     this(null, null, null, type, value);
   }
 
-  public StringSecret(Instant updatedAt, UUID uuid, String name, String type, String value) {
-    super(updatedAt, uuid, name);
+  public StringSecret(Instant versionCreatedAt, UUID uuid, String name, String type, String value) {
+    super(versionCreatedAt, uuid, name);
     if (type == null) {
       throw new IllegalArgumentException("'value' must not be null");
     }
@@ -32,7 +32,7 @@ public class StringSecret extends Secret {
 
   public StringSecret(NamedStringSecret namedStringSecret) {
     this(
-        namedStringSecret.getUpdatedAt(),
+        namedStringSecret.getVersionCreatedAt(),
         namedStringSecret.getUuid(),
         namedStringSecret.getName(),
         namedStringSecret.getSecretType(),

@@ -10,14 +10,14 @@ public class RsaSecret extends Secret {
   @JsonProperty("value")
   private RsaBody rsaBody;
 
-  public RsaSecret(Instant updatedAt, UUID uuid, String name, String publicKey, String privateKey) {
-    super(updatedAt, uuid, name);
+  public RsaSecret(Instant versionCreatedAt, UUID uuid, String name, String publicKey, String privateKey) {
+    super(versionCreatedAt, uuid, name);
     setRsaBody(new RsaBody(publicKey, privateKey));
   }
 
   public RsaSecret(NamedRsaSecret namedRsaSecret) {
     this(
-        namedRsaSecret.getUpdatedAt(),
+        namedRsaSecret.getVersionCreatedAt(),
         namedRsaSecret.getUuid(),
         namedRsaSecret.getName(),
         namedRsaSecret.getPublicKey(),
