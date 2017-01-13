@@ -135,7 +135,7 @@ public class LunaEncryptionService extends EncryptionService {
 
   private void reconnect() throws Exception {
     lunaSlotManager.reinitialize();
-    initializeKeys();
+    login();
   }
 
   protected static class LunaSlotManagerProxy {

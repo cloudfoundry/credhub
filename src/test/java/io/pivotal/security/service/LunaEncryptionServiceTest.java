@@ -52,10 +52,6 @@ public class LunaEncryptionServiceTest {
           public SecureRandom getSecureRandom() {
             return new SecureRandom();
           }
-          @Override
-          protected void initializeKeys() throws Exception {
-            login();
-          }
         };
       });
 
