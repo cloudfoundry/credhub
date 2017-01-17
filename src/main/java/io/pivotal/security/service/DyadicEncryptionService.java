@@ -2,7 +2,6 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
-import io.pivotal.security.config.LunaProviderProperties;
 import io.pivotal.security.constants.CipherTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,15 +21,13 @@ import java.security.SecureRandom;
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
 public class DyadicEncryptionService extends EncryptionService {
-  private final LunaProviderProperties lunaProviderProperties;
   private final DyadicConnection dyadicConnection;
 
   private Provider provider;
   private SecureRandom secureRandom;
 
   @Autowired
-  DyadicEncryptionService(EncryptionKeysConfiguration encryptionKeysConfiguration, LunaProviderProperties lunaProviderProperties, DyadicConnection dyadicConnection) throws Exception {
-    this.lunaProviderProperties = lunaProviderProperties;
+  DyadicEncryptionService(EncryptionKeysConfiguration encryptionKeysConfiguration, DyadicConnection dyadicConnection) throws Exception {
     this.dyadicConnection = dyadicConnection;
     this.secureRandom = new SecureRandom();
 
