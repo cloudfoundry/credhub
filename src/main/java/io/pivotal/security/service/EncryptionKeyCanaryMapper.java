@@ -5,15 +5,15 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static io.pivotal.security.service.EncryptionKeyService.CHARSET;
-
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.crypto.AEADBadTagException;
+import static io.pivotal.security.service.EncryptionKeyService.CHARSET;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -96,7 +96,15 @@ public class EncryptionKeyCanaryMapper {
     try {
       plaintext = encryptionService.decrypt(encryptionKey, canary.getEncryptedValue(), canary.getNonce());
     } catch (AEADBadTagException e) {
+      // dev_internal key was wrong
       plaintext = WRONG_CANARY_PLAINTEXT;
+    } catch (IllegalBlockSizeException e) {
+      // Our guess(es) at "HSM key was wrong":
+      if (e.getMessage().contains("returns 0x40")) { // Could not process input data: function 'C_Decrypt' returns 0x40
+        plaintext = WRONG_CANARY_PLAINTEXT;
+      } else {
+        throw new RuntimeException(e);
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

@@ -6,6 +6,14 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
+import javax.crypto.AEADBadTagException;
+import javax.crypto.IllegalBlockSizeException;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -20,12 +28,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 public class EncryptionKeyCanaryMapperTest {
@@ -106,29 +108,90 @@ public class EncryptionKeyCanaryMapperTest {
       });
 
       describe("when there is no matching canary in the database", () -> {
+        EncryptionKeyCanary nonMatchingCanary = new EncryptionKeyCanary();
+
         beforeEach(() -> {
-          EncryptionKeyCanary nonMatchingCanary = new EncryptionKeyCanary();
           nonMatchingCanary.setUuid(UUID.randomUUID());
           nonMatchingCanary.setEncryptedValue("fake-non-matching-encrypted-value".getBytes());
           nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
 
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(Arrays.asList(nonMatchingCanary));
-          when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
-              .thenReturn("different-canary-value");
-          when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
-              .thenReturn(activeEncryptionKeyCanary);
-
-          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
         });
 
-        it("should create a canary for the key", () -> {
-          ArgumentCaptor<EncryptionKeyCanary> argumentCaptor = ArgumentCaptor.forClass(EncryptionKeyCanary.class);
-          verify(encryptionKeyCanaryDataService, times(1)).save(argumentCaptor.capture());
+        describe("when decrypting with the wrong key raises AEADBadTagException (dev_internal)", () -> {
+          beforeEach(() -> {
+            when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
+                .thenThrow(new AEADBadTagException());
+            when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
+                .thenReturn(activeEncryptionKeyCanary);
 
-          EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
-          assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
-          assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
-          verify(encryptionService, times(1)).encrypt(activeEncryptionKey, CANARY_VALUE);
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
+          });
+
+          it("should create a canary for the key", () -> {
+            ArgumentCaptor<EncryptionKeyCanary> argumentCaptor = ArgumentCaptor.forClass(EncryptionKeyCanary.class);
+            verify(encryptionKeyCanaryDataService, times(1)).save(argumentCaptor.capture());
+
+            EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
+            assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+            assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
+            verify(encryptionService, times(1)).encrypt(activeEncryptionKey, CANARY_VALUE);
+          });
+        });
+
+        describe("when decrypting with the wrong key raises a known IllegalBlockSizeException error (HSM)", () -> {
+          beforeEach(() -> {
+            when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
+                .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x40"));
+            when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
+                .thenReturn(activeEncryptionKeyCanary);
+
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
+          });
+
+          it("should create a canary for the key", () -> {
+            ArgumentCaptor<EncryptionKeyCanary> argumentCaptor = ArgumentCaptor.forClass(EncryptionKeyCanary.class);
+            verify(encryptionKeyCanaryDataService, times(1)).save(argumentCaptor.capture());
+
+            EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
+            assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+            assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
+            verify(encryptionService, times(1)).encrypt(activeEncryptionKey, CANARY_VALUE);
+          });
+        });
+
+        describe("when decrypting with the wrong key raises an unknown IllegalBlockSizeException error (HSM)", () -> {
+          beforeEach(() -> {
+            when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
+                .thenThrow(new IllegalBlockSizeException("I don't know what 0x41 means and neither do you"));
+            when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
+                .thenReturn(activeEncryptionKeyCanary);
+          });
+
+          itThrowsWithMessage("something", RuntimeException.class, "javax.crypto.IllegalBlockSizeException: I don't know what 0x41 means and neither do you", () -> {
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
+          });
+        });
+
+        describe("when decrypting with the wrong key returns an incorrect canary value", () -> {
+          beforeEach(() -> {
+            when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
+                .thenReturn("different-canary-value");
+            when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
+                .thenReturn(activeEncryptionKeyCanary);
+
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
+          });
+
+          it("should create a canary for the key", () -> {
+            ArgumentCaptor<EncryptionKeyCanary> argumentCaptor = ArgumentCaptor.forClass(EncryptionKeyCanary.class);
+            verify(encryptionKeyCanaryDataService, times(1)).save(argumentCaptor.capture());
+
+            EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
+            assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+            assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
+            verify(encryptionService, times(1)).encrypt(activeEncryptionKey, CANARY_VALUE);
+          });
         });
       });
 
