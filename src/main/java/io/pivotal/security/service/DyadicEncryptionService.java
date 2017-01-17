@@ -23,7 +23,6 @@ import java.security.SecureRandom;
 public class DyadicEncryptionService extends EncryptionService {
   private final DyadicConnection dyadicConnection;
 
-  private Provider provider;
   private SecureRandom secureRandom;
 
   @Autowired
@@ -41,7 +40,10 @@ public class DyadicEncryptionService extends EncryptionService {
 
   @Override
   CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return new CipherWrapper(Cipher.getInstance(CipherTypes.CCM.toString(), provider));
+    final String ccmCipherName = CipherTypes.CCM.toString();
+    final Provider dyadicConnectionProvider = dyadicConnection.getProvider();
+
+    return new CipherWrapper(Cipher.getInstance(ccmCipherName, dyadicConnectionProvider));
   }
 
   @Override
