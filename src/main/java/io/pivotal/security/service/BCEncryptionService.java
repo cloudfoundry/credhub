@@ -15,7 +15,6 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.security.Key;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -35,8 +34,6 @@ public class BCEncryptionService extends EncryptionService {
   ) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
     this.provider = provider;
 
-    KeyStore keyStore = KeyStore.getInstance("BKS", provider);
-    keyStore.load(null, null);
     secureRandom = SecureRandom.getInstance("SHA1PRNG");
 
     setupKeys(encryptionKeysConfiguration);
