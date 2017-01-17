@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 import java.util.ArrayList;
@@ -169,6 +170,40 @@ public class EncryptionKeyCanaryMapperTest {
           });
 
           itThrowsWithMessage("something", RuntimeException.class, "javax.crypto.IllegalBlockSizeException: I don't know what 0x41 means and neither do you", () -> {
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
+          });
+        });
+
+        describe("when decrypting with the wrong key raises a known BadPaddingException error (DSM)", () -> {
+          beforeEach(() -> {
+            when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
+                .thenThrow(new BadPaddingException("Decrypt error: rv=48"));
+            when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
+                .thenReturn(activeEncryptionKeyCanary);
+
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
+          });
+
+          it("should create a canary for the key", () -> {
+            ArgumentCaptor<EncryptionKeyCanary> argumentCaptor = ArgumentCaptor.forClass(EncryptionKeyCanary.class);
+            verify(encryptionKeyCanaryDataService, times(1)).save(argumentCaptor.capture());
+
+            EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
+            assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+            assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
+            verify(encryptionService, times(1)).encrypt(activeEncryptionKey, CANARY_VALUE);
+          });
+        });
+
+        describe("when decrypting with the wrong key raises an unknown BadPaddingException error (DSM)", () -> {
+          beforeEach(() -> {
+            when(encryptionService.decrypt(activeEncryptionKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
+                .thenThrow(new BadPaddingException("Decrypt error: rv=1337 too cool for school"));
+            when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
+                .thenReturn(activeEncryptionKeyCanary);
+          });
+
+          itThrowsWithMessage("something", RuntimeException.class, "javax.crypto.BadPaddingException: Decrypt error: rv=1337 too cool for school", () -> {
             subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionService);
           });
         });
