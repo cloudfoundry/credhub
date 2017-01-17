@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,9 +26,17 @@ public class EncryptionKeysConfigurationTest {
     wireAndUnwire(this, false);
 
     it("fills in list of keys from application-unit-test.yml", () -> {
-      assertThat(subject.getKeys().size(), equalTo(2));
-      assertThat(subject.getKeys().get(0), equalTo("D673ACD01DA091B08144FBC8C0B5F524"));
-      assertThat(subject.getKeys().get(1), equalTo("A673ACF01DB091B08133FBC8C0B5F555"));
+      List<EncryptionKeyMetadata> keys = subject.getKeys();
+      assertThat(keys.size(), equalTo(2));
+
+      EncryptionKeyMetadata firstKey = keys.get(0);
+      EncryptionKeyMetadata secondKey = keys.get(1);
+
+      assertThat(firstKey.getDevKey(), equalTo("D673ACD01DA091B08144FBC8C0B5F524"));
+      assertThat(firstKey.isActive(), equalTo(true));
+
+      assertThat(secondKey.getDevKey(), equalTo("A673ACF01DB091B08133FBC8C0B5F555"));
+      assertThat(secondKey.isActive(), equalTo(false));
     });
   }
 }

@@ -3,10 +3,10 @@ auth-server:
 
 encryption:
   provider: dev_internal
-  active-key: D673ACD01DA091B08144FBC8C0B5F524
   keys:
-    - D673ACD01DA091B08144FBC8C0B5F524
-    - A673ACF01DB091B08133FBC8C0B5F555
+  - dev-key: D673ACD01DA091B08144FBC8C0B5F524
+    active: true
+  - dev-key: A673ACF01DB091B08133FBC8C0B5F555
 
 spring:
   datasource:

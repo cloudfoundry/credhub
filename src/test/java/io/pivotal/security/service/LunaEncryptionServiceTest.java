@@ -1,6 +1,8 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.EncryptionKeysConfiguration;
+import io.pivotal.security.config.LunaProviderProperties;
 import io.pivotal.security.service.EncryptionService.CipherWrapper;
 import org.junit.runner.RunWith;
 
@@ -16,8 +18,8 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,23 +29,31 @@ public class LunaEncryptionServiceTest {
   private LunaEncryptionService subject;
 
   private Provider provider;
-  private LunaEncryptionService.LunaSlotManagerProxy lunaSlotManager;
+  private LunaConnection lunaConnection;
   private CipherWrapper exceptionThrowingCipher;
+  private EncryptionKeysConfiguration encryptionKeysConfiguration;
+  private LunaProviderProperties lunaProviderProperties;
 
   {
     beforeEach(() -> {
+      lunaProviderProperties = mock(LunaProviderProperties.class);
+      when(lunaProviderProperties.getPartitionName()).thenReturn("expectedPartitionName");
+      when(lunaProviderProperties.getPartitionPassword()).thenReturn("expectedPartitionPassword");
+      encryptionKeysConfiguration = new EncryptionKeysConfiguration();
       provider = mock(Provider.class);
       when(provider.getName()).thenReturn("mock provider");
-      lunaSlotManager = mock(LunaEncryptionService.LunaSlotManagerProxy.class);
-      exceptionThrowingCipher = mock(CipherWrapper.class);
-      when(exceptionThrowingCipher.doFinal(any(byte[].class)))
-          .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x30"));
+      lunaConnection = mock(LunaConnection.class);
     });
 
-    describe("encrypton and decryption when the Luna connection has been dropped", () -> {
+    describe("encryption and decryption when the Luna connection has been dropped", () -> {
       beforeEach(() -> {
         // this subject is only suitable for testing the retry behavior
-        subject = new LunaEncryptionService(provider, lunaSlotManager) {
+
+        exceptionThrowingCipher = mock(CipherWrapper.class);
+        when(exceptionThrowingCipher.doFinal(any(byte[].class)))
+            .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x30"));
+
+        subject = new LunaEncryptionService(encryptionKeysConfiguration, lunaProviderProperties, lunaConnection) {
           @Override
           public CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
             return exceptionThrowingCipher;
@@ -53,6 +63,7 @@ public class LunaEncryptionServiceTest {
             return new SecureRandom();
           }
         };
+        reset(lunaConnection);
       });
 
       it("retries encryption failures", () -> {
@@ -64,8 +75,7 @@ public class LunaEncryptionServiceTest {
         }
 
         verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
-        verify(lunaSlotManager).reinitialize();
-        verify(lunaSlotManager).login(anyString(), anyString());
+        verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
       });
 
       it("retries decryption failures", () -> {
@@ -77,8 +87,7 @@ public class LunaEncryptionServiceTest {
         }
 
         verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
-        verify(lunaSlotManager).reinitialize();
-        verify(lunaSlotManager).login(anyString(), anyString());
+        verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
       });
 
     });
