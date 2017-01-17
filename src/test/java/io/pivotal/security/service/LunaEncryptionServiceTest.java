@@ -11,6 +11,7 @@ import javax.crypto.NoSuchPaddingException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
+import java.security.ProviderException;
 import java.security.SecureRandom;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -47,11 +48,7 @@ public class LunaEncryptionServiceTest {
 
     describe("encryption and decryption when the Luna connection has been dropped", () -> {
       beforeEach(() -> {
-        // this subject is only suitable for testing the retry behavior
-
         exceptionThrowingCipher = mock(CipherWrapper.class);
-        when(exceptionThrowingCipher.doFinal(any(byte[].class)))
-            .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x30"));
 
         subject = new LunaEncryptionService(encryptionKeysConfiguration, lunaProviderProperties, lunaConnection) {
           @Override
@@ -66,28 +63,42 @@ public class LunaEncryptionServiceTest {
         reset(lunaConnection);
       });
 
-      it("retries encryption failures", () -> {
-        try {
-          subject.encrypt(mock(Key.class), "a value");
-          fail("Expected exception");
-        } catch (IllegalBlockSizeException e) {
-          // expected
-        }
+      describe("#encrypt", () -> {
+        beforeEach(() -> {
+          when(exceptionThrowingCipher.doFinal(any(byte[].class)))
+              .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+        });
 
-        verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
-        verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+        it("retries encryption failures", () -> {
+          try {
+            subject.encrypt(mock(Key.class), "a value");
+            fail("Expected exception");
+          } catch (ProviderException e) {
+            // expected
+          }
+
+          verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
+          verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+        });
       });
 
-      it("retries decryption failures", () -> {
-        try {
-          subject.decrypt(mock(Key.class), "an encrypted value".getBytes(), "a nonce".getBytes());
-          fail("Expected exception");
-        } catch (IllegalBlockSizeException e) {
-          // expected
-        }
+      describe("#decrypt", () -> {
+        beforeEach(() -> {
+          when(exceptionThrowingCipher.doFinal(any(byte[].class)))
+              .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x30"));
+        });
 
-        verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
-        verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+        it("retries decryption failures", () -> {
+          try {
+            subject.decrypt(mock(Key.class), "an encrypted value".getBytes(), "a nonce".getBytes());
+            fail("Expected exception");
+          } catch (IllegalBlockSizeException e) {
+            // expected
+          }
+
+          verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
+          verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+        });
       });
 
     });

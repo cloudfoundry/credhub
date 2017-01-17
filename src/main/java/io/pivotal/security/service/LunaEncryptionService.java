@@ -16,6 +16,7 @@ import javax.crypto.spec.IvParameterSpec;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.ProviderException;
 import java.security.SecureRandom;
 
 @SuppressWarnings("unused")
@@ -43,7 +44,7 @@ public class LunaEncryptionService extends EncryptionService {
   public Encryption encrypt(Key key, String value) throws Exception {
     try {
       return super.encrypt(key, value);
-    } catch (IllegalBlockSizeException e) {
+    } catch (ProviderException e) {
       login();
       return super.encrypt(key, value);
     }
