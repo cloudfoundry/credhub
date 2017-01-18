@@ -82,15 +82,15 @@ public class EncryptionKeyRotatorTest {
 
     it("should rotate all the secrets, CAs, and password params that were encrypted with an old key", () -> {
       verify(secretEncryptionHelper, times(3)).rotate(any(NamedSecret.class));
-      verify(secretEncryptionHelper, times(2)).rotate(any(NamedPasswordSecret.class));
+      verify(secretEncryptionHelper, times(2)).rotatePasswordParameters(any(NamedPasswordSecret.class));
       verify(secretEncryptionHelper, times(2)).rotate(any(NamedCertificateAuthority.class));
 
       verify(secretEncryptionHelper).rotate(certificateSecret);
       verify(secretEncryptionHelper).rotate(passwordSecretUnsaved1);
       verify(secretEncryptionHelper).rotate(passwordSecretUnsaved2);
 
-      verify(secretEncryptionHelper).rotate(passwordWithOldParameters1);
-      verify(secretEncryptionHelper).rotate(passwordWithOldParameters2);
+      verify(secretEncryptionHelper).rotatePasswordParameters(passwordWithOldParameters1);
+      verify(secretEncryptionHelper).rotatePasswordParameters(passwordWithOldParameters2);
 
       verify(secretEncryptionHelper).rotate(certificateAuthority1);
       verify(secretEncryptionHelper).rotate(certificateAuthority2);

@@ -101,7 +101,7 @@ public class SecretEncryptionHelper {
     refreshEncryptedValue(secret, retrieveClearTextValue(secret));
   }
 
-  public void rotate(NamedPasswordSecret password) {
+  public void rotatePasswordParameters(NamedPasswordSecret password) {
     refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
   }
 

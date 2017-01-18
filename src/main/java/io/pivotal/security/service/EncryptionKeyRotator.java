@@ -47,7 +47,7 @@ public class EncryptionKeyRotator {
 
     List<NamedPasswordSecret> passwordsWithParametersEncryptedByOldEncryptionKey = secretDataService.findAllPasswordsWithParametersNotEncryptedByActiveKey();
     for (NamedPasswordSecret password : passwordsWithParametersEncryptedByOldEncryptionKey) {
-      secretEncryptionHelper.rotate(password);
+      secretEncryptionHelper.rotatePasswordParameters(password);
       secretDataService.save(password);
     }
 
