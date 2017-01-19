@@ -1,5 +1,7 @@
 package io.pivotal.security.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +12,6 @@ import java.security.SecureRandom;
 import java.security.Security;
 
 @Component
-
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
 class LunaConnection {
   private Provider provider;
@@ -18,6 +19,7 @@ class LunaConnection {
   private KeyStore keyStore;
   private SecureRandom secureRandom;
   private KeyGenerator aesKeyGenerator;
+  private long lastReconnectAt;
 
   public LunaConnection() throws Exception {
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
@@ -29,11 +31,14 @@ class LunaConnection {
     aesKeyGenerator.init(128);
   }
 
-  void connect(String partitionName, String partitionPassword) {
+  synchronized void connect(String partitionName, String partitionPassword) {
     try {
-      reinitialize();
-      login(partitionName, partitionPassword);
-      makeKeyStore();
+      if (System.currentTimeMillis() > lastReconnectAt + 5000) {
+        reinitialize();
+        login(partitionName, partitionPassword);
+        makeKeyStore();
+        lastReconnectAt = System.currentTimeMillis();
+      }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
