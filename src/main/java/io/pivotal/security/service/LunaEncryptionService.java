@@ -4,6 +4,8 @@ import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.config.LunaProviderProperties;
 import io.pivotal.security.constants.CipherTypes;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -26,6 +28,7 @@ public class LunaEncryptionService extends EncryptionService {
 
   private final LunaProviderProperties lunaProviderProperties;
   private final LunaConnection lunaConnection;
+  private Logger logger;
 
   @Autowired
   public LunaEncryptionService(
@@ -36,6 +39,8 @@ public class LunaEncryptionService extends EncryptionService {
     this.lunaProviderProperties = lunaProviderProperties;
     this.lunaConnection = lunaConnection;
 
+    logger = LogManager.getLogger();
+
     login();
     setupKeys(encryptionKeysConfiguration);
   }
@@ -45,7 +50,10 @@ public class LunaEncryptionService extends EncryptionService {
     try {
       return super.encrypt(key, value);
     } catch (ProviderException e) {
+      logger.info("Failed to encrypt secret. Trying to log in.");
+      logger.info("Exception thrown: " + e.getMessage());
       login();
+      logger.info("Reconnected to the HSM");
       return super.encrypt(key, value);
     }
   }
@@ -55,7 +63,10 @@ public class LunaEncryptionService extends EncryptionService {
     try {
       return super.decrypt(key, encryptedValue, nonce);
     } catch(IllegalBlockSizeException e) {
+      logger.info("Failed to decrypt secret. Trying to log in.");
+      logger.info("Exception thrown: " + e.getMessage());
       login();
+      logger.info("Reconnected to the HSM");
       return super.decrypt(key, encryptedValue, nonce);
     }
   }
