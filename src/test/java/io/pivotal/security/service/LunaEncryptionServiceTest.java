@@ -13,12 +13,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.ProviderException;
 import java.security.SecureRandom;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
@@ -34,6 +36,8 @@ public class LunaEncryptionServiceTest {
   private CipherWrapper exceptionThrowingCipher;
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
   private LunaProviderProperties lunaProviderProperties;
+  private ReentrantReadWriteLock.ReadLock readLock;
+  private ReentrantReadWriteLock.WriteLock writeLock;
 
   {
     beforeEach(() -> {
@@ -44,6 +48,10 @@ public class LunaEncryptionServiceTest {
       provider = mock(Provider.class);
       when(provider.getName()).thenReturn("mock provider");
       lunaConnection = mock(LunaConnection.class);
+      readLock = mock(ReentrantReadWriteLock.ReadLock.class);
+      writeLock = mock(ReentrantReadWriteLock.WriteLock.class);
+      when(lunaConnection.usageLock()).thenReturn(readLock);
+      when(lunaConnection.reconnectLock()).thenReturn(writeLock);
     });
 
     describe("encryption and decryption when the Luna connection has been dropped", () -> {
@@ -61,46 +69,131 @@ public class LunaEncryptionServiceTest {
           }
         };
         reset(lunaConnection);
+        when(lunaConnection.usageLock()).thenReturn(readLock);
+        when(lunaConnection.reconnectLock()).thenReturn(writeLock);
       });
 
       describe("#encrypt", () -> {
-        beforeEach(() -> {
-          when(exceptionThrowingCipher.doFinal(any(byte[].class)))
-              .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+        describe("when encrypt throws errors", () -> {
+          beforeEach(() -> {
+            when(exceptionThrowingCipher.doFinal(any(byte[].class)))
+                .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+          });
+
+          it("retries encryption failures", () -> {
+            try {
+              subject.encrypt(mock(Key.class), "a value");
+              fail("Expected exception");
+            } catch (ProviderException e) {
+              // expected
+            }
+
+            verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
+            verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+          });
+
+          it("unlocks after exception and locks again before encrypting", () -> {
+            reset(writeLock);
+
+            try {
+              subject.encrypt(mock(Key.class), "a value");
+            } catch (ProviderException e) {
+              // expected
+            }
+
+            verify(readLock, times(2)).lock();
+            verify(readLock, times(2)).unlock();
+
+            verify(writeLock, times(1)).unlock();
+            verify(writeLock, times(1)).lock();
+          });
         });
 
-        it("retries encryption failures", () -> {
-          try {
-            subject.encrypt(mock(Key.class), "a value");
-            fail("Expected exception");
-          } catch (ProviderException e) {
-            // expected
-          }
+        describe("encryption locks", () -> {
+          it("acquires a Luna Usage readLock", () -> {
+            reset(writeLock);
 
-          verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
-          verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+            subject.encrypt(mock(Key.class), "a value");
+            verify(readLock, times(1)).lock();
+            verify(readLock, times(1)).unlock();
+
+            verify(writeLock, times(0)).unlock();
+            verify(writeLock, times(0)).lock();
+          });
         });
       });
 
       describe("#decrypt", () -> {
-        beforeEach(() -> {
-          when(exceptionThrowingCipher.doFinal(any(byte[].class)))
-              .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x30"));
+        describe("when decryption errors", () -> {
+          beforeEach(() -> {
+            when(exceptionThrowingCipher.doFinal(any(byte[].class)))
+                .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x30"));
+          });
+
+          it("retries decryption failures", () -> {
+            try {
+              subject.decrypt(mock(Key.class), "an encrypted value".getBytes(), "a nonce".getBytes());
+              fail("Expected exception");
+            } catch (IllegalBlockSizeException e) {
+              // expected
+            }
+
+            verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
+            verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+          });
+
+          it("unlocks after exception and locks again before encrypting", () -> {
+            reset(writeLock);
+
+            try {
+              subject.decrypt(mock(Key.class), "an encrypted value".getBytes(), "a nonce".getBytes());
+            } catch (IllegalBlockSizeException e) {
+              // expected
+            }
+
+            verify(readLock, times(2)).lock();
+            verify(readLock, times(2)).unlock();
+
+            verify(writeLock, times(1)).lock();
+            verify(writeLock, times(1)).unlock();
+          });
+
+          // no need to test this for encryption because the behavior is the same
+          it("locks and unlocks the reconnect lock when login errors", () -> {
+            reset(writeLock);
+            doThrow(new RuntimeException()).when(
+                lunaConnection).connect(any(String.class), any(String.class)
+            );
+
+            try {
+              subject.decrypt(mock(Key.class), "an encrypted value".getBytes(), "a nonce".getBytes());
+            } catch (IllegalBlockSizeException | RuntimeException e) {
+              // expected
+            }
+
+            verify(readLock, times(1)).lock();
+            verify(readLock, times(2)).unlock();
+
+            verify(writeLock, times(1)).lock();
+            verify(writeLock, times(1)).unlock();
+          });
         });
 
-        it("retries decryption failures", () -> {
-          try {
-            subject.decrypt(mock(Key.class), "an encrypted value".getBytes(), "a nonce".getBytes());
-            fail("Expected exception");
-          } catch (IllegalBlockSizeException e) {
-            // expected
-          }
+        describe("decryption locks", () -> {
+          it("acquires a Luna Usage readLock", () -> {
+            when(exceptionThrowingCipher.doFinal(any(byte[].class))).thenReturn("the result".getBytes());
 
-          verify(exceptionThrowingCipher, times(2)).doFinal(any(byte[].class));
-          verify(lunaConnection).connect("expectedPartitionName", "expectedPartitionPassword");
+            reset(writeLock);
+
+            subject.decrypt(mock(Key.class), "an encrypted value".getBytes(), "a nonce".getBytes());
+            verify(readLock, times(1)).lock();
+            verify(readLock, times(1)).unlock();
+
+            verify(writeLock, times(0)).lock();
+            verify(writeLock, times(0)).unlock();
+          });
         });
       });
-
     });
   }
 }

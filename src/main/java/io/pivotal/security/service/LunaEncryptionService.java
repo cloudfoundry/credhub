@@ -47,27 +47,41 @@ public class LunaEncryptionService extends EncryptionService {
 
   @Override
   public Encryption encrypt(Key key, String value) throws Exception {
+    preventReconnect();
     try {
       return super.encrypt(key, value);
     } catch (ProviderException e) {
       logger.info("Failed to encrypt secret. Trying to log in.");
       logger.info("Exception thrown: " + e.getMessage());
+
+      allowReconnect();
       login();
       logger.info("Reconnected to the HSM");
+
+      preventReconnect();
       return super.encrypt(key, value);
+    } finally {
+      allowReconnect();
     }
   }
 
   @Override
   public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
+    preventReconnect();
     try {
       return super.decrypt(key, encryptedValue, nonce);
     } catch(IllegalBlockSizeException e) {
       logger.info("Failed to decrypt secret. Trying to log in.");
       logger.info("Exception thrown: " + e.getMessage());
+
+      allowReconnect();
       login();
       logger.info("Reconnected to the HSM");
+
+      preventReconnect();
       return super.decrypt(key, encryptedValue, nonce);
+    } finally {
+      allowReconnect();
     }
   }
 
@@ -88,6 +102,8 @@ public class LunaEncryptionService extends EncryptionService {
 
   @Override
   Key createKey(EncryptionKeyMetadata encryptionKeyMetadata) {
+    preventReconnect();
+
     try {
       KeyStore keyStore = lunaConnection.getKeyStore();
       String encryptionKeyName = encryptionKeyMetadata.getEncryptionKeyName();
@@ -100,10 +116,33 @@ public class LunaEncryptionService extends EncryptionService {
       return keyStore.getKey(encryptionKeyName, null);
     } catch (Exception e) {
       throw new RuntimeException(e);
+    } finally {
+      allowReconnect();
     }
   }
 
   private void login() {
-    lunaConnection.connect(lunaProviderProperties.getPartitionName(), lunaProviderProperties.getPartitionPassword());
+    takeOwnershipForReconnect();
+    try {
+      lunaConnection.connect(lunaProviderProperties.getPartitionName(), lunaProviderProperties.getPartitionPassword());
+    } finally {
+      returnOwnershipAfterReconnect();
+    }
+  }
+
+  private void preventReconnect() {
+    lunaConnection.usageLock().lock();
+  }
+
+  private void allowReconnect() {
+    lunaConnection.usageLock().unlock();
+  }
+
+  private void returnOwnershipAfterReconnect() {
+    lunaConnection.reconnectLock().unlock();
+  }
+
+  private void takeOwnershipForReconnect() {
+    lunaConnection.reconnectLock().lock();
   }
 }
