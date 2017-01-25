@@ -1,7 +1,6 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.config.LunaProviderProperties;
 import io.pivotal.security.constants.CipherTypes;
 import org.apache.logging.log4j.LogManager;
@@ -10,56 +9,64 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.ProviderException;
 import java.security.SecureRandom;
+import java.util.UUID;
+
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 @SuppressWarnings("unused")
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
 @Component
 public class LunaEncryptionService extends EncryptionService {
 
+  private final EncryptionKeyCanaryMapper keyMapper;
   private final LunaProviderProperties lunaProviderProperties;
   private final LunaConnection lunaConnection;
   private Logger logger;
 
   @Autowired
   public LunaEncryptionService(
-      EncryptionKeysConfiguration encryptionKeysConfiguration,
+      EncryptionKeyCanaryMapper keyMapper,
       LunaProviderProperties lunaProviderProperties,
       LunaConnection lunaConnection
   ) {
+    this.keyMapper = keyMapper;
     this.lunaProviderProperties = lunaProviderProperties;
     this.lunaConnection = lunaConnection;
 
     logger = LogManager.getLogger();
 
-    login();
-    setupKeys(encryptionKeysConfiguration);
+    reconnect();
   }
 
   @Override
   public Encryption encrypt(Key key, String value) throws Exception {
     preventReconnect();
+
     try {
       return super.encrypt(key, value);
-    } catch (ProviderException e) {
+    } catch (IllegalBlockSizeException | ProviderException e) {
       logger.info("Failed to encrypt secret. Trying to log in.");
       logger.info("Exception thrown: " + e.getMessage());
 
       allowReconnect();
-      login();
-      logger.info("Reconnected to the HSM");
+      UUID keyId = keyMapper.getUuidForKey(key);
+      try {
+        reconnect();
+        logger.info("Reconnected to the HSM");
+      } finally {
+        preventReconnect();
+      }
 
-      preventReconnect();
-      return super.encrypt(key, value);
+      return super.encrypt(keyMapper.getKeyForUuid(keyId), value);
     } finally {
       allowReconnect();
     }
@@ -70,16 +77,20 @@ public class LunaEncryptionService extends EncryptionService {
     preventReconnect();
     try {
       return super.decrypt(key, encryptedValue, nonce);
-    } catch(IllegalBlockSizeException e) {
+    } catch(IllegalBlockSizeException | ProviderException e) {
       logger.info("Failed to decrypt secret. Trying to log in.");
       logger.info("Exception thrown: " + e.getMessage());
 
       allowReconnect();
-      login();
-      logger.info("Reconnected to the HSM");
+      UUID keyId = keyMapper.getUuidForKey(key);
+      try {
+        reconnect();
+        logger.info("Reconnected to the HSM");
+      } finally {
+        preventReconnect();
+      }
 
-      preventReconnect();
-      return super.decrypt(key, encryptedValue, nonce);
+      return super.decrypt(keyMapper.getKeyForUuid(keyId), encryptedValue, nonce);
     } finally {
       allowReconnect();
     }
@@ -121,10 +132,11 @@ public class LunaEncryptionService extends EncryptionService {
     }
   }
 
-  private void login() {
+  private void reconnect() {
     takeOwnershipForReconnect();
     try {
       lunaConnection.connect(lunaProviderProperties.getPartitionName(), lunaProviderProperties.getPartitionPassword());
+      keyMapper.mapUuidsToKeys();
     } finally {
       returnOwnershipAfterReconnect();
     }

@@ -6,26 +6,31 @@ import io.pivotal.security.config.LunaProviderProperties;
 import io.pivotal.security.service.EncryptionService.CipherWrapper;
 import org.junit.runner.RunWith;
 
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.ProviderException;
-import java.security.SecureRandom;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
+import java.security.ProviderException;
+import java.security.SecureRandom;
+import java.util.UUID;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 
 @RunWith(Spectrum.class)
 public class LunaEncryptionServiceTest {
@@ -38,9 +43,15 @@ public class LunaEncryptionServiceTest {
   private LunaProviderProperties lunaProviderProperties;
   private ReentrantReadWriteLock.ReadLock readLock;
   private ReentrantReadWriteLock.WriteLock writeLock;
+  private EncryptionKeyCanaryMapper keyMapper;
+  private Key badKey;
+  private Key goodKey;
 
   {
     beforeEach(() -> {
+      keyMapper = mock(EncryptionKeyCanaryMapper.class);
+      goodKey = mock(Key.class, "good key");
+      badKey = mock(Key.class, "bad key");
       lunaProviderProperties = mock(LunaProviderProperties.class);
       when(lunaProviderProperties.getPartitionName()).thenReturn("expectedPartitionName");
       when(lunaProviderProperties.getPartitionPassword()).thenReturn("expectedPartitionPassword");
@@ -58,7 +69,7 @@ public class LunaEncryptionServiceTest {
       beforeEach(() -> {
         exceptionThrowingCipher = mock(CipherWrapper.class);
 
-        subject = new LunaEncryptionService(encryptionKeysConfiguration, lunaProviderProperties, lunaConnection) {
+        subject = new LunaEncryptionService(keyMapper, lunaProviderProperties, lunaConnection) {
           @Override
           public CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
             return exceptionThrowingCipher;
@@ -107,6 +118,27 @@ public class LunaEncryptionServiceTest {
             verify(writeLock, times(1)).unlock();
             verify(writeLock, times(1)).lock();
           });
+
+          it("creates new keys for UUIDs", () -> {
+            verify(keyMapper).mapUuidsToKeys();
+          });
+
+          describe("when reconnect succeeds", () -> {
+            beforeEach(() -> {
+              simulateUuidMappingChangingFromBadToGood();
+            });
+
+            it("retries with a new key after reconnect", () -> {
+              try {
+                subject.encrypt(badKey, "some string");
+              } catch (Exception e) {
+                // expected
+              }
+
+              verify(exceptionThrowingCipher).init(anyInt(), eq(badKey), any(IvParameterSpec.class));
+              verify(exceptionThrowingCipher).init(anyInt(), eq(goodKey), any(IvParameterSpec.class));
+            });
+          });
         });
 
         describe("encryption locks", () -> {
@@ -124,7 +156,7 @@ public class LunaEncryptionServiceTest {
       });
 
       describe("#decrypt", () -> {
-        describe("when decryption errors", () -> {
+        describe("when decrypt throws errors", () -> {
           beforeEach(() -> {
             when(exceptionThrowingCipher.doFinal(any(byte[].class)))
                 .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x30"));
@@ -171,11 +203,28 @@ public class LunaEncryptionServiceTest {
               // expected
             }
 
-            verify(readLock, times(1)).lock();
+            verify(readLock, times(2)).lock();
             verify(readLock, times(2)).unlock();
 
             verify(writeLock, times(1)).lock();
             verify(writeLock, times(1)).unlock();
+          });
+
+          describe("when reconnect succeeds", () -> {
+            beforeEach(() -> {
+              simulateUuidMappingChangingFromBadToGood();
+            });
+
+            it("retries with a new key after reconnect", () -> {
+              try {
+                subject.decrypt(badKey, "some string".getBytes(), "some nonce".getBytes());
+              } catch (Exception e) {
+                // expected
+              }
+
+              verify(exceptionThrowingCipher).init(anyInt(), eq(badKey), any(IvParameterSpec.class));
+              verify(exceptionThrowingCipher).init(anyInt(), eq(goodKey), any(IvParameterSpec.class));
+            });
           });
         });
 
@@ -195,5 +244,11 @@ public class LunaEncryptionServiceTest {
         });
       });
     });
+  }
+
+  private void simulateUuidMappingChangingFromBadToGood() {
+    UUID uuidForChangingKeys = UUID.randomUUID();
+    when(keyMapper.getUuidForKey(badKey)).thenReturn(uuidForChangingKeys);
+    when(keyMapper.getKeyForUuid(uuidForChangingKeys)).thenReturn(goodKey);
   }
 }

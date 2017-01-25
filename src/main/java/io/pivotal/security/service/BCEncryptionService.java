@@ -1,24 +1,21 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.constants.CipherTypes;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
-import java.io.IOException;
-import java.security.Key;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
@@ -28,15 +25,9 @@ public class BCEncryptionService extends EncryptionService {
   private final BouncyCastleProvider provider;
 
   @Autowired
-  BCEncryptionService(
-      BouncyCastleProvider provider,
-      EncryptionKeysConfiguration encryptionKeysConfiguration
-  ) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException {
+  BCEncryptionService(BouncyCastleProvider provider) throws Exception {
     this.provider = provider;
-
-    secureRandom = SecureRandom.getInstance("SHA1PRNG");
-
-    setupKeys(encryptionKeysConfiguration);
+    this.secureRandom = SecureRandom.getInstance("SHA1PRNG");
   }
 
   @Override

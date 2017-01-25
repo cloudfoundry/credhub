@@ -1,29 +1,25 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.config.EncryptionKeysConfiguration;
+
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CHARSET;
+
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
-
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.service.EncryptionKeyService.CHARSET;
 
 // This class is tested in BCEncryptionServiceTest.
 
 public abstract class EncryptionService {
-  private final List<Key> keys = new ArrayList<>();
-  private Key activeKey;
 
   abstract SecureRandom getSecureRandom();
   abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
@@ -50,27 +46,11 @@ public abstract class EncryptionService {
     return new String(decryptionCipher.doFinal(encryptedValue), CHARSET);
   }
 
-  public Key getActiveKey() { return activeKey; }
-
-  public List<Key> getKeys() {
-    return keys;
-  }
-
   private byte[] generateNonce() {
     SecureRandom secureRandom = getSecureRandom();
     byte[] nonce = new byte[NONCE_SIZE];
     secureRandom.nextBytes(nonce);
     return nonce;
-  }
-
-  void setupKeys(EncryptionKeysConfiguration encryptionKeysConfiguration) {
-    encryptionKeysConfiguration.getKeys().forEach(keyMetadata -> {
-      Key key = createKey(keyMetadata);
-      keys.add(key);
-      if (keyMetadata.isActive()) {
-        activeKey = key;
-      }
-    });
   }
 
   static class CipherWrapper {

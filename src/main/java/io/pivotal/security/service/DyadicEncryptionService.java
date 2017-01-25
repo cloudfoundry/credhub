@@ -1,21 +1,21 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.constants.CipherTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
+
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 @SuppressWarnings("unused")
 @Component
@@ -26,11 +26,9 @@ public class DyadicEncryptionService extends EncryptionService {
   private SecureRandom secureRandom;
 
   @Autowired
-  DyadicEncryptionService(EncryptionKeysConfiguration encryptionKeysConfiguration, DyadicConnection dyadicConnection) throws Exception {
+  DyadicEncryptionService(DyadicConnection dyadicConnection) throws Exception {
     this.dyadicConnection = dyadicConnection;
     this.secureRandom = new SecureRandom();
-
-    setupKeys(encryptionKeysConfiguration);
   }
 
   @Override
