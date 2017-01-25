@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -468,7 +469,7 @@ public class SecretDataServiceTest {
       });
     });
 
-    describe("#findAllNotEncryptedByActiveKey", () -> {
+    describe("#findNotEncryptedByActiveKey", () -> {
       it("should return all versions of all secrets encrypted with an old key", () -> {
         UUID oldCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
 
@@ -480,8 +481,8 @@ public class SecretDataServiceTest {
         NamedPasswordSecret secretEncryptedWithActiveKey = saveNamedPassword(3000000000123L, "ANOTHER", activeCanaryUuid);
         NamedPasswordSecret newerSecretEncryptedWithActiveKey = saveNamedPassword(4000000000123L, "ANOTHER", activeCanaryUuid);
 
-        List<NamedSecret> secrets = subject.findAllNotEncryptedByActiveKey();
-        List<UUID> secretUuids = secrets.stream().map(secret -> secret.getUuid()).collect(Collectors.toList());
+        final Slice<NamedSecret> secrets = subject.findNotEncryptedByActiveKey();
+        List<UUID> secretUuids = secrets.getContent().stream().map(secret -> secret.getUuid()).collect(Collectors.toList());
 
         assertThat(secretUuids, not(contains(secretEncryptedWithActiveKey.getUuid())));
         assertThat(secretUuids, not(contains(newerSecretEncryptedWithActiveKey.getUuid())));

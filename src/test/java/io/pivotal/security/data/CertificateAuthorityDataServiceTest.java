@@ -11,24 +11,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
@@ -36,6 +21,22 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -284,7 +285,7 @@ public class CertificateAuthorityDataServiceTest {
       });
     });
 
-    describe("#findAllNotEncryptedByActiveKey", () -> {
+    describe("#findNotEncryptedByActiveKey", () -> {
       it("should return all versions of all certificate authorities not encrypted by the active key", () -> {
         UUID oldCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
 
@@ -296,8 +297,8 @@ public class CertificateAuthorityDataServiceTest {
         NamedCertificateAuthority certificateAuthoritySavedWithActiveKey1 = subject.save(createCertificateAuthority("active-ca-2", "active-cert-1", activeCanaryUuid));
         NamedCertificateAuthority certificateAuthoritySavedWithActiveKey2 = subject.save(createCertificateAuthority("active-ca-2", "active-cert-2", activeCanaryUuid));
 
-        List<NamedCertificateAuthority> certificateAuthorities = subject.findAllNotEncryptedByActiveKey();
-        List<UUID> uuids = certificateAuthorities.stream().map(certificateAuthority -> certificateAuthority.getUuid()).collect(Collectors.toList());
+        Slice<NamedCertificateAuthority> certificateAuthorities = subject.findNotEncryptedByActiveKey();
+        List<UUID> uuids = certificateAuthorities.getContent().stream().map(certificateAuthority -> certificateAuthority.getUuid()).collect(Collectors.toList());
 
         assertThat(uuids, not(contains(certificateAuthoritySavedWithActiveKey1.getUuid())));
         assertThat(uuids, not(contains(certificateAuthoritySavedWithActiveKey2.getUuid())));

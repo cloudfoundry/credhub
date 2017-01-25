@@ -7,12 +7,16 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Slice;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class EncryptionKeyRotator {
+@EnableAsync
+class EncryptionKeyRotator {
   private final SecretEncryptionHelper secretEncryptionHelper;
   private final SecretDataService secretDataService;
   private final CertificateAuthorityDataService certificateAuthorityDataService;
@@ -27,29 +31,34 @@ public class EncryptionKeyRotator {
     this.secretDataService = secretDataService;
     this.certificateAuthorityDataService = certificateAuthorityDataService;
     this.logger = LogManager.getLogger(this.getClass());
-
-    rotate();
   }
 
-  // Synchronized to ensure that nothing happens until everything has been rotated.
-  // This is the naive version!!!
-  // Future stories should improve this (performance, error handling, etc.).
-  private synchronized void rotate() {
-    List<NamedSecret> secretsEncryptedByOldKey = secretDataService.findAllNotEncryptedByActiveKey();
-
+  @Async
+  @EventListener(ContextRefreshedEvent.class)
+  public void rotate() {
+    final long start = System.currentTimeMillis();
     logger.info("Started encryption key rotation");
 
-    for (NamedSecret secret : secretsEncryptedByOldKey) {
-      secretEncryptionHelper.rotate(secret);
-      secretDataService.save(secret);
+    Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findNotEncryptedByActiveKey();
+    while (secretsEncryptedByOldKey.hasContent()) {
+      secretsEncryptedByOldKey.getContent().forEach(secret -> {
+        secretEncryptionHelper.rotate(secret);
+        secretDataService.save(secret);
+      });
+      secretsEncryptedByOldKey = secretDataService.findNotEncryptedByActiveKey();
     }
 
-    List<NamedCertificateAuthority> certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findAllNotEncryptedByActiveKey();
-    for (NamedCertificateAuthority certificateAuthority : certificateAuthoritiesEncryptedByOldKey) {
-      secretEncryptionHelper.rotate(certificateAuthority);
-      certificateAuthorityDataService.save(certificateAuthority);
+    Slice<NamedCertificateAuthority> certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findNotEncryptedByActiveKey();
+    while (certificateAuthoritiesEncryptedByOldKey.hasContent()) {
+      certificateAuthoritiesEncryptedByOldKey.getContent().forEach(certificateAuthority -> {
+        secretEncryptionHelper.rotate(certificateAuthority);
+        certificateAuthorityDataService.save(certificateAuthority);
+      });
+      certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findNotEncryptedByActiveKey();
     }
 
-    logger.info("Finished encryption key rotation");
+    final long finish = System.currentTimeMillis();
+    final long delta = finish - start;
+    logger.info("Finished encryption key rotation - took " + delta + " milliseconds.");
   }
 }

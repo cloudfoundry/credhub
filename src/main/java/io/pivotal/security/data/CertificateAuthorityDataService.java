@@ -4,10 +4,14 @@ import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
 import io.pivotal.security.service.EncryptionKeyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+
+import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 @Service
 public class CertificateAuthorityDataService {
@@ -42,7 +46,10 @@ public class CertificateAuthorityDataService {
     return certificateAuthorityRepository.findAllByNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
   }
 
-  public List<NamedCertificateAuthority> findAllNotEncryptedByActiveKey() {
-    return certificateAuthorityRepository.findByEncryptionKeyUuidNot(encryptionKeyService.getActiveEncryptionKeyUuid());
+  public Slice<NamedCertificateAuthority> findNotEncryptedByActiveKey() {
+    return certificateAuthorityRepository.findByEncryptionKeyUuidNot(
+        encryptionKeyService.getActiveEncryptionKeyUuid(),
+        new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
+    );
   }
 }
