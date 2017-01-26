@@ -17,12 +17,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -32,6 +26,12 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class SpectrumHelper {
@@ -66,8 +66,8 @@ public class SpectrumHelper {
     });
   }
 
-  private static void cleanUpBeforeTests(Supplier<MyTestContextManager> myTestContextManagerSupplier) {
-    beforeEach(() -> {
+  private static void cleanUpAfterTests(Supplier<MyTestContextManager> myTestContextManagerSupplier) {
+    afterEach(() -> {
       Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
       flyway.clean();
       flyway.migrate();
@@ -76,10 +76,10 @@ public class SpectrumHelper {
 
   public static void wireAndUnwire(final Object testInstance, boolean cleanUpBeforeTests) {
     Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
-    if (cleanUpBeforeTests) {
-      cleanUpBeforeTests(myTestContextManagerSupplier);
-    }
     beforeEach(() -> myTestContextManagerSupplier.get().prepareTestInstance(testInstance));
+    if (cleanUpBeforeTests) {
+      cleanUpAfterTests(myTestContextManagerSupplier);
+    }
     afterEach(cleanMockBeans(testInstance, myTestContextManagerSupplier));
     afterEach(() -> {
       myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class).purge();
