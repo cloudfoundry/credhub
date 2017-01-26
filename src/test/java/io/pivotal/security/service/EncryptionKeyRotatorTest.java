@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.CertificateAuthorityDataService;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.EncryptedValueContainer;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.entity.NamedPasswordSecret;
@@ -66,11 +67,6 @@ public class EncryptionKeyRotatorTest {
             return passwordWithOldParameters2;
           });
 
-      when(secretDataService.findAllPasswordsWithParametersNotEncryptedByActiveKey())
-          .thenAnswer(invocation -> (
-            asList(passwordWithOldParameters1, passwordWithOldParameters2)
-          ));
-
       certificateAuthority1 = new NamedCertificateAuthority();
       certificateAuthority2 = new NamedCertificateAuthority();
 
@@ -81,31 +77,22 @@ public class EncryptionKeyRotatorTest {
     });
 
     it("should rotate all the secrets, CAs, and password params that were encrypted with an old key", () -> {
-      verify(secretEncryptionHelper, times(3)).rotate(any(NamedSecret.class));
-      verify(secretEncryptionHelper, times(2)).rotatePasswordParameters(any(NamedPasswordSecret.class));
-      verify(secretEncryptionHelper, times(2)).rotate(any(NamedCertificateAuthority.class));
+      verify(secretEncryptionHelper, times(5)).rotate(any(EncryptedValueContainer.class));
 
       verify(secretEncryptionHelper).rotate(certificateSecret);
       verify(secretEncryptionHelper).rotate(passwordSecretUnsaved1);
       verify(secretEncryptionHelper).rotate(passwordSecretUnsaved2);
-
-      verify(secretEncryptionHelper).rotatePasswordParameters(passwordWithOldParameters1);
-      verify(secretEncryptionHelper).rotatePasswordParameters(passwordWithOldParameters2);
-
       verify(secretEncryptionHelper).rotate(certificateAuthority1);
       verify(secretEncryptionHelper).rotate(certificateAuthority2);
     });
 
     it("should save all the secrets, CAs, and password params that were encrypted with an old key", () -> {
-      verify(secretDataService, times(5)).save(any(NamedSecret.class));
+      verify(secretDataService, times(3)).save(any(NamedSecret.class));
       verify(certificateAuthorityDataService, times(2)).save(any(NamedCertificateAuthority.class));
 
       verify(secretDataService).save(certificateSecret);
       verify(secretDataService).save(passwordSecretUnsaved1);
       verify(secretDataService).save(passwordSecretUnsaved2);
-
-      verify(secretDataService).save(passwordWithOldParameters1);
-      verify(secretDataService).save(passwordWithOldParameters2);
 
       verify(certificateAuthorityDataService).save(certificateAuthority1);
       verify(certificateAuthorityDataService).save(certificateAuthority2);

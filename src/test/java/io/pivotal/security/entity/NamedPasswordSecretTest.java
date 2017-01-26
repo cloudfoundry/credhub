@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -19,9 +22,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsNull.notNullValue;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -33,8 +33,6 @@ public class NamedPasswordSecretTest {
   NamedPasswordSecret subject;
 
   PasswordGenerationParameters generationParameters;
-
-  private UUID encryptionKeyUuid;
 
   {
     wireAndUnwire(this, false);
@@ -50,33 +48,6 @@ public class NamedPasswordSecretTest {
 
     it("returns type password", () -> {
       assertThat(subject.getSecretType(), equalTo("password"));
-    });
-
-    describe("#setEncryptionKeyUuid", () -> {
-      describe("when there is no parameter encryption key UUID", () -> {
-        it("should also set the parameter encryption key UUID", () -> {
-          subject = new NamedPasswordSecret("foo");
-          encryptionKeyUuid = UUID.randomUUID();
-          subject.setEncryptionKeyUuid(encryptionKeyUuid);
-
-          assertThat(subject.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
-          assertThat(subject.getParameterEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
-        });
-      });
-
-      describe("when there is a parameter encryption key UUID", () -> {
-        it("should should not override the existing parameter encryption key UUID", () -> {
-          subject = new NamedPasswordSecret("foo");
-          UUID parameterEncryptionKeyUuid = UUID.randomUUID();
-          subject.setParameterEncryptionKeyUuid(parameterEncryptionKeyUuid);
-
-          encryptionKeyUuid = UUID.randomUUID();
-          subject.setEncryptionKeyUuid(encryptionKeyUuid);
-
-          assertThat(subject.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
-          assertThat(subject.getParameterEncryptionKeyUuid(), equalTo(parameterEncryptionKeyUuid));
-        });
-      });
     });
 
     describe("with or without alternative names", () -> {
@@ -119,7 +90,6 @@ public class NamedPasswordSecretTest {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
         UUID encryptionKeyUuid = UUID.randomUUID();
-        UUID parameterEncryptionKeyUuid = UUID.randomUUID();
 
         PasswordGenerationParameters parameters = new PasswordGenerationParameters();
         parameters.setExcludeNumber(true);
@@ -135,7 +105,6 @@ public class NamedPasswordSecretTest {
         subject.setUuid(uuid);
         subject.setVersionCreatedAt(frozenTime);
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
-        subject.setParameterEncryptionKeyUuid(parameterEncryptionKeyUuid);
 
         NamedPasswordSecret copy = new NamedPasswordSecret();
         subject.copyInto(copy);
@@ -144,7 +113,6 @@ public class NamedPasswordSecretTest {
         assertThat(copy.getEncryptedValue(), equalTo("value".getBytes()));
         assertThat(copy.getNonce(), equalTo("nonce".getBytes()));
         assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
-        assertThat(copy.getParameterEncryptionKeyUuid(), equalTo(parameterEncryptionKeyUuid));
         assertThat(copy.getEncryptedGenerationParameters(), equalTo(stringifiedParameters.getBytes()));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));

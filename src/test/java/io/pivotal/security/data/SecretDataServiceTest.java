@@ -489,35 +489,6 @@ public class SecretDataServiceTest {
         assertThat(secretUuids, containsInAnyOrder(secret1.getUuid(), secret2.getUuid(), secret3.getUuid(), secret1Newer.getUuid()));
       });
     });
-
-
-    describe("#findAllPasswordsNotEncryptedByActiveKey", () -> {
-      it("should return all versions of all passwords with parameters encrypted using an old key", () -> {
-        UUID oldCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
-
-        NamedPasswordSecret secretWithOldParameters1 = new NamedPasswordSecret("secret1");
-        secretWithOldParameters1.setEncryptionKeyUuid(activeCanaryUuid);
-        secretWithOldParameters1.setParameterEncryptionKeyUuid(oldCanaryUuid);
-        secretWithOldParameters1 = secretRepository.save(secretWithOldParameters1);
-
-        NamedPasswordSecret secretWithOldParameters2 = new NamedPasswordSecret("secret2");
-        secretWithOldParameters2.setEncryptionKeyUuid(activeCanaryUuid);
-        secretWithOldParameters2.setParameterEncryptionKeyUuid(oldCanaryUuid);
-        secretWithOldParameters2 = secretRepository.save(secretWithOldParameters2);
-
-        NamedPasswordSecret secretWithActiveParameters = new NamedPasswordSecret("secret3");
-        secretWithActiveParameters.setEncryptionKeyUuid(activeCanaryUuid);
-        secretWithActiveParameters.setParameterEncryptionKeyUuid(activeCanaryUuid);
-        secretWithActiveParameters = secretRepository.save(secretWithOldParameters2);
-
-        List<NamedPasswordSecret> secrets = subject.findAllPasswordsWithParametersNotEncryptedByActiveKey();
-        List<UUID> secretUuids = secrets.stream().map(secret -> secret.getUuid()).collect(Collectors.toList());
-
-        assertThat(secretUuids, not(contains(secretWithActiveParameters.getUuid())));
-
-        assertThat(secretUuids, containsInAnyOrder(secretWithOldParameters1.getUuid(), secretWithOldParameters2.getUuid()));
-      });
-    });
   }
 
   private NamedPasswordSecret saveNamedPassword(long timeMillis, String secretName, UUID canaryUuid) {

@@ -7,10 +7,8 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "PasswordSecret")
@@ -22,9 +20,6 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
 
   @Column(length = NONCE_SIZE)
   private byte[] parametersNonce;
-
-  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
-  private UUID parameterEncryptionKeyUuid;
 
   public static final String SECRET_TYPE = "password";
 
@@ -72,28 +67,10 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
   void copyIntoImpl(NamedPasswordSecret copy) {
     copy.setEncryptedGenerationParameters(encryptedGenerationParameters);
     copy.setParametersNonce(parametersNonce);
-    copy.setParameterEncryptionKeyUuid(parameterEncryptionKeyUuid);
   }
 
   @Override
   public SecretKind getKind() {
     return SecretKind.PASSWORD;
-  }
-
-  @Override
-  public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
-    super.setEncryptionKeyUuid(encryptionKeyUuid);
-
-    if (parameterEncryptionKeyUuid == null) {
-      setParameterEncryptionKeyUuid(encryptionKeyUuid);
-    }
-  }
-
-  public UUID getParameterEncryptionKeyUuid() {
-    return parameterEncryptionKeyUuid;
-  }
-
-  public void setParameterEncryptionKeyUuid(UUID parameterEncryptionKeyUuid) {
-    this.parameterEncryptionKeyUuid = parameterEncryptionKeyUuid;
   }
 }

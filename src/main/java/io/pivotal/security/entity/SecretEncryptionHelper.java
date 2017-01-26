@@ -20,7 +20,6 @@ public class SecretEncryptionHelper {
 
   private final EncryptionKeyService encryptionKeyService;
   private final EncryptionService encryptionService;
-  private String clearTextValue;
 
   @Autowired
   SecretEncryptionHelper(EncryptionKeyService encryptionKeyService, EncryptionService encryptionService) {
@@ -35,36 +34,27 @@ public class SecretEncryptionHelper {
     if (clearTextValue == null) {
       encryptedValueContainer.setNonce(null);
       encryptedValueContainer.setEncryptedValue(null);
-      encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
-      return;
+    } else {
+      try {
+        encrypt(encryptedValueContainer, clearTextValue);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
 
-    try {
-      Key activeEncryptionKey = encryptionKeyService.getActiveEncryptionKey();
-      final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
-      encryptedValueContainer.setNonce(encryption.nonce);
-      encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
-      encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
   }
 
   public String retrieveClearTextValue(EncryptedValueContainer encryptedValueContainer) {
     if (encryptedValueContainer.getNonce() == null || encryptedValueContainer.getEncryptedValue() == null) {
       return null;
     }
-    try {
-      Key encryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
-      return encryptionService.decrypt(encryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return decrypt(encryptedValueContainer);
   }
 
   public void refreshEncryptedGenerationParameters(NamedPasswordSecret namedPasswordSecret, PasswordGenerationParameters generationParameters) {
     try {
-      clearTextValue = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
+      String clearTextValue = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
       refreshEncryptedValue(new ParametersAdapter(namedPasswordSecret), clearTextValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -85,16 +75,45 @@ public class SecretEncryptionHelper {
     }
   }
 
-  public void rotate(NamedSecret secret) {
-    refreshEncryptedValue(secret, retrieveClearTextValue(secret));
+  public void rotate(EncryptedValueContainer secret) {
+    final UUID activeEncryptionKeyUuid = encryptionKeyService.getActiveEncryptionKeyUuid();
+    final boolean hasOldEncryptionKey = !activeEncryptionKeyUuid.equals(secret.getEncryptionKeyUuid());
+
+    if (hasOldEncryptionKey) {
+      if (secret instanceof NamedPasswordSecret) {
+        rotatePasswordParameters((NamedPasswordSecret) secret);
+      }
+
+      if (secret.getEncryptedValue() != null) {
+        try {
+          encrypt(secret, decrypt(secret));
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    secret.setEncryptionKeyUuid(activeEncryptionKeyUuid);
   }
 
-  public void rotatePasswordParameters(NamedPasswordSecret password) {
+  private void rotatePasswordParameters(NamedPasswordSecret password) {
     refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
   }
 
-  public void rotate(NamedCertificateAuthority certificateAuthority) {
-    refreshEncryptedValue(certificateAuthority, retrieveClearTextValue(certificateAuthority));
+  private void encrypt(EncryptedValueContainer encryptedValueContainer, String clearTextValue) throws Exception {
+    Key activeEncryptionKey = encryptionKeyService.getActiveEncryptionKey();
+    final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
+    encryptedValueContainer.setNonce(encryption.nonce);
+    encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
+  }
+
+  private String decrypt(EncryptedValueContainer encryptedValueContainer) {
+    try {
+      Key encryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
+      return encryptionService.decrypt(encryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static class ParametersAdapter implements EncryptedValueContainer {
@@ -126,12 +145,11 @@ public class SecretEncryptionHelper {
 
     @Override
     public UUID getEncryptionKeyUuid() {
-      return namedPasswordSecret.getParameterEncryptionKeyUuid();
+      return namedPasswordSecret.getEncryptionKeyUuid();
     }
 
     @Override
     public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
-      namedPasswordSecret.setParameterEncryptionKeyUuid(encryptionKeyUuid);
     }
   }
 }

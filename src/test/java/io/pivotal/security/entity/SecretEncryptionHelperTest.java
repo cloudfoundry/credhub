@@ -16,7 +16,10 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
@@ -134,24 +137,25 @@ public class SecretEncryptionHelperTest {
       });
 
       describe("when there are no password parameters", () -> {
-        it("should only set the parameter encryption key", () -> {
+        it("should not set anything", () -> {
           NamedPasswordSecret valueContainer = new NamedPasswordSecret("my-password");
+          valueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
+
           subject.refreshEncryptedGenerationParameters(valueContainer, null);
           assertThat(valueContainer.getEncryptedGenerationParameters(), equalTo(null));
           assertThat(valueContainer.getParametersNonce(), equalTo(null));
-          assertThat(valueContainer.getParameterEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
         });
       });
 
       describe("when setting parameters for the first time", () -> {
         it("should encrypt the parameters and update the NamedPasswordSecret", () -> {
           NamedPasswordSecret valueContainer = new NamedPasswordSecret("my-password");
+          valueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
 
           subject.refreshEncryptedGenerationParameters(valueContainer, passwordGenerationParameters);
 
           assertThat(valueContainer.getEncryptedGenerationParameters(), equalTo("parameters-encrypted-value".getBytes()));
           assertThat(valueContainer.getParametersNonce(), equalTo("parameters-nonce".getBytes()));
-          assertThat(valueContainer.getParameterEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
         });
       });
 
@@ -162,7 +166,6 @@ public class SecretEncryptionHelperTest {
           valueContainer.setEncryptedValue("fake-encrypted-value".getBytes());
           valueContainer.setNonce("fake-nonce".getBytes());
 
-          valueContainer.setParameterEncryptionKeyUuid(activeEncryptionKeyUuid);
           valueContainer.setEncryptedGenerationParameters("fake-encrypted-parameters".getBytes());
           valueContainer.setParametersNonce("fake-encrypted-nonce".getBytes());
 
@@ -170,23 +173,51 @@ public class SecretEncryptionHelperTest {
 
           assertThat(valueContainer.getEncryptedGenerationParameters(), equalTo("parameters-encrypted-value".getBytes()));
           assertThat(valueContainer.getParametersNonce(), equalTo("parameters-nonce".getBytes()));
-          assertThat(valueContainer.getParameterEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
         });
       });
     });
 
     describe("#rotate", () -> {
-      describe("when given a NamedSecret", () -> {
+      beforeEach(() -> {
+        when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
+            .thenReturn("plaintext");
+        when(encryptionService.encrypt(activeEncryptionKey ,"plaintext"))
+            .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
+      });
+
+      describe("when the secret was already encrypted with the active key", () -> {
+        it("should do nothing", () -> {
+          NamedSecret secret = new NamedCertificateSecret("some-name");
+          secret.setEncryptionKeyUuid(activeEncryptionKeyUuid);
+          secret.setEncryptedValue("fake-encrypted-value".getBytes());
+          secret.setNonce("fake-nonce".getBytes());
+
+          subject.rotate(secret);
+
+          verify(encryptionService, times(0)).encrypt(any(Key.class), any(String.class));
+          verify(encryptionService, times(0)).decrypt(any(Key.class), any(byte[].class), any(byte[].class));
+        });
+      });
+
+      describe("when the secret does not contain an encrypted value", () -> {
+        it("should only update the encryption key UUID", () -> {
+          NamedSecret secret = new NamedCertificateSecret("some-name");
+          secret.setEncryptionKeyUuid(oldEncryptionKeyUuid);
+
+          subject.rotate(secret);
+
+          assertThat(secret.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+          assertThat(secret.getEncryptedValue(), equalTo(null));
+          assertThat(secret.getNonce(), equalTo(null));
+        });
+      });
+
+      describe("when the secret contains an encrypted value", () -> {
         it("should re-encrypt with the active encryption key", () -> {
           NamedSecret secret = new NamedCertificateSecret("some-name");
           secret.setEncryptionKeyUuid(oldEncryptionKeyUuid);
           secret.setEncryptedValue("old-encrypted-value".getBytes());
           secret.setNonce("old-nonce".getBytes());
-
-          when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
-              .thenReturn("plaintext");
-          when(encryptionService.encrypt(activeEncryptionKey ,"plaintext"))
-              .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
 
           subject.rotate(secret);
 
@@ -196,53 +227,33 @@ public class SecretEncryptionHelperTest {
         });
       });
 
-      describe("when given a NamedCertificateAuthority", () -> {
-        it("should re-encrypt with the active encryption key", () -> {
-          NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("some-name");
-          certificateAuthority.setEncryptionKeyUuid(oldEncryptionKeyUuid);
-          certificateAuthority.setEncryptedValue("old-encrypted-value".getBytes());
-          certificateAuthority.setNonce("old-nonce".getBytes());
+      describe("when the secret is a NamedPasswordSecret", () -> {
+        it("should re-encrypt the password and the parameters with the active encryption key", () -> {
+          NamedPasswordSecret password = new NamedPasswordSecret("some-name");
 
-          when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
-              .thenReturn("plaintext");
-          when(encryptionService.encrypt(activeEncryptionKey, "plaintext"))
-              .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
+          password.setEncryptionKeyUuid(oldEncryptionKeyUuid);
+          password.setEncryptedValue("old-encrypted-value".getBytes());
+          password.setNonce("old-nonce".getBytes());
 
-          subject.rotate(certificateAuthority);
+          password.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
+          password.setParametersNonce("old-parameters-nonce".getBytes());
 
-          assertThat(certificateAuthority.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
-          assertThat(certificateAuthority.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
-          assertThat(certificateAuthority.getNonce(), equalTo("new-nonce".getBytes()));
+          stringifiedParameters = new ObjectMapper().writeValueAsString(new PasswordGenerationParameters());
+
+          when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
+              .thenReturn(stringifiedParameters);
+          when(encryptionService.encrypt(activeEncryptionKey, stringifiedParameters))
+              .thenReturn(new Encryption("new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
+
+          subject.rotate(password);
+
+          assertThat(password.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+          assertThat(password.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
+          assertThat(password.getNonce(), equalTo("new-nonce".getBytes()));
+
+          assertThat(password.getEncryptedGenerationParameters(), equalTo("new-encrypted-parameters".getBytes()));
+          assertThat(password.getParametersNonce(), equalTo("new-nonce-parameters".getBytes()));
         });
-      });
-    });
-
-    describe("#rotatePasswordParameters", () -> {
-      it("should re-encrypt with the active encryption key", () -> {
-        NamedPasswordSecret password = new NamedPasswordSecret("some-name");
-
-        password.setEncryptionKeyUuid(activeEncryptionKeyUuid);
-        password.setEncryptedValue("fake-encrypted-value".getBytes());
-        password.setNonce("fake-nonce".getBytes());
-
-        password.setParameterEncryptionKeyUuid(oldEncryptionKeyUuid);
-        password.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
-        password.setParametersNonce("old-parameters-nonce".getBytes());
-
-        stringifiedParameters = new ObjectMapper().writeValueAsString(new PasswordGenerationParameters());
-
-        when(encryptionService.decrypt(activeEncryptionKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
-            .thenReturn("plaintext-password");
-        when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
-            .thenReturn(stringifiedParameters);
-        when(encryptionService.encrypt(activeEncryptionKey, stringifiedParameters))
-            .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
-
-        subject.rotatePasswordParameters(password);
-
-        assertThat(password.getParameterEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
-        assertThat(password.getEncryptedGenerationParameters(), equalTo("new-encrypted-value".getBytes()));
-        assertThat(password.getParametersNonce(), equalTo("new-nonce".getBytes()));
       });
     });
   }
