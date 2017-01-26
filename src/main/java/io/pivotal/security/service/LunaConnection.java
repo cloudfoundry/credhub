@@ -3,12 +3,14 @@ package io.pivotal.security.service;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.KeyGenerator;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.crypto.KeyGenerator;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
@@ -36,7 +38,23 @@ class LunaConnection {
     if (!isLoggedIn()) {
       try {
         reinitialize();
-        login(partitionName, partitionPassword);
+      } catch (Exception e) {
+        // todo: do we have to ignore this exception?
+        // throw new RuntimeException(e);
+        e.printStackTrace();
+      }
+
+      // todo: can this be replaced with findSlotFromLabel(tokenLabel)? (is partitionName a tokenLabel?)
+      int[] slots;
+      try {
+        slots = (int[]) lunaSlotManager.getClass().getMethod("getSlotList").invoke(lunaSlotManager);
+        Arrays.stream(slots).forEach(slot -> {
+          try {
+            login(slot, partitionPassword);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        });
         makeKeyStore();
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -79,6 +97,10 @@ class LunaConnection {
     lunaSlotManager.getClass().getMethod("login", String.class, String.class).invoke(lunaSlotManager, partitionName, partitionPassword);
   }
 
+  private void login(int slot, String partitionPassword) throws Exception {
+    lunaSlotManager.getClass().getMethod("login", int.class, String.class).invoke(lunaSlotManager, slot, partitionPassword);
+  }
+
   private void reinitialize() throws Exception {
     lunaSlotManager.getClass().getMethod("reinitialize").invoke(lunaSlotManager);
   }
@@ -88,6 +110,14 @@ class LunaConnection {
       return (Boolean) lunaSlotManager.getClass().getMethod("isLoggedIn").invoke(lunaSlotManager);
     } catch (Exception e) {
       return false;
+    }
+  }
+
+  int getNumberOfSlots() {
+    try {
+      return ((Integer) lunaSlotManager.getClass().getMethod("getNumberOfSlots").invoke(lunaSlotManager)).intValue();
+    } catch (Exception e) {
+      return 0;
     }
   }
 }
