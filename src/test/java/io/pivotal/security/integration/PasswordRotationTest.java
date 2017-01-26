@@ -11,7 +11,6 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -24,9 +23,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.security.Key;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -37,6 +33,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.security.Key;
+
+import javax.crypto.spec.SecretKeySpec;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -59,9 +59,6 @@ public class PasswordRotationTest {
 
   @Autowired
   EncryptionService encryptionService;
-
-  @Autowired
-  EncryptionKeyService encryptionKeyService;
 
   private MockMvc mockMvc;
   private String passwordName;

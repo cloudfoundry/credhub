@@ -2,8 +2,8 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.service.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,18 +18,18 @@ public class SecretEncryptionHelper {
 
   private final ObjectMapper objectMapper;
 
-  private final EncryptionKeyService encryptionKeyService;
+  private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final EncryptionService encryptionService;
 
   @Autowired
-  SecretEncryptionHelper(EncryptionKeyService encryptionKeyService, EncryptionService encryptionService) {
-    this.encryptionKeyService = encryptionKeyService;
+  SecretEncryptionHelper(EncryptionKeyCanaryMapper encryptionKeyCanaryMapper, EncryptionService encryptionService) {
+    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.encryptionService = encryptionService;
     this.objectMapper = new ObjectMapper();
   }
 
   public void refreshEncryptedValue(EncryptedValueContainer encryptedValueContainer, String clearTextValue) {
-    UUID activeEncryptionKeyUuid = encryptionKeyService.getActiveEncryptionKeyUuid();
+    UUID activeEncryptionKeyUuid = encryptionKeyCanaryMapper.getActiveUuid();
 
     if (clearTextValue == null) {
       encryptedValueContainer.setNonce(null);
@@ -76,7 +76,7 @@ public class SecretEncryptionHelper {
   }
 
   public void rotate(EncryptedValueContainer secret) {
-    final UUID activeEncryptionKeyUuid = encryptionKeyService.getActiveEncryptionKeyUuid();
+    final UUID activeEncryptionKeyUuid = encryptionKeyCanaryMapper.getActiveUuid();
     final boolean hasOldEncryptionKey = !activeEncryptionKeyUuid.equals(secret.getEncryptionKeyUuid());
 
     if (hasOldEncryptionKey) {
@@ -101,7 +101,7 @@ public class SecretEncryptionHelper {
   }
 
   private void encrypt(EncryptedValueContainer encryptedValueContainer, String clearTextValue) throws Exception {
-    Key activeEncryptionKey = encryptionKeyService.getActiveEncryptionKey();
+    Key activeEncryptionKey = encryptionKeyCanaryMapper.getActiveKey();
     final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
     encryptedValueContainer.setNonce(encryption.nonce);
     encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
@@ -109,7 +109,7 @@ public class SecretEncryptionHelper {
 
   private String decrypt(EncryptedValueContainer encryptedValueContainer) {
     try {
-      Key encryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
+      Key encryptionKey = encryptionKeyCanaryMapper.getKeyForUuid(encryptedValueContainer.getEncryptionKeyUuid());
       return encryptionService.decrypt(encryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
     } catch (Exception e) {
       throw new RuntimeException(e);

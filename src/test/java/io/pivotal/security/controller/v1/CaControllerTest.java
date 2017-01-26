@@ -9,7 +9,7 @@ import io.pivotal.security.generator.BCCertificateAuthorityGenerator;
 import io.pivotal.security.mapper.CAGeneratorRequestTranslator;
 import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -88,7 +88,7 @@ public class CaControllerTest {
   BCCertificateAuthorityGenerator certificateAuthorityGenerator;
 
   @Autowired
-  EncryptionKeyService encryptionKeyService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @SpyBean
   FakeAuditLogService auditLogService;
@@ -120,7 +120,7 @@ public class CaControllerTest {
           .setPrivateKey("private_key")
           .setUuid(uuid)
           .setVersionCreatedAt(FROZEN_TIME_INSTANT);
-      fakeGeneratedCa.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+      fakeGeneratedCa.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     });
 
     describe("generating a ca", () -> {
@@ -852,7 +852,7 @@ public class CaControllerTest {
     originalCa = spy(new NamedCertificateAuthority(UNIQUE_NAME));
     originalCa.setUuid(UUID.randomUUID());
     originalCa.setCertificate("original-certificate");
-    originalCa.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+    originalCa.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
 
     doReturn(originalCa)
         .when(certificateAuthorityDataService).findMostRecent(anyString());
@@ -863,7 +863,7 @@ public class CaControllerTest {
 
     doAnswer(invocation -> {
       NamedCertificateAuthority certificateAuthority = invocation.getArgumentAt(0, NamedCertificateAuthority.class);
-      certificateAuthority.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+      certificateAuthority.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
       certificateAuthority.setVersionCreatedAt(FROZEN_TIME_INSTANT);
       if (certificateAuthority.getUuid() == null) {
         certificateAuthority.setUuid(uuid);

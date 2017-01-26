@@ -5,7 +5,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class CertificateAuthorityDataServiceTest {
   CertificateAuthorityRepository certificateAuthorityRepository;
 
   @SpyBean
-  EncryptionKeyService encryptionKeyService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
@@ -71,13 +71,13 @@ public class CertificateAuthorityDataServiceTest {
       jdbcTemplate.execute("delete from named_certificate_authority");
       jdbcTemplate.execute("delete from encryption_key_canary");
 
-      subject = new CertificateAuthorityDataService(certificateAuthorityRepository, encryptionKeyService);
+      subject = new CertificateAuthorityDataService(certificateAuthorityRepository, encryptionKeyCanaryMapper);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
 
       activeCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
 
-      when(encryptionKeyService.getActiveEncryptionKeyUuid()).thenReturn(activeCanaryUuid);
+      when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeCanaryUuid);
     });
 
     afterEach(() -> {

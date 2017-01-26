@@ -9,7 +9,7 @@ import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -79,7 +79,7 @@ public class SecretsControllerRegenerateTest {
   PasseyStringSecretGenerator passwordGenerator;
 
   @Autowired
-  EncryptionKeyService encryptionKeyService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   private MockMvc mockMvc;
 
@@ -104,7 +104,7 @@ public class SecretsControllerRegenerateTest {
     describe("regenerating a password", () -> {
       beforeEach(() -> {
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
-        originalSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+        originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         originalSecret.setValue("original-password");
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
 

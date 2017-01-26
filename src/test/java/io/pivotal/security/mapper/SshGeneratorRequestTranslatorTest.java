@@ -9,7 +9,7 @@ import io.pivotal.security.controller.v1.SshSecretParametersFactory;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
@@ -46,7 +46,7 @@ public class SshGeneratorRequestTranslatorTest {
   SshSecretParametersFactory sshSecretParametersFactory;
 
   @Autowired
-  EncryptionKeyService encryptionKeyService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   private SshGeneratorRequestTranslator subject;
@@ -144,7 +144,7 @@ public class SshGeneratorRequestTranslatorTest {
         NamedSshSecret secret = new NamedSshSecret();
         secret.setName("test");
         secret.setPublicKey(sshPublicKey);
-        secret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+        secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         secret.setPrivateKey("fakeprivatekey");
 
         subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));

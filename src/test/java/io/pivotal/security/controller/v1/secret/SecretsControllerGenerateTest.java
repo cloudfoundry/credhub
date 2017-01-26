@@ -11,7 +11,7 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -80,7 +80,7 @@ public class SecretsControllerGenerateTest {
   PasseyStringSecretGenerator secretGenerator;
 
   @Autowired
-  EncryptionKeyService encryptionKeyService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   private MockMvc mockMvc;
 
@@ -190,7 +190,7 @@ public class SecretsControllerGenerateTest {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
           final NamedPasswordSecret expectedSecret = new NamedPasswordSecret(secretName);
-          expectedSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+          expectedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
           expectedSecret.setValue(fakePassword);
           doReturn(expectedSecret
               .setUuid(uuid)

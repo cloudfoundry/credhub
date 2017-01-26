@@ -9,7 +9,7 @@ import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.generator.PasseyStringSecretGenerator;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.exparity.hamcrest.BeanMatchers;
@@ -45,7 +45,7 @@ public class PasswordGeneratorRequestTranslatorTest {
   private PasswordGeneratorRequestTranslator subject;
 
   @Autowired
-  EncryptionKeyService encryptionKeyService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   {
     wireAndUnwire(this, false);
@@ -108,7 +108,7 @@ public class PasswordGeneratorRequestTranslatorTest {
 
     it("can populate a hex-only entity from JSON", () -> {
       final NamedPasswordSecret secret = new NamedPasswordSecret("abc");
-      secret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+      secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
 
       String requestJson = "{" +
           "  \"type\":\"password\"," +
@@ -128,7 +128,7 @@ public class PasswordGeneratorRequestTranslatorTest {
       PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
 
       NamedPasswordSecret secret = new NamedPasswordSecret("test");
-      secret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+      secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
       secret.setValue("old-password");
       secret.setGenerationParameters(generationParameters);
 

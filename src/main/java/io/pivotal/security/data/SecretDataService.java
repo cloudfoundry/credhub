@@ -3,7 +3,7 @@ package io.pivotal.security.data;
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSecretImpl;
 import io.pivotal.security.repository.SecretRepository;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -11,11 +11,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import static io.pivotal.security.repository.SecretRepository.SECRET_BATCH_SIZE;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import static io.pivotal.security.repository.SecretRepository.SECRET_BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -44,22 +44,22 @@ public class SecretDataService {
 
   private final SecretRepository secretRepository;
   private final JdbcTemplate jdbcTemplate;
-  private final EncryptionKeyService encryptionKeyService;
+  private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   SecretDataService(
       SecretRepository secretRepository,
       JdbcTemplate jdbcTemplate,
-      EncryptionKeyService encryptionKeyService
+      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper
   ) {
     this.secretRepository = secretRepository;
     this.jdbcTemplate = jdbcTemplate;
-    this.encryptionKeyService = encryptionKeyService;
+    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
     if (namedSecret.getEncryptionKeyUuid() == null) {
-      namedSecret.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+      namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
     return secretRepository.saveAndFlush(namedSecret);
   }
@@ -117,7 +117,7 @@ public class SecretDataService {
 
   public Slice<NamedSecret> findNotEncryptedByActiveKey() {
     return secretRepository.findByEncryptionKeyUuidNot(
-        encryptionKeyService.getActiveEncryptionKeyUuid(),
+        encryptionKeyCanaryMapper.getActiveUuid(),
         new PageRequest(0, SECRET_BATCH_SIZE)
     );
   }

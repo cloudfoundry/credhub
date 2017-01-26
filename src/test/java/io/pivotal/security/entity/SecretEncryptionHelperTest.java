@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.EncryptionService;
 import org.junit.runner.RunWith;
 
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 public class SecretEncryptionHelperTest {
 
   private SecretEncryptionHelper subject;
-  private EncryptionKeyService encryptionKeyService;
+  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private Key activeEncryptionKey;
 
   private Key oldEncryptionKey;
@@ -41,9 +41,9 @@ public class SecretEncryptionHelperTest {
 
   {
     beforeEach(() -> {
-      encryptionKeyService = mock(EncryptionKeyService.class);
+      encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
       encryptionService = mock(EncryptionService.class);
-      subject = new SecretEncryptionHelper(encryptionKeyService, encryptionService);
+      subject = new SecretEncryptionHelper(encryptionKeyCanaryMapper, encryptionService);
 
       activeEncryptionKey = mock(Key.class);
       oldEncryptionKey = mock(Key.class);
@@ -51,10 +51,10 @@ public class SecretEncryptionHelperTest {
       oldEncryptionKeyUuid = UUID.randomUUID();
       activeEncryptionKeyUuid = UUID.randomUUID();
 
-      when(encryptionKeyService.getActiveEncryptionKeyUuid()).thenReturn(activeEncryptionKeyUuid);
-      when(encryptionKeyService.getActiveEncryptionKey()).thenReturn(activeEncryptionKey);
-      when(encryptionKeyService.getEncryptionKey(activeEncryptionKeyUuid)).thenReturn(activeEncryptionKey);
-      when(encryptionKeyService.getEncryptionKey(oldEncryptionKeyUuid)).thenReturn(oldEncryptionKey);
+      when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeEncryptionKeyUuid);
+      when(encryptionKeyCanaryMapper.getActiveKey()).thenReturn(activeEncryptionKey);
+      when(encryptionKeyCanaryMapper.getKeyForUuid(activeEncryptionKeyUuid)).thenReturn(activeEncryptionKey);
+      when(encryptionKeyCanaryMapper.getKeyForUuid(oldEncryptionKeyUuid)).thenReturn(oldEncryptionKey);
     });
 
     describe("#refreshEncryptedValue", () -> {

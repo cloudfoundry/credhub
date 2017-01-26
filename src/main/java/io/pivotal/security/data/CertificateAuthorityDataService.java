@@ -2,34 +2,34 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.repository.CertificateAuthorityRepository;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
+import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
+
 import java.util.List;
 import java.util.UUID;
-
-import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 @Service
 public class CertificateAuthorityDataService {
   private final CertificateAuthorityRepository certificateAuthorityRepository;
-  private final EncryptionKeyService encryptionKeyService;
+  private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
   public CertificateAuthorityDataService(
       CertificateAuthorityRepository certificateAuthorityRepository,
-      EncryptionKeyService encryptionKeyService
+      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper
   ) {
     this.certificateAuthorityRepository = certificateAuthorityRepository;
-    this.encryptionKeyService = encryptionKeyService;
+    this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
   public NamedCertificateAuthority save(NamedCertificateAuthority certificateAuthority) {
     if (certificateAuthority.getEncryptionKeyUuid() == null) {
-      certificateAuthority.setEncryptionKeyUuid(encryptionKeyService.getActiveEncryptionKeyUuid());
+      certificateAuthority.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
     return certificateAuthorityRepository.save(certificateAuthority);
   }
@@ -48,7 +48,7 @@ public class CertificateAuthorityDataService {
 
   public Slice<NamedCertificateAuthority> findNotEncryptedByActiveKey() {
     return certificateAuthorityRepository.findByEncryptionKeyUuidNot(
-        encryptionKeyService.getActiveEncryptionKeyUuid(),
+        encryptionKeyCanaryMapper.getActiveUuid(),
         new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
     );
   }

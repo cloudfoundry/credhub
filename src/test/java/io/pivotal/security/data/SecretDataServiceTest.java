@@ -10,7 +10,7 @@ import io.pivotal.security.entity.NamedSshSecret;
 import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.SecretRepository;
-import io.pivotal.security.service.EncryptionKeyService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.runner.RunWith;
@@ -69,7 +69,7 @@ public class SecretDataServiceTest {
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @SpyBean
-  EncryptionKeyService encryptionKeyService;
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   private final Consumer<Long> fakeTimeSetter;
   private UUID activeCanaryUuid;
@@ -85,7 +85,7 @@ public class SecretDataServiceTest {
 
       activeCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
 
-      when(encryptionKeyService.getActiveEncryptionKeyUuid()).thenReturn(activeCanaryUuid);
+      when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeCanaryUuid);
     });
 
     afterEach(() -> {
