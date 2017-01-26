@@ -29,7 +29,6 @@ public class EncryptionKeyCanaryMapper {
   private static final String WRONG_CANARY_PLAINTEXT = "WRONG KEY FOR CANARY";
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
-  private final EncryptionService encryptionService;
   private final BiMap<UUID, Key> encryptionKeyMap;
 
   private UUID activeUuid;
@@ -39,21 +38,17 @@ public class EncryptionKeyCanaryMapper {
   @Autowired
   EncryptionKeyCanaryMapper(
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
-      EncryptionKeysConfiguration encryptionKeysConfiguration,
-      EncryptionService encryptionService
+      EncryptionKeysConfiguration encryptionKeysConfiguration
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
-    this.encryptionService = encryptionService;
 
     encryptionKeyMap = HashBiMap.create();
-
-    mapUuidsToKeys();
   }
 
-  public void mapUuidsToKeys() {
-    createKeys();
-    mapCanariesToKeys();
+  public void mapUuidsToKeys(EncryptionService encryptionService) {
+    createKeys(encryptionService);
+    mapCanariesToKeys(encryptionService);
   }
 
   public List<Key> getKeys() {
@@ -76,7 +71,7 @@ public class EncryptionKeyCanaryMapper {
     return activeUuid;
   }
 
-  private void createKeys() {
+  private void createKeys(EncryptionService encryptionService) {
     keys = newArrayList();
     encryptionKeysConfiguration.getKeys().forEach(keyMetadata -> {
       Key key = encryptionService.createKey(keyMetadata);
@@ -87,13 +82,13 @@ public class EncryptionKeyCanaryMapper {
     });
   }
 
-  private void mapCanariesToKeys() {
+  private void mapCanariesToKeys(EncryptionService encryptionService) {
     encryptionKeyMap.clear();
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
 
     ensureKeyIsInList(activeKey, keys);
-    populateActiveCanary(activeKey, encryptionKeyCanaries);
-    populateCanariesForNonActiveKeys(activeKey, encryptionKeyCanaries, keys);
+    populateActiveCanary(activeKey, encryptionKeyCanaries, encryptionService);
+    populateCanariesForNonActiveKeys(activeKey, encryptionKeyCanaries, keys, encryptionService);
   }
 
   private void ensureKeyIsInList(Key key, List<Key> encryptionKeys) {
@@ -104,24 +99,25 @@ public class EncryptionKeyCanaryMapper {
     }
   }
 
-  private void populateActiveCanary(Key activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries) {
-    EncryptionKeyCanary activeCanary = findCanaryMatchingKey(activeEncryptionKey, encryptionKeyCanaries).orElseGet(() -> createCanary(activeEncryptionKey));
+  private void populateActiveCanary(Key activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries, EncryptionService encryptionService) {
+    EncryptionKeyCanary activeCanary = findCanaryMatchingKey(activeEncryptionKey, encryptionKeyCanaries, encryptionService).orElseGet(() -> createCanary(activeEncryptionKey, encryptionService));
     activeUuid = activeCanary.getUuid();
     encryptionKeyMap.put(activeCanary.getUuid(), activeEncryptionKey);
   }
 
-  private void populateCanariesForNonActiveKeys(Key activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries, List<Key> encryptionKeys) {
+  private void populateCanariesForNonActiveKeys(Key activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries, List<Key> encryptionKeys,
+                                                EncryptionService encryptionService) {
     final Stream<Key> nonActiveKeys = encryptionKeys.stream().filter(encryptionKey -> !activeEncryptionKey.equals(encryptionKey));
     nonActiveKeys.forEach(encryptionKey -> {
-      findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries).ifPresent(canary -> encryptionKeyMap.put(canary.getUuid(), encryptionKey));
+      findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries, encryptionService).ifPresent(canary -> encryptionKeyMap.put(canary.getUuid(), encryptionKey));
     });
   }
 
-  private Optional<EncryptionKeyCanary> findCanaryMatchingKey(Key encryptionKey, List<EncryptionKeyCanary> canaries) {
-    return canaries.stream().filter(canary -> isMatchingCanary(encryptionKey, canary)).findFirst();
+  private Optional<EncryptionKeyCanary> findCanaryMatchingKey(Key encryptionKey, List<EncryptionKeyCanary> canaries, EncryptionService encryptionService) {
+    return canaries.stream().filter(canary -> isMatchingCanary(encryptionKey, canary, encryptionService)).findFirst();
   }
 
-  private EncryptionKeyCanary createCanary(Key encryptionKey) {
+  private EncryptionKeyCanary createCanary(Key encryptionKey, EncryptionService encryptionService) {
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
     try {
@@ -135,7 +131,7 @@ public class EncryptionKeyCanaryMapper {
     return encryptionKeyCanaryDataService.save(canary);
   }
 
-  private boolean isMatchingCanary(Key encryptionKey, EncryptionKeyCanary canary) {
+  private boolean isMatchingCanary(Key encryptionKey, EncryptionKeyCanary canary, EncryptionService encryptionService) {
     String plaintext;
 
     try {

@@ -89,6 +89,7 @@ public class LunaEncryptionServiceTest {
           beforeEach(() -> {
             when(exceptionThrowingCipher.doFinal(any(byte[].class)))
                 .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
+            reset(keyMapper);
           });
 
           it("retries encryption failures", () -> {
@@ -120,7 +121,13 @@ public class LunaEncryptionServiceTest {
           });
 
           it("creates new keys for UUIDs", () -> {
-            verify(keyMapper).mapUuidsToKeys();
+            try {
+              subject.encrypt(mock(Key.class), "a value");
+              fail("Expected exception");
+            } catch (ProviderException e) {
+              // expected
+            }
+            verify(keyMapper).mapUuidsToKeys(any(EncryptionService.class));
           });
 
           describe("when reconnect succeeds", () -> {

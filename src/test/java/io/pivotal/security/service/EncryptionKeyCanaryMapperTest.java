@@ -90,22 +90,21 @@ public class EncryptionKeyCanaryMapperTest {
 
       when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(existingEncryptionKeyCanary1, activeEncryptionKeyCanary, existingEncryptionKeyCanary2));
 
-      subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+      subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+      subject.mapUuidsToKeys(encryptionService);
     });
 
-    describe("initialization", () -> {
-      describe("#getKeys", () -> {
-        it("should return the keys", () -> {
-          final List<Key> keys = subject.getKeys();
-          assertThat(keys.size(), equalTo(3));
-          assertThat(keys, containsInAnyOrder(
-              activeKey, existingKey1, existingKey2
-          ));
-        });
+    describe("#mapCanariesToKeys", () -> {
+      it("should create the keys", () -> {
+        final List<Key> keys = subject.getKeys();
+        assertThat(keys.size(), equalTo(3));
+        assertThat(keys, containsInAnyOrder(
+            activeKey, existingKey1, existingKey2
+        ));
+      });
 
-        it("should contain a reference to the active key", () -> {
-          assertThat(subject.getKeys(), hasItem(subject.getActiveKey()));
-        });
+      it("should contain a reference to the active key", () -> {
+        assertThat(subject.getKeys(), hasItem(subject.getActiveKey()));
       });
     });
 
@@ -115,7 +114,8 @@ public class EncryptionKeyCanaryMapperTest {
       });
 
       itThrowsWithMessage("a warning about no active key", RuntimeException.class, "No active key was found", () -> {
-        new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+        subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+        subject.mapUuidsToKeys(encryptionService);
       });
     });
 
@@ -131,7 +131,8 @@ public class EncryptionKeyCanaryMapperTest {
           when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
               .thenReturn(activeEncryptionKeyCanary);
 
-          new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+          subject.mapUuidsToKeys(encryptionService);
         });
 
         it("creates and saves a canary to the database", () -> {
@@ -159,14 +160,15 @@ public class EncryptionKeyCanaryMapperTest {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(Arrays.asList(nonMatchingCanary));
         });
 
-        describe("when decrypting with the wrong key raises AEADBadTagException (dev_internal)", () -> {
+        describe("when decrypting with the wrong key raises AEADBadTagException -- dev_internal", () -> {
           beforeEach(() -> {
             when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
                 .thenThrow(new AEADBadTagException());
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
                 .thenReturn(activeEncryptionKeyCanary);
 
-            new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+            subject.mapUuidsToKeys(encryptionService);
           });
 
           it("should create a canary for the key", () -> {
@@ -174,14 +176,15 @@ public class EncryptionKeyCanaryMapperTest {
           });
         });
 
-        describe("when decrypting with the wrong key raises a known IllegalBlockSizeException error (HSM)", () -> {
+        describe("when decrypting with the wrong key raises a known IllegalBlockSizeException error -- HSM", () -> {
           beforeEach(() -> {
             when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
                 .thenThrow(new IllegalBlockSizeException("Could not process input data: function 'C_Decrypt' returns 0x40"));
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
                 .thenReturn(activeEncryptionKeyCanary);
 
-            new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+            subject.mapUuidsToKeys(encryptionService);
           });
 
           it("should create a canary for the key", () -> {
@@ -189,7 +192,7 @@ public class EncryptionKeyCanaryMapperTest {
           });
         });
 
-        describe("when decrypting with the wrong key raises an unknown IllegalBlockSizeException error (HSM)", () -> {
+        describe("when decrypting with the wrong key raises an unknown IllegalBlockSizeException error -- HSM", () -> {
           beforeEach(() -> {
             when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
                 .thenThrow(new IllegalBlockSizeException("I don't know what 0x41 means and neither do you"));
@@ -198,18 +201,20 @@ public class EncryptionKeyCanaryMapperTest {
           });
 
           itThrowsWithMessage("something", RuntimeException.class, "javax.crypto.IllegalBlockSizeException: I don't know what 0x41 means and neither do you", () -> {
-            new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+            subject.mapUuidsToKeys(encryptionService);
           });
         });
 
-        describe("when decrypting with the wrong key raises a known BadPaddingException error (DSM)", () -> {
+        describe("when decrypting with the wrong key raises a known BadPaddingException error -- DSM", () -> {
           beforeEach(() -> {
             when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
                 .thenThrow(new BadPaddingException("Decrypt error: rv=48"));
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
                 .thenReturn(activeEncryptionKeyCanary);
 
-            new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+            subject.mapUuidsToKeys(encryptionService);
           });
 
           it("should create a canary for the key", () -> {
@@ -217,7 +222,7 @@ public class EncryptionKeyCanaryMapperTest {
           });
         });
 
-        describe("when decrypting with the wrong key raises an unknown BadPaddingException error (DSM)", () -> {
+        describe("when decrypting with the wrong key raises an unknown BadPaddingException error -- DSM", () -> {
           beforeEach(() -> {
             when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
                 .thenThrow(new BadPaddingException("Decrypt error: rv=1337 too cool for school"));
@@ -226,7 +231,8 @@ public class EncryptionKeyCanaryMapperTest {
           });
 
           itThrowsWithMessage("something", RuntimeException.class, "javax.crypto.BadPaddingException: Decrypt error: rv=1337 too cool for school", () -> {
-            new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+            subject.mapUuidsToKeys(encryptionService);
           });
         });
 
@@ -237,7 +243,8 @@ public class EncryptionKeyCanaryMapperTest {
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
                 .thenReturn(activeEncryptionKeyCanary);
 
-            new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+            subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+            subject.mapUuidsToKeys(encryptionService);
           });
 
           it("should create a canary for the key", () -> {
@@ -252,7 +259,8 @@ public class EncryptionKeyCanaryMapperTest {
           when(encryptionService.decrypt(activeKey, activeEncryptionKeyCanary.getEncryptedValue(), activeEncryptionKeyCanary.getNonce()))
               .thenReturn(CANARY_VALUE);
 
-          new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+          subject.mapUuidsToKeys(encryptionService);
         });
 
         it("should map the key to the matching canary", () -> {
@@ -290,7 +298,8 @@ public class EncryptionKeyCanaryMapperTest {
         beforeEach(() -> {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(existingEncryptionKeyCanary1, activeEncryptionKeyCanary));
 
-          new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration);
+          subject.mapUuidsToKeys(encryptionService);
         });
 
         it("should not create a canary for the key", () -> {

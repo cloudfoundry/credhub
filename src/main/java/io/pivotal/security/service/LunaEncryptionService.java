@@ -45,6 +45,7 @@ public class LunaEncryptionService extends EncryptionService {
     logger = LogManager.getLogger();
 
     reconnect();
+    keyMapper.mapUuidsToKeys(this);
   }
 
   @Override
@@ -136,7 +137,7 @@ public class LunaEncryptionService extends EncryptionService {
     takeOwnershipForReconnect();
     try {
       lunaConnection.connect(lunaProviderProperties.getPartitionName(), lunaProviderProperties.getPartitionPassword());
-      keyMapper.mapUuidsToKeys();
+      keyMapper.mapUuidsToKeys(this);
     } finally {
       returnOwnershipAfterReconnect();
     }
