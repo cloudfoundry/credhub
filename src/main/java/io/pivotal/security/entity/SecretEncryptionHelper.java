@@ -2,8 +2,8 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.service.Encryption;
+import io.pivotal.security.service.EncryptionKeyService;
 import io.pivotal.security.service.EncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,6 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.security.Key;
-import java.util.Objects;
 import java.util.UUID;
 
 @Component
@@ -41,22 +40,11 @@ public class SecretEncryptionHelper {
     }
 
     try {
-      Key usedEncryptionKey = encryptionKeyService.getEncryptionKey(encryptedValueContainer.getEncryptionKeyUuid());
-
-      if (encryptedValueContainer.getNonce() == null ||
-          encryptedValueContainer.getEncryptedValue() == null ||
-          !encryptedValueContainer.getEncryptionKeyUuid().equals(activeEncryptionKeyUuid) ||
-          !Objects.equals(clearTextValue, encryptionService.decrypt(
-              usedEncryptionKey,
-              encryptedValueContainer.getEncryptedValue(),
-              encryptedValueContainer.getNonce()
-          ))) {
-        Key activeEncryptionKey = encryptionKeyService.getActiveEncryptionKey();
-        final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
-        encryptedValueContainer.setNonce(encryption.nonce);
-        encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
-        encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
-      }
+      Key activeEncryptionKey = encryptionKeyService.getActiveEncryptionKey();
+      final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
+      encryptedValueContainer.setNonce(encryption.nonce);
+      encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
+      encryptedValueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
