@@ -104,6 +104,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"country\": \"My Country\"," +
           "\"key_length\": 3072," +
           "\"duration\": 1000," +
+          "\"self_sign\": true," +
           "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
           "\"extended_key_usage\": [\"server_auth\", \"client_auth\"]," +
           "\"key_usage\": [\"data_encipherment\", \"non_repudiation\"]," +
@@ -120,6 +121,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setType("certificate");
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
+      expectedParameters.setSelfSign(true);
       expectedParameters.addAlternativeNames("my-alternative-name-1", "my-alternative-name-2");
       expectedParameters.addExtendedKeyUsage("server_auth", "client_auth");
       expectedParameters.addKeyUsage("data_encipherment", "non_repudiation");

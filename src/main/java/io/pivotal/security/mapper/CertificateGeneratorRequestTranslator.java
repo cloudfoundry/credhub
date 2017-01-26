@@ -77,6 +77,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         .ifPresent(secretParameters::setKeyLength);
     Optional.ofNullable(parsed.read("$.parameters.duration", Integer.class))
         .ifPresent(secretParameters::setDurationDays);
+    Optional.ofNullable(parsed.read("$.parameters.self_sign", Boolean.class))
+            .ifPresent(secretParameters::setSelfSign);
 
     secretParameters.setType(parsed.read("$.type", String.class));
 
@@ -116,7 +118,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         "$['parameters']['state']",
         "$['parameters']['country']",
         "$['parameters']['key_length']",
-        "$['parameters']['duration']"
+        "$['parameters']['duration']",
+        "$['parameters']['self_sign']"
     );
   }
 }

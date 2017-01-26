@@ -43,17 +43,27 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
 
   @Override
   public Certificate generateSecret(CertificateSecretParameters params) {
-    NamedCertificateAuthority ca = findCa(params.getCaName());
     try {
       KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
-      X500Name issuerDn = getIssuer(ca.getCertificate());
-      PrivateKey issuerKey = getPrivateKey(ca);
 
-      X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
+      if (params.getSelfSign()) {
+        X509Certificate cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
+        String certPem = CertificateFormatter.pemOf(cert);
+        String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
+        return new Certificate(null, certPem, privatePem);
+      } else {
+        NamedCertificateAuthority ca = findCa(params.getCaName());
+        X500Name issuerDn = getIssuer(ca.getCertificate());
+        PrivateKey issuerKey = getPrivateKey(ca);
 
-      String certPem = CertificateFormatter.pemOf(cert);
-      String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-      return new Certificate(ca.getCertificate(), certPem, privatePem);
+        X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
+
+        String certPem = CertificateFormatter.pemOf(cert);
+        String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
+        return new Certificate(ca.getCertificate(), certPem, privatePem);
+      }
+    } catch (ParameterizedValidationException e) {
+      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

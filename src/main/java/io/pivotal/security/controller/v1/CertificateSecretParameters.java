@@ -42,6 +42,7 @@ public class CertificateSecretParameters implements RequestParameters {
   private int keyLength = 2048;
   private int durationDays = 365;
   private String caName = "default";
+  private boolean selfSign = false;
 
   // Used for regen; contains RDN (NOT key length, duration days, or alternative names)
   private X500Name x500Name;
@@ -284,6 +285,15 @@ public class CertificateSecretParameters implements RequestParameters {
 
   public CertificateSecretParameters setCaName(String caName) {
     this.caName = caName;
+    return this;
+  }
+
+  public boolean getSelfSign() {
+    return selfSign;
+  }
+
+  public CertificateSecretParameters setSelfSign(boolean selfSign) {
+    this.selfSign = selfSign;
     return this;
   }
 
