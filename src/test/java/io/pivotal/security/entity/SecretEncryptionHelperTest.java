@@ -5,11 +5,8 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.service.RetryingEncryptionService;
 import org.junit.runner.RunWith;
-
-import java.security.Key;
-import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -21,6 +18,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.Key;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 public class SecretEncryptionHelperTest {
@@ -37,12 +37,12 @@ public class SecretEncryptionHelperTest {
 
   private String stringifiedParameters;
 
-  private EncryptionService encryptionService;
+  private RetryingEncryptionService encryptionService;
 
   {
     beforeEach(() -> {
       encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
-      encryptionService = mock(EncryptionService.class);
+      encryptionService = mock(RetryingEncryptionService.class);
       subject = new SecretEncryptionHelper(encryptionKeyCanaryMapper, encryptionService);
 
       activeEncryptionKey = mock(Key.class);

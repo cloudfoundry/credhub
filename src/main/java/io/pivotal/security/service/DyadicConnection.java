@@ -3,16 +3,17 @@ package io.pivotal.security.service;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.IvParameterSpec;
 import java.lang.reflect.Constructor;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.Security;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.IvParameterSpec;
+
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm", matchIfMissing = true)
-class DyadicConnection {
+class DyadicConnection  implements RemoteEncryptionConnectable {
   private Provider provider;
   private KeyStore keyStore;
   private KeyGenerator aesKeyGenerator;
@@ -43,12 +44,17 @@ class DyadicConnection {
     return keyStore;
   }
 
-  public IvParameterSpec generateParameterSpec(byte[] nonce) {
+  IvParameterSpec generateParameterSpec(byte[] nonce) {
     int numBytes = nonce != null ? nonce.length : 0;
     try {
       return (IvParameterSpec) parameterSpecConstructor.newInstance(nonce, numBytes, null);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void reconnect(Exception originalException) {
+    // does retrying make sense for Dyadic
   }
 }

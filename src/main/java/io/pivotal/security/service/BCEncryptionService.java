@@ -25,11 +25,9 @@ public class BCEncryptionService extends EncryptionService {
   private final BouncyCastleProvider provider;
 
   @Autowired
-  BCEncryptionService(BouncyCastleProvider provider, EncryptionKeyCanaryMapper keyMapper) throws Exception {
+  BCEncryptionService(BouncyCastleProvider provider) throws Exception {
     this.provider = provider;
     this.secureRandom = SecureRandom.getInstance("SHA1PRNG");
-
-    keyMapper.mapUuidsToKeys(this);
   }
 
   @Override

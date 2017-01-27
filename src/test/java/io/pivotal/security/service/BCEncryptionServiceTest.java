@@ -13,9 +13,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import java.security.Key;
 
@@ -28,21 +25,14 @@ public class BCEncryptionServiceTest {
   private Encryption encryption;
   private Key encryptionKey;
 
-  private EncryptionKeyCanaryMapper keyMapper;
-
   {
     beforeEach(() -> {
-      keyMapper = mock(EncryptionKeyCanaryMapper.class);
-      subject = new BCEncryptionService(new BouncyCastleProvider(), keyMapper);
+      subject = new BCEncryptionService(new BouncyCastleProvider());
 
       EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
       keyMetadata.setDevKey("0123456789ABCDEF0123456789ABCDEF");
 
       encryptionKey = subject.createKey(keyMetadata);
-    });
-
-    it("initializes the keyMapper", () -> {
-      verify(keyMapper).mapUuidsToKeys(eq(subject));
     });
 
     describe("#createKey", () -> {

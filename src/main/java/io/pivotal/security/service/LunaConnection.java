@@ -1,5 +1,7 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.config.LunaProviderProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -14,15 +16,18 @@ import javax.crypto.KeyGenerator;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
-class LunaConnection {
+class LunaConnection implements RemoteEncryptionConnectable {
   private Provider provider;
   private Object lunaSlotManager;
   private KeyStore keyStore;
   private SecureRandom secureRandom;
   private KeyGenerator aesKeyGenerator;
   private ReentrantReadWriteLock readWriteLock;
+  private final LunaProviderProperties lunaProviderProperties;
 
-  public LunaConnection() throws Exception {
+  @Autowired
+  public LunaConnection(LunaProviderProperties lunaProviderProperties) throws Exception {
+    this.lunaProviderProperties = lunaProviderProperties;
     provider = (Provider) Class.forName("com.safenetinc.luna.provider.LunaProvider").newInstance();
     Security.addProvider(provider);
     lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager").getDeclaredMethod("getInstance").invoke(null);
@@ -34,7 +39,8 @@ class LunaConnection {
     readWriteLock = new ReentrantReadWriteLock();
   }
 
-  synchronized void connect(String partitionName, String partitionPassword) {
+  @Override
+  synchronized public void reconnect(Exception originalException) {
     if (!isLoggedIn()) {
       try {
         reinitialize();
@@ -50,7 +56,7 @@ class LunaConnection {
         slots = (int[]) lunaSlotManager.getClass().getMethod("getSlotList").invoke(lunaSlotManager);
         Arrays.stream(slots).forEach(slot -> {
           try {
-            login(slot, partitionPassword);
+            login(slot, lunaProviderProperties.getPartitionPassword());
           } catch (Exception e) {
             e.printStackTrace();
           }

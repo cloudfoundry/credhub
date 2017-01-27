@@ -26,11 +26,9 @@ public class DyadicEncryptionService extends EncryptionService {
   private SecureRandom secureRandom;
 
   @Autowired
-  DyadicEncryptionService(DyadicConnection dyadicConnection, EncryptionKeyCanaryMapper keyMapper) throws Exception {
+  DyadicEncryptionService(DyadicConnection dyadicConnection) throws Exception {
     this.dyadicConnection = dyadicConnection;
     this.secureRandom = new SecureRandom();
-
-    keyMapper.mapUuidsToKeys(this);
   }
 
   @Override

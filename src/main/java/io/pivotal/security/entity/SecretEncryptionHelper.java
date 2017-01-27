@@ -2,9 +2,9 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.service.RetryingEncryptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -19,10 +19,10 @@ public class SecretEncryptionHelper {
   private final ObjectMapper objectMapper;
 
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  private final EncryptionService encryptionService;
+  private final RetryingEncryptionService encryptionService;
 
   @Autowired
-  SecretEncryptionHelper(EncryptionKeyCanaryMapper encryptionKeyCanaryMapper, EncryptionService encryptionService) {
+  SecretEncryptionHelper(EncryptionKeyCanaryMapper encryptionKeyCanaryMapper, RetryingEncryptionService encryptionService) {
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.encryptionService = encryptionService;
     this.objectMapper = new ObjectMapper();
