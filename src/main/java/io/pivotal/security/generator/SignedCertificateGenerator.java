@@ -70,11 +70,16 @@ public class SignedCertificateGenerator {
       certificateBuilder.addExtension(Extension.extendedKeyUsage, false, params.getExtendedKeyUsage());
     }
 
-    certificateBuilder.addExtension(Extension.basicConstraints, true,
-        new BasicConstraints(!NamedCertificateSecret.SECRET_TYPE.equals(params.getType())));
+    certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(isCaCert(params)));
 
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 
     return new JcaX509CertificateConverter().setProvider(provider).getCertificate(holder);
+  }
+
+  private boolean isCaCert(CertificateSecretParameters params) {
+    boolean isNamedCertificateAuthority = !NamedCertificateSecret.SECRET_TYPE.equals(params.getType());
+    boolean isCaParam = params.getIsCA();
+    return isNamedCertificateAuthority || isCaParam;
   }
 }

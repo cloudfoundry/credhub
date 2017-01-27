@@ -51,9 +51,14 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         .ifPresent(secretParameters::addKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.extended_key_usage", String[].class))
         .ifPresent(secretParameters::addExtendedKeyUsage);
+    Optional.ofNullable(parsed.read("$.parameters.self_sign", Boolean.class))
+      .ifPresent(secretParameters::setSelfSign);
+    Optional.ofNullable(parsed.read("$.parameters.is_ca", Boolean.class))
+      .ifPresent(secretParameters::setIsCa);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
         .ifPresent(secretParameters::setCaName);
 
+    assignDefaults(secretParameters);
     secretParameters.validate();
 
     return secretParameters;
@@ -77,8 +82,6 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         .ifPresent(secretParameters::setKeyLength);
     Optional.ofNullable(parsed.read("$.parameters.duration", Integer.class))
         .ifPresent(secretParameters::setDurationDays);
-    Optional.ofNullable(parsed.read("$.parameters.self_sign", Boolean.class))
-            .ifPresent(secretParameters::setSelfSign);
 
     secretParameters.setType(parsed.read("$.type", String.class));
 
@@ -90,6 +93,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   @Override
   public void populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
     CertificateSecretParameters requestParameters = validRequestParameters(documentContext, entity);
+
     Certificate secret = certificateSecretGenerator.generateSecret(requestParameters);
     entity.setCa(secret.getCaCertificate());
     entity.setCertificate(secret.getCertificate());
@@ -119,7 +123,14 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         "$['parameters']['country']",
         "$['parameters']['key_length']",
         "$['parameters']['duration']",
+        "$['parameters']['is_ca']",
         "$['parameters']['self_sign']"
     );
+  }
+
+  private void assignDefaults(CertificateSecretParameters requestParameters) {
+    if (requestParameters.getIsCA() && requestParameters.getCaName() == "default") {
+      requestParameters.setSelfSign(true);
+    }
   }
 }

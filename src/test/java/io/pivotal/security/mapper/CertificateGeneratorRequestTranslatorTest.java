@@ -32,12 +32,11 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.security.Security;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.describedAs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
@@ -45,6 +44,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -126,6 +126,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.addExtendedKeyUsage("server_auth", "client_auth");
       expectedParameters.addKeyUsage("data_encipherment", "non_repudiation");
       expectedParameters.setCaName("My Ca");
+      expectedParameters.setIsCa(false);
       DocumentContext parsed = jsonPath.parse(json);
 
       subject.validateJsonKeys(parsed);
@@ -155,6 +156,41 @@ public class CertificateGeneratorRequestTranslatorTest {
       subject.validateJsonKeys(parsed);
       params = subject.validRequestParameters(parsed, null);
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
+    });
+
+
+    describe("making CAs", () -> {
+      it("is CA when isCA is true and defaults to self-signed when 'ca' params is not present" , () -> {
+        String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"is_ca\": true" +
+          "}" +
+          "}";
+
+        DocumentContext parsed = jsonPath.parse(json);
+        CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
+        assertThat(params.getIsCA(), equalTo(true));
+        assertThat(params.getSelfSign(), equalTo(true));
+      });
+
+      it("is CA when isCA is true and respects CA param (which will be used to sign this CA)", () -> {
+        String json = "{" +
+          "\"type\":\"certificate\"," +
+          "\"parameters\":{" +
+          "\"organization\": \"organization.io\"," +
+          "\"is_ca\": true," +
+          "\"ca\": \"My Ca\"" +
+          "}" +
+          "}";
+
+        DocumentContext parsed = jsonPath.parse(json);
+        CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
+        assertThat(params.getIsCA(), equalTo(true));
+        assertThat(params.getSelfSign(), equalTo(false));
+        assertThat(params.getCaName(), equalTo("My Ca"));
+      });
     });
 
     describe("when all parameters are omitted", () -> {
@@ -190,26 +226,13 @@ public class CertificateGeneratorRequestTranslatorTest {
       String json = "{" +
           "\"type\":\"certificate\"," +
           "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"" +
+          "\"organization\": \"organization.io\"" +
           "}" +
           "}";
 
-      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
-      expectedParameters.setOrganization("organization.io");
-      expectedParameters.setState("My State");
-      expectedParameters.setCountry("My Country");
-      expectedParameters.setType("certificate");
-      expectedParameters.setKeyLength(2048);
       DocumentContext parsed = jsonPath.parse(json);
-
       CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
-      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
-
-      subject.validateJsonKeys(parsed);
-      params = subject.validRequestParameters(parsed, null);
-      assertThat(params, BeanMatchers.theSameAs(expectedParameters));
+      assertThat(params.getKeyLength(), equalTo(2048));
     });
 
     describe("params that should be excluded for Certificate Authority are excluded", () -> {
