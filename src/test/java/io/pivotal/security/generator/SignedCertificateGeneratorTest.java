@@ -291,19 +291,41 @@ public class SignedCertificateGeneratorTest {
       });
     });
 
-    describe("a generated self-signed certificate", () -> {
-      ThrowingRunnable makeCert = () -> {
+    describe("a self-signed certificate", () -> {
+      beforeEach(() -> {
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
+        generator.initialize(1024); // doesn't matter for testing
+        certKeyPair = generator.generateKeyPair();
+
+        issuerKeyPair = certKeyPair; // self-signed
+        inputParameters = new CertificateSecretParameters()
+          .setCommonName("my test cert")
+          .setOrganization("credhub")
+          .setDurationDays(10)
+          .setType("certificate");
+        isCA = "[]";
+
+        // subject and issuer have same name-- we're self-signed.
+        subjectDistinguishedName = inputParameters.getDN();
+        issuerDistinguishedName = subjectDistinguishedName;
+      });
+
+      final ThrowingRunnable makeCert = () -> {
         generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
       };
 
+      describe("must behave like", validCertificateSuite.build(makeCert));
+    });
+
+    describe("a generated self-signed CA", () -> {
       beforeEach(() -> {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
         generator.initialize(1024); // doesn't matter for testing
         issuerKeyPair = generator.generateKeyPair();
 
-        certKeyPair = issuerKeyPair;
+        certKeyPair = issuerKeyPair; // self-signed
         inputParameters = new CertificateSecretParameters()
-            .setCommonName("my test cert")
+            .setCommonName("my test ca")
             .setCountry("US")
             .setState("CA")
             .setOrganization("credhub")
@@ -313,6 +335,10 @@ public class SignedCertificateGeneratorTest {
         subjectDistinguishedName = inputParameters.getDN();
         issuerDistinguishedName = subjectDistinguishedName;
       });
+
+      ThrowingRunnable makeCert = () -> {
+        generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
+      };
 
       describe("must behave like", validCertificateSuite.build(makeCert));
     });
