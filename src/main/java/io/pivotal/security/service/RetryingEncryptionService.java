@@ -30,40 +30,27 @@ public class RetryingEncryptionService {
     readWriteLock = new ReentrantReadWriteLock();
   }
 
-  public Encryption encrypt(Key key, String value) throws Exception {
-    preventReconnect();
-
-    try {
-      return encryptionService.encrypt(key, value);
-    } catch (IllegalBlockSizeException | ProviderException e) {
-      logger.info("Failed to encrypt secret. Trying to log in.");
-      logger.info("Exception thrown: " + e.getMessage());
-
-      allowReconnect();
-      UUID keyId = keyMapper.getUuidForKey(key);
-      try {
-        reconnectAndRemapKeysToUuids(e);
-        logger.info("Reconnected to the HSM");
-      } finally {
-        preventReconnect();
-      }
-
-      return encryptionService.encrypt(keyMapper.getKeyForUuid(keyId), value);
-    } finally {
-      allowReconnect();
-    }
+  public Encryption encrypt(Key encryptionKey, final String value) throws Exception {
+    logger.info("Attempting encrypt");
+    return (Encryption) retryOnErrorWithRemappedKey(encryptionKey, key -> encryptionService.encrypt(key, value));
   }
 
-  public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
+  public String decrypt(Key decryptionKey, final byte[] encryptedValue, final byte[] nonce) throws Exception {
+    logger.info("Attempting decrypt");
+    return (String) retryOnErrorWithRemappedKey(decryptionKey, key -> encryptionService.decrypt(key, encryptedValue, nonce));
+  }
+
+  private Object retryOnErrorWithRemappedKey(Key originalKey, ThrowingFunction<Key, Object> operation) throws Exception {
     preventReconnect();
+
     try {
-      return encryptionService.decrypt(key, encryptedValue, nonce);
+      return operation.apply(originalKey);
     } catch (IllegalBlockSizeException | ProviderException e) {
-      logger.info("Failed to decrypt secret. Trying to log in.");
+      logger.info("Operation failed. Trying to log in.");
       logger.info("Exception thrown: " + e.getMessage());
 
       allowReconnect();
-      UUID keyId = keyMapper.getUuidForKey(key);
+      UUID keyId = keyMapper.getUuidForKey(originalKey);
       try {
         reconnectAndRemapKeysToUuids(e);
         logger.info("Reconnected to the HSM");
@@ -71,7 +58,7 @@ public class RetryingEncryptionService {
         preventReconnect();
       }
 
-      return encryptionService.decrypt(keyMapper.getKeyForUuid(keyId), encryptedValue, nonce);
+      return operation.apply(keyMapper.getKeyForUuid(keyId));
     } finally {
       allowReconnect();
     }
@@ -101,5 +88,10 @@ public class RetryingEncryptionService {
 
   private void takeOwnershipForReconnect() {
     readWriteLock.writeLock().lock();
+  }
+
+  @FunctionalInterface
+  interface ThrowingFunction<T,R> {
+    R apply(T t) throws Exception;
   }
 }
