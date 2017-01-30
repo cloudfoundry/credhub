@@ -12,7 +12,7 @@ import java.util.List;
 @Component
 public class PasseyStringSecretGenerator implements SecretGenerator<PasswordGenerationParameters, Password> {
 
-  public static final int DEFAULT_LENGTH = 20;
+  public static final int DEFAULT_LENGTH = 30;
   public static final int MIN_LENGTH = 4;
   public static final int MAX_LENGTH = 200;
 

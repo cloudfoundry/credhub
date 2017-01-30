@@ -55,7 +55,7 @@ public class PasseyStringSecretGeneratorTest {
 
       when(characterRuleProvider.getCharacterRules(same(secretParameters))).thenReturn(characterRules);
 
-      when(passwordGenerator.generatePassword(eq(20), same(characterRules))).thenReturn("very-secret");
+      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), same(characterRules))).thenReturn("very-secret");
 
       Password secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getPassword(), equalTo("very-secret"));
@@ -72,7 +72,7 @@ public class PasseyStringSecretGeneratorTest {
     });
 
     it("ignores too-small length values", () -> {
-      when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList())).thenReturn("very-secret");
 
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(3);
@@ -82,7 +82,7 @@ public class PasseyStringSecretGeneratorTest {
     });
 
     it("ignores too-large length values", () -> {
-      when(passwordGenerator.generatePassword(eq(20), anyList())).thenReturn("very-secret");
+      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList())).thenReturn("very-secret");
 
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
       secretParameters.setLength(201);
