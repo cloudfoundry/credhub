@@ -31,10 +31,10 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class PasseyStringSecretGeneratorTest {
+public class PassayStringSecretGeneratorTest {
 
   @Autowired
-  private PasseyStringSecretGenerator subject;
+  private PassayStringSecretGenerator subject;
 
   @MockBean
   private CharacterRuleProvider characterRuleProvider;

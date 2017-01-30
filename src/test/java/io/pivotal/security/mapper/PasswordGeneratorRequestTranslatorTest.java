@@ -8,7 +8,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.generator.PasseyStringSecretGenerator;
+import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -39,7 +39,7 @@ public class PasswordGeneratorRequestTranslatorTest {
   ParseContext jsonPath;
 
   @MockBean
-  PasseyStringSecretGenerator secretGenerator;
+  PassayStringSecretGenerator secretGenerator;
 
   @Autowired
   private PasswordGeneratorRequestTranslator subject;

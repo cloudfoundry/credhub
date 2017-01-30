@@ -7,7 +7,7 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.entity.NamedPasswordSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
-import io.pivotal.security.generator.PasseyStringSecretGenerator;
+import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -76,7 +76,7 @@ public class SecretsControllerRegenerateTest {
   SecretDataService secretDataService;
 
   @MockBean
-  PasseyStringSecretGenerator passwordGenerator;
+  PassayStringSecretGenerator passwordGenerator;
 
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;

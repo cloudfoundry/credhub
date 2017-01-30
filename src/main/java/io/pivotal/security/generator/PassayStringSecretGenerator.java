@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class PasseyStringSecretGenerator implements SecretGenerator<PasswordGenerationParameters, Password> {
+public class PassayStringSecretGenerator implements SecretGenerator<PasswordGenerationParameters, Password> {
 
   public static final int DEFAULT_LENGTH = 30;
   public static final int MIN_LENGTH = 4;

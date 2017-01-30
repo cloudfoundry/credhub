@@ -4,7 +4,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.generator.PasseyStringSecretGenerator;
+import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,7 +19,7 @@ import static com.google.common.collect.ImmutableSet.of;
 public class PasswordGeneratorRequestTranslator implements RequestTranslator<NamedPasswordSecret>, SecretGeneratorRequestTranslator<PasswordGenerationParameters, NamedPasswordSecret> {
 
   @Autowired
-  PasseyStringSecretGenerator stringSecretGenerator;
+  PassayStringSecretGenerator stringSecretGenerator;
 
   @Override
   public PasswordGenerationParameters validRequestParameters(DocumentContext parsed, NamedPasswordSecret entity) {
