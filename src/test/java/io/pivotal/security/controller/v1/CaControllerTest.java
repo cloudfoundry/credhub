@@ -819,7 +819,7 @@ public class CaControllerTest {
       });
 
       it("get returns 404 when not found", () -> {
-        String notFoundJson = "{\"error\": \"CA not found. Please validate your input and retry your request.\"}";
+        String notFoundJson = "{\"error\": \"The request could not be completed because the CA has not been defined. Please set the CA and retry your request.\"}";
         response
             .andExpect(status().isNotFound())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8))

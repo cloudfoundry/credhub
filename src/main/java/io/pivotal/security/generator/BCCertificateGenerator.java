@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.data.CertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
@@ -36,7 +36,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   SignedCertificateGenerator signedCertificateGenerator;
 
   @Autowired
-  CertificateAuthorityDataService certificateAuthorityDataService;
+  CertificateAuthorityService certificateAuthorityService;
 
   @Autowired
   BouncyCastleProvider provider;
@@ -52,35 +52,23 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
         return new Certificate(null, certPem, privatePem);
       } else {
-        NamedCertificateAuthority ca = findCa(params.getCaName());
-        X500Name issuerDn = getIssuer(ca.getCertificate());
+        NamedCertificateAuthority ca = certificateAuthorityService.findMostRecent(params.getCaName());
+
+        String certificate = ca.getCertificate();
+        X500Name issuerDn = getIssuer(certificate);
         PrivateKey issuerKey = getPrivateKey(ca);
 
         X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new Certificate(ca.getCertificate(), certPem, privatePem);
+        return new Certificate(certificate, certPem, privatePem);
       }
     } catch (ParameterizedValidationException e) {
       throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private NamedCertificateAuthority findCa(String caName) {
-    NamedCertificateAuthority mostRecentCA = certificateAuthorityDataService.findMostRecent(caName);
-
-    if (mostRecentCA == null) {
-      if ("default".equals(caName)) {
-        throw new ParameterizedValidationException("error.default_ca_required");
-      } else {
-        throw new ParameterizedValidationException("error.ca_not_found_for_certificate_generation");
-      }
-    }
-
-    return mostRecentCA;
   }
 
   private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {

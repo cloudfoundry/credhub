@@ -3,14 +3,13 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.data.CertificateAuthorityDataService;
+import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -41,21 +40,14 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -75,7 +67,7 @@ public class BCCertificateGeneratorTest {
   FakeKeyPairGenerator fakeKeyPairGenerator;
 
   @MockBean
-  CertificateAuthorityDataService certificateAuthorityDataService;
+  CertificateAuthorityService certificateAuthorityService;
 
   @MockBean
   CurrentTimeProvider currentTimeProvider;
@@ -89,7 +81,7 @@ public class BCCertificateGeneratorTest {
   private KeyPair childCertificateKeyPair;
   private X500Name caDn;
   private KeyPair caKeyPair;
-  private NamedCertificateAuthority defaultNamedCA;
+  private NamedCertificateAuthority certificateAuthority;
   private CertificateSecretParameters inputParameters;
   private X509CertificateHolder childCertificateHolder;
   private X509Certificate caX509Cert;
@@ -110,64 +102,30 @@ public class BCCertificateGeneratorTest {
       X509CertificateHolder caX509CertHolder = generateX509CertificateAuthority();
       caX509Cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
       privateKey = CertificateFormatter.pemOf(caKeyPair.getPrivate());
-      defaultNamedCA = new NamedCertificateAuthority("default");
-      defaultNamedCA
+      certificateAuthority = new NamedCertificateAuthority("my-ca-name");
+      certificateAuthority
           .setCertificate(CertificateFormatter.pemOf(caX509Cert));
 
-      defaultNamedCA.setEncryptedValue("fake-encrypted-value".getBytes());
-      defaultNamedCA.setNonce("fake-nonce".getBytes());
+      certificateAuthority.setEncryptedValue("fake-encrypted-value".getBytes());
+      certificateAuthority.setNonce("fake-nonce".getBytes());
 
-      doReturn(privateKey).when(secretEncryptionHelper).retrieveClearTextValue(defaultNamedCA);
+      doReturn(privateKey).when(secretEncryptionHelper).retrieveClearTextValue(certificateAuthority);
 
       inputParameters = new CertificateSecretParameters()
         .setOrganization("foo")
         .setState("bar")
+        .setCaName("my-ca-name")
         .setCountry("mars")
         .setDurationDays(365);
     });
 
     afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
 
-    describe("when there is no default ca", () -> {
-      it("throws a validation exception", () -> {
-        CertificateSecretParameters inputParameters = new CertificateSecretParameters();
-        try {
-          subject.generateSecret(inputParameters);
-          fail();
-        } catch (ParameterizedValidationException ve) {
-          assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
-        }
-      });
-
-      it("throws the correct validation exception when default is explicitly requested", () -> {
-        CertificateSecretParameters inputParameters = new CertificateSecretParameters();
-        try {
-          inputParameters.setCaName("default");
-          subject.generateSecret(inputParameters);
-          fail();
-        } catch (ParameterizedValidationException ve) {
-          assertThat(ve.getMessage(), equalTo("error.default_ca_required"));
-        }
-      });
-    });
-
-    describe("when a CA does not exist", () -> {
-      it("throws a validation exception when attempting to sign a certificate with that CA", () -> {
-        inputParameters.setCaName("nonexistentCA");
-        try {
-          subject.generateSecret(inputParameters);
-          fail();
-        } catch (ParameterizedValidationException ve) {
-          assertThat(ve.getMessage(), equalTo("error.ca_not_found_for_certificate_generation"));
-        }
-      });
-    });
-
-    describe("when a default CA exists", () -> {
+    describe("when CA exists", () -> {
       beforeEach(() -> {
         childCertificateKeyPair = fakeKeyPairGenerator.generate();
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
-        when(certificateAuthorityDataService.findMostRecent("default")).thenReturn(defaultNamedCA);
+        when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(certificateAuthority);
         childCertificateHolder = generateChildCertificateSignedByCa(
             childCertificateKeyPair, caKeyPair.getPrivate(), caDn);
         childCertificate = new JcaX509CertificateConverter()
@@ -180,7 +138,7 @@ public class BCCertificateGeneratorTest {
         Certificate certificateSecret = subject.generateSecret(inputParameters);
 
         assertThat(certificateSecret.getCaCertificate(),
-            equalTo(defaultNamedCA.getCertificate()));
+            equalTo(certificateAuthority.getCertificate()));
         assertThat(certificateSecret.getPrivateKey(),
             equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
         assertThat(certificateSecret.getCertificate(),
@@ -204,6 +162,7 @@ public class BCCertificateGeneratorTest {
       final X509Certificate[] certificate = new X509Certificate[1];
 
       beforeEach(() -> {
+        inputParameters.setCaName(null);
         inputParameters.setSelfSign(true);
         X509CertificateHolder certHolder = generateX509SelfSignedCert();
         certificate[0] = new JcaX509CertificateConverter()
