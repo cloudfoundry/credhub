@@ -68,7 +68,7 @@ CREATE TABLE named_certificate_authority (
     encrypted_value bytea,
     name character varying(255) NOT NULL,
     nonce bytea,
-    type character varying(255),
+    foo character varying(255),
     updated_at bigint NOT NULL
 );
 
@@ -77,7 +77,7 @@ CREATE TABLE named_certificate_authority (
 --
 
 CREATE TABLE named_secret (
-    type character varying(31) NOT NULL,
+    foo character varying(31) NOT NULL,
     id bigint NOT NULL,
     encrypted_value bytea,
     name character varying(255) NOT NULL,
