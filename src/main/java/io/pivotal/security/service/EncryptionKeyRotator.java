@@ -37,7 +37,7 @@ class EncryptionKeyRotator {
   @EventListener(ContextRefreshedEvent.class)
   public void rotate() {
     final long start = System.currentTimeMillis();
-    logger.info("Started encryption key rotation");
+    logger.info("Starting encryption key rotation.");
     final int[] count = {0};
 
     Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findNotEncryptedByActiveKey();
@@ -62,6 +62,10 @@ class EncryptionKeyRotator {
 
     final long finish = System.currentTimeMillis();
     final long delta = finish - start;
-    logger.info("Finished encryption key rotation of " + count[0] + " item(s) - took " + delta + " milliseconds.");
+    if (count[0] == 0) {
+      logger.info("Found no records in need of encryption key rotation.");
+    } else {
+      logger.info("Finished encryption key rotation of " + count[0] + " item(s) - took " + delta + " milliseconds.");
+    }
   }
 }
