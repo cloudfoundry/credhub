@@ -28,17 +28,22 @@ import java.security.spec.InvalidKeySpecException;
 @Component
 public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, Certificate> {
 
-  @Autowired
-  LibcryptoRsaKeyPairGenerator keyGenerator;
+  private final LibcryptoRsaKeyPairGenerator keyGenerator;
+  private final SignedCertificateGenerator signedCertificateGenerator;
+  private final CertificateAuthorityService certificateAuthorityService;
+  private final BouncyCastleProvider provider;
 
   @Autowired
-  SignedCertificateGenerator signedCertificateGenerator;
-
-  @Autowired
-  CertificateAuthorityService certificateAuthorityService;
-
-  @Autowired
-  BouncyCastleProvider provider;
+  public BCCertificateGenerator(
+      LibcryptoRsaKeyPairGenerator keyGenerator,
+      SignedCertificateGenerator signedCertificateGenerator,
+      CertificateAuthorityService certificateAuthorityService,
+      BouncyCastleProvider provider) {
+    this.keyGenerator = keyGenerator;
+    this.signedCertificateGenerator = signedCertificateGenerator;
+    this.certificateAuthorityService = certificateAuthorityService;
+    this.provider = provider;
+  }
 
   @Override
   public Certificate generateSecret(CertificateSecretParameters params) {

@@ -47,6 +47,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,24 +56,18 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class BCCertificateGeneratorTest {
-
-  @Autowired
   private BCCertificateGenerator subject;
 
-  @MockBean
+  private LibcryptoRsaKeyPairGenerator keyGenerator;
   private SignedCertificateGenerator signedCertificateGenerator;
+  private CertificateAuthorityService certificateAuthorityService;
+  private BouncyCastleProvider bouncyCastleProvider;
 
   @MockBean
-  LibcryptoRsaKeyPairGenerator keyGenerator;
+  private CurrentTimeProvider currentTimeProvider;
 
   @Autowired
   FakeKeyPairGenerator fakeKeyPairGenerator;
-
-  @MockBean
-  CertificateAuthorityService certificateAuthorityService;
-
-  @MockBean
-  CurrentTimeProvider currentTimeProvider;
 
   @MockBean
   RandomSerialNumberGenerator randomSerialNumberGenerator;
@@ -91,7 +86,14 @@ public class BCCertificateGeneratorTest {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      Security.addProvider(new BouncyCastleProvider());
+      keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
+      signedCertificateGenerator = mock(SignedCertificateGenerator.class);
+      certificateAuthorityService = mock(CertificateAuthorityService.class);
+      bouncyCastleProvider = new BouncyCastleProvider();
+
+      subject = new BCCertificateGenerator(keyGenerator, signedCertificateGenerator, certificateAuthorityService, bouncyCastleProvider);
+
+      Security.addProvider(bouncyCastleProvider);
 
       when(currentTimeProvider.getNow()).thenReturn(new Calendar.Builder().setInstant(22233333L).build());
       when(randomSerialNumberGenerator.generate()).thenReturn(BigInteger.TEN);
