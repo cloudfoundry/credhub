@@ -1,7 +1,6 @@
 package io.pivotal.security.service;
 
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,8 +18,7 @@ public class RetryingEncryptionService {
   private final EncryptionService encryptionService;
   private final EncryptionKeyCanaryMapper keyMapper;
   private final RemoteEncryptionConnectable remoteEncryptionConnectable;
-  private final Logger logger;
-  private boolean needsReconnect;
+  private final org.apache.logging.log4j.Logger logger;
 
   @Autowired
   public RetryingEncryptionService(EncryptionService encryptionService, EncryptionKeyCanaryMapper keyMapper, RemoteEncryptionConnectable remoteEncryptionConnectable) {
@@ -34,15 +32,15 @@ public class RetryingEncryptionService {
 
   public Encryption encrypt(Key encryptionKey, final String value) throws Exception {
     logger.info("Attempting encrypt");
-    return retryOnErrorWithRemappedKey(encryptionKey, key -> encryptionService.encrypt(key, value));
+    return (Encryption) retryOnErrorWithRemappedKey(encryptionKey, key -> encryptionService.encrypt(key, value));
   }
 
   public String decrypt(Key decryptionKey, final byte[] encryptedValue, final byte[] nonce) throws Exception {
     logger.info("Attempting decrypt");
-    return retryOnErrorWithRemappedKey(decryptionKey, key -> encryptionService.decrypt(key, encryptedValue, nonce));
+    return (String) retryOnErrorWithRemappedKey(decryptionKey, key -> encryptionService.decrypt(key, encryptedValue, nonce));
   }
 
-  private <T> T retryOnErrorWithRemappedKey(Key originalKey, ThrowingFunction<Key, T> operation) throws Exception {
+  private Object retryOnErrorWithRemappedKey(Key originalKey, ThrowingFunction<Key, Object> operation) throws Exception {
     preventReconnect();
 
     try {
@@ -53,7 +51,6 @@ public class RetryingEncryptionService {
 
       allowReconnect();
       UUID keyId = keyMapper.getUuidForKey(originalKey);
-      needsReconnect = true;
       try {
         reconnectAndRemapKeysToUuids(e);
         logger.info("Reconnected to the HSM");
@@ -67,37 +64,34 @@ public class RetryingEncryptionService {
     }
   }
 
-  private synchronized void reconnectAndRemapKeysToUuids(Exception originalException) throws Exception {
-    if (needsReconnect) {
-      preventCryptoDuringReconnect();
-      try {
-        remoteEncryptionConnectable.reconnect(originalException);
-        keyMapper.mapUuidsToKeys();
-        needsReconnect = false;
-      } finally {
-        allowCryptoAfterReconnect();
-      }
+  private void reconnectAndRemapKeysToUuids(Exception originalException) throws Exception {
+    takeOwnershipForReconnect();
+    try {
+      remoteEncryptionConnectable.reconnect(originalException);
+      keyMapper.mapUuidsToKeys();
+    } finally {
+      returnOwnershipAfterReconnect();
     }
-  }
-
-  private void allowReconnect() {
-    readWriteLock.readLock().unlock();
   }
 
   private void preventReconnect() {
     readWriteLock.readLock().lock();
   }
 
-  private void allowCryptoAfterReconnect() {
+  private void allowReconnect() {
+    readWriteLock.readLock().unlock();
+  }
+
+  private void returnOwnershipAfterReconnect() {
     readWriteLock.writeLock().unlock();
   }
 
-  private void preventCryptoDuringReconnect() {
+  private void takeOwnershipForReconnect() {
     readWriteLock.writeLock().lock();
   }
 
   @FunctionalInterface
-  private interface ThrowingFunction<T, R> {
+  interface ThrowingFunction<T,R> {
     R apply(T t) throws Exception;
   }
 }
