@@ -7,12 +7,12 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.data.CertificateAuthorityDataService;
-import io.pivotal.security.generator.BCCertificateAuthorityGenerator;
-import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.generator.BCCertificateAuthorityGenerator;
 import io.pivotal.security.generator.BCCertificateGenerator;
+import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -32,11 +32,12 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.security.Security;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.describedAs;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
@@ -44,7 +45,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -330,7 +330,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       Certificate secret = certificateGenerator.generateSecret(parameters);
 
       String originalPrivateKey = secret.getPrivateKey();
-      String originalCertificate = secret.getCertificate();
+      String originalCertificate = secret.getPublicKeyCertificate();
 
       NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
       namedCertificateSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
@@ -370,7 +370,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       Certificate secret = certificateGenerator.generateSecret(parameters);
 
       String originalPrivateKey = secret.getPrivateKey();
-      String originalCertificate = secret.getCertificate();
+      String originalCertificate = secret.getPublicKeyCertificate();
 
       NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
       namedCertificateSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());

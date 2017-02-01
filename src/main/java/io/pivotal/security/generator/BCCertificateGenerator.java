@@ -2,7 +2,6 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityService;
-import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -52,17 +51,17 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
         return new Certificate(null, certPem, privatePem);
       } else {
-        NamedCertificateAuthority ca = certificateAuthorityService.findMostRecent(params.getCaName());
+        Certificate ca = certificateAuthorityService.findMostRecent(params.getCaName());
 
-        String certificate = ca.getCertificate();
-        X500Name issuerDn = getIssuer(certificate);
-        PrivateKey issuerKey = getPrivateKey(ca);
+        String caCertificate = ca.getPublicKeyCertificate();
+        X500Name issuerDn = getIssuer(caCertificate);
+        PrivateKey issuerKey = getPrivateKey(ca.getPrivateKey());
 
         X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new Certificate(certificate, certPem, privatePem);
+        return new Certificate(caCertificate, certPem, privatePem);
       }
     } catch (ParameterizedValidationException e) {
       throw e;
@@ -71,8 +70,8 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     }
   }
 
-  private PrivateKey getPrivateKey(NamedCertificateAuthority ca) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-    PEMParser pemParser = new PEMParser(new StringReader(ca.getPrivateKey()));
+  private PrivateKey getPrivateKey(String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    PEMParser pemParser = new PEMParser(new StringReader(privateKey));
     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);

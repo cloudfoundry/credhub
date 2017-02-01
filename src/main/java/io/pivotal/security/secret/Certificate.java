@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Certificate implements Secret {
   private final String caCertificate;
-  private final String certificate;
+  private final String publicKeyCertificate;
   private final String privateKey;
 
-  public Certificate(String caCertificate, String certificate, String privateKey) {
+  public Certificate(String caCertificate, String publicKeyCertificate, String privateKey) {
     this.caCertificate = caCertificate;
-    this.certificate = certificate;
+    this.publicKeyCertificate = publicKeyCertificate;
     this.privateKey = privateKey;
   }
 
@@ -19,8 +19,8 @@ public class Certificate implements Secret {
   }
 
   @JsonProperty("certificate")
-  public String getCertificate() {
-    return certificate;
+  public String getPublicKeyCertificate() {
+    return publicKeyCertificate;
   }
 
   @JsonProperty("private_key")

@@ -34,17 +34,15 @@ public class SignedCertificateGenerator {
   @Autowired
   BouncyCastleProvider provider;
 
-  X509Certificate getSignedByIssuer(X500Name issuerDn, PrivateKey issuerKey, KeyPair keyPair,
-                                    CertificateSecretParameters params) throws Exception {
-    return get(issuerDn, issuerKey, keyPair, params);
-  }
-
   X509Certificate getSelfSigned(KeyPair keyPair, CertificateSecretParameters params) throws Exception {
-    return get(params.getDN(), keyPair.getPrivate(), keyPair, params);
+    return getSignedByIssuer(params.getDN(), keyPair.getPrivate(), keyPair, params);
   }
 
-  private X509Certificate get(X500Name issuerDn, PrivateKey issuerKey, KeyPair keyPair, CertificateSecretParameters
-      params) throws Exception {
+  X509Certificate getSignedByIssuer(
+      X500Name issuerDn,
+      PrivateKey issuerKey,
+      KeyPair keyPair,
+      CertificateSecretParameters params) throws Exception {
     Instant now = timeProvider.getNow().toInstant();
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
     ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider(provider).build(issuerKey);

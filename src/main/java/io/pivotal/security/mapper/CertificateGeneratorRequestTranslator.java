@@ -96,7 +96,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
 
     Certificate secret = certificateSecretGenerator.generateSecret(requestParameters);
     entity.setCa(secret.getCaCertificate());
-    entity.setCertificate(secret.getCertificate());
+    entity.setCertificate(secret.getPublicKeyCertificate());
     entity.setPrivateKey(secret.getPrivateKey());
     entity.setCaName(requestParameters.getCaName());
   }
