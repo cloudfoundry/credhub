@@ -1,13 +1,11 @@
 package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -21,10 +19,6 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -34,14 +28,12 @@ import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Calendar;
 import java.util.Date;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -53,8 +45,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class BCCertificateGeneratorTest {
   private BCCertificateGenerator subject;
 
@@ -63,14 +53,7 @@ public class BCCertificateGeneratorTest {
   private CertificateAuthorityService certificateAuthorityService;
   private BouncyCastleProvider bouncyCastleProvider;
 
-  @MockBean
-  private CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
-  FakeKeyPairGenerator fakeKeyPairGenerator;
-
-  @MockBean
-  RandomSerialNumberGenerator randomSerialNumberGenerator;
+  private FakeKeyPairGenerator fakeKeyPairGenerator;
 
   private KeyPair childCertificateKeyPair;
   private X500Name caDn;
@@ -83,8 +66,6 @@ public class BCCertificateGeneratorTest {
   private String privateKey;
 
   {
-    wireAndUnwire(this, false);
-
     beforeEach(() -> {
       keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
       signedCertificateGenerator = mock(SignedCertificateGenerator.class);
@@ -95,8 +76,7 @@ public class BCCertificateGeneratorTest {
 
       Security.addProvider(bouncyCastleProvider);
 
-      when(currentTimeProvider.getNow()).thenReturn(new Calendar.Builder().setInstant(22233333L).build());
-      when(randomSerialNumberGenerator.generate()).thenReturn(BigInteger.TEN);
+      fakeKeyPairGenerator = new FakeKeyPairGenerator();
 
       caDn = new X500Name("O=foo,ST=bar,C=mars");
       caKeyPair = fakeKeyPairGenerator.generate();
@@ -197,6 +177,8 @@ public class BCCertificateGeneratorTest {
         .getEncoded());
     ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC")
         .build(caPrivateKey);
+
+    CurrentTimeProvider currentTimeProvider = new CurrentTimeProvider();
 
     Instant now = currentTimeProvider.getNow().toInstant();
 
