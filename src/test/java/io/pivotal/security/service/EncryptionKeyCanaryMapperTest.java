@@ -108,12 +108,20 @@ public class EncryptionKeyCanaryMapperTest {
     });
 
     describe("when there is no active key", () -> {
-      beforeEach(() -> {
-        when(encryptionKeysConfiguration.getKeys()).thenReturn(asList());
+      describe("when the list of keys is empty", () -> {
+        itThrowsWithMessage("it throws warning about no active key", RuntimeException.class, "No active key was found", () -> {
+          when(encryptionKeysConfiguration.getKeys()).thenReturn(asList());
+
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+        });
       });
 
-      itThrowsWithMessage("a warning about no active key", RuntimeException.class, "No active key was found", () -> {
-        subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+      describe("when there are keys but the active key is null", () -> {
+        itThrowsWithMessage("it throws warning about no active key", RuntimeException.class, "No active key was found", () -> {
+          when(encryptionKeysConfiguration.getKeys()).thenReturn(asList(existingKey1Data));
+
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+        });
       });
     });
 

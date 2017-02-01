@@ -96,9 +96,7 @@ public class EncryptionKeyCanaryMapper {
   }
 
   private void ensureKeyIsInList(Key key, List<Key> encryptionKeys) {
-    final Optional<Key> firstMatchingKey = encryptionKeys.stream().filter(k -> key.equals(k)).findFirst();
-    // TODO this could be refactored to orElseThrow except there is a bug in the JDK :(
-    if (!firstMatchingKey.isPresent()) {
+    if (!encryptionKeys.contains(key)) {
       throw new RuntimeException("No active key was found");
     }
   }
