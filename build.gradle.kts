@@ -26,7 +26,7 @@ buildscript {
 apply {
     plugin("java")
     plugin("idea")
-    plugin("spring-boot")
+    plugin("org.springframework.boot")
     plugin("org.owasp.dependencycheck")
     plugin("com.github.hierynomus.license")
     plugin("jacoco")
