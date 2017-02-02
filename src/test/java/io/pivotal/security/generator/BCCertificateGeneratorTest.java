@@ -62,6 +62,11 @@ public class BCCertificateGeneratorTest {
   private Certificate rootCa;
   private X509Certificate rootCaX509Certificate;
 
+  private X500Name intermediateCaDn;
+  private KeyPair intermediateCaKeyPair;
+  private Certificate intermediateCa;
+  private X509Certificate intermediateX509Certificate;
+
   private CertificateSecretParameters inputParameters;
   private X509Certificate childX509Certificate;
 
@@ -82,8 +87,11 @@ public class BCCertificateGeneratorTest {
       rootCaKeyPair = fakeKeyPairGenerator.generate();
       X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(), rootCaDn, rootCaDn, true);
       rootCaX509Certificate = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
-      String rootCaPrivateKey = CertificateFormatter.pemOf(rootCaKeyPair.getPrivate());
-      rootCa = new Certificate(null, CertificateFormatter.pemOf(rootCaX509Certificate), rootCaPrivateKey);
+      rootCa = new Certificate(
+          null,
+          CertificateFormatter.pemOf(rootCaX509Certificate),
+          CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())
+      );
 
       inputParameters = new CertificateSecretParameters()
         .setOrganization("foo")
@@ -98,50 +106,97 @@ public class BCCertificateGeneratorTest {
     describe("when CA exists", () -> {
       final Supplier<KeyPair> childCertificateKeyPair = let(() -> fakeKeyPairGenerator.generate());
 
-      beforeEach(() -> {
-        when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
+      describe("and it is a root CA", () -> {
+        beforeEach(() -> {
+          when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
 
-        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair.get());
+          when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair.get());
 
-        X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
-            childCertificateKeyPair.get(),
-            rootCaKeyPair.getPrivate(),
-            rootCaDn
-        );
+          X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
+              childCertificateKeyPair.get(),
+              rootCaKeyPair.getPrivate(),
+              rootCaDn
+          );
 
-        childX509Certificate = new JcaX509CertificateConverter()
-            .setProvider("BC")
-            .getCertificate(childCertificateHolder);
+          childX509Certificate = new JcaX509CertificateConverter()
+              .setProvider("BC")
+              .getCertificate(childCertificateHolder);
 
-        when(
-            signedCertificateGenerator
-                .getSignedByIssuer(rootCaDn, rootCaKeyPair.getPrivate(), childCertificateKeyPair.get(), inputParameters)
-        ).thenReturn(childX509Certificate);
-      });
-
-      it("generates a valid childCertificate", () -> {
-        Certificate certificateSecret = subject.generateSecret(inputParameters);
-
-        assertThat(certificateSecret.getCaCertificate(),
-            equalTo(rootCa.getPublicKeyCertificate()));
-
-        assertThat(certificateSecret.getPrivateKey(),
-            equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
-
-        assertThat(certificateSecret.getPublicKeyCertificate(),
-            equalTo(CertificateFormatter.pemOf(childX509Certificate)));
-
-        verify(keyGenerator, times(1)).generateKeyPair(2048);
-      });
-
-      describe("when a key length is given", () -> {
-        beforeEach(() -> inputParameters.setKeyLength(4096));
+          when(
+              signedCertificateGenerator
+                  .getSignedByIssuer(rootCaDn, rootCaKeyPair.getPrivate(), childCertificateKeyPair.get(), inputParameters)
+          ).thenReturn(childX509Certificate);
+        });
 
         it("generates a valid childCertificate", () -> {
+          Certificate certificateSignedByRoot = subject.generateSecret(inputParameters);
+
+          assertThat(certificateSignedByRoot.getCaCertificate(),
+              equalTo(rootCa.getPublicKeyCertificate()));
+
+          assertThat(certificateSignedByRoot.getPrivateKey(),
+              equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
+
+          assertThat(certificateSignedByRoot.getPublicKeyCertificate(),
+              equalTo(CertificateFormatter.pemOf(childX509Certificate)));
+
+          verify(keyGenerator, times(1)).generateKeyPair(2048);
+        });
+
+        it("generates a valid childCertificate when a key length is given", () -> {
+          inputParameters.setKeyLength(4096);
+
           Certificate certificateSecret = subject.generateSecret(inputParameters);
 
           assertThat(certificateSecret, notNullValue());
           verify(keyGenerator, times(1)).generateKeyPair(4096);
+        });
+      });
+
+      describe("and it is an intermediate CA", () -> {
+        beforeEach(() -> {
+          intermediateCaDn = new X500Name("O=foo,ST=bar,C=intermediate");
+          intermediateCaKeyPair = fakeKeyPairGenerator.generate();
+          X509CertificateHolder intermediateCaCertificateHolder = makeCert(intermediateCaKeyPair, rootCaKeyPair.getPrivate(), rootCaDn, intermediateCaDn, true);
+          intermediateX509Certificate = new JcaX509CertificateConverter().setProvider("BC").getCertificate(intermediateCaCertificateHolder);
+          intermediateCa = new Certificate(
+              null,
+              CertificateFormatter.pemOf(intermediateX509Certificate),
+              CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate())
+          );
+          when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(intermediateCa);
+
+          when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair.get());
+
+          X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
+              childCertificateKeyPair.get(),
+              intermediateCaKeyPair.getPrivate(),
+              intermediateCaDn
+          );
+
+          childX509Certificate = new JcaX509CertificateConverter()
+              .setProvider("BC")
+              .getCertificate(childCertificateHolder);
+
+          when(
+              signedCertificateGenerator
+                  .getSignedByIssuer(intermediateCaDn, intermediateCaKeyPair.getPrivate(), childCertificateKeyPair.get(), inputParameters)
+          ).thenReturn(childX509Certificate);
+        });
+
+        it("generates a valid childCertificate", () -> {
+          Certificate certificateSignedByIntermediate = subject.generateSecret(inputParameters);
+
+          assertThat(certificateSignedByIntermediate.getCaCertificate(),
+              equalTo(intermediateCa.getPublicKeyCertificate()));
+
+          assertThat(certificateSignedByIntermediate.getPrivateKey(),
+              equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
+
+          assertThat(certificateSignedByIntermediate.getPublicKeyCertificate(),
+              equalTo(CertificateFormatter.pemOf(childX509Certificate)));
+
+          verify(keyGenerator, times(1)).generateKeyPair(2048);
         });
       });
     });

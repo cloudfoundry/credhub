@@ -59,7 +59,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         Certificate ca = certificateAuthorityService.findMostRecent(params.getCaName());
 
         String caCertificate = ca.getPublicKeyCertificate();
-        X500Name issuerDn = getIssuer(caCertificate);
+        X500Name issuerDn = getSubjectNameOfCa(caCertificate);
         PrivateKey issuerKey = getPrivateKey(ca.getPrivateKey());
 
         X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
@@ -82,9 +82,9 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 
-  private X500Name getIssuer(String ca) throws IOException, CertificateException {
+  private X500Name getSubjectNameOfCa(String ca) throws IOException, CertificateException {
     X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", provider)
         .generateCertificate(new ByteArrayInputStream(ca.getBytes()));
-    return new X500Name(certificate.getIssuerDN().getName());
+    return new X500Name(certificate.getSubjectDN().getName());
   }
 }
