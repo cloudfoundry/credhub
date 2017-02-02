@@ -8,19 +8,17 @@ import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
 import org.junit.runner.RunWith;
 
+import java.security.Key;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import java.security.Key;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 public class SecretEncryptionHelperTest {
@@ -59,7 +57,7 @@ public class SecretEncryptionHelperTest {
 
     describe("#refreshEncryptedValue", () -> {
       beforeEach(() -> {
-        when(encryptionService.encrypt(activeEncryptionKey, "fake-plaintext"))
+        when(encryptionService.encrypt(activeEncryptionKeyUuid, "fake-plaintext"))
             .thenReturn(new Encryption("some-encrypted-value".getBytes(), "some-nonce".getBytes()));
       });
 
@@ -112,7 +110,7 @@ public class SecretEncryptionHelperTest {
 
       describe("when there is an encrypted value", () -> {
         beforeEach(() -> {
-          when(encryptionService.decrypt(oldEncryptionKey, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
+          when(encryptionService.decrypt(oldEncryptionKeyUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()))
               .thenReturn("fake-plaintext-value");
         });
 
@@ -132,7 +130,7 @@ public class SecretEncryptionHelperTest {
         passwordGenerationParameters = new PasswordGenerationParameters().setExcludeSpecial(true);
         stringifiedParameters = new ObjectMapper().writeValueAsString(passwordGenerationParameters);
 
-        when(encryptionService.encrypt(activeEncryptionKey, stringifiedParameters))
+        when(encryptionService.encrypt(activeEncryptionKeyUuid, stringifiedParameters))
             .thenReturn(new Encryption("parameters-encrypted-value".getBytes(), "parameters-nonce".getBytes()));
       });
 
@@ -179,9 +177,9 @@ public class SecretEncryptionHelperTest {
 
     describe("#rotate", () -> {
       beforeEach(() -> {
-        when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
+        when(encryptionService.decrypt(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
             .thenReturn("plaintext");
-        when(encryptionService.encrypt(activeEncryptionKey ,"plaintext"))
+        when(encryptionService.encrypt(activeEncryptionKeyUuid ,"plaintext"))
             .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
       });
 
@@ -193,9 +191,7 @@ public class SecretEncryptionHelperTest {
           secret.setNonce("fake-nonce".getBytes());
 
           subject.rotate(secret);
-
-          verify(encryptionService, times(0)).encrypt(any(Key.class), any(String.class));
-          verify(encryptionService, times(0)).decrypt(any(Key.class), any(byte[].class), any(byte[].class));
+          verifyNoMoreInteractions(encryptionService);;
         });
       });
 
@@ -240,9 +236,9 @@ public class SecretEncryptionHelperTest {
 
           stringifiedParameters = new ObjectMapper().writeValueAsString(new PasswordGenerationParameters());
 
-          when(encryptionService.decrypt(oldEncryptionKey, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
+          when(encryptionService.decrypt(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
               .thenReturn(stringifiedParameters);
-          when(encryptionService.encrypt(activeEncryptionKey, stringifiedParameters))
+          when(encryptionService.encrypt(activeEncryptionKeyUuid, stringifiedParameters))
               .thenReturn(new Encryption("new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
 
           subject.rotate(password);

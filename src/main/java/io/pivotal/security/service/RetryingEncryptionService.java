@@ -34,24 +34,22 @@ public class RetryingEncryptionService {
     readWriteLock = new ReentrantReadWriteLock();
   }
 
-  public Encryption encrypt(Key encryptionKey, final String value) throws Exception {
+  public Encryption encrypt(UUID keyId, final String value) throws Exception {
     logger.info("Attempting encrypt");
-    return (Encryption) retryOnErrorWithRemappedKey(encryptionKey, key -> encryptionService.encrypt(key, value));
+    return retryOnErrorWithRemappedKey(keyId, key -> encryptionService.encrypt(key, value));
   }
 
-  public String decrypt(Key decryptionKey, final byte[] encryptedValue, final byte[] nonce) throws Exception {
+  public String decrypt(UUID keyId, final byte[] encryptedValue, final byte[] nonce) throws Exception {
     logger.info("Attempting decrypt");
-    return (String) retryOnErrorWithRemappedKey(decryptionKey, key -> encryptionService.decrypt(key, encryptedValue, nonce));
+    return retryOnErrorWithRemappedKey(keyId, key -> encryptionService.decrypt(key, encryptedValue, nonce));
   }
 
-  private <T> T retryOnErrorWithRemappedKey(Key originalKey, ThrowingFunction<Key, T> operation) throws Exception {
+  private <T> T retryOnErrorWithRemappedKey(UUID keyId, ThrowingFunction<Key, T> operation) throws Exception {
     return withPreventReconnectLock(() -> {
       try {
-        return operation.apply(originalKey);
+        return operation.apply(keyMapper.getKeyForUuid(keyId));
       } catch (IllegalBlockSizeException | ProviderException e) {
         logger.info("Operation failed: " + e.getMessage());
-
-        UUID keyId = keyMapper.getUuidForKey(originalKey);
 
         setNeedsReconnectFlag();
         withPreventCryptoLock(() -> {
@@ -107,7 +105,7 @@ public class RetryingEncryptionService {
   }
 
   @FunctionalInterface
-  interface ThrowingFunction<T,R> {
+  private interface ThrowingFunction<T, R> {
     R apply(T t) throws Exception;
   }
 

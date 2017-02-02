@@ -101,16 +101,14 @@ public class SecretEncryptionHelper {
   }
 
   private void encrypt(EncryptedValueContainer encryptedValueContainer, String clearTextValue) throws Exception {
-    Key activeEncryptionKey = encryptionKeyCanaryMapper.getActiveKey();
-    final Encryption encryption = encryptionService.encrypt(activeEncryptionKey, clearTextValue);
+    final Encryption encryption = encryptionService.encrypt(encryptionKeyCanaryMapper.getActiveUuid(), clearTextValue);
     encryptedValueContainer.setNonce(encryption.nonce);
     encryptedValueContainer.setEncryptedValue(encryption.encryptedValue);
   }
 
   private String decrypt(EncryptedValueContainer encryptedValueContainer) {
     try {
-      Key encryptionKey = encryptionKeyCanaryMapper.getKeyForUuid(encryptedValueContainer.getEncryptionKeyUuid());
-      return encryptionService.decrypt(encryptionKey, encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
+      return encryptionService.decrypt(encryptedValueContainer.getEncryptionKeyUuid(), encryptedValueContainer.getEncryptedValue(), encryptedValueContainer.getNonce());
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
