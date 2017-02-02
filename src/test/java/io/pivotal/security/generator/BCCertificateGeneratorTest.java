@@ -29,11 +29,13 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.let;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -55,15 +57,13 @@ public class BCCertificateGeneratorTest {
 
   private FakeKeyPairGenerator fakeKeyPairGenerator;
 
-  private KeyPair childCertificateKeyPair;
-  private X500Name caDn;
-  private KeyPair caKeyPair;
-  private Certificate certificateAuthority;
+  private X500Name rootCaDn;
+  private KeyPair rootCaKeyPair;
+  private Certificate rootCa;
+  private X509Certificate rootCaX509Certificate;
+
   private CertificateSecretParameters inputParameters;
-  private X509CertificateHolder childCertificateHolder;
-  private X509Certificate caX509Cert;
-  private X509Certificate childCertificate;
-  private String privateKey;
+  private X509Certificate childX509Certificate;
 
   {
     beforeEach(() -> {
@@ -78,12 +78,12 @@ public class BCCertificateGeneratorTest {
 
       fakeKeyPairGenerator = new FakeKeyPairGenerator();
 
-      caDn = new X500Name("O=foo,ST=bar,C=mars");
-      caKeyPair = fakeKeyPairGenerator.generate();
-      X509CertificateHolder caX509CertHolder = generateX509CertificateAuthority();
-      caX509Cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
-      privateKey = CertificateFormatter.pemOf(caKeyPair.getPrivate());
-      certificateAuthority = new Certificate(null, CertificateFormatter.pemOf(caX509Cert), privateKey);
+      rootCaDn = new X500Name("O=foo,ST=bar,C=root");
+      rootCaKeyPair = fakeKeyPairGenerator.generate();
+      X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(), rootCaDn, rootCaDn, true);
+      rootCaX509Certificate = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
+      String rootCaPrivateKey = CertificateFormatter.pemOf(rootCaKeyPair.getPrivate());
+      rootCa = new Certificate(null, CertificateFormatter.pemOf(rootCaX509Certificate), rootCaPrivateKey);
 
       inputParameters = new CertificateSecretParameters()
         .setOrganization("foo")
@@ -96,27 +96,41 @@ public class BCCertificateGeneratorTest {
     afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
 
     describe("when CA exists", () -> {
+      final Supplier<KeyPair> childCertificateKeyPair = let(() -> fakeKeyPairGenerator.generate());
+
       beforeEach(() -> {
-        childCertificateKeyPair = fakeKeyPairGenerator.generate();
-        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair);
-        when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(certificateAuthority);
-        childCertificateHolder = generateChildCertificateSignedByCa(
-            childCertificateKeyPair, caKeyPair.getPrivate(), caDn);
-        childCertificate = new JcaX509CertificateConverter()
-            .setProvider("BC").getCertificate(childCertificateHolder);
-        when(signedCertificateGenerator.getSignedByIssuer(caDn, caKeyPair.getPrivate(),
-            childCertificateKeyPair, inputParameters)).thenReturn(childCertificate);
+        when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(rootCa);
+
+        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair.get());
+
+        X509CertificateHolder childCertificateHolder = generateChildCertificateSignedByCa(
+            childCertificateKeyPair.get(),
+            rootCaKeyPair.getPrivate(),
+            rootCaDn
+        );
+
+        childX509Certificate = new JcaX509CertificateConverter()
+            .setProvider("BC")
+            .getCertificate(childCertificateHolder);
+
+        when(
+            signedCertificateGenerator
+                .getSignedByIssuer(rootCaDn, rootCaKeyPair.getPrivate(), childCertificateKeyPair.get(), inputParameters)
+        ).thenReturn(childX509Certificate);
       });
 
       it("generates a valid childCertificate", () -> {
         Certificate certificateSecret = subject.generateSecret(inputParameters);
 
         assertThat(certificateSecret.getCaCertificate(),
-            equalTo(certificateAuthority.getPublicKeyCertificate()));
+            equalTo(rootCa.getPublicKeyCertificate()));
+
         assertThat(certificateSecret.getPrivateKey(),
-            equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.getPrivate())));
+            equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
+
         assertThat(certificateSecret.getPublicKeyCertificate(),
-            equalTo(CertificateFormatter.pemOf(childCertificate)));
+            equalTo(CertificateFormatter.pemOf(childX509Certificate)));
+
         verify(keyGenerator, times(1)).generateKeyPair(2048);
       });
 
@@ -133,36 +147,31 @@ public class BCCertificateGeneratorTest {
     });
 
     describe("when the selfSign flag is set", () -> {
-      final X509Certificate[] certificate = new X509Certificate[1];
+      final Supplier<X509Certificate> certificate = let(() ->
+          new JcaX509CertificateConverter().setProvider("BC").getCertificate(generateX509SelfSignedCert())
+      );
 
       beforeEach(() -> {
         inputParameters.setCaName(null);
         inputParameters.setSelfSign(true);
-        X509CertificateHolder certHolder = generateX509SelfSignedCert();
-        certificate[0] = new JcaX509CertificateConverter()
-          .setProvider("BC").getCertificate(certHolder);
-        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(caKeyPair);
-        when(signedCertificateGenerator.getSelfSigned(caKeyPair, inputParameters)).thenReturn(certificate[0]);
+        when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
+        when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters)).thenReturn(certificate.get());
       });
 
       it("generates a valid self-signed certificate", () -> {
         Certificate certificateSecret = subject.generateSecret(inputParameters);
         assertThat(certificateSecret.getPrivateKey(),
-                equalTo(CertificateFormatter.pemOf(caKeyPair.getPrivate())));
+                equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
         assertThat(certificateSecret.getPublicKeyCertificate(),
-                equalTo(CertificateFormatter.pemOf(certificate[0])));
+                equalTo(CertificateFormatter.pemOf(certificate.get())));
         assertThat(certificateSecret.getCaCertificate(), nullValue());
-        verify(signedCertificateGenerator, times(1)).getSelfSigned(caKeyPair, inputParameters);
+        verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
       });
     });
   }
 
-  private X509CertificateHolder generateX509CertificateAuthority() throws Exception {
-    return makeCert(caKeyPair, caKeyPair.getPrivate(), caDn, caDn, true);
-  }
-
   private X509CertificateHolder generateX509SelfSignedCert() throws Exception {
-    return makeCert(caKeyPair, caKeyPair.getPrivate(), caDn, caDn, false);
+    return makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(), rootCaDn, rootCaDn, false);
   }
 
   private X509CertificateHolder generateChildCertificateSignedByCa(KeyPair certKeyPair,
@@ -171,8 +180,11 @@ public class BCCertificateGeneratorTest {
     return makeCert(certKeyPair, caPrivateKey, caDn, inputParameters.getDN(), false);
   }
 
-  private X509CertificateHolder makeCert(KeyPair certKeyPair, PrivateKey caPrivateKey,
-                                         X500Name caDn, X500Name subjectDN, boolean isCA) throws OperatorCreationException, NoSuchAlgorithmException, CertIOException {
+  private X509CertificateHolder makeCert(KeyPair certKeyPair,
+                                         PrivateKey caPrivateKey,
+                                         X500Name caDn,
+                                         X500Name subjectDN,
+                                         boolean isCA) throws OperatorCreationException, NoSuchAlgorithmException, CertIOException {
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(certKeyPair.getPublic()
         .getEncoded());
     ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC")
