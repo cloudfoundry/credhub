@@ -7,16 +7,11 @@ import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Slice;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 @Component
-@EnableAsync
-class EncryptionKeyRotator {
+public class EncryptionKeyRotator {
   private final SecretEncryptionHelper secretEncryptionHelper;
   private final SecretDataService secretDataService;
   private final CertificateAuthorityDataService certificateAuthorityDataService;
@@ -33,8 +28,6 @@ class EncryptionKeyRotator {
     this.logger = LogManager.getLogger(this.getClass());
   }
 
-  @Async
-  @EventListener(ContextRefreshedEvent.class)
   public void rotate() {
     final long start = System.currentTimeMillis();
     logger.info("Starting encryption key rotation.");
