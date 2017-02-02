@@ -54,7 +54,7 @@ class DyadicConnection  implements RemoteEncryptionConnectable {
   }
 
   @Override
-  public void reconnect(Exception originalException) {
-    // does retrying make sense for Dyadic
+  public void reconnect(Exception reasonForReconnect) {
+    // does retrying make sense for Dyadic?
   }
 }
