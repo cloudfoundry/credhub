@@ -41,8 +41,8 @@ public class CertificateSecretParameters implements RequestParameters {
   // Optional Certificate Parameters (not used in RDN)
   private int keyLength = 2048;
   private int durationDays = 365;
-  private String caName = "default";
   private boolean selfSign = false;
+  private String caName = "default";
   private boolean isCA = false;
 
   // Used for regen; contains RDN (NOT key length, duration days, or alternative names)
