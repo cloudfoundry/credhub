@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.util.Arrays;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.crypto.KeyGenerator;
@@ -40,27 +40,11 @@ class LunaConnection implements RemoteEncryptionConnectable {
   }
 
   @Override
-  synchronized public void reconnect(Exception originalException) {
+  synchronized public void reconnect(Exception reasonForReconnect) {
     if (!isLoggedIn()) {
       try {
         reinitialize();
-      } catch (Exception e) {
-        // todo: do we have to ignore this exception?
-        // throw new RuntimeException(e);
-        e.printStackTrace();
-      }
-
-      // todo: can this be replaced with findSlotFromLabel(tokenLabel)? (is partitionName a tokenLabel?)
-      int[] slots;
-      try {
-        slots = (int[]) lunaSlotManager.getClass().getMethod("getSlotList").invoke(lunaSlotManager);
-        Arrays.stream(slots).forEach(slot -> {
-          try {
-            login(slot, lunaProviderProperties.getPartitionPassword());
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
-        });
+        login(lunaProviderProperties.getPartitionName(), lunaProviderProperties.getPartitionPassword());
         makeKeyStore();
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -84,46 +68,34 @@ class LunaConnection implements RemoteEncryptionConnectable {
     return keyStore;
   }
 
-  // Reconnection should be exclusive (analogous to a DB write operation).
-  ReentrantReadWriteLock.WriteLock reconnectLock() {
-    return readWriteLock.writeLock();
-  }
-
-  // Normal HSM usage can happen in parallel (analogous to a DB read operation).
-  ReentrantReadWriteLock.ReadLock usageLock() {
-    return readWriteLock.readLock();
-  }
-
   private void makeKeyStore() throws Exception {
     keyStore = KeyStore.getInstance("Luna", provider);
     keyStore.load(null, null);
   }
 
-  private void login(String partitionName, String partitionPassword) throws Exception {
-    lunaSlotManager.getClass().getMethod("login", String.class, String.class).invoke(lunaSlotManager, partitionName, partitionPassword);
+  private void login(String partitionName, String partitionPassword) {
+    try {
+      lunaSlotManager.getClass().getMethod("login", String.class, String.class).invoke(lunaSlotManager, partitionName, partitionPassword);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  private void login(int slot, String partitionPassword) throws Exception {
-    lunaSlotManager.getClass().getMethod("login", int.class, String.class).invoke(lunaSlotManager, slot, partitionPassword);
-  }
-
-  private void reinitialize() throws Exception {
-    lunaSlotManager.getClass().getMethod("reinitialize").invoke(lunaSlotManager);
+  private void reinitialize() {
+    try {
+      lunaSlotManager.getClass().getMethod("reinitialize").invoke(lunaSlotManager);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private Boolean isLoggedIn() {
     try {
       return (Boolean) lunaSlotManager.getClass().getMethod("isLoggedIn").invoke(lunaSlotManager);
+    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+      throw new RuntimeException(e);
     } catch (Exception e) {
       return false;
-    }
-  }
-
-  int getNumberOfSlots() {
-    try {
-      return ((Integer) lunaSlotManager.getClass().getMethod("getNumberOfSlots").invoke(lunaSlotManager)).intValue();
-    } catch (Exception e) {
-      return 0;
     }
   }
 }
