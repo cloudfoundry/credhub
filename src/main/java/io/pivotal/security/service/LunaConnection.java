@@ -91,7 +91,7 @@ class LunaConnection implements RemoteEncryptionConnectable, KeyGeneratingConnec
   private Boolean isLoggedIn() {
     try {
       return (Boolean) lunaSlotManager.getClass().getMethod("isLoggedIn").invoke(lunaSlotManager);
-    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+    } catch (IllegalAccessException | NoSuchMethodException e) {
       throw new RuntimeException(e);
     } catch (Exception e) {
       return false;
