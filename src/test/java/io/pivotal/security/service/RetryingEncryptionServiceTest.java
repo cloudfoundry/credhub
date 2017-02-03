@@ -4,17 +4,11 @@ import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
-import javax.crypto.IllegalBlockSizeException;
-import java.security.Key;
-import java.security.ProviderException;
-import java.util.UUID;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -27,6 +21,13 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.security.Key;
+import java.security.ProviderException;
+import java.util.UUID;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import javax.crypto.IllegalBlockSizeException;
 
 @RunWith(Spectrum.class)
 public class RetryingEncryptionServiceTest {
