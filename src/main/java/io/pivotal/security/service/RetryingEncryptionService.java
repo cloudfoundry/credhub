@@ -55,7 +55,8 @@ public class RetryingEncryptionService {
         withPreventCryptoLock(() -> {
           if (needsReconnect()) {
             logger.info("Trying reconnect");
-            reconnectAndRemapKeysToUuids(e);
+            remoteEncryptionConnectable.reconnect(e);
+            keyMapper.mapUuidsToKeys();
             clearNeedsReconnectFlag();
           }
         });
@@ -63,11 +64,6 @@ public class RetryingEncryptionService {
         return operation.apply(keyMapper.getKeyForUuid(keyId));
       }
     });
-  }
-
-  private void reconnectAndRemapKeysToUuids(Exception originalException) throws Exception {
-    remoteEncryptionConnectable.reconnect(originalException);
-    keyMapper.mapUuidsToKeys();
   }
 
   private <T> T withPreventReconnectLock(ThrowingSupplier<T> operation) throws Exception {
