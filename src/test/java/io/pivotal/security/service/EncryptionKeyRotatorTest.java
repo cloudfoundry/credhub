@@ -17,9 +17,7 @@ import java.util.ArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static java.util.Arrays.asList;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(Spectrum.class)
 public class EncryptionKeyRotatorTest {
@@ -45,7 +43,7 @@ public class EncryptionKeyRotatorTest {
       passwordSecret = new NamedPasswordSecret();
       sshSecret = new NamedSshSecret();
 
-      when(secretDataService.findNotEncryptedByActiveKey())
+      when(secretDataService.findEncryptedWithAvailableInactiveKey())
           .thenReturn(new SliceImpl<>(asList(certificateSecret, passwordSecret)))
           .thenReturn(new SliceImpl<>(asList(sshSecret)))
           .thenReturn(new SliceImpl<>(new ArrayList<>()));
@@ -54,17 +52,17 @@ public class EncryptionKeyRotatorTest {
       certificateAuthority2 = new NamedCertificateAuthority();
       certificateAuthority3 = new NamedCertificateAuthority();
 
-      when(certificateAuthorityDataService.findNotEncryptedByActiveKey())
+      when(certificateAuthorityDataService.findEncryptedWithAvailableInactiveKey())
           .thenReturn(new SliceImpl<>(asList(certificateAuthority1, certificateAuthority2)))
           .thenReturn(new SliceImpl<>(asList(certificateAuthority3)))
           .thenReturn(new SliceImpl<>(new ArrayList<>()));
 
       final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(secretEncryptionHelper, secretDataService, certificateAuthorityDataService);
-      encryptionKeyRotator.rotate();
 
+      encryptionKeyRotator.rotate();
     });
 
-    it("should rotate all the secrets and CAs that were encrypted with an old key", () -> {
+    it("should rotate all the secrets and CAs that were encrypted with an available old key", () -> {
       verify(secretEncryptionHelper).rotate(certificateSecret);
       verify(secretEncryptionHelper).rotate(passwordSecret);
       verify(secretEncryptionHelper).rotate(sshSecret);
@@ -73,7 +71,7 @@ public class EncryptionKeyRotatorTest {
       verify(secretEncryptionHelper).rotate(certificateAuthority3);
     });
 
-    it("should save all the secrets, CAs that were encrypted with an old key", () -> {
+    it("should save all the secrets, CAs that were rotated", () -> {
       verify(secretDataService).save(certificateSecret);
       verify(secretDataService).save(passwordSecret);
       verify(secretDataService).save(sshSecret);

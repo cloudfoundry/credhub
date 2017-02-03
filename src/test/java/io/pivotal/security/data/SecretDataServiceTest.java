@@ -2,12 +2,7 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedRsaSecret;
-import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.entity.*;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -25,24 +20,18 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
@@ -73,6 +62,7 @@ public class SecretDataServiceTest {
 
   private final Consumer<Long> fakeTimeSetter;
   private UUID activeCanaryUuid;
+  private UUID unknownCanaryUuid;
 
   {
     wireAndUnwire(this, false);
@@ -84,6 +74,7 @@ public class SecretDataServiceTest {
       fakeTimeSetter.accept(345345L);
 
       activeCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
+      unknownCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
 
       when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeCanaryUuid);
     });
@@ -469,9 +460,11 @@ public class SecretDataServiceTest {
       });
     });
 
-    describe("#findNotEncryptedByActiveKey", () -> {
-      it("should return all versions of all secrets encrypted with an old key", () -> {
+    describe("#findEncryptedWithAvailableInactiveKey", () -> {
+      it("should return all versions of all secrets encrypted with a known and inactive key", () -> {
         UUID oldCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
+
+        when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys()).thenReturn(Arrays.asList(oldCanaryUuid));
 
         NamedPasswordSecret secret1 = saveNamedPassword(2000000000123L, "secret", oldCanaryUuid);
         NamedPasswordSecret secret2 = saveNamedPassword(3000000000123L, "ANOTHER", oldCanaryUuid);
@@ -481,11 +474,15 @@ public class SecretDataServiceTest {
         NamedPasswordSecret secretEncryptedWithActiveKey = saveNamedPassword(3000000000123L, "ANOTHER", activeCanaryUuid);
         NamedPasswordSecret newerSecretEncryptedWithActiveKey = saveNamedPassword(4000000000123L, "ANOTHER", activeCanaryUuid);
 
-        final Slice<NamedSecret> secrets = subject.findNotEncryptedByActiveKey();
+        NamedPasswordSecret secretEncryptedWithUnknownKey = saveNamedPassword(4000000000123L, "ANOTHER", unknownCanaryUuid);
+
+        final Slice<NamedSecret> secrets = subject.findEncryptedWithAvailableInactiveKey();
         List<UUID> secretUuids = secrets.getContent().stream().map(secret -> secret.getUuid()).collect(Collectors.toList());
 
         assertThat(secretUuids, not(contains(secretEncryptedWithActiveKey.getUuid())));
         assertThat(secretUuids, not(contains(newerSecretEncryptedWithActiveKey.getUuid())));
+
+        assertThat(secretUuids, not(contains(secretEncryptedWithUnknownKey.getUuid())));
 
         assertThat(secretUuids, containsInAnyOrder(secret1.getUuid(), secret2.getUuid(), secret3.getUuid(), secret1Newer.getUuid()));
       });

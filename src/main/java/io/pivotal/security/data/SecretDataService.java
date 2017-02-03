@@ -11,11 +11,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import static io.pivotal.security.repository.SecretRepository.SECRET_BATCH_SIZE;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -76,6 +76,10 @@ public class SecretDataService {
     return secretRepository.findOneByUuid(UUID.fromString(uuid));
   }
 
+  public NamedSecret findByUuid(UUID uuid) {
+    return secretRepository.findOneByUuid(uuid);
+  }
+
   public List<NamedSecret> findContainingName(String name) {
     return findMostRecentLikeSubstrings('%' + name + '%', StringUtils.stripStart(name, "/") + '%');
   }
@@ -115,10 +119,16 @@ public class SecretDataService {
     );
   }
 
-  public Slice<NamedSecret> findNotEncryptedByActiveKey() {
-    return secretRepository.findByEncryptionKeyUuidNot(
-        encryptionKeyCanaryMapper.getActiveUuid(),
-        new PageRequest(0, SECRET_BATCH_SIZE)
+  public Long countAllNotEncryptedByActiveKey() {
+    return secretRepository.countByEncryptionKeyUuidNot(
+      encryptionKeyCanaryMapper.getActiveUuid()
+    );
+  }
+
+  public Slice<NamedSecret> findEncryptedWithAvailableInactiveKey() {
+    return secretRepository.findByEncryptionKeyUuidIn(
+      encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
+      new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
     );
   }
 }

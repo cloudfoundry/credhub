@@ -8,18 +8,15 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.nio.charset.Charset;
-import java.security.Key;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Stream;
-
 import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+import java.nio.charset.Charset;
+import java.security.Key;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -73,6 +70,18 @@ public class EncryptionKeyCanaryMapper {
 
   public UUID getActiveUuid() {
     return activeUuid;
+  }
+
+  public List<UUID> getCanaryUuidsWithKnownAndInactiveKeys() {
+    List<UUID> list = new ArrayList<>();
+
+    encryptionKeyMap.forEach((uuid, key) -> {
+      if (key != null && !activeUuid.equals(uuid)) {
+        list.add(uuid);
+      }
+    });
+
+    return list;
   }
 
   private void createKeys() {

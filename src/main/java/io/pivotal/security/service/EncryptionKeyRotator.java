@@ -31,34 +31,40 @@ public class EncryptionKeyRotator {
   public void rotate() {
     final long start = System.currentTimeMillis();
     logger.info("Starting encryption key rotation.");
-    final int[] count = {0};
+    int rotatedRecordCount = 0;
 
-    Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findNotEncryptedByActiveKey();
+    final long startingNotRotatedRecordCount = secretDataService.countAllNotEncryptedByActiveKey() + certificateAuthorityDataService.countAllNotEncryptedByActiveKey();
+
+    Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findEncryptedWithAvailableInactiveKey();
     while (secretsEncryptedByOldKey.hasContent()) {
-      secretsEncryptedByOldKey.getContent().forEach(secret -> {
+      for (NamedSecret secret : secretsEncryptedByOldKey.getContent()) {
         secretEncryptionHelper.rotate(secret);
         secretDataService.save(secret);
-        count[0]++;
-      });
-      secretsEncryptedByOldKey = secretDataService.findNotEncryptedByActiveKey();
+        rotatedRecordCount++;
+      }
+      secretsEncryptedByOldKey = secretDataService.findEncryptedWithAvailableInactiveKey();
     }
 
-    Slice<NamedCertificateAuthority> certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findNotEncryptedByActiveKey();
+    Slice<NamedCertificateAuthority> certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findEncryptedWithAvailableInactiveKey();
     while (certificateAuthoritiesEncryptedByOldKey.hasContent()) {
-      certificateAuthoritiesEncryptedByOldKey.getContent().forEach(certificateAuthority -> {
+      for (NamedCertificateAuthority certificateAuthority : certificateAuthoritiesEncryptedByOldKey.getContent()) {
         secretEncryptionHelper.rotate(certificateAuthority);
         certificateAuthorityDataService.save(certificateAuthority);
-        count[0]++;
-      });
-      certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findNotEncryptedByActiveKey();
+        rotatedRecordCount++;
+      }
+      certificateAuthoritiesEncryptedByOldKey = certificateAuthorityDataService.findEncryptedWithAvailableInactiveKey();
     }
 
     final long finish = System.currentTimeMillis();
-    final long delta = finish - start;
-    if (count[0] == 0) {
+    final long duration = finish - start;
+    final long endingNotRotatedRecordCount = startingNotRotatedRecordCount - rotatedRecordCount;
+
+    if (rotatedRecordCount == 0 && endingNotRotatedRecordCount == 0) {
       logger.info("Found no records in need of encryption key rotation.");
     } else {
-      logger.info("Finished encryption key rotation of " + count[0] + " item(s) - took " + delta + " milliseconds.");
+      logger.info("Finished encryption key rotation in " + duration + " milliseconds. Details:");
+      logger.info("  Successfully rotated " + rotatedRecordCount + " item(s)");
+      logger.info("  Skipped " + endingNotRotatedRecordCount + " item(s) due to missing master encryption key(s).");
     }
   }
 }

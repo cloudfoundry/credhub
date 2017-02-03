@@ -8,33 +8,28 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 @RunWith(Spectrum.class)
 public class EncryptionKeyCanaryMapperTest {
@@ -44,15 +39,18 @@ public class EncryptionKeyCanaryMapperTest {
   private UUID activeCanaryUUID;
   private UUID existingCanaryUUID1;
   private UUID existingCanaryUUID2;
+  private UUID unknownCanaryUUID;
   private Key activeKey;
   private Key existingKey1;
   private Key existingKey2;
+  private Key unknownKey;
   private EncryptionKeyMetadata activeKeyData;
   private EncryptionKeyMetadata existingKey1Data;
   private EncryptionKeyMetadata existingKey2Data;
   private EncryptionKeyCanary activeEncryptionKeyCanary;
   private EncryptionKeyCanary existingEncryptionKeyCanary1;
   private EncryptionKeyCanary existingEncryptionKeyCanary2;
+  private EncryptionKeyCanary unknownCanary;
 
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
 
@@ -65,6 +63,7 @@ public class EncryptionKeyCanaryMapperTest {
       activeCanaryUUID = UUID.randomUUID();
       existingCanaryUUID1 = UUID.randomUUID();
       existingCanaryUUID2 = UUID.randomUUID();
+      unknownCanaryUUID = UUID.randomUUID();
 
       activeKeyData = new EncryptionKeyMetadata("activeDevKey", "activeDevKeyName", true);
       existingKey1Data = new EncryptionKeyMetadata("key1", "key1Name", false);
@@ -72,10 +71,12 @@ public class EncryptionKeyCanaryMapperTest {
       activeKey = mock(Key.class, "active key");
       existingKey1 = mock(Key.class, "key 1");
       existingKey2 = mock(Key.class, "key 2");
+      unknownKey = mock(Key.class, "key 3");
 
       activeEncryptionKeyCanary = createEncryptionCanary(activeCanaryUUID, "fake-active-encrypted-value", "fake-active-nonce", activeKey);
       existingEncryptionKeyCanary1 = createEncryptionCanary(existingCanaryUUID1, "fake-existing-encrypted-value1", "fake-existing-nonce1", existingKey1);
       existingEncryptionKeyCanary2 = createEncryptionCanary(existingCanaryUUID2, "fake-existing-encrypted-value2", "fake-existing-nonce2", existingKey2);
+      unknownCanary = createEncryptionCanary(unknownCanaryUUID, "fake-existing-encrypted-value3", "fake-existing-nonce3", unknownKey);
 
       when(encryptionService.encrypt(activeKey, CANARY_VALUE))
           .thenReturn(new Encryption("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
@@ -277,6 +278,7 @@ public class EncryptionKeyCanaryMapperTest {
           assertThat(subject.getKeyForUuid(activeCanaryUUID), equalTo(activeKey));
           assertThat(subject.getKeyForUuid(existingCanaryUUID1), equalTo(existingKey1));
           assertThat(subject.getKeyForUuid(existingCanaryUUID2), equalTo(existingKey2));
+          assertThat(subject.getCanaryUuidsWithKnownAndInactiveKeys().toArray(), arrayContainingInAnyOrder(existingCanaryUUID1, existingCanaryUUID2));
         });
 
         it("should set the active key's canary UUID as active", () -> {
@@ -298,10 +300,36 @@ public class EncryptionKeyCanaryMapperTest {
         it("should not include it in the returned map", () -> {
           assertThat(subject.getKeyForUuid(activeCanaryUUID), equalTo(activeKey));
           assertThat(subject.getKeyForUuid(existingCanaryUUID1), equalTo(existingKey1));
+          assertThat(subject.getKeyForUuid(existingCanaryUUID2), equalTo(null));
         });
 
         it("should set the active key's canary UUID as active", () -> {
           assertThat(subject.getActiveUuid(), equalTo(activeCanaryUUID));
+        });
+
+        it("should not include the UUID in getCanaryUuidsWithKnownAndInactiveKeys", () -> {
+          assertThat(subject.getCanaryUuidsWithKnownAndInactiveKeys().toArray(), arrayContainingInAnyOrder(existingCanaryUUID1));
+        });
+      });
+
+      describe("when there are canaries for keys that we don't have", () -> {
+        beforeEach(() -> {
+          when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(unknownCanary, activeEncryptionKeyCanary));
+
+          subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService, encryptionKeysConfiguration, encryptionService);
+        });
+
+        it("should not include it in the returned map", () -> {
+          assertThat(subject.getKeyForUuid(activeCanaryUUID), equalTo(activeKey));
+          assertThat(subject.getKeyForUuid(unknownCanaryUUID), equalTo(null));
+        });
+
+        it("should set the active key's canary UUID as active", () -> {
+          assertThat(subject.getActiveUuid(), equalTo(activeCanaryUUID));
+        });
+
+        it("should not include the UUID in getCanaryUuidsWithKnownAndInactiveKeys", () -> {
+          assertThat(subject.getCanaryUuidsWithKnownAndInactiveKeys().size(), equalTo(0));
         });
       });
     });

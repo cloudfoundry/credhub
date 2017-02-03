@@ -8,10 +8,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 
-import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
-
 import java.util.List;
 import java.util.UUID;
+
+import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 @Service
 public class CertificateAuthorityDataService {
@@ -46,10 +46,16 @@ public class CertificateAuthorityDataService {
     return certificateAuthorityRepository.findAllByNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
   }
 
-  public Slice<NamedCertificateAuthority> findNotEncryptedByActiveKey() {
-    return certificateAuthorityRepository.findByEncryptionKeyUuidNot(
-        encryptionKeyCanaryMapper.getActiveUuid(),
-        new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
+  public Long countAllNotEncryptedByActiveKey() {
+    return certificateAuthorityRepository.countByEncryptionKeyUuidNot(
+      encryptionKeyCanaryMapper.getActiveUuid()
+    );
+  }
+
+  public Slice<NamedCertificateAuthority> findEncryptedWithAvailableInactiveKey() {
+    return certificateAuthorityRepository.findByEncryptionKeyUuidIn(
+      encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
+      new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
     );
   }
 }

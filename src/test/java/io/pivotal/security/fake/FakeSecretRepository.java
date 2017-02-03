@@ -2,11 +2,7 @@ package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.repository.SecretRepository;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -83,7 +79,12 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public Slice<NamedSecret> findByEncryptionKeyUuidNot(UUID encryptionKeyUuid, Pageable page) {
+  public Long countByEncryptionKeyUuidNot(UUID encryptionKeyUuid) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Slice<NamedSecret> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page) {
     throw new UnsupportedOperationException();
   }
 

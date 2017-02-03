@@ -12,14 +12,13 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 
 public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
-  int SECRET_BATCH_SIZE = 50;
-
   NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name);
   NamedSecret findOneByUuid(UUID uuid);
 
   List<NamedSecret> deleteByNameIgnoreCase(String name);
   List<NamedSecret> findAllByNameIgnoreCase(String name);
-  Slice<NamedSecret> findByEncryptionKeyUuidNot(UUID encryptionKeyUuid, Pageable page);
+  Long countByEncryptionKeyUuidNot(UUID encryptionKeyUuid);
+  Slice<NamedSecret> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
 
   default List<String> findAllPaths(Boolean findPaths) {
     if (!findPaths) {

@@ -74,10 +74,10 @@ public class SpectrumHelper {
     });
   }
 
-  public static void wireAndUnwire(final Object testInstance, boolean cleanUpBeforeTests) {
+  public static void wireAndUnwire(final Object testInstance, boolean cleanUpAfterTests) {
     Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
     beforeEach(() -> myTestContextManagerSupplier.get().prepareTestInstance(testInstance));
-    if (cleanUpBeforeTests) {
+    if (cleanUpAfterTests) {
       cleanUpAfterTests(myTestContextManagerSupplier);
     }
     afterEach(cleanMockBeans(testInstance, myTestContextManagerSupplier));

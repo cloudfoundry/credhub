@@ -76,10 +76,7 @@ public class SecretEncryptionHelper {
   }
 
   public void rotate(EncryptedValueContainer secret) {
-    final UUID activeEncryptionKeyUuid = encryptionKeyCanaryMapper.getActiveUuid();
-    final boolean hasOldEncryptionKey = !activeEncryptionKeyUuid.equals(secret.getEncryptionKeyUuid());
-
-    if (hasOldEncryptionKey) {
+    if (usingOldEncryptionKey(secret)) {
       if (secret instanceof NamedPasswordSecret) {
         rotatePasswordParameters((NamedPasswordSecret) secret);
       }
@@ -93,7 +90,12 @@ public class SecretEncryptionHelper {
       }
     }
 
-    secret.setEncryptionKeyUuid(activeEncryptionKeyUuid);
+    secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+  }
+
+  private boolean usingOldEncryptionKey(EncryptedValueContainer secret) {
+    final UUID activeEncryptionKeyUuid = encryptionKeyCanaryMapper.getActiveUuid();
+    return !activeEncryptionKeyUuid.equals(secret.getEncryptionKeyUuid());
   }
 
   private void rotatePasswordParameters(NamedPasswordSecret password) {
