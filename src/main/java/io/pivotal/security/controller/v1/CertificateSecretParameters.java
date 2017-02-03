@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1Object;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -12,14 +11,16 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.openssl.PEMParser;
 import org.springframework.util.StringUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
+import java.io.StringReader;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -57,7 +58,16 @@ public class CertificateSecretParameters implements RequestParameters {
 
   public CertificateSecretParameters(String certificate) {
     try {
-      this.x500Name = getSubjectX500Name(certificate);
+      X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
+          .generateCertificate(new ByteArrayInputStream(certificate.getBytes()));
+
+      X509CertificateHolder certificateHolder = (X509CertificateHolder) (new PEMParser((new StringReader(certificate))).readObject());
+
+      this.x500Name = extractX500Name(cert);
+      this.keyLength = extractKeyLength(cert);
+      this.alternativeNames = getAlternativeNames(certificateHolder);
+      this.extendedKeyUsage = extractExtendedKeyUsage(certificateHolder);
+      this.keyUsage = extractKeyUsage(certificateHolder);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -146,14 +156,6 @@ public class CertificateSecretParameters implements RequestParameters {
     return builder.build();
   }
 
-  public CertificateSecretParameters addAlternativeNames(Extension encodedAlternativeNames) {
-    if (encodedAlternativeNames != null) {
-      this.alternativeNames = GeneralNames.getInstance(ASN1Sequence.getInstance(encodedAlternativeNames.getParsedValue()));
-    }
-
-    return this;
-  }
-
   public CertificateSecretParameters addAlternativeNames(String... alternativeNames) {
     GeneralName[] genNames = new GeneralName[alternativeNames.length];
     for (int i = 0; i < alternativeNames.length; i++) {
@@ -171,11 +173,6 @@ public class CertificateSecretParameters implements RequestParameters {
 
     this.alternativeNames = new GeneralNames(genNames);
 
-    return this;
-  }
-
-  public CertificateSecretParameters addExtendedKeyUsage(ExtendedKeyUsage extendedKeyUsage) {
-    this.extendedKeyUsage = extendedKeyUsage;
     return this;
   }
 
@@ -203,11 +200,6 @@ public class CertificateSecretParameters implements RequestParameters {
       }
     }
     this.extendedKeyUsage = new ExtendedKeyUsage(keyPurposeIds);
-    return this;
-  }
-
-  public CertificateSecretParameters addKeyUsage(KeyUsage keyUsage) {
-    this.keyUsage = keyUsage;
     return this;
   }
 
@@ -254,11 +246,11 @@ public class CertificateSecretParameters implements RequestParameters {
     return alternativeNames;
   }
 
-  public ASN1Object getExtendedKeyUsage() {
+  public ExtendedKeyUsage getExtendedKeyUsage() {
     return extendedKeyUsage;
   }
 
-  public ASN1Object getKeyUsage() {
+  public KeyUsage getKeyUsage() {
     return keyUsage;
   }
 
@@ -316,9 +308,24 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  private static X500Name getSubjectX500Name(String cert) throws IOException, CertificateException, NoSuchProviderException {
-    X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
-        .generateCertificate(new ByteArrayInputStream(cert.getBytes()));
-    return new X500Name(certificate.getSubjectDN().getName());
+  private static X500Name extractX500Name(X509Certificate cert) {
+    return new X500Name(cert.getSubjectDN().getName());
+  }
+
+  private static int extractKeyLength(X509Certificate cert) {
+    return ((RSAPublicKey) cert.getPublicKey()).getModulus().bitLength();
+  }
+
+  private static GeneralNames getAlternativeNames(X509CertificateHolder certificateHolder) throws CertificateParsingException {
+    Extension encodedAlternativeNames = certificateHolder.getExtension(Extension.subjectAlternativeName);
+    return GeneralNames.getInstance(encodedAlternativeNames.getParsedValue());
+  }
+
+  private static ExtendedKeyUsage extractExtendedKeyUsage(X509CertificateHolder certificateHolder) throws CertificateParsingException {
+    return ExtendedKeyUsage.fromExtensions(certificateHolder.getExtensions());
+  }
+
+  private static KeyUsage extractKeyUsage(X509CertificateHolder certificateHolder) {
+    return KeyUsage.fromExtensions(certificateHolder.getExtensions());
   }
 }

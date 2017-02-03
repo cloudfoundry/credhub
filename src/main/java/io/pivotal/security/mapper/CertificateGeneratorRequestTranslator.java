@@ -20,11 +20,16 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @Component
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {
 
-  @Autowired
-  SecretGenerator<CertificateSecretParameters, Certificate> certificateSecretGenerator;
+  private SecretGenerator<CertificateSecretParameters, Certificate> certificateSecretGenerator;
+  private CertificateSecretParametersFactory parametersFactory;
 
   @Autowired
-  CertificateSecretParametersFactory parametersFactory;
+  public CertificateGeneratorRequestTranslator(
+      SecretGenerator<CertificateSecretParameters, Certificate> certificateSecretGenerator,
+      CertificateSecretParametersFactory parametersFactory) {
+    this.certificateSecretGenerator = certificateSecretGenerator;
+    this.parametersFactory = parametersFactory;
+  }
 
   @Override
   public CertificateSecretParameters validRequestParameters(DocumentContext parsed, NamedCertificateSecret entity) {
@@ -34,13 +39,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
       if (isEmpty(entity.getCaName())) {
         throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_credentials");
       }
-      return new CertificateSecretParameters(entity.getCertificate())
-          .setCaName(entity.getCaName())
-          .setDurationDays(entity.getDurationDays())
-          .setKeyLength(entity.getKeyLength())
-          .addAlternativeNames(entity.getAlternativeNames())
-          .addKeyUsage(entity.getKeyUsage())
-          .addExtendedKeyUsage(entity.getExtendedKeyUsage());
+      return new CertificateSecretParameters(entity.getCertificate());
     }
 
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
@@ -129,7 +128,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   }
 
   private void assignDefaults(CertificateSecretParameters requestParameters) {
-    if (requestParameters.getIsCA() && requestParameters.getCaName() == "default") {
+    if (requestParameters.getIsCA() && requestParameters.getCaName().equals("default")) {
       requestParameters.setSelfSign(true);
     }
   }

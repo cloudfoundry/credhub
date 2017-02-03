@@ -16,17 +16,11 @@ import io.pivotal.security.secret.CertificateAuthority;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -35,15 +29,13 @@ import java.security.Security;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.controller.v1.CertificateSecretParametersTest.TEST_CERT;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
@@ -57,20 +49,16 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class CertificateGeneratorRequestTranslatorTest {
 
-  @Autowired
-  ParseContext jsonPath;
+  private CertificateGeneratorRequestTranslator subject;
 
-  @SpyBean
-  BCCertificateGenerator certificateGenerator;
+  private BCCertificateGenerator certificateGenerator;
+  private CertificateSecretParametersFactory certificateSecretParametersFactory;
+
+  @Autowired
+  private ParseContext jsonPath;
 
   @SpyBean
   BCCertificateAuthorityGenerator certificateAuthorityGenerator;
-
-  @MockBean
-  CertificateSecretParametersFactory certificateSecretParametersFactory;
-
-  @Autowired
-  CertificateGeneratorRequestTranslator subject;
 
   @SpyBean
   CertificateAuthorityDataService certificateAuthorityDataService;
@@ -86,6 +74,11 @@ public class CertificateGeneratorRequestTranslatorTest {
 
     beforeEach(() -> {
       Security.addProvider(new BouncyCastleProvider());
+
+      certificateGenerator = mock(BCCertificateGenerator.class);
+      certificateSecretParametersFactory = mock(CertificateSecretParametersFactory.class);
+      subject = new CertificateGeneratorRequestTranslator(certificateGenerator, certificateSecretParametersFactory);
+
       when(certificateSecretParametersFactory.get()).thenCallRealMethod();
     });
 
@@ -158,7 +151,6 @@ public class CertificateGeneratorRequestTranslatorTest {
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
-
     describe("making CAs", () -> {
       it("is CA when isCA is true and defaults to self-signed when 'ca' params is not present" , () -> {
         String json = "{" +
@@ -203,36 +195,13 @@ public class CertificateGeneratorRequestTranslatorTest {
         parsed = jsonPath.parse(json);
       });
 
-      it("fails on a certificate generator request", () -> {
-        try {
+      itThrowsWithMessage("for a certificate generation request", ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
           subject.validRequestParameters(parsed, null);
-          fail();
-        } catch (ParameterizedValidationException ve) {
-          assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
-        }
       });
 
-      it("fails on a certificate authority request", () -> {
-        try {
+      itThrowsWithMessage("for a certificate authority generation request", ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
           subject.validCertificateAuthorityParameters(parsed);
-          fail();
-        } catch (ParameterizedValidationException ve) {
-          assertThat(ve.getMessage(), equalTo("error.missing_certificate_parameters"));
-        }
       });
-    });
-
-    it("ensures that key length is set to default", () -> {
-      String json = "{" +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"organization\": \"organization.io\"" +
-          "}" +
-          "}";
-
-      DocumentContext parsed = jsonPath.parse(json);
-      CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
-      assertThat(params.getKeyLength(), equalTo(2048));
     });
 
     describe("params that should be excluded for Certificate Authority are excluded", () -> {
@@ -316,78 +285,20 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
     });
 
-    it("can regenerate using the existing entity and json", () -> {
-      NamedCertificateAuthority certificateAuthority = setupCa();
+    describe("regenerating certificates", () -> {
+      it("can creates correct parameters from entity from the entity", () -> {
+        NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
+            .setCertificate(TEST_CERT)
+            .setCaName("my-ca");
+        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(certificateSecret.getCertificate());
+        CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
+        assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
+      });
 
-      CertificateSecretParameters parameters = new CertificateSecretParameters();
-      parameters.setCaName("my-root");
-      parameters.setCommonName("Credhub Unit Tests");
-      parameters.setKeyLength(1024);
-      parameters.setDurationDays(30);
-      parameters.addAlternativeNames("another-name");
-      parameters.addExtendedKeyUsage("code_signing");
-      parameters.addKeyUsage("digital_signature", "non_repudiation");
-      Certificate secret = certificateGenerator.generateSecret(parameters);
-
-      String originalPrivateKey = secret.getPrivateKey();
-      String originalCertificate = secret.getPublicKeyCertificate();
-
-      NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
-      namedCertificateSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
-      namedCertificateSecret.setCaName("my-root");
-      namedCertificateSecret.setCa(secret.getCaCertificate());
-      namedCertificateSecret.setCertificate(originalCertificate);
-      namedCertificateSecret.setPrivateKey(originalPrivateKey);
-
-      subject.populateEntityFromJson(namedCertificateSecret, jsonPath.parse("{\"regenerate\":true}"));
-
-      assertThat(namedCertificateSecret.getCertificate(), not(equalTo(originalCertificate)));
-      assertNotNull(namedCertificateSecret.getCertificate());
-      assertThat(namedCertificateSecret.getPrivateKey(), not(equalTo(originalPrivateKey)));
-      assertNotNull(namedCertificateSecret.getPrivateKey());
-
-      assertThat(namedCertificateSecret.getCaName(), equalTo("my-root"));
-      assertThat(namedCertificateSecret.getCa(), equalTo(certificateAuthority.getCertificate()));
-
-      assertThat(namedCertificateSecret.getKeyLength(), equalTo(1024));
-      assertThat(namedCertificateSecret.getDurationDays(), equalTo(30));
-
-      ASN1Sequence alternativeNameSequence = (ASN1Sequence) namedCertificateSecret.getAlternativeNames().getParsedValue();
-      assertThat(((DERTaggedObject) alternativeNameSequence.getObjectAt(0)).getEncoded(), equalTo(new GeneralName(GeneralName.dNSName, "another-name").getEncoded()));
-
-      assertThat(namedCertificateSecret.getExtendedKeyUsage().hasKeyPurposeId(KeyPurposeId.id_kp_codeSigning), equalTo(true));
-      assertThat(namedCertificateSecret.getExtendedKeyUsage().hasKeyPurposeId(KeyPurposeId.id_kp_serverAuth), equalTo(false));
-
-      assertThat(namedCertificateSecret.getKeyUsage().hasUsages(KeyUsage.digitalSignature | KeyUsage.nonRepudiation), equalTo(true));
-    });
-
-    it("can regenerate using the existing entity and json when there are no alternative names", () -> {
-      setupCa();
-
-      CertificateSecretParameters parameters = new CertificateSecretParameters();
-      parameters.setCaName("my-root");
-      parameters.setCommonName("Credhub Unit Tests");
-      Certificate secret = certificateGenerator.generateSecret(parameters);
-
-      String originalPrivateKey = secret.getPrivateKey();
-      String originalCertificate = secret.getPublicKeyCertificate();
-
-      NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret();
-      namedCertificateSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
-      namedCertificateSecret.setCaName("my-root");
-      namedCertificateSecret.setCa(secret.getCaCertificate());
-      namedCertificateSecret.setCertificate(originalCertificate);
-      namedCertificateSecret.setPrivateKey(originalPrivateKey);
-
-      subject.populateEntityFromJson(namedCertificateSecret, jsonPath.parse("{\"regenerate\":true}"));
-
-      assertNull(namedCertificateSecret.getAlternativeNames());
-    });
-
-
-    itThrowsWithMessage("regeneration is not allowed if caName is not present", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
-      NamedCertificateSecret entity = new NamedCertificateSecret("foo");
-      subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
+      itThrowsWithMessage("regeneration is not allowed if caName is not present", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
+        NamedCertificateSecret entity = new NamedCertificateSecret("foo");
+        subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
+      });
     });
   }
 

@@ -13,14 +13,13 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
-import static io.pivotal.security.entity.NamedCertificateSecret.NEW_LINE;
-
 @Entity
 @Table(name = "RsaSecret")
 @DiscriminatorValue(NamedRsaSecret.SECRET_TYPE)
 public class NamedRsaSecret extends NamedRsaSshSecret {
   static private final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
   static private final String RSA_END = "\n-----END PUBLIC KEY-----";
+  static private final String NEW_LINE = "\n";
   public static final String SECRET_TYPE = "rsa";
 
   public NamedRsaSecret() {
