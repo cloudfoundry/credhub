@@ -6,21 +6,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 import java.security.Key;
-import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
 
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-
 @SuppressWarnings("unused")
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
-public class DyadicEncryptionService extends EncryptionService {
+public class DyadicEncryptionService extends EncryptionServiceWithConnection {
   private final DyadicConnection dyadicConnection;
 
   private SecureRandom secureRandom;
@@ -37,7 +34,7 @@ public class DyadicEncryptionService extends EncryptionService {
   }
 
   @Override
-  CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
+  EncryptionService.CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
     final String ccmCipherName = CipherTypes.CCM.toString();
     final Provider dyadicConnectionProvider = dyadicConnection.getProvider();
 
@@ -51,18 +48,6 @@ public class DyadicEncryptionService extends EncryptionService {
 
   @Override
   Key createKey(EncryptionKeyMetadata encryptionKeyMetadata) {
-    try {
-      KeyStore keyStore = dyadicConnection.getKeyStore();
-      String encryptionKeyAlias = encryptionKeyMetadata.getEncryptionKeyName();
-
-      if (!keyStore.containsAlias(encryptionKeyAlias)) {
-        SecretKey aesKey = dyadicConnection.getKeyGenerator().generateKey();
-        keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
-      }
-
-      return keyStore.getKey(encryptionKeyAlias, null);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return createKey(encryptionKeyMetadata, dyadicConnection);
   }
 }

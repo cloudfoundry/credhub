@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.KeyGenerator;
 import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.Provider;
@@ -12,11 +13,9 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.crypto.KeyGenerator;
-
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
-class LunaConnection implements RemoteEncryptionConnectable {
+class LunaConnection implements RemoteEncryptionConnectable, KeyGeneratingConnection {
   private Provider provider;
   private Object lunaSlotManager;
   private KeyStore keyStore;
@@ -60,11 +59,11 @@ class LunaConnection implements RemoteEncryptionConnectable {
     return secureRandom;
   }
 
-  KeyGenerator getKeyGenerator() {
+  public KeyGenerator getKeyGenerator() {
     return aesKeyGenerator;
   }
 
-  KeyStore getKeyStore() {
+  public KeyStore getKeyStore() {
     return keyStore;
   }
 
