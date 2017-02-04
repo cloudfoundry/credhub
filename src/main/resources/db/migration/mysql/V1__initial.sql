@@ -30,7 +30,7 @@ CREATE TABLE `auth_failure_audit_record` (
 --
 
 CREATE TABLE `named_secret` (
-  `foo` varchar(31) NOT NULL,
+  `type` varchar(31) NOT NULL,
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `encrypted_value` blob,
   `name` varchar(255) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE `named_certificate_authority` (
   `encrypted_value` blob,
   `name` varchar(255) NOT NULL,
   `nonce` tinyblob,
-  `foo` varchar(255) DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
   `updated_at` bigint(20) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_5ic6w4fi93q8y7xv7280yhsmr` (`name`)

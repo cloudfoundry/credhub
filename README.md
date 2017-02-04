@@ -50,5 +50,5 @@ tests, and then push your changes if all tests pass.
 - If credhub is running, kill the process
 - sudo vi bin/ctl and add these flags: -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=49151
 - sudo bin/ctl start
-- In IntelliJ, create a run configuration of foo "Remote" with the IP address of your VM and port number 49151
+- In IntelliJ, create a run configuration of type "Remote" with the IP address of your VM and port number 49151
 - Click the "Debug" button.
