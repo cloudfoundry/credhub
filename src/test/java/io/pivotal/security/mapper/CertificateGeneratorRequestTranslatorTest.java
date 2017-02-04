@@ -4,24 +4,18 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
-import io.pivotal.security.data.CertificateAuthorityDataService;
-import io.pivotal.security.entity.NamedCertificateAuthority;
 import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.generator.BCCertificateAuthorityGenerator;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.secret.CertificateAuthority;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.security.Security;
@@ -53,19 +47,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
   private BCCertificateGenerator certificateGenerator;
   private CertificateSecretParametersFactory certificateSecretParametersFactory;
-
-  @Autowired
   private ParseContext jsonPath;
-
-  @SpyBean
-  BCCertificateAuthorityGenerator certificateAuthorityGenerator;
-
-  @SpyBean
-  CertificateAuthorityDataService certificateAuthorityDataService;
-
-  @Autowired
-  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
 
@@ -73,13 +55,13 @@ public class CertificateGeneratorRequestTranslatorTest {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      Security.addProvider(new BouncyCastleProvider());
-
       certificateGenerator = mock(BCCertificateGenerator.class);
       certificateSecretParametersFactory = mock(CertificateSecretParametersFactory.class);
       subject = new CertificateGeneratorRequestTranslator(certificateGenerator, certificateSecretParametersFactory);
 
       when(certificateSecretParametersFactory.get()).thenCallRealMethod();
+
+      jsonPath = new JsonContextFactory().getObject();
     });
 
     it("knows keys for all valid parameters", () -> {
@@ -280,12 +262,15 @@ public class CertificateGeneratorRequestTranslatorTest {
 
         assertThat(secret.getCa(), equalTo("my-root"));
         assertThat(secret.getCertificate(), equalTo("my-cert"));
-        assertThat(secret.getPrivateKey(), equalTo("my-priv"));
         assertThat(secret.getCaName(), equalTo("my-ca-name"));
       });
     });
 
     describe("regenerating certificates", () -> {
+      beforeEach(() -> {
+        Security.addProvider(new BouncyCastleProvider());
+      });
+
       it("can creates correct parameters from entity from the entity", () -> {
         NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
             .setCertificate(TEST_CERT)
@@ -300,19 +285,5 @@ public class CertificateGeneratorRequestTranslatorTest {
         subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
       });
     });
-  }
-
-  private NamedCertificateAuthority setupCa() throws Exception {
-    CertificateSecretParameters authorityParameters = new CertificateSecretParameters();
-    authorityParameters.setCommonName("my-root");
-    CertificateAuthority certificateSecret = certificateAuthorityGenerator.generateSecret(authorityParameters);
-    NamedCertificateAuthority certificateAuthority = new NamedCertificateAuthority("my-root");
-    certificateAuthority.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
-    certificateAuthority.setCertificate(certificateSecret.getCertificate())
-        .setPrivateKey(certificateSecret.getPrivateKey());
-
-    when(certificateAuthorityDataService.findMostRecent("my-root")).thenReturn(certificateAuthority);
-
-    return certificateAuthority;
   }
 }
