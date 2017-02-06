@@ -97,6 +97,8 @@ public class SecretDataService {
     return secretRepository.deleteByNameIgnoreCase(name);
   }
 
+  public void deleteAll() { secretRepository.deleteAll(); }
+
   public List<NamedSecret> findAllByName(String name) {
     return secretRepository.findAllByNameIgnoreCase(name);
   }

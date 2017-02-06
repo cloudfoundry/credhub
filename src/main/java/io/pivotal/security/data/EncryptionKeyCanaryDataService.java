@@ -23,4 +23,6 @@ public class EncryptionKeyCanaryDataService {
   public List<EncryptionKeyCanary> findAll() {
     return encryptionKeyCanaryRepository.findAll();
   }
+
+  public void delete(EncryptionKeyCanary canary){ encryptionKeyCanaryRepository.delete(canary);}
 }

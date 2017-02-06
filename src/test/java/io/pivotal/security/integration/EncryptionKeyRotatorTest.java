@@ -13,7 +13,6 @@ import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.EncryptionKeyRotator;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static java.util.Collections.singletonList;
@@ -42,7 +44,6 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @RunWith(Spectrum.class)
-@Ignore("Extracted into chore #139053085. Failing with test pollution, we suspect that canaries are destroyed by another test.")
 public class EncryptionKeyRotatorTest {
   private NamedSecret secretWithCurrentKey;
   private NamedSecret secretWithOldKey;
@@ -66,9 +67,10 @@ public class EncryptionKeyRotatorTest {
   @Autowired
   EncryptionService encryptionService;
   private EncryptionKeyCanary unknownCanary;
+  private EncryptionKeyCanary oldCanary;
 
   {
-    wireAndUnwire(this, true);
+    wireAndUnwire(this, false);
 
     describe("when data exists that is encrypted with an unknown key", () -> {
       beforeEach(() -> {
@@ -77,7 +79,7 @@ public class EncryptionKeyRotatorTest {
         secretDataService.save(secretWithCurrentKey);
 
         Key oldKey = new SecretKeySpec(parseHexBinary("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0, 16, "AES");
-        EncryptionKeyCanary oldCanary = new EncryptionKeyCanary();
+        oldCanary = new EncryptionKeyCanary();
         final Encryption canaryEncryption = encryptionService.encrypt(oldKey, CANARY_VALUE);
         oldCanary.setEncryptedValue(canaryEncryption.encryptedValue);
         oldCanary.setNonce(canaryEncryption.nonce);
@@ -103,6 +105,12 @@ public class EncryptionKeyRotatorTest {
         secretDataService.save(secretWithUnknownKey);
       });
 
+      afterEach(() -> {
+        secretDataService.deleteAll();
+        encryptionKeyCanaryDataService.delete(oldCanary);
+        encryptionKeyCanaryDataService.delete(unknownCanary);
+      });
+
       it("should rotate data that it can decrypt (and it shouldn't loop forever!)", () -> {
         encryptionKeyRotator.rotate();
 
@@ -124,5 +132,6 @@ public class EncryptionKeyRotatorTest {
         assertThat(uuids, not(hasItem(secretWithCurrentKey.getUuid())));
       });
     });
+
   }
 }

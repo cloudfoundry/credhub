@@ -26,7 +26,10 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static javax.xml.bind.DatatypeConverter.parseHexBinary;
@@ -59,13 +62,14 @@ public class PasswordRotationTest {
 
   private MockMvc mockMvc;
   private String passwordName;
+  private EncryptionKeyCanary oldCanary;
 
   {
-    wireAndUnwire(this, true);
+    wireAndUnwire(this, false);
 
     beforeEach(() -> {
       Key oldKey = new SecretKeySpec(parseHexBinary("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0, 16, "AES");
-      EncryptionKeyCanary oldCanary = new EncryptionKeyCanary();
+      oldCanary = new EncryptionKeyCanary();
       final Encryption canaryEncryption = encryptionService.encrypt(oldKey, CANARY_VALUE);
       oldCanary.setEncryptedValue(canaryEncryption.encryptedValue);
       oldCanary.setNonce(canaryEncryption.nonce);
@@ -88,6 +92,11 @@ public class PasswordRotationTest {
       secretDataService.save(password);
 
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    });
+
+    afterEach(() -> {
+      secretDataService.deleteAll();
+      encryptionKeyCanaryDataService.delete(oldCanary);
     });
 
     describe("when a password with parameters is rotated", () -> {
