@@ -72,15 +72,13 @@ public class EncryptionKeyCanaryMapper {
     return activeUuid;
   }
 
+  public ArrayList<UUID> getKnownCanaryUuids() {
+    return new ArrayList<>(encryptionKeyMap.keySet());
+  }
+
   public List<UUID> getCanaryUuidsWithKnownAndInactiveKeys() {
-    List<UUID> list = new ArrayList<>();
-
-    encryptionKeyMap.forEach((uuid, key) -> {
-      if (key != null && !activeUuid.equals(uuid)) {
-        list.add(uuid);
-      }
-    });
-
+    List<UUID> list = getKnownCanaryUuids();
+    list.removeIf((uuid) -> activeUuid.equals(uuid));
     return list;
   }
 

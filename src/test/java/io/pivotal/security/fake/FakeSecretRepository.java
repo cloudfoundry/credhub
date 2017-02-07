@@ -84,6 +84,11 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
+  public Long countByEncryptionKeyUuidIn(List<UUID> uuids) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Slice<NamedSecret> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page) {
     throw new UnsupportedOperationException();
   }

@@ -121,10 +121,18 @@ public class SecretDataService {
     );
   }
 
+  public Long count() {
+    return secretRepository.count();
+  }
+
   public Long countAllNotEncryptedByActiveKey() {
     return secretRepository.countByEncryptionKeyUuidNot(
       encryptionKeyCanaryMapper.getActiveUuid()
     );
+  }
+
+  public Long countEncryptedWithKeyUuidIn(List<UUID> uuids) {
+    return secretRepository.countByEncryptionKeyUuidIn(uuids);
   }
 
   public Slice<NamedSecret> findEncryptedWithAvailableInactiveKey() {
