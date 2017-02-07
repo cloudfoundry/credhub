@@ -3,9 +3,9 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
-import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
       if (isEmpty(entity.getCaName())) {
         throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_credentials");
       }
-      return new CertificateSecretParameters(entity.getCertificate());
+      return new CertificateSecretParameters(entity.getCertificate(), entity.getCaName());
     }
 
     CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
@@ -57,7 +57,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
         .ifPresent(secretParameters::setCaName);
 
-    assignDefaults(secretParameters);
+    assignDefaults(entity, secretParameters);
     secretParameters.validate();
 
     return secretParameters;
@@ -127,9 +127,13 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     );
   }
 
-  private void assignDefaults(CertificateSecretParameters requestParameters) {
+  private void assignDefaults(NamedCertificateSecret entity, CertificateSecretParameters requestParameters) {
     if (requestParameters.getIsCA() && requestParameters.getCaName().equals("default")) {
       requestParameters.setSelfSign(true);
+    }
+
+    if (requestParameters.getSelfSign()) {
+      requestParameters.setCaName(entity.getName());
     }
   }
 }

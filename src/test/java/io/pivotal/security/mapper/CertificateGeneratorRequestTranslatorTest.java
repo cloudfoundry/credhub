@@ -20,10 +20,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.security.Security;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.controller.v1.CertificateSecretParametersTest.TEST_CERT;
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.controller.v1.CertificateSecretParametersTest.BIG_TEST_CERT;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -79,7 +77,7 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"country\": \"My Country\"," +
           "\"key_length\": 3072," +
           "\"duration\": 1000," +
-          "\"self_sign\": true," +
+          "\"self_sign\": false," +
           "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
           "\"extended_key_usage\": [\"server_auth\", \"client_auth\"]," +
           "\"key_usage\": [\"data_encipherment\", \"non_repudiation\"]," +
@@ -96,7 +94,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setType("certificate");
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
-      expectedParameters.setSelfSign(true);
+      expectedParameters.setSelfSign(false);
       expectedParameters.addAlternativeNames("my-alternative-name-1", "my-alternative-name-2");
       expectedParameters.addExtendedKeyUsage("server_auth", "client_auth");
       expectedParameters.addKeyUsage("data_encipherment", "non_repudiation");
@@ -111,6 +109,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
     it("ensures that all of the necessary parameters have been provided", () -> {
       String json = "{" +
+          "\"name\":\"My Name\"," +
           "\"type\":\"certificate\"," +
           "\"parameters\":{" +
           "\"organization\": \"organization.io\"," +
@@ -136,6 +135,7 @@ public class CertificateGeneratorRequestTranslatorTest {
     describe("making CAs", () -> {
       it("is CA when isCA is true and defaults to self-signed when 'ca' params is not present" , () -> {
         String json = "{" +
+          "\"name\":\"My Name\"," +
           "\"type\":\"certificate\"," +
           "\"parameters\":{" +
           "\"organization\": \"organization.io\"," +
@@ -144,13 +144,16 @@ public class CertificateGeneratorRequestTranslatorTest {
           "}";
 
         DocumentContext parsed = jsonPath.parse(json);
-        CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
+        NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
+        CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
         assertThat(params.getIsCA(), equalTo(true));
         assertThat(params.getSelfSign(), equalTo(true));
+        assertThat(params.getCaName(), equalTo("my-secret"));
       });
 
       it("is CA when isCA is true and respects CA param (which will be used to sign this CA)", () -> {
         String json = "{" +
+          "\"name\":\"My Name\"," +
           "\"type\":\"certificate\"," +
           "\"parameters\":{" +
           "\"organization\": \"organization.io\"," +
@@ -160,7 +163,8 @@ public class CertificateGeneratorRequestTranslatorTest {
           "}";
 
         DocumentContext parsed = jsonPath.parse(json);
-        CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
+        NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
+        CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
         assertThat(params.getIsCA(), equalTo(true));
         assertThat(params.getSelfSign(), equalTo(false));
         assertThat(params.getCaName(), equalTo("My Ca"));
@@ -273,9 +277,9 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       it("can creates correct parameters from entity from the entity", () -> {
         NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
-            .setCertificate(TEST_CERT)
+            .setCertificate(BIG_TEST_CERT)
             .setCaName("my-ca");
-        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(certificateSecret.getCertificate());
+        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(certificateSecret.getCertificate(), certificateSecret.getCaName());
         CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
         assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
       });
@@ -283,6 +287,34 @@ public class CertificateGeneratorRequestTranslatorTest {
       itThrowsWithMessage("regeneration is not allowed if caName is not present", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
         NamedCertificateSecret entity = new NamedCertificateSecret("foo");
         subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
+      });
+    });
+
+    describe("self-signed certificates", () -> {
+      it("should set name of the ca to the name of the credential", () -> {
+        String json = "{" +
+            "\"type\":\"certificate\"," +
+            "\"name\":\"My Name\"," +
+            "\"parameters\":{" +
+            "\"organization\": \"organization.io\"," +
+            "\"state\": \"My State\"," +
+            "\"country\": \"My Country\"," +
+            "\"self_sign\": true" +
+            "}" +
+            "}";
+        DocumentContext parsed = jsonPath.parse(json);
+
+        CertificateSecretParameters expectedParameters = new CertificateSecretParameters()
+            .setOrganization("organization.io")
+            .setState("My State")
+            .setCountry("My Country")
+            .setType("certificate")
+            .setSelfSign(true)
+            .setCaName("My Name");
+
+        NamedCertificateSecret entity = new NamedCertificateSecret("My Name");
+        CertificateSecretParameters parameters = subject.validRequestParameters(parsed, entity);
+        assertThat(parameters, samePropertyValuesAs(expectedParameters));
       });
     });
   }
