@@ -6,6 +6,16 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -16,16 +26,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "NamedSecret")
@@ -43,9 +46,6 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @GeneratedValue(generator = "uuid2")
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
-
-  @Column(unique = true, nullable = false)
-  private String name;
 
   @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
   private byte[] encryptedValue;
@@ -68,13 +68,22 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
   private UUID encryptionKeyUuid;
 
-  public NamedSecret() {
-    this(null);
+  @ManyToOne
+  @JoinColumn(name="secret_name_uuid", nullable=false)
+  private SecretName secretName;
+
+  public NamedSecret(SecretName name) {
+    setSecretName(name);
   }
 
   public NamedSecret(String name) {
-    setName(name);
+    if (this.getSecretName() == null) {
+      SecretName secretName = new SecretName(name);
+      this.setSecretName(secretName);
+    }
   }
+
+  public NamedSecret() { /* yay Hibernate */ }
 
   public UUID getUuid() {
     return uuid;
@@ -85,12 +94,16 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return (Z) this;
   }
 
-  public String getName() {
-    return name;
+  public SecretName getSecretName() {
+    return secretName;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setSecretName(SecretName secretName) {
+    this.secretName = secretName;
+  }
+
+  public String getName() {
+    return secretName.getName();
   }
 
   public byte[] getEncryptedValue() {
@@ -149,7 +162,7 @@ abstract public class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   abstract void copyIntoImpl(Z copy);
 
   public void copyInto(Z copy) {
-    copy.setName(name);
+    copy.setSecretName(getSecretName());
     copy.setEncryptedValue(encryptedValue);
     copy.setNonce(nonce);
     copy.setEncryptionKeyUuid(encryptionKeyUuid);

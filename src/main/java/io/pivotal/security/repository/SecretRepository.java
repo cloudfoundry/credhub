@@ -13,16 +13,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
-  NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name);
   NamedSecret findOneByUuid(UUID uuid);
-
   @Transactional
-  long deleteByNameIgnoreCase(String name);
-  List<NamedSecret> findAllByNameIgnoreCase(String name);
+  long deleteBySecretNameUuid(UUID secretNameUuid);
   Long countByEncryptionKeyUuidNot(UUID encryptionKeyUuid);
   Long countByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);
   Slice<NamedSecret> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
-
+  List<NamedSecret> findAllBySecretNameUuid(UUID uuid);
+  NamedSecret findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
   default List<String> findAllPaths(Boolean findPaths) {
     if (!findPaths) {
       return newArrayList();

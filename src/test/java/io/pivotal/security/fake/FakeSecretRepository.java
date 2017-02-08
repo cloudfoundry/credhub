@@ -2,7 +2,11 @@ package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.repository.SecretRepository;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,17 +25,12 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public NamedSecret findOneByUuid(UUID uuid) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public long deleteByNameIgnoreCase(String name) {
+  public long deleteBySecretNameUuid(UUID secretNameUuid) {
     throw new UnsupportedOperationException();
   }
 
@@ -74,11 +73,6 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findAllByNameIgnoreCase(String name) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public Long countByEncryptionKeyUuidNot(UUID encryptionKeyUuid) {
     throw new UnsupportedOperationException();
   }
@@ -90,6 +84,16 @@ public class FakeSecretRepository implements SecretRepository {
 
   @Override
   public Slice<NamedSecret> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public List<NamedSecret> findAllBySecretNameUuid(UUID uuid) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public NamedSecret findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(UUID uuid) {
     throw new UnsupportedOperationException();
   }
 

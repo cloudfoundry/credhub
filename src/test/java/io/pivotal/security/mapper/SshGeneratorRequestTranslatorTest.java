@@ -6,9 +6,10 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
-import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -142,7 +143,8 @@ public class SshGeneratorRequestTranslatorTest {
         String sshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDI2N6/Mn0S11V+zqxOBF5ZF8lpHPhbrEqV3g8SNkCS4MhDD/KZcAKEaV80qdm6uDFQkKv6XdlHy7HWsxaFq05RM0pOoZU2P2SWGI9FXP9yCqzwTQebF5xi3CHuhHXjndnRCXJtC/gZvf5y2vXga/cSWWMgZFok42Jf1EMw8GOMF4373th/ApwHLuxoo965EKVaPsbgJjOOS6YmI3TImtZAInR0bWKSNP0/J9Il6TluelR2BKE8k/KRSSgBZgOLL5XSI3VHNfyBoU99HRn94pyYftrg6Pa0A8gdwD4GopYwidvNyRLoCrocl5kcnNdCzJ6qdAU4wEAq/wYxN71mfZY5zqG2LbJGXLxc0hfR4mkdxb60xTuLrNHVnS0BdIy2SB+ftQeNHwsmAhqkQa6Sg5GPIDLUh84ir1wnXog6Px8yw2UzCgGB9PekP2N0X0iYsjlsqI/e9B3C7fWoDDlzfmhHsVtWmxcABBRGyFAS5quPP4guuqADjuUjEJAWVUl7a+0= foocomment";
 
         NamedSshSecret secret = new NamedSshSecret();
-        secret.setName("test");
+
+        secret.setSecretName(new SecretName("test"));
         secret.setPublicKey(sshPublicKey);
         secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         secret.setPrivateKey("fakeprivatekey");

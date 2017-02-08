@@ -2,15 +2,20 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.entity.NamedSecretImpl;
+import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 import java.time.Instant;
@@ -19,49 +24,49 @@ import java.util.UUID;
 
 @Service
 public class SecretDataService {
-  private static final String FIND_MOST_RECENT_BY_SUBSTRING_QUERY =
-    "SELECT DISTINCT " +
-      "name, " +
-      "version_created_at " +
-    "FROM " +
-      "named_secret " +
-    "INNER JOIN ( " +
-      "SELECT " +
-        "UPPER(name) AS inner_name, " +
-        "MAX(version_created_at) AS inner_version_created_at " +
-      "FROM " +
-        "named_secret " +
-      "GROUP BY " +
-        "UPPER(name) " +
-    ") AS most_recent " +
-    "ON " +
-      "named_secret.version_created_at = most_recent.inner_version_created_at " +
-    "AND " +
-      "UPPER(named_secret.name) = most_recent.inner_name " +
-    "WHERE " +
-      "UPPER(named_secret.name) LIKE UPPER(?) " +
-    "ORDER BY version_created_at DESC";
-
   private final SecretRepository secretRepository;
+  private final SecretNameRepository secretNameRepository;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+
+  private final String FIND_MATCHING_NAME_QUERY =
+      " select name.name, secret.version_created_at from (" +
+      "   select" +
+      "     max(version_created_at) as version_created_at," +
+      "     secret_name_uuid" +
+      "   from named_secret group by secret_name_uuid" +
+      " ) as secret inner join (" +
+      "   select * from secret_name" +
+      "     where lower(name) like lower(?)" +
+      " ) as name" +
+      " on secret.secret_name_uuid = name.uuid" +
+      " order by version_created_at desc";
 
   @Autowired
   SecretDataService(
       SecretRepository secretRepository,
+      SecretNameRepository secretNameRepository,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper
   ) {
     this.secretRepository = secretRepository;
+    this.secretNameRepository = secretNameRepository;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
-    namedSecret.setName(addLeadingSlashIfMissing(namedSecret.getName()));
+    namedSecret.getSecretName().setName(addLeadingSlashIfMissing(namedSecret.getName()));
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
+
+    SecretName secretName = namedSecret.getSecretName();
+
+    if (secretName.getUuid() == null) {
+      namedSecret.setSecretName(createOrFindSecretName(secretName.getName()));
+    }
+
     return secretRepository.saveAndFlush(namedSecret);
   }
 
@@ -70,7 +75,13 @@ public class SecretDataService {
   }
 
   public NamedSecret findMostRecent(String name) {
-    return secretRepository.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(addLeadingSlashIfMissing(name));
+    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+
+    if (secretName == null) {
+      return null;
+    } else {
+      return secretRepository.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid());
+    }
   }
 
   public NamedSecret findByUuid(String uuid) {
@@ -82,40 +93,32 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> findContainingName(String name) {
-    return findMostRecentLikeSubstring('%' + name + '%');
+    return findMatchingName("%" + name + "%");
   }
 
   public List<NamedSecret> findStartingWithPath(String path) {
     path = addLeadingSlashIfMissing(path);
     path = !path.endsWith("/") ? path + "/" : path;
 
-    return findMostRecentLikeSubstring(path + "%");
+    return findMatchingName(path + "%");
   }
 
   public long delete(String name) {
-    return secretRepository.deleteByNameIgnoreCase(addLeadingSlashIfMissing(name));
+    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+
+    if (secretName != null) {
+      return secretRepository.deleteBySecretNameUuid(secretName.getUuid());
+    } else {
+      return 0;
+    }
   }
 
   public void deleteAll() { secretRepository.deleteAll(); }
 
   public List<NamedSecret> findAllByName(String name) {
-    return secretRepository.findAllByNameIgnoreCase(addLeadingSlashIfMissing(name));
-  }
+    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
 
-  private List<NamedSecret> findMostRecentLikeSubstring(String substring) {
-    // The subquery gets us the right name/version_created_at pairs, but changes the capitalization of the names.
-    return jdbcTemplate.query(
-        FIND_MOST_RECENT_BY_SUBSTRING_QUERY,
-      new Object[] {substring},
-      (rowSet, rowNum) -> {
-        NamedSecret secret = new NamedSecretImpl();
-
-        secret.setName(rowSet.getString("name"));
-        secret.setVersionCreatedAt(Instant.ofEpochMilli(rowSet.getLong("version_created_at")));
-
-        return secret;
-      }
-    );
+    return secretName != null ? secretRepository.findAllBySecretNameUuid(secretName.getUuid()) : newArrayList();
   }
 
   public Long count() {
@@ -136,6 +139,28 @@ public class SecretDataService {
     return secretRepository.findByEncryptionKeyUuidIn(
       encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
       new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
+    );
+  }
+
+  private SecretName createOrFindSecretName(String name) {
+    try {
+      return secretNameRepository.saveAndFlush(new SecretName(name));
+    } catch (DataIntegrityViolationException | ConstraintViolationException e) {
+      return secretNameRepository.findOneByNameIgnoreCase(name);
+    }
+  }
+
+  private List<NamedSecret> findMatchingName(String nameLike) {
+    return jdbcTemplate.query(
+        FIND_MATCHING_NAME_QUERY,
+        new Object[]{nameLike},
+        (rowSet, rowNum) -> {
+          SecretName secretName = new SecretName(rowSet.getString("name"));
+          NamedSecret secret = new NamedSecretImpl();
+          secret.setSecretName(secretName);
+          secret.setVersionCreatedAt(Instant.ofEpochMilli(rowSet.getLong("version_created_at")));
+          return secret;
+        }
     );
   }
 

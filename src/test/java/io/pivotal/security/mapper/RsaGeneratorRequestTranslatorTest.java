@@ -6,6 +6,7 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
+import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.entity.NamedRsaSecret;
 import io.pivotal.security.generator.RsaGenerator;
@@ -131,7 +132,8 @@ public class RsaGeneratorRequestTranslatorTest {
 
       it("can regenerate using the existing entity and JSON", () -> {
         NamedRsaSecret secret = spy(NamedRsaSecret.class);
-        secret.setName("test");
+        SecretName secretName = new SecretName("test");
+        secret.setSecretName(secretName);
         when(secret.getKeyLength()).thenReturn(3072);
 
         ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor.forClass(RsaSecretParameters.class);
