@@ -1,7 +1,7 @@
 UPDATE
   named_certificate_authority
 SET
-  name = CONCAT('/', name)
+  name = '/' || name
 WHERE
   name NOT LIKE '/%';
 
@@ -9,7 +9,7 @@ WHERE
 UPDATE
   certificate_secret
 SET
-  ca_name = CONCAT('/', ca_name)
+  ca_name = '/' || ca_name
 WHERE
   ca_name IS NOT NULL AND ca_name NOT LIKE '/%';
 
@@ -17,7 +17,7 @@ WHERE
 UPDATE
   certificate_secret
 SET
-  ca_name = CONCAT(ca_name, '-ca')
+  ca_name = ca_name || '-ca'
 WHERE
   EXISTS(
     SELECT 1
@@ -30,7 +30,7 @@ WHERE
 UPDATE
   named_certificate_authority
 SET
-  name = CONCAT(named_certificate_authority.name, '-ca')
+  name = named_certificate_authority.name || '-ca'
 WHERE
   EXISTS(
     SELECT name
