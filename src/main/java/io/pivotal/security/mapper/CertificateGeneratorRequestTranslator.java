@@ -42,48 +42,37 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
       return new CertificateSecretParameters(entity.getCertificate(), entity.getCaName());
     }
 
-    CertificateSecretParameters secretParameters = validCertificateAuthorityParameters(parsed);
-
+    CertificateSecretParameters secretParameters = parametersFactory.get();
+    Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
+      .ifPresent(secretParameters::setCommonName);
+    Optional.ofNullable(parsed.read("$.parameters.organization", String.class))
+      .ifPresent(secretParameters::setOrganization);
+    Optional.ofNullable(parsed.read("$.parameters.organization_unit", String.class))
+      .ifPresent(secretParameters::setOrganizationUnit);
+    Optional.ofNullable(parsed.read("$.parameters.locality", String.class))
+      .ifPresent(secretParameters::setLocality);
+    Optional.ofNullable(parsed.read("$.parameters.state", String.class))
+      .ifPresent(secretParameters::setState);
+    Optional.ofNullable(parsed.read("$.parameters.country", String.class))
+      .ifPresent(secretParameters::setCountry);
+    Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
+      .ifPresent(secretParameters::setKeyLength);
+    Optional.ofNullable(parsed.read("$.parameters.duration", Integer.class))
+      .ifPresent(secretParameters::setDurationDays);
     Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
-        .ifPresent(secretParameters::addAlternativeNames);
+      .ifPresent(secretParameters::addAlternativeNames);
     Optional.ofNullable(parsed.read("$.parameters.key_usage", String[].class))
-        .ifPresent(secretParameters::addKeyUsage);
+      .ifPresent(secretParameters::addKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.extended_key_usage", String[].class))
-        .ifPresent(secretParameters::addExtendedKeyUsage);
+      .ifPresent(secretParameters::addExtendedKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.self_sign", Boolean.class))
       .ifPresent(secretParameters::setSelfSign);
     Optional.ofNullable(parsed.read("$.parameters.is_ca", Boolean.class))
       .ifPresent(secretParameters::setIsCa);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
-        .ifPresent(secretParameters::setCaName);
+      .ifPresent(secretParameters::setCaName);
 
     assignDefaults(entity, secretParameters);
-    secretParameters.validate();
-
-    return secretParameters;
-  }
-
-  public CertificateSecretParameters validCertificateAuthorityParameters(DocumentContext parsed) {
-    CertificateSecretParameters secretParameters = parametersFactory.get();
-    Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
-        .ifPresent(secretParameters::setCommonName);
-    Optional.ofNullable(parsed.read("$.parameters.organization", String.class))
-        .ifPresent(secretParameters::setOrganization);
-    Optional.ofNullable(parsed.read("$.parameters.organization_unit", String.class))
-        .ifPresent(secretParameters::setOrganizationUnit);
-    Optional.ofNullable(parsed.read("$.parameters.locality", String.class))
-        .ifPresent(secretParameters::setLocality);
-    Optional.ofNullable(parsed.read("$.parameters.state", String.class))
-        .ifPresent(secretParameters::setState);
-    Optional.ofNullable(parsed.read("$.parameters.country", String.class))
-        .ifPresent(secretParameters::setCountry);
-    Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
-        .ifPresent(secretParameters::setKeyLength);
-    Optional.ofNullable(parsed.read("$.parameters.duration", Integer.class))
-        .ifPresent(secretParameters::setDurationDays);
-
-    secretParameters.setType(parsed.read("$.type", String.class));
-
     secretParameters.validate();
 
     return secretParameters;

@@ -16,14 +16,12 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
+import java.util.UUID;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -55,9 +53,9 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
     });
 
     afterEach(() -> {
-      jdbcTemplate.execute("delete from named_secret");
-      jdbcTemplate.execute("delete from named_certificate_authority");
-      jdbcTemplate.execute("delete from encryption_key_canary");
+      flyway.clean();
+      flyway.setTarget(MigrationVersion.LATEST);
+      flyway.migrate();
     });
 
     it("should rename authorities with conflicting names", () -> {
@@ -67,7 +65,7 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
       UUID conflictingNamedCertAuthorityUuid = storeNamedCertificateAuthority("authority");
       UUID nonConflictingNamedCertAuthorityUuid = storeNamedCertificateAuthority("one-more");
 
-      flyway.setTarget(MigrationVersion.LATEST);
+      flyway.setTarget(MigrationVersion.fromVersion("24"));
       flyway.migrate();
 
       assertThat(getSecretNameForUuid(existingCertUuid), equalTo("/authority"));
@@ -87,7 +85,7 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
       UUID importedCert = storeCertificateSecret("imported", null);
       UUID unrelatedCert = storeCertificateSecret("unrelated", "something-else");
 
-      flyway.setTarget(MigrationVersion.LATEST);
+      flyway.setTarget(MigrationVersion.fromVersion("24"));
       flyway.migrate();
 
       assertThat(getSecretNameForUuid(ca), equalTo("/my-authority-ca"));
@@ -102,7 +100,7 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
       UUID ca = storeNamedCertificateAuthority("my-authority");
       UUID cert = storeCertificateSecret("my-cert", "my-authority"); // signed by ca
 
-      flyway.setTarget(MigrationVersion.LATEST);
+      flyway.setTarget(MigrationVersion.fromVersion("24"));
       flyway.migrate();
 
       assertThat(getSecretNameForUuid(ca), equalTo("/my-authority"));
@@ -112,10 +110,7 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
   }
 
   private String getSecretNameForUuid(UUID uuid) {
-    return namedParameterJdbcTemplate.queryForObject(
-        "SELECT name FROM secret_name WHERE secret_name.uuid = (SELECT secret_name_uuid FROM named_secret WHERE uuid = :uuid AND type = 'cert')",
-        new MapSqlParameterSource("uuid", uuidForDb(uuid)), String.class
-    );
+    return namedParameterJdbcTemplate.queryForObject("SELECT name FROM named_secret WHERE uuid = :uuid AND type = 'cert'", new MapSqlParameterSource("uuid", uuidForDb(uuid)), String.class);
   }
 
   private String getCaNameFromCertificateSecretForUuid(UUID uuid) {

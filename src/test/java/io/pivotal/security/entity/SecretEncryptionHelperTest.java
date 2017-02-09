@@ -59,7 +59,7 @@ public class SecretEncryptionHelperTest {
 
       describe("when there is no plaintext value", () -> {
         it("should only set the encryption key", () -> {
-          NamedCertificateAuthority valueContainer = new NamedCertificateAuthority("my-ca");
+          NamedCertificateSecret valueContainer = new NamedCertificateSecret("my-ca");
           subject.refreshEncryptedValue(valueContainer, null);
           assertThat(valueContainer.getNonce(), equalTo(null));
           assertThat(valueContainer.getEncryptedValue(), equalTo(null));
@@ -69,7 +69,7 @@ public class SecretEncryptionHelperTest {
 
       describe("when setting the encrypted value for the first time", () -> {
         it("encrypts the value and updates the EncryptedValueContainer", () -> {
-          NamedCertificateAuthority valueContainer = new NamedCertificateAuthority("my-ca");
+          NamedCertificateSecret valueContainer = new NamedCertificateSecret("my-ca");
 
           subject.refreshEncryptedValue(valueContainer, "fake-plaintext");
 
@@ -81,7 +81,7 @@ public class SecretEncryptionHelperTest {
 
       describe("when updating the encrypted value", () -> {
         it("encrypts the value and updates the EncryptedValueContainer", () -> {
-          NamedCertificateAuthority valueContainer = new NamedCertificateAuthority("my-ca");
+          NamedCertificateSecret valueContainer = new NamedCertificateSecret("my-ca");
           valueContainer.setEncryptedValue("fake-encrypted-value".getBytes());
           valueContainer.setNonce("fake-nonce".getBytes());
           valueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
@@ -98,7 +98,7 @@ public class SecretEncryptionHelperTest {
     describe("#retrieveClearTextValue", () -> {
       describe("when there is no encrypted value", () -> {
         it("should return null", () -> {
-          NamedCertificateAuthority valueContainer = new NamedCertificateAuthority("my-ca");
+          NamedCertificateSecret valueContainer = new NamedCertificateSecret("my-ca");
 
           assertThat(subject.retrieveClearTextValue(valueContainer), equalTo(null));
         });

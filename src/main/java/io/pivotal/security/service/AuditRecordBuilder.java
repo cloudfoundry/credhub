@@ -9,21 +9,14 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
-import static io.pivotal.security.controller.v1.CaController.API_V1_CA;
-import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
-
+import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.entity.AuditingOperationCode.*;
 
 public class AuditRecordBuilder {
   private final String hostName;
@@ -124,15 +117,14 @@ public class AuditRecordBuilder {
   }
 
   private AuditingOperationCode computeOperationCode() {
-    boolean isCa = path.contains(API_V1_CA) ? true : false;
     switch (method) {
       case "GET":
-        return isCa ? CA_ACCESS : CREDENTIAL_ACCESS;
+        return CREDENTIAL_ACCESS;
       case "POST":
       case "PUT":
-        return isCa ? CA_UPDATE : CREDENTIAL_UPDATE;
+        return CREDENTIAL_UPDATE;
       case "DELETE":
-        return isCa ? UNKNOWN_OPERATION : CREDENTIAL_DELETE;
+        return CREDENTIAL_DELETE;
       default:
         return UNKNOWN_OPERATION;
     }

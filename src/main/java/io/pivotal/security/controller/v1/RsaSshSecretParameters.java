@@ -11,11 +11,6 @@ public class RsaSshSecretParameters implements RequestParameters {
   private int keyLength = 2048;
   private List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
 
-  @Override
-  public String getType() {
-    throw new UnsupportedOperationException();
-  }
-
   public void validate() {
     if (!validKeyLengths.contains(keyLength)) {
       throw new ParameterizedValidationException("error.invalid_key_length");

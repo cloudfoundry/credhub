@@ -16,11 +16,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -138,7 +139,7 @@ public class SecretDataService {
   public Slice<NamedSecret> findEncryptedWithAvailableInactiveKey() {
     return secretRepository.findByEncryptionKeyUuidIn(
       encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
-      new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
+      new PageRequest(0, BATCH_SIZE)
     );
   }
 

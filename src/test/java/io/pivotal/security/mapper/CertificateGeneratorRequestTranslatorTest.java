@@ -91,7 +91,6 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setLocality("My Locality");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
-      expectedParameters.setType("certificate");
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
       expectedParameters.setSelfSign(false);
@@ -121,7 +120,6 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setOrganization("organization.io");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
-      expectedParameters.setType("certificate");
       DocumentContext parsed = jsonPath.parse(json);
 
       CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
@@ -184,13 +182,9 @@ public class CertificateGeneratorRequestTranslatorTest {
       itThrowsWithMessage("for a certificate generation request", ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
           subject.validRequestParameters(parsed, null);
       });
-
-      itThrowsWithMessage("for a certificate authority generation request", ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
-          subject.validCertificateAuthorityParameters(parsed);
-      });
     });
 
-    describe("params that should be excluded for Certificate Authority are excluded", () -> {
+    describe("params that should be excluded are excluded", () -> {
       itThrows("only allowed parameters", ParameterizedValidationException.class, () -> {
         String json = "{" +
             "\"type\":\"root\"," +
@@ -208,7 +202,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
     });
 
-    describe("validates the parameter holder at least once", () -> {
+    describe("validates the parameter holder once", () -> {
       beforeEach(() -> {
         mockParams = mock(CertificateSecretParameters.class);
         when(certificateSecretParametersFactory.get()).thenReturn(mockParams);
@@ -217,11 +211,6 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       it("on a certificate generator request", () -> {
         subject.validRequestParameters(parsed, null);
-        verify(mockParams, times(2)).validate();
-      });
-
-      it("on a certificate authority request", () -> {
-        subject.validCertificateAuthorityParameters(parsed);
         verify(mockParams, times(1)).validate();
       });
     });
@@ -241,7 +230,6 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setOrganization("organization.io");
       expectedParameters.setState("My State");
       expectedParameters.setCountry("My Country");
-      expectedParameters.setType("certificate");
       expectedParameters.setKeyLength(3072);
 
       CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
@@ -308,7 +296,6 @@ public class CertificateGeneratorRequestTranslatorTest {
             .setOrganization("organization.io")
             .setState("My State")
             .setCountry("My Country")
-            .setType("certificate")
             .setSelfSign(true)
             .setCaName("My Name");
 

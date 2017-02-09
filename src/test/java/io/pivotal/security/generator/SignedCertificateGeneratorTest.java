@@ -256,8 +256,7 @@ public class SignedCertificateGeneratorTest {
             .setCountry("US")
             .setState("CA")
             .setOrganization("credhub")
-            .setDurationDays(10)
-            .setType("certificate");
+            .setDurationDays(10);
         isCA = "[]";
         subjectDistinguishedName = inputParameters.getDN();
         issuerDistinguishedName = new X500Name(SEPARATE_ISSUER_PRINCIPAL_STRING);
@@ -301,8 +300,7 @@ public class SignedCertificateGeneratorTest {
         inputParameters = new CertificateSecretParameters()
           .setCommonName("my test cert")
           .setOrganization("credhub")
-          .setDurationDays(10)
-          .setType("certificate");
+          .setDurationDays(10);
         isCA = "[]";
 
         // subject and issuer have same name-- we're self-signed.
@@ -311,33 +309,6 @@ public class SignedCertificateGeneratorTest {
       });
 
       final ThrowingRunnable makeCert = () -> {
-        generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
-      };
-
-      describe("must behave like", validCertificateSuite.build(makeCert));
-    });
-
-    // Remove me with NamedCertificates
-    describe("a generated self-signed CA using the old type == root", () -> {
-      beforeEach(() -> {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
-        generator.initialize(1024); // doesn't matter for testing
-        issuerKeyPair = generator.generateKeyPair();
-
-        certKeyPair = issuerKeyPair; // self-signed
-        inputParameters = new CertificateSecretParameters()
-            .setCommonName("my test ca")
-            .setCountry("US")
-            .setState("CA")
-            .setOrganization("credhub")
-            .setDurationDays(10)
-            .setType("root");
-        isCA = "[TRUE]";
-        subjectDistinguishedName = inputParameters.getDN();
-        issuerDistinguishedName = subjectDistinguishedName;
-      });
-
-      ThrowingRunnable makeCert = () -> {
         generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
       };
 
@@ -357,8 +328,7 @@ public class SignedCertificateGeneratorTest {
             .setState("CA")
             .setOrganization("credhub")
             .setDurationDays(10)
-            .setIsCa(true)
-            .setType("certificate");
+            .setIsCa(true);
         isCA = "[TRUE]";
         subjectDistinguishedName = inputParameters.getDN();
         issuerDistinguishedName = subjectDistinguishedName;

@@ -1,0 +1,1 @@
+DROP TABLE named_certificate_authority;

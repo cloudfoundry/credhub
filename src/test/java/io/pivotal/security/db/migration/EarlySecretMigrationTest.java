@@ -17,6 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
 
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 
@@ -45,11 +47,19 @@ public class EarlySecretMigrationTest {
   {
     wireAndUnwire(this, false);
 
-    it("should apply the latest migration successfully", () -> {
+    beforeEach(() -> {
       flyway.clean();
       flyway.setTarget(MigrationVersion.fromVersion("4"));
       flyway.migrate();
+    });
 
+    afterEach(() -> {
+      flyway.clean();
+      flyway.setTarget(MigrationVersion.LATEST);
+      flyway.migrate();
+    });
+
+    it("should apply the latest migration successfully", () -> {
       jdbcTemplate.update(
           "insert into named_canary (id, name, encrypted_value, nonce) values (?, ?, ?, ?)",
           10, "canary", "encrypted-value".getBytes(), "nonce".getBytes()
@@ -60,7 +70,7 @@ public class EarlySecretMigrationTest {
       storeValueSecret("/test");
       storeValueSecret("/deploy123/test");
 
-      flyway.setTarget(MigrationVersion.LATEST);
+      flyway.setTarget(MigrationVersion.fromVersion("25"));
       flyway.migrate();
 
       jdbcTemplate.execute("delete from named_secret");

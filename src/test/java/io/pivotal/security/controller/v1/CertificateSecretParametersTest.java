@@ -309,7 +309,6 @@ public class CertificateSecretParametersTest {
 
           certificateSecretParameters = new CertificateSecretParameters(BIG_TEST_CERT, "some-ca-name");
 
-          assertThat(certificateSecretParameters.getType(), equalTo("certificate"));
           assertThat(certificateSecretParameters.getDN().toString(), equalTo(distinguishedName));
           assertThat(certificateSecretParameters.getKeyLength(), equalTo(4096));
           assertThat(certificateSecretParameters.extractAlternativeNames(), equalTo(generalNames));

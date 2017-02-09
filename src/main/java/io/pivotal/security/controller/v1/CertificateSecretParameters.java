@@ -1,6 +1,5 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -29,8 +28,6 @@ public class CertificateSecretParameters implements RequestParameters {
   private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
   private static final Pattern BAD_IP_ADDRESS_PATTERN = Pattern.compile("^(\\d+\\.){3}\\d+$");
   private static final Pattern DNS_PATTERN_INCLUDING_LEADING_WILDCARD = Pattern.compile("^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
-
-  private String type;
 
   // Parameters used in RDN; at least one must be set
   private String organization;
@@ -74,8 +71,6 @@ public class CertificateSecretParameters implements RequestParameters {
       this.keyUsage = extractKeyUsage(x509CertHolder);
 
       this.caName = caName;
-
-      this.type = NamedCertificateSecret.SECRET_TYPE; // Delete when Certificate Authorities are removed.
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -304,15 +299,6 @@ public class CertificateSecretParameters implements RequestParameters {
 
   public CertificateSecretParameters setIsCa(boolean isCA) {
     this.isCA = isCA;
-    return this;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public CertificateSecretParameters setType(String type) {
-    this.type = type;
     return this;
   }
 

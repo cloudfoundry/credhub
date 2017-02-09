@@ -6,13 +6,15 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
+  int BATCH_SIZE = 50;
+
   NamedSecret findOneByUuid(UUID uuid);
   @Transactional
   long deleteBySecretNameUuid(UUID secretNameUuid);

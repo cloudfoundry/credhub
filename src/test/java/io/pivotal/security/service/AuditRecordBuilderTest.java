@@ -6,15 +6,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.CA_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CA_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.entity.AuditingOperationCode.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -72,32 +65,8 @@ public class AuditRecordBuilderTest {
       assertThat(subject.getOperationCode(), equalTo(CREDENTIAL_DELETE));
     });
 
-    it("sets operation code to be ca_access for a ca get request", () -> {
-      MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/ca");
-      subject = new AuditRecordBuilder("foo", request, null);
-      assertThat(subject.getOperationCode(), equalTo(CA_ACCESS));
-    });
-
-    it("sets operation code to be ca_update for a ca post request", () -> {
-      MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/ca");
-      subject = new AuditRecordBuilder("foo", request, null);
-      assertThat(subject.getOperationCode(), equalTo(CA_UPDATE));
-    });
-
-    it("sets operation code to be ca_update for a ca put request", () -> {
-      MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/api/v1/ca");
-      subject = new AuditRecordBuilder("foo", request, null);
-      assertThat(subject.getOperationCode(), equalTo(CA_UPDATE));
-    });
-
-    it("sets operations code to be UNKNOWN_OPERATION for a ca delete request", () -> {
-      MockHttpServletRequest request = new MockHttpServletRequest("DELETE", "/api/v1/ca");
-      subject = new AuditRecordBuilder("foo", request, null);
-      assertThat(subject.getOperationCode(), equalTo(UNKNOWN_OPERATION));
-    });
-
     it("sets operations code to be UNKNOWN_OPERATION in other cases", () -> {
-      MockHttpServletRequest request = new MockHttpServletRequest("UNRECOGNIZED_HTTP_METHOD", "/api/v1/ca");
+      MockHttpServletRequest request = new MockHttpServletRequest("UNRECOGNIZED_HTTP_METHOD", "/api/v1/data");
       subject = new AuditRecordBuilder("foo", request, null);
       assertThat(subject.getOperationCode(), equalTo(UNKNOWN_OPERATION));
     });
