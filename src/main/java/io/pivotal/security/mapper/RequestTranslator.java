@@ -6,12 +6,12 @@ import com.jayway.jsonpath.Option;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.ParameterizedValidationException;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.jayway.jsonpath.JsonPath.using;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.jayway.jsonpath.JsonPath.using;
 
 public interface RequestTranslator<ET> {
   void populateEntityFromJson(ET namedSecret, DocumentContext documentContext);

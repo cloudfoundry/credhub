@@ -1,14 +1,14 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+
 import static com.google.common.collect.ImmutableSet.of;
 import static io.pivotal.security.util.StringUtil.emptyToNull;
-
-import java.util.Set;
 
 @Component
 public class CertificateSetRequestTranslator implements RequestTranslator<NamedCertificateSecret> {

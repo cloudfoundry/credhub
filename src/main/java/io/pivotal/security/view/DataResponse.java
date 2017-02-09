@@ -2,11 +2,11 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 public class DataResponse<M, V> {
   private List<V> data;

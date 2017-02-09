@@ -5,12 +5,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 import java.security.ProviderException;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.crypto.IllegalBlockSizeException;
 
 @Component
 public class RetryingEncryptionService {

@@ -10,7 +10,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
-public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
+public class NamedCertificateSecretData extends NamedSecretData<NamedCertificateSecretData> {
   public static final String SECRET_TYPE = "certificate";
 
   @Column(length = 7000)
@@ -22,10 +22,10 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   @Column
   private String caName;
 
-  public NamedCertificateSecret() {
+  public NamedCertificateSecretData() {
   }
 
-  public NamedCertificateSecret(String name) {
+  public NamedCertificateSecretData(String name) {
     super(name);
   }
 
@@ -33,7 +33,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return ca;
   }
 
-  public NamedCertificateSecret setCa(String ca) {
+  public NamedCertificateSecretData setCa(String ca) {
     this.ca = ca;
     return this;
   }
@@ -42,7 +42,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return certificate;
   }
 
-  public NamedCertificateSecret setCertificate(String certificate) {
+  public NamedCertificateSecretData setCertificate(String certificate) {
     this.certificate = certificate;
     return this;
   }
@@ -51,12 +51,12 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }
 
-  public NamedCertificateSecret setPrivateKey(String privateKey) {
+  public NamedCertificateSecretData setPrivateKey(String privateKey) {
     SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, privateKey);
     return this;
   }
 
-  public NamedCertificateSecret setCaName(String caName) {
+  public NamedCertificateSecretData setCaName(String caName) {
     this.caName = caName;
     return this;
   }
@@ -76,7 +76,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   }
 
   @Override
-  void copyIntoImpl(NamedCertificateSecret copy) {
+  void copyIntoImpl(NamedCertificateSecretData copy) {
     copy.setCaName(caName);
     copy.setCa(ca);
     copy.setCertificate(certificate);

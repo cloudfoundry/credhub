@@ -1,7 +1,7 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.domain.NamedStringSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

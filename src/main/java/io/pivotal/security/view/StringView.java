@@ -1,6 +1,6 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.entity.NamedStringSecret;
+import io.pivotal.security.domain.NamedStringSecret;
 
 class StringView extends SecretView {
   StringView(NamedStringSecret namedStringSecret) {

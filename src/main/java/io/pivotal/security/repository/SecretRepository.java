@@ -1,6 +1,6 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedSecretData;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,25 +12,25 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-public interface SecretRepository extends JpaRepository<NamedSecret, UUID> {
+public interface SecretRepository extends JpaRepository<NamedSecretData, UUID> {
   int BATCH_SIZE = 50;
 
-  NamedSecret findOneByUuid(UUID uuid);
+  NamedSecretData findOneByUuid(UUID uuid);
   @Transactional
   long deleteBySecretNameUuid(UUID secretNameUuid);
   Long countByEncryptionKeyUuidNot(UUID encryptionKeyUuid);
   Long countByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);
-  Slice<NamedSecret> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
-  List<NamedSecret> findAllBySecretNameUuid(UUID uuid);
-  NamedSecret findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
+  Slice<NamedSecretData> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
+  List<NamedSecretData> findAllBySecretNameUuid(UUID uuid);
+  NamedSecretData findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
   default List<String> findAllPaths(Boolean findPaths) {
     if (!findPaths) {
       return newArrayList();
     }
 
     return findAll().stream()
-        .map(NamedSecret::getName)
-        .flatMap(NamedSecret::fullHierarchyForPath)
+        .map(NamedSecretData::getName)
+        .flatMap(NamedSecretData::fullHierarchyForPath)
         .distinct()
         .sorted()
         .collect(Collectors.toList());

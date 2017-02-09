@@ -1,11 +1,10 @@
 package io.pivotal.security.view;
 
-import static com.google.common.collect.Lists.newArrayList;
-
+import javax.validation.ValidationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.validation.ValidationException;
+import static com.google.common.collect.Lists.newArrayList;
 
 public class ParameterizedValidationException extends ValidationException {
   List<String> paramList = newArrayList();

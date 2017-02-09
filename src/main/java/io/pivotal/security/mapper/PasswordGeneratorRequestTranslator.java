@@ -2,9 +2,9 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.secret.Password;
-import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.secret.Password;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

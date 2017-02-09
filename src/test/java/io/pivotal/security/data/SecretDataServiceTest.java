@@ -2,12 +2,13 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedRsaSecret;
-import io.pivotal.security.entity.NamedSecret;
-import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.SecretRepository;
@@ -22,6 +23,13 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
@@ -39,13 +47,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -109,8 +110,8 @@ public class SecretDataServiceTest {
 
         // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
         // we need to use Hibernate to check the UUID :(
-        passwordSecret = (NamedPasswordSecret) (secretRepository.findAll().get(0));
-        assertThat(passwordSecret.getUuid(), equalTo(secret.getUuid()));
+        NamedPasswordSecretData foundPasswordSecret = (NamedPasswordSecretData) (secretRepository.findAll().get(0));
+        assertThat(foundPasswordSecret.getUuid(), equalTo(secret.getUuid()));
       });
 
       it("should update a secret", () -> {
@@ -130,8 +131,8 @@ public class SecretDataServiceTest {
         assertThat(passwordSecret.getName(), equalTo("/my-secret-2"));
         assertThat(passwordSecret.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
 
-        passwordSecret = (NamedPasswordSecret) (secretRepository.findAll().get(0));
-        assertThat(passwordSecret.getUuid(), equalTo(secret.getUuid()));
+        NamedPasswordSecretData foundPasswordSecret = (NamedPasswordSecretData) (secretRepository.findAll().get(0));
+        assertThat(foundPasswordSecret.getUuid(), equalTo(secret.getUuid()));
       });
 
       it("should generate a uuid when creating", () -> {

@@ -3,9 +3,9 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
-import io.pivotal.security.secret.SshKey;
-import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.secret.SshKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

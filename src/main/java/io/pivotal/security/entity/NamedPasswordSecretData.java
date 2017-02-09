@@ -12,8 +12,8 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 
 @Entity
 @Table(name = "PasswordSecret")
-@DiscriminatorValue(NamedPasswordSecret.SECRET_TYPE)
-public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> {
+@DiscriminatorValue(NamedPasswordSecretData.SECRET_TYPE)
+public class NamedPasswordSecretData extends NamedStringSecretData<NamedPasswordSecretData> {
 
   @Column(length = 255 + NONCE_SIZE)
   private byte[] encryptedGenerationParameters;
@@ -24,10 +24,10 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
   public static final String SECRET_TYPE = "password";
 
   @SuppressWarnings("unused")
-  public NamedPasswordSecret() {
+  public NamedPasswordSecretData() {
   }
 
-  public NamedPasswordSecret(String name) {
+  public NamedPasswordSecretData(String name) {
     super(name);
   }
 
@@ -35,7 +35,7 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
     return encryptedGenerationParameters;
   }
 
-  public NamedPasswordSecret setEncryptedGenerationParameters(byte[] encryptedGenerationParameters) {
+  public NamedPasswordSecretData setEncryptedGenerationParameters(byte[] encryptedGenerationParameters) {
     this.encryptedGenerationParameters = encryptedGenerationParameters;
     return this;
   }
@@ -44,7 +44,7 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
     return parametersNonce;
   }
 
-  public NamedPasswordSecret setParametersNonce(byte[] parametersNonce) {
+  public NamedPasswordSecretData setParametersNonce(byte[] parametersNonce) {
     this.parametersNonce = parametersNonce;
     return this;
   }
@@ -53,7 +53,7 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
     return SecretEncryptionHelperProvider.getInstance().retrieveGenerationParameters(this);
   }
 
-  public NamedPasswordSecret setGenerationParameters(PasswordGenerationParameters generationParameters) {
+  public NamedPasswordSecretData setGenerationParameters(PasswordGenerationParameters generationParameters) {
     SecretEncryptionHelperProvider.getInstance().refreshEncryptedGenerationParameters(this, generationParameters);
     return this;
   }
@@ -64,7 +64,7 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
   }
 
   @Override
-  void copyIntoImpl(NamedPasswordSecret copy) {
+  public void copyIntoImpl(NamedPasswordSecretData copy) {
     copy.setEncryptedGenerationParameters(encryptedGenerationParameters);
     copy.setParametersNonce(parametersNonce);
   }

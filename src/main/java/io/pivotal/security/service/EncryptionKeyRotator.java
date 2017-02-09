@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

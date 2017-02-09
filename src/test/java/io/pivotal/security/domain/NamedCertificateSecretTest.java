@@ -1,4 +1,4 @@
-package io.pivotal.security.entity;
+package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;

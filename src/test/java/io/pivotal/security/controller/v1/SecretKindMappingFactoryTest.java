@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.entity.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import org.junit.Assert;
 import org.junit.runner.RunWith;

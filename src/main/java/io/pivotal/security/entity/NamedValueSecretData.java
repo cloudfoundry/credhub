@@ -8,15 +8,15 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "ValueSecret")
-@DiscriminatorValue(NamedValueSecret.SECRET_TYPE)
-public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
+@DiscriminatorValue(NamedValueSecretData.SECRET_TYPE)
+public class NamedValueSecretData extends NamedStringSecretData<NamedValueSecretData> {
 
   public static final String SECRET_TYPE = "value";
 
-  public NamedValueSecret() {
+  public NamedValueSecretData() {
   }
 
-  public NamedValueSecret(String name) {
+  public NamedValueSecretData(String name) {
     super(name);
   }
 
@@ -26,7 +26,7 @@ public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
   }
 
   @Override
-  void copyIntoImpl(NamedValueSecret copy) {
+  public void copyIntoImpl(NamedValueSecretData copy) {
   }
 
   @Override

@@ -1,26 +1,27 @@
 package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.view.ParameterizedValidationException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.runner.RunWith;
+
+import java.security.Security;
+
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import io.pivotal.security.secret.Certificate;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
-import io.pivotal.security.view.ParameterizedValidationException;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
-import org.junit.runner.RunWith;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.security.Security;
 
 @RunWith(Spectrum.class)
 public class CertificateAuthorityServiceTest {

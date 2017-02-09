@@ -6,7 +6,7 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
-import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.secret.SshKey;

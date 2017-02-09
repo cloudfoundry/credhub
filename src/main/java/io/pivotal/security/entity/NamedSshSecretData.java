@@ -13,17 +13,17 @@ import java.util.Arrays;
 
 @Entity
 @Table(name = "SshSecret")
-@DiscriminatorValue(NamedSshSecret.SECRET_TYPE)
-public class NamedSshSecret extends NamedRsaSshSecret {
+@DiscriminatorValue(NamedSshSecretData.SECRET_TYPE)
+public class NamedSshSecretData extends NamedRsaSshSecretData {
   private final static String SSH_PREFIX = "ssh-rsa ";
   public static final int SMALL_BUFFER_SIZE = 10;
   public static final String SECRET_TYPE = "ssh";
 
-  public NamedSshSecret() {
+  public NamedSshSecretData() {
     this(null);
   }
 
-  public NamedSshSecret(String name) {
+  public NamedSshSecretData(String name) {
     super(name);
   }
 

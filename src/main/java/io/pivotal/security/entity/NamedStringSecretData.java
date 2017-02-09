@@ -1,11 +1,11 @@
 package io.pivotal.security.entity;
 
-public abstract class NamedStringSecret<T extends NamedStringSecret> extends NamedSecret<T> {
+public abstract class NamedStringSecretData<T extends NamedStringSecretData> extends NamedSecretData<T> {
 
-  public NamedStringSecret() {
+  public NamedStringSecretData() {
   }
 
-  public NamedStringSecret(String name) {
+  public NamedStringSecretData(String name) {
     super(name);
   }
 
@@ -13,7 +13,7 @@ public abstract class NamedStringSecret<T extends NamedStringSecret> extends Nam
     return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }
 
-  public NamedStringSecret setValue(String value) {
+  public NamedStringSecretData setValue(String value) {
     if (value == null) {
       throw new IllegalArgumentException("value cannot be null");
     }

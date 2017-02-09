@@ -1,6 +1,6 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.entity.NamedSshSecret;
+import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.secret.SshKey;
 
 class SshView extends SecretView {

@@ -1,10 +1,10 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedRsaSecret;
-import io.pivotal.security.entity.NamedSshSecret;
-import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.entity.NamedValueSecretData;
 
 public interface SecretKindFromString {
 
@@ -13,15 +13,15 @@ public interface SecretKindFromString {
       throw new ParameterizedValidationException("error.type_invalid");
     }
     switch (type) {
-      case NamedValueSecret.SECRET_TYPE:
+      case NamedValueSecretData.SECRET_TYPE:
         return SecretKind.VALUE;
-      case NamedPasswordSecret.SECRET_TYPE:
+      case NamedPasswordSecretData.SECRET_TYPE:
         return SecretKind.PASSWORD;
-      case NamedCertificateSecret.SECRET_TYPE:
+      case NamedCertificateSecretData.SECRET_TYPE:
         return SecretKind.CERTIFICATE;
-      case NamedSshSecret.SECRET_TYPE:
+      case NamedSshSecretData.SECRET_TYPE:
         return SecretKind.SSH;
-      case NamedRsaSecret.SECRET_TYPE:
+      case NamedRsaSecretData.SECRET_TYPE:
         return SecretKind.RSA;
     }
     throw new ParameterizedValidationException("error.type_invalid");

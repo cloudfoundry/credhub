@@ -7,11 +7,11 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public abstract class NamedRsaSshSecret extends NamedSecret<NamedRsaSshSecret> {
+public abstract class NamedRsaSshSecretData extends NamedSecretData<NamedRsaSshSecretData> {
   @Column(length = 7000)
   private String publicKey;
 
-  public NamedRsaSshSecret(String name) {
+  public NamedRsaSshSecretData(String name) {
     super(name);
   }
 
@@ -19,7 +19,7 @@ public abstract class NamedRsaSshSecret extends NamedSecret<NamedRsaSshSecret> {
     return publicKey;
   }
 
-  public <T extends NamedRsaSshSecret> T setPublicKey(String publicKey) {
+  public <T extends NamedRsaSshSecretData> T setPublicKey(String publicKey) {
     this.publicKey = publicKey;
     return (T) this;
   }
@@ -28,7 +28,7 @@ public abstract class NamedRsaSshSecret extends NamedSecret<NamedRsaSshSecret> {
     return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
   }
 
-  public <T extends NamedRsaSshSecret> T setPrivateKey(String privateKey) {
+  public <T extends NamedRsaSshSecretData> T setPrivateKey(String privateKey) {
     SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, privateKey);
     return (T) this;
   }
@@ -36,7 +36,7 @@ public abstract class NamedRsaSshSecret extends NamedSecret<NamedRsaSshSecret> {
   public abstract SecretKind getKind();
 
   @Override
-  void copyIntoImpl(NamedRsaSshSecret copy) {
+  public void copyIntoImpl(NamedRsaSshSecretData copy) {
     copy.setPublicKey(getPublicKey());
   }
 }

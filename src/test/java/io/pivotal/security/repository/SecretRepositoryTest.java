@@ -3,9 +3,9 @@ package io.pivotal.security.repository;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedStringSecret;
-import io.pivotal.security.entity.NamedValueSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedStringSecretData;
+import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -15,17 +15,17 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -66,7 +66,7 @@ public class SecretRepositoryTest {
       Arrays.fill(encryptedValue, (byte) 'A');
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      NamedCertificateSecret entity = new NamedCertificateSecret();
+      NamedCertificateSecretData entity = new NamedCertificateSecretData();
       SecretName secretName = secretNameRepository.save(new SecretName(name));
       final String longString = stringBuilder.toString();
       entity.setSecretName(secretName);
@@ -76,7 +76,7 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      NamedCertificateSecret certificateSecret = (NamedCertificateSecret) subject.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid());
+      NamedCertificateSecretData certificateSecret = (NamedCertificateSecretData) subject.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid());
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
       assertThat(certificateSecret.getEncryptedValue(), equalTo(encryptedValue));
@@ -89,7 +89,7 @@ public class SecretRepositoryTest {
 
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      NamedStringSecret entity = new NamedValueSecret();
+      NamedStringSecretData entity = new NamedValueSecretData();
       SecretName secretName = secretNameRepository.save(new SecretName(name));
       entity.setSecretName(secretName);
       entity.setEncryptedValue(encryptedValue);

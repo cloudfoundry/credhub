@@ -2,12 +2,11 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.SecretKind;
 import org.mockito.Mock;
-import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Supplier;

@@ -3,6 +3,8 @@ package io.pivotal.security.entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
@@ -11,10 +13,14 @@ import org.junit.runner.RunWith;
 import java.security.Key;
 import java.util.UUID;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class SecretEncryptionHelperTest {
@@ -132,7 +138,7 @@ public class SecretEncryptionHelperTest {
 
       describe("when there are no password parameters", () -> {
         it("should not set anything", () -> {
-          NamedPasswordSecret valueContainer = new NamedPasswordSecret("my-password");
+          NamedPasswordSecretData valueContainer = new NamedPasswordSecretData("my-password");
           valueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
 
           subject.refreshEncryptedGenerationParameters(valueContainer, null);
@@ -142,8 +148,8 @@ public class SecretEncryptionHelperTest {
       });
 
       describe("when setting parameters for the first time", () -> {
-        it("should encrypt the parameters and update the NamedPasswordSecret", () -> {
-          NamedPasswordSecret valueContainer = new NamedPasswordSecret("my-password");
+        it("should encrypt the parameters and update the NamedPasswordSecretData", () -> {
+          NamedPasswordSecretData valueContainer = new NamedPasswordSecretData("my-password");
           valueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
 
           subject.refreshEncryptedGenerationParameters(valueContainer, passwordGenerationParameters);
@@ -154,8 +160,8 @@ public class SecretEncryptionHelperTest {
       });
 
       describe("when updating the parameters", () -> {
-        it("should encrypt the parameters and update the NamedPasswordSecret", () -> {
-          NamedPasswordSecret valueContainer = new NamedPasswordSecret("my-password");
+        it("should encrypt the parameters and update the NamedPasswordSecretData", () -> {
+          NamedPasswordSecretData valueContainer = new NamedPasswordSecretData("my-password");
           valueContainer.setEncryptionKeyUuid(activeEncryptionKeyUuid);
           valueContainer.setEncryptedValue("fake-encrypted-value".getBytes());
           valueContainer.setNonce("fake-nonce".getBytes());
@@ -219,9 +225,9 @@ public class SecretEncryptionHelperTest {
         });
       });
 
-      describe("when the secret is a NamedPasswordSecret", () -> {
+      describe("when the secret is a NamedPasswordSecretData", () -> {
         it("should re-encrypt the password and the parameters with the active encryption key", () -> {
-          NamedPasswordSecret password = new NamedPasswordSecret("some-name");
+          NamedPasswordSecretData password = new NamedPasswordSecretData("some-name");
 
           password.setEncryptionKeyUuid(oldEncryptionKeyUuid);
           password.setEncryptedValue("old-encrypted-value".getBytes());

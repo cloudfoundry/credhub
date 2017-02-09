@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.KeyGenerator;
-import java.lang.reflect.InvocationTargetException;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.SecureRandom;

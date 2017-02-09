@@ -21,9 +21,8 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 
 @Configuration
 @EnableResourceServer

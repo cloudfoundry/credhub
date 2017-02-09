@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
-import java.security.Key;
 import java.util.UUID;
 
 @Component
@@ -52,7 +51,7 @@ public class SecretEncryptionHelper {
     return decrypt(encryptedValueContainer);
   }
 
-  public void refreshEncryptedGenerationParameters(NamedPasswordSecret namedPasswordSecret, PasswordGenerationParameters generationParameters) {
+  public void refreshEncryptedGenerationParameters(NamedPasswordSecretData namedPasswordSecret, PasswordGenerationParameters generationParameters) {
     try {
       String clearTextValue = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
       refreshEncryptedValue(new ParametersAdapter(namedPasswordSecret), clearTextValue);
@@ -61,7 +60,7 @@ public class SecretEncryptionHelper {
     }
   }
 
-  public PasswordGenerationParameters retrieveGenerationParameters(NamedPasswordSecret namedPasswordSecret) {
+  public PasswordGenerationParameters retrieveGenerationParameters(NamedPasswordSecretData namedPasswordSecret) {
     String password = retrieveClearTextValue(namedPasswordSecret);
     Assert.notNull(password, "Password length generation parameter cannot be restored without an existing password");
     String json = retrieveClearTextValue(new ParametersAdapter(namedPasswordSecret));
@@ -77,8 +76,8 @@ public class SecretEncryptionHelper {
 
   public void rotate(EncryptedValueContainer secret) {
     if (usingOldEncryptionKey(secret)) {
-      if (secret instanceof NamedPasswordSecret) {
-        rotatePasswordParameters((NamedPasswordSecret) secret);
+      if (secret instanceof NamedPasswordSecretData) {
+        rotatePasswordParameters((NamedPasswordSecretData) secret);
       }
 
       if (secret.getEncryptedValue() != null) {
@@ -98,7 +97,7 @@ public class SecretEncryptionHelper {
     return !activeEncryptionKeyUuid.equals(secret.getEncryptionKeyUuid());
   }
 
-  private void rotatePasswordParameters(NamedPasswordSecret password) {
+  private void rotatePasswordParameters(NamedPasswordSecretData password) {
     refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
   }
 
@@ -117,9 +116,9 @@ public class SecretEncryptionHelper {
   }
 
   private static class ParametersAdapter implements EncryptedValueContainer {
-    private final NamedPasswordSecret namedPasswordSecret;
+    private final NamedPasswordSecretData namedPasswordSecret;
 
-    ParametersAdapter(NamedPasswordSecret namedPasswordSecret) {
+    ParametersAdapter(NamedPasswordSecretData namedPasswordSecret) {
       this.namedPasswordSecret = namedPasswordSecret;
     }
 

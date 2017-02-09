@@ -3,10 +3,10 @@ package db.migration.common;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static io.pivotal.security.util.UuidUtil.makeUuid;
-
 import java.sql.Types;
 import java.util.List;
+
+import static io.pivotal.security.util.UuidUtil.makeUuid;
 
 public class V25_1__add_secret_name_relation implements SpringJdbcMigration {
   public void migrate(JdbcTemplate jdbcTemplate) throws Exception {

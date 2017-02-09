@@ -3,9 +3,9 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
-import io.pivotal.security.secret.RsaKey;
-import io.pivotal.security.entity.NamedRsaSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.secret.RsaKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

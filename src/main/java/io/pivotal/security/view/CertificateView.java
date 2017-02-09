@@ -1,6 +1,6 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.secret.Certificate;
 
 class CertificateView extends SecretView {

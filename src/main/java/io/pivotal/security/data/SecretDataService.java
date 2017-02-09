@@ -1,6 +1,17 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
@@ -12,15 +23,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 @Service
@@ -68,7 +80,7 @@ public class SecretDataService {
       namedSecret.setSecretName(createOrFindSecretName(secretName.getName()));
     }
 
-    return secretRepository.saveAndFlush(namedSecret);
+    return (Z) wrap(namedSecret.saveAndFlush(secretRepository));
   }
 
   public List<String> findAllPaths() {
@@ -81,16 +93,16 @@ public class SecretDataService {
     if (secretName == null) {
       return null;
     } else {
-      return secretRepository.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid());
+      return wrap(secretRepository.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid()));
     }
   }
 
   public NamedSecret findByUuid(String uuid) {
-    return secretRepository.findOneByUuid(UUID.fromString(uuid));
+    return wrap(secretRepository.findOneByUuid(UUID.fromString(uuid)));
   }
 
   public NamedSecret findByUuid(UUID uuid) {
-    return secretRepository.findOneByUuid(uuid);
+    return wrap(secretRepository.findOneByUuid(uuid));
   }
 
   public List<SecretView> findContainingName(String name) {
@@ -119,7 +131,7 @@ public class SecretDataService {
   public List<NamedSecret> findAllByName(String name) {
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
 
-    return secretName != null ? secretRepository.findAllBySecretNameUuid(secretName.getUuid()) : newArrayList();
+    return secretName != null ? wrap(secretRepository.findAllBySecretNameUuid(secretName.getUuid())) : newArrayList();
   }
 
   public Long count() {
@@ -137,10 +149,11 @@ public class SecretDataService {
   }
 
   public Slice<NamedSecret> findEncryptedWithAvailableInactiveKey() {
-    return secretRepository.findByEncryptionKeyUuidIn(
-      encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
-      new PageRequest(0, BATCH_SIZE)
+    final Slice<NamedSecretData> namedSecretDataSlice = secretRepository.findByEncryptionKeyUuidIn(
+        encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
+        new PageRequest(0, BATCH_SIZE)
     );
+    return new SliceImpl(wrap(namedSecretDataSlice.getContent()));
   }
 
   private SecretName createOrFindSecretName(String name) {
@@ -163,7 +176,30 @@ public class SecretDataService {
     );
   }
 
-  private String addLeadingSlashIfMissing(String name) {
+  private static String addLeadingSlashIfMissing(String name) {
     return StringUtils.prependIfMissing(name, "/");
+  }
+
+  private static List<NamedSecret> wrap(List<NamedSecretData>daos) {
+    return daos.stream().map(SecretDataService::wrap).collect(Collectors.toList());
+  }
+
+  private static NamedSecret wrap(NamedSecretData dao) {
+    if (dao instanceof NamedCertificateSecretData) {
+      return new NamedCertificateSecret((NamedCertificateSecretData) dao);
+    }
+    if (dao instanceof NamedPasswordSecretData) {
+      return new NamedPasswordSecret((NamedPasswordSecretData) dao);
+    }
+    if (dao instanceof NamedRsaSecretData) {
+      return new NamedRsaSecret((NamedRsaSecretData) dao);
+    }
+    if (dao instanceof NamedSshSecretData) {
+      return new NamedSshSecret((NamedSshSecretData) dao);
+    }
+    if (dao instanceof NamedValueSecretData) {
+      return new NamedValueSecret((NamedValueSecretData) dao);
+    }
+    throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
   }
 }

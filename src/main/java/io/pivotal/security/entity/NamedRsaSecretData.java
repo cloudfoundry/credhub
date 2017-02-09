@@ -15,18 +15,18 @@ import java.security.spec.X509EncodedKeySpec;
 
 @Entity
 @Table(name = "RsaSecret")
-@DiscriminatorValue(NamedRsaSecret.SECRET_TYPE)
-public class NamedRsaSecret extends NamedRsaSshSecret {
+@DiscriminatorValue(NamedRsaSecretData.SECRET_TYPE)
+public class NamedRsaSecretData extends NamedRsaSshSecretData {
   static private final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
   static private final String RSA_END = "\n-----END PUBLIC KEY-----";
   static private final String NEW_LINE = "\n";
   public static final String SECRET_TYPE = "rsa";
 
-  public NamedRsaSecret() {
+  public NamedRsaSecretData() {
     this(null);
   }
 
-  public NamedRsaSecret(String name) {
+  public NamedRsaSecretData(String name) {
     super(name);
   }
 

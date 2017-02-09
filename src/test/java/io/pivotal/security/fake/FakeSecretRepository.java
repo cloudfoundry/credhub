@@ -1,6 +1,6 @@
 package io.pivotal.security.fake;
 
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.repository.SecretRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -25,7 +25,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findOneByUuid(UUID uuid) {
+  public NamedSecretData findOneByUuid(UUID uuid) {
     throw new UnsupportedOperationException();
   }
 
@@ -35,7 +35,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public <S extends NamedSecret> S save(S entity) {
+  public <S extends NamedSecretData> S save(S entity) {
     transactionManager.currentTransaction.enqueue(() -> {
       count++;
     });
@@ -43,7 +43,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret findOne(UUID aLong) {
+  public NamedSecretData findOne(UUID aLong) {
     throw new UnsupportedOperationException();
   }
 
@@ -53,22 +53,22 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> findAll() {
+  public List<NamedSecretData> findAll() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<NamedSecret> findAll(Sort sort) {
+  public List<NamedSecretData> findAll(Sort sort) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Page<NamedSecret> findAll(Pageable pageable) {
+  public Page<NamedSecretData> findAll(Pageable pageable) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<NamedSecret> findAll(Iterable<UUID> longs) {
+  public List<NamedSecretData> findAll(Iterable<UUID> longs) {
     throw new UnsupportedOperationException();
   }
 
@@ -83,17 +83,17 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public Slice<NamedSecret> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page) {
+  public Slice<NamedSecretData> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<NamedSecret> findAllBySecretNameUuid(UUID uuid) {
+  public List<NamedSecretData> findAllBySecretNameUuid(UUID uuid) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public NamedSecret findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(UUID uuid) {
+  public NamedSecretData findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(UUID uuid) {
     throw new UnsupportedOperationException();
   }
 
@@ -108,12 +108,12 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public void delete(NamedSecret entity) {
+  public void delete(NamedSecretData entity) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void delete(Iterable<? extends NamedSecret> entities) {
+  public void delete(Iterable<? extends NamedSecretData> entities) {
     throw new UnsupportedOperationException();
   }
 
@@ -128,7 +128,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public void deleteInBatch(Iterable<NamedSecret> entities) {
+  public void deleteInBatch(Iterable<NamedSecretData> entities) {
     throw new UnsupportedOperationException();
   }
 
@@ -138,47 +138,47 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public NamedSecret getOne(UUID aLong) {
+  public NamedSecretData getOne(UUID aLong) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> S saveAndFlush(S entity) {
+  public <S extends NamedSecretData> S saveAndFlush(S entity) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> List<S> save(Iterable<S> entities) {
+  public <S extends NamedSecretData> List<S> save(Iterable<S> entities) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> List<S> findAll(Example<S> example) {
+  public <S extends NamedSecretData> List<S> findAll(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> List<S> findAll(Example<S> example, Sort sort) {
+  public <S extends NamedSecretData> List<S> findAll(Example<S> example, Sort sort) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> S findOne(Example<S> example) {
+  public <S extends NamedSecretData> S findOne(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> Page<S> findAll(Example<S> example, Pageable pageable) {
+  public <S extends NamedSecretData> Page<S> findAll(Example<S> example, Pageable pageable) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> long count(Example<S> example) {
+  public <S extends NamedSecretData> long count(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends NamedSecret> boolean exists(Example<S> example) {
+  public <S extends NamedSecretData> boolean exists(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 }

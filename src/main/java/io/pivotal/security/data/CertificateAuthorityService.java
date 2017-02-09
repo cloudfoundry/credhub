@@ -1,7 +1,7 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.entity.NamedCertificateSecret;
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.view.ParameterizedValidationException;

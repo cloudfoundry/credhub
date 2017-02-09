@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.entity.NamedSecret;
+import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.view.SecretKind;
 
