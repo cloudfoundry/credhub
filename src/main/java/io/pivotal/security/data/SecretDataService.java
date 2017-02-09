@@ -39,7 +39,7 @@ public class SecretDataService {
     "AND " +
       "UPPER(named_secret.name) = most_recent.inner_name " +
     "WHERE " +
-      "UPPER(named_secret.name) LIKE UPPER(?) OR UPPER(named_secret.name) LIKE UPPER(?) " +
+      "UPPER(named_secret.name) LIKE UPPER(?) " +
     "ORDER BY version_created_at DESC";
 
   private final SecretRepository secretRepository;
@@ -58,6 +58,7 @@ public class SecretDataService {
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
+    namedSecret.setName(addLeadingSlashIfMissing(namedSecret.getName()));
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
@@ -69,7 +70,7 @@ public class SecretDataService {
   }
 
   public NamedSecret findMostRecent(String name) {
-    return secretRepository.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(name);
+    return secretRepository.findFirstByNameIgnoreCaseOrderByVersionCreatedAtDesc(addLeadingSlashIfMissing(name));
   }
 
   public NamedSecret findByUuid(String uuid) {
@@ -81,35 +82,31 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> findContainingName(String name) {
-    return findMostRecentLikeSubstrings('%' + name + '%', StringUtils.stripStart(name, "/") + '%');
+    return findMostRecentLikeSubstring('%' + name + '%');
   }
 
-  public List<NamedSecret> findStartingWithName(String name) {
-    if (!name.endsWith("/")) {
-      name += '/';
-    }
-    name += '%';
+  public List<NamedSecret> findStartingWithPath(String path) {
+    path = addLeadingSlashIfMissing(path);
+    path = !path.endsWith("/") ? path + "/" : path;
 
-    return findMostRecentLikeSubstrings(name, name);
+    return findMostRecentLikeSubstring(path + "%");
   }
 
   public long delete(String name) {
-    return secretRepository.deleteByNameIgnoreCase(name);
+    return secretRepository.deleteByNameIgnoreCase(addLeadingSlashIfMissing(name));
   }
 
   public void deleteAll() { secretRepository.deleteAll(); }
 
   public List<NamedSecret> findAllByName(String name) {
-    return secretRepository.findAllByNameIgnoreCase(name);
+    return secretRepository.findAllByNameIgnoreCase(addLeadingSlashIfMissing(name));
   }
 
-  private List<NamedSecret> findMostRecentLikeSubstrings(String substring1, String substring2) {
-    secretRepository.flush();
-
+  private List<NamedSecret> findMostRecentLikeSubstring(String substring) {
     // The subquery gets us the right name/version_created_at pairs, but changes the capitalization of the names.
     return jdbcTemplate.query(
         FIND_MOST_RECENT_BY_SUBSTRING_QUERY,
-      new Object[] {substring1, substring2},
+      new Object[] {substring},
       (rowSet, rowNum) -> {
         NamedSecret secret = new NamedSecretImpl();
 
@@ -140,5 +137,9 @@ public class SecretDataService {
       encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
       new PageRequest(0, CERTIFICATE_AUTHORITY_BATCH_SIZE)
     );
+  }
+
+  private String addLeadingSlashIfMissing(String name) {
+    return StringUtils.prependIfMissing(name, "/");
   }
 }

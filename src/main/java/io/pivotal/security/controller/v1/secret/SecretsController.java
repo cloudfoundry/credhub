@@ -321,6 +321,6 @@ public class SecretsController {
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findWithAuditing(sanitizedName(path), secretDataService::findStartingWithName, request, authentication);
+    return findWithAuditing(sanitizedName(path), secretDataService::findStartingWithPath, request, authentication);
   }
 }

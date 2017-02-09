@@ -124,7 +124,7 @@ public class SecretsControllerFindTest {
           namedPasswordSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedPasswordSecret.setVersionCreatedAt(frozenTime))
-          ).when(secretDataService).findStartingWithName(path);
+          ).when(secretDataService).findStartingWithPath(path);
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=/" + path)
               .accept(APPLICATION_JSON);
@@ -144,7 +144,7 @@ public class SecretsControllerFindTest {
           namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
-          ).when(secretDataService).findStartingWithName(substring);
+          ).when(secretDataService).findStartingWithPath(substring);
 
           final String path = substring;
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
@@ -179,7 +179,7 @@ public class SecretsControllerFindTest {
           namedValueSecret.setEncryptedValue("some value".getBytes());
           doReturn(
               Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
-          ).when(secretDataService).findStartingWithName(path.toUpperCase());
+          ).when(secretDataService).findStartingWithPath(path.toUpperCase());
 
           assertTrue(secretName.startsWith(path));
 

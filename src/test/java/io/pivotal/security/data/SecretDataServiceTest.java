@@ -91,7 +91,7 @@ public class SecretDataServiceTest {
 
     describe("#save", () -> {
       it("should save a secret", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
         NamedSecret savedSecret = subject.save(secret);
@@ -102,7 +102,7 @@ public class SecretDataServiceTest {
 
         assertThat(passwordSecrets.size(), equalTo(1));
         NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
-        assertThat(passwordSecret.getName(), equalTo("my-secret"));
+        assertThat(passwordSecret.getName(), equalTo("/my-secret"));
         assertThat(passwordSecret.getEncryptedValue(), equalTo("secret-password".getBytes()));
 
         // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
@@ -112,7 +112,7 @@ public class SecretDataServiceTest {
       });
 
       it("should update a secret", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret-2");
+        NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret-2");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
         NamedPasswordSecret savedSecret = subject.save(secret);
@@ -125,7 +125,7 @@ public class SecretDataServiceTest {
 
         assertThat(passwordSecrets.size(), equalTo(1));
         NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
-        assertThat(passwordSecret.getName(), equalTo("my-secret-2"));
+        assertThat(passwordSecret.getName(), equalTo("/my-secret-2"));
         assertThat(passwordSecret.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
 
         passwordSecret = (NamedPasswordSecret) (secretRepository.findAll().get(0));
@@ -133,7 +133,7 @@ public class SecretDataServiceTest {
       });
 
       it("should generate a uuid when creating", () -> {
-        NamedSshSecret secret = new NamedSshSecret("my-secret-2").setPublicKey("fake-public-key");
+        NamedSshSecret secret = new NamedSshSecret("/my-secret-2").setPublicKey("fake-public-key");
         NamedSshSecret savedSecret = subject.save(secret);
 
         UUID generatedUuid = savedSecret.getUuid();
@@ -145,9 +145,19 @@ public class SecretDataServiceTest {
         assertThat(savedSecret.getUuid(), equalTo(generatedUuid));
       });
 
+      it("should save with the leading slash", () -> {
+        NamedPasswordSecret secretWithLeadingSlash = new NamedPasswordSecret("/my/secret");
+
+        subject.save(secretWithLeadingSlash);
+
+        NamedPasswordSecret savedSecret = getSecretsFromDb().get(0);
+
+        assertThat(savedSecret.getName(), equalTo("/my/secret"));
+      });
+
       describe("when the secret has no encrypted value", () -> {
         it("should set the default encryption key UUID", () -> {
-          NamedSshSecret secret = new NamedSshSecret("my-secret").setPublicKey("fake-public-key");
+          NamedSshSecret secret = new NamedSshSecret("/my-secret").setPublicKey("fake-public-key");
           NamedSshSecret savedSecret = subject.save(secret);
 
           assertThat(savedSecret.getEncryptionKeyUuid(), equalTo(activeCanaryUuid));
@@ -157,27 +167,27 @@ public class SecretDataServiceTest {
 
     describe("#delete", () -> {
       it("should delete all secrets matching a name", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
         subject.save(secret);
-        secret = new NamedPasswordSecret("my-secret");
+        secret = new NamedPasswordSecret("/my-secret");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("another password".getBytes());
         subject.save(secret);
         assertThat(getSecretsFromDb().size(), equalTo(2));
 
-        subject.delete("my-secret");
+        subject.delete("/my-secret");
 
-        assertThat(subject.findAllByName("my-secret"), empty());
+        assertThat(subject.findAllByName("/my-secret"), empty());
       });
 
       it("should be able to delete a secret ignoring case", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
         subject.save(secret);
-        secret = new NamedPasswordSecret("my-secret");
+        secret = new NamedPasswordSecret("/my-secret");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("another password".getBytes());
         subject.save(secret);
@@ -185,7 +195,7 @@ public class SecretDataServiceTest {
 
         subject.delete("MY-SECRET");
 
-        assertThat(subject.findContainingName("my-secret"), empty());
+        assertThat(subject.findContainingName("/my-secret"), empty());
       });
 
       it("should cascade correctly", () -> {
@@ -211,75 +221,94 @@ public class SecretDataServiceTest {
 
         assertThat(getSecretsFromDb().size(), equalTo(0));
       });
+
+      it("should not need a leading slash to delete a secret", () -> {
+        NamedPasswordSecret secret = new NamedPasswordSecret("/my/secret");
+        secret.setEncryptionKeyUuid(activeCanaryUuid);
+        secret.setEncryptedValue("secret-password".getBytes());
+        subject.save(secret);
+
+        subject.delete("my/secret");
+
+        assertThat(getSecretsFromDb().size(), equalTo(0));
+      });
     });
 
     describe("#findMostRecent", () -> {
-      it("returns all secrets ignoring case", () -> {
-        NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret("my-SECRET");
+      beforeEach(() -> {
+        NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret("/my-SECRET");
         namedPasswordSecret1.setEncryptionKeyUuid(activeCanaryUuid);
-        namedPasswordSecret1.setEncryptedValue("my-password".getBytes());
+        namedPasswordSecret1.setEncryptedValue("/my-password".getBytes());
         NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret("MY-SECRET");
         namedPasswordSecret2.setEncryptionKeyUuid(activeCanaryUuid);
-        namedPasswordSecret2.setEncryptedValue("my-password".getBytes());
+        namedPasswordSecret2.setEncryptedValue("/my-password".getBytes());
         subject.save(namedPasswordSecret1);
         fakeTimeSetter.accept(345346L); // 1 second later
         subject.save(namedPasswordSecret2);
+      });
 
+      it("returns all secrets ignoring case", () -> {
+        NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findMostRecent("/my-secret");
+        assertThat(passwordSecret.getName(), equalTo("/MY-SECRET"));
+        assertThat(passwordSecret.getEncryptedValue(), equalTo("/my-password".getBytes()));
+      });
+
+      it("returns all secrets ignoring the leading slash", () -> {
         NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findMostRecent("my-secret");
-        assertThat(passwordSecret.getName(), equalTo("MY-SECRET"));
-        assertThat(passwordSecret.getEncryptedValue(), equalTo("my-password".getBytes()));
+        assertThat(passwordSecret.getName(), equalTo("/MY-SECRET"));
+        assertThat(passwordSecret.getEncryptedValue(), equalTo("/my-password".getBytes()));
       });
 
       it("finds most recent based on version_created_at date, not updated_at", () -> {
-        NamedCertificateSecret firstCertificate = new NamedCertificateSecret("my-certificate");
+        NamedCertificateSecret firstCertificate = new NamedCertificateSecret("/my-certificate");
         firstCertificate.setEncryptionKeyUuid(activeCanaryUuid);
         firstCertificate.setCertificate("first-certificate");
 
-        NamedCertificateSecret secondCertificate = new NamedCertificateSecret("my-certificate");
+        NamedCertificateSecret secondCertificate = new NamedCertificateSecret("/my-certificate");
         secondCertificate.setEncryptionKeyUuid(activeCanaryUuid);
         secondCertificate.setCertificate("second-certificate");
 
-        firstCertificate = (NamedCertificateSecret) subject.save(firstCertificate);
-        fakeTimeSetter.accept(345346L);
-        secondCertificate = (NamedCertificateSecret) subject.save(secondCertificate);
+        firstCertificate = subject.save(firstCertificate);
+        fakeTimeSetter.accept(445346L);
+        secondCertificate = subject.save(secondCertificate);
 
-        NamedCertificateSecret mostRecent = (NamedCertificateSecret) subject.findMostRecent("my-certificate");
+        NamedCertificateSecret mostRecent = (NamedCertificateSecret) subject.findMostRecent("/my-certificate");
         assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
 
         firstCertificate.setCertificate("updated-first-certificate");
-        fakeTimeSetter.accept(345347L);
+        fakeTimeSetter.accept(445347L);
         subject.save(firstCertificate);
 
-        mostRecent = (NamedCertificateSecret) subject.findMostRecent("my-certificate");
+        mostRecent = (NamedCertificateSecret) subject.findMostRecent("/my-certificate");
         assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
       });
     });
 
     describe("#findByUuid", () -> {
       it("should be able to find secret by uuid", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("my-secret");
+        NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
         NamedPasswordSecret savedSecret = subject.save(secret);
 
         assertNotNull(savedSecret.getUuid());
         NamedPasswordSecret oneByUuid = (NamedPasswordSecret) subject.findByUuid(savedSecret.getUuid().toString());
-        assertThat(oneByUuid.getName(), equalTo("my-secret"));
+        assertThat(oneByUuid.getName(), equalTo("/my-secret"));
         assertThat(oneByUuid.getEncryptedValue(), equalTo("secret-password".getBytes()));
       });
     });
 
     describe("#findContainingName", () -> {
-      String valueName = "value.Secret";
-      String passwordName = "password/Secret";
-      String certificateName = "certif/ic/atesecret";
+      String valueName = "/value.Secret";
+      String passwordName = "/password/Secret";
+      String certificateName = "/certif/ic/atesecret";
 
       beforeEach(() -> {
         fakeTimeSetter.accept(2000000000123L);
         NamedValueSecret namedValueSecret = new NamedValueSecret(valueName);
         namedValueSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedValueSecret);
-        NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret("mySe.cret");
+        NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret("/mySe.cret");
         namedPasswordSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedValueSecret);
 
@@ -287,7 +316,7 @@ public class SecretDataServiceTest {
         namedPasswordSecret = new NamedPasswordSecret(passwordName);
         namedPasswordSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedPasswordSecret);
-        NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret("myseecret");
+        NamedCertificateSecret namedCertificateSecret = new NamedCertificateSecret("/myseecret");
         namedCertificateSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedCertificateSecret);
 
@@ -316,20 +345,20 @@ public class SecretDataServiceTest {
         ));
       });
 
-      it("should return a credential ignoring leading slash at the start of credential name", () -> {
+      it("should return a credential, not ignoring leading slash at the start of credential name", () -> {
         fakeTimeSetter.accept(4000000000123L);
-        NamedPasswordSecret namedSecret = new NamedPasswordSecret("my/password/secret");
+        NamedPasswordSecret namedSecret = new NamedPasswordSecret("/my/password/secret");
         namedSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedSecret);
         fakeTimeSetter.accept(5000000000123L);
-        namedSecret = new NamedPasswordSecret("mypassword/secret");
+        namedSecret = new NamedPasswordSecret("/mypassword/secret");
         namedSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedSecret);
         List<NamedSecret> containingName = subject.findContainingName("/password");
         assertThat(containingName, IsIterableContainingInOrder.contains(
-            hasProperty("name", equalTo("my/password/secret")),
-            hasProperty("name", equalTo(passwordName))
-            ));
+          hasProperty("name", equalTo("/my/password/secret")),
+          hasProperty("name", equalTo(passwordName))
+        ));
       });
 
       describe("when there are duplicate names", () -> {
@@ -349,33 +378,33 @@ public class SecretDataServiceTest {
           List<NamedSecret> secrets = subject.findContainingName("DUP");
 
           NamedSecret secret = secrets.get(0);
-          assertThat(secret.getName(), equalTo("bar/duplicate"));
+          assertThat(secret.getName(), equalTo("/bar/duplicate"));
           assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(4000000000123L)));
 
           secret = secrets.get(1);
-          assertThat(secret.getName(), equalTo("foo/DUPLICATE"));
+          assertThat(secret.getName(), equalTo("/foo/DUPLICATE"));
           assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(2000000000123L)));
         });
       });
     });
 
-    describe("#findStartingWithName", () -> {
+    describe("#findStartingWithPath", () -> {
       beforeEach(() -> {
-        saveNamedPassword(2000000000123L, "secret/1");
-        saveNamedPassword(3000000000123L, "Secret/2");
-        saveNamedPassword(1000000000123L, "SECRET/3");
-        saveNamedPassword(1000000000123L, "not/So/Secret");
-        saveNamedPassword(1000000000123L, "SECRETnotrailingslash");
+        saveNamedPassword(2000000000123L, "/secret/1");
+        saveNamedPassword(3000000000123L, "/Secret/2");
+        saveNamedPassword(1000000000123L, "/SECRET/3");
+        saveNamedPassword(1000000000123L, "/not/So/Secret");
+        saveNamedPassword(1000000000123L, "/SECRETnotrailingslash");
       });
 
       it("should return a list of secrets in chronological order that start with a given string", () -> {
-        List<NamedSecret> secrets = subject.findStartingWithName("Secret/");
+        List<NamedSecret> secrets = subject.findStartingWithPath("Secret/");
 
         assertThat(secrets.size(), equalTo(3));
         assertThat(secrets, IsIterableContainingInOrder.contains(
-            hasProperty("name", equalTo("Secret/2")),
-            hasProperty("name", equalTo("secret/1")),
-            hasProperty("name", equalTo("SECRET/3"))
+            hasProperty("name", equalTo("/Secret/2")),
+            hasProperty("name", equalTo("/secret/1")),
+            hasProperty("name", equalTo("/SECRET/3"))
         ));
         assertThat(secrets, not(contains(hasProperty("notSoSecret"))));
       });
@@ -384,49 +413,56 @@ public class SecretDataServiceTest {
         NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findMostRecent("secret/1");
         passwordSecret.setEncryptedValue("new-encrypted-value".getBytes());
         subject.save(passwordSecret);
-        List<NamedSecret> secrets = subject.findStartingWithName("Secret/");
+        List<NamedSecret> secrets = subject.findStartingWithPath("Secret/");
         assertThat(secrets, IsIterableContainingInOrder.contains(
-            hasProperty("name", equalTo("Secret/2")),
-            hasProperty("name", equalTo("secret/1")),
-            hasProperty("name", equalTo("SECRET/3"))
+            hasProperty("name", equalTo("/Secret/2")),
+            hasProperty("name", equalTo("/secret/1")),
+            hasProperty("name", equalTo("/SECRET/3"))
         ));
       });
 
       describe("when there are duplicate names", () -> {
         beforeEach(() -> {
-          saveNamedPassword(2000000000123L, "DupSecret/1");
-          saveNamedPassword(3000000000123L, "DupSecret/1");
-          saveNamedPassword(1000000000123L, "DupSecret/1");
+          saveNamedPassword(2000000000123L, "/DupSecret/1");
+          saveNamedPassword(3000000000123L, "/DupSecret/1");
+          saveNamedPassword(1000000000123L, "/DupSecret/1");
         });
 
         it("should not return duplicate secret names", () -> {
-          List<NamedSecret> secrets = subject.findStartingWithName("dupsecret/");
+          List<NamedSecret> secrets = subject.findStartingWithPath("/dupsecret/");
           assertThat(secrets.size(), equalTo(1));
         });
 
         it("should return the most recent secret", () -> {
-          List<NamedSecret> secrets = subject.findStartingWithName("dupsecret/");
+          List<NamedSecret> secrets = subject.findStartingWithPath("/dupsecret/");
           NamedSecret secret = secrets.get(0);
           assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(3000000000123L)));
         });
       });
 
+      it("should ignore a leading slash", () -> {
+        List<NamedSecret> secrets = subject.findStartingWithPath("Secret");
+
+        assertThat(secrets.size(), equalTo(3));
+        assertThat(secrets, not(contains(hasProperty("name", equalTo("/not/So/Secret")))));
+      });
+
       describe("when the path does not have a trailing slash", () -> {
         it("should append an ending slash", () -> {
-          List<NamedSecret> secrets = subject.findStartingWithName("Secret");
+          List<NamedSecret> secrets = subject.findStartingWithPath("Secret");
 
           assertThat(secrets.size(), equalTo(3));
-          assertThat(secrets, not(contains(hasProperty("name", equalTo("SECRETnotrailingslash")))));
+          assertThat(secrets, not(contains(hasProperty("name", equalTo("/SECRETnotrailingslash")))));
         });
       });
     });
 
     describe("#findAllPaths", () -> {
       beforeEach(() -> {
-        String valueOther = "fubario";
-        String valueName = "value/Secret";
-        String passwordName = "password/Secret";
-        String certificateName = "certif/ic/ateSecret";
+        String valueOther = "/fubario";
+        String valueName = "/value/Secret";
+        String passwordName = "/password/Secret";
+        String certificateName = "/certif/ic/ateSecret";
         NamedValueSecret namedValueSecret = new NamedValueSecret(valueOther);
         namedValueSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedValueSecret);
@@ -442,15 +478,23 @@ public class SecretDataServiceTest {
       });
 
       it("can fetches possible paths for all secrets", () -> {
-        assertThat(subject.findAllPaths(), equalTo(newArrayList("certif/", "certif/ic/", "password/", "value/")));
+        assertThat(subject.findAllPaths(), equalTo(newArrayList("/", "/certif/", "/certif/ic/", "/password/", "/value/")));
       });
     });
 
     describe("#findAllByName", () -> {
       it("finds all by name", () -> {
-        NamedPasswordSecret secret1 = saveNamedPassword(2000000000123L, "secret1");
-        NamedPasswordSecret secret2 = saveNamedPassword(4000000000123L, "seCret1");
-        saveNamedPassword(3000000000123L, "Secret2");
+        NamedPasswordSecret secret1 = saveNamedPassword(2000000000123L, "/secret1");
+        NamedPasswordSecret secret2 = saveNamedPassword(4000000000123L, "/seCret1");
+        saveNamedPassword(3000000000123L, "/Secret2");
+
+        List<NamedSecret> secrets = subject.findAllByName("/Secret1");
+        assertThat(secrets, containsInAnyOrder(hasProperty("uuid", equalTo(secret1.getUuid())), hasProperty("uuid", equalTo(secret2.getUuid()))));
+      });
+
+      it("finds all by name prepending the leading slash", () -> {
+        NamedPasswordSecret secret1 = saveNamedPassword(2000000000123L, "/secret1");
+        NamedPasswordSecret secret2 = saveNamedPassword(4000000000123L, "/secret1");
 
         List<NamedSecret> secrets = subject.findAllByName("Secret1");
         assertThat(secrets, containsInAnyOrder(hasProperty("uuid", equalTo(secret1.getUuid())), hasProperty("uuid", equalTo(secret2.getUuid()))));

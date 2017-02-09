@@ -30,7 +30,7 @@ public interface RequestTranslator<ET> {
   }
 
   default void validatePathName(String name) {
-    if (name.startsWith("/") || name.contains("//") || name.endsWith("/")) {
+    if (name.contains("//") || name.endsWith("/")) {
       throw new ParameterizedValidationException("error.invalid_name_has_slash");
     }
   }
