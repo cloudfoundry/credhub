@@ -1,9 +1,9 @@
 package db.migration.common;
 
+import io.pivotal.security.util.UuidUtil;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.nio.ByteBuffer;
 import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
@@ -33,10 +33,7 @@ public class V20_1__set_uuid_in_encryption_key_canary implements SpringJdbcMigra
     if (databaseName.equals("postgresql")) {
       return new Object[]{uuid, id};
     } else {
-      ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]);
-      byteBuffer.putLong(uuid.getMostSignificantBits());
-      byteBuffer.putLong(uuid.getLeastSignificantBits());
-      return new Object[]{byteBuffer.array(), id};
+      return new Object[]{UuidUtil.uuidToByteArray(uuid), id};
     }
   }
 }
