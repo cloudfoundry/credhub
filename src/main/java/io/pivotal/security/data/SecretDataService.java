@@ -11,11 +11,11 @@ import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import static io.pivotal.security.repository.CertificateAuthorityRepository.CERTIFICATE_AUTHORITY_BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -93,7 +93,7 @@ public class SecretDataService {
     return findMostRecentLikeSubstrings(name, name);
   }
 
-  public List<NamedSecret> delete(String name) {
+  public long delete(String name) {
     return secretRepository.deleteByNameIgnoreCase(name);
   }
 

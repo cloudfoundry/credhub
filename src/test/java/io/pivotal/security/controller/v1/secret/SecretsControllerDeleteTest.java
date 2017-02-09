@@ -19,12 +19,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -46,7 +42,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -66,10 +61,6 @@ public class SecretsControllerDeleteTest {
 
   @SpyBean
   SecretDataService secretDataService;
-
-  @Autowired
-  PlatformTransactionManager transactionManager;
-  TransactionStatus transaction;
 
   private MockMvc mockMvc;
 
@@ -93,14 +84,6 @@ public class SecretsControllerDeleteTest {
     });
 
     describe("#delete", () -> {
-      beforeEach(() -> {
-        transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-      });
-
-      afterEach(() -> {
-        transactionManager.rollback(transaction);
-      });
-
       describe("error handling", () -> {
         it("should return NOT_FOUND when there is no secret with that name", () -> {
           final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
@@ -135,8 +118,7 @@ public class SecretsControllerDeleteTest {
 
       describe("when there is one secret with the name (case-insensitive)", () -> {
         beforeEach(() -> {
-          doReturn(Arrays.asList(new NamedValueSecret(secretName)))
-              .when(secretDataService).delete(secretName.toUpperCase());
+          doReturn(1L).when(secretDataService).delete(secretName.toUpperCase());
 
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()));
         });
@@ -154,7 +136,7 @@ public class SecretsControllerDeleteTest {
           verify(auditLogService).performWithAuditing(captor.capture(), any(Supplier.class));
           AuditRecordBuilder auditRecorder = captor.getValue();
           assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_DELETE));
-          assertThat(auditRecorder.getCredentialName(), equalTo(secretName));
+          assertThat(auditRecorder.getCredentialName(), equalTo(secretName.toUpperCase()));
         });
       });
 
@@ -164,8 +146,7 @@ public class SecretsControllerDeleteTest {
           value1.setEncryptedValue("value1".getBytes());
           NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
-          doReturn(Arrays.asList(value1, value2))
-              .when(secretDataService).delete(secretName);
+          doReturn(2L).when(secretDataService).delete(secretName);
 
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName));
         });
@@ -193,8 +174,7 @@ public class SecretsControllerDeleteTest {
           value1.setEncryptedValue("value1".getBytes());
           NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
-          doReturn(Arrays.asList(value1, value2))
-              .when(secretDataService).delete(secretName.toUpperCase());
+          doReturn(2L).when(secretDataService).delete(secretName.toUpperCase());
         });
 
         it("can delete when the name is a query param", () -> {
@@ -221,7 +201,7 @@ public class SecretsControllerDeleteTest {
           value1.setEncryptedValue("value1".getBytes());
           NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
-          doReturn(Arrays.asList(value1, value2))
+          doReturn(2L)
               .when(secretDataService).delete(secretName.toUpperCase());
           mockMvc.perform(delete("/api/v1/data?name=/" + secretName.toUpperCase()))
               .andExpect(status().isOk());

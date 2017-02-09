@@ -15,9 +15,9 @@ import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
 import io.pivotal.security.view.ParameterizedValidationException;
-import io.pivotal.security.view.SecretView;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
+import io.pivotal.security.view.SecretView;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +39,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -49,10 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -111,19 +112,19 @@ public class SecretsController {
                                Authentication authentication) throws Exception {
     AuditRecordBuilder auditRecorder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(auditRecorder, () -> {
-      List<NamedSecret> namedSecrets;
       final String nameToDelete = sanitizedName(secretName);
 
       if (StringUtils.isEmpty(nameToDelete)) {
         return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
       }
 
-      namedSecrets = secretDataService.delete(nameToDelete);
+      long numDeleted = secretDataService.delete(nameToDelete);
 
-      if (namedSecrets.size() > 0) {
-        auditRecorder.setCredentialName(namedSecrets.get(0).getName());
+      if (numDeleted > 0) {
+        auditRecorder.setCredentialName(nameToDelete);
         return new ResponseEntity(HttpStatus.OK);
       } else {
+        auditRecorder.setCredentialName(nameToDelete);
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
     });

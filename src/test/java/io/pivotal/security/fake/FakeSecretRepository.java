@@ -31,7 +31,7 @@ public class FakeSecretRepository implements SecretRepository {
   }
 
   @Override
-  public List<NamedSecret> deleteByNameIgnoreCase(String name) {
+  public long deleteByNameIgnoreCase(String name) {
     throw new UnsupportedOperationException();
   }
 
