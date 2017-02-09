@@ -7,13 +7,13 @@ import java.security.Key;
 import java.security.KeyStore;
 
 public abstract class EncryptionServiceWithConnection extends EncryptionService {
-  protected Key createKey(EncryptionKeyMetadata encryptionKeyMetadata, KeyGeneratingConnection dyadicConnection) {
+  protected Key createKey(EncryptionKeyMetadata encryptionKeyMetadata, KeyGeneratingConnection connection) {
     try {
-      KeyStore keyStore = dyadicConnection.getKeyStore();
+      KeyStore keyStore = connection.getKeyStore();
       String encryptionKeyAlias = encryptionKeyMetadata.getEncryptionKeyName();
 
       if (!keyStore.containsAlias(encryptionKeyAlias)) {
-        SecretKey aesKey = dyadicConnection.getKeyGenerator().generateKey();
+        SecretKey aesKey = connection.getKeyGenerator().generateKey();
         keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
       }
 
