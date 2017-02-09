@@ -166,11 +166,11 @@ public class CaController {
   }
 
   private String sanitizedName(String name) {
-    return StringUtils.stripStart(name, "/");
+    return StringUtils.stripStart(name, " ");
   }
 
   private String sanitizedName(DocumentContext parsedRequest) {
-    return StringUtils.stripStart(parsedRequest.read("$.name"), "/");
+    return StringUtils.stripStart(parsedRequest.read("$.name"), " ");
   }
 
   private Function<String, List<NamedCertificateAuthority>> findAsList(Function<String, NamedCertificateAuthority> finder) {
