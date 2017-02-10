@@ -1,5 +1,0 @@
----
-applications:
-  - name: pivotal-credential-manager
-    buildpack: java_buildpack
-    path: build/libs/sec-eng-credential-manager-0.1.0.jar

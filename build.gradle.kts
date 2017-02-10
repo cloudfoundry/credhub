@@ -34,7 +34,7 @@ apply {
 
 val jar = getTask<Jar>("jar")
 jar.apply {
-    baseName = "sec-eng-credential-manager"
+    baseName = "credhub"
     version = "${System.getenv("VERSION") ?: "DEV"}"
 }
 
