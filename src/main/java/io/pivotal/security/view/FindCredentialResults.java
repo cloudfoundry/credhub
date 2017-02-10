@@ -1,30 +1,23 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.entity.NamedSecret;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
 public class FindCredentialResults {
-  private List<Credential> credentials;
+  private List<SecretView> credentials;
 
   @SuppressWarnings("rawtypes")
-  FindCredentialResults(List<Credential> credentials) {
+  FindCredentialResults(List<SecretView> credentials) {
     this.credentials = credentials;
   }
 
-  public static FindCredentialResults fromEntity(List<NamedSecret> secrets) {
-    List<Credential> credentials = newArrayList();
-    for(NamedSecret s: secrets) {
-      credentials.add(new Credential(s.getName(), s.getVersionCreatedAt()));
-    }
-    return new FindCredentialResults(credentials);
+  public static FindCredentialResults fromSecrets(List<SecretView> secrets) {
+    return new FindCredentialResults(secrets);
   }
 
   @JsonProperty
-  public List<Credential> getCredentials() {
+  public List<SecretView> getCredentials() {
     return credentials;
   }
 

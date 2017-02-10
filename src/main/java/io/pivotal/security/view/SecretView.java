@@ -17,6 +17,10 @@ public class SecretView extends BaseView {
   private final String type;
   private final Object value;
 
+  public SecretView(Instant versionCreatedAt, String name) {
+    this(versionCreatedAt, null, name, "", "");
+  }
+
   SecretView(Instant versionCreatedAt, UUID uuid, String name, String type, Object value) {
     super(versionCreatedAt);
     this.uuid = uuid;
@@ -32,7 +36,7 @@ public class SecretView extends BaseView {
 
   @JsonProperty("id")
   public String getUuid() {
-    return uuid.toString();
+    return uuid == null ? "" : uuid.toString();
   }
 
   @JsonProperty("name")

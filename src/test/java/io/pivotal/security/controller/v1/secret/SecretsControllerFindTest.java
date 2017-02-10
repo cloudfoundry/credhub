@@ -8,6 +8,7 @@ import io.pivotal.security.entity.NamedValueSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.SecretView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -20,6 +21,11 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -41,11 +47,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -92,8 +93,9 @@ public class SecretsControllerFindTest {
             String substring = secretName.substring(4).toUpperCase();
             NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
             namedValueSecret.setEncryptedValue("some value".getBytes());
+            namedValueSecret.setVersionCreatedAt(frozenTime);
             doReturn(
-                Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
+                Arrays.asList(new SecretView(frozenTime, secretName))
             ).when(secretDataService).findContainingName(substring);
             final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
                 .accept(APPLICATION_JSON);
@@ -122,8 +124,9 @@ public class SecretsControllerFindTest {
           String path = secretName.substring(0, secretName.lastIndexOf("/"));
           NamedPasswordSecret namedPasswordSecret = new NamedPasswordSecret(secretName);
           namedPasswordSecret.setEncryptedValue("some value".getBytes());
+          namedPasswordSecret.setVersionCreatedAt(frozenTime);
           doReturn(
-              Arrays.asList(namedPasswordSecret.setVersionCreatedAt(frozenTime))
+              Arrays.asList(new SecretView(frozenTime, secretName))
           ).when(secretDataService).findStartingWithPath(path);
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=/" + path)
@@ -142,8 +145,9 @@ public class SecretsControllerFindTest {
           String substring = secretName.substring(0, secretName.lastIndexOf("/"));
           NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
           namedValueSecret.setEncryptedValue("some value".getBytes());
+          namedValueSecret.setVersionCreatedAt(frozenTime);
           doReturn(
-              Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
+              Arrays.asList(new SecretView(frozenTime, secretName))
           ).when(secretDataService).findStartingWithPath(substring);
 
           final String path = substring;
@@ -177,8 +181,9 @@ public class SecretsControllerFindTest {
           final String path = "my-namespace";
           NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
           namedValueSecret.setEncryptedValue("some value".getBytes());
+          namedValueSecret.setVersionCreatedAt(frozenTime);
           doReturn(
-              Arrays.asList(namedValueSecret.setVersionCreatedAt(frozenTime))
+              Arrays.asList(new SecretView(frozenTime, secretName))
           ).when(secretDataService).findStartingWithPath(path.toUpperCase());
 
           assertTrue(secretName.startsWith(path));

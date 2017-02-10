@@ -39,11 +39,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -52,8 +49,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -228,13 +227,13 @@ public class SecretsController {
   }
 
   private ResponseEntity findWithAuditing(String nameSubstring,
-                                          Function<String, List<NamedSecret>> finder,
+                                          Function<String, List<SecretView>> finder,
                                           HttpServletRequest request,
                                           Authentication authentication) throws Exception {
     AuditRecordBuilder auditParams = new AuditRecordBuilder(CREDENTIAL_FIND, null, request, authentication);
     return auditLogService.performWithAuditing(auditParams, () -> {
-      List<NamedSecret> namedSecrets = finder.apply(nameSubstring);
-      return new ResponseEntity<>(FindCredentialResults.fromEntity(namedSecrets), HttpStatus.OK);
+      List<SecretView> secretViews = finder.apply(nameSubstring);
+      return new ResponseEntity<>(FindCredentialResults.fromSecrets(secretViews), HttpStatus.OK);
     });
   }
 

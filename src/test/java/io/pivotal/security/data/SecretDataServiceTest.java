@@ -13,6 +13,7 @@ import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.SecretView;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -357,7 +358,7 @@ public class SecretDataServiceTest {
         namedSecret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(namedSecret);
 
-        List<NamedSecret> containingName = subject.findContainingName("/password");
+        List<SecretView> containingName = subject.findContainingName("/password");
         assertThat(containingName, IsIterableContainingInOrder.contains(
           hasProperty("name", equalTo("/my/password/secret")),
           hasProperty("name", equalTo(passwordName))
@@ -373,14 +374,14 @@ public class SecretDataServiceTest {
         });
 
         it("should not return duplicate secret names", () -> {
-          List<NamedSecret> secrets = subject.findContainingName("DUP");
+          List<SecretView> secrets = subject.findContainingName("DUP");
           assertThat(secrets.size(), equalTo(2));
         });
 
         it("should return the most recent secret", () -> {
-          List<NamedSecret> secrets = subject.findContainingName("DUP");
+          List<SecretView> secrets = subject.findContainingName("DUP");
 
-          NamedSecret secret = secrets.get(0);
+          SecretView secret = secrets.get(0);
           assertThat(secret.getName(), equalTo("/bar/duplicate"));
           assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(4000000000123L)));
 
@@ -401,7 +402,7 @@ public class SecretDataServiceTest {
       });
 
       it("should return a list of secrets in chronological order that start with a given string", () -> {
-        List<NamedSecret> secrets = subject.findStartingWithPath("Secret/");
+        List<SecretView> secrets = subject.findStartingWithPath("Secret/");
 
         assertThat(secrets.size(), equalTo(3));
         assertThat(secrets, IsIterableContainingInOrder.contains(
@@ -416,7 +417,7 @@ public class SecretDataServiceTest {
         NamedPasswordSecret passwordSecret = (NamedPasswordSecret) subject.findMostRecent("secret/1");
         passwordSecret.setEncryptedValue("new-encrypted-value".getBytes());
         subject.save(passwordSecret);
-        List<NamedSecret> secrets = subject.findStartingWithPath("Secret/");
+        List<SecretView> secrets = subject.findStartingWithPath("Secret/");
         assertThat(secrets, IsIterableContainingInOrder.contains(
             hasProperty("name", equalTo("/Secret/2")),
             hasProperty("name", equalTo("/secret/1")),
@@ -432,19 +433,19 @@ public class SecretDataServiceTest {
         });
 
         it("should not return duplicate secret names", () -> {
-          List<NamedSecret> secrets = subject.findStartingWithPath("/dupsecret/");
+          List<SecretView> secrets = subject.findStartingWithPath("/dupsecret/");
           assertThat(secrets.size(), equalTo(1));
         });
 
         it("should return the most recent secret", () -> {
-          List<NamedSecret> secrets = subject.findStartingWithPath("/dupsecret/");
-          NamedSecret secret = secrets.get(0);
+          List<SecretView> secrets = subject.findStartingWithPath("/dupsecret/");
+          SecretView secret = secrets.get(0);
           assertThat(secret.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(3000000000123L)));
         });
       });
 
       it("should ignore a leading slash", () -> {
-        List<NamedSecret> secrets = subject.findStartingWithPath("Secret");
+        List<SecretView> secrets = subject.findStartingWithPath("Secret");
 
         assertThat(secrets.size(), equalTo(3));
         assertThat(secrets, not(contains(hasProperty("name", equalTo("/not/So/Secret")))));
@@ -452,7 +453,7 @@ public class SecretDataServiceTest {
 
       describe("when the path does not have a trailing slash", () -> {
         it("should append an ending slash", () -> {
-          List<NamedSecret> secrets = subject.findStartingWithPath("Secret");
+          List<SecretView> secrets = subject.findStartingWithPath("Secret");
 
           assertThat(secrets.size(), equalTo(3));
           assertThat(secrets, not(contains(hasProperty("name", equalTo("/SECRETnotrailingslash")))));
