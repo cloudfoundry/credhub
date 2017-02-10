@@ -1,4 +1,4 @@
-# CF CredHub 
+# CredHub 
 
 The CredHub server manages secrets like passwords, certificates, ssh keys, rsa keys, strings 
 (arbitrary values) and CAs. CredHub provides a REST API to get, set, or generate and securely store
