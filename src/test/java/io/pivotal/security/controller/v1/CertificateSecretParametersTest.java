@@ -1,7 +1,16 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static io.pivotal.security.util.CertificateStringConstants.BIG_TEST_CERT;
+import static io.pivotal.security.util.CertificateStringConstants.MISLEADING_CERT;
+import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_TEST_CERT;
 import io.pivotal.security.view.ParameterizedValidationException;
+import static java.util.Arrays.asList;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -9,128 +18,16 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import java.security.Security;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import org.junit.runner.RunWith;
+
+import java.security.Security;
 
 @RunWith(Spectrum.class)
 public class CertificateSecretParametersTest {
-
-  /**
-   * openssl x509 -in <(pbpaste) -text -noout:
-   *
-   * Subject Name: O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa
-   * Duration: 30 days
-   * Key Length: 4096
-   * Alternative Names: SolarSystem
-   * Extended Key Usage: server_auth, client_auth
-   * Key Usage: digital_signature
-   * Issuer: CN=foo
-   */
-  public static final String BIG_TEST_CERT = "-----BEGIN CERTIFICATE-----\n" +
-      "MIIEbzCCA1egAwIBAgIUYE3pB+BUaAP0YHeofpCmI/xCkmYwDQYJKoZIhvcNAQEL\n" +
-      "BQAwDjEMMAoGA1UEAwwDZm9vMB4XDTE3MDIwMzAxNDMzNloXDTE3MDMwNTAxNDMz\n" +
-      "NlowfDERMA8GA1UECgwIdGVzdC1vcmcxEDAOBgNVBAgMB0p1cGl0ZXIxETAPBgNV\n" +
-      "BAYTCE1pbGt5V2F5MRkwFwYDVQQDDBB0ZXN0LWNvbW1vbi1uYW1lMRYwFAYDVQQL\n" +
-      "DA10ZXN0LW9yZy11bml0MQ8wDQYDVQQHDAZFdXJvcGEwggIiMA0GCSqGSIb3DQEB\n" +
-      "AQUAA4ICDwAwggIKAoICAQCk+byx2uL5QNAQqdeEWoD0NfuXdbtf/j7orjK7TjCn\n" +
-      "djM21HLnIq96hZ+/Vxg30oxjRqAMKDUIj8OTrisorgcgpLNV7NwklPG9A0gv7xdk\n" +
-      "YvxhnEnyrztZYiS8sx98YDwjQpJDeA45QX6+/9k8qmXf7XRQRRTqhkG8jpkk0vvj\n" +
-      "hvwwTAma+0xALWfVBnhLJz82snJI+ezM9OuwO53iOkziNHNxtuc5sq/AjuDf48O4\n" +
-      "HOtxdB27WniL0T3+4Ng8ZRAgMmlSrQdFn6x/Us32VTVLTD4x1s9H4HL3c8LZJaoD\n" +
-      "CEKIwFRn2lSko4b4PAUGHZ0KpfeTlur0uR464s4PHh+EV1DOm/R/1/HIQgKanr5B\n" +
-      "FzLONAqFPPCMB/hTPli+Q6nez+Q2alpyxEz/QTCTNROKl+opVWJW6gAPMXAkpqc2\n" +
-      "bx0O7fRwwF9evVcQ1BZdfWaG3iGqO60o0y7lEAmvlOwnw0JjSta2NDlR0nNp9frx\n" +
-      "85USPdMoSBoaAGb+BehbvFsVoRTToxCo0YwCDcGjgacR4oCu5zTZd0KUVlGJ0vpu\n" +
-      "OJiUALyYSD/6mN8ZIfPa/rR8PF5ju3JzGd/AEh0F8gfgardLrNHre904/0HwBqvc\n" +
-      "ShdSS0XHjA7nTLAyARgLU/E0TIL9DH63tWrB2W+m7vBMkU0fuY5c40QIalT/iGbj\n" +
-      "8QIDAQABo1cwVTAWBgNVHREEDzANggtTb2xhclN5c3RlbTAOBgNVHQ8BAf8EBAMC\n" +
-      "B4AwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAw\n" +
-      "DQYJKoZIhvcNAQELBQADggEBAF6cvPlK7kuoC/EBmTF4OdTrqzKYa4bm47hn0e7V\n" +
-      "3fmgt5YJl/HM/wQI5Dw37y5SjtCScvZUJQ7N+vKQ06bPJHea8f3+XwgsM0JpUhkV\n" +
-      "djZR9L5LrJdwmhk4arbMLMKeFwB1Xir72trL1DreI/Kzsow0LbMhllLWPyRHmAhr\n" +
-      "Kqu/WgGim6m3lVgZdx4o6cguGry+ceiunCwCFL36CL1AdvYL8ZnUlQDT1hNp3anE\n" +
-      "QTHPRc0mETzHET0uL+9UpaUxglRPzuxVhyIYimXSiPQlk8K43gmXM8QKi85eo8xD\n" +
-      "W5kgC9Eel5YQcs5wUS/1aW72x2D+7DeGxLjFwm0Sy9S8hfI=\n" +
-      "-----END CERTIFICATE-----";
-
-  /**
-   * Version: 3 (0x2)
-   Serial Number:
-   Issuer: CN=foo.example.com
-   Validity
-     Not Before: Feb  6 20:00:27 2017 GMT
-     Not After : Feb  6 20:00:27 2018 GMT
-   Subject: CN=foo.example.com
-   Subject Public Key Info:
-     Public Key Algorithm: rsaEncryption
-     RSA Public Key: (2048 bit)
-   X509v3 extensions:
-   X509v3 Basic Constraints: critical
-   CA:FALSE
-   */
-  public static final String SIMPLE_TEST_CERT = "-----BEGIN CERTIFICATE-----\n" +
-    "MIIC0jCCAbqgAwIBAgIUW6HcroJaHBMF2VK/6z13iBnNxeAwDQYJKoZIhvcNAQEL\n" +
-    "BQAwGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMB4XDTE3MDIwNjIwMDAyN1oX\n" +
-    "DTE4MDIwNjIwMDAyN1owGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMIIBIjAN\n" +
-    "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyy+c0ZPNPmGBzkiC+XzMJkbgJFK7\n" +
-    "2BNgLpzI1AmqFBMBs7dSfxypS7qTfAEUQ1HMY2S9/odhslEUIyBVPguonk++WvGw\n" +
-    "w6P49d3GPK6beyrw+FobBkVWJ64qRZIUJlRanFzs1yGnRJ2omHgJ03sTYiL4t8wt\n" +
-    "Cm9po3gp7QwGXQ2Ol1QEadH095WBdwkN0Wo7WF/4+Fz7cACCBZNQoSYmT3uREH9S\n" +
-    "iVur6H4WLsPEs5QBV+o9204qVZh0er+/LEwzuqZD97gppLVdYk673R2Kje4Gc6mz\n" +
-    "Y61oKlQzSQXPsA1Sx7dOUgMGtzhRrFgUE1WzvTqiDVQB9dEsn1JILJWA7wIDAQAB\n" +
-    "oxAwDjAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4IBAQANE8zWwdjCEmOw\n" +
-    "+wbqVR3RyL1P2T0eQI1ML/epxVNLRoAKihs2ypKFLpLC9P7mucsHxl4FY/pzXOJo\n" +
-    "i0PEG/ZCapRunC3XVwxGUZos2ytPIebyshlp4eRTyuch7ei3aTO2cLrLsgWZxyxc\n" +
-    "i5JveF8PvPZkOR5qzq6P7dMpQde3nL8/kLRwp7aSE8OAKoeyhEDCy+e9lPh9+Q/g\n" +
-    "36dvhRfyD3PUifLC1A6usOedplxEJpf5hNlyVljTXRZXRijltHIxsp2vf8vzSLO4\n" +
-    "zam9Ke7B5YU8lRd5PlyFXDp+vEJ4HaX8FMtUthLvvDQ7l9UOR7r2rf3hfggxC7/s\n" +
-    "s2smQYqB\n" +
-    "-----END CERTIFICATE-----";
-
-  /*
-  This cert appears to be self-signed (Issuer DN == Subject DN) but is actually
-  signed with a CA of the same name.
-
-  Version: 3 (0x2)
-  Signature Algorithm: sha256WithRSAEncryption
-  Issuer: CN=trickster
-  Validity
-      Not Before: Feb  7 19:41:38 2017 GMT
-      Not After : Feb  7 19:41:38 2018 GMT
-  Subject: CN=trickster
-  X509v3 Basic Constraints: critical
-      CA:FALSE
-  */
-  public static final String MISLEADING_CERT = "-----BEGIN CERTIFICATE-----\n" +
-    "MIICxjCCAa6gAwIBAgIUdYAQkigXgqz1FFN0Qi2T6k2dYJswDQYJKoZIhvcNAQEL\n" +
-    "BQAwFDESMBAGA1UEAwwJdHJpY2tzdGVyMB4XDTE3MDIwNzE5NDEzOFoXDTE4MDIw\n" +
-    "NzE5NDEzOFowFDESMBAGA1UEAwwJdHJpY2tzdGVyMIIBIjANBgkqhkiG9w0BAQEF\n" +
-    "AAOCAQ8AMIIBCgKCAQEAz9r5xtR3Iy/A9mooCA+NjetzqbN4hzzj5ZcJlE/x6UGg\n" +
-    "CF393EtOfOUkimDKRgdMFXUnFLBskns9TtmmuQfcGmNV5FDwQpBX2brJbEcOOE3q\n" +
-    "dJgV7HDeu1bX+ZpPm0wOwtQXyxr72j03Lt6V+Htrgana3qcejGq8syRO5FEruCsj\n" +
-    "vRGlWXd3CYF7/UlVhlc06ILqD+CoePArPrussxAqt4UoUSuoJeaqEvGyi8IJ4mqu\n" +
-    "pqUAvWsh8u79A+T+om3JHA7RFhV2Vu83dj+CwMfMsdDiyiaRz5wyVTDpu7X2AeGi\n" +
-    "Y3uuJAm/nc6qyDmuAo6BhnFux6dLLlCJ0EqyEzjAQwIDAQABoxAwDjAMBgNVHRMB\n" +
-    "Af8EAjAAMA0GCSqGSIb3DQEBCwUAA4IBAQDPa6O7GIdyQOwUWYYuf7ed8Qj28Jy7\n" +
-    "K8utG7SBmE6iPt978m1VW3u01YMh61yNOcs9RBGE7I2H28Zuu9ut4MY8BNBV00rE\n" +
-    "sAaPHeOQmEGPPt5oZ1ztlAjSOK9YHOfHaKj4ISfMdhDQ4vAOxGbj3NJMsxiYL4oH\n" +
-    "4yQp0lZ5S1TVNZXn77sr5HXuzy+2r40HDc/4Q/9iQseB6Aypjii1Q6m8eej6rcnC\n" +
-    "snC8luPGbSwo31gKr9wFxv78GJcswIGt6fi4CxV7eGWn0p9EY4NsR8jdatLd/eKD\n" +
-    "qA2eKfjSi415xgI1eOf89HvoYKlBGYuFxXB3YRkJfpS+khFeu7HTsyj2\n" +
-    "-----END CERTIFICATE-----";
-
   private CertificateSecretParameters certificateSecretParameters;
 
   {

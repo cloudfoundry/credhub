@@ -1,33 +1,34 @@
 package io.pivotal.security.controller.v1;
 
+import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.view.ParameterizedValidationException;
-import org.bouncycastle.asn1.ASN1Object;
+import static java.lang.Math.toIntExact;
+import static java.time.temporal.ChronoUnit.DAYS;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.openssl.PEMParser;
 import org.springframework.util.StringUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
 import java.security.InvalidKeyException;
 import java.security.SignatureException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-import static java.lang.Math.toIntExact;
-import static java.time.temporal.ChronoUnit.DAYS;
-
 public class CertificateSecretParameters implements RequestParameters {
   private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
   private static final Pattern BAD_IP_ADDRESS_PATTERN = Pattern.compile("^(\\d+\\.){3}\\d+$");
   private static final Pattern DNS_PATTERN_INCLUDING_LEADING_WILDCARD = Pattern.compile("^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
+  private final CertificateReader certificateReader;
 
   // Parameters used in RDN; at least one must be set
   private String organization;
@@ -52,23 +53,21 @@ public class CertificateSecretParameters implements RequestParameters {
   private KeyUsage keyUsage;
 
   public CertificateSecretParameters() {
+    this.certificateReader = null;
   }
 
   public CertificateSecretParameters(String certificate, String caName) {
     try {
-      X509Certificate x509Cert = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
-          .generateCertificate(new ByteArrayInputStream(certificate.getBytes()));
+      this.certificateReader = new CertificateReader(certificate);
+      this.x500Name = certificateReader.getSubjectName();
+      this.keyLength = certificateReader.getKeyLength();
+      this.selfSign = certificateReader.isSelfSigned();
+      this.durationDays = certificateReader.getDurationDays();
 
-      X509CertificateHolder x509CertHolder = (X509CertificateHolder) (new PEMParser((new StringReader(certificate))).readObject());
-
-      this.x500Name = extractX500Name(x509Cert);
-      this.keyLength = extractKeyLength(x509Cert);
-      this.selfSign = extractIsSelfSigned(x509Cert);
-      this.durationDays = extractDurationDays(x509Cert);
-
-      this.extendedKeyUsage = extractExtendedKeyUsage(x509CertHolder);
-      this.alternativeNames = extractAlternativeNames(x509CertHolder);
-      this.keyUsage = extractKeyUsage(x509CertHolder);
+      this.extendedKeyUsage = certificateReader.getExtendedKeyUsage();
+      this.alternativeNames = certificateReader.getAlternativeNames();
+      this.keyUsage = certificateReader.getKeyUsage();
+      this.isCA = certificateReader.isCA();
 
       this.caName = caName;
     } catch (Exception e) {
@@ -245,7 +244,7 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  public ASN1Object extractAlternativeNames() {
+  public GeneralNames extractAlternativeNames() {
     return alternativeNames;
   }
 
