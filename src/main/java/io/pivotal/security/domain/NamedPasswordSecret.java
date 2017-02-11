@@ -54,11 +54,6 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
   }
 
   @Override
-  void copyIntoImpl(NamedPasswordSecret copy) {
-    delegate.copyIntoImpl(copy.delegate);
-  }
-
-  @Override
   public SecretKind getKind() {
     return delegate.getKind();
   }

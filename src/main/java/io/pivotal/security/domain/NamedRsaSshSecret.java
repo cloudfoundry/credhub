@@ -32,8 +32,4 @@ public abstract class NamedRsaSshSecret extends NamedSecret<NamedRsaSshSecret> {
   }
 
 
-  @Override
-  void copyIntoImpl(NamedRsaSshSecret copy) {
-    delegate.copyIntoImpl(copy.delegate);
-  }
 }

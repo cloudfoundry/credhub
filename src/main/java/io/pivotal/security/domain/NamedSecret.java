@@ -15,7 +15,6 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
 
   public abstract SecretKind getKind();
   public abstract String getSecretType();
-  abstract void copyIntoImpl(Z copy);
 
   public NamedSecret(NamedSecretData delegate) {
     this.delegate = delegate;

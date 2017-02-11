@@ -25,11 +25,6 @@ public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
   }
 
   @Override
-  void copyIntoImpl(NamedValueSecret copy) {
-    delegate.copyIntoImpl(copy.delegate);
-  }
-
-  @Override
   public SecretKind getKind() {
     return delegate.getKind();
   }

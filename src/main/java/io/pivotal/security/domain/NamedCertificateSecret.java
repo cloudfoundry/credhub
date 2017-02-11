@@ -65,8 +65,4 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return delegate.getSecretType();
   }
 
-  @Override
-  void copyIntoImpl(NamedCertificateSecret copy) {
-    delegate.copyInto(copy.delegate);
-  }
 }
