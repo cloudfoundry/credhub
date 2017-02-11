@@ -54,7 +54,7 @@ public class CertificateStringConstants {
    * X509v3 Basic Constraints: critical
    * CA:FALSE
    */
-  public static final String SIMPLE_TEST_CERT = "-----BEGIN CERTIFICATE-----\n" +
+  public static final String SIMPLE_SELF_SIGNED_TEST_CERT = "-----BEGIN CERTIFICATE-----\n" +
       "MIIC0jCCAbqgAwIBAgIUW6HcroJaHBMF2VK/6z13iBnNxeAwDQYJKoZIhvcNAQEL\n" +
       "BQAwGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMB4XDTE3MDIwNjIwMDAyN1oX\n" +
       "DTE4MDIwNjIwMDAyN1owGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMIIBIjAN\n" +

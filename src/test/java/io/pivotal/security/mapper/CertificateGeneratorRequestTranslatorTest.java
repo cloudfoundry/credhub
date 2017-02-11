@@ -18,6 +18,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateReader;
 import static io.pivotal.security.util.CertificateStringConstants.BIG_TEST_CERT;
+import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -269,17 +270,30 @@ public class CertificateGeneratorRequestTranslatorTest {
         Security.addProvider(new BouncyCastleProvider());
       });
 
-      it("can creates correct parameters from entity from the entity", () -> {
-        NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
-            .setCertificate(BIG_TEST_CERT)
-            .setCaName("my-ca");
-        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(new CertificateReader(BIG_TEST_CERT), certificateSecret.getCaName());
-        CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
-        assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
+      describe("when a certificate is not self signed", () -> {
+        it("can creates correct parameters from entity from the entity", () -> {
+          NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
+              .setCertificate(BIG_TEST_CERT)
+              .setCaName("my-ca");
+          CertificateSecretParameters expectedParameters = new CertificateSecretParameters(new CertificateReader(BIG_TEST_CERT), certificateSecret.getCaName());
+          CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
+          assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
+        });
       });
 
-      itThrowsWithMessage("regeneration is not allowed if caName is not present", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
-        NamedCertificateSecret entity = new NamedCertificateSecret("foo");
+      describe("when a certificate is self signed", () -> {
+        it("can creates correct parameters from entity from the entity", () -> {
+          NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
+              .setCertificate(SIMPLE_SELF_SIGNED_TEST_CERT);
+          CertificateSecretParameters expectedParameters = new CertificateSecretParameters(new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT), certificateSecret.getCaName());
+          CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
+          assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
+        });
+      });
+
+      itThrowsWithMessage("regeneration is not allowed if caName is not present and it is not a self signed certificate", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
+        NamedCertificateSecret entity = new NamedCertificateSecret("foo")
+            .setCertificate(BIG_TEST_CERT);
         subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
       });
     });

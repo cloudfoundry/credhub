@@ -67,7 +67,7 @@ public class CertificateReader {
   public Boolean isSelfSigned() {
     final String issuerName = certificate.getIssuerDN().getName();
 
-    if (!issuerName.equals(subjectName.toString())) {
+    if (!issuerName.equals(getSubjectName().toString())) {
       return false;
     } else {
       try {

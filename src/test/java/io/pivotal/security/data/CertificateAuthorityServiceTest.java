@@ -10,7 +10,7 @@ import io.pivotal.security.entity.NamedPasswordSecret;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import io.pivotal.security.secret.Certificate;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CA_CERT;
-import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_TEST_CERT;
+import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
@@ -79,8 +79,8 @@ public class CertificateAuthorityServiceTest {
     describe("when the certificate found isn't a ca", () -> {
       beforeEach(() -> {
         NamedCertificateSecret notACertificateAuthority = mock(NamedCertificateSecret.class);
-        when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_TEST_CERT);
-        when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_TEST_CERT);
+        when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
+        when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
         when(secretDataService.findMostRecent("just-a-certificate")).thenReturn(notACertificateAuthority);
       });
 

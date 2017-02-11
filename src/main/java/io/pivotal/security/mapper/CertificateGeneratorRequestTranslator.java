@@ -37,10 +37,11 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
 
     if (Boolean.TRUE.equals(regenerate)) {
-      if (isEmpty(entity.getCaName())) {
+      CertificateReader certificateReader = new CertificateReader(entity.getCertificate());
+      if (isEmpty(entity.getCaName()) && !certificateReader.isSelfSigned()) {
         throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_credentials");
       }
-      return new CertificateSecretParameters(new CertificateReader(entity.getCertificate()), entity.getCaName());
+      return new CertificateSecretParameters(certificateReader, entity.getCaName());
     }
 
     CertificateSecretParameters secretParameters = parametersFactory.get();

@@ -8,7 +8,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.util.CertificateStringConstants.BIG_TEST_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.MISLEADING_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CA_CERT;
-import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_TEST_CERT;
+import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static java.util.Arrays.asList;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
@@ -54,7 +54,7 @@ public class CertificateReaderTest {
 
     describe("when given a simple self-signed certificate", () -> {
       it("should still correctly set up certificate fields", () -> {
-        CertificateReader certificateReader = new CertificateReader(SIMPLE_TEST_CERT);
+        CertificateReader certificateReader = new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT);
 
         assertThat(certificateReader.getSubjectName().toString(), equalTo("CN=foo.example.com"));
         assertThat(certificateReader.getKeyLength(), equalTo(2048));
