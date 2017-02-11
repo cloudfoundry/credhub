@@ -62,18 +62,6 @@ public class CertificateSecretParametersTest {
         assertThat(extendedKeyUsages.getUsages()[4], equalTo(KeyPurposeId.id_kp_timeStamping));
       });
 
-      it("validates extended key usages", () -> {
-        try {
-          new CertificateSecretParameters().
-              setCountry("My Country")
-              .addExtendedKeyUsage("client_auth", "server_off");
-          fail();
-        } catch (ParameterizedValidationException pve) {
-          assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
-          assertThat(pve.getParameters()[0], equalTo("server_off"));
-        }
-      });
-
       it("can add key usages", () -> {
         CertificateSecretParameters params = new CertificateSecretParameters()
             .setCountry("My Country")
@@ -135,6 +123,48 @@ public class CertificateSecretParametersTest {
       it("sets default key length to 2048 bits", () -> {
         assertThat(new CertificateSecretParameters().getKeyLength(), equalTo(2048));
       });
+    });
+
+    describe("when given a certificate string", () -> {
+      it("should set all the parameters from a PEM string", () -> {
+        CertificateReader reader = mock(CertificateReader.class);
+        when(reader.getSubjectName()).thenReturn(new X500Name("CN=test-common-name"));
+        when(reader.getKeyLength()).thenReturn(1024);
+        when(reader.isSelfSigned()).thenReturn(true);
+        when(reader.getDurationDays()).thenReturn(30);
+        ExtendedKeyUsage extendedKeyUsage = mock(ExtendedKeyUsage.class);
+        when(reader.getExtendedKeyUsage()).thenReturn(extendedKeyUsage);
+        GeneralNames alternativeNames = mock(GeneralNames.class);
+        when(reader.getAlternativeNames()).thenReturn(alternativeNames);
+        when(reader.getKeyUsage()).thenReturn(new KeyUsage(10));
+        when(reader.isCA()).thenReturn(true);
+
+        certificateSecretParameters = new CertificateSecretParameters(reader, "some-ca-name");
+        assertThat(certificateSecretParameters.getDN().toString(), equalTo("CN=test-common-name"));
+        assertThat(certificateSecretParameters.getKeyLength(), equalTo(1024));
+        assertThat(certificateSecretParameters.isSelfSigned(), equalTo(true));
+        assertThat(certificateSecretParameters.getDurationDays(), equalTo(30));
+        assertThat(certificateSecretParameters.getExtendedKeyUsage(), equalTo(extendedKeyUsage));
+        assertThat(certificateSecretParameters.getAlternativeNames(), equalTo(alternativeNames));
+        assertThat(certificateSecretParameters.getKeyUsage(), equalTo(new KeyUsage(10)));
+        assertThat(certificateSecretParameters.isCA(), equalTo(true));
+
+        assertThat(certificateSecretParameters.getCaName(), equalTo("some-ca-name"));
+      });
+    });
+
+    describe("#validate", () -> {
+      it("validates extended key usages", () -> {
+        try {
+          new CertificateSecretParameters().
+              setCountry("My Country")
+              .addExtendedKeyUsage("client_auth", "server_off");
+          fail();
+        } catch (ParameterizedValidationException pve) {
+          assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
+          assertThat(pve.getParameters()[0], equalTo("server_off"));
+        }
+      });
 
       itThrowsWithMessage("when duration is less than 1", ParameterizedValidationException.class, "error.invalid_duration", () -> {
         new CertificateSecretParameters()
@@ -181,34 +211,6 @@ public class CertificateSecretParametersTest {
               .setKeyLength(9192)
               .validate();
         });
-      });
-    });
-
-    describe("when given a certificate string", () -> {
-      it("should set all the parameters from a PEM string", () -> {
-        CertificateReader reader = mock(CertificateReader.class);
-        when(reader.getSubjectName()).thenReturn(new X500Name("CN=test-common-name"));
-        when(reader.getKeyLength()).thenReturn(1024);
-        when(reader.isSelfSigned()).thenReturn(true);
-        when(reader.getDurationDays()).thenReturn(30);
-        ExtendedKeyUsage extendedKeyUsage = mock(ExtendedKeyUsage.class);
-        when(reader.getExtendedKeyUsage()).thenReturn(extendedKeyUsage);
-        GeneralNames alternativeNames = mock(GeneralNames.class);
-        when(reader.getAlternativeNames()).thenReturn(alternativeNames);
-        when(reader.getKeyUsage()).thenReturn(new KeyUsage(10));
-        when(reader.isCA()).thenReturn(true);
-
-        certificateSecretParameters = new CertificateSecretParameters(reader, "some-ca-name");
-        assertThat(certificateSecretParameters.getDN().toString(), equalTo("CN=test-common-name"));
-        assertThat(certificateSecretParameters.getKeyLength(), equalTo(1024));
-        assertThat(certificateSecretParameters.isSelfSigned(), equalTo(true));
-        assertThat(certificateSecretParameters.getDurationDays(), equalTo(30));
-        assertThat(certificateSecretParameters.getExtendedKeyUsage(), equalTo(extendedKeyUsage));
-        assertThat(certificateSecretParameters.getAlternativeNames(), equalTo(alternativeNames));
-        assertThat(certificateSecretParameters.getKeyUsage(), equalTo(new KeyUsage(10)));
-        assertThat(certificateSecretParameters.isCA(), equalTo(true));
-
-        assertThat(certificateSecretParameters.getCaName(), equalTo("some-ca-name"));
       });
     });
   }
