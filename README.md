@@ -7,7 +7,7 @@ such secrets.
 See additional repos for more info:
 
 * [credhub-cli](https://github.com/pivotal-cf/credhub-cli) :     command line interface for credhub
-* [credhub-release](https://github.com/pivotal-cf/credhub-release) : BOSH release of CredHub server
+* [credhub-release](https://github.com/pivotal-cf/credhub-release) : BOSH release of CredHub server **[Currently private - Coming Soon]**
 * [credhub-acceptance-tests](https://github.com/pivotal-cf/credhub-acceptance-tests) : integration tests written in Go.
 
 ## Development Notes
