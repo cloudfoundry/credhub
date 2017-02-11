@@ -28,14 +28,8 @@ public class CertificateAuthorityService {
 
       return new Certificate(null, namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey());
     } else {
-      throw getValidationError(caName);
+      throw new ParameterizedValidationException("error.ca_not_found");
     }
   }
 
-  private ParameterizedValidationException getValidationError(String caName) {
-    if ("default".equals(caName)) {
-      throw new ParameterizedValidationException("error.default_ca_required");
-    }
-    throw new ParameterizedValidationException("error.ca_not_found");
-  }
 }

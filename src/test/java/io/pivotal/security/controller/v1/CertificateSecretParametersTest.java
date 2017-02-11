@@ -166,8 +166,28 @@ public class CertificateSecretParametersTest {
         }
       });
 
+      describe("with self_sign set to true and no ca name", () -> {
+        itThrowsWithMessage("when is_ca is set to false", ParameterizedValidationException.class, "error.missing_signing_ca", () -> {
+          new CertificateSecretParameters()
+              .setCommonName("foo")
+              .setIsCa(false)
+              .validate();
+        });
+
+        describe("when is_ca is set to true", () -> {
+          it("should not throw an exception", () -> {
+            new CertificateSecretParameters()
+                .setCommonName("foo")
+                .setIsCa(true)
+                .validate();
+          });
+        });
+      });
+
+
       itThrowsWithMessage("when duration is less than 1", ParameterizedValidationException.class, "error.invalid_duration", () -> {
         new CertificateSecretParameters()
+            .setCaName("test-ca")
             .setCommonName("foo")
             .setDurationDays(0)
             .validate();
@@ -175,6 +195,7 @@ public class CertificateSecretParametersTest {
 
       itThrowsWithMessage("when duration is greater than 3650", ParameterizedValidationException.class, "error.invalid_duration", () -> {
         new CertificateSecretParameters()
+            .setCaName("test-ca")
             .setCommonName("foo")
             .setDurationDays(3651)
             .validate();
@@ -182,6 +203,7 @@ public class CertificateSecretParametersTest {
 
       itThrowsWithMessage("when all of DN parameters are empty", ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
         new CertificateSecretParameters()
+            .setCaName("test-ca")
             .setOrganization("")
             .setState("")
             .setCountry("")
@@ -193,6 +215,7 @@ public class CertificateSecretParametersTest {
       describe("when key lengths are invalid", () -> {
         itThrowsWithMessage("when key length is less than 2048", ParameterizedValidationException.class, "error.invalid_key_length", () -> {
           new CertificateSecretParameters()
+              .setCaName("test-ca")
               .setCommonName("foo")
               .setKeyLength(1024)
               .validate();
@@ -200,6 +223,7 @@ public class CertificateSecretParametersTest {
 
         itThrowsWithMessage("when key length is between 2048 and 3072", ParameterizedValidationException.class, "error.invalid_key_length", () -> {
           new CertificateSecretParameters()
+              .setCaName("test-ca")
               .setCommonName("foo")
               .setKeyLength(2222)
               .validate();
@@ -207,6 +231,7 @@ public class CertificateSecretParametersTest {
 
         itThrowsWithMessage("when key length is greater than 4096", ParameterizedValidationException.class, "error.invalid_key_length", () -> {
           new CertificateSecretParameters()
+              .setCaName("test-ca")
               .setCommonName("foo")
               .setKeyLength(9192)
               .validate();

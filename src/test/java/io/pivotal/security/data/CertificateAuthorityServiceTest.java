@@ -44,26 +44,6 @@ public class CertificateAuthorityServiceTest {
       Security.removeProvider("BC");
     });
 
-    describe("when the user is asking for the default CA", () -> {
-      describe("and the default exists in the namedSecretRepository", () -> {
-        beforeEach(() -> {
-          when(secretDataService.findMostRecent("default")).thenReturn(namedCertificateSecret);
-          when(namedCertificateSecret.getPrivateKey()).thenReturn("my-key");
-          when(namedCertificateSecret.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
-        });
-
-        it("returns it", () -> {
-          assertThat(certificateAuthorityService.findMostRecent("default"), samePropertyValuesAs(certificate));
-        });
-      });
-
-      describe("when both data services cannot find the default CA", () -> {
-        itThrowsWithMessage("error.default_ca_required", ParameterizedValidationException.class, "error.default_ca_required", () -> {
-          certificateAuthorityService.findMostRecent("default");
-        });
-      });
-    });
-
     describe("when a CA does not exist", () -> {
       beforeEach(() -> {
         when(secretDataService.findMostRecent(any(String.class))).thenReturn(null);

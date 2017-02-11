@@ -115,13 +115,15 @@ public class CertificateGeneratorRequestTranslatorTest {
           "\"parameters\":{" +
           "\"organization\": \"organization.io\"," +
           "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"" +
+          "\"country\": \"My Country\"," +
+          "\"ca\": \"my-ca\"" +
           "}" +
           "}";
-      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
-      expectedParameters.setOrganization("organization.io");
-      expectedParameters.setState("My State");
-      expectedParameters.setCountry("My Country");
+      CertificateSecretParameters expectedParameters = new CertificateSecretParameters()
+          .setOrganization("organization.io")
+          .setState("My State")
+          .setCountry("My Country")
+          .setCaName("my-ca");
       DocumentContext parsed = jsonPath.parse(json);
 
       CertificateSecretParameters params = subject.validRequestParameters(parsed, null);
@@ -148,7 +150,7 @@ public class CertificateGeneratorRequestTranslatorTest {
         CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
         assertThat(params.isCA(), equalTo(true));
         assertThat(params.isSelfSigned(), equalTo(true));
-        assertThat(params.getCaName(), equalTo("my-secret"));
+        assertThat(params.getCaName(), equalTo(null));
       });
 
       it("is CA when isCA is true and respects CA param (which will be used to sign this CA)", () -> {
@@ -221,20 +223,22 @@ public class CertificateGeneratorRequestTranslatorTest {
       String json = "{" +
           "\"type\":\"certificate\"," +
           "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"," +
-          "\"key_length\": 3072" +
+            "\"organization\": \"organization.io\"," +
+            "\"state\": \"My State\"," +
+            "\"country\": \"My Country\"," +
+            "\"key_length\": 3072," +
+            "\"self_sign\": true" +
           "}" +
-          "}";
+        "}";
 
-      CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
-      expectedParameters.setOrganization("organization.io");
-      expectedParameters.setState("My State");
-      expectedParameters.setCountry("My Country");
-      expectedParameters.setKeyLength(3072);
+      CertificateSecretParameters expectedParameters = new CertificateSecretParameters()
+          .setOrganization("organization.io")
+          .setState("My State")
+          .setCountry("My Country")
+          .setKeyLength(3072)
+          .setSelfSigned(true);
 
-      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), null);
+      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), new NamedCertificateSecret("my-ca"));
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -298,8 +302,7 @@ public class CertificateGeneratorRequestTranslatorTest {
             .setOrganization("organization.io")
             .setState("My State")
             .setCountry("My Country")
-            .setSelfSigned(true)
-            .setCaName("My Name");
+            .setSelfSigned(true);
 
         NamedCertificateSecret entity = new NamedCertificateSecret("My Name");
         CertificateSecretParameters parameters = subject.validRequestParameters(parsed, entity);

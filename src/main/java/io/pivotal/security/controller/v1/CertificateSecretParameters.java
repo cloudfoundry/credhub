@@ -32,7 +32,7 @@ public class CertificateSecretParameters implements RequestParameters {
   private int keyLength = 2048;
   private int durationDays = 365;
   private boolean selfSigned = false;
-  private String caName = "default";
+  private String caName;
   private boolean isCA = false;
 
   // Used for regen; contains RDN (NOT key length, duration days, or alternative names)
@@ -100,6 +100,10 @@ public class CertificateSecretParameters implements RequestParameters {
         && StringUtils.isEmpty(commonName)
         && StringUtils.isEmpty(country)) {
       throw new ParameterizedValidationException("error.missing_certificate_parameters");
+    }
+
+    if (StringUtils.isEmpty(caName) && !selfSigned && !isCA) {
+      throw new ParameterizedValidationException("error.missing_signing_ca");
     }
 
     switch (keyLength) {

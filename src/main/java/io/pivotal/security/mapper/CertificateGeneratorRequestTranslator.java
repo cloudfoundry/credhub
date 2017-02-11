@@ -10,6 +10,7 @@ import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateReader;
 import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.apache.commons.lang3.StringUtils;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -72,7 +73,10 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
       .ifPresent(secretParameters::setCaName);
 
-    assignDefaults(entity, secretParameters);
+    if (secretParameters.isCA() && StringUtils.isEmpty(secretParameters.getCaName())) {
+      secretParameters.setSelfSigned(true);
+    }
+
     secretParameters.validate();
 
     return secretParameters;
@@ -116,13 +120,4 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     );
   }
 
-  private void assignDefaults(NamedCertificateSecret entity, CertificateSecretParameters requestParameters) {
-    if (requestParameters.isCA() && requestParameters.getCaName().equals("default")) {
-      requestParameters.setSelfSigned(true);
-    }
-
-    if (requestParameters.isSelfSigned()) {
-      requestParameters.setCaName(entity.getName());
-    }
-  }
 }
