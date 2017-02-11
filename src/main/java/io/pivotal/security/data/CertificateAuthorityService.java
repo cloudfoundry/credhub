@@ -1,7 +1,9 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.entity.NamedCertificateSecret;
+import io.pivotal.security.entity.NamedSecret;
 import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,12 +18,18 @@ public class CertificateAuthorityService {
   }
 
   public Certificate findMostRecent(String caName) throws ParameterizedValidationException {
-    NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) secretDataService.findMostRecent(caName);
-    if (namedCertificateSecret != null) {
-      return new Certificate(null, namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey());
-    }
+    NamedSecret mostRecent = secretDataService.findMostRecent(caName);
+    if (NamedCertificateSecret.class.isInstance(mostRecent)) {
+      NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) mostRecent;
 
-    throw getValidationError(caName);
+      if (!new CertificateReader(namedCertificateSecret.getCertificate()).isCA()) {
+        throw new ParameterizedValidationException("error.cert_not_ca");
+      }
+
+      return new Certificate(null, namedCertificateSecret.getCertificate(), namedCertificateSecret.getPrivateKey());
+    } else {
+      throw getValidationError(caName);
+    }
   }
 
   private ParameterizedValidationException getValidationError(String caName) {
