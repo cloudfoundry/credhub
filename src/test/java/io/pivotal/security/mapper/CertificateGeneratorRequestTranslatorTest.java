@@ -16,6 +16,7 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.util.CertificateReader;
 import static io.pivotal.security.util.CertificateStringConstants.BIG_TEST_CERT;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -94,7 +95,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       expectedParameters.setCountry("My Country");
       expectedParameters.setDurationDays(1000);
       expectedParameters.setKeyLength(3072);
-      expectedParameters.setSelfSign(false);
+      expectedParameters.setSelfSigned(false);
       expectedParameters.addAlternativeNames("my-alternative-name-1", "my-alternative-name-2");
       expectedParameters.addExtendedKeyUsage("server_auth", "client_auth");
       expectedParameters.addKeyUsage("data_encipherment", "non_repudiation");
@@ -145,8 +146,8 @@ public class CertificateGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
         NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
         CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
-        assertThat(params.getIsCA(), equalTo(true));
-        assertThat(params.getSelfSign(), equalTo(true));
+        assertThat(params.isCA(), equalTo(true));
+        assertThat(params.isSelfSigned(), equalTo(true));
         assertThat(params.getCaName(), equalTo("my-secret"));
       });
 
@@ -164,8 +165,8 @@ public class CertificateGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
         NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
         CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
-        assertThat(params.getIsCA(), equalTo(true));
-        assertThat(params.getSelfSign(), equalTo(false));
+        assertThat(params.isCA(), equalTo(true));
+        assertThat(params.isSelfSigned(), equalTo(false));
         assertThat(params.getCaName(), equalTo("My Ca"));
       });
     });
@@ -268,7 +269,7 @@ public class CertificateGeneratorRequestTranslatorTest {
         NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
             .setCertificate(BIG_TEST_CERT)
             .setCaName("my-ca");
-        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(certificateSecret.getCertificate(), certificateSecret.getCaName());
+        CertificateSecretParameters expectedParameters = new CertificateSecretParameters(new CertificateReader(BIG_TEST_CERT), certificateSecret.getCaName());
         CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
         assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
       });
@@ -297,7 +298,7 @@ public class CertificateGeneratorRequestTranslatorTest {
             .setOrganization("organization.io")
             .setState("My State")
             .setCountry("My Country")
-            .setSelfSign(true)
+            .setSelfSigned(true)
             .setCaName("My Name");
 
         NamedCertificateSecret entity = new NamedCertificateSecret("My Name");

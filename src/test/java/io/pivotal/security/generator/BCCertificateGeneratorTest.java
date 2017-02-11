@@ -208,7 +208,7 @@ public class BCCertificateGeneratorTest {
 
       beforeEach(() -> {
         inputParameters.setCaName(null);
-        inputParameters.setSelfSign(true);
+        inputParameters.setSelfSigned(true);
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
         when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters)).thenReturn(certificate.get());
       });

@@ -55,8 +55,8 @@ public class SignedCertificateGenerator {
         publicKeyInfo
     );
 
-    if (params.extractAlternativeNames() != null) {
-      certificateBuilder.addExtension(Extension.subjectAlternativeName, false, params.extractAlternativeNames());
+    if (params.getAlternativeNames() != null) {
+      certificateBuilder.addExtension(Extension.subjectAlternativeName, false, params.getAlternativeNames());
     }
 
     if (params.getKeyUsage() != null) {
@@ -67,7 +67,7 @@ public class SignedCertificateGenerator {
       certificateBuilder.addExtension(Extension.extendedKeyUsage, false, params.getExtendedKeyUsage());
     }
 
-    certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(params.getIsCA()));
+    certificateBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(params.isCA()));
 
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 

@@ -1,30 +1,24 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.util.CertificateStringConstants.BIG_TEST_CERT;
-import static io.pivotal.security.util.CertificateStringConstants.MISLEADING_CERT;
-import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_TEST_CERT;
+import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.view.ParameterizedValidationException;
-import static java.util.Arrays.asList;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import org.junit.runner.RunWith;
-
-import java.security.Security;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class CertificateSecretParametersTest {
@@ -51,7 +45,7 @@ public class CertificateSecretParametersTest {
         CertificateSecretParameters params = new CertificateSecretParameters()
             .addAlternativeNames("alternative-name-1", "alternative-name-2");
 
-        ASN1Sequence sequence = ASN1Sequence.getInstance(params.extractAlternativeNames());
+        ASN1Sequence sequence = ASN1Sequence.getInstance(params.getAlternativeNames());
         assertThat(sequence.getObjectAt(0), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-1")));
         assertThat(sequence.getObjectAt(1), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-2")));
       });
@@ -191,65 +185,30 @@ public class CertificateSecretParametersTest {
     });
 
     describe("when given a certificate string", () -> {
-      beforeEach(() -> {
-        Security.addProvider(new BouncyCastleProvider());
-      });
+      it("should set all the parameters from a PEM string", () -> {
+        CertificateReader reader = mock(CertificateReader.class);
+        when(reader.getSubjectName()).thenReturn(new X500Name("CN=test-common-name"));
+        when(reader.getKeyLength()).thenReturn(1024);
+        when(reader.isSelfSigned()).thenReturn(true);
+        when(reader.getDurationDays()).thenReturn(30);
+        ExtendedKeyUsage extendedKeyUsage = mock(ExtendedKeyUsage.class);
+        when(reader.getExtendedKeyUsage()).thenReturn(extendedKeyUsage);
+        GeneralNames alternativeNames = mock(GeneralNames.class);
+        when(reader.getAlternativeNames()).thenReturn(alternativeNames);
+        when(reader.getKeyUsage()).thenReturn(new KeyUsage(10));
+        when(reader.isCA()).thenReturn(true);
 
-      afterEach(() -> {
-        Security.removeProvider("BC");
-      });
+        certificateSecretParameters = new CertificateSecretParameters(reader, "some-ca-name");
+        assertThat(certificateSecretParameters.getDN().toString(), equalTo("CN=test-common-name"));
+        assertThat(certificateSecretParameters.getKeyLength(), equalTo(1024));
+        assertThat(certificateSecretParameters.isSelfSigned(), equalTo(true));
+        assertThat(certificateSecretParameters.getDurationDays(), equalTo(30));
+        assertThat(certificateSecretParameters.getExtendedKeyUsage(), equalTo(extendedKeyUsage));
+        assertThat(certificateSecretParameters.getAlternativeNames(), equalTo(alternativeNames));
+        assertThat(certificateSecretParameters.getKeyUsage(), equalTo(new KeyUsage(10)));
+        assertThat(certificateSecretParameters.isCA(), equalTo(true));
 
-      describe("when it is not a self-signed certificate", () -> {
-        it("should correctly set certificate fields", () -> {
-          final String distinguishedName = "O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa";
-          final GeneralNames generalNames = new GeneralNames(new GeneralName(GeneralName.dNSName, "SolarSystem"));
-
-          certificateSecretParameters = new CertificateSecretParameters(BIG_TEST_CERT, "some-ca-name");
-
-          assertThat(certificateSecretParameters.getDN().toString(), equalTo(distinguishedName));
-          assertThat(certificateSecretParameters.getKeyLength(), equalTo(4096));
-          assertThat(certificateSecretParameters.extractAlternativeNames(), equalTo(generalNames));
-          assertThat(asList(certificateSecretParameters.getExtendedKeyUsage().getUsages()),
-              containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth));
-          assertThat(certificateSecretParameters.getKeyUsage().hasUsages(KeyUsage.digitalSignature), equalTo(true));
-          assertThat(certificateSecretParameters.getDurationDays(), equalTo(30));
-          assertThat(certificateSecretParameters.getSelfSign(), equalTo(false));
-          assertThat(certificateSecretParameters.getCaName(), equalTo("some-ca-name"));
-          assertThat(certificateSecretParameters.getIsCA(), equalTo(false));
-        });
-
-      });
-
-      describe("when given a simple self-signed certificate", () -> {
-        it("should still correctly set up certificate fields", () -> {
-          certificateSecretParameters = new CertificateSecretParameters(SIMPLE_TEST_CERT, "my-name");
-
-          assertThat(certificateSecretParameters.getDN().toString(), equalTo("CN=foo.example.com"));
-          assertThat(certificateSecretParameters.getKeyLength(), equalTo(2048));
-          assertThat(certificateSecretParameters.extractAlternativeNames(), equalTo(null));
-          assertThat(certificateSecretParameters.getExtendedKeyUsage(), equalTo(null));
-          assertThat(certificateSecretParameters.getKeyUsage(), equalTo(null));
-          assertThat(certificateSecretParameters.getDurationDays(), equalTo(365));
-          assertThat(certificateSecretParameters.getCaName(), equalTo("my-name"));
-          assertThat(certificateSecretParameters.getSelfSign(), equalTo(true));
-          assertThat(certificateSecretParameters.getIsCA(), equalTo(false));
-        });
-      });
-
-      describe("when given a deceptive, not self-signed, certificate", () -> {
-        it("should still correctly set up certificate fields", () -> {
-          certificateSecretParameters = new CertificateSecretParameters(MISLEADING_CERT, "some-ca-name");
-
-          assertThat(certificateSecretParameters.getDN().toString(), equalTo("CN=trickster"));
-          assertThat(certificateSecretParameters.getKeyLength(), equalTo(2048));
-          assertThat(certificateSecretParameters.extractAlternativeNames(), equalTo(null));
-          assertThat(certificateSecretParameters.getExtendedKeyUsage(), equalTo(null));
-          assertThat(certificateSecretParameters.getKeyUsage(), equalTo(null));
-          assertThat(certificateSecretParameters.getDurationDays(), equalTo(365));
-          assertThat(certificateSecretParameters.getCaName(), equalTo("some-ca-name"));
-          assertThat(certificateSecretParameters.getSelfSign(), equalTo(false));
-          assertThat(certificateSecretParameters.getIsCA(), equalTo(false));
-        });
+        assertThat(certificateSecretParameters.getCaName(), equalTo("some-ca-name"));
       });
     });
   }

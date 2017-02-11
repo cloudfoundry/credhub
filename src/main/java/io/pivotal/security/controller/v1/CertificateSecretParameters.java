@@ -2,25 +2,16 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.util.CertificateReader;
 import io.pivotal.security.view.ParameterizedValidationException;
-import static java.lang.Math.toIntExact;
-import static java.time.temporal.ChronoUnit.DAYS;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.cert.X509CertificateHolder;
 import org.springframework.util.StringUtils;
 
-import java.security.InvalidKeyException;
-import java.security.SignatureException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -28,7 +19,6 @@ public class CertificateSecretParameters implements RequestParameters {
   private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
   private static final Pattern BAD_IP_ADDRESS_PATTERN = Pattern.compile("^(\\d+\\.){3}\\d+$");
   private static final Pattern DNS_PATTERN_INCLUDING_LEADING_WILDCARD = Pattern.compile("^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
-  private final CertificateReader certificateReader;
 
   // Parameters used in RDN; at least one must be set
   private String organization;
@@ -41,7 +31,7 @@ public class CertificateSecretParameters implements RequestParameters {
   // Optional Certificate Parameters (not used in RDN)
   private int keyLength = 2048;
   private int durationDays = 365;
-  private boolean selfSign = false;
+  private boolean selfSigned = false;
   private String caName = "default";
   private boolean isCA = false;
 
@@ -52,16 +42,13 @@ public class CertificateSecretParameters implements RequestParameters {
   private ExtendedKeyUsage extendedKeyUsage;
   private KeyUsage keyUsage;
 
-  public CertificateSecretParameters() {
-    this.certificateReader = null;
-  }
+  public CertificateSecretParameters() {}
 
-  public CertificateSecretParameters(String certificate, String caName) {
+  public CertificateSecretParameters(CertificateReader certificateReader, String caName) {
     try {
-      this.certificateReader = new CertificateReader(certificate);
       this.x500Name = certificateReader.getSubjectName();
       this.keyLength = certificateReader.getKeyLength();
-      this.selfSign = certificateReader.isSelfSigned();
+      this.selfSigned = certificateReader.isSelfSigned();
       this.durationDays = certificateReader.getDurationDays();
 
       this.extendedKeyUsage = certificateReader.getExtendedKeyUsage();
@@ -244,7 +231,7 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  public GeneralNames extractAlternativeNames() {
+  public GeneralNames getAlternativeNames() {
     return alternativeNames;
   }
 
@@ -283,67 +270,21 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  public boolean getSelfSign() {
-    return selfSign;
+  public boolean isSelfSigned() {
+    return selfSigned;
   }
 
-  public CertificateSecretParameters setSelfSign(boolean selfSign) {
-    this.selfSign = selfSign;
+  public CertificateSecretParameters setSelfSigned(boolean selfSigned) {
+    this.selfSigned = selfSigned;
     return this;
   }
 
-  public boolean getIsCA() {
+  public boolean isCA() {
     return isCA;
   }
 
   public CertificateSecretParameters setIsCa(boolean isCA) {
     this.isCA = isCA;
     return this;
-  }
-
-  private static boolean extractIsSelfSigned(X509Certificate cert) {
-    final String issuerName = cert.getIssuerDN().getName();
-    final String subjectName = cert.getSubjectDN().getName();
-
-    if (!issuerName.equals(subjectName)) {
-      return false;
-    } else {
-      try {
-        cert.verify(cert.getPublicKey());
-        return true;
-      } catch(SignatureException | InvalidKeyException e) {
-        return false;
-      } catch(Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-  }
-
-  private static X500Name extractX500Name(X509Certificate cert) {
-    return new X500Name(cert.getSubjectDN().getName());
-  }
-
-  private static int extractKeyLength(X509Certificate cert) {
-    return ((RSAPublicKey) cert.getPublicKey()).getModulus().bitLength();
-  }
-
-  private int extractDurationDays(X509Certificate cert) {
-    return toIntExact(DAYS.between(
-        cert.getNotBefore().toInstant(),
-        cert.getNotAfter().toInstant()
-    ));
-  }
-
-  private static GeneralNames extractAlternativeNames(X509CertificateHolder certificateHolder) throws CertificateParsingException {
-    Extension encodedAlternativeNames = certificateHolder.getExtension(Extension.subjectAlternativeName);
-    return encodedAlternativeNames != null ? GeneralNames.getInstance(encodedAlternativeNames.getParsedValue()) : null;
-  }
-
-  private static ExtendedKeyUsage extractExtendedKeyUsage(X509CertificateHolder certificateHolder) throws CertificateParsingException {
-    return ExtendedKeyUsage.fromExtensions(certificateHolder.getExtensions());
-  }
-
-  private static KeyUsage extractKeyUsage(X509CertificateHolder certificateHolder) {
-    return KeyUsage.fromExtensions(certificateHolder.getExtensions());
   }
 }

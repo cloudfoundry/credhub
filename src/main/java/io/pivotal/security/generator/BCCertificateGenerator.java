@@ -50,7 +50,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     try {
       KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
 
-      if (params.getSelfSign()) {
+      if (params.isSelfSigned()) {
         X509Certificate cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());

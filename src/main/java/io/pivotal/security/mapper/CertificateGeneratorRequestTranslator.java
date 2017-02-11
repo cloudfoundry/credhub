@@ -1,21 +1,21 @@
 package io.pivotal.security.mapper;
 
+import static com.google.common.collect.ImmutableSet.of;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.entity.NamedCertificateSecret;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.util.CertificateReader;
+import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
 import io.pivotal.security.view.ParameterizedValidationException;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.Set;
-
-import static com.google.common.collect.ImmutableSet.of;
-import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @Component
 public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {
@@ -39,7 +39,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
       if (isEmpty(entity.getCaName())) {
         throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_credentials");
       }
-      return new CertificateSecretParameters(entity.getCertificate(), entity.getCaName());
+      return new CertificateSecretParameters(new CertificateReader(entity.getCertificate()), entity.getCaName());
     }
 
     CertificateSecretParameters secretParameters = parametersFactory.get();
@@ -66,7 +66,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
     Optional.ofNullable(parsed.read("$.parameters.extended_key_usage", String[].class))
       .ifPresent(secretParameters::addExtendedKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.self_sign", Boolean.class))
-      .ifPresent(secretParameters::setSelfSign);
+      .ifPresent(secretParameters::setSelfSigned);
     Optional.ofNullable(parsed.read("$.parameters.is_ca", Boolean.class))
       .ifPresent(secretParameters::setIsCa);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
@@ -117,11 +117,11 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   }
 
   private void assignDefaults(NamedCertificateSecret entity, CertificateSecretParameters requestParameters) {
-    if (requestParameters.getIsCA() && requestParameters.getCaName().equals("default")) {
-      requestParameters.setSelfSign(true);
+    if (requestParameters.isCA() && requestParameters.getCaName().equals("default")) {
+      requestParameters.setSelfSigned(true);
     }
 
-    if (requestParameters.getSelfSign()) {
+    if (requestParameters.isSelfSigned()) {
       requestParameters.setCaName(entity.getName());
     }
   }

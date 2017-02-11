@@ -23,12 +23,6 @@ import java.security.interfaces.RSAPublicKey;
 public class CertificateReader {
   private final X509Certificate certificate;
   private final X509CertificateHolder certificateHolder;
-
-  private GeneralNames alternativeNames;
-  private int durationDays;
-  private ExtendedKeyUsage extendedKeyUsage;
-  private int keyLength;
-  private KeyUsage keyUsage;
   private X500Name subjectName;
 
   public CertificateReader(String pemString) {
@@ -43,8 +37,7 @@ public class CertificateReader {
 
   public GeneralNames getAlternativeNames() {
     Extension encodedAlternativeNames = certificateHolder.getExtension(Extension.subjectAlternativeName);
-    alternativeNames = encodedAlternativeNames != null ? GeneralNames.getInstance(encodedAlternativeNames.getParsedValue()) : null;
-    return alternativeNames;
+    return encodedAlternativeNames != null ? GeneralNames.getInstance(encodedAlternativeNames.getParsedValue()) : null;
   }
 
   public int getDurationDays() {
