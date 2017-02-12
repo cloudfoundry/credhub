@@ -1,3 +1,3 @@
 #!/bin/bash
 
-gradle --no-daemon bootRun
+./gradlew --no-daemon bootRun
