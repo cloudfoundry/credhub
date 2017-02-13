@@ -7,6 +7,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.secret.Certificate;
@@ -16,6 +17,7 @@ import io.pivotal.security.view.ParameterizedValidationException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -52,6 +54,9 @@ public class CertificateGeneratorRequestTranslatorTest {
   private ParseContext jsonPath;
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
+
+  @Autowired
+  Encryptor encryptor;
 
   {
     wireAndUnwire(this, false);
@@ -248,6 +253,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       final NamedCertificateSecret secret = new NamedCertificateSecret("abc");
 
       beforeEach(() -> {
+        secret.setEncryptor(encryptor);
         doReturn(new Certificate("my-root", "my-cert", "my-priv"))
             .when(certificateGenerator)
             .generateSecret(any(CertificateSecretParameters.class));
@@ -272,8 +278,9 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
 
       describe("when a certificate is not self signed", () -> {
-        it("can creates correct parameters from entity from the entity", () -> {
+        it("creates correct parameters from the entity", () -> {
           NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
+              .setEncryptor(encryptor)
               .setCertificate(BIG_TEST_CERT)
               .setCaName("my-ca");
           CertificateSecretParameters expectedParameters = new CertificateSecretParameters(new CertificateReader(BIG_TEST_CERT), certificateSecret.getCaName());

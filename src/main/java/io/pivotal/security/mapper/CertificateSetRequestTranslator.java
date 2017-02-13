@@ -1,8 +1,10 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.view.ParameterizedValidationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -13,6 +15,13 @@ import static io.pivotal.security.util.StringUtil.emptyToNull;
 @Component
 public class CertificateSetRequestTranslator implements RequestTranslator<NamedCertificateSecret> {
 
+  private Encryptor encryptor;
+
+  @Autowired
+  public CertificateSetRequestTranslator(Encryptor encryptor) {
+    this.encryptor = encryptor;
+  }
+
   @Override
   public void populateEntityFromJson(NamedCertificateSecret namedCertificateSecret, DocumentContext documentContext) {
     String root = emptyToNull(documentContext.read("$.value.ca"));
@@ -21,6 +30,7 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
     if (root == null && certificate == null && privateKey == null) {
       throw new ParameterizedValidationException("error.missing_certificate_credentials");
     }
+    namedCertificateSecret.setEncryptor(encryptor);
     namedCertificateSecret.setCa(root);
     namedCertificateSecret.setCertificate(certificate);
     namedCertificateSecret.setPrivateKey(privateKey);

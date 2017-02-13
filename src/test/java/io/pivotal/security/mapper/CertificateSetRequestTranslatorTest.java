@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -28,6 +29,9 @@ public class CertificateSetRequestTranslatorTest {
   @Autowired
   private ParseContext jsonPath;
 
+  @Autowired
+  Encryptor encryptor;
+
   private CertificateSetRequestTranslator subject;
 
   private NamedCertificateSecret entity;
@@ -38,7 +42,7 @@ public class CertificateSetRequestTranslatorTest {
     describe("populating entity from json", () -> {
 
       beforeEach(() -> {
-        subject = new CertificateSetRequestTranslator();
+        subject = new CertificateSetRequestTranslator(encryptor);
         entity = new NamedCertificateSecret("Foo");
       });
 

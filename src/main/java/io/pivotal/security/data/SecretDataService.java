@@ -1,5 +1,6 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
@@ -41,31 +42,34 @@ public class SecretDataService {
   private final SecretNameRepository secretNameRepository;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private Encryptor encryptor;
 
   private final String FIND_MATCHING_NAME_QUERY =
       " select name.name, secret.version_created_at from (" +
-      "   select" +
-      "     max(version_created_at) as version_created_at," +
-      "     secret_name_uuid" +
-      "   from named_secret group by secret_name_uuid" +
-      " ) as secret inner join (" +
-      "   select * from secret_name" +
-      "     where lower(name) like lower(?)" +
-      " ) as name" +
-      " on secret.secret_name_uuid = name.uuid" +
-      " order by version_created_at desc";
+          "   select" +
+          "     max(version_created_at) as version_created_at," +
+          "     secret_name_uuid" +
+          "   from named_secret group by secret_name_uuid" +
+          " ) as secret inner join (" +
+          "   select * from secret_name" +
+          "     where lower(name) like lower(?)" +
+          " ) as name" +
+          " on secret.secret_name_uuid = name.uuid" +
+          " order by version_created_at desc";
 
   @Autowired
   protected SecretDataService(
       SecretRepository secretRepository,
       SecretNameRepository secretNameRepository,
       JdbcTemplate jdbcTemplate,
-      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper
+      EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
+      Encryptor encryptor
   ) {
     this.secretRepository = secretRepository;
     this.secretNameRepository = secretNameRepository;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
+    this.encryptor = encryptor;
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
@@ -138,7 +142,7 @@ public class SecretDataService {
 
   public Long countAllNotEncryptedByActiveKey() {
     return secretRepository.countByEncryptionKeyUuidNot(
-      encryptionKeyCanaryMapper.getActiveUuid()
+        encryptionKeyCanaryMapper.getActiveUuid()
     );
   }
 
@@ -178,26 +182,27 @@ public class SecretDataService {
     return StringUtils.prependIfMissing(name, "/");
   }
 
-  private static List<NamedSecret> wrap(List<NamedSecretData>daos) {
-    return daos.stream().map(SecretDataService::wrap).collect(Collectors.toList());
+  private List<NamedSecret> wrap(List<NamedSecretData> daos) {
+    return daos.stream().map(this::wrap).collect(Collectors.toList());
   }
 
-  private static NamedSecret wrap(NamedSecretData dao) {
+  private NamedSecret wrap(NamedSecretData dao) {
+    NamedSecret returnValue;
     if (dao instanceof NamedCertificateSecretData) {
-      return new NamedCertificateSecret((NamedCertificateSecretData) dao);
+      returnValue =  new NamedCertificateSecret((NamedCertificateSecretData) dao);
+    } else if (dao instanceof NamedPasswordSecretData) {
+      returnValue =  new NamedPasswordSecret((NamedPasswordSecretData) dao);
+    } else if (dao instanceof NamedRsaSecretData) {
+      returnValue =  new NamedRsaSecret((NamedRsaSecretData) dao);
+    } else if (dao instanceof NamedSshSecretData) {
+      returnValue =  new NamedSshSecret((NamedSshSecretData) dao);
+    } else if (dao instanceof NamedValueSecretData) {
+      returnValue =  new NamedValueSecret((NamedValueSecretData) dao);
+    } else {
+      throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
     }
-    if (dao instanceof NamedPasswordSecretData) {
-      return new NamedPasswordSecret((NamedPasswordSecretData) dao);
-    }
-    if (dao instanceof NamedRsaSecretData) {
-      return new NamedRsaSecret((NamedRsaSecretData) dao);
-    }
-    if (dao instanceof NamedSshSecretData) {
-      return new NamedSshSecret((NamedSshSecretData) dao);
-    }
-    if (dao instanceof NamedValueSecretData) {
-      return new NamedValueSecret((NamedValueSecretData) dao);
-    }
-    throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
+
+    returnValue.setEncryptor(encryptor);
+    return returnValue;
   }
 }

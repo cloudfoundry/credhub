@@ -28,6 +28,9 @@ public class NamedCertificateSecretTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
 
+  @Autowired
+  Encryptor encryptor;
+
   private NamedCertificateSecret subject;
 
   {
@@ -35,6 +38,7 @@ public class NamedCertificateSecretTest {
 
     beforeEach(() -> {
       subject = new NamedCertificateSecret("Foo")
+          .setEncryptor(encryptor)
           .setCa("my-ca")
           .setCertificate("my-cert")
           .setPrivateKey("my-priv");

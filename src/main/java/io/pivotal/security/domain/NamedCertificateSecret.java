@@ -1,6 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
 
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
@@ -38,11 +39,20 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   }
 
   public String getPrivateKey() {
-    return delegate.getPrivateKey();
+    return encryptor.decrypt(
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedValue(),
+        delegate.getNonce()
+    );
   }
 
   public NamedCertificateSecret setPrivateKey(String privateKey) {
-    delegate.setPrivateKey(privateKey);
+    final Encryption encryption = encryptor.encrypt(privateKey);
+
+    delegate.setNonce(encryption.nonce);
+    delegate.setEncryptedValue(encryption.encryptedValue);
+    delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+
     return this;
   }
 

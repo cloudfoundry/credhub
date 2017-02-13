@@ -12,6 +12,7 @@ import java.util.UUID;
 public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedValueContainer {
 
   protected NamedSecretData delegate;
+  protected Encryptor encryptor;
 
   public abstract SecretKind getKind();
   public abstract String getSecretType();
@@ -81,5 +82,10 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
 
   public NamedSecretData saveAndFlush(SecretRepository secretRepository) {
     return secretRepository.saveAndFlush(delegate);
+  }
+
+  public Z setEncryptor(Encryptor encryptor) {
+    this.encryptor = encryptor;
+    return (Z) this;
   }
 }

@@ -47,15 +47,6 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
     return this;
   }
 
-  public String getPrivateKey() {
-    return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
-  }
-
-  public NamedCertificateSecretData setPrivateKey(String privateKey) {
-    SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, privateKey);
-    return this;
-  }
-
   public NamedCertificateSecretData setCaName(String caName) {
     this.caName = caName;
     return this;

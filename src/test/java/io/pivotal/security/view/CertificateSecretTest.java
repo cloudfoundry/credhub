@@ -3,9 +3,11 @@ package io.pivotal.security.view;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.JsonExpectationsHelper;
@@ -35,6 +37,9 @@ public class CertificateSecretTest {
 
   private UUID uuid;
 
+  @Autowired
+  Encryptor encryptor;
+
   {
     wireAndUnwire(this, false);
 
@@ -43,6 +48,7 @@ public class CertificateSecretTest {
       secretName = "foo";
       uuid = UUID.randomUUID();
       entity = new NamedCertificateSecret(secretName)
+          .setEncryptor(encryptor)
           .setCa("ca")
           .setCertificate("cert")
           .setPrivateKey("priv")
@@ -77,7 +83,7 @@ public class CertificateSecretTest {
     });
 
     it("includes keys with null values", () -> {
-      final SecretView subject = CertificateView.fromEntity(new NamedCertificateSecret(secretName).setUuid(uuid));
+      final SecretView subject = CertificateView.fromEntity(new NamedCertificateSecret(secretName).setEncryptor(encryptor).setUuid(uuid));
       assertThat(serializingObjectMapper.writeValueAsString(subject), equalTo("{" +
           "\"type\":\"certificate\"," +
           "\"version_created_at\":null," +

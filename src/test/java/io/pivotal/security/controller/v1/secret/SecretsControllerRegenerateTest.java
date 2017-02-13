@@ -107,7 +107,6 @@ public class SecretsControllerRegenerateTest {
         originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         originalSecret.setValue("original-password");
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
-
         generationParameters.setExcludeNumber(true);
         originalSecret.setGenerationParameters(generationParameters);
 

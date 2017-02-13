@@ -2,6 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import org.junit.Assert;
@@ -30,6 +31,9 @@ public class SecretKindMappingFactoryTest {
   @Mock
   private DocumentContext parsedRequest;
 
+  @Mock
+  Encryptor encryptor;
+
   {
     SecretKindMappingFactory subject = (secretPath, parsed) -> null;
 
@@ -41,7 +45,7 @@ public class SecretKindMappingFactoryTest {
         NamedPasswordSecret constructedObject = new NamedPasswordSecret("name");
         when(constructor.apply("name")).thenReturn(constructedObject);
 
-        Assert.assertThat(subject.createNewSecret(null, constructor, "name", requestTranslator, parsedRequest), sameInstance(constructedObject));
+        Assert.assertThat(subject.createNewSecret(null, constructor, "name", requestTranslator, parsedRequest, encryptor), sameInstance(constructedObject));
         verify(constructor).apply("name");
 
         verify(requestTranslator).populateEntityFromJson(constructedObject, parsedRequest);
@@ -56,7 +60,7 @@ public class SecretKindMappingFactoryTest {
         NamedPasswordSecret constructedObject = new NamedPasswordSecret("name");
         when(constructor.apply("name")).thenReturn(constructedObject);
 
-        Assert.assertThat(subject.createNewSecret(existingObject, constructor, "name", requestTranslator, parsedRequest), sameInstance(constructedObject));
+        Assert.assertThat(subject.createNewSecret(existingObject, constructor, "name", requestTranslator, parsedRequest, encryptor), sameInstance(constructedObject));
         verify(constructor).apply("name");
 
         verify(existingObject).copyInto(constructedObject);
@@ -66,12 +70,12 @@ public class SecretKindMappingFactoryTest {
 
     describe("validation", () -> {
       it("calls the request translator to validate JSON keys", () -> {
-        subject.createNewSecret(null, NamedPasswordSecret::new, "name", requestTranslator, parsedRequest);
+        subject.createNewSecret(null, NamedPasswordSecret::new, "name", requestTranslator, parsedRequest, encryptor);
         verify(requestTranslator).validateJsonKeys(parsedRequest);
       });
 
       it("calls the request translator to validate path", () -> {
-        subject.createNewSecret(null, NamedPasswordSecret::new, "/dont//do//this/", requestTranslator, parsedRequest);
+        subject.createNewSecret(null, NamedPasswordSecret::new, "/dont//do//this/", requestTranslator, parsedRequest, encryptor);
         verify(requestTranslator).validatePathName(any(String.class));
       });
     });
