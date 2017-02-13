@@ -82,8 +82,14 @@ public class CertificateReader {
   }
 
   public boolean isCA() {
-    BasicConstraints basicConstraints = BasicConstraints
-        .fromExtensions(Extensions.getInstance(certificateHolder.getExtensions()));
-    return basicConstraints.isCA();
+    Extensions extensions = certificateHolder.getExtensions();
+    BasicConstraints basicConstraints = null;
+
+    if (extensions != null) {
+      basicConstraints = BasicConstraints
+          .fromExtensions(Extensions.getInstance(extensions));
+    }
+
+    return basicConstraints != null && basicConstraints.isCA();
   }
 }
