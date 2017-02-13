@@ -112,20 +112,17 @@ public class SecretsController {
     AuditRecordBuilder auditRecorder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(auditRecorder, () -> {
       final String nameToDelete = sanitizedName(secretName);
+      auditRecorder.setCredentialName(nameToDelete);
 
       if (StringUtils.isEmpty(nameToDelete)) {
         return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
       }
-
-      long numDeleted = secretDataService.delete(nameToDelete);
-
-      if (numDeleted > 0) {
-        auditRecorder.setCredentialName(nameToDelete);
-        return new ResponseEntity(HttpStatus.OK);
-      } else {
-        auditRecorder.setCredentialName(nameToDelete);
+      if (secretDataService.findMostRecent(nameToDelete) == null) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
+
+      secretDataService.delete(nameToDelete);
+      return new ResponseEntity(HttpStatus.OK);
     });
   }
 
