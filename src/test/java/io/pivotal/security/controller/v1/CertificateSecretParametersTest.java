@@ -184,6 +184,15 @@ public class CertificateSecretParametersTest {
         });
       });
 
+      describe("with self_sign set to true and a ca name", () -> {
+        itThrowsWithMessage("", ParameterizedValidationException.class, "error.ca_and_self_sign", () -> {
+          new CertificateSecretParameters()
+              .setCommonName("foo")
+              .setCaName("test-ca")
+              .setSelfSigned(true)
+              .validate();
+        });
+      });
 
       itThrowsWithMessage("when duration is less than 1", ParameterizedValidationException.class, "error.invalid_duration", () -> {
         new CertificateSecretParameters()

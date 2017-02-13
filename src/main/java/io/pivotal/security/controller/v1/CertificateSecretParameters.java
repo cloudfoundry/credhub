@@ -100,10 +100,10 @@ public class CertificateSecretParameters implements RequestParameters {
         && StringUtils.isEmpty(commonName)
         && StringUtils.isEmpty(country)) {
       throw new ParameterizedValidationException("error.missing_certificate_parameters");
-    }
-
-    if (StringUtils.isEmpty(caName) && !selfSigned && !isCA) {
+    } else if (StringUtils.isEmpty(caName) && !selfSigned && !isCA) {
       throw new ParameterizedValidationException("error.missing_signing_ca");
+    } else if (!StringUtils.isEmpty(caName) && selfSigned) {
+      throw new ParameterizedValidationException("error.ca_and_self_sign");
     }
 
     switch (keyLength) {
