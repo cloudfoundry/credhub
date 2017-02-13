@@ -11,6 +11,7 @@ import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
+import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -45,6 +46,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +63,9 @@ public class SecretDataServiceTest {
 
   @Autowired
   SecretRepository secretRepository;
+
+  @Autowired
+  SecretNameRepository nameRepository;
 
   @Autowired
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
@@ -182,7 +187,8 @@ public class SecretDataServiceTest {
 
         subject.delete("/my-secret");
 
-        assertThat(subject.findAllByName("/my-secret"), empty());
+        assertThat(getSecretsFromDb().size(), equalTo(0));
+        assertNull(nameRepository.findOneByNameIgnoreCase("/my-secret"));
       });
 
       it("should be able to delete a secret ignoring case", () -> {

@@ -95,7 +95,7 @@ public class PasswordRotationTest {
     });
 
     afterEach(() -> {
-      secretDataService.deleteAll();
+      secretDataService.delete(passwordName);
       encryptionKeyCanaryDataService.delete(oldCanary);
     });
 

@@ -106,7 +106,7 @@ public class EncryptionKeyRotatorTest {
       });
 
       afterEach(() -> {
-        secretDataService.deleteAll();
+        secretDataService.delete("cert");
         encryptionKeyCanaryDataService.delete(oldCanary);
         encryptionKeyCanaryDataService.delete(unknownCanary);
       });

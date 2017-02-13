@@ -37,7 +37,7 @@ import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 @Service
 public class SecretDataService {
-  private final SecretRepository secretRepository;
+  protected final SecretRepository secretRepository;
   private final SecretNameRepository secretNameRepository;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -56,7 +56,7 @@ public class SecretDataService {
       " order by version_created_at desc";
 
   @Autowired
-  SecretDataService(
+  protected SecretDataService(
       SecretRepository secretRepository,
       SecretNameRepository secretNameRepository,
       JdbcTemplate jdbcTemplate,
@@ -120,13 +120,11 @@ public class SecretDataService {
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
 
     if (secretName != null) {
-      return secretRepository.deleteBySecretNameUuid(secretName.getUuid());
+      return secretNameRepository.deleteByName(secretName.getName());
     } else {
       return 0;
     }
   }
-
-  public void deleteAll() { secretRepository.deleteAll(); }
 
   public List<NamedSecret> findAllByName(String name) {
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
