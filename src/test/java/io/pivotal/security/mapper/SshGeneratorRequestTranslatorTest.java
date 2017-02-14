@@ -6,6 +6,7 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.generator.SshGenerator;
@@ -56,6 +57,9 @@ public class SshGeneratorRequestTranslatorTest {
 
   private ArgumentCaptor<SshSecretParameters> secretParameterCaptor;
 
+  @Autowired
+  private Encryptor encryptor;
+
   {
     wireAndUnwire(this, false);
 
@@ -102,6 +106,7 @@ public class SshGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
 
         NamedSshSecret namedSshSecret = new NamedSshSecret();
+        namedSshSecret.setEncryptor(encryptor);
         subject.populateEntityFromJson(namedSshSecret, parsed);
 
         verify(secretGenerator).generateSecret(mockParams);
@@ -115,6 +120,7 @@ public class SshGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
 
         NamedSshSecret namedSshSecret = new NamedSshSecret();
+        namedSshSecret.setEncryptor(encryptor);
         subject.populateEntityFromJson(namedSshSecret, parsed);
 
         verify(mockParams, times(1)).validate();
@@ -131,6 +137,7 @@ public class SshGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
 
         NamedSshSecret namedSshSecret = new NamedSshSecret();
+        namedSshSecret.setEncryptor(encryptor);
         subject.populateEntityFromJson(namedSshSecret, parsed);
 
         verify(mockParams).setKeyLength(3072);
@@ -144,6 +151,7 @@ public class SshGeneratorRequestTranslatorTest {
 
         NamedSshSecret secret = new NamedSshSecret();
 
+        secret.setEncryptor(encryptor);
         secret.setSecretName(new SecretName("test"));
         secret.setPublicKey(sshPublicKey);
         secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());

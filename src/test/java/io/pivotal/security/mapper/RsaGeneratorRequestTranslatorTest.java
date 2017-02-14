@@ -6,6 +6,7 @@ import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.generator.RsaGenerator;
@@ -51,6 +52,9 @@ public class RsaGeneratorRequestTranslatorTest {
 
   private RsaSecretParameters mockParams;
 
+  @Autowired
+  private Encryptor encryptor;
+
   {
     wireAndUnwire(this, false);
 
@@ -95,6 +99,7 @@ public class RsaGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
 
         NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
+        namedRsaSecret.setEncryptor(encryptor);
         subject.populateEntityFromJson(namedRsaSecret, parsed);
 
         verify(secretGenerator).generateSecret(mockParams);
@@ -108,6 +113,7 @@ public class RsaGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
 
         NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
+        namedRsaSecret.setEncryptor(encryptor);
         subject.populateEntityFromJson(namedRsaSecret, parsed);
 
         verify(mockParams, times(1)).validate();
@@ -123,6 +129,7 @@ public class RsaGeneratorRequestTranslatorTest {
         DocumentContext parsed = jsonPath.parse(json);
 
         NamedRsaSecret namedRsaSecret = new NamedRsaSecret();
+        namedRsaSecret.setEncryptor(encryptor);
         subject.populateEntityFromJson(namedRsaSecret, parsed);
 
         verify(mockParams).setKeyLength(3072);
@@ -132,8 +139,8 @@ public class RsaGeneratorRequestTranslatorTest {
 
       it("can regenerate using the existing entity and JSON", () -> {
         NamedRsaSecret secret = spy(NamedRsaSecret.class);
-        SecretName secretName = new SecretName("test");
-        secret.setSecretName(secretName);
+        secret.setEncryptor(encryptor);
+        secret.setSecretName(new SecretName("test"));
         when(secret.getKeyLength()).thenReturn(3072);
 
         ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor.forClass(RsaSecretParameters.class);

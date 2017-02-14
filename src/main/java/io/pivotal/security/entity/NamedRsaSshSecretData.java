@@ -24,15 +24,6 @@ public abstract class NamedRsaSshSecretData extends NamedSecretData<NamedRsaSshS
     return (T) this;
   }
 
-  public String getPrivateKey() {
-    return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
-  }
-
-  public <T extends NamedRsaSshSecretData> T setPrivateKey(String privateKey) {
-    SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, privateKey);
-    return (T) this;
-  }
-
   public abstract SecretKind getKind();
 
   @Override

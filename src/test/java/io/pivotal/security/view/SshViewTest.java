@@ -1,12 +1,10 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
@@ -15,13 +13,13 @@ import java.util.UUID;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class SshViewTest {
 
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
@@ -32,13 +30,17 @@ public class SshViewTest {
 
   private UUID uuid;
 
-  {
-    wireAndUnwire(this, false);
+  private Encryptor encryptor;
 
+  {
     beforeEach(() -> {
       secretName = "foo";
       uuid = UUID.randomUUID();
+      encryptor = mock(Encryptor.class);
+      when(encryptor.encrypt("my-private-key")).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
+      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("my-private-key");
       entity = new NamedSshSecret(secretName)
+          .setEncryptor(encryptor)
           .setPublicKey("my-public-key")
           .setPrivateKey("my-private-key");
       entity.setUuid(uuid);
