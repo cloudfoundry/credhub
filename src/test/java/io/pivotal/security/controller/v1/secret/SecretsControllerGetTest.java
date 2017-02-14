@@ -3,9 +3,8 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -62,13 +61,13 @@ public class SecretsControllerGetTest {
   SecretsController subject;
 
   @SpyBean
+  Encryptor encryptor;
+
+  @SpyBean
   FakeAuditLogService auditLogService;
 
   @SpyBean
   SecretDataService secretDataService;
-
-  @SpyBean
-  SecretEncryptionHelper secretEncryptionHelper;
 
   private MockMvc mockMvc;
 
@@ -77,8 +76,8 @@ public class SecretsControllerGetTest {
   private final Consumer<Long> fakeTimeSetter;
 
   private final String secretName = "my-namespace/subTree/secret-name";
-
   private ResultActions response;
+
   private UUID uuid;
 
   {
@@ -97,14 +96,14 @@ public class SecretsControllerGetTest {
 
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        NamedValueSecret valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        NamedValueSecret valueSecret = new NamedValueSecret(secretName).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
         valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
-        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret2.setEncryptedValue("fake-encrypted-value2".getBytes());
         valueSecret2.setNonce("fake-nonce2".getBytes());
 
-        doReturn(secretValue).when(secretEncryptionHelper).retrieveClearTextValue(any(NamedValueSecretData.class));
+        doReturn(secretValue).when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
 
         doReturn(
             valueSecret

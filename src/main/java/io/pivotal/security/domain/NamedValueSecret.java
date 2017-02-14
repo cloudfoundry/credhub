@@ -1,6 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
 
 public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
@@ -20,11 +21,23 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
   }
 
   public String getValue() {
-    return delegate.getValue();
+    return encryptor.decrypt(
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedValue(),
+        delegate.getNonce()
+    );
   }
 
   public NamedValueSecret setValue(String value) {
-    delegate.setValue(value);
+    if (value == null) {
+      throw new IllegalArgumentException("value cannot be null");
+    }
+
+    final Encryption encryption = encryptor.encrypt(value);
+    delegate.setEncryptedValue(encryption.encryptedValue);
+    delegate.setNonce(encryption.nonce);
+    delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+
     return this;
   }
 

@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -28,6 +29,9 @@ public class ValueSetRequestTranslatorTest {
   @Autowired
   private ParseContext jsonPath;
 
+  @Autowired
+  private Encryptor encryptor;
+
   private ValueSetRequestTranslator subject;
 
   private NamedValueSecret entity;
@@ -38,7 +42,7 @@ public class ValueSetRequestTranslatorTest {
     describe("populating entity from JSON", () -> {
       beforeEach(() -> {
         subject = new ValueSetRequestTranslator();
-        entity = new NamedValueSecret("rick");
+        entity = new NamedValueSecret("rick").setEncryptor(encryptor);
       });
 
       it("fills in entity with values from JSON", () -> {

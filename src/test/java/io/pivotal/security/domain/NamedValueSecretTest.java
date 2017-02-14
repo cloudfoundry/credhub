@@ -25,6 +25,9 @@ public class NamedValueSecretTest {
   @Autowired
   public ObjectMapper objectMapper;
 
+  @Autowired
+  private Encryptor encryptor;
+
   NamedValueSecret subject;
 
   {
@@ -40,7 +43,7 @@ public class NamedValueSecretTest {
 
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
-        subject = new NamedValueSecret("foo");
+        subject = new NamedValueSecret("foo").setEncryptor(encryptor);
       });
 
       it("sets the nonce and the encrypted value", () -> {

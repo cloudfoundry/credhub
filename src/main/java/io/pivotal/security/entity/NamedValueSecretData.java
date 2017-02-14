@@ -20,18 +20,6 @@ public class NamedValueSecretData extends NamedSecretData<NamedValueSecretData> 
     super(name);
   }
 
-  public String getValue() {
-    return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
-  }
-
-  public NamedValueSecretData setValue(String value) {
-    if (value == null) {
-      throw new IllegalArgumentException("value cannot be null");
-    }
-    SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, value);
-    return this;
-  }
-
   @Override
   public String getSecretType() {
     return SECRET_TYPE;

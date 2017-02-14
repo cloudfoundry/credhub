@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
@@ -66,6 +67,9 @@ public class SecretsControllerSetTest {
   @Autowired
   SecretsController subject;
 
+  @Autowired
+  private Encryptor encryptor;
+
   @SpyBean
   FakeAuditLogService auditLogService;
 
@@ -83,9 +87,9 @@ public class SecretsControllerSetTest {
   private ResultActions response;
 
   private UUID uuid;
-
   final String secretValue = "secret-value";
   private NamedValueSecret valueSecret;
+
   private ResultActions[] responses;
 
   {
@@ -158,7 +162,7 @@ public class SecretsControllerSetTest {
     describe("setting a secret", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        valueSecret = new NamedValueSecret(secretName).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        valueSecret = new NamedValueSecret(secretName).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
         valueSecret.setValue(secretValue);
 
         doReturn(
@@ -371,6 +375,7 @@ public class SecretsControllerSetTest {
     describe("error handling", () -> {
       it("returns 400 when the handler raises an exception", () -> {
         NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
+        namedValueSecret.setEncryptor(encryptor);
         namedValueSecret.setValue(secretValue);
         doReturn(
             namedValueSecret
@@ -469,7 +474,7 @@ public class SecretsControllerSetTest {
 
   private void putSecretInDatabase(String name, String value) throws Exception {
     uuid = UUID.randomUUID();
-    NamedValueSecret valueSecret = new NamedValueSecret(name).setUuid(uuid).setVersionCreatedAt(frozenTime);
+    NamedValueSecret valueSecret = new NamedValueSecret(name).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
     valueSecret.setValue(value);
     doReturn(
         valueSecret

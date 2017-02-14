@@ -1,15 +1,9 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.SecretEncryptionHelper;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -17,34 +11,31 @@ import java.util.UUID;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class ValueViewTest {
-  @MockBean
-  SecretEncryptionHelper secretEncryptionHelper;
-
   private NamedValueSecret entity;
 
   private UUID uuid;
 
-  {
-    wireAndUnwire(this, false);
+  private Encryptor encryptor;
 
+  {
     beforeEach(() -> {
       uuid = UUID.randomUUID();
+      encryptor = mock(Encryptor.class);
+      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("fake-plaintext-value");
       entity = new NamedValueSecret("foo")
+        .setEncryptor(encryptor)
         .setUuid(uuid);
       entity.setEncryptedValue("fake-encrypted-value".getBytes());
       entity.setNonce("fake-nonce".getBytes());
 
-      when(secretEncryptionHelper.retrieveClearTextValue(any(NamedValueSecretData.class))).thenReturn("fake-plaintext-value");
     });
 
     it("can create view from entity", () -> {
