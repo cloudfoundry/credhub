@@ -4,7 +4,6 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.NamedCertificateSecretData;
-import io.pivotal.security.entity.NamedStringSecretData;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
@@ -89,7 +88,7 @@ public class SecretRepositoryTest {
 
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      NamedStringSecretData entity = new NamedValueSecretData();
+      NamedValueSecretData entity = new NamedValueSecretData();
       SecretName secretName = secretNameRepository.save(new SecretName(name));
       entity.setSecretName(secretName);
       entity.setEncryptedValue(encryptedValue);

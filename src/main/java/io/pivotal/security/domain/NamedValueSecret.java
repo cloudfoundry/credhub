@@ -3,7 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.view.SecretKind;
 
-public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
+public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
   private NamedValueSecretData delegate;
 
   public NamedValueSecret(NamedValueSecretData delegate) {
@@ -17,6 +17,15 @@ public class NamedValueSecret extends NamedStringSecret<NamedValueSecret> {
 
   public NamedValueSecret() {
     this(new NamedValueSecretData());
+  }
+
+  public String getValue() {
+    return delegate.getValue();
+  }
+
+  public NamedValueSecret setValue(String value) {
+    delegate.setValue(value);
+    return this;
   }
 
   @Override

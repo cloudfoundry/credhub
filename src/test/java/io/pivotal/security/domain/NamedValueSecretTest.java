@@ -25,7 +25,7 @@ public class NamedValueSecretTest {
   @Autowired
   public ObjectMapper objectMapper;
 
-  NamedStringSecret subject;
+  NamedValueSecret subject;
 
   {
     wireAndUnwire(this, false);

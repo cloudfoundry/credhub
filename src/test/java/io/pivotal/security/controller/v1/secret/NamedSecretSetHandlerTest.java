@@ -2,8 +2,9 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
@@ -11,56 +12,48 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
+import io.pivotal.security.mapper.PasswordSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
-import io.pivotal.security.mapper.StringSetRequestTranslator;
-import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
 
-  @Autowired
-  NamedSecretSetHandler subject;
-
-  @Autowired
-  ParseContext jsonPath;
-
-  @MockBean
-  private StringSetRequestTranslator stringSetRequestTranslator;
-
-  @MockBean
-  private CertificateSetRequestTranslator certificateSetRequestTranslator;
-
-  @MockBean
-  private RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
+  private NamedSecretSetHandler subject;
+  private ParseContext jsonPath;
+  private ValueSetRequestTranslator valueSetRequestTranslator = mock(ValueSetRequestTranslator.class);
+  private PasswordSetRequestTranslator passwordSetRequestTranslator = mock(PasswordSetRequestTranslator.class);
+  private CertificateSetRequestTranslator certificateSetRequestTranslator = mock(CertificateSetRequestTranslator.class);
+  private RsaSshSetRequestTranslator rsaSshSetRequestTranslator = mock(RsaSshSetRequestTranslator.class);
+  private Encryptor encryptor = mock(Encryptor.class);
 
   {
-    wireAndUnwire(this, false);
+    beforeEach(() -> {
+      jsonPath = new JsonContextFactory().getObject();
+      subject = new NamedSecretSetHandler(
+          valueSetRequestTranslator,
+          passwordSetRequestTranslator,
+          certificateSetRequestTranslator,
+          rsaSshSetRequestTranslator,
+          encryptor
+        );
+    });
 
     describe("it verifies the secret type and secret creation for", () -> {
-      beforeEach(injectMocks(this));
-
       describe(
           "value",
           behavesLikeMapper(() -> subject,
-              () -> subject.stringSetRequestTranslator,
+              valueSetRequestTranslator,
               SecretKind.VALUE,
               NamedValueSecret.class,
               new NamedValueSecret(),
@@ -70,7 +63,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe(
           "password",
           behavesLikeMapper(() -> subject,
-              () -> subject.stringSetRequestTranslator,
+              passwordSetRequestTranslator,
               SecretKind.PASSWORD,
               NamedPasswordSecret.class,
               new NamedPasswordSecret(),
@@ -80,7 +73,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe(
           "certificate",
           behavesLikeMapper(() -> subject,
-              () -> subject.certificateSetRequestTranslator,
+              certificateSetRequestTranslator,
               SecretKind.CERTIFICATE,
               NamedCertificateSecret.class,
               new NamedCertificateSecret(),
@@ -90,7 +83,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe(
           "ssh",
           behavesLikeMapper(() -> subject,
-              () -> subject.rsaSshSetRequestTranslator,
+              rsaSshSetRequestTranslator,
               SecretKind.SSH,
               NamedSshSecret.class,
               new NamedSshSecret(),
@@ -100,7 +93,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe(
           "rsa",
           behavesLikeMapper(() -> subject,
-              () -> subject.rsaSshSetRequestTranslator,
+              rsaSshSetRequestTranslator,
               SecretKind.RSA,
               NamedRsaSecret.class,
               new NamedRsaSecret(),
@@ -111,11 +104,11 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     describe("verifies full set of keys for", () -> {
 
       it("value", () -> {
-        stringSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));
+        valueSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));
       });
 
       it("password", () -> {
-        stringSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\",\"value\":\"myValue\",\"overwrite\":true}"));
+        valueSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\",\"value\":\"myValue\",\"overwrite\":true}"));
       });
 
       it("certificate", () -> {

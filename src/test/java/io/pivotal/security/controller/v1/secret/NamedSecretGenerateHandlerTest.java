@@ -1,11 +1,10 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
-import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
@@ -15,74 +14,56 @@ import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
 
-  @Autowired
-  NamedSecretGenerateHandler subject;
-
-  @Autowired
-  ParseContext jsonPath;
-
-  @Autowired
-  SecretDataService secretDataService;
-
-  @MockBean
-  PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
-
-  @MockBean
-  CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
-
-  @MockBean
-  SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
-
-  @MockBean
-  RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
-
-  @MockBean
-  DocumentContext documentContext;
+  private NamedSecretGenerateHandler subject;
+  private ParseContext jsonPath;
+  private PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator = mock(PasswordGeneratorRequestTranslator.class);
+  private CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator = mock(CertificateGeneratorRequestTranslator.class);
+  private SshGeneratorRequestTranslator sshGeneratorRequestTranslator = mock(SshGeneratorRequestTranslator.class);
+  private RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator = mock(RsaGeneratorRequestTranslator.class);
+  private Encryptor encryptor = mock(Encryptor.class);
 
   {
-    wireAndUnwire(this, false);
+    beforeEach(() -> {
+      jsonPath = new JsonContextFactory().getObject();
+      subject = new NamedSecretGenerateHandler(
+          passwordGeneratorRequestTranslator,
+          certificateGeneratorRequestTranslator,
+          sshGeneratorRequestTranslator,
+          rsaGeneratorRequestTranslator,
+          encryptor
+      );
+    });
 
     describe("it verifies the secret type and secret creation for", () -> {
-      beforeEach(injectMocks(this));
-
       describe("value", () -> {
         itThrowsWithMessage("cannot be generated", ParameterizedValidationException.class, "error.invalid_generate_type", () -> {
-          SecretKind.VALUE.lift(subject.make("secret-path", documentContext)).apply(null);
+          SecretKind.VALUE.lift(subject.make("secret-path", null)).apply(null);
         });
 
         itThrowsWithMessage("ignores type mismatches and gives the can't generate message", ParameterizedValidationException.class, "error.invalid_generate_type", () -> {
-          SecretKind.VALUE.lift(subject.make("secret-path", documentContext)).apply(new NamedPasswordSecret());
+          SecretKind.VALUE.lift(subject.make("secret-path", null)).apply(new NamedPasswordSecret());
         });
       });
 
       describe(
           "password",
           behavesLikeMapper(() -> subject,
-              () -> subject.passwordGeneratorRequestTranslator,
+              passwordGeneratorRequestTranslator,
               SecretKind.PASSWORD,
               NamedPasswordSecret.class,
               new NamedPasswordSecret(),
@@ -92,7 +73,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       describe(
           "certificate",
           behavesLikeMapper(() -> subject,
-              () -> subject.certificateGeneratorRequestTranslator,
+              certificateGeneratorRequestTranslator,
               SecretKind.CERTIFICATE,
               NamedCertificateSecret.class,
               new NamedCertificateSecret(),
@@ -102,7 +83,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       describe(
           "ssh",
           behavesLikeMapper(() -> subject,
-              () -> subject.sshGeneratorRequestTranslator,
+              sshGeneratorRequestTranslator,
               SecretKind.SSH,
               NamedSshSecret.class,
               new NamedSshSecret(),
@@ -112,7 +93,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       describe(
           "rsa",
           behavesLikeMapper(() -> subject,
-              () -> subject.rsaGeneratorRequestTranslator,
+              rsaGeneratorRequestTranslator,
               SecretKind.RSA,
               NamedRsaSecret.class,
               new NamedRsaSecret(),

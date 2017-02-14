@@ -21,21 +21,26 @@ import java.security.NoSuchAlgorithmException;
 
 @Component
 class NamedSecretGenerateHandler implements SecretKindMappingFactory {
+  private final PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
+  private final CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
+  private final SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
+  private final RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
+  private final Encryptor encryptor;
 
   @Autowired
-  PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
-
-  @Autowired
-  CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
-
-  @Autowired
-  SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
-
-  @Autowired
-  RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
-
-  @Autowired
-  Encryptor encryptor;
+  NamedSecretGenerateHandler(
+      PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator,
+      CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator,
+      SshGeneratorRequestTranslator sshGeneratorRequestTranslator,
+      RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator,
+      Encryptor encryptor
+  ) {
+    this.passwordGeneratorRequestTranslator = passwordGeneratorRequestTranslator;
+    this.certificateGeneratorRequestTranslator = certificateGeneratorRequestTranslator;
+    this.sshGeneratorRequestTranslator = sshGeneratorRequestTranslator;
+    this.rsaGeneratorRequestTranslator = rsaGeneratorRequestTranslator;
+    this.encryptor = encryptor;
+  }
 
   @Override
   public SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make(String secretPath, DocumentContext parsedRequest) {

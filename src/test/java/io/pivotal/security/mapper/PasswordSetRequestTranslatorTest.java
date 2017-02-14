@@ -4,7 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.junit.runner.RunWith;
@@ -23,22 +23,22 @@ import static org.junit.Assert.assertThat;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class StringSetRequestTranslatorTest {
+public class PasswordSetRequestTranslatorTest {
 
   @Autowired
   private ParseContext jsonPath;
 
-  private StringSetRequestTranslator subject;
+  private PasswordSetRequestTranslator subject;
 
-  private NamedValueSecret entity;
+  private NamedPasswordSecret entity;
 
   {
     wireAndUnwire(this, false);
 
     describe("populating entity from JSON", () -> {
       beforeEach(() -> {
-        subject = new StringSetRequestTranslator();
-        entity = new NamedValueSecret("rick");
+        subject = new PasswordSetRequestTranslator();
+        entity = new NamedPasswordSecret("rick");
       });
 
       it("fills in entity with values from JSON", () -> {

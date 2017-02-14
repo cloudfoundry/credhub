@@ -3,7 +3,6 @@ package io.pivotal.security.service;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.data.OperationAuditRecordDataService;
-import io.pivotal.security.entity.NamedStringSecretData;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.fake.FakeSecretRepository;
@@ -110,7 +109,7 @@ public class DatabaseAuditLogServiceTest {
             responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               NamedValueSecretData entity = new NamedValueSecretData("keyName");
               entity.setEncryptedValue("value".getBytes());
-              final NamedStringSecretData secret = secretRepository.save(entity);
+              final NamedValueSecretData secret = secretRepository.save(entity);
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
           });
@@ -139,7 +138,7 @@ public class DatabaseAuditLogServiceTest {
             responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               NamedValueSecretData entity = new NamedValueSecretData("keyName");
               entity.setEncryptedValue("value".getBytes());
-              final NamedStringSecretData secret = secretRepository.save(entity);
+              final NamedValueSecretData secret = secretRepository.save(entity);
               return new ResponseEntity<>(secret, HttpStatus.OK);
             });
           });

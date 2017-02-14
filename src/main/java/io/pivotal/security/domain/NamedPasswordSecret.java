@@ -4,7 +4,7 @@ import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.view.SecretKind;
 
-public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> {
+public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
   private NamedPasswordSecretData delegate;
 
@@ -19,6 +19,15 @@ public class NamedPasswordSecret extends NamedStringSecret<NamedPasswordSecret> 
 
   public NamedPasswordSecret() {
     this(new NamedPasswordSecretData());
+  }
+
+  public String getValue() {
+    return delegate.getValue();
+  }
+
+  public NamedPasswordSecret setValue(String value) {
+    delegate.setValue(value);
+    return this;
   }
 
   public byte[] getEncryptedGenerationParameters() {

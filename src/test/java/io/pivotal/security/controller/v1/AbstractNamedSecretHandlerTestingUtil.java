@@ -36,7 +36,7 @@ public abstract class AbstractNamedSecretHandlerTestingUtil {
 
   protected Spectrum.Block behavesLikeMapper(
       Supplier<SecretKindMappingFactory> subject,
-      Supplier<RequestTranslator> translatorSupplier,
+      RequestTranslator translatorSupplier,
       SecretKind secretKind,
       Class<? extends NamedSecret> clazz,
       NamedSecret existingEntity,
@@ -44,7 +44,7 @@ public abstract class AbstractNamedSecretHandlerTestingUtil {
     return () -> {
       beforeEach(() -> {
         mapFunction = secretKind.lift(subject.get().make("secret-path", documentContext));
-        expectedTranslator = translatorSupplier.get();
+        expectedTranslator = translatorSupplier;
       });
 
       it("creates the secret", () -> {

@@ -13,7 +13,7 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 @Entity
 @Table(name = "PasswordSecret")
 @DiscriminatorValue(NamedPasswordSecretData.SECRET_TYPE)
-public class NamedPasswordSecretData extends NamedStringSecretData<NamedPasswordSecretData> {
+public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecretData> {
 
   @Column(length = 255 + NONCE_SIZE)
   private byte[] encryptedGenerationParameters;
@@ -29,6 +29,18 @@ public class NamedPasswordSecretData extends NamedStringSecretData<NamedPassword
 
   public NamedPasswordSecretData(String name) {
     super(name);
+  }
+
+  public String getValue() {
+    return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
+  }
+
+  public NamedPasswordSecretData setValue(String value) {
+    if (value == null) {
+      throw new IllegalArgumentException("value cannot be null");
+    }
+    SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, value);
+    return this;
   }
 
   public byte[] getEncryptedGenerationParameters() {

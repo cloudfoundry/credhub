@@ -2,10 +2,11 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.domain.NamedStringSecret;
+import io.pivotal.security.domain.NamedValueSecret;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -51,8 +52,10 @@ public class SecretView extends BaseView {
 
   public static SecretView fromEntity(NamedSecret namedSecret) {
     SecretView result;
-    if (NamedStringSecret.class.isInstance(namedSecret)) {
-      result =  new StringView((NamedStringSecret) namedSecret);
+    if (NamedValueSecret.class.isInstance(namedSecret)) {
+      result = new ValueView((NamedValueSecret) namedSecret);
+    } else if (NamedPasswordSecret.class.isInstance(namedSecret)) {
+      result = new PasswordView((NamedPasswordSecret) namedSecret);
     } else if (NamedCertificateSecret.class.isInstance(namedSecret)) {
       result = new CertificateView((NamedCertificateSecret) namedSecret);
     } else if (NamedSshSecret.class.isInstance(namedSecret)) {

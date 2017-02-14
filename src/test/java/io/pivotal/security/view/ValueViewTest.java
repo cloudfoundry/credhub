@@ -26,7 +26,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class StringViewTest {
+public class ValueViewTest {
   @MockBean
   SecretEncryptionHelper secretEncryptionHelper;
 
@@ -48,7 +48,7 @@ public class StringViewTest {
     });
 
     it("can create view from entity", () -> {
-      StringView actual = (StringView) StringView.fromEntity(entity);
+      ValueView actual = (ValueView) ValueView.fromEntity(entity);
       assertThat(json(actual), equalTo("{" +
           "\"type\":\"value\"," +
           "\"version_created_at\":null," +
@@ -62,19 +62,19 @@ public class StringViewTest {
       Instant now = Instant.now();
       entity.setVersionCreatedAt(now);
 
-      StringView actual = (StringView) StringView.fromEntity(entity);
+      ValueView actual = (ValueView) ValueView.fromEntity(entity);
 
       assertThat(actual.getVersionCreatedAt(), equalTo(now));
     });
 
     it("has type in the view", () -> {
-      StringView actual = (StringView) StringView.fromEntity(entity);
+      ValueView actual = (ValueView) ValueView.fromEntity(entity);
 
       assertThat(actual.getType(), equalTo("value"));
     });
 
     it("has a uuid in the view", () -> {
-      StringView actual = (StringView) StringView.fromEntity(entity);
+      ValueView actual = (ValueView) ValueView.fromEntity(entity);
 
       assertThat(actual.getUuid(), equalTo(uuid.toString()));
     });
