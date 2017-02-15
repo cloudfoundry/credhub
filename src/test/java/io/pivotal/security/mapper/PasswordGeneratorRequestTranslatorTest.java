@@ -6,6 +6,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.secret.Password;
@@ -46,6 +47,9 @@ public class PasswordGeneratorRequestTranslatorTest {
 
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+
+  @Autowired
+  private Encryptor encryptor;
 
   {
     wireAndUnwire(this, false);
@@ -89,6 +93,7 @@ public class PasswordGeneratorRequestTranslatorTest {
 
     it("can populate an entity from JSON", () -> {
       final NamedPasswordSecret secret = new NamedPasswordSecret("abc");
+      secret.setEncryptor(encryptor);
 
       String requestJson = "{" +
           "  \"type\":\"password\"," +
@@ -99,7 +104,7 @@ public class PasswordGeneratorRequestTranslatorTest {
           "}";
       DocumentContext parsed = jsonPath.parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);
-      assertThat(secret.getValue(), notNullValue());
+      assertThat(secret.getPassword(), notNullValue());
       assertThat(secret.getGenerationParameters().getLength(), equalTo(11));
       assertThat(secret.getGenerationParameters().isExcludeLower(), equalTo(false));
       assertThat(secret.getGenerationParameters().isExcludeUpper(), equalTo(true));
@@ -108,6 +113,7 @@ public class PasswordGeneratorRequestTranslatorTest {
 
     it("can populate a hex-only entity from JSON", () -> {
       final NamedPasswordSecret secret = new NamedPasswordSecret("abc");
+      secret.setEncryptor(encryptor);
       secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
 
       String requestJson = "{" +
@@ -119,7 +125,7 @@ public class PasswordGeneratorRequestTranslatorTest {
           "}";
       DocumentContext parsed = jsonPath.parse(requestJson);
       subject.populateEntityFromJson(secret, parsed);
-      assertThat(secret.getValue(), notNullValue());
+      assertThat(secret.getPassword(), notNullValue());
       assertThat(secret.getGenerationParameters().getLength(), equalTo(11));
       assertThat(secret.getGenerationParameters().isOnlyHex(), equalTo(true));
     });
@@ -128,15 +134,15 @@ public class PasswordGeneratorRequestTranslatorTest {
       PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
 
       NamedPasswordSecret secret = new NamedPasswordSecret("test");
+      secret.setEncryptor(encryptor);
       secret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
-      secret.setValue("old-password");
-      secret.setGenerationParameters(generationParameters);
+      secret.setPasswordAndGenerationParameters("old-password", generationParameters);
 
       subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
 
       when(secretGenerator.generateSecret(generationParameters)).thenReturn(new Password("my-password"));
 
-      assertThat(secret.getValue(), equalTo("my-password"));
+      assertThat(secret.getPassword(), equalTo("my-password"));
     });
 
     describe("validateJsonKeys", () -> {
@@ -171,7 +177,8 @@ public class PasswordGeneratorRequestTranslatorTest {
 
     itThrowsWithMessage("rejects generation unless generation parameters are present in the existing entity", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
       NamedPasswordSecret secretWithoutGenerationParameters = new NamedPasswordSecret("test");
-      secretWithoutGenerationParameters.setValue("old-password");
+      secretWithoutGenerationParameters.setEncryptor(encryptor);
+      secretWithoutGenerationParameters.setPasswordAndGenerationParameters("old-password", null);
 
       subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), secretWithoutGenerationParameters);
     });

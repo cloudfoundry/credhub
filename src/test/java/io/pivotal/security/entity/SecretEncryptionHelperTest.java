@@ -3,6 +3,7 @@ package io.pivotal.security.entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
@@ -39,11 +40,13 @@ public class SecretEncryptionHelperTest {
   private String stringifiedParameters;
 
   private RetryingEncryptionService encryptionService;
+  private Encryptor encryptor;
 
   {
     beforeEach(() -> {
       encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
       encryptionService = mock(RetryingEncryptionService.class);
+      encryptor = new Encryptor(encryptionKeyCanaryMapper, encryptionService);
       subject = new SecretEncryptionHelper(encryptionKeyCanaryMapper, encryptionService);
 
       activeEncryptionKey = mock(Key.class);

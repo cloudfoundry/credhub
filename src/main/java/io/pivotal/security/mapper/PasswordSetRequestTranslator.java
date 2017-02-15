@@ -19,7 +19,7 @@ public class PasswordSetRequestTranslator implements RequestTranslator<NamedPass
     if (StringUtils.isEmpty(value)) {
       throw new ParameterizedValidationException("error.missing_string_secret_value");
     }
-    namedPasswordSecret.setValue(value);
+    namedPasswordSecret.setPasswordAndGenerationParameters(value, null);
   }
 
   @Override

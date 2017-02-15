@@ -5,6 +5,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
@@ -16,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -69,6 +71,9 @@ public class SecretsControllerAuditLogTest {
   @MockBean
   SecretDataService secretDataService;
 
+  @SpyBean
+  Encryptor encryptor;
+
   @InjectMocks
   @Autowired
   SecretsController secretsController;
@@ -87,7 +92,7 @@ public class SecretsControllerAuditLogTest {
     describe("when getting a credential", () -> {
       describe("by name", () -> {
         it("makes a credential_access audit log entry", () -> {
-          doReturn(Arrays.asList(new NamedPasswordSecret("foo")))
+          doReturn(Arrays.asList(new NamedPasswordSecret("foo").setEncryptor(encryptor)))
               .when(secretDataService).findAllByName(eq("foo"));
 
           mockMvc.perform(get(API_V1_DATA + "?name=foo")
@@ -108,7 +113,7 @@ public class SecretsControllerAuditLogTest {
 
       describe("by id", () -> {
         it("makes a credential_access audit log entry", () -> {
-          doReturn(new NamedPasswordSecret("foo"))
+          doReturn(new NamedPasswordSecret("foo").setEncryptor(encryptor))
               .when(secretDataService).findByUuid(eq("foo-id"));
 
           mockMvc.perform(get(API_V1_DATA + "/foo-id")
@@ -132,6 +137,7 @@ public class SecretsControllerAuditLogTest {
       beforeEach(() -> {
         when(secretDataService.save(any())).thenAnswer(invocation -> {
           NamedValueSecret namedValueSecret = invocation.getArgumentAt(0, NamedValueSecret.class);
+          namedValueSecret.setEncryptor(encryptor);
           namedValueSecret.setUuid(UUID.randomUUID());
           return namedValueSecret;
         });

@@ -30,18 +30,6 @@ public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecret
     super(name);
   }
 
-  public String getValue() {
-    return SecretEncryptionHelperProvider.getInstance().retrieveClearTextValue(this);
-  }
-
-  public NamedPasswordSecretData setValue(String value) {
-    if (value == null) {
-      throw new IllegalArgumentException("value cannot be null");
-    }
-    SecretEncryptionHelperProvider.getInstance().refreshEncryptedValue(this, value);
-    return this;
-  }
-
   public byte[] getEncryptedGenerationParameters() {
     return encryptedGenerationParameters;
   }

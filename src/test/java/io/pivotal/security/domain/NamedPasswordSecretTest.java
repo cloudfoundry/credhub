@@ -30,6 +30,9 @@ public class NamedPasswordSecretTest {
   @Autowired
   ObjectMapper objectMapper;
 
+  @Autowired
+  Encryptor encryptor;
+
   NamedPasswordSecret subject;
 
   PasswordGenerationParameters generationParameters;
@@ -39,6 +42,7 @@ public class NamedPasswordSecretTest {
 
     beforeEach(() -> {
       subject = new NamedPasswordSecret("Foo");
+      subject.setEncryptor(encryptor);
 
       generationParameters = new PasswordGenerationParameters();
       generationParameters.setExcludeLower(true);
@@ -53,32 +57,32 @@ public class NamedPasswordSecretTest {
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
         subject = new NamedPasswordSecret("foo");
+        subject.setEncryptor(encryptor);
       });
 
       it("sets the nonce and the encrypted value", () -> {
-        subject.setValue("my-value");
+        subject.setPasswordAndGenerationParameters("my-value", null);
         assertThat(subject.getEncryptedValue(), notNullValue());
         assertThat(subject.getNonce(), notNullValue());
       });
 
       it("can decrypt values", () -> {
-        subject.setValue("my-value");
-        assertThat(subject.getValue(), equalTo("my-value"));
+        subject.setPasswordAndGenerationParameters("my-value", generationParameters);
+        assertThat(subject.getPassword(), equalTo("my-value"));
       });
 
       itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
-        subject.setValue(null);
+        subject.setPasswordAndGenerationParameters(null, null);
       });
 
       it("sets the parametersNonce and the encryptedGenerationParameters", () -> {
-        subject.setGenerationParameters(generationParameters);
+        subject.setPasswordAndGenerationParameters("my-value", generationParameters);
         assertThat(subject.getEncryptedGenerationParameters(), notNullValue());
         assertThat(subject.getParametersNonce(), notNullValue());
       });
 
       it("can decrypt values", () -> {
-        subject.setValue("length10pw");
-        subject.setGenerationParameters(generationParameters);
+        subject.setPasswordAndGenerationParameters("length10pw", generationParameters);
         assertThat(subject.getGenerationParameters().getLength(), equalTo(10));
         assertThat(subject.getGenerationParameters().isExcludeLower(), equalTo(true));
         assertThat(subject.getGenerationParameters().isExcludeUpper(), equalTo(false));
@@ -99,6 +103,7 @@ public class NamedPasswordSecretTest {
         String stringifiedParameters = new ObjectMapper().writeValueAsString(parameters);
 
         subject = new NamedPasswordSecret("foo");
+        subject.setEncryptor(encryptor);
         subject.setEncryptedValue("value".getBytes());
         subject.setNonce("nonce".getBytes());
         subject.setEncryptedGenerationParameters(stringifiedParameters.getBytes());
@@ -107,6 +112,7 @@ public class NamedPasswordSecretTest {
         subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
         NamedPasswordSecret copy = new NamedPasswordSecret();
+        subject.setEncryptor(encryptor);
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("foo"));

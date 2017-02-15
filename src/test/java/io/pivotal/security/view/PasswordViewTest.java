@@ -2,9 +2,8 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.entity.NamedPasswordSecretData;
-import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,12 +26,13 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class PasswordViewTest {
-  @MockBean
-  SecretEncryptionHelper secretEncryptionHelper;
 
   private NamedPasswordSecret entity;
 
   private UUID uuid;
+
+  @MockBean
+  private Encryptor encryptor;
 
   {
     wireAndUnwire(this, false);
@@ -40,11 +40,12 @@ public class PasswordViewTest {
     beforeEach(() -> {
       uuid = UUID.randomUUID();
       entity = new NamedPasswordSecret("foo")
+        .setEncryptor(encryptor)
         .setUuid(uuid);
       entity.setEncryptedValue("fake-encrypted-value".getBytes());
       entity.setNonce("fake-nonce".getBytes());
 
-      when(secretEncryptionHelper.retrieveClearTextValue(any(NamedPasswordSecretData.class))).thenReturn("fake-plaintext-value");
+      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("fake-plaintext-value");
     });
 
     it("can create view from entity", () -> {

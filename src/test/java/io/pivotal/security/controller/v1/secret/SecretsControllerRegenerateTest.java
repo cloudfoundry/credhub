@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
@@ -81,6 +82,9 @@ public class SecretsControllerRegenerateTest {
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
+  @Autowired
+  private Encryptor encryptor;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -104,12 +108,12 @@ public class SecretsControllerRegenerateTest {
     describe("regenerating a password", () -> {
       beforeEach(() -> {
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+        originalSecret.setEncryptor(encryptor);
         originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
-        originalSecret.setValue("original-password");
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
         generationParameters.setExcludeNumber(true);
+        originalSecret.setPasswordAndGenerationParameters("original-password", generationParameters);
         originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
-        originalSecret.setGenerationParameters(generationParameters);
 
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
@@ -143,7 +147,7 @@ public class SecretsControllerRegenerateTest {
 
         NamedPasswordSecret newPassword = argumentCaptor.getValue();
 
-        assertThat(newPassword.getValue(), equalTo("generated-secret"));
+        assertThat(newPassword.getPassword(), equalTo("generated-secret"));
         assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
       });
 
@@ -189,7 +193,8 @@ public class SecretsControllerRegenerateTest {
     describe("when attempting to regenerate a non-regenerated password", () -> {
       beforeEach(() -> {
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
-        originalSecret.setValue("abcde");
+        originalSecret.setEncryptor(encryptor);
+        originalSecret.setPasswordAndGenerationParameters("abcde", null);
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
         response = mockMvc.perform(post("/api/v1/data")

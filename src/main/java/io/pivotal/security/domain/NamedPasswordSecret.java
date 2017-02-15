@@ -1,17 +1,23 @@
 package io.pivotal.security.domain;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.entity.NamedPasswordSecretData;
-import io.pivotal.security.entity.SecretEncryptionHelperProvider;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
+import org.springframework.util.Assert;
+
+import java.io.IOException;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
   private NamedPasswordSecretData delegate;
+  private ObjectMapper objectMapper;
 
   public NamedPasswordSecret(NamedPasswordSecretData delegate) {
     super(delegate);
     this.delegate = delegate;
+    this.objectMapper = new ObjectMapper();
   }
 
   public NamedPasswordSecret(String name) {
@@ -22,12 +28,34 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     this(new NamedPasswordSecretData());
   }
 
-  public String getValue() {
-    return delegate.getValue();
+  public String getPassword() {
+    return encryptor.decrypt(
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedValue(),
+        delegate.getNonce()
+    );
   }
 
-  public NamedPasswordSecret setValue(String value) {
-    delegate.setValue(value);
+  public NamedPasswordSecret setPasswordAndGenerationParameters(String password, PasswordGenerationParameters generationParameters) {
+    if(password == null) {
+      throw new IllegalArgumentException("password cannot be null");
+    }
+
+    try {
+      String generationParameterJson = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
+
+      Encryption encryptedParameters = encryptor.encrypt(generationParameterJson);
+      delegate.setEncryptedGenerationParameters(encryptedParameters.encryptedValue);
+      delegate.setParametersNonce(encryptedParameters.nonce);
+
+      Encryption encryptedPassword = encryptor.encrypt(password);
+      delegate.setEncryptedValue(encryptedPassword.encryptedValue);
+      delegate.setNonce(encryptedPassword.nonce);
+
+      delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     return this;
   }
 
@@ -50,12 +78,25 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
   }
 
   public PasswordGenerationParameters getGenerationParameters() {
-    return SecretEncryptionHelperProvider.getInstance().retrieveGenerationParameters(this);
-  }
+    String password = getPassword();
+    Assert.notNull(password, "Password length generation parameter cannot be restored without an existing password");
 
-  public NamedPasswordSecret setGenerationParameters(PasswordGenerationParameters generationParameters) {
-    SecretEncryptionHelperProvider.getInstance().refreshEncryptedGenerationParameters(this, generationParameters);
-    return this;
+    String parameterJson = encryptor.decrypt(
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedGenerationParameters(),
+        delegate.getParametersNonce()
+    );
+    if (parameterJson == null) {
+      return null;
+    }
+
+    try {
+      PasswordGenerationParameters passwordGenerationParameters = objectMapper.readValue(parameterJson, PasswordGenerationParameters.class);
+      passwordGenerationParameters.setLength(password.length());
+      return passwordGenerationParameters;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

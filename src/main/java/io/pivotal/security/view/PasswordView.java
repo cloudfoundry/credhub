@@ -9,7 +9,7 @@ class PasswordView extends SecretView {
         namedPasswordSecret.getUuid(),
         namedPasswordSecret.getName(),
         namedPasswordSecret.getSecretType(),
-        namedPasswordSecret.getValue()
+        namedPasswordSecret.getPassword()
     );
   }
 }

@@ -10,7 +10,6 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
@@ -20,17 +19,13 @@ import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,39 +54,28 @@ public class SecretsController {
 
   public static final String API_V1_DATA = "/api/v1/data";
 
-  @Autowired
-  SecretDataService secretDataService;
-
-  @Autowired
-  NamedSecretGenerateHandler namedSecretGenerateHandler;
-
-  @Autowired
-  NamedSecretSetHandler namedSecretSetHandler;
-
-  @Autowired
-  JsonContextFactory jsonContextFactory;
-
-  @Autowired
-  ResourceServerTokenServices tokenServices;
-
-  @Autowired
+  private SecretDataService secretDataService;
+  private NamedSecretGenerateHandler namedSecretGenerateHandler;
+  private NamedSecretSetHandler namedSecretSetHandler;
+  private JsonContextFactory jsonContextFactory;
   private MessageSource messageSource;
-
-  @Autowired
-  @Qualifier("currentTimeProvider")
-  CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
-  ConfigurableEnvironment environment;
-
-  @Autowired
-  AuditLogService auditLogService;
-
+  private AuditLogService auditLogService;
   private MessageSourceAccessor messageSourceAccessor;
 
-  @PostConstruct
-  public void init() {
-    messageSourceAccessor = new MessageSourceAccessor(messageSource);
+  public SecretsController(SecretDataService secretDataService,
+                           NamedSecretGenerateHandler namedSecretGenerateHandler,
+                           NamedSecretSetHandler namedSecretSetHandler,
+                           JsonContextFactory jsonContextFactory,
+                           MessageSource messageSource,
+                           AuditLogService auditLogService
+  ) {
+    this.secretDataService = secretDataService;
+    this.namedSecretGenerateHandler = namedSecretGenerateHandler;
+    this.namedSecretSetHandler = namedSecretSetHandler;
+    this.jsonContextFactory = jsonContextFactory;
+    this.messageSource = messageSource;
+    this.auditLogService = auditLogService;
+    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)

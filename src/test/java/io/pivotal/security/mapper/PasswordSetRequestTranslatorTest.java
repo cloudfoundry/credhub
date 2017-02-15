@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.ParameterizedValidationException;
@@ -32,6 +33,9 @@ public class PasswordSetRequestTranslatorTest {
 
   private NamedPasswordSecret entity;
 
+  @Autowired
+  private Encryptor encryptor;
+
   {
     wireAndUnwire(this, false);
 
@@ -39,6 +43,7 @@ public class PasswordSetRequestTranslatorTest {
       beforeEach(() -> {
         subject = new PasswordSetRequestTranslator();
         entity = new NamedPasswordSecret("rick");
+        entity.setEncryptor(encryptor);
       });
 
       it("fills in entity with values from JSON", () -> {
@@ -46,7 +51,7 @@ public class PasswordSetRequestTranslatorTest {
 
         DocumentContext parsed = jsonPath.parse(requestJson);
         subject.populateEntityFromJson(entity, parsed);
-        assertThat(entity.getValue(), equalTo("myValue"));
+        assertThat(entity.getPassword(), equalTo("myValue"));
       });
 
       itThrowsWithMessage("exception when empty value is given", ParameterizedValidationException.class, "error.missing_string_secret_value", () -> {

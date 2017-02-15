@@ -153,7 +153,7 @@ public class EncryptionKeyRotatorTest {
         assertThat(uuids, not(hasItem(secretWithCurrentKey.getUuid())));
 
         NamedPasswordSecret rotatedPassword = (NamedPasswordSecret) secretDataService.findMostRecent(passwordName);
-        assertThat(rotatedPassword.getValue(), equalTo("test-password-plaintext"));
+        assertThat(rotatedPassword.getPassword(), equalTo("test-password-plaintext"));
         assertThat(rotatedPassword.getGenerationParameters(), samePropertyValuesAs(
           new PasswordGenerationParameters()
             .setExcludeNumber(true)

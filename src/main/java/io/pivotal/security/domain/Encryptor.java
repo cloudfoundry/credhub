@@ -14,7 +14,7 @@ public class Encryptor {
   private final RetryingEncryptionService encryptionService;
 
   @Autowired
-  Encryptor(EncryptionKeyCanaryMapper encryptionKeyCanaryMapper, RetryingEncryptionService encryptionService) {
+  public Encryptor(EncryptionKeyCanaryMapper encryptionKeyCanaryMapper, RetryingEncryptionService encryptionService) {
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.encryptionService = encryptionService;
   }
@@ -30,7 +30,7 @@ public class Encryptor {
   }
 
   public String decrypt(UUID keyUuid, byte[] encryptedValue, byte[] nonce) {
-    if(keyUuid == null || encryptedValue == null || nonce == null) {
+    if (keyUuid == null || encryptedValue == null || nonce == null) {
       return null;
     }
     try {

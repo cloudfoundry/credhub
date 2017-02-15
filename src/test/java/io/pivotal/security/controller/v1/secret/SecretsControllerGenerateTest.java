@@ -5,6 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
@@ -82,6 +83,9 @@ public class SecretsControllerGenerateTest {
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
+  @Autowired
+  private Encryptor encryptor;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -89,9 +93,9 @@ public class SecretsControllerGenerateTest {
   private final Consumer<Long> fakeTimeSetter;
 
   private final String secretName = "my-namespace/subTree/secret-name";
-
   private ResultActions response;
   private UUID uuid;
+
   private final String fakePassword = "generated-secret";
 
   {
@@ -175,7 +179,7 @@ public class SecretsControllerGenerateTest {
           NamedPasswordSecret newPassword = argumentCaptor.getValue();
 
           assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
-          assertThat(newPassword.getValue(), equalTo(fakePassword));
+          assertThat(newPassword.getPassword(), equalTo(fakePassword));
         });
 
         it("persists an audit entry", () -> {
@@ -190,8 +194,9 @@ public class SecretsControllerGenerateTest {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
           final NamedPasswordSecret expectedSecret = new NamedPasswordSecret(secretName);
+          expectedSecret.setEncryptor(encryptor);
           expectedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
-          expectedSecret.setValue(fakePassword);
+          expectedSecret.setPasswordAndGenerationParameters(fakePassword, null);
           doReturn(expectedSecret
               .setUuid(uuid)
               .setVersionCreatedAt(frozenTime.minusSeconds(1)))
@@ -228,7 +233,7 @@ public class SecretsControllerGenerateTest {
 
           it("asks the data service to persist the secret", () -> {
             final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretDataService.findMostRecent(secretName);
-            assertThat(namedSecret.getValue(), equalTo(fakePassword));
+            assertThat(namedSecret.getPassword(), equalTo(fakePassword));
           });
 
           it("persists an audit entry", () -> {
