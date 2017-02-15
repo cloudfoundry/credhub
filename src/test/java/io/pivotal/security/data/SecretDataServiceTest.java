@@ -99,25 +99,25 @@ public class SecretDataServiceTest {
 
     describe("#save", () -> {
       it("should save a secret", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
-        secret.setEncryptionKeyUuid(activeCanaryUuid);
-        secret.setEncryptedValue("secret-password".getBytes());
+          NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
+          secret.setEncryptionKeyUuid(activeCanaryUuid);
+          secret.setEncryptedValue("secret-password".getBytes());
         NamedSecret savedSecret = subject.save(secret);
 
-        assertNotNull(savedSecret);
+          assertNotNull(savedSecret);
 
-        List<NamedPasswordSecret> passwordSecrets = getSecretsFromDb();
+          List<NamedPasswordSecret> passwordSecrets = getSecretsFromDb();
 
-        assertThat(passwordSecrets.size(), equalTo(1));
-        NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
-        assertThat(passwordSecret.getName(), equalTo("/my-secret"));
-        assertThat(passwordSecret.getEncryptedValue(), equalTo("secret-password".getBytes()));
+          assertThat(passwordSecrets.size(), equalTo(1));
+          NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
+          assertThat(passwordSecret.getName(), equalTo("/my-secret"));
+          assertThat(passwordSecret.getEncryptedValue(), equalTo("secret-password".getBytes()));
 
-        // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
-        // we need to use Hibernate to check the UUID :(
-        NamedPasswordSecretData foundPasswordSecret = (NamedPasswordSecretData) (secretRepository.findAll().get(0));
-        assertThat(foundPasswordSecret.getUuid(), equalTo(secret.getUuid()));
-      });
+          // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
+          // we need to use Hibernate to check the UUID :(
+          NamedPasswordSecretData foundPasswordSecret = (NamedPasswordSecretData) (secretRepository.findAll().get(0));
+          assertThat(foundPasswordSecret.getUuid(), equalTo(secret.getUuid()));
+        });
 
       it("should update a secret", () -> {
         NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret-2");
@@ -208,7 +208,7 @@ public class SecretDataServiceTest {
       });
 
       it("should cascade correctly", () -> {
-        NamedPasswordSecret secret = new NamedPasswordSecret("test-password");
+        NamedPasswordSecret secret = new NamedPasswordSecret("test-password-for-delete");
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         subject.save(secret);
         NamedValueSecret namedValueSecret = new NamedValueSecret("test-value");

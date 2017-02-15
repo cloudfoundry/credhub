@@ -108,6 +108,7 @@ public class SecretsControllerRegenerateTest {
         originalSecret.setValue("original-password");
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
         generationParameters.setExcludeNumber(true);
+        originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
         originalSecret.setGenerationParameters(generationParameters);
 
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
@@ -160,6 +161,8 @@ public class SecretsControllerRegenerateTest {
 
     describe("regenerate request for a non-existent secret", () -> {
       beforeEach(() -> {
+        doReturn(null).when(secretDataService).findMostRecent("my-password");
+
         response = mockMvc.perform(post("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)

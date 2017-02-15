@@ -82,7 +82,7 @@ public class SecretsControllerSetTest {
 
   private final Consumer<Long> fakeTimeSetter;
 
-  private final String secretName = "my-namespace/subTree/secret-name";
+  private final String secretName = "my-namespace/secretForSetTest/secret-name";
 
   private ResultActions response;
 

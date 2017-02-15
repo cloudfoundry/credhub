@@ -194,8 +194,8 @@ public class SecretsControllerGenerateTest {
           expectedSecret.setValue(fakePassword);
           doReturn(expectedSecret
               .setUuid(uuid)
-              .setVersionCreatedAt(frozenTime))
-              .when(secretDataService).findMostRecent(secretName);
+              .setVersionCreatedAt(frozenTime.minusSeconds(1)))
+            .when(secretDataService).findMostRecent(secretName);
           resetAuditLogMock();
         });
 
@@ -249,13 +249,13 @@ public class SecretsControllerGenerateTest {
             response = mockMvc.perform(post);
           });
 
-          it("should return the expected response", () -> {
+          it("should return the existing values", () -> {
             response.andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePassword))
                 .andExpect(jsonPath("$.id").value(uuid.toString()))
-                .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
+                .andExpect(jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
           });
 
           it("validates parameters", () -> {
@@ -279,7 +279,7 @@ public class SecretsControllerGenerateTest {
         it("returns 400 when type is not present", () -> {
           mockMvc.perform(post("/api/v1/data")
               .accept(APPLICATION_JSON)
-              .content("{\"name\":\"" + secretName+ "\"}")
+              .content("{\"name\":\"some-new-secret-name\"}")
           )
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.error").value("The request does not include a valid type. Please validate your input and retry your request."));
