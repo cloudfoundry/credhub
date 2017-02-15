@@ -2,6 +2,7 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.SecretEncryptionHelperProvider;
 import io.pivotal.security.view.SecretKind;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
@@ -49,11 +50,11 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
   }
 
   public PasswordGenerationParameters getGenerationParameters() {
-    return delegate.getGenerationParameters();
+    return SecretEncryptionHelperProvider.getInstance().retrieveGenerationParameters(this);
   }
 
   public NamedPasswordSecret setGenerationParameters(PasswordGenerationParameters generationParameters) {
-    delegate.setGenerationParameters(generationParameters);
+    SecretEncryptionHelperProvider.getInstance().refreshEncryptedGenerationParameters(this, generationParameters);
     return this;
   }
 

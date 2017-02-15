@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.view.SecretKind;
 
 import javax.persistence.Column;
@@ -58,15 +57,6 @@ public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecret
 
   public NamedPasswordSecretData setParametersNonce(byte[] parametersNonce) {
     this.parametersNonce = parametersNonce;
-    return this;
-  }
-
-  public PasswordGenerationParameters getGenerationParameters() {
-    return SecretEncryptionHelperProvider.getInstance().retrieveGenerationParameters(this);
-  }
-
-  public NamedPasswordSecretData setGenerationParameters(PasswordGenerationParameters generationParameters) {
-    SecretEncryptionHelperProvider.getInstance().refreshEncryptedGenerationParameters(this, generationParameters);
     return this;
   }
 

@@ -2,6 +2,7 @@ package io.pivotal.security.entity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
@@ -51,7 +52,7 @@ public class SecretEncryptionHelper {
     return decrypt(encryptedValueContainer);
   }
 
-  public void refreshEncryptedGenerationParameters(NamedPasswordSecretData namedPasswordSecret, PasswordGenerationParameters generationParameters) {
+  public void refreshEncryptedGenerationParameters(NamedPasswordSecret namedPasswordSecret, PasswordGenerationParameters generationParameters) {
     try {
       String clearTextValue = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
       refreshEncryptedValue(new ParametersAdapter(namedPasswordSecret), clearTextValue);
@@ -60,7 +61,7 @@ public class SecretEncryptionHelper {
     }
   }
 
-  public PasswordGenerationParameters retrieveGenerationParameters(NamedPasswordSecretData namedPasswordSecret) {
+  public PasswordGenerationParameters retrieveGenerationParameters(NamedPasswordSecret namedPasswordSecret) {
     String password = retrieveClearTextValue(namedPasswordSecret);
     Assert.notNull(password, "Password length generation parameter cannot be restored without an existing password");
     String json = retrieveClearTextValue(new ParametersAdapter(namedPasswordSecret));
@@ -76,8 +77,8 @@ public class SecretEncryptionHelper {
 
   public void rotate(EncryptedValueContainer secret) {
     if (usingOldEncryptionKey(secret)) {
-      if (secret instanceof NamedPasswordSecretData) {
-        rotatePasswordParameters((NamedPasswordSecretData) secret);
+      if (secret instanceof NamedPasswordSecret) {
+        rotatePasswordParameters((NamedPasswordSecret) secret);
       }
 
       if (secret.getEncryptedValue() != null) {
@@ -97,7 +98,7 @@ public class SecretEncryptionHelper {
     return !activeEncryptionKeyUuid.equals(secret.getEncryptionKeyUuid());
   }
 
-  private void rotatePasswordParameters(NamedPasswordSecretData password) {
+  private void rotatePasswordParameters(NamedPasswordSecret password) {
     refreshEncryptedGenerationParameters(password, retrieveGenerationParameters(password));
   }
 
@@ -116,9 +117,9 @@ public class SecretEncryptionHelper {
   }
 
   private static class ParametersAdapter implements EncryptedValueContainer {
-    private final NamedPasswordSecretData namedPasswordSecret;
+    private final NamedPasswordSecret namedPasswordSecret;
 
-    ParametersAdapter(NamedPasswordSecretData namedPasswordSecret) {
+    ParametersAdapter(NamedPasswordSecret namedPasswordSecret) {
       this.namedPasswordSecret = namedPasswordSecret;
     }
 
