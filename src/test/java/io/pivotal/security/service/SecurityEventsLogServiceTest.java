@@ -82,7 +82,7 @@ public class SecurityEventsLogServiceTest {
         assertThat(version.length(), greaterThan(0));
 
         verify(securityEventsLoggerMock).info(
-            "CEF:0|pivotal|credhub|" +
+            "CEF:0|cloud_foundry|credhub|" +
             version + "|" +
             "GET /api/some-path|" +
             "GET /api/some-path|0|rt=" +
