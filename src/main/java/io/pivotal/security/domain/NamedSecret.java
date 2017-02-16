@@ -82,8 +82,8 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
     delegate.copyInto(copy.delegate);
   }
 
-  public NamedSecretData saveAndFlush(SecretRepository secretRepository) {
-    return secretRepository.saveAndFlush(delegate);
+  public NamedSecretData toDataEntity() {
+    return this.delegate;
   }
 
   public Z setEncryptor(Encryptor encryptor) {

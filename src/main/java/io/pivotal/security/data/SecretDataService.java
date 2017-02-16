@@ -84,7 +84,7 @@ public class SecretDataService {
       namedSecret.setSecretName(createOrFindSecretName(secretName.getName()));
     }
 
-    return (Z) wrap(namedSecret.saveAndFlush(secretRepository));
+    return (Z) wrap(secretRepository.saveAndFlush(namedSecret.toDataEntity()));
   }
 
   public List<String> findAllPaths() {
