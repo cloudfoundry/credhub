@@ -75,4 +75,9 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return delegate.getSecretType();
   }
 
+  public void rotate() {
+    String decryptedPrivateKey = this.getPrivateKey();
+    this.setPrivateKey(decryptedPrivateKey);
+  }
+
 }

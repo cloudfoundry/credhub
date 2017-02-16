@@ -16,6 +16,7 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
 
   public abstract SecretKind getKind();
   public abstract String getSecretType();
+  public abstract void rotate();
 
   public NamedSecret(NamedSecretData delegate) {
     this.delegate = delegate;
@@ -77,6 +78,7 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
   }
 
   public void copyInto(Z copy) {
+    copy.encryptor = this.encryptor;
     delegate.copyInto(copy.delegate);
   }
 

@@ -2,10 +2,8 @@ package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -24,8 +22,6 @@ import static org.hamcrest.Matchers.not;
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedSshSecretTest {
-  @Autowired
-  SecretEncryptionHelper secretEncryptionHelper;
 
   private NamedSshSecret subject;
 

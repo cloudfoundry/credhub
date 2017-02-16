@@ -50,4 +50,9 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
   public SecretKind getKind() {
     return delegate.getKind();
   }
+
+  public void rotate(){
+    String decryptedValue = this.getValue();
+    this.setValue(decryptedValue);
+  }
 }

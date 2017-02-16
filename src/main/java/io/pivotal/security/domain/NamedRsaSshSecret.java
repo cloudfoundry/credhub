@@ -41,5 +41,8 @@ public abstract class NamedRsaSshSecret extends NamedSecret<NamedRsaSshSecret> {
     return (T) this;
   }
 
-
+  public void rotate(){
+    String decryptedValue = this.getPrivateKey();
+    this.setPrivateKey(decryptedValue);
+  }
 }

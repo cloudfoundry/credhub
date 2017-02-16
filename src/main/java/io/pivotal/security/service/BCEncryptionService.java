@@ -24,7 +24,7 @@ public class BCEncryptionService extends EncryptionService {
   private final BouncyCastleProvider provider;
 
   @Autowired
-  BCEncryptionService(BouncyCastleProvider provider) throws Exception {
+  public BCEncryptionService(BouncyCastleProvider provider) throws Exception {
     this.provider = provider;
     this.secureRandom = SecureRandom.getInstance("SHA1PRNG");
   }

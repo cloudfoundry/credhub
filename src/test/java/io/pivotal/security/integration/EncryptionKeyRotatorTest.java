@@ -6,21 +6,21 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import io.pivotal.security.entity.SecretEncryptionHelper;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.EncryptionKeyRotator;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -42,23 +42,18 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsNot.not;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @RunWith(Spectrum.class)
 public class EncryptionKeyRotatorTest {
-  private NamedSecret secretWithCurrentKey;
+  private NamedCertificateSecret secretWithCurrentKey;
   private NamedSecret secretWithOldKey;
-  private NamedSecret secretWithUnknownKey;
-
+  private NamedCertificateSecret secretWithUnknownKey;
+  private NamedPasswordSecret password;
   @SpyBean
   SecretDataService secretDataService;
-
-  @SpyBean
-  SecretEncryptionHelper encryptionHelper;
 
   @SpyBean
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -71,6 +66,10 @@ public class EncryptionKeyRotatorTest {
 
   @Autowired
   EncryptionService encryptionService;
+
+  @Autowired
+  Encryptor encryptor;
+
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
 
@@ -81,49 +80,57 @@ public class EncryptionKeyRotatorTest {
 
     describe("when data exists that is encrypted with an unknown key", () -> {
       beforeEach(() -> {
-        secretWithCurrentKey = new NamedCertificateSecret("cert");
-        encryptionHelper.refreshEncryptedValue(secretWithCurrentKey, "cert-private-key");
-        secretDataService.save(secretWithCurrentKey);
+          secretWithCurrentKey = new NamedCertificateSecret("cert");
+          secretWithCurrentKey
+                  .setEncryptor(encryptor)
+                  .setCa("my-ca")
+                  .setCertificate("my-cert")
+                  .setPrivateKey("cert-private-key");
 
-        Key oldKey = new SecretKeySpec(parseHexBinary("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0, 16, "AES");
-        oldCanary = new EncryptionKeyCanary();
-        final Encryption canaryEncryption = encryptionService.encrypt(oldKey, CANARY_VALUE);
-        oldCanary.setEncryptedValue(canaryEncryption.encryptedValue);
-        oldCanary.setNonce(canaryEncryption.nonce);
-        oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
-        when(encryptionKeyCanaryMapper.getKeyForUuid(oldCanary.getUuid())).thenReturn(oldKey);
-        when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys()).thenReturn(singletonList(oldCanary.getUuid()));
+          secretDataService.save(secretWithCurrentKey);
 
-        secretWithOldKey = new NamedCertificateSecret("cert");
-        final Encryption encryption = encryptionService.encrypt(oldKey, "old-certificate-private-key");
-        secretWithOldKey.setEncryptedValue(encryption.encryptedValue);
-        secretWithOldKey.setNonce(encryption.nonce);
-        secretWithOldKey.setEncryptionKeyUuid(oldCanary.getUuid());
-        secretDataService.save(secretWithOldKey);
+          Key oldKey = new SecretKeySpec(parseHexBinary("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0, 16, "AES");
+          oldCanary = new EncryptionKeyCanary();
+          final Encryption canaryEncryption = encryptionService.encrypt(oldKey, CANARY_VALUE);
+          oldCanary.setEncryptedValue(canaryEncryption.encryptedValue);
+          oldCanary.setNonce(canaryEncryption.nonce);
+          oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
+          when(encryptionKeyCanaryMapper.getKeyForUuid(oldCanary.getUuid())).thenReturn(oldKey);
+          when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys()).thenReturn(singletonList(oldCanary.getUuid()));
 
-        unknownCanary = new EncryptionKeyCanary();
-        unknownCanary.setEncryptedValue("bad-encrypted-value".getBytes());
-        unknownCanary.setNonce("bad-nonce".getBytes());
-        unknownCanary = encryptionKeyCanaryDataService.save(unknownCanary);
+          secretWithOldKey = new NamedCertificateSecret("cert");
+          final Encryption encryption = encryptionService.encrypt(oldKey, "old-certificate-private-key");
+          secretWithOldKey.setEncryptedValue(encryption.encryptedValue);
+          secretWithOldKey.setNonce(encryption.nonce);
+          secretWithOldKey.setEncryptionKeyUuid(oldCanary.getUuid());
+          secretDataService.save(secretWithOldKey);
 
-        secretWithUnknownKey = new NamedCertificateSecret("cert");
-        encryptionHelper.refreshEncryptedValue(secretWithUnknownKey, "cert-private-key");
-        secretWithUnknownKey.setEncryptionKeyUuid(unknownCanary.getUuid());
-        secretDataService.save(secretWithUnknownKey);
+          unknownCanary = new EncryptionKeyCanary();
+          unknownCanary.setEncryptedValue("bad-encrypted-value".getBytes());
+          unknownCanary.setNonce("bad-nonce".getBytes());
+          unknownCanary = encryptionKeyCanaryDataService.save(unknownCanary);
 
-        passwordName = "/test-password";
-        NamedPasswordSecret password = new NamedPasswordSecret(passwordName);
-        final Encryption secretEncryption = encryptionService.encrypt(oldKey, "test-password-plaintext");
-        password.setEncryptedValue(secretEncryption.encryptedValue);
-        password.setNonce(secretEncryption.nonce);
-        PasswordGenerationParameters parameters = new PasswordGenerationParameters();
-        parameters.setExcludeNumber(true);
-        final Encryption parameterEncryption = encryptionService.encrypt(oldKey, new ObjectMapper().writeValueAsString(parameters));
-        password.setEncryptedGenerationParameters(parameterEncryption.encryptedValue);
-        password.setParametersNonce(parameterEncryption.nonce);
-        password.setEncryptionKeyUuid(oldCanary.getUuid());
+          secretWithUnknownKey = new NamedCertificateSecret("cert");
+          secretWithUnknownKey
+                  .setEncryptor(encryptor)
+                  .setPrivateKey("cert-private-key");
+          secretWithUnknownKey.setEncryptionKeyUuid(unknownCanary.getUuid());
+          secretDataService.save(secretWithUnknownKey);
 
-        secretDataService.save(password);
+          passwordName = "/test-password";
+          password = new NamedPasswordSecret(passwordName);
+          final Encryption secretEncryption = encryptionService.encrypt(oldKey, "test-password-plaintext");
+          password.setEncryptedValue(secretEncryption.encryptedValue);
+          password.setNonce(secretEncryption.nonce);
+          PasswordGenerationParameters parameters = new PasswordGenerationParameters();
+          parameters.setExcludeNumber(true);
+          final Encryption parameterEncryption = encryptionService.encrypt(oldKey, new ObjectMapper().writeValueAsString(parameters));
+          password.setEncryptedGenerationParameters(parameterEncryption.encryptedValue);
+          password.setParametersNonce(parameterEncryption.nonce);
+          password.setEncryptionKeyUuid(oldCanary.getUuid());
+
+          secretDataService.save(password);
+
       });
 
       afterEach(() -> {
@@ -133,16 +140,25 @@ public class EncryptionKeyRotatorTest {
       });
 
       it("should rotate data that it can decrypt (and it shouldn't loop forever!)", () -> {
+        Slice<NamedSecret> beforeRotation = secretDataService.findEncryptedWithAvailableInactiveKey();
+        int numberToRotate = beforeRotation.getNumberOfElements();
+
         encryptionKeyRotator.rotate();
 
-        ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
-        verify(encryptionHelper, times(2)).rotate(argumentCaptor.capture());
-        List<NamedSecret> namedSecrets = argumentCaptor.getAllValues();
-        List<UUID> uuids = namedSecrets.stream().map(secret -> secret.getUuid()).collect(Collectors.toList());
+        Slice<NamedSecret> afterRotation = secretDataService.findEncryptedWithAvailableInactiveKey();
+        int numberToRotateWhenDone = afterRotation.getNumberOfElements();
 
-        // Get's updated to use current key:
+        assertThat(numberToRotate, equalTo(2));
+        assertThat(numberToRotateWhenDone, equalTo(0));
+
+        List<UUID> uuids = beforeRotation.getContent().stream().map(secret -> secret.getUuid()).collect(Collectors.toList());
+
+        // Gets updated to use current key:
         assertThat(secretDataService.findByUuid(secretWithOldKey.getUuid()).getEncryptionKeyUuid(), equalTo(encryptionKeyCanaryMapper.getActiveUuid()));
         assertThat(uuids, hasItem(secretWithOldKey.getUuid()));
+
+        assertThat(secretDataService.findByUuid(password.getUuid()).getEncryptionKeyUuid(), equalTo(encryptionKeyCanaryMapper.getActiveUuid()));
+        assertThat(uuids, hasItem(password.getUuid()));
 
         // Unchanged because we don't have the key:
         assertThat(secretDataService.findByUuid(secretWithUnknownKey.getUuid()).getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));

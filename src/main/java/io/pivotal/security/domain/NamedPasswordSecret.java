@@ -108,4 +108,10 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
   public SecretKind getKind() {
     return delegate.getKind();
   }
+
+  public void rotate(){
+    String decryptedPassword = this.getPassword();
+    PasswordGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();
+    this.setPasswordAndGenerationParameters(decryptedPassword, decryptedGenerationParameters);
+  }
 }

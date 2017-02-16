@@ -2,7 +2,6 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.entity.SecretEncryptionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Slice;
@@ -10,15 +9,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EncryptionKeyRotator {
-  private final SecretEncryptionHelper secretEncryptionHelper;
   private final SecretDataService secretDataService;
   private final Logger logger;
 
-  EncryptionKeyRotator(
-      SecretEncryptionHelper secretEncryptionHelper,
-      SecretDataService secretDataService
-  ) {
-    this.secretEncryptionHelper = secretEncryptionHelper;
+  EncryptionKeyRotator(SecretDataService secretDataService) {
     this.secretDataService = secretDataService;
     this.logger = LogManager.getLogger(this.getClass());
   }
@@ -33,7 +27,7 @@ public class EncryptionKeyRotator {
     Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findEncryptedWithAvailableInactiveKey();
     while (secretsEncryptedByOldKey.hasContent()) {
       for (NamedSecret secret : secretsEncryptedByOldKey.getContent()) {
-        secretEncryptionHelper.rotate(secret);
+        secret.rotate();
         secretDataService.save(secret);
         rotatedRecordCount++;
       }
