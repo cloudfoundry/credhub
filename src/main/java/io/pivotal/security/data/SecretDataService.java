@@ -189,15 +189,15 @@ public class SecretDataService {
   private NamedSecret wrap(NamedSecretData dao) {
     NamedSecret returnValue;
     if (dao instanceof NamedCertificateSecretData) {
-      returnValue =  new NamedCertificateSecret((NamedCertificateSecretData) dao);
+      returnValue = new NamedCertificateSecret((NamedCertificateSecretData) dao);
     } else if (dao instanceof NamedPasswordSecretData) {
-      returnValue =  new NamedPasswordSecret((NamedPasswordSecretData) dao);
+      returnValue = new NamedPasswordSecret((NamedPasswordSecretData) dao);
     } else if (dao instanceof NamedRsaSecretData) {
-      returnValue =  new NamedRsaSecret((NamedRsaSecretData) dao);
+      returnValue = new NamedRsaSecret((NamedRsaSecretData) dao);
     } else if (dao instanceof NamedSshSecretData) {
-      returnValue =  new NamedSshSecret((NamedSshSecretData) dao);
+      returnValue = new NamedSshSecret((NamedSshSecretData) dao);
     } else if (dao instanceof NamedValueSecretData) {
-      returnValue =  new NamedValueSecret((NamedValueSecretData) dao);
+      returnValue = new NamedValueSecret((NamedValueSecretData) dao);
     } else {
       throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
     }
