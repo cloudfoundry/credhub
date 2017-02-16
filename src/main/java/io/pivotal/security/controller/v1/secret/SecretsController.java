@@ -21,10 +21,12 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -44,6 +47,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.ByteStreams.toByteArray;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -80,12 +84,12 @@ public class SecretsController {
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   public ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return auditedStoreSecret(requestBody, request, authentication, namedSecretGenerateHandler);
+    return retryingAuditedStoreSecret(requestBody, request, authentication, namedSecretGenerateHandler);
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   public ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return auditedStoreSecret(requestBody, request, authentication, namedSecretSetHandler);
+    return retryingAuditedStoreSecret(requestBody, request, authentication, namedSecretSetHandler);
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
@@ -223,6 +227,17 @@ public class SecretsController {
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
     });
+  }
+
+  private ResponseEntity retryingAuditedStoreSecret(InputStream requestBody, HttpServletRequest request, Authentication authentication, SecretKindMappingFactory requestHandler) throws Exception {
+    final ByteArrayInputStream rereadableRequestBody = new ByteArrayInputStream(toByteArray(requestBody));
+    try {
+      return auditedStoreSecret(rereadableRequestBody, request, authentication, requestHandler);
+    } catch (JpaSystemException | DataIntegrityViolationException e) {
+      System.out.println("Exception in controller " + e.getMessage() + ", exception class name: " + e.getClass().getCanonicalName());
+      rereadableRequestBody.reset();
+      return auditedStoreSecret(rereadableRequestBody, request, authentication, requestHandler);
+    }
   }
 
   private ResponseEntity<?> auditedStoreSecret(InputStream requestBody,
