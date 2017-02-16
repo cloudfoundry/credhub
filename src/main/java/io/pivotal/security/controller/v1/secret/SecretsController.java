@@ -234,7 +234,7 @@ public class SecretsController {
     try {
       return auditedStoreSecret(rereadableRequestBody, request, authentication, requestHandler);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
-      System.out.println("Exception in controller " + e.getMessage() + ", exception class name: " + e.getClass().getCanonicalName());
+      System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
       rereadableRequestBody.reset();
       return auditedStoreSecret(rereadableRequestBody, request, authentication, requestHandler);
     }

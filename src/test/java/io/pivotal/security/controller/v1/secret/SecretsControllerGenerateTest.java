@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -44,10 +45,12 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -277,6 +280,43 @@ public class SecretsControllerGenerateTest {
 
             assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_ACCESS));
           });
+        });
+      });
+
+      describe("when another thread wins a race to write a new value", () -> {
+        beforeEach(() -> {
+          final NamedPasswordSecret expectedSecret = new NamedPasswordSecret(secretName);
+          expectedSecret.setEncryptor(encryptor);
+          expectedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+          expectedSecret.setPasswordAndGenerationParameters(fakePassword, null);
+
+          Mockito.reset(secretDataService);
+
+          doReturn(null)
+              .doReturn(expectedSecret
+                  .setUuid(uuid)
+                  .setVersionCreatedAt(frozenTime.minusSeconds(1))
+              ).when(secretDataService).findMostRecent(anyString());
+
+          doThrow(new DataIntegrityViolationException("we already have one of those"))
+              .when(secretDataService).save(any(NamedSecret.class));
+
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+          response = mockMvc.perform(post);
+        });
+
+        it("retries and finds the value written by the other thread", () -> {
+          verify(secretDataService).save(any(NamedSecret.class));
+          response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("password"))
+              .andExpect(jsonPath("$.value").value(fakePassword))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
         });
       });
 
