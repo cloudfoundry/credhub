@@ -35,7 +35,7 @@ public class CharacterRuleProviderTest {
     PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
-    assertThat(characterRules, iterableWithSize(4));
+    assertThat(characterRules, iterableWithSize(3));
   }
 
   @Test
@@ -44,14 +44,14 @@ public class CharacterRuleProviderTest {
     secretParameters.setExcludeUpper(true);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
-    assertThat(characterRules, iterableWithSize(3));
+    assertThat(characterRules, iterableWithSize(2));
     assertThat(characterRules, containsInAnyOrder(
         hasCharacters("abc"),
-        hasCharacters("123"),
-        hasCharacters("#$%")
+        hasCharacters("123")
     ));
-    assertThat(characterRules, not(hasItem(
-        hasCharacters("ABC")
+    assertThat(characterRules, not(containsInAnyOrder(
+        hasCharacters("ABC"),
+        hasCharacters("#$%")
     )));
   }
 
@@ -61,21 +61,21 @@ public class CharacterRuleProviderTest {
     secretParameters.setExcludeLower(true);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
-    assertThat(characterRules, iterableWithSize(3));
+    assertThat(characterRules, iterableWithSize(2));
     assertThat(characterRules, containsInAnyOrder(
         hasCharacters("ABC"),
-        hasCharacters("123"),
-        hasCharacters("#$%")
+        hasCharacters("123")
     ));
-    assertThat(characterRules, not(hasItem(
-        hasCharacters("abc")
+    assertThat(characterRules, not(containsInAnyOrder(
+        hasCharacters("abc"),
+        hasCharacters("#$%")
     )));
   }
 
   @Test
   public void getCharacterRulesWithoutSpecial() {
     PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
-    secretParameters.setExcludeSpecial(true);
+    secretParameters.setIncludeSpecial(false);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
     assertThat(characterRules, iterableWithSize(3));
@@ -87,6 +87,21 @@ public class CharacterRuleProviderTest {
     assertThat(characterRules, not(hasItem(
         hasCharacters("#$%")
     )));
+  }
+
+  @Test
+  public void getCharacterRulesWithAllIncluded() {
+    PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+    secretParameters.setIncludeSpecial(true);
+
+    List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
+    assertThat(characterRules, iterableWithSize(4));
+    assertThat(characterRules, containsInAnyOrder(
+        hasCharacters("ABC"),
+        hasCharacters("abc"),
+        hasCharacters("123"),
+        hasCharacters("#$%")
+    ));
   }
 
   @Test
@@ -95,14 +110,14 @@ public class CharacterRuleProviderTest {
     secretParameters.setExcludeNumber(true);
 
     List<CharacterRule> characterRules = subject.getCharacterRules(secretParameters);
-    assertThat(characterRules, iterableWithSize(3));
+    assertThat(characterRules, iterableWithSize(2));
     assertThat(characterRules, containsInAnyOrder(
         hasCharacters("ABC"),
-        hasCharacters("abc"),
-        hasCharacters("#$%")
+        hasCharacters("abc")
     ));
-    assertThat(characterRules, not(hasItem(
-        hasCharacters("123")
+    assertThat(characterRules, not(containsInAnyOrder(
+        hasCharacters("123"),
+        hasCharacters("#$%")
     )));
   }
 
@@ -148,7 +163,7 @@ public class CharacterRuleProviderTest {
   @Test
   public void getCharacterRulesWithoutAny() {
     PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
-    secretParameters.setExcludeSpecial(true);
+    secretParameters.setIncludeSpecial(false);
     secretParameters.setExcludeNumber(true);
     secretParameters.setExcludeUpper(true);
     secretParameters.setExcludeLower(true);

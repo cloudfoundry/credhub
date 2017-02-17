@@ -18,11 +18,11 @@ public class PasswordGenerationParameters implements RequestParameters {
   @JsonProperty(value = "exclude_number", index = 1)
   private boolean excludeNumber;
 
-  @JsonProperty(value = "exclude_special", index = 2)
-  private boolean excludeSpecial;
-
-  @JsonProperty(value = "exclude_upper", index = 3)
+  @JsonProperty(value = "exclude_upper", index = 2)
   private boolean excludeUpper;
+
+  @JsonProperty(value = "include_special", index = 3)
+  private boolean includeSpecial;
 
   @JsonProperty(value = "only_hex", index = 4)
   private boolean onlyHex;
@@ -36,12 +36,12 @@ public class PasswordGenerationParameters implements RequestParameters {
     return this;
   }
 
-  public boolean isExcludeSpecial() {
-    return excludeSpecial;
+  public boolean isIncludeSpecial() {
+    return includeSpecial;
   }
 
-  public PasswordGenerationParameters setExcludeSpecial(boolean excludeSpecial) {
-    this.excludeSpecial = excludeSpecial;
+  public PasswordGenerationParameters setIncludeSpecial(boolean includeSpecial) {
+    this.includeSpecial = includeSpecial;
     return this;
   }
 
@@ -84,7 +84,7 @@ public class PasswordGenerationParameters implements RequestParameters {
 
   @JsonIgnore
   public boolean isValid() {
-    return !(excludeSpecial
+    return !(!includeSpecial
         && excludeNumber
         && excludeUpper
         && excludeLower

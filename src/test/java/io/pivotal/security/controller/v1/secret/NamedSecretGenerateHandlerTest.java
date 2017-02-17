@@ -111,7 +111,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
                 "\"exclude_lower\":true," +
                 "\"exclude_upper\":false," +
                 "\"exclude_number\":false," +
-                "\"exclude_special\":false}" +
+                "\"include_special\":true}" +
                 "}"));
           }
       );

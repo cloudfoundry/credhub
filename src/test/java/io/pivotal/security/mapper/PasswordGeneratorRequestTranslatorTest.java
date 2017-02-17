@@ -70,7 +70,7 @@ public class PasswordGeneratorRequestTranslatorTest {
           "\"type\":\"password\"," +
           "\"parameters\": {" +
           "\"only_hex\": false," +
-          "\"exclude_special\": true," +
+          "\"include_special\": false," +
           "\"exclude_number\": true," +
           "\"exclude_upper\": true," +
           "\"exclude_lower\": true," +
@@ -157,7 +157,7 @@ public class PasswordGeneratorRequestTranslatorTest {
             "\"exclude_lower\":true" +
             "\"exclude_upper\":true" +
             "\"exclude_number\":true" +
-            "\"exclude_special\":true" +
+            "\"include_special\":false" +
             "\"only_hex\":true" +
             "}" +
             "}";

@@ -45,8 +45,8 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
           .ifPresent(secretParameters::setExcludeUpper);
       Optional.ofNullable(parsed.read("$.parameters.exclude_number", Boolean.class))
           .ifPresent(secretParameters::setExcludeNumber);
-      Optional.ofNullable(parsed.read("$.parameters.exclude_special", Boolean.class))
-          .ifPresent(secretParameters::setExcludeSpecial);
+      Optional.ofNullable(parsed.read("$.parameters.include_special", Boolean.class))
+          .ifPresent(secretParameters::setIncludeSpecial);
       Optional.ofNullable(parsed.read("$.parameters.only_hex", Boolean.class))
           .ifPresent(secretParameters::setOnlyHex);
 
@@ -76,7 +76,7 @@ public class PasswordGeneratorRequestTranslator implements RequestTranslator<Nam
         "$['parameters']['exclude_lower']",
         "$['parameters']['exclude_upper']",
         "$['parameters']['exclude_number']",
-        "$['parameters']['exclude_special']",
+        "$['parameters']['include_special']",
         "$['parameters']['only_hex']"
       );
   }

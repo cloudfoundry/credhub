@@ -49,7 +49,7 @@ public class CharacterRuleProvider {
       characterRules.add(new CharacterRule(EnglishCharacterData.Digit));
       characterRules.add(new CharacterRule(hexCharacters));
     } else {
-      if (!parameters.isExcludeSpecial()) {
+      if (parameters.isIncludeSpecial()) {
         characterRules.add(new CharacterRule(specialCharacters));
       }
 
