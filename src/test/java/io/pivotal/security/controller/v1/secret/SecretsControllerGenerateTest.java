@@ -327,7 +327,7 @@ public class SecretsControllerGenerateTest {
               .content("{\"name\":\"some-new-secret-name\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value("The request does not include a valid type. Please validate your input and retry your request."));
+              .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
         });
 
         it("returns 400 when name is empty", () -> {
