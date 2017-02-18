@@ -15,16 +15,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.when;
 
 
@@ -35,9 +34,6 @@ public class PassayStringSecretGeneratorTest {
 
   @Autowired
   private PassayStringSecretGenerator subject;
-
-  @MockBean
-  private CharacterRuleProvider characterRuleProvider;
 
   @MockBean
   private PasswordGenerator passwordGenerator;
@@ -51,11 +47,7 @@ public class PassayStringSecretGeneratorTest {
     it("can generate secret", () -> {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
 
-      List<CharacterRule> characterRules = new ArrayList<>();
-
-      when(characterRuleProvider.getCharacterRules(same(secretParameters))).thenReturn(characterRules);
-
-      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), same(characterRules))).thenReturn("very-secret");
+      when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), any(List.class))).thenReturn("very-secret");
 
       Password secretValue = subject.generateSecret(secretParameters);
       assertThat(secretValue.getPassword(), equalTo("very-secret"));

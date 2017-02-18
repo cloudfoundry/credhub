@@ -4,45 +4,38 @@ import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class CharacterRuleProvider {
 
-  private CharacterData specialCharacters;
-  private CharacterData hexCharacters;
+  private static CharacterData specialCharacters = new CharacterData() {
+    @Override
+    public String getErrorCode() {
+      // reusing library string that indicates whether a validation failed
+      return "INSUFFICIENT_SPECIAL";
+    }
 
-  public CharacterRuleProvider() {
-    specialCharacters = new CharacterData() {
-      @Override
-      public String getErrorCode() {
-        // reusing library string that indicates whether a validation failed
-        return "INSUFFICIENT_SPECIAL";
-      }
+    @Override
+    public String getCharacters() {
+      return "!\"#$%&'()*,-./:;<=>?@[\\]^_`{|}~";
+    }
+  };
 
-      @Override
-      public String getCharacters() {
-        return "!\"#$%&'()*,-./:;<=>?@[\\]^_`{|}~";
-      }
-    };
+  private static CharacterData hexCharacters = new CharacterData() {
+    @Override
+    public String getErrorCode() {
+      return "error.insufficient_hex_alpha";
+    }
 
-    hexCharacters = new CharacterData() {
-      @Override
-      public String getErrorCode() {
-        return "error.insufficient_hex_alpha";
-      }
+    @Override
+    public String getCharacters() {
+      return "0123456789ABCDEF";
+    }
+  };
 
-      @Override
-      public String getCharacters() {
-        return "0123456789ABCDEF";
-      }
-    };
-  }
-
-  public List<CharacterRule> getCharacterRules(PasswordGenerationParameters parameters) {
+  public static List<CharacterRule> getCharacterRules(PasswordGenerationParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();
 
     if (parameters.isOnlyHex()) {

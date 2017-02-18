@@ -17,16 +17,13 @@ public class PassayStringSecretGenerator implements SecretGenerator<PasswordGene
   public static final int MAX_LENGTH = 200;
 
   @Autowired
-  CharacterRuleProvider characterRuleProvider;
-
-  @Autowired
   PasswordGenerator passwordGenerator;
 
   @Override
   public Password generateSecret(PasswordGenerationParameters parameters) {
     int passwordLength = normalizedSecretLength(parameters.getLength());
 
-    List<CharacterRule> characterRules = characterRuleProvider.getCharacterRules(parameters);
+    List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(parameters);
 
     return new Password(passwordGenerator.generatePassword(passwordLength, characterRules));
   }
