@@ -2,16 +2,14 @@ package io.pivotal.security.config;
 
 import io.pivotal.security.oauth.AuditOAuth2AccessDeniedHandler;
 import io.pivotal.security.oauth.AuditOAuth2AuthenticationExceptionHandler;
+import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
@@ -24,6 +22,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 
 @Configuration
 @EnableResourceServer
@@ -45,6 +44,8 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   @PostConstruct
   public void init() {
     Assert.notNull(resourceServerProperties.getJwt().getKeyValue(), "Configuration property security.oauth2.resource.jwt.key-value must be set.");
+    securityProperties.getUser().setName(RandomStringUtils.random(12));
+    securityProperties.getUser().setRole(new ArrayList<>());
   }
 
   @Override
@@ -96,15 +97,5 @@ public class OAuth2Configuration extends ResourceServerConfigurerAdapter {
   @Bean
   public AuditOAuth2AccessDeniedHandler getAuditOAuth2AccessDeniedHandler() {
     return new AuditOAuth2AccessDeniedHandler();
-  }
-
-  @Bean
-  public AuthenticationManager authenticationManager() {
-    return new AuthenticationManager() {
-      @Override
-      public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        return authentication;
-      }
-    };
   }
 }
