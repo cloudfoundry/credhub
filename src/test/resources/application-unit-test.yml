@@ -20,13 +20,18 @@ security:
       jwt:
         key-value: |
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsKxPDE3VJx5yTU6TMEad
-          KYxXCeRDdc2ctc0Ke0FxMkcKNG4CPwF39+lAOd+jwNlDFcH7vxeyYrtANNd/gFAU
-          W7yqESfhdkB0whcStSRuevll6/3xy54bg1+cHicEl4dbvMaF+mx3MJoImn8rLOJy
-          heYyftATUxfyf3Uoo5minTCAh2SppnmYGpWz8OltKuTFP809vxOO4Ah4dgMcx8Yk
-          ePrU0sQoP+C3sdiyBYZSf+G01eeFaawr1NUtRpT/htS/tgFReYIFrox4CSZx7SsX
-          KIlFvmT8XstT2JndP0iiZdod9V+h6FgowfExdWlNyUl/aWVGtmVftOQLZsSMtrHR
-          xwIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzfUQ7qkEYqpunTNf5mgb
+          n5mIl3z/ssuwm9S6lS8vQYoPcuNKIinu2VUvWHRANy1hhGtmxJrDjJ+C6hUL2HeS
+          S/Anh+kCaL1ZVZsdsO+KnC3xbMIvfDwgeql6XAxn8KUBqdUw5eMovobs6uc7d4Fz
+          6ULAG/0+0Q+CD/OH1WvereyrTqSJWPibNdXb9ClFc09ONAKs5YbskdkJtfvECDtq
+          HiAEJ66qKPXJDoBLNTsumk48ELOEXJi2o9fyAh7jcrbK3KtTZg+rEIRWuUrI7ZHv
+          7f9YVy9uYoTK5sYaR3R5rRSrLJjc6jGj1+TtGBUhoBQ8dhnUNqmPyq601O+1RR/6
+          ZQIDAQAB
           -----END PUBLIC KEY-----
 server:
   port: 9000
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate

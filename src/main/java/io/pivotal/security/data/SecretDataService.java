@@ -1,6 +1,7 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Encryptor;
+import static com.google.common.collect.Lists.newArrayList;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
@@ -16,12 +17,11 @@ import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
+import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.SecretView;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -32,9 +32,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -56,6 +53,7 @@ public class SecretDataService {
           " ) as name" +
           " on secret.secret_name_uuid = name.uuid" +
           " order by version_created_at desc";
+  private NamedSecretData dao;
 
   @Autowired
   protected SecretDataService(
@@ -81,7 +79,7 @@ public class SecretDataService {
     SecretName secretName = namedSecret.getSecretName();
 
     if (secretName.getUuid() == null) {
-      namedSecret.setSecretName(createOrFindSecretName(secretName.getName()));
+      namedSecret.setSecretName(secretNameRepository.saveAndFlush(secretName));
     }
 
     return (Z) wrap(secretRepository.saveAndFlush(namedSecret.toDataEntity()));
@@ -156,14 +154,6 @@ public class SecretDataService {
         new PageRequest(0, BATCH_SIZE)
     );
     return new SliceImpl(wrap(namedSecretDataSlice.getContent()));
-  }
-
-  private SecretName createOrFindSecretName(String name) {
-    try {
-      return secretNameRepository.saveAndFlush(new SecretName(name));
-    } catch (DataIntegrityViolationException | ConstraintViolationException e) {
-      return secretNameRepository.findOneByNameIgnoreCase(name);
-    }
   }
 
   private List<SecretView> findMatchingName(String nameLike) {

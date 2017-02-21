@@ -2,6 +2,10 @@ package io.pivotal.security.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
@@ -11,12 +15,23 @@ import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import io.pivotal.security.service.EncryptionKeyRotator;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static java.util.Collections.singletonList;
+import static javax.xml.bind.DatatypeConverter.parseHexBinary;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.hamcrest.core.IsNot.not;
 import org.junit.runner.RunWith;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -28,21 +43,6 @@ import java.security.Key;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static java.util.Collections.singletonList;
-import static javax.xml.bind.DatatypeConverter.parseHexBinary;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsNot.not;
-import static org.mockito.Mockito.*;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -70,6 +70,9 @@ public class EncryptionKeyRotatorTest {
   @Autowired
   Encryptor encryptor;
 
+  @Autowired
+  SecretNameRepository secretNameRepository;
+
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
 
@@ -80,7 +83,7 @@ public class EncryptionKeyRotatorTest {
 
     describe("when data exists that is encrypted with an unknown key", () -> {
       beforeEach(() -> {
-          secretWithCurrentKey = new NamedCertificateSecret("cert");
+          secretWithCurrentKey = new NamedCertificateSecret("/current-key");
           secretWithCurrentKey
                   .setEncryptor(encryptor)
                   .setCa("my-ca")
@@ -98,7 +101,7 @@ public class EncryptionKeyRotatorTest {
           when(encryptionKeyCanaryMapper.getKeyForUuid(oldCanary.getUuid())).thenReturn(oldKey);
           when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys()).thenReturn(singletonList(oldCanary.getUuid()));
 
-          secretWithOldKey = new NamedCertificateSecret("cert");
+          secretWithOldKey = new NamedCertificateSecret("/old-key");
           final Encryption encryption = encryptionService.encrypt(oldKey, "old-certificate-private-key");
           secretWithOldKey.setEncryptedValue(encryption.encryptedValue);
           secretWithOldKey.setNonce(encryption.nonce);
@@ -110,7 +113,7 @@ public class EncryptionKeyRotatorTest {
           unknownCanary.setNonce("bad-nonce".getBytes());
           unknownCanary = encryptionKeyCanaryDataService.save(unknownCanary);
 
-          secretWithUnknownKey = new NamedCertificateSecret("cert");
+          secretWithUnknownKey = new NamedCertificateSecret("/unknown-key");
           secretWithUnknownKey
                   .setEncryptor(encryptor)
                   .setPrivateKey("cert-private-key");
@@ -134,7 +137,7 @@ public class EncryptionKeyRotatorTest {
       });
 
       afterEach(() -> {
-        secretDataService.delete("cert");
+        secretNameRepository.deleteAll();
         encryptionKeyCanaryDataService.delete(oldCanary);
         encryptionKeyCanaryDataService.delete(unknownCanary);
       });

@@ -1,29 +1,57 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.fake.FakeAuditLogService;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import io.pivotal.security.repository.SecretNameRepository;
+import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -32,35 +60,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = { "unit-test", "UseRealAuditLogService" }, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerSetTest {
 
@@ -74,10 +75,13 @@ public class SecretsControllerSetTest {
   private Encryptor encryptor;
 
   @SpyBean
-  FakeAuditLogService auditLogService;
+  AuditLogService auditLogService;
 
   @SpyBean
   SecretDataService secretDataService;
+
+  @Autowired
+  SecretNameRepository secretNameRepository;
 
   private MockMvc mockMvc;
 
@@ -85,13 +89,12 @@ public class SecretsControllerSetTest {
 
   private final Consumer<Long> fakeTimeSetter;
 
-  private final String secretName = "my-namespace/secretForSetTest/secret-name";
+  private final String secretName = "/my-namespace/secretForSetTest/secret-name";
 
   private ResultActions response;
 
   private UUID uuid;
   final String secretValue = "secret-value";
-  private NamedValueSecret valueSecret;
 
   private ResultActions[] responses;
 
@@ -105,6 +108,10 @@ public class SecretsControllerSetTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
       resetAuditLogMock();
+    });
+
+    afterEach(() -> {
+      secretNameRepository.deleteAll();
     });
 
     describe("setting secrets in parallel", () -> {
@@ -163,16 +170,6 @@ public class SecretsControllerSetTest {
     });
 
     describe("setting a secret", () -> {
-      beforeEach(() -> {
-        uuid = UUID.randomUUID();
-        valueSecret = new NamedValueSecret(secretName).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
-        valueSecret.setValue(secretValue);
-
-        doReturn(
-            valueSecret
-        ).when(secretDataService).save(any(NamedValueSecret.class));
-      });
-
       describe("via parameter in request body", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -209,7 +206,13 @@ public class SecretsControllerSetTest {
 
       describe("when another thread wins a race to write a new value", () -> {
         beforeEach(() -> {
-          Mockito.reset(secretDataService);
+          uuid = UUID.randomUUID();
+
+          NamedValueSecret valueSecret = new NamedValueSecret(secretName);
+          valueSecret.setEncryptor(encryptor);
+          valueSecret.setValue(secretValue);
+          valueSecret.setUuid(uuid);
+          valueSecret.setVersionCreatedAt(frozenTime);
 
           doReturn(null)
               .doReturn(valueSecret)
@@ -384,12 +387,14 @@ public class SecretsControllerSetTest {
   // this is extracted while we are supporting both body and path
   private void setSecretBehavior() {
     it("returns the secret as json", () -> {
+      NamedSecret expected = secretDataService.findMostRecent(secretName);
+
       response.andExpect(status().isOk())
           .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
           .andExpect(jsonPath("$.type").value("value"))
           .andExpect(jsonPath("$.value").value(secretValue))
-          .andExpect(jsonPath("$.id").value(uuid.toString()))
-          .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
+          .andExpect(jsonPath("$.id").value(expected.getUuid().toString()))
+          .andExpect(jsonPath("$.version_created_at").value(expected.getVersionCreatedAt().toString()));
     });
 
     it("asks the data service to persist the secret", () -> {
@@ -509,13 +514,6 @@ public class SecretsControllerSetTest {
   }
 
   private void putSecretInDatabase(String name, String value) throws Exception {
-    uuid = UUID.randomUUID();
-    NamedValueSecret valueSecret = new NamedValueSecret(name).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
-    valueSecret.setValue(value);
-    doReturn(
-        valueSecret
-    ).when(secretDataService).save(any(NamedValueSecret.class));
-
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
@@ -527,20 +525,12 @@ public class SecretsControllerSetTest {
 
     response = mockMvc.perform(put);
 
-    Mockito.reset(secretDataService);
-    doReturn(
-        valueSecret
-    ).when(secretDataService).findMostRecent(name);
-    doReturn(
-        valueSecret
-    ).when(secretDataService).findMostRecent(name.toUpperCase());
-    doReturn(
-        valueSecret
-    ).when(secretDataService).findByUuid(uuid.toString());
+    uuid = secretDataService.findMostRecent(name).getUuid();
+    reset(secretDataService);
   }
 
   private void resetAuditLogMock() throws Exception {
-    Mockito.reset(auditLogService);
+    reset(auditLogService);
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
