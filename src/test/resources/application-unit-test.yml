@@ -13,6 +13,8 @@ encryption:
   - dev-key: A673ACF01DB091B08133FBC8C0B5F555
 
 security:
+  basic:
+    enabled: false
   oauth2:
     resource:
       jwt:

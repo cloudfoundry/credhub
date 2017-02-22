@@ -39,3 +39,6 @@ security:
 
 server:
   port: 9000
+
+logging:
+  config: /Users/pivotal/workspace/credhub-release/src/credhub/src/main/resources/log4j2.properties
