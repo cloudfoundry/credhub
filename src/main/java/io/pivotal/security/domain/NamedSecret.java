@@ -3,7 +3,6 @@ package io.pivotal.security.domain;
 import io.pivotal.security.entity.EncryptedValueContainer;
 import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.SecretName;
-import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.view.SecretKind;
 
 import java.time.Instant;

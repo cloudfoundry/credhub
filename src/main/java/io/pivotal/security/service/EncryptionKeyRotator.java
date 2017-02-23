@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.exceptions.KeyNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.data.domain.Slice;
@@ -27,9 +28,13 @@ public class EncryptionKeyRotator {
     Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findEncryptedWithAvailableInactiveKey();
     while (secretsEncryptedByOldKey.hasContent()) {
       for (NamedSecret secret : secretsEncryptedByOldKey.getContent()) {
-        secret.rotate();
-        secretDataService.save(secret);
-        rotatedRecordCount++;
+        try {
+          secret.rotate();
+          secretDataService.save(secret);
+          rotatedRecordCount++;
+        } catch (KeyNotFoundException e) {
+          logger.error("key not found for value, unable to rotate");
+        }
       }
       secretsEncryptedByOldKey = secretDataService.findEncryptedWithAvailableInactiveKey();
     }

@@ -1,5 +1,6 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
@@ -35,6 +36,8 @@ public class Encryptor {
     }
     try {
       return encryptionService.decrypt(keyUuid, encryptedValue, nonce);
+    } catch (KeyNotFoundException e) {
+      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

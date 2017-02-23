@@ -1,5 +1,6 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.exceptions.KeyNotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,11 @@ public class RetryingEncryptionService {
   private <T> T retryOnErrorWithRemappedKey(UUID keyId, ThrowingFunction<Key, T> operation) throws Exception {
     return withPreventReconnectLock(() -> {
       try {
-        return operation.apply(keyMapper.getKeyForUuid(keyId));
+        Key keyForUuid = keyMapper.getKeyForUuid(keyId);
+        if (keyForUuid == null){
+          throw new KeyNotFoundException();
+        }
+        return operation.apply(keyForUuid);
       } catch (IllegalBlockSizeException | ProviderException e) {
         logger.info("Operation failed: " + e.getMessage());
 

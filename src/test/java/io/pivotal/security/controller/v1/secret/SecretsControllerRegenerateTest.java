@@ -218,6 +218,30 @@ public class SecretsControllerRegenerateTest {
         assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_UPDATE));
       });
     });
+
+    describe("when attempting to regenerate a password with parameters that can't be decrypted", () -> {
+      beforeEach(() -> {
+        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+        originalSecret.setEncryptor(encryptor);
+        originalSecret.setPasswordAndGenerationParameters("abcde", new PasswordGenerationParameters());
+        originalSecret.setEncryptionKeyUuid(UUID.randomUUID());
+
+        doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
+
+        response = mockMvc.perform(post("/api/v1/data")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{\"regenerate\":true,\"name\":\"my-password\"}"));
+      });
+
+      it("returns an error", () -> {
+        String cannotRegenerateJson = "{\"error\": \"The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.\"}";
+
+        response
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().json(cannotRegenerateJson));
+      });
+    });
   }
 
   private void resetAuditLogMock() throws Exception {

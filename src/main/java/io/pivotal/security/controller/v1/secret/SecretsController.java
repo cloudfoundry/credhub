@@ -13,12 +13,13 @@ import io.pivotal.security.entity.AuditingOperationCode;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import io.pivotal.security.exceptions.KeyNotFoundException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;
@@ -117,14 +118,14 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    return retrieveSecretWithAuditing(
-        id,
-        findAsList(secretDataService::findByUuid),
-        request,
-        authentication,
-        (namedSecrets) -> SecretView.fromEntity(namedSecrets.get(0))
-    );
-  }
+        return retrieveSecretWithAuditing(
+                id,
+                findAsList(secretDataService::findByUuid),
+                request,
+                authentication,
+                true
+        );
+    }
 
   @RequestMapping(path = "", method = RequestMethod.GET)
   public ResponseEntity getSecret(
@@ -133,14 +134,14 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    return retrieveSecretWithAuditing(
-        secretName,
-        selectLookupFunction(current),
-        request,
-        authentication,
-        (namedSecrets) -> DataResponse.fromEntity(namedSecrets, SecretView::fromEntity)
-    );
-  }
+      return retrieveSecretWithAuditing(
+                secretName,
+                selectLookupFunction(current),
+                request,
+                authentication,
+                false
+        );
+    }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
     if (current) {
@@ -158,23 +159,33 @@ public class SecretsController {
   }
 
   private ResponseEntity retrieveSecretWithAuditing(String identifier,
-                                                    Function<String, List<NamedSecret>> finder,
-                                                    HttpServletRequest request,
-                                                    Authentication authentication,
-                                                    Function<List<NamedSecret>, Object> secretPresenter) throws Exception {
+                                                      Function<String, List<NamedSecret>> finder,
+                                                      HttpServletRequest request,
+                                                      Authentication authentication,
+                                                      boolean returnFirstEntry) throws Exception {
     final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
-    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
-      if (StringUtils.isEmpty(identifier)) {
-        return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
-      }
-      List<NamedSecret> namedSecrets = finder.apply(identifier);
-      if (namedSecrets.isEmpty()) {
-        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
-      } else {
-        auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
-        return new ResponseEntity<>(secretPresenter.apply(namedSecrets), HttpStatus.OK);
-      }
-    });
+      return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
+          if (StringUtils.isEmpty(identifier)) {
+              return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
+          }
+          List<NamedSecret> namedSecrets = finder.apply(identifier);
+          if (namedSecrets.isEmpty()) {
+              return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
+          } else {
+              ResponseEntity success;
+              auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
+              try {
+                  if (returnFirstEntry) {
+                      success = new ResponseEntity<>(SecretView.fromEntity(namedSecrets.get(0)), HttpStatus.OK);
+                  } else {
+                      success = new ResponseEntity<>(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
+                  }
+              } catch (KeyNotFoundException e) {
+                  return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
+              }
+              return success;
+          }
+      });
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
@@ -290,6 +301,8 @@ public class SecretsController {
       return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
+    } catch (KeyNotFoundException e) {
+        return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

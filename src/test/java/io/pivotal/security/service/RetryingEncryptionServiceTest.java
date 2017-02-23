@@ -1,12 +1,14 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.exceptions.KeyNotFoundException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -281,6 +283,15 @@ public class RetryingEncryptionServiceTest {
 
             verify(remoteEncryptionConnectable, times(1)).reconnect(any(IllegalBlockSizeException.class));
             verify(keyMapper, times(1)).mapUuidsToKeys();
+          });
+        });
+
+        describe("when the encryption key for the credential cannot be found", () -> {
+          itThrows("should throw an appropriate exception", KeyNotFoundException.class, () -> {
+            UUID fakeUUID = UUID.randomUUID();
+            reset(encryptionService);
+            when(keyMapper.getKeyForUuid(fakeUUID)).thenReturn(null);
+            subject.decrypt(fakeUUID, "something we cant read".getBytes(), "nonce".getBytes());
           });
         });
       });
