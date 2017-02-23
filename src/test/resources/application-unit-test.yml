@@ -3,7 +3,7 @@ info:
     version: unit-test-version
 
 auth-server:
-  url: https://50.17.59.67:8443
+  url: https://example.com:8443
 
 encryption:
   provider: dev_internal
