@@ -2,7 +2,6 @@ package io.pivotal.security.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -16,7 +15,6 @@ import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
@@ -70,16 +68,13 @@ public class EncryptionKeyRotatorTest {
   @Autowired
   Encryptor encryptor;
 
-  @Autowired
-  SecretNameRepository secretNameRepository;
-
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
 
   private String passwordName;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     describe("when data exists that is encrypted with an unknown key", () -> {
       beforeEach(() -> {
@@ -134,12 +129,6 @@ public class EncryptionKeyRotatorTest {
 
           secretDataService.save(password);
 
-      });
-
-      afterEach(() -> {
-        secretNameRepository.deleteAll();
-        encryptionKeyCanaryDataService.delete(oldCanary);
-        encryptionKeyCanaryDataService.delete(unknownCanary);
       });
 
       it("should rotate data that it can decrypt (and it shouldn't loop forever!)", () -> {

@@ -1,22 +1,20 @@
 package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
 
 import java.time.Instant;
 import java.util.List;
@@ -36,11 +34,7 @@ public class AuthFailureAuditRecordDataServiceTest {
   private final long tokenExpires = tokenIssued + 10000;
 
   {
-    wireAndUnwire(this, true);
-
-    afterEach(() -> {
-      jdbcTemplate.execute("delete from auth_failure_audit_record");
-    });
+    wireAndUnwire(this);
 
     describe("#save", () -> {
       it("should create the entity in the database", () -> {

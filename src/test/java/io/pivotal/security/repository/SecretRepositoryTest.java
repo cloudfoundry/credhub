@@ -1,13 +1,19 @@
 package io.pivotal.security.repository;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
-import io.pivotal.security.helper.EncryptionCanaryHelper;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,13 +24,6 @@ import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -43,13 +42,16 @@ public class SecretRepositoryTest {
   @Autowired
   SecretNameRepository secretNameRepository;
 
+  @Autowired
+  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+
   private Consumer<Long> fakeTimeSetter;
   private String name;
 
   private UUID canaryUuid;
 
   {
-    wireAndUnwire(this, true);
+    wireAndUnwire(this);
 
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
@@ -57,7 +59,7 @@ public class SecretRepositoryTest {
       name = "my-secret";
       fakeTimeSetter.accept(345345L);
 
-      canaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
+      canaryUuid = encryptionKeyCanaryMapper.getActiveUuid();
     });
 
     it("can store certificates of length 7000 which means 7016 for GCM", () -> {

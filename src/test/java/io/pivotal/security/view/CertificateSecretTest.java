@@ -40,7 +40,7 @@ public class CertificateSecretTest {
   Encryptor encryptor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       serializingObjectMapper = new ObjectMapper();

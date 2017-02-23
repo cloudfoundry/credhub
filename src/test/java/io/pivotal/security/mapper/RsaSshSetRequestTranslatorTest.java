@@ -36,7 +36,7 @@ public class RsaSshSetRequestTranslatorTest {
   private Encryptor encryptor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     describe("populating entity from json", () -> {
 

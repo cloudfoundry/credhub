@@ -27,7 +27,7 @@ public class NamedSshSecretTest {
   private UUID encryptionKeyUuid;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       subject = new NamedSshSecret("/Foo");

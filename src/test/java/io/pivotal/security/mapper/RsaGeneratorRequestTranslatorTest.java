@@ -56,7 +56,7 @@ public class RsaGeneratorRequestTranslatorTest {
   private Encryptor encryptor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       mockParams = spy(RsaSecretParameters.class);

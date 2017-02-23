@@ -1,8 +1,12 @@
 package io.pivotal.security.db.migration;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
@@ -16,11 +20,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -45,7 +44,7 @@ public class EarlySecretMigrationTest {
   JdbcTemplate jdbcTemplate;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       flyway.clean();
@@ -54,7 +53,6 @@ public class EarlySecretMigrationTest {
     });
 
     afterEach(() -> {
-      flyway.clean();
       flyway.setTarget(MigrationVersion.LATEST);
       flyway.migrate();
     });
@@ -69,13 +67,6 @@ public class EarlySecretMigrationTest {
       storeValueSecret("test");
       storeValueSecret("/test");
       storeValueSecret("/deploy123/test");
-
-      flyway.setTarget(MigrationVersion.fromVersion("25"));
-      flyway.migrate();
-
-      jdbcTemplate.execute("delete from named_secret");
-      jdbcTemplate.execute("delete from named_certificate_authority");
-      jdbcTemplate.execute("delete from encryption_key_canary");
     });
   }
 

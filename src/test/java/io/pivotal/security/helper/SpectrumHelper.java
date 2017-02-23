@@ -3,19 +3,22 @@ package io.pivotal.security.helper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import io.pivotal.security.entity.JpaAuditingHandler;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.apache.tomcat.jdbc.pool.DataSource;
-import org.flywaydb.core.Flyway;
+import static org.junit.Assert.fail;
 import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestContextManager;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -23,16 +26,8 @@ import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.Objects;
 import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 
 public class SpectrumHelper {
 
@@ -66,27 +61,35 @@ public class SpectrumHelper {
     });
   }
 
-  private static void cleanUpAfterTests(Supplier<MyTestContextManager> myTestContextManagerSupplier) {
-    afterEach(() -> {
-      Flyway flyway = myTestContextManagerSupplier.get().getApplicationContext().getBean(Flyway.class);
-      flyway.clean();
-      flyway.migrate();
-    });
-  }
-
-  public static void wireAndUnwire(final Object testInstance, boolean cleanUpAfterTests) {
+  public static void wireAndUnwire(final Object testInstance) {
     Supplier<MyTestContextManager> myTestContextManagerSupplier = getTestContextManagerSupplier(testInstance);
-    beforeEach(() -> myTestContextManagerSupplier.get().prepareTestInstance(testInstance));
-    if (cleanUpAfterTests) {
-      cleanUpAfterTests(myTestContextManagerSupplier);
-    }
-    afterEach(cleanMockBeans(testInstance, myTestContextManagerSupplier));
+    beforeEach(() -> {
+      MyTestContextManager myTestContextManager = myTestContextManagerSupplier.get();
+      myTestContextManager.prepareTestInstance(testInstance);
+
+      cleanUpDatabase(myTestContextManagerSupplier);
+    });
+
     afterEach(() -> {
+      cleanMockBeans(testInstance);
+
       myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class).purge();
     });
   }
 
-  public static Supplier<MyTestContextManager> getTestContextManagerSupplier(Object testInstance) {
+  private static void cleanUpDatabase(Supplier<MyTestContextManager> myTestContextManagerSupplier) {
+    ApplicationContext applicationContext = myTestContextManagerSupplier.get().getApplicationContext();
+    JdbcTemplate jdbcTemplate = applicationContext.getBean(JdbcTemplate.class);
+    jdbcTemplate.execute("delete from secret_name");
+    jdbcTemplate.execute("truncate table auth_failure_audit_record");
+    jdbcTemplate.execute("truncate table operation_audit_record");
+    jdbcTemplate.execute("delete from encryption_key_canary");
+
+    EncryptionKeyCanaryMapper encryptionKeyCanaryMapper = applicationContext.getBean(EncryptionKeyCanaryMapper.class);
+    encryptionKeyCanaryMapper.mapUuidsToKeys();
+  }
+
+  static Supplier<MyTestContextManager> getTestContextManagerSupplier(Object testInstance) {
     return Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
   }
 
@@ -94,26 +97,13 @@ public class SpectrumHelper {
     return new ObjectMapper().writeValueAsString(o);
   }
 
-  // Don't use this without talking to Rick
-  public static void autoTransactional(final Object testInstance) {
-    final Supplier<PlatformTransactionManager> transactionManagerSupplier = Suppliers.memoize(() -> {
-      final MyTestContextManager testContextManager = new MyTestContextManager(testInstance.getClass());
-      return testContextManager.getApplicationContext().getBean(PlatformTransactionManager.class);
-    })::get;
-
-    final AtomicReference<TransactionStatus> transaction = new AtomicReference<>();
-
-    beforeEach(() -> transaction.set(transactionManagerSupplier.get().getTransaction(new DefaultTransactionDefinition())));
-
-    afterEach(() -> transactionManagerSupplier.get().rollback(transaction.get()));
-  }
-
   public static Consumer<Long> mockOutCurrentTimeProvider(Object testInstance) {
     final Supplier<MyTestContextManager> testContextManagerSupplier = Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
     final CurrentTimeProvider mockCurrentTimeProvider = mock(CurrentTimeProvider.class);
 
     beforeEach(() -> {
-      final JpaAuditingHandler auditingHandler = testContextManagerSupplier.get().getApplicationContext().getBean(JpaAuditingHandler.class);
+      ApplicationContext applicationContext = testContextManagerSupplier.get().getApplicationContext();
+      final JpaAuditingHandler auditingHandler = applicationContext.getBean(JpaAuditingHandler.class);
       auditingHandler.setDateTimeProvider(mockCurrentTimeProvider);
     });
 
@@ -127,20 +117,22 @@ public class SpectrumHelper {
     return (epochMillis) -> { when(mockCurrentTimeProvider.getNow()).thenReturn(getNow(epochMillis)); };
   }
 
-  private static Spectrum.Block cleanMockBeans(Object testInstance, Supplier<MyTestContextManager> testContextManager) {
-    return () -> {
-      Class klazz = testInstance.getClass();
-      for (Field field : klazz.getDeclaredFields()) {
-        for (Annotation annotation : field.getAnnotations()) {
-          String simpleName = annotation.annotationType().getSimpleName();
-          if (simpleName.equals(MOCK_BEAN_SIMPLE_NAME) || simpleName.equals(SPY_BEAN_SIMPLE_NAME)) {
-            field.setAccessible(true);
+  private static void cleanMockBeans(Object testInstance) {
+    Class klazz = testInstance.getClass();
+    for (Field field : klazz.getDeclaredFields()) {
+      for (Annotation annotation : field.getAnnotations()) {
+        String simpleName = annotation.annotationType().getSimpleName();
+        if (simpleName.equals(MOCK_BEAN_SIMPLE_NAME) || simpleName.equals(SPY_BEAN_SIMPLE_NAME)) {
+          field.setAccessible(true);
+          try {
             Mockito.reset(field.get(testInstance));
             field.set(testInstance, null);
+          } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
           }
         }
       }
-    };
+    }
   }
 
   public static Spectrum.Block injectMocks(Object testInstance) {

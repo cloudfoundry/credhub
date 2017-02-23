@@ -42,7 +42,7 @@ public class PassayStringSecretGeneratorTest {
   private ArgumentCaptor<List<CharacterRule>> captor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     it("can generate secret", () -> {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();

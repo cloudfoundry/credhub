@@ -55,7 +55,7 @@ public class AuthConfigurationTest {
   private MockMvc mockMvc;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     });

@@ -74,7 +74,7 @@ public class SecretsControllerFindTest {
   private ResultActions response;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {

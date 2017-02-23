@@ -61,7 +61,7 @@ public class SshGeneratorRequestTranslatorTest {
   private Encryptor encryptor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       mockParams = spy(SshSecretParameters.class);

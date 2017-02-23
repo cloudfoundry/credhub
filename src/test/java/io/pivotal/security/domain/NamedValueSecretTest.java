@@ -31,7 +31,7 @@ public class NamedValueSecretTest {
   NamedValueSecret subject;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       subject = new NamedValueSecret("Foo");

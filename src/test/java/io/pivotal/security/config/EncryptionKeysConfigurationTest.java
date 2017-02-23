@@ -23,7 +23,7 @@ public class EncryptionKeysConfigurationTest {
   private EncryptionKeysConfiguration subject;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     it("fills in list of keys from application-unit-test.yml", () -> {
       List<EncryptionKeyMetadata> keys = subject.getKeys();

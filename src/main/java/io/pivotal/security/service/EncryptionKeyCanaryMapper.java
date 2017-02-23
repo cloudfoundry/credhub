@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import static com.google.common.collect.Lists.newArrayList;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
@@ -18,8 +19,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -51,6 +50,7 @@ public class EncryptionKeyCanaryMapper {
   }
 
   public void mapUuidsToKeys() {
+    encryptionKeyMap.clear();
     createKeys();
     mapCanariesToKeys();
   }

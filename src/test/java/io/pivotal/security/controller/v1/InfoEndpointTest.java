@@ -32,7 +32,7 @@ public class InfoEndpointTest {
   private MockMvc mockMvc;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(context).build();

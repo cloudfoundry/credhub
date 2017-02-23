@@ -36,7 +36,7 @@ public class UpdatingASecretTest {
   private String passwordName;
 
   {
-    wireAndUnwire(this, true);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       passwordName = "test-password";

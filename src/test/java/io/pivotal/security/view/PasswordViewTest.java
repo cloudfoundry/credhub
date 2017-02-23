@@ -34,7 +34,7 @@ public class PasswordViewTest {
   private Encryptor encryptor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       uuid = UUID.randomUUID();

@@ -1,24 +1,23 @@
 package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -35,15 +34,14 @@ public class EncryptionKeyCanaryDataServiceTest {
   @Autowired
   JdbcTemplate jdbcTemplate;
 
+  @Autowired
+  EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
+
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
-      jdbcTemplate.execute("delete from encryption_key_canary");
-    });
-
-    afterEach(() -> {
-      jdbcTemplate.execute("delete from encryption_key_canary");
+      encryptionKeyCanaryRepository.deleteAll();
     });
 
     describe("#save", () -> {

@@ -38,7 +38,7 @@ public class CertificateSetRequestTranslatorTest {
   private NamedCertificateSecret entity;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     describe("#populateEntityFromJson", () -> {
       beforeEach(() -> {

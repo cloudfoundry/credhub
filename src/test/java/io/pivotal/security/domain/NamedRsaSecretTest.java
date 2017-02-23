@@ -25,7 +25,7 @@ public class NamedRsaSecretTest {
   private NamedRsaSecret subject;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       subject = new NamedRsaSecret("/Foo");

@@ -52,7 +52,7 @@ public class PasswordGeneratorRequestTranslatorTest {
   private Encryptor encryptor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new Password("my-password"));

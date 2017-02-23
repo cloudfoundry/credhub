@@ -81,23 +81,14 @@ public class SecretDataServiceTest {
   private UUID unknownCanaryUuid;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      jdbcTemplate.execute("delete from secret_name");
-      jdbcTemplate.execute("delete from encryption_key_canary");
       fakeTimeSetter.accept(345345L);
 
-      activeCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
+      activeCanaryUuid = encryptionKeyCanaryMapper.getActiveUuid();
       unknownCanaryUuid = EncryptionCanaryHelper.addCanary(encryptionKeyCanaryDataService).getUuid();
-
-      when(encryptionKeyCanaryMapper.getActiveUuid()).thenReturn(activeCanaryUuid);
-    });
-
-    afterEach(() -> {
-      jdbcTemplate.execute("delete from secret_name");
-      jdbcTemplate.execute("delete from encryption_key_canary");
     });
 
     describe("#save", () -> {

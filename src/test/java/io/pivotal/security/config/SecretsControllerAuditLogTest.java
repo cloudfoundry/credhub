@@ -80,7 +80,7 @@ public class SecretsControllerAuditLogTest {
   private MockMvc mockMvc;
 
   {
-    wireAndUnwire(this, true);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)

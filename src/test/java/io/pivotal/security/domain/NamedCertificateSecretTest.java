@@ -33,7 +33,7 @@ public class NamedCertificateSecretTest {
   private NamedCertificateSecret subject;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       subject = new NamedCertificateSecret("/Foo")

@@ -102,7 +102,7 @@ public class SecretsControllerGenerateTest {
   private final String fakePassword = "generated-secret";
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 

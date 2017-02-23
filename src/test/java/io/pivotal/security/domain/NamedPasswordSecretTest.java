@@ -39,7 +39,7 @@ public class NamedPasswordSecretTest {
   PasswordGenerationParameters generationParameters;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       subject = new NamedPasswordSecret("/Foo");

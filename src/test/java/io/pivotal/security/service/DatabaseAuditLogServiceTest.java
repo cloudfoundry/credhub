@@ -76,7 +76,7 @@ public class DatabaseAuditLogServiceTest {
   private ResponseEntity<?> responseEntity;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       OAuth2Authentication authentication = tokenStore.readAuthentication(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);

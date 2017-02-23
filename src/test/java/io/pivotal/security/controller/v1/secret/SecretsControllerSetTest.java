@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -79,9 +78,6 @@ public class SecretsControllerSetTest {
   @SpyBean
   SecretDataService secretDataService;
 
-  @Autowired
-  SecretNameRepository secretNameRepository;
-
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -98,7 +94,7 @@ public class SecretsControllerSetTest {
   private ResultActions[] responses;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
@@ -107,10 +103,6 @@ public class SecretsControllerSetTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
       resetAuditLogMock();
-    });
-
-    afterEach(() -> {
-      secretNameRepository.deleteAll();
     });
 
     describe("setting secrets in parallel", () -> {

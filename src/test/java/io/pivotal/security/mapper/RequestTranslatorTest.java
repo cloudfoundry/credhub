@@ -44,7 +44,7 @@ public class RequestTranslatorTest {
       }
     };
 
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     describe("populating entity from JSON", () -> {
       it("can accept all these valid keys", () -> {

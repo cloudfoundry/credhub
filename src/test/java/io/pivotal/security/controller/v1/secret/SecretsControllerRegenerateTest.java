@@ -95,7 +95,7 @@ public class SecretsControllerRegenerateTest {
   private UUID uuid;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {

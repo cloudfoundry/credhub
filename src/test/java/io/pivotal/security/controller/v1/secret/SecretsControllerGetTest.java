@@ -79,7 +79,7 @@ public class SecretsControllerGetTest {
   private UUID uuid;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
     fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {

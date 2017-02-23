@@ -58,7 +58,7 @@ public class CertificateGeneratorRequestTranslatorTest {
   Encryptor encryptor;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       certificateGenerator = mock(BCCertificateGenerator.class);

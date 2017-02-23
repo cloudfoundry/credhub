@@ -37,7 +37,7 @@ public class ValueSetRequestTranslatorTest {
   private NamedValueSecret entity;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     describe("populating entity from JSON", () -> {
       beforeEach(() -> {

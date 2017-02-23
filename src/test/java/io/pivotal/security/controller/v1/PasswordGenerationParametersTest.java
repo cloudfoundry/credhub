@@ -23,7 +23,7 @@ public class PasswordGenerationParametersTest {
   ObjectMapper objectMapper;
 
   {
-    wireAndUnwire(this, false);
+    wireAndUnwire(this);
 
     it("is invalid when all charsets are excluded", () -> {
       assertThat(makeParameters(true, true, false, true, false).isValid(), equalTo(false));

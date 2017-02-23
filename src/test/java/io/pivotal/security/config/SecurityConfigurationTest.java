@@ -62,7 +62,7 @@ public class SecurityConfigurationTest {
   private String secretName;
 
   {
-    wireAndUnwire(this, true);
+    wireAndUnwire(this);
 
     beforeEach(() -> {
       urlPath = "/api/v1/data";
