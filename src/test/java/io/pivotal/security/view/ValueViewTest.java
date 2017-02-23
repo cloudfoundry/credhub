@@ -1,21 +1,20 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedValueSecret;
-import org.junit.runner.RunWith;
-
-import java.time.Instant;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedValueSecret;
 import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import org.junit.runner.RunWith;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 public class ValueViewTest {
@@ -30,7 +29,7 @@ public class ValueViewTest {
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
       when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("fake-plaintext-value");
-      entity = new NamedValueSecret("foo")
+      entity = new NamedValueSecret("/foo")
         .setEncryptor(encryptor)
         .setUuid(uuid);
       entity.setEncryptedValue("fake-encrypted-value".getBytes());
@@ -44,7 +43,7 @@ public class ValueViewTest {
           "\"type\":\"value\"," +
           "\"version_created_at\":null," +
           "\"id\":\"" + uuid.toString() + "\"," +
-          "\"name\":\"foo\"," +
+          "\"name\":\"/foo\"," +
           "\"value\":\"fake-plaintext-value\"" +
           "}"));
     });

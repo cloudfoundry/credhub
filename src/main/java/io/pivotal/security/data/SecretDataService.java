@@ -71,7 +71,6 @@ public class SecretDataService {
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
-    namedSecret.getSecretName().setName(addLeadingSlashIfMissing(namedSecret.getName()));
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
@@ -113,7 +112,7 @@ public class SecretDataService {
 
   public List<SecretView> findStartingWithPath(String path) {
     path = addLeadingSlashIfMissing(path);
-    path = !path.endsWith("/") ? path + "/" : path;
+    path = StringUtils.appendIfMissing(path, "/");
 
     return findMatchingName(path + "%");
   }

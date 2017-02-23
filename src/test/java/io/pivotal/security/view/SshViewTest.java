@@ -1,23 +1,22 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSshSecret;
+import static io.pivotal.security.helper.SpectrumHelper.json;
 import io.pivotal.security.service.Encryption;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.json;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class SshViewTest {
@@ -34,7 +33,7 @@ public class SshViewTest {
 
   {
     beforeEach(() -> {
-      secretName = "foo";
+      secretName = "/foo";
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
       when(encryptor.encrypt("my-private-key")).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
@@ -51,7 +50,7 @@ public class SshViewTest {
       jsonExpectationsHelper.assertJsonEqual("{" +
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"type\":\"ssh\"," +
-          "\"name\":\"foo\"," +
+          "\"name\":\"/foo\"," +
           "\"version_created_at\":null," +
           "\"value\":{" +
             "\"public_key\":\"my-public-key\"," +

@@ -2,10 +2,16 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
+import static io.pivotal.security.helper.SpectrumHelper.json;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,13 +20,6 @@ import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.json;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -45,7 +44,7 @@ public class CertificateSecretTest {
 
     beforeEach(() -> {
       serializingObjectMapper = new ObjectMapper();
-      secretName = "foo";
+      secretName = "/foo";
       uuid = UUID.randomUUID();
       entity = new NamedCertificateSecret(secretName)
           .setEncryptor(encryptor)

@@ -18,6 +18,7 @@ import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.apache.commons.lang.StringUtils;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
@@ -185,14 +186,14 @@ public class SecretsControllerSetTest {
         setSecretBehavior();
       });
 
-      describe("when name has a leading slash", () -> {
+      describe("when name does not have a leading slash", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{" +
                   "  \"type\":\"value\"," +
-                  "  \"name\":\"" + "/" + secretName + "\"," +
+                  "  \"name\":\"" + StringUtils.stripStart(secretName, "/") + "\"," +
                   "  \"value\":\"" + secretValue + "\"" +
                   "}");
 
@@ -224,7 +225,7 @@ public class SecretsControllerSetTest {
               .contentType(APPLICATION_JSON)
               .content("{" +
                   "  \"type\":\"value\"," +
-                  "  \"name\":\"" + "/" + secretName + "\"," +
+                  "  \"name\":\"" + secretName + "\"," +
                   "  \"value\":\"" + secretValue + "\"" +
                   "}");
 

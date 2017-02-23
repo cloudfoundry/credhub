@@ -576,8 +576,7 @@ public class SecretDataServiceTest {
 
   private NamedPasswordSecret saveNamedPassword(long timeMillis, String name, UUID canaryUuid) {
     fakeTimeSetter.accept(timeMillis);
-    name = StringUtils.prependIfMissing(name, "/");
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(name);
+    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
     if (secretName == null) {
       secretName = secretNameRepository.saveAndFlush(new SecretName(name));
     }

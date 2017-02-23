@@ -1,5 +1,7 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.ByteStreams.toByteArray;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.ResponseError;
@@ -8,6 +10,9 @@ import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.DataResponse;
@@ -45,12 +50,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.io.ByteStreams.toByteArray;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -98,17 +97,16 @@ public class SecretsController {
                                Authentication authentication) throws Exception {
     AuditRecordBuilder auditRecorder = new AuditRecordBuilder(null, request, authentication);
     return auditLogService.performWithAuditing(auditRecorder, () -> {
-      final String nameToDelete = sanitizedName(secretName);
-      auditRecorder.setCredentialName(nameToDelete);
+      auditRecorder.setCredentialName(secretName);
 
-      if (StringUtils.isEmpty(nameToDelete)) {
+      if (StringUtils.isEmpty(secretName)) {
         return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
       }
-      if (secretDataService.findMostRecent(nameToDelete) == null) {
+      if (secretDataService.findMostRecent(secretName) == null) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
 
-      secretDataService.delete(nameToDelete);
+      secretDataService.delete(secretName);
       return new ResponseEntity(HttpStatus.OK);
     });
   }
@@ -135,23 +133,13 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-    String secretIdentifier = sanitizedName(secretName);
-
     return retrieveSecretWithAuditing(
-        secretIdentifier,
+        secretName,
         selectLookupFunction(current),
         request,
         authentication,
         (namedSecrets) -> DataResponse.fromEntity(namedSecrets, SecretView::fromEntity)
     );
-  }
-
-  public String sanitizedName(@RequestParam(value = "name", required = false) String secretName) {
-    if (secretName != null && secretName.startsWith("/")) {
-      secretName = secretName.substring(1);
-    }
-
-    return secretName;
   }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
@@ -267,7 +255,7 @@ public class SecretsController {
   }
 
   private String getSecretName(DocumentContext parsed) {
-    return sanitizedName(parsed.read("$.name", String.class));
+    return parsed.read("$.name", String.class);
   }
 
   private ResponseEntity<?> storeSecret(String secretPath,
@@ -315,6 +303,6 @@ public class SecretsController {
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
-    return findWithAuditing(sanitizedName(path), secretDataService::findStartingWithPath, request, authentication);
+    return findWithAuditing(path, secretDataService::findStartingWithPath, request, authentication);
   }
 }

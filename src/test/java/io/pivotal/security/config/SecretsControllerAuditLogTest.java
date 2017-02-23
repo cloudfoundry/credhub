@@ -91,7 +91,7 @@ public class SecretsControllerAuditLogTest {
     describe("when getting a credential", () -> {
       describe("by name", () -> {
         it("makes a credential_access audit log entry", () -> {
-          doReturn(Arrays.asList(new NamedPasswordSecret("foo").setEncryptor(encryptor)))
+          doReturn(Arrays.asList(new NamedPasswordSecret("/foo").setEncryptor(encryptor)))
               .when(secretDataService).findAllByName(eq("foo"));
 
           mockMvc.perform(get(API_V1_DATA + "?name=foo")
@@ -105,14 +105,14 @@ public class SecretsControllerAuditLogTest {
 
           OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-          assertThat(auditRecord.getCredentialName(), equalTo("foo"));
+          assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
           assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
         });
       });
 
       describe("by id", () -> {
         it("makes a credential_access audit log entry", () -> {
-          doReturn(new NamedPasswordSecret("foo").setEncryptor(encryptor))
+          doReturn(new NamedPasswordSecret("/foo").setEncryptor(encryptor))
               .when(secretDataService).findByUuid(eq("foo-id"));
 
           mockMvc.perform(get(API_V1_DATA + "/foo-id")
@@ -126,7 +126,7 @@ public class SecretsControllerAuditLogTest {
 
           OperationAuditRecord auditRecord = recordCaptor.getValue();
 
-          assertThat(auditRecord.getCredentialName(), equalTo("foo"));
+          assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
           assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
         });
       });

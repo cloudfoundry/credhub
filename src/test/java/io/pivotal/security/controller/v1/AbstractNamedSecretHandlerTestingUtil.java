@@ -40,7 +40,7 @@ public abstract class AbstractNamedSecretHandlerTestingUtil {
   ) {
     return () -> {
       beforeEach(() -> {
-        mapFunction = secretKind.lift(subject.get().make("secret-path", documentContext));
+        mapFunction = secretKind.lift(subject.get().make("/secret-path", documentContext));
         expectedTranslator = translatorSupplier;
       });
 
@@ -48,7 +48,7 @@ public abstract class AbstractNamedSecretHandlerTestingUtil {
         NamedSecret namedSecret = mapFunction.apply(null);
         verify(expectedTranslator).populateEntityFromJson(isA(clazz), eq(documentContext));
         assertThat(namedSecret, instanceOf(clazz));
-        assertThat(namedSecret.getName(), equalTo("secret-path"));
+        assertThat(namedSecret.getName(), equalTo("/secret-path"));
       });
 
       it("updates the secret", () -> {

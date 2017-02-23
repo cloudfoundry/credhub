@@ -1,22 +1,21 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -29,7 +28,7 @@ public class NamedRsaSecretTest {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      subject = new NamedRsaSecret("Foo");
+      subject = new NamedRsaSecret("/Foo");
     });
 
     it("returns type rsa", () -> {
@@ -68,7 +67,7 @@ public class NamedRsaSecretTest {
         UUID uuid = UUID.randomUUID();
         UUID encryptionKeyUuid = UUID.randomUUID();
 
-        subject = new NamedRsaSecret("foo");
+        subject = new NamedRsaSecret("/foo");
         subject.setPublicKey("fake-public-key");
         subject.setEncryptedValue("fake-private-key".getBytes());
         subject.setNonce("fake-nonce".getBytes());
@@ -79,7 +78,7 @@ public class NamedRsaSecretTest {
         NamedRsaSecret copy = new NamedRsaSecret();
         subject.copyInto(copy);
 
-        assertThat(copy.getName(), equalTo("foo"));
+        assertThat(copy.getName(), equalTo("/foo"));
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
         assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
         assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));

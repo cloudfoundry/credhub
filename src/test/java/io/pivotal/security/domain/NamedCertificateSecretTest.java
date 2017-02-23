@@ -1,8 +1,16 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsNull.notNullValue;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,15 +19,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsNull.notNullValue;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -37,7 +36,7 @@ public class NamedCertificateSecretTest {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      subject = new NamedCertificateSecret("Foo")
+      subject = new NamedCertificateSecret("/Foo")
           .setEncryptor(encryptor)
           .setCa("my-ca")
           .setCertificate("my-cert")
@@ -65,7 +64,7 @@ public class NamedCertificateSecretTest {
         UUID uuid = UUID.randomUUID();
         UUID encryptionKeyUuid = UUID.randomUUID();
 
-        subject = new NamedCertificateSecret("name");
+        subject = new NamedCertificateSecret("/name");
         subject.setCa("fake-ca");
         subject.setCertificate("fake-certificate");
         subject.setEncryptedValue("fake-private-key".getBytes());
@@ -78,7 +77,7 @@ public class NamedCertificateSecretTest {
         NamedCertificateSecret copy = new NamedCertificateSecret();
         subject.copyInto(copy);
 
-        assertThat(copy.getName(), equalTo("name"));
+        assertThat(copy.getName(), equalTo("/name"));
         assertThat(copy.getCaName(), equalTo("ca-name"));
         assertThat(copy.getCa(), equalTo("fake-ca"));
         assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));

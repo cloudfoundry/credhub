@@ -2,9 +2,20 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.hamcrest.core.IsNull.notNullValue;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,18 +23,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsNull.notNullValue;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -43,7 +42,7 @@ public class NamedPasswordSecretTest {
     wireAndUnwire(this, false);
 
     beforeEach(() -> {
-      subject = new NamedPasswordSecret("Foo");
+      subject = new NamedPasswordSecret("/Foo");
       subject.setEncryptor(encryptor);
 
       generationParameters = new PasswordGenerationParameters();
@@ -58,7 +57,7 @@ public class NamedPasswordSecretTest {
 
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
-        subject = new NamedPasswordSecret("foo");
+        subject = new NamedPasswordSecret("/foo");
         subject.setEncryptor(encryptor);
       });
 
@@ -111,7 +110,7 @@ public class NamedPasswordSecretTest {
         parameters.setExcludeUpper(false);
 
 
-        subject = new NamedPasswordSecret("foo");
+        subject = new NamedPasswordSecret("/foo");
         subject.setEncryptor(encryptor);
         subject.setPasswordAndGenerationParameters("hello", parameters);
         subject.setUuid(uuid);
@@ -125,7 +124,7 @@ public class NamedPasswordSecretTest {
         NamedPasswordSecret copy = new NamedPasswordSecret();
         subject.copyInto(copy);
 
-        assertThat(copy.getName(), equalTo("foo"));
+        assertThat(copy.getName(), equalTo("/foo"));
         assertThat(copy.getPassword(), equalTo("hello"));
         assertThat(copy.getEncryptedValue(), equalTo(initialEncryptedValue));
 
