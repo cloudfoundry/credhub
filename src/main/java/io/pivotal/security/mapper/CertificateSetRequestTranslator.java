@@ -1,16 +1,15 @@
 package io.pivotal.security.mapper;
 
+import static com.google.common.collect.ImmutableSet.of;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
+import static io.pivotal.security.util.StringUtil.emptyToNull;
 import io.pivotal.security.view.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
-
-import static com.google.common.collect.ImmutableSet.of;
-import static io.pivotal.security.util.StringUtil.emptyToNull;
 
 @Component
 public class CertificateSetRequestTranslator implements RequestTranslator<NamedCertificateSecret> {
@@ -30,6 +29,7 @@ public class CertificateSetRequestTranslator implements RequestTranslator<NamedC
     if (root == null && certificate == null && privateKey == null) {
       throw new ParameterizedValidationException("error.missing_certificate_credentials");
     }
+    namedCertificateSecret.setCaName(null);
     namedCertificateSecret.setEncryptor(encryptor);
     namedCertificateSecret.setCa(root);
     namedCertificateSecret.setCertificate(certificate);

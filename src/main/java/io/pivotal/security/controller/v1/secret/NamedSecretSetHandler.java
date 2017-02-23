@@ -47,27 +47,27 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
     return new SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException>() {
       @Override
       public NamedSecret value(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedValueSecret) namedSecret, NamedValueSecret::new, secretPath, valueSetRequestTranslator, parsedRequest, encryptor, false);
+        return createNewSecret((NamedValueSecret) namedSecret, NamedValueSecret::new, secretPath, valueSetRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new, secretPath, passwordSetRequestTranslator, parsedRequest, encryptor, false);
+        return createNewSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new, secretPath, passwordSetRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret certificate(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedCertificateSecret) namedSecret, NamedCertificateSecret::new, secretPath, certificateSetRequestTranslator, parsedRequest, encryptor, false);
+        return createNewSecret((NamedCertificateSecret) namedSecret, NamedCertificateSecret::new, secretPath, certificateSetRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret ssh(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedSshSecret) namedSecret, NamedSshSecret::new, secretPath, rsaSshSetRequestTranslator, parsedRequest, encryptor, false);
+        return createNewSecret((NamedSshSecret) namedSecret, NamedSshSecret::new, secretPath, rsaSshSetRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret rsa(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaSshSetRequestTranslator, parsedRequest, encryptor, false);
+        return createNewSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaSshSetRequestTranslator, parsedRequest, encryptor);
       }
     };
   }

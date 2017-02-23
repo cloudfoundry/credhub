@@ -1,6 +1,9 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
@@ -8,7 +11,6 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
@@ -17,14 +19,7 @@ import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
 import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
@@ -56,8 +51,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               valueSetRequestTranslator,
               SecretKind.VALUE,
               NamedValueSecret.class,
-              new NamedValueSecret(),
-              mock(NamedValueSecret.class))
+              new NamedValueSecret()
+          )
       );
 
       describe(
@@ -66,8 +61,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               passwordSetRequestTranslator,
               SecretKind.PASSWORD,
               NamedPasswordSecret.class,
-              new NamedPasswordSecret(),
-              mock(NamedPasswordSecret.class))
+              new NamedPasswordSecret()
+          )
       );
 
       describe(
@@ -76,8 +71,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               certificateSetRequestTranslator,
               SecretKind.CERTIFICATE,
               NamedCertificateSecret.class,
-              new NamedCertificateSecret(),
-              mock(NamedCertificateSecret.class))
+              new NamedCertificateSecret()
+          )
       );
 
       describe(
@@ -86,8 +81,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               rsaSshSetRequestTranslator,
               SecretKind.SSH,
               NamedSshSecret.class,
-              new NamedSshSecret(),
-              mock(NamedSshSecret.class))
+              new NamedSshSecret()
+          )
       );
 
       describe(
@@ -96,8 +91,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               rsaSshSetRequestTranslator,
               SecretKind.RSA,
               NamedRsaSecret.class,
-              new NamedRsaSecret(),
-              mock(NamedRsaSecret.class))
+              new NamedRsaSecret()
+          )
       );
     });
 
@@ -136,10 +131,5 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
             "\"private_key\":\"private-key\"}}"));
       });
     });
-  }
-
-  @Override
-  protected void verifyExistingSecretCopying(NamedSecret mockExistingSecret) {
-    verify(mockExistingSecret, never()).copyInto(any());
   }
 }

@@ -52,22 +52,22 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new, secretPath, passwordGeneratorRequestTranslator, parsedRequest, encryptor, true);
+        return createNewSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new, secretPath, passwordGeneratorRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret certificate(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedCertificateSecret) namedSecret, NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsedRequest, encryptor, true);
+        return createNewSecret((NamedCertificateSecret) namedSecret, NamedCertificateSecret::new, secretPath, certificateGeneratorRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret ssh(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedSshSecret) namedSecret, NamedSshSecret::new, secretPath, sshGeneratorRequestTranslator, parsedRequest, encryptor, true);
+        return createNewSecret((NamedSshSecret) namedSecret, NamedSshSecret::new, secretPath, sshGeneratorRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret rsa(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaGeneratorRequestTranslator, parsedRequest, encryptor, true);
+        return createNewSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaGeneratorRequestTranslator, parsedRequest, encryptor);
       }
     };
   }

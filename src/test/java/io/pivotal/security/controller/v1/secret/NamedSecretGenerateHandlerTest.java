@@ -8,7 +8,6 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
@@ -66,8 +65,8 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
               passwordGeneratorRequestTranslator,
               SecretKind.PASSWORD,
               NamedPasswordSecret.class,
-              new NamedPasswordSecret(),
-              mock(NamedPasswordSecret.class))
+              new NamedPasswordSecret()
+          )
       );
 
       describe(
@@ -76,8 +75,8 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
               certificateGeneratorRequestTranslator,
               SecretKind.CERTIFICATE,
               NamedCertificateSecret.class,
-              new NamedCertificateSecret(),
-              mock(NamedCertificateSecret.class))
+              new NamedCertificateSecret()
+          )
       );
 
       describe(
@@ -86,8 +85,8 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
               sshGeneratorRequestTranslator,
               SecretKind.SSH,
               NamedSshSecret.class,
-              new NamedSshSecret(),
-              mock(NamedSshSecret.class))
+              new NamedSshSecret()
+          )
       );
 
       describe(
@@ -96,8 +95,8 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
               rsaGeneratorRequestTranslator,
               SecretKind.RSA,
               NamedRsaSecret.class,
-              new NamedRsaSecret(),
-              mock(NamedRsaSecret.class))
+              new NamedRsaSecret()
+          )
       );
     });
 
@@ -158,10 +157,5 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
           }
       );
     });
-  }
-
-  @Override
-  protected void verifyExistingSecretCopying(NamedSecret mockExistingSecret) {
-    verify(mockExistingSecret).copyInto(any());
   }
 }

@@ -39,11 +39,11 @@ public class CertificateSetRequestTranslatorTest {
   {
     wireAndUnwire(this, false);
 
-    describe("populating entity from json", () -> {
-
+    describe("#populateEntityFromJson", () -> {
       beforeEach(() -> {
         subject = new CertificateSetRequestTranslator(encryptor);
         entity = new NamedCertificateSecret("Foo");
+        entity.setCaName("some-ca-name");
       });
 
       it("creates an entity when all fields are present", () -> {
@@ -95,6 +95,7 @@ public class CertificateSetRequestTranslatorTest {
     assertThat(entity.getCa(), equalTo(expectedRoot));
     assertThat(entity.getCertificate(), equalTo(expectedCertificate));
     assertThat(entity.getPrivateKey(), equalTo(expectedPrivateKey));
+    assertThat(entity.getCaName(), equalTo(null));
   }
 
   private String createJson(String root, String certificate, String privateKey) {

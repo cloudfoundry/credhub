@@ -8,7 +8,6 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -21,7 +20,6 @@ import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
@@ -363,23 +361,6 @@ public class SecretsControllerSetTest {
 
           assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_ACCESS));
         });
-      });
-
-      it("does not copy values from existing secret to new secret", () -> {
-        doReturn(new NamedPasswordSecret("foo").setEncryptedGenerationParameters(new byte[1])).when(secretDataService).findMostRecent("foo");
-        mockMvc.perform(put("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"password\"," +
-                "  \"name\":\"foo\"," +
-                "  \"value\":\"my-password\"," +
-                "  \"overwrite\":true" +
-                "}"))
-            .andExpect(status().isOk());
-        ArgumentCaptor<NamedPasswordSecret> captor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
-        verify(secretDataService).save(captor.capture());
-        assertThat(captor.getValue().getEncryptedGenerationParameters(), nullValue());
       });
     });
   }

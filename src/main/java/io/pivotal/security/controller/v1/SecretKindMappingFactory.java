@@ -18,18 +18,13 @@ public interface SecretKindMappingFactory {
       String secretPath,
       RequestTranslator<Z> requestTranslator,
       DocumentContext parsedRequest,
-      Encryptor encryptor,
-      boolean copyEverything
+      Encryptor encryptor
   ) throws NoSuchAlgorithmException {
     Z result = secretConstructor.apply(secretPath);
     result.setEncryptor(encryptor);
 
     if (existingNamedSecret != null) {
-      result.setSecretName(existingNamedSecret.getSecretName());
-
-      if (copyEverything) {
-        existingNamedSecret.copyInto(result);
-      }
+      existingNamedSecret.copyInto(result);
     }
 
     requestTranslator.validatePathName(secretPath);

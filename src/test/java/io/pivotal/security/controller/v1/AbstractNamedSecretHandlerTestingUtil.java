@@ -1,18 +1,13 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.SecretKind;
-import org.mockito.Mock;
-
-import java.security.NoSuchAlgorithmException;
-import java.util.function.Supplier;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
@@ -21,7 +16,11 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.same;
+import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
+
+import java.security.NoSuchAlgorithmException;
+import java.util.function.Supplier;
 
 public abstract class AbstractNamedSecretHandlerTestingUtil {
 
@@ -32,15 +31,13 @@ public abstract class AbstractNamedSecretHandlerTestingUtil {
 
   CheckedFunction<NamedSecret, NoSuchAlgorithmException> mapFunction;
 
-  protected abstract void verifyExistingSecretCopying(NamedSecret mockExistingSecret);
-
   protected Spectrum.Block behavesLikeMapper(
       Supplier<SecretKindMappingFactory> subject,
       RequestTranslator translatorSupplier,
       SecretKind secretKind,
       Class<? extends NamedSecret> clazz,
-      NamedSecret existingEntity,
-      NamedSecret mockExistingSecret) {
+      NamedSecret existingEntity
+  ) {
     return () -> {
       beforeEach(() -> {
         mapFunction = secretKind.lift(subject.get().make("secret-path", documentContext));
@@ -61,10 +58,6 @@ public abstract class AbstractNamedSecretHandlerTestingUtil {
         assertThat(namedSecret, instanceOf(clazz));
       });
 
-      it("pass the existing secret through only when doing generation, not set", () -> {
-        mapFunction.apply(mockExistingSecret);
-        verifyExistingSecretCopying(mockExistingSecret);
-      });
     };
   }
 }
