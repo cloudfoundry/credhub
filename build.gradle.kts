@@ -16,7 +16,7 @@ buildscript {
         maven { setUrl("https://plugins.gradle.org/m2/") }
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.2.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.4.4.RELEASE")
         classpath("org.owasp:dependency-check-gradle:1.3.6")
         classpath("gradle.plugin.nl.javadude.gradle.plugins:license-gradle-plugin:0.13.1")
         classpath("org.springframework.build.gradle:propdeps-plugin:0.0.7")
