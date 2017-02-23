@@ -7,7 +7,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

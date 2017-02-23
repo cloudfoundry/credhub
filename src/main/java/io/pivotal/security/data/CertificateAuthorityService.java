@@ -4,7 +4,7 @@ import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateReader;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

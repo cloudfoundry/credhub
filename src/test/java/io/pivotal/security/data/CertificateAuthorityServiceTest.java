@@ -4,7 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 

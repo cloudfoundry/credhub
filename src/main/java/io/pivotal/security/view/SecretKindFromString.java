@@ -5,6 +5,7 @@ import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.entity.NamedRsaSecretData;
 import io.pivotal.security.entity.NamedSshSecretData;
 import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 
 public interface SecretKindFromString {
 

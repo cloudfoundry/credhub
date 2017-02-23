@@ -13,7 +13,7 @@ import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;

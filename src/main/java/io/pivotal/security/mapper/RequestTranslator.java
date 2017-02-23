@@ -4,7 +4,7 @@ import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.Option;
 import io.pivotal.security.util.StringUtil;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 
 import java.util.List;
 import java.util.Set;

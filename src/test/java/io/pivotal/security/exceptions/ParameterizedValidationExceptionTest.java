@@ -1,4 +1,4 @@
-package io.pivotal.security.view;
+package io.pivotal.security.exceptions;
 
 import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;

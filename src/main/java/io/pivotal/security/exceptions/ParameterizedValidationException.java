@@ -1,4 +1,4 @@
-package io.pivotal.security.view;
+package io.pivotal.security.exceptions;
 
 import javax.validation.ValidationException;
 import java.util.List;

@@ -1,6 +1,6 @@
 package io.pivotal.security.controller.v1;
 
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;

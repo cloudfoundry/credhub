@@ -2,6 +2,7 @@ package io.pivotal.security.oauth;
 
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.exceptions.AccessTokenExpiredException;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;

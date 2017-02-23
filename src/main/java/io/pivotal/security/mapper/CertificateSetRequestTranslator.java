@@ -5,7 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import static io.pivotal.security.util.StringUtil.emptyToNull;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

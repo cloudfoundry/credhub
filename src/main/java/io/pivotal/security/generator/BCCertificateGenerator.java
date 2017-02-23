@@ -4,7 +4,7 @@ import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

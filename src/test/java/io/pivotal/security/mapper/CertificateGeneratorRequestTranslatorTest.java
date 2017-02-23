@@ -21,7 +21,7 @@ import io.pivotal.security.util.CertificateReader;
 import static io.pivotal.security.util.CertificateStringConstants.BIG_TEST_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import static org.hamcrest.CoreMatchers.equalTo;

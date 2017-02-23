@@ -1,4 +1,4 @@
-package io.pivotal.security.oauth;
+package io.pivotal.security.exceptions;
 
 import org.springframework.security.oauth2.common.exceptions.ClientAuthenticationException;
 

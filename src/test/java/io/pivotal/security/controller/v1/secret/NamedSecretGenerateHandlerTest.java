@@ -17,7 +17,7 @@ import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 import static org.mockito.Mockito.mock;

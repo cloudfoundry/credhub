@@ -12,7 +12,7 @@ import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;

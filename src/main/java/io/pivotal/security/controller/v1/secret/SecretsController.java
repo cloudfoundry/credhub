@@ -18,7 +18,7 @@ import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;

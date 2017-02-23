@@ -9,7 +9,7 @@ import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateReader;
 import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.apache.commons.lang3.StringUtils;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.springframework.beans.factory.annotation.Autowired;

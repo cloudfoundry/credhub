@@ -2,7 +2,7 @@ package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.domain.NamedRsaSshSecret;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;

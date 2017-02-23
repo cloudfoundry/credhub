@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;

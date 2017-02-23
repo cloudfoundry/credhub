@@ -2,7 +2,7 @@ package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.view.ParameterizedValidationException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
