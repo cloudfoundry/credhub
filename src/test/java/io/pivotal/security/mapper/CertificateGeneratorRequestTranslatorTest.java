@@ -259,7 +259,7 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
 
       it("can populate an entity from JSON", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\",\"ca\":\"my-ca-name\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\",\"ca\":\"/my-ca-name\"}}";
         parsed = jsonPath.parse(requestJson);
         subject.populateEntityFromJson(secret, parsed);
 
@@ -267,7 +267,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
         assertThat(secret.getCa(), equalTo("my-root"));
         assertThat(secret.getCertificate(), equalTo("my-cert"));
-        assertThat(secret.getCaName(), equalTo("my-ca-name"));
+        assertThat(secret.getCaName(), equalTo("/my-ca-name"));
       });
     });
 

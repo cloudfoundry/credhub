@@ -58,6 +58,20 @@ public class NamedCertificateSecretTest {
       assertThat(subject.getPrivateKey(), equalTo("my-priv"));
     });
 
+    it("adds a slash to caName", () -> {
+      subject.setCaName("something");
+      assertThat(subject.getCaName(), equalTo("/something"));
+
+      subject.setCaName("/something");
+      assertThat(subject.getCaName(), equalTo("/something"));
+
+      subject.setCaName("");
+      assertThat(subject.getCaName(), equalTo(""));
+
+      subject.setCaName(null);
+      assertThat(subject.getCaName(), equalTo(null));
+    });
+
     describe("#copyInto", () -> {
       it("should copy the correct values", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
@@ -78,7 +92,7 @@ public class NamedCertificateSecretTest {
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("/name"));
-        assertThat(copy.getCaName(), equalTo("ca-name"));
+        assertThat(copy.getCaName(), equalTo("/ca-name"));
         assertThat(copy.getCa(), equalTo("fake-ca"));
         assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
         assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));

@@ -1,6 +1,7 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.view.SecretKind;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
@@ -48,7 +49,7 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
   }
 
   public NamedCertificateSecretData setCaName(String caName) {
-    this.caName = caName;
+    this.caName = !StringUtils.isEmpty(caName) ? StringUtils.prependIfMissing(caName, "/") : caName;
     return this;
   }
 
