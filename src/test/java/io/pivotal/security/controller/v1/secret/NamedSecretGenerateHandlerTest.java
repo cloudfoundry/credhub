@@ -1,6 +1,9 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
@@ -9,6 +12,7 @@ import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
@@ -16,14 +20,7 @@ import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @RunWith(Spectrum.class)
 public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTestingUtil {

@@ -175,7 +175,7 @@ public class PasswordGeneratorRequestTranslatorTest {
       });
     });
 
-    itThrowsWithMessage("rejects generation unless generation parameters are present in the existing entity", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_credentials", () -> {
+    itThrowsWithMessage("rejects generation unless generation parameters are present in the existing entity", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_password", () -> {
       NamedPasswordSecret secretWithoutGenerationParameters = new NamedPasswordSecret("test");
       secretWithoutGenerationParameters.setEncryptor(encryptor);
       secretWithoutGenerationParameters.setPasswordAndGenerationParameters("old-password", null);

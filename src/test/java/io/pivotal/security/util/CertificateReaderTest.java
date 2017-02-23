@@ -58,6 +58,20 @@ public class CertificateReaderTest {
       });
     });
 
+    describe("#isValid", () -> {
+      it("returns true for a valid cert", () -> {
+        assertThat(new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT).isValid(), equalTo(true));
+        assertThat(new CertificateReader(V3_CERT_WITHOUT_BASIC_CONSTRAINTS).isValid(), equalTo(true));
+        assertThat(new CertificateReader(SELF_SIGNED_CA_CERT).isValid(), equalTo(true));
+        assertThat(new CertificateReader(BIG_TEST_CERT).isValid(), equalTo(true));
+      });
+
+      it("returns false for an invalid cert", () -> {
+        assertThat(new CertificateReader("penguin").isValid(), equalTo(false));
+        assertThat(new CertificateReader("").isValid(), equalTo(false));
+      });
+    });
+
     describe("when it is not a self-signed certificate", () -> {
       it("should correctly set certificate fields", () -> {
         final String distinguishedName = "O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa";

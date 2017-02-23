@@ -1,5 +1,7 @@
 package io.pivotal.security.util;
 
+import static java.lang.Math.toIntExact;
+import static java.time.temporal.ChronoUnit.DAYS;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
@@ -18,9 +20,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
 
-import static java.lang.Math.toIntExact;
-import static java.time.temporal.ChronoUnit.DAYS;
-
 public class CertificateReader {
   private final X509Certificate certificate;
   private final X509CertificateHolder certificateHolder;
@@ -34,6 +33,10 @@ public class CertificateReader {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public boolean isValid() {
+    return certificate != null;
   }
 
   public GeneralNames getAlternativeNames() {
