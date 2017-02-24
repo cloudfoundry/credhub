@@ -1,35 +1,20 @@
 package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.secret.SecretsController;
-import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import io.pivotal.security.entity.OperationAuditRecord;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.service.DatabaseAuditLogService;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -38,17 +23,35 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
 import java.util.Arrays;
 import java.util.UUID;
+
+import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
@@ -134,7 +137,7 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request to set credential is served", () -> {
       beforeEach(() -> {
-        when(secretDataService.save(any())).thenAnswer(invocation -> {
+        when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
           NamedValueSecret namedValueSecret = invocation.getArgumentAt(0, NamedValueSecret.class);
           namedValueSecret.setEncryptor(encryptor);
           namedValueSecret.setUuid(UUID.randomUUID());
@@ -173,7 +176,7 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request to generate a credential is served", () -> {
       beforeEach(() -> {
-        when(secretDataService.save(any())).thenAnswer(invocation -> {
+        when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
           NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
           namedPasswordSecret.setUuid(UUID.randomUUID());
           return namedPasswordSecret;
@@ -260,7 +263,7 @@ public class SecretsControllerAuditLogTest {
 
     describe("when a request has multiple X-Forwarded-For headers set", () -> {
       beforeEach(() -> {
-        when(secretDataService.save(any())).thenAnswer(invocation -> {
+        when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
           NamedValueSecret namedValueSecret = invocation.getArgumentAt(0, NamedValueSecret.class);
           namedValueSecret.setUuid(UUID.randomUUID());
           return namedValueSecret;

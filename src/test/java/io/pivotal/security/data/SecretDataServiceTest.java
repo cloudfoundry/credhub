@@ -1,11 +1,6 @@
 package io.pivotal.security.data;
 
-import static com.google.common.collect.Lists.newArrayList;
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
@@ -13,35 +8,42 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.SecretView;
 import org.apache.commons.lang3.StringUtils;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.not;
 import org.hamcrest.collection.IsIterableContainingInOrder;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Slice;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -100,11 +102,11 @@ public class SecretDataServiceTest {
 
           assertNotNull(savedSecret);
 
-          List<NamedPasswordSecret> passwordSecrets = getSecretsFromDb();
+          List<NamedPasswordSecretData> passwordSecrets = getSecretsFromDb();
 
           assertThat(passwordSecrets.size(), equalTo(1));
-          NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
-          assertThat(passwordSecret.getName(), equalTo("/my-secret"));
+          NamedPasswordSecretData passwordSecret = passwordSecrets.get(0);
+          assertThat(passwordSecret.getSecretName().getName(), equalTo("/my-secret"));
           assertThat(passwordSecret.getEncryptedValue(), equalTo("secret-password".getBytes()));
 
           // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
@@ -123,11 +125,11 @@ public class SecretDataServiceTest {
 
         subject.save(savedSecret);
 
-        List<NamedPasswordSecret> passwordSecrets = getSecretsFromDb();
+        List<NamedPasswordSecretData> passwordSecrets = getSecretsFromDb();
 
         assertThat(passwordSecrets.size(), equalTo(1));
-        NamedPasswordSecret passwordSecret = passwordSecrets.get(0);
-        assertThat(passwordSecret.getName(), equalTo("/my-secret-2"));
+        NamedPasswordSecretData passwordSecret = passwordSecrets.get(0);
+        assertThat(passwordSecret.getSecretName().getName(), equalTo("/my-secret-2"));
         assertThat(passwordSecret.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
 
         NamedPasswordSecretData foundPasswordSecret = (NamedPasswordSecretData) (secretRepository.findAll().get(0));
@@ -152,9 +154,9 @@ public class SecretDataServiceTest {
 
         subject.save(secretWithLeadingSlash);
 
-        NamedPasswordSecret savedSecret = getSecretsFromDb().get(0);
+        NamedPasswordSecretData savedSecret = getSecretsFromDb().get(0);
 
-        assertThat(savedSecret.getName(), equalTo("/my/secret"));
+        assertThat(savedSecret.getSecretName().getName(), equalTo("/my/secret"));
       });
 
       describe("when the secret has no encrypted value", () -> {
@@ -171,13 +173,13 @@ public class SecretDataServiceTest {
       it("should delete all secrets matching a name", () -> {
         SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("/my-secret"));
 
-        NamedPasswordSecret secret = new NamedPasswordSecret();
+        NamedPasswordSecretData secret = new NamedPasswordSecretData();
         secret.setSecretName(secretName);
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
         subject.save(secret);
 
-        secret = new NamedPasswordSecret();
+        secret = new NamedPasswordSecretData();
         secret.setSecretName(secretName);
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("another password".getBytes());
@@ -194,13 +196,13 @@ public class SecretDataServiceTest {
       it("should be able to delete a secret ignoring case", () -> {
         SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("/my-secret"));
 
-        NamedPasswordSecret secret = new NamedPasswordSecret();
+        NamedPasswordSecretData secret = new NamedPasswordSecretData();
         secret.setSecretName(secretName);
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("secret-password".getBytes());
         subject.save(secret);
 
-        secret = new NamedPasswordSecret();
+        secret = new NamedPasswordSecretData();
         secret.setSecretName(secretName);
         secret.setEncryptionKeyUuid(activeCanaryUuid);
         secret.setEncryptedValue("another password".getBytes());
@@ -253,12 +255,12 @@ public class SecretDataServiceTest {
       beforeEach(() -> {
         SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("/my-SECRET"));
 
-        NamedPasswordSecret namedPasswordSecret1 = new NamedPasswordSecret();
+        NamedPasswordSecretData namedPasswordSecret1 = new NamedPasswordSecretData();
         namedPasswordSecret1.setSecretName(secretName);
         namedPasswordSecret1.setEncryptionKeyUuid(activeCanaryUuid);
         namedPasswordSecret1.setEncryptedValue("/my-old-password".getBytes());
 
-        NamedPasswordSecret namedPasswordSecret2 = new NamedPasswordSecret();
+        NamedPasswordSecretData namedPasswordSecret2 = new NamedPasswordSecretData();
         namedPasswordSecret2.setSecretName(secretName);
         namedPasswordSecret2.setEncryptionKeyUuid(activeCanaryUuid);
         namedPasswordSecret2.setEncryptedValue("/my-new-password".getBytes());
@@ -283,26 +285,26 @@ public class SecretDataServiceTest {
       it("finds most recent based on version_created_at date, not updated_at", () -> {
         SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("/my-certificate"));
 
-        NamedCertificateSecret firstCertificate = new NamedCertificateSecret();
+        NamedCertificateSecretData firstCertificate = new NamedCertificateSecretData();
         firstCertificate.setSecretName(secretName);
         firstCertificate.setEncryptionKeyUuid(activeCanaryUuid);
         firstCertificate.setCertificate("first-certificate");
 
-        NamedCertificateSecret secondCertificate = new NamedCertificateSecret();
+        NamedCertificateSecretData secondCertificate = new NamedCertificateSecretData();
         secondCertificate.setSecretName(secretName);
         secondCertificate.setEncryptionKeyUuid(activeCanaryUuid);
         secondCertificate.setCertificate("second-certificate");
 
-        firstCertificate = subject.save(firstCertificate);
+        NamedCertificateSecret savedFirstCertificate = subject.save(firstCertificate);
         fakeTimeSetter.accept(445346L);
-        secondCertificate = subject.save(secondCertificate);
+        subject.save(secondCertificate);
 
         NamedCertificateSecret mostRecent = (NamedCertificateSecret) subject.findMostRecent("/my-certificate");
         assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
 
         firstCertificate.setCertificate("updated-first-certificate");
         fakeTimeSetter.accept(445347L);
-        subject.save(firstCertificate);
+        subject.save(savedFirstCertificate);
 
         mostRecent = (NamedCertificateSecret) subject.findMostRecent("/my-certificate");
         assertThat(mostRecent.getCertificate(), equalTo("second-certificate"));
@@ -571,7 +573,7 @@ public class SecretDataServiceTest {
     if (secretName == null) {
       secretName = secretNameRepository.saveAndFlush(new SecretName(name));
     }
-    NamedPasswordSecret secretObject = new NamedPasswordSecret();
+    NamedPasswordSecretData secretObject = new NamedPasswordSecretData();
     secretObject.setSecretName(secretName);
     secretObject.setEncryptionKeyUuid(canaryUuid);
     return subject.save(secretObject);
@@ -581,14 +583,15 @@ public class SecretDataServiceTest {
     return saveNamedPassword(timeMillis, secretName, activeCanaryUuid);
   }
 
-  private List<NamedPasswordSecret> getSecretsFromDb() {
+  private List<NamedPasswordSecretData> getSecretsFromDb() {
     List<SecretName> names = jdbcTemplate.query("select * from secret_name", (rowSet, rowNum) -> {
       SecretName secretName = new SecretName(rowSet.getString("name"));
       secretName.setUuid(UUID.nameUUIDFromBytes(rowSet.getBytes("uuid")));
       return secretName;
     });
+
     return jdbcTemplate.query("select * from named_secret", (rowSet, rowNum) -> {
-      NamedPasswordSecret passwordSecret = new NamedPasswordSecret();
+      NamedPasswordSecretData passwordSecret = new NamedPasswordSecretData();
 
       UUID secretNameUuid = UUID.nameUUIDFromBytes(rowSet.getBytes("secret_name_uuid"));
       SecretName secretName = names.stream()

@@ -6,6 +6,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -87,7 +88,7 @@ public class SecurityConfigurationTest {
 
     describe("with a token accepted by our security config", () -> {
       it("allows access", () -> {
-        when(secretDataService.save(any())).thenAnswer(invocation -> {
+        when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
           NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
           namedPasswordSecret.setUuid(UUID.randomUUID());
           namedPasswordSecret.setVersionCreatedAt(Instant.now());

@@ -8,11 +8,10 @@ import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,9 +137,8 @@ public class RsaGeneratorRequestTranslatorTest {
       });
 
       it("can regenerate using the existing entity and JSON", () -> {
-        NamedRsaSecret secret = spy(NamedRsaSecret.class);
+        NamedRsaSecret secret = spy(new NamedRsaSecret("test"));
         secret.setEncryptor(encryptor);
-        secret.setSecretName(new SecretName("test"));
         when(secret.getKeyLength()).thenReturn(3072);
 
         ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor.forClass(RsaSecretParameters.class);

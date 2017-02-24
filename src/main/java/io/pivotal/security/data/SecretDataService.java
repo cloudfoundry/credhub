@@ -1,7 +1,6 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Encryptor;
-import static com.google.common.collect.Lists.newArrayList;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
@@ -17,7 +16,6 @@ import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
-import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.SecretView;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +25,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 import java.time.Instant;
 import java.util.List;
@@ -71,6 +72,10 @@ public class SecretDataService {
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
+    return (Z) namedSecret.save(this);
+  }
+
+  public <Z extends NamedSecret> Z save(NamedSecretData namedSecret) {
     if (namedSecret.getEncryptionKeyUuid() == null) {
       namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
@@ -81,11 +86,11 @@ public class SecretDataService {
       namedSecret.setSecretName(secretNameRepository.saveAndFlush(secretName));
     }
 
-    return (Z) wrap(secretRepository.saveAndFlush(namedSecret.toDataEntity()));
+    return (Z) wrap(secretRepository.saveAndFlush(namedSecret));
   }
 
   public List<String> findAllPaths() {
-    return secretRepository.findAllPaths(true);
+    return findAllPaths(true);
   }
 
   public NamedSecret findMostRecent(String name) {
@@ -153,6 +158,19 @@ public class SecretDataService {
         new PageRequest(0, BATCH_SIZE)
     );
     return new SliceImpl(wrap(namedSecretDataSlice.getContent()));
+  }
+
+  private List<String> findAllPaths(Boolean findPaths) {
+    if (!findPaths) {
+      return newArrayList();
+    }
+
+    return secretRepository.findAll().stream()
+            .map(namedSecretData -> namedSecretData.getSecretName().getName())
+            .flatMap(NamedSecretData::fullHierarchyForPath)
+            .distinct()
+            .sorted()
+            .collect(Collectors.toList());
   }
 
   private List<SecretView> findMatchingName(String nameLike) {

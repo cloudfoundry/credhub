@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.EncryptedValueContainer;
 import io.pivotal.security.entity.NamedSecretData;
-import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.view.SecretKind;
 
 import java.time.Instant;
@@ -30,16 +30,8 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
     return (Z) this;
   }
 
-  public SecretName getSecretName() {
-    return delegate.getSecretName();
-  }
-
-  public void setSecretName(SecretName secretName) {
-    delegate.setSecretName(secretName);
-  }
-
   public String getName() {
-    return delegate.getName();
+    return delegate.getSecretName().getName();
   }
 
   public byte[] getEncryptedValue() {
@@ -57,7 +49,6 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
   public void setNonce(byte[] nonce) {
     delegate.setNonce(nonce);
   }
-
 
   public UUID getEncryptionKeyUuid() {
     return delegate.getEncryptionKeyUuid();
@@ -81,12 +72,12 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
     delegate.copyInto(copy.delegate);
   }
 
-  public NamedSecretData toDataEntity() {
-    return this.delegate;
-  }
-
   public Z setEncryptor(Encryptor encryptor) {
     this.encryptor = encryptor;
     return (Z) this;
+  }
+
+  public <Z extends NamedSecret> Z save(SecretDataService secretDataService) {
+    return (Z) secretDataService.save(delegate);
   }
 }

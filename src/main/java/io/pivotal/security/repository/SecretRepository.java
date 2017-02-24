@@ -23,16 +23,4 @@ public interface SecretRepository extends JpaRepository<NamedSecretData, UUID> {
   Slice<NamedSecretData> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
   List<NamedSecretData> findAllBySecretNameUuid(UUID uuid);
   NamedSecretData findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
-  default List<String> findAllPaths(Boolean findPaths) {
-    if (!findPaths) {
-      return newArrayList();
-    }
-
-    return findAll().stream()
-        .map(NamedSecretData::getName)
-        .flatMap(NamedSecretData::fullHierarchyForPath)
-        .distinct()
-        .sorted()
-        .collect(Collectors.toList());
-  }
 }
