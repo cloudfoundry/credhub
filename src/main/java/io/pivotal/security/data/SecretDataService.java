@@ -194,6 +194,9 @@ public class SecretDataService {
   }
 
   private NamedSecret wrap(NamedSecretData dao) {
+    if (dao == null) {
+      return null;
+    }
     NamedSecret returnValue;
     if (dao instanceof NamedCertificateSecretData) {
       returnValue = new NamedCertificateSecret((NamedCertificateSecretData) dao);

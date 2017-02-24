@@ -28,7 +28,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -95,25 +94,25 @@ public class SecretDataServiceTest {
 
     describe("#save", () -> {
       it("should save a secret", () -> {
-          NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
-          secret.setEncryptionKeyUuid(activeCanaryUuid);
-          secret.setEncryptedValue("secret-password".getBytes());
+        NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret");
+        secret.setEncryptionKeyUuid(activeCanaryUuid);
+        secret.setEncryptedValue("secret-password".getBytes());
         NamedSecret savedSecret = subject.save(secret);
 
-          assertNotNull(savedSecret);
+        assertNotNull(savedSecret);
 
-          List<NamedPasswordSecretData> passwordSecrets = getSecretsFromDb();
+        List<NamedPasswordSecretData> passwordSecrets = getSecretsFromDb();
 
-          assertThat(passwordSecrets.size(), equalTo(1));
-          NamedPasswordSecretData passwordSecret = passwordSecrets.get(0);
-          assertThat(passwordSecret.getSecretName().getName(), equalTo("/my-secret"));
-          assertThat(passwordSecret.getEncryptedValue(), equalTo("secret-password".getBytes()));
+        assertThat(passwordSecrets.size(), equalTo(1));
+        NamedPasswordSecretData passwordSecret = passwordSecrets.get(0);
+        assertThat(passwordSecret.getSecretName().getName(), equalTo("/my-secret"));
+        assertThat(passwordSecret.getEncryptedValue(), equalTo("secret-password".getBytes()));
 
-          // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
-          // we need to use Hibernate to check the UUID :(
-          NamedPasswordSecretData foundPasswordSecret = (NamedPasswordSecretData) (secretRepository.findAll().get(0));
-          assertThat(foundPasswordSecret.getUuid(), equalTo(secret.getUuid()));
-        });
+        // Because Java UUID doesn't let us convert from a byte[] to a type 4 UUID,
+        // we need to use Hibernate to check the UUID :(
+        NamedPasswordSecretData foundPasswordSecret = (NamedPasswordSecretData) (secretRepository.findAll().get(0));
+        assertThat(foundPasswordSecret.getUuid(), equalTo(secret.getUuid()));
+      });
 
       it("should update a secret", () -> {
         NamedPasswordSecret secret = new NamedPasswordSecret("/my-secret-2");
@@ -251,6 +250,16 @@ public class SecretDataServiceTest {
       });
     });
 
+    describe("#findMostRecent when SecretName found without versions", () -> {
+      beforeEach(() -> {
+        secretNameRepository.saveAndFlush(new SecretName("/my-unused-SECRET"));
+      });
+
+      it("should return null", () -> {
+        assertNull(subject.findMostRecent("/my-unused-SECRET"));
+      });
+    });
+
     describe("#findMostRecent", () -> {
       beforeEach(() -> {
         SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("/my-SECRET"));
@@ -385,8 +394,8 @@ public class SecretDataServiceTest {
 
         List<SecretView> containingName = subject.findContainingName("/password");
         assertThat(containingName, IsIterableContainingInOrder.contains(
-          hasProperty("name", equalTo("/my/password/secret")),
-          hasProperty("name", equalTo(passwordName))
+            hasProperty("name", equalTo("/my/password/secret")),
+            hasProperty("name", equalTo(passwordName))
         ));
       });
 
