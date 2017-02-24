@@ -1,22 +1,24 @@
 package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.junit.runner.RunWith;
-import org.passay.CharacterRule;
-
-import java.util.List;
-
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
+import org.junit.runner.RunWith;
+import org.passay.CharacterData;
+import org.passay.CharacterRule;
+import org.passay.EnglishCharacterData;
+
+import java.util.List;
 
 @RunWith(Spectrum.class)
 public class CharacterRuleProviderTest {
@@ -24,9 +26,14 @@ public class CharacterRuleProviderTest {
     describe("#getCharacterRules", () -> {
       it("creates character rules from default parameters", () -> {
         PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
-
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
-        assertThat(characterRules, iterableWithSize(3));
+
+        assertThat(characterRules, containsInAnyOrder(
+            usesCharacters(EnglishCharacterData.Digit),
+            usesCharacters(EnglishCharacterData.LowerCase),
+            usesCharacters(EnglishCharacterData.UpperCase)
+        ));
+        assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Hex))));
       });
 
       it("can create character rules without uppercase", () -> {
@@ -36,12 +43,13 @@ public class CharacterRuleProviderTest {
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
         assertThat(characterRules, iterableWithSize(2));
         assertThat(characterRules, containsInAnyOrder(
-            hasCharacters("abc"),
-            hasCharacters("123")
+            usesCharacters(EnglishCharacterData.LowerCase),
+            usesCharacters(EnglishCharacterData.Digit)
         ));
         assertThat(characterRules, not(containsInAnyOrder(
-            hasCharacters("ABC"),
-            hasCharacters("#$%")
+            usesCharacters(EnglishCharacterData.UpperCase),
+            usesCharacters(CredHubCharacterData.Special),
+            usesCharacters(CredHubCharacterData.Hex)
         )));
       });
 
@@ -52,12 +60,13 @@ public class CharacterRuleProviderTest {
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
         assertThat(characterRules, iterableWithSize(2));
         assertThat(characterRules, containsInAnyOrder(
-            hasCharacters("ABC"),
-            hasCharacters("123")
+            usesCharacters(EnglishCharacterData.UpperCase),
+            usesCharacters(EnglishCharacterData.Digit)
         ));
         assertThat(characterRules, not(containsInAnyOrder(
-            hasCharacters("abc"),
-            hasCharacters("#$%")
+            usesCharacters(EnglishCharacterData.LowerCase),
+            usesCharacters(CredHubCharacterData.Special),
+            usesCharacters(CredHubCharacterData.Hex)
         )));
       });
 
@@ -68,13 +77,12 @@ public class CharacterRuleProviderTest {
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
         assertThat(characterRules, iterableWithSize(3));
         assertThat(characterRules, containsInAnyOrder(
-            hasCharacters("ABC"),
-            hasCharacters("abc"),
-            hasCharacters("123")
+            usesCharacters(EnglishCharacterData.UpperCase),
+            usesCharacters(EnglishCharacterData.LowerCase),
+            usesCharacters(EnglishCharacterData.Digit)
         ));
-        assertThat(characterRules, not(hasItem(
-            hasCharacters("#$%")
-        )));
+        assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Special))));
+        assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Hex))));
       });
 
       it("can create character rules with all included", () -> {
@@ -84,10 +92,10 @@ public class CharacterRuleProviderTest {
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
         assertThat(characterRules, iterableWithSize(4));
         assertThat(characterRules, containsInAnyOrder(
-            hasCharacters("ABC"),
-            hasCharacters("abc"),
-            hasCharacters("123"),
-            hasCharacters("#$%")
+            usesCharacters(EnglishCharacterData.UpperCase),
+            usesCharacters(EnglishCharacterData.LowerCase),
+            usesCharacters(EnglishCharacterData.Digit),
+            usesCharacters(CredHubCharacterData.Special)
         ));
       });
 
@@ -98,12 +106,12 @@ public class CharacterRuleProviderTest {
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
         assertThat(characterRules, iterableWithSize(2));
         assertThat(characterRules, containsInAnyOrder(
-            hasCharacters("ABC"),
-            hasCharacters("abc")
+            usesCharacters(EnglishCharacterData.UpperCase),
+            usesCharacters(EnglishCharacterData.LowerCase)
         ));
         assertThat(characterRules, not(containsInAnyOrder(
-            hasCharacters("123"),
-            hasCharacters("#$%")
+            usesCharacters(EnglishCharacterData.Digit),
+            usesCharacters(CredHubCharacterData.Special)
         )));
       });
 
@@ -112,17 +120,8 @@ public class CharacterRuleProviderTest {
         secretParameters.setOnlyHex(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
-        assertThat(characterRules, iterableWithSize(2));
-        assertThat(characterRules, containsInAnyOrder(
-            hasCharacters("123"),
-            hasCharacters("ABC")
-        ));
-        assertThat(characterRules, not(hasItem(
-            hasCharacters("abc")
-        )));
-        assertThat(characterRules, not(hasItem(
-            hasCharacters("GH")
-        )));
+        assertThat(characterRules, iterableWithSize(1));
+        assertThat(characterRules, contains(usesCharacters(CredHubCharacterData.Hex)));
       });
 
       it("ignores other rules when hex only", () -> {
@@ -131,17 +130,13 @@ public class CharacterRuleProviderTest {
         secretParameters.setExcludeUpper(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(secretParameters);
-        assertThat(characterRules, iterableWithSize(2));
-        assertThat(characterRules, containsInAnyOrder(
-            hasCharacters("123"),
-            hasCharacters("ABC")
-        ));
-        assertThat(characterRules, not(hasItem(
-            hasCharacters("abc")
-        )));
-        assertThat(characterRules, not(hasItem(
-            hasCharacters("GH")
-        )));
+        assertThat(characterRules, iterableWithSize(1));
+
+        assertThat(characterRules, contains(usesCharacters(CredHubCharacterData.Hex)));
+
+        assertThat(characterRules, not(hasItem(usesCharacters(EnglishCharacterData.LowerCase))));
+        assertThat(characterRules, not(hasItem(usesCharacters(EnglishCharacterData.UpperCase))));
+        assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Special))));
       });
 
       it("returns empty list when all are excluded", () -> {
@@ -157,18 +152,18 @@ public class CharacterRuleProviderTest {
     });
   }
 
-  private Matcher<CharacterRule> hasCharacters(String characters) {
+  private Matcher<CharacterRule> usesCharacters(CharacterData characterData) {
     return new BaseMatcher<CharacterRule>() {
 
       @Override
       public boolean matches(final Object item) {
-        final CharacterRule foo = (CharacterRule) item;
-        return foo.getValidCharacters().contains(characters);
+        final CharacterRule rule = (CharacterRule) item;
+        return rule.getValidCharacters().equals(characterData.getCharacters());
       }
 
       @Override
       public void describeTo(final Description description) {
-        description.appendText("getValidCharacters() should include").appendValue(characters);
+        description.appendText("getValidCharacters() should equal").appendValue(characterData.getCharacters());
       }
     };
   }
