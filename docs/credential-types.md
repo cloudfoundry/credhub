@@ -8,9 +8,10 @@ CredHub supports the following credential types:
 
   ```json
   {
+    "name": "/example/value",
     "type": "value",
     "value": "/var/vcap/jobs/credhub/example.sh",
-    "updated_at": "2016-10-13T20:59:28Z"
+    "version_created_at": "2016-10-13T20:59:28Z"
   }
   ```
 
@@ -18,9 +19,10 @@ CredHub supports the following credential types:
 
   ```json
   {
+    "name": "/example/password",
     "type": "password",
     "value": "nZaowPHTl0CQYVyYA0nV7ayHVulCBU3WTmwJKiZm",
-    "updated_at": "2016-10-13T21:03:42Z"
+    "version_created_at": "2016-10-13T21:03:42Z"
   }
   ```
 
@@ -28,13 +30,14 @@ CredHub supports the following credential types:
 
   ```json
   {
+    "name": "/example/certificate",
     "type": "certificate",
     "value": {
       "ca": "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----",
       "certificate": "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-    "updated_at": "2016-10-13T21:07:37Z"
+    "version_created_at": "2016-10-13T21:07:37Z"
   }
   ```
 
@@ -42,12 +45,13 @@ CredHub supports the following credential types:
 
   ```json
   {
+    "name": "/example/ssh",
     "type": "ssh",
     "value": {
       "public_key": "ssh-rsa AAA...PLx user@location",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-    "updated_at": "2016-10-13T21:10:44Z"
+    "version_created_at": "2016-10-13T21:10:44Z"
   }
   ```
 
@@ -55,12 +59,13 @@ CredHub supports the following credential types:
 
   ```json
   {
+    "name": "/example/rsa",
     "type": "rsa",
     "value": {
       "public_key": "-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-    "updated_at": "2016-10-13T21:13:41Z"
+    "version_created_at": "2016-10-13T21:13:41Z"
   }
   ```
 
@@ -128,7 +133,6 @@ api-private-key=<%= p("demo.tls.private_key") %>
   ```yml
 ---
 name: demo-deploy
-director_uuid: 4c083c13-80b8-4385-9f6f-2c3228334b32
 
 instance_groups:
   properties:
@@ -155,7 +159,6 @@ properties:
     type: password
     parameters: 
       length: 40
-      exclude_special: true
 
   demo.tls:
     description: "Certificate and private key for TLS connection to API"
@@ -170,18 +173,21 @@ You may also define these generation parameters in the deployment itself, as sho
   ```yml
 ---
 name: demo-deploy
-director_uuid: 4c083c13-80b8-4385-9f6f-2c3228334b32
 
 variables: 
 - name: demo-password
   type: password
   options: 
     length: 40
-    exclude_special: true
+- name: demo-ca
+  type: certificate
+  options: 
+    is_ca: true
+    common_name: 'Demo Certificate Authority'
 - name: demo-tls
   type: certificate
   options: 
-    ca: Main-CA
+    ca: demo-ca
     common_name: example.com
     alternative_names: 
     - example.com

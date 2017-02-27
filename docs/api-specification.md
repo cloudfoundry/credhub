@@ -65,10 +65,11 @@ Success Response -
 Status: 200
 ```json
 {
+   "name": "/example/password",
    "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
    "type": "password",
    "value": "esTHU1TKyfOkuZjssrlhp56buRZq0n",
-   "updated_at": "2016-01-01T12:00:00Z"
+   "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -90,16 +91,16 @@ Status: 200
 {
   "credentials": [
     {
-      "name": "example",
-      "updated_at": "2016-09-30T16:27:58Z"
+      "name": "/example",
+      "version_created_at": "2016-09-30T16:27:58Z"
     },
     {
-      "name": "example/test",
-      "updated_at": "2016-08-30T10:46:36Z"
+      "name": "/example/test",
+      "version_created_at": "2016-08-30T10:46:36Z"
     },
     {
-      "name": "test/examples",
-      "updated_at": "2016-09-10T00:48:10Z"
+      "name": "/test/examples",
+      "version_created_at": "2016-09-10T00:48:10Z"
     }
   ]
 }
@@ -118,20 +119,20 @@ Status: 200
 {
   "credentials": [
     {
-      "name": "deploy123/cc/example",
-      "updated_at": "2016-09-30T17:12:34Z"
+      "name": "/deploy123/cc/example",
+      "version_created_at": "2016-09-30T17:12:34Z"
     },
     {
-      "name": "deploy123/example-test",
-      "updated_at": "2016-09-30T17:12:31Z"
+      "name": "/deploy123/example-test",
+      "version_created_at": "2016-09-30T17:12:31Z"
     },
     {
-      "name": "deploy123/password",
-      "updated_at": "2016-09-30T17:12:27Z"
+      "name": "/deploy123/password",
+      "version_created_at": "2016-09-30T17:12:27Z"
     },
     {
-      "name": "deploy123/ext",
-      "updated_at": "2016-09-30T17:12:25Z"
+      "name": "/deploy123/ext",
+      "version_created_at": "2016-09-30T17:12:25Z"
     }
   ]
 }
@@ -181,10 +182,11 @@ Status: 200
 {
   "data": [
   {
+     "name": "/example/password",
      "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
      "type": "password",
      "value": "esTHU1TKyfOkuZjssrlhp56buRZq0n",
-     "updated_at": "2016-01-01T12:00:00Z"
+     "version_created_at": "2016-01-01T12:00:00Z"
   }]
 }
 ```
@@ -197,7 +199,7 @@ URI: `[host]/api/v1/data`
 Request -
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/password",
   "type": "password", 
   "overwrite": true,
   "value": "esTHU1TKyfOkuZjssrlhp56buRZq0n"
@@ -208,10 +210,11 @@ Success Response -
 Status: 200
 ```json
 {
+   "name": "/example/password",
    "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
    "type": "password",
    "value": "esTHU1TKyfOkuZjssrlhp56buRZq0n",
-   "updated_at": "2016-01-01T12:00:00Z"
+   "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -223,7 +226,7 @@ URI: `[host]/api/v1/data`
 Request -
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/password",
   "type": "password",
   "overwrite": true,
   "parameters":
@@ -232,7 +235,7 @@ Request -
     "exclude_upper": false, 
     "exclude_lower": false, 
     "exclude_number": false, 
-    "exclude_special": true
+    "include_special": true
   }
 }
 ```
@@ -241,10 +244,11 @@ Success Response -
 Status: 200
 ```json
 {
+   "name": "/example/password",
    "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
    "type": "password",
    "value": "esTHU1TKyfOkuZjssrlhp56buRZq0n",
-   "updated_at": "2016-01-01T12:00:00Z"
+   "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -266,6 +270,7 @@ Status: 200
 {
   "data": [
   {
+    "name": "/example/certificate",
     "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
     "type": "certificate",
     "value":
@@ -274,7 +279,7 @@ Status: 200
         "certificate": "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----",
         "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
       },
-    "updated_at": "2016-01-01T12:00:00Z"
+    "version_created_at": "2016-01-01T12:00:00Z"
   }]
 }
 ```
@@ -288,7 +293,7 @@ URI: `[host]/api/v1/data`
 Request - 
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/certificate",
   "type": "certificate",
   "overwrite": true,
   "value":
@@ -304,6 +309,7 @@ Success Response -
 Status: 200
 ```json
 {
+  "name": "/example/certificate",
   "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
   "type": "certificate",
   "value":
@@ -312,7 +318,7 @@ Status: 200
       "certificate": "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-  "updated_at": "2016-01-01T12:00:00Z"
+  "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -326,7 +332,7 @@ URI: `[host]/api/v1/data`
 Request - 
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/certificate",
   "type": "certificate",
   "overwrite": true,
   "parameters":
@@ -340,7 +346,9 @@ Request -
     "state": "CA",
     "country": "US",
     "key_length": 2048,
-    "duration": 365
+    "duration": 365,
+    "key_usage": ["digital_signature"],
+    "extended_key_usage": ["client_auth", "server_auth"]
   }
 }
 ```
@@ -349,6 +357,7 @@ Success Response -
 Status: 200
 ```json
 {
+  "name": "/example/certificate",
   "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
   "type": "certificate",
   "value":
@@ -357,7 +366,7 @@ Status: 200
       "certificate": "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-  "updated_at": "2016-01-01T12:00:00Z"
+  "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -370,7 +379,7 @@ URI: `[host]/api/v1/data`
 Request - 
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/certificate",
   "type": "certificate",
   "overwrite": true,
   "parameters":
@@ -392,6 +401,7 @@ Success Response -
 Status: 200
 ```json
 {
+  "name": "/example/certificate",
   "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
   "type": "certificate",
   "value":
@@ -400,7 +410,7 @@ Status: 200
       "certificate": "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-  "updated_at": "2016-01-01T12:00:00Z"
+  "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -423,6 +433,7 @@ Status: 200
 {
   "data": [
   {
+    "name": "/example/ssh",
     "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
     "type": "ssh",
     "value":
@@ -430,7 +441,7 @@ Status: 200
         "public_key": "ssh-rsa AAAAB3NzaC...p+p3QPLx comment",
         "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
       },
-    "updated_at": "2016-01-01T12:00:00Z"
+    "version_created_at": "2016-01-01T12:00:00Z"
   }]
 }
 ```
@@ -444,7 +455,7 @@ URI: `[host]/api/v1/data`
 Request - 
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/ssh",
   "type": "ssh",
   "value":
     {
@@ -458,6 +469,7 @@ Success Response -
 Status: 200
 ```json
 {
+  "name": "/example/ssh",
   "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
   "type": "ssh",
   "value":
@@ -465,7 +477,7 @@ Status: 200
       "public_key": "ssh-rsa AAAAB3NzaC...p+p3QPLx comment",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-  "updated_at": "2016-01-01T12:00:00Z"
+  "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -479,7 +491,7 @@ URI: `[host]/api/v1/data`
 Request - 
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/ssh",
   "type": "ssh",
   "overwrite": true,
   "parameters":
@@ -494,6 +506,7 @@ Success Response -
 Status: 200
 ```json
 {
+  "name": "/example/ssh",
   "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
   "type": "ssh",
   "value":
@@ -501,7 +514,7 @@ Status: 200
       "public_key": "ssh-rsa AAAAB3NzaC...p+p3QPLx user@location",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-  "updated_at": "2016-01-01T12:00:00Z"
+  "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -523,6 +536,7 @@ Status: 200
 {
   "data": [
   {
+    "name": "/example/rsa",
     "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
     "type": "rsa",
     "value":
@@ -530,7 +544,7 @@ Status: 200
         "public_key": "-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----",
         "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
       },
-    "updated_at": "2016-01-01T12:00:00Z"
+    "version_created_at": "2016-01-01T12:00:00Z"
   }]
 }
 ```
@@ -544,7 +558,7 @@ URI: `[host]/api/v1/data`
 Request - 
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/rsa",
   "type": "rsa",
   "value":
     {
@@ -558,6 +572,7 @@ Success Response -
 Status: 200
 ```json
 {
+  "name": "/example/rsa",
   "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
   "type": "rsa",
   "value":
@@ -565,7 +580,7 @@ Status: 200
       "public_key": "-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-  "updated_at": "2016-01-01T12:00:00Z"
+  "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -579,7 +594,7 @@ URI: `[host]/api/v1/data`
 Request - 
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/rsa",
   "type": "rsa",
   "overwrite": true,
   "parameters":
@@ -593,6 +608,7 @@ Success Response -
 Status: 200
 ```json
 {
+  "name": "/example/rsa",
   "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
   "type": "rsa",
   "value":
@@ -600,7 +616,7 @@ Status: 200
       "public_key": "-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----",
       "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
     },
-  "updated_at": "2016-01-01T12:00:00Z"
+  "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
 ---
@@ -620,10 +636,11 @@ Status: 200
 {
   "data": [
   {
+    "name": "/example/value",
     "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
     "type": "value",
     "value": "/usr/local/app.sh",
-    "updated_at": "2016-01-01T12:00:00Z"
+    "version_created_at": "2016-01-01T12:00:00Z"
   }]
 }
 ```
@@ -636,7 +653,7 @@ URI: `[host]/api/v1/data`
 Request -
 ```json
 {
-  "name": "Credential Name",
+  "name": "/example/value",
   "type": "value", 
   "overwrite": true,
    "value": "/usr/local/app.sh"
@@ -647,9 +664,10 @@ Success Response -
 Status: 200
 ```json
 {
+   "name": "/example/value",
    "id": "78aaebab-67c5-4e9d-b08b-41205334ec05",
    "type": "value",
    "value": "/usr/local/app.sh",
-   "updated_at": "2016-01-01T12:00:00Z"
+   "version_created_at": "2016-01-01T12:00:00Z"
 }
 ```
