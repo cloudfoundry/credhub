@@ -13,8 +13,12 @@ import java.security.interfaces.RSAPublicKey;
 @Component
 public class SshGenerator implements SecretGenerator<SshSecretParameters, SshKey> {
 
+  private LibcryptoRsaKeyPairGenerator keyGenerator;
+
   @Autowired
-  LibcryptoRsaKeyPairGenerator keyGenerator;
+  public SshGenerator(LibcryptoRsaKeyPairGenerator keyGenerator) {
+    this.keyGenerator = keyGenerator;
+  }
 
   @Override
   public SshKey generateSecret(SshSecretParameters parameters) {
