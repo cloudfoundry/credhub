@@ -1,5 +1,6 @@
 package io.pivotal.security.controller.v1.secret;
 
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.ResponseError;
@@ -10,6 +11,7 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.model.SecretSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.DataResponse;
@@ -29,20 +31,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.io.ByteStreams.toByteArray;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,7 +53,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.io.ByteStreams.toByteArray;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -90,8 +95,12 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
-  public ResponseEntity set(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retryingAuditedStoreSecret(requestBody, request, authentication, namedSecretSetHandler);
+  public ResponseEntity set(
+      @RequestBody @Valid SecretSetRequest requestBody,
+      HttpServletRequest request,
+      Authentication authentication
+  ) throws Exception {
+    return retryingAuditedStoreSecret(requestBody.getInputStream(), request, authentication, namedSecretSetHandler);
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
@@ -209,8 +218,37 @@ public class SecretsController {
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleInputNotReadableException() throws IOException {
-    return new ResponseError(ResponseErrorType.BAD_REQUEST);
+  public ResponseEntity handleInputNotReadableException(Exception exception) throws Exception {
+    final Throwable cause = exception.getCause();
+    if (cause instanceof UnrecognizedPropertyException) {
+      return handleUnknownField((UnrecognizedPropertyException) cause);
+    } else {
+      return new ResponseEntity<>(new ResponseError(ResponseErrorType.BAD_REQUEST).getError(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @ExceptionHandler({MethodArgumentNotValidException.class})
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseEntity<?> handleInvalidField(MethodArgumentNotValidException exception) throws IOException {
+    // EWWWW
+    FieldError fieldError = exception.getBindingResult().getFieldError();
+    switch (fieldError.getField()) {
+      case "type":
+        return createParameterizedErrorResponse(new ParameterizedValidationException("error.type_invalid"), HttpStatus.BAD_REQUEST);
+      case "name":
+        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_name"), HttpStatus.BAD_REQUEST);
+      default:
+        return new ResponseEntity<>(new ResponseError(ResponseErrorType.BAD_REQUEST).getError(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @ExceptionHandler({UnrecognizedPropertyException.class})
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseEntity<?> handleUnknownField(UnrecognizedPropertyException e) throws IOException {
+    return createParameterizedErrorResponse(
+        new ParameterizedValidationException("error.invalid_json_key", e.getPropertyName()),
+        HttpStatus.BAD_REQUEST
+    );
   }
 
   private ResponseEntity findWithAuditing(String nameSubstring,

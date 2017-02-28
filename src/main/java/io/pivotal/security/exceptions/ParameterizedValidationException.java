@@ -14,6 +14,11 @@ public class ParameterizedValidationException extends ValidationException {
     this.paramList = parameters;
   }
 
+  public ParameterizedValidationException(String messageCode, String parameter) {
+    this(messageCode);
+    this.paramList = newArrayList(parameter);
+  }
+
   public ParameterizedValidationException(String messageCode) {
     super(messageCode);
   }

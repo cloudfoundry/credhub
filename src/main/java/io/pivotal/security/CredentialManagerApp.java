@@ -3,6 +3,7 @@ package io.pivotal.security;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.pivotal.security.config.AuthServerProperties;
@@ -66,6 +67,8 @@ public class CredentialManagerApp {
   public Jackson2ObjectMapperBuilder jacksonBuilder(Module javaTimeModule) {
     Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
     builder.modules(javaTimeModule);
+    builder.failOnUnknownProperties(true);
+    builder.propertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     return builder;
   }
 
