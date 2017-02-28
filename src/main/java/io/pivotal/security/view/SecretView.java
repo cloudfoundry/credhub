@@ -8,6 +8,7 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ public class SecretView extends BaseView {
     return value;
   }
 
-  public static SecretView fromEntity(NamedSecret namedSecret) {
+  public static SecretView fromEntity(NamedSecret namedSecret) throws NoSuchAlgorithmException {
     SecretView result;
     if (NamedValueSecret.class.isInstance(namedSecret)) {
       result = new ValueView((NamedValueSecret) namedSecret);

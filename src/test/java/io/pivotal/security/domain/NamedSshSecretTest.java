@@ -1,25 +1,20 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
+import org.junit.runner.RunWith;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import io.pivotal.security.CredentialManagerApp;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import static org.junit.Assert.assertNull;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedSshSecretTest {
 
   private NamedSshSecret subject;
@@ -27,8 +22,6 @@ public class NamedSshSecretTest {
   private UUID encryptionKeyUuid;
 
   {
-    wireAndUnwire(this);
-
     beforeEach(() -> {
       subject = new NamedSshSecret("/Foo");
     });
@@ -110,6 +103,22 @@ public class NamedSshSecretTest {
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
+      });
+    });
+
+    describe("#getPublicKeyFingerPrint", () -> {
+      it("should compute SHA-256 fingerprint from the public key", () -> {
+        String sshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1Op/vBLg+7pveOtiZqZQK4RVnQlRsttVelIZMn8iafQQxv2xRqb2/n+9ErsTqby+9ninr8E4mxgWCs3Ew/K7Rnuzg9EEyfypB76cSzHZHHtk9j2qejwkZwTrBvRV4NA7irAqX5s6v+tKa/xX0PwB1UhLPJ3Z1yb4oEaAmAv/TAGbrKX7QlHc0TLjjkIIA/fAiD7NFOBaQVaSWvL+SBfgBRbxQ4QXluPF9uOX6XkcgXkn524SrqBR5BBT01WIzEreZzmGlZQMWR1wnO7j7ogubinwulZkVLf/ufX68I2+6sIlFELelKcFMbzgOshcQj6o/XaswSMUH4UR";
+        subject = new NamedSshSecret("/foo");
+        subject.setPublicKey(sshPublicKey);
+        assertThat(
+            subject.getPublicKeyFingerprint(),
+            equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA"));
+      });
+
+      it("return null if public key is null", () -> {
+        subject = new NamedSshSecret("/foo");
+        assertNull(subject.getPublicKeyFingerprint());
       });
     });
   }

@@ -1,19 +1,20 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSshSecret;
-import static io.pivotal.security.helper.SpectrumHelper.json;
 import io.pivotal.security.service.Encryption;
+import org.junit.runner.RunWith;
+import org.springframework.test.util.JsonExpectationsHelper;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import org.junit.runner.RunWith;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -36,12 +37,12 @@ public class SshViewTest {
       secretName = "/foo";
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
-      when(encryptor.encrypt("my-private-key")).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
-      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("my-private-key");
+      when(encryptor.encrypt("myprivatekey")).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
+      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("myprivatekey");
       entity = new NamedSshSecret(secretName)
           .setEncryptor(encryptor)
-          .setPublicKey("my-public-key")
-          .setPrivateKey("my-private-key");
+          .setPublicKey("mypublickey")
+          .setPrivateKey("myprivatekey");
       entity.setUuid(uuid);
     });
 
@@ -53,8 +54,9 @@ public class SshViewTest {
           "\"name\":\"/foo\"," +
           "\"version_created_at\":null," +
           "\"value\":{" +
-            "\"public_key\":\"my-public-key\"," +
-            "\"private_key\":\"my-private-key\"" +
+            "\"public_key\":\"mypublickey\"," +
+            "\"private_key\":\"myprivatekey\"," +
+            "\"public_key_fingerprint\": \"MPHy8EJazi2AopguKfVtADl+oDYhM2kgZhPXDNoCA4Q\""+
           "}" +
         "}", json(subject), true);
     });

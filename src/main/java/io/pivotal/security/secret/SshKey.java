@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class SshKey implements Secret {
   private final String publicKey;
   private final String privateKey;
+  private final String publicKeyFingerprint;
 
-  public SshKey(String publicKey, String privateKey) {
+  public SshKey(String publicKey, String privateKey, String publicKeyFingerprint) {
     this.publicKey = publicKey;
     this.privateKey = privateKey;
+    this.publicKeyFingerprint = publicKeyFingerprint;
   }
 
   @JsonProperty("public_key")
@@ -19,5 +21,10 @@ public class SshKey implements Secret {
   @JsonProperty("private_key")
   public String getPrivateKey() {
     return privateKey;
+  }
+
+  @JsonProperty("public_key_fingerprint")
+  public String getPublicKeyFingerprint() {
+    return publicKeyFingerprint;
   }
 }

@@ -184,6 +184,8 @@ public class SecretsController {
                   }
               } catch (KeyNotFoundException e) {
                   return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
+              } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
               }
               return success;
           }
