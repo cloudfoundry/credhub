@@ -44,7 +44,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -54,7 +53,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.io.ByteStreams.toByteArray;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -91,7 +89,7 @@ public class SecretsController {
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   public ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retryingAuditedStoreSecret(requestBody, request, authentication, namedSecretGenerateHandler);
+    return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler, jsonContextFactory.getObject().parse(requestBody));
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
@@ -100,7 +98,7 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
-    return retryingAuditedStoreSecret(requestBody.getInputStream(), request, authentication, namedSecretSetHandler);
+    return retryingAuditedStoreSecret(request, authentication, namedSecretSetHandler, jsonContextFactory.getObject().parse(requestBody.getInputStream()));
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
@@ -270,22 +268,18 @@ public class SecretsController {
     });
   }
 
-  private ResponseEntity retryingAuditedStoreSecret(InputStream requestBody, HttpServletRequest request, Authentication authentication, SecretKindMappingFactory requestHandler) throws Exception {
-    final ByteArrayInputStream rereadableRequestBody = new ByteArrayInputStream(toByteArray(requestBody));
+  private ResponseEntity retryingAuditedStoreSecret(HttpServletRequest request, Authentication authentication, SecretKindMappingFactory requestHandler, DocumentContext parsedRequestBody) throws Exception {
     try {
-      return auditedStoreSecret(rereadableRequestBody, request, authentication, requestHandler);
+      return auditedStoreSecret(request, authentication, requestHandler, parsedRequestBody);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
-      rereadableRequestBody.reset();
-      return auditedStoreSecret(rereadableRequestBody, request, authentication, requestHandler);
+      return auditedStoreSecret(request, authentication, requestHandler, parsedRequestBody);
     }
   }
 
-  private ResponseEntity<?> auditedStoreSecret(InputStream requestBody,
-                                               HttpServletRequest request,
+  private ResponseEntity<?> auditedStoreSecret(HttpServletRequest request,
                                                Authentication authentication,
-                                               SecretKindMappingFactory handler) throws Exception {
-    final DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestBody);
+                                               SecretKindMappingFactory handler, DocumentContext parsedRequestBody) throws Exception {
     final String secretName = getSecretName(parsedRequestBody);
     if (StringUtils.isEmpty(secretName)) {
       return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
