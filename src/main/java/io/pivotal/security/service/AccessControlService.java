@@ -30,10 +30,10 @@ public class AccessControlService {
 
     public AccessEntryResponse setAccessControlEntry(AccessEntryRequest request) {
 
-        SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(request.getResource());
-        List<AccessEntryData> accessEntries = accessEntryRepository.findAllByResourceUuid(secretName.getUuid());
+        SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(request.getCredentialName());
+        List<AccessEntryData> accessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
 
-        for (AccessControlEntry ace : request.getAccessControlEntries()) {
+        for (AccessControlEntry ace : request.getAccessControlList()) {
             Optional<AccessEntryData> accessEntry = accessEntries.stream()
                     .filter((accessEntryData -> accessEntryData.getActor().equals(ace.getActor())))
                     .findFirst();
@@ -60,10 +60,10 @@ public class AccessControlService {
             }
         }
 
-        List<AccessControlEntry> responseAces = accessEntryRepository.findAllByResourceUuid(secretName.getUuid()).stream().map(this::transformData)
+        List<AccessControlEntry> responseAces = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid()).stream().map(this::transformData)
                 .collect(Collectors.toList());
 
-        return new AccessEntryResponse(request.getResource(), responseAces);
+        return new AccessEntryResponse(request.getCredentialName(), responseAces);
     }
 
     private AccessControlEntry transformData(AccessEntryData data) {

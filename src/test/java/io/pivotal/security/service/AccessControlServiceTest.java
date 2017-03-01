@@ -76,7 +76,7 @@ public class AccessControlServiceTest {
         it("returns the acl for the given resource", () -> {
           AccessEntryResponse response = subject.setAccessControlEntry(request);
 
-          assertThat(response.getResource(), equalTo("/lightsaber"));
+          assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
           assertThat(response.getAcls(), hasItems(
               allOf(hasProperty("actor", equalTo("Luke")),
@@ -102,7 +102,7 @@ public class AccessControlServiceTest {
         it("returns the acl for the given resource", () -> {
           AccessEntryResponse response = subject.setAccessControlEntry(request);
 
-          assertThat(response.getResource(), equalTo("/lightsaber"));
+          assertThat(response.getCredentialName(), equalTo("/lightsaber"));
           assertThat(response.getAcls().size(), equalTo(1));
           assertThat(response.getAcls().get(0).getActor(), equalTo("Luke"));
           assertThat(response.getAcls().get(0).getOperations().size(), equalTo(1));
@@ -113,7 +113,7 @@ public class AccessControlServiceTest {
 
           assertThat(data.getReadPermission(), equalTo(true));
           assertThat(data.getWritePermission(), equalTo(false));
-          assertThat(data.getResource().getUuid(), equalTo(secretName.getUuid()));
+          assertThat(data.getCredentialName().getUuid(), equalTo(secretName.getUuid()));
         });
       });
     });

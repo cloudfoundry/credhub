@@ -24,7 +24,7 @@ public class AccessEntryData {
 
     @ManyToOne
     @JoinColumn(name = "secret_name_uuid", nullable = false)
-    private SecretName resource;
+    private SecretName credentialName;
 
     @Column(nullable = false)
     private String actor;
@@ -35,8 +35,8 @@ public class AccessEntryData {
     @Column(name = "write_permission",nullable = false)
     private Boolean writePermission;
 
-    public AccessEntryData(SecretName resource, String actor, Boolean readPermission, Boolean writePermission) {
-        this.resource = resource;
+    public AccessEntryData(SecretName credentialName, String actor, Boolean readPermission, Boolean writePermission) {
+        this.credentialName = credentialName;
         this.actor = actor;
         this.readPermission = readPermission;
         this.writePermission = writePermission;
@@ -54,12 +54,12 @@ public class AccessEntryData {
         this.uuid = uuid;
     }
 
-    public SecretName getResource() {
-        return resource;
+    public SecretName getCredentialName() {
+        return credentialName;
     }
 
-    public void setResource(SecretName resource) {
-        this.resource = resource;
+    public void setCredentialName(SecretName credentialName) {
+        this.credentialName = credentialName;
     }
 
     public String getActor() {

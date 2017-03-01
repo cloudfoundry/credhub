@@ -1,6 +1,6 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1_RESOURCES;
+import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.service.AccessControlService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,10 +18,10 @@ import java.util.Collections;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path = API_V1_RESOURCES, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AccessEntryController {
 
-  public static final String API_V1_RESOURCES = "/api/v1/resources";
+  public static final String API_V1 = "/api/v1";
 
   private AccessControlService accessControlService;
 

@@ -8,23 +8,23 @@ import java.util.List;
 @JsonAutoDetect
 public class AccessEntryResponse {
 
-    private String resource;
+    private String credentialName;
     private List<AccessControlEntry> acls;
 
     public AccessEntryResponse() {
     }
 
-    public AccessEntryResponse(String resource, List<AccessControlEntry> acls) {
-        this.resource = resource;
+    public AccessEntryResponse(String credentialName, List<AccessControlEntry> acls) {
+        this.credentialName = credentialName;
         this.acls = acls;
     }
 
-    public String getResource() {
-        return resource;
+    public String getCredentialName() {
+        return credentialName;
     }
 
-    public void setResource(String resource) {
-        this.resource = resource;
+    public void setCredentialName(String credentialName) {
+        this.credentialName = credentialName;
     }
 
     public List<AccessControlEntry> getAcls() {

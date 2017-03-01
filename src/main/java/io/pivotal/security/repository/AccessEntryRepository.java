@@ -8,5 +8,5 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AccessEntryRepository  extends JpaRepository<AccessEntryData, UUID>{
-    List<AccessEntryData> findAllByResourceUuid(UUID name);
+    List<AccessEntryData> findAllByCredentialNameUuid(UUID name);
 }

@@ -57,12 +57,12 @@ public class AccessEntryControllerTest {
 
         describe("When posting access control entry for user and credential", () -> {
             it("returns the full Access Control List for user", () -> {
-                final MockHttpServletRequestBuilder post = post("/api/v1/resources/aces")
+                final MockHttpServletRequestBuilder post = post("/api/v1/aces")
                         .accept(APPLICATION_JSON)
                         .contentType(APPLICATION_JSON)
                         .content("{" +
-                                "  \"resource\": \"cred1\",\n" +
-                                "  \"access_control_entries\": [\n" +
+                                "  \"credential_name\": \"cred1\",\n" +
+                                "  \"access_control_list\": [\n" +
                                 "     { \n" +
                                 "       \"actor\": \"dan\",\n" +
                                 "       \"operations\": [\"read\"]\n" +
@@ -76,7 +76,7 @@ public class AccessEntryControllerTest {
 
                 this.mockMvc.perform(post).andExpect(status().isOk())
                         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                        .andExpect(jsonPath("$.resource", equalTo("cred1")))
+                        .andExpect(jsonPath("$.credential_name", equalTo("cred1")))
                         .andExpect(jsonPath("$.acls", hasSize(1)))
                         .andExpect(jsonPath("$.acls[0].actor", equalTo("dan")))
                         .andExpect(jsonPath("$.acls[0].operations[0]", equalTo("read")));
@@ -84,20 +84,20 @@ public class AccessEntryControllerTest {
                 ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor.forClass(AccessEntryRequest.class);
                 verify(accessControlService).setAccessControlEntry(captor.capture());
 
-                assertThat(captor.getValue().getResource(), equalTo("cred1"));
-                assertThat(captor.getValue().getAccessControlEntries().get(0).getActor(), equalTo("dan"));
-                assertThat(captor.getValue().getAccessControlEntries().get(0).getOperations().get(0), equalTo("read"));
+                assertThat(captor.getValue().getCredentialName(), equalTo("cred1"));
+                assertThat(captor.getValue().getAccessControlList().get(0).getActor(), equalTo("dan"));
+                assertThat(captor.getValue().getAccessControlList().get(0).getOperations().get(0), equalTo("read"));
             });
         });
 
         describe("When posting access control entry for user and credential with invalid operation", () -> {
             it("returns an error", () -> {
-                final MockHttpServletRequestBuilder post = post("/api/v1/resources/aces")
+                final MockHttpServletRequestBuilder post = post("/api/v1/aces")
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON)
                     .content("{" +
-                        "  \"resource\": \"cred1\",\n" +
-                        "  \"access_control_entries\": [\n" +
+                        "  \"credential_name\": \"cred1\",\n" +
+                        "  \"access_control_list\": [\n" +
                         "     { \n" +
                         "       \"actor\": \"dan\",\n" +
                         "       \"operations\": [\"unicorn\"]\n" +

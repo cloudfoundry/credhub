@@ -11,37 +11,38 @@ import java.util.List;
 public class AccessEntryRequest {
 
     @NotNull
-    private String resource;
+    @JsonProperty("credential_name")
+    private String credentialName;
 
     @SuppressWarnings("unused")
     public AccessEntryRequest() {
         /* this needs to be there for jackson to be happy */
     }
 
-    public AccessEntryRequest(String resource, List<AccessControlEntry> accessControlEntries) {
-        this.resource = resource;
-        this.accessControlEntries = accessControlEntries;
+    public AccessEntryRequest(String credentialName, List<AccessControlEntry> accessControlList) {
+        this.credentialName = credentialName;
+        this.accessControlList = accessControlList;
     }
 
     @NotNull
-    @JsonProperty("access_control_entries")
-    private List<AccessControlEntry> accessControlEntries;
+    @JsonProperty("access_control_list")
+    private List<AccessControlEntry> accessControlList;
 
-    public String getResource() {
-        return resource;
+    public String getCredentialName() {
+        return credentialName;
     }
 
-    public void setResource(String resource) {
-        this.resource = resource;
+    public void setCredentialName(String credentialName) {
+        this.credentialName = credentialName;
     }
 
     @Valid
-    public List<AccessControlEntry> getAccessControlEntries() {
-        return accessControlEntries;
+    public List<AccessControlEntry> getAccessControlList() {
+        return accessControlList;
     }
 
     @SuppressWarnings("unused")
-    public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
-        this.accessControlEntries = accessControlEntries;
+    public void setAccessControlList(List<AccessControlEntry> accessControlList) {
+        this.accessControlList = accessControlList;
     }
 }
