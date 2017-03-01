@@ -49,7 +49,7 @@ createdb credhub
 Then to run in development mode with Postgres
 
 ```sh
-./gradlew bootRun -Dspring.profiles.active=dev-postgres
+./start_server.sh -Dspring.profiles.active=dev-postgres
 ```
 
 #### MySQL
@@ -61,7 +61,7 @@ Log into your MySQL server. Create a database `credhub` with privileges granted 
 Then to run in development mode with MySQL
 
 ```sh
-./gradlew bootRun -Dspring.profiles.active=dev-mysql
+./start_server.sh -Dspring.profiles.active=dev-mysql
 ```
 
 ### Running tests with different databases
