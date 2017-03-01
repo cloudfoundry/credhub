@@ -24,7 +24,7 @@ The default production configuration is in `application.yml`.
 
 Development configurations are in `application-dev*.yml` files.
 
-By default, credhub launches with the `dev-h2` profile.
+By default, CredHub launches with the `dev-h2` profile.
 
 ### Starting the server with different databases
 
