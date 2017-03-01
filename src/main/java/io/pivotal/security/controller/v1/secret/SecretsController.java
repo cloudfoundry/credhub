@@ -7,10 +7,13 @@ import io.pivotal.security.controller.v1.ResponseError;
 import io.pivotal.security.controller.v1.ResponseErrorType;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.mapper.PasswordSetRequestTranslator;
 import io.pivotal.security.model.SecretSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
@@ -70,13 +73,17 @@ public class SecretsController {
   private MessageSource messageSource;
   private AuditLogService auditLogService;
   private MessageSourceAccessor messageSourceAccessor;
+  private PasswordSetRequestTranslator passwordSetRequestTranslator;
+  private Encryptor encryptor;
 
   public SecretsController(SecretDataService secretDataService,
                            NamedSecretGenerateHandler namedSecretGenerateHandler,
                            NamedSecretSetHandler namedSecretSetHandler,
                            JsonContextFactory jsonContextFactory,
                            MessageSource messageSource,
-                           AuditLogService auditLogService
+                           AuditLogService auditLogService,
+                           PasswordSetRequestTranslator passwordSetRequestTranslator,
+                           Encryptor encryptor
   ) {
     this.secretDataService = secretDataService;
     this.namedSecretGenerateHandler = namedSecretGenerateHandler;
@@ -85,6 +92,8 @@ public class SecretsController {
     this.messageSource = messageSource;
     this.auditLogService = auditLogService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
+    this.passwordSetRequestTranslator = passwordSetRequestTranslator;
+    this.encryptor = encryptor;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -98,7 +107,66 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
-    return retryingAuditedStoreSecret(request, authentication, namedSecretSetHandler, jsonContextFactory.getObject().parse(requestBody.getInputStream()));
+    if (requestBody.getType().equals("password")) {
+      InputStream inputStream = requestBody.getInputStream();
+      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(inputStream);
+
+      try {
+        return doSetPassword(request, authentication, parsedRequestBody, requestBody);
+      } catch (JpaSystemException | DataIntegrityViolationException e) {
+        System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
+        return doSetPassword(request, authentication, parsedRequestBody, requestBody);
+      }
+    } else {
+      InputStream inputStream = requestBody.getInputStream();
+      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(inputStream);
+
+      return retryingAuditedStoreSecret(request, authentication, namedSecretSetHandler, parsedRequestBody);
+    }
+  }
+
+  private ResponseEntity doSetPassword(HttpServletRequest request, Authentication authentication, DocumentContext parsedRequestBody, SecretSetRequest requestBody) throws Exception {
+    final String secretName = requestBody.getName();
+
+    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
+
+    boolean willBeCreated = existingNamedSecret == null;
+    boolean overwrite = requestBody.isOverwrite();
+
+    boolean willWrite = willBeCreated || overwrite;
+    AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+    return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
+      try {
+        if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals("password")) {
+          throw new ParameterizedValidationException("error.type_mismatch");
+        }
+
+        NamedPasswordSecret storedNamedSecret = (NamedPasswordSecret) existingNamedSecret;
+        if (willWrite) {
+          storedNamedSecret = new NamedPasswordSecret(secretName);
+          storedNamedSecret.setEncryptor(encryptor);
+
+          if (existingNamedSecret != null) {
+            existingNamedSecret.copyInto(storedNamedSecret);
+          }
+
+          passwordSetRequestTranslator.validatePathName(secretName);
+          passwordSetRequestTranslator.validateJsonKeys(parsedRequestBody);
+          passwordSetRequestTranslator.populateEntityFromJson(storedNamedSecret, parsedRequestBody);
+
+          storedNamedSecret = secretDataService.save(storedNamedSecret);
+        }
+
+        SecretView secretView = SecretView.fromEntity(storedNamedSecret);
+        return new ResponseEntity<>(secretView, HttpStatus.OK);
+      } catch (ParameterizedValidationException ve) {
+        return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
+      } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException(e);
+      } catch (KeyNotFoundException e) {
+          return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    });
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
@@ -235,6 +303,8 @@ public class SecretsController {
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.type_invalid"), HttpStatus.BAD_REQUEST);
       case "name":
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_name"), HttpStatus.BAD_REQUEST);
+//      case "value":
+//        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"), HttpStatus.BAD_REQUEST);
       default:
         return new ResponseEntity<>(new ResponseError(ResponseErrorType.BAD_REQUEST).getError(), HttpStatus.BAD_REQUEST);
     }
@@ -307,11 +377,11 @@ public class SecretsController {
 
   private ResponseEntity<?> storeSecret(String secretPath,
                                         SecretKindMappingFactory namedSecretHandler,
-                                        DocumentContext parsed,
+                                        DocumentContext parsedRequest,
                                         NamedSecret existingNamedSecret,
                                         boolean willWrite) {
     try {
-      String requestedSecretType = parsed.read("$.type");
+      String requestedSecretType = parsedRequest.read("$.type");
       final SecretKind secretKind = (existingNamedSecret != null ?
           existingNamedSecret.getKind() :
           SecretKindFromString.fromString(requestedSecretType));
@@ -321,14 +391,14 @@ public class SecretsController {
 
       NamedSecret storedNamedSecret;
       if (willWrite) {
-        storedNamedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(existingNamedSecret);
+        storedNamedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsedRequest)).apply(existingNamedSecret);
         storedNamedSecret = secretDataService.save(storedNamedSecret);
       } else {
         // To catch invalid parameters, validate request even though we throw away the result.
         // We need to apply it to null or Hibernate may decide to save the record.
         // As above, the unit tests won't catch (all) issues :( , but there is an integration test to cover it.
         storedNamedSecret = existingNamedSecret;
-        secretKind.lift(namedSecretHandler.make(secretPath, parsed)).apply(null);
+        secretKind.lift(namedSecretHandler.make(secretPath, parsedRequest)).apply(null);
       }
 
       SecretView secretView = SecretView.fromEntity(storedNamedSecret);

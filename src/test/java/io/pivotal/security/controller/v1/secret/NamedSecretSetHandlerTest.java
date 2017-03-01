@@ -1,15 +1,11 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
@@ -19,6 +15,10 @@ import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
 import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static org.mockito.Mockito.mock;
 
 @RunWith(Spectrum.class)
@@ -37,7 +37,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       jsonPath = new JsonContextFactory().getObject();
       subject = new NamedSecretSetHandler(
           valueSetRequestTranslator,
-          passwordSetRequestTranslator,
           certificateSetRequestTranslator,
           rsaSshSetRequestTranslator,
           encryptor
@@ -52,16 +51,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
               SecretKind.VALUE,
               NamedValueSecret.class,
               new NamedValueSecret()
-          )
-      );
-
-      describe(
-          "password",
-          behavesLikeMapper(() -> subject,
-              passwordSetRequestTranslator,
-              SecretKind.PASSWORD,
-              NamedPasswordSecret.class,
-              new NamedPasswordSecret()
           )
       );
 

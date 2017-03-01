@@ -4,13 +4,11 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
-import io.pivotal.security.mapper.PasswordSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
 import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
@@ -22,7 +20,6 @@ import java.security.NoSuchAlgorithmException;
 @Component
 class NamedSecretSetHandler implements SecretKindMappingFactory {
   private final ValueSetRequestTranslator valueSetRequestTranslator;
-  private final PasswordSetRequestTranslator passwordSetRequestTranslator;
   private final CertificateSetRequestTranslator certificateSetRequestTranslator;
   private final RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
   private final Encryptor encryptor;
@@ -30,13 +27,11 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
   @Autowired
   public NamedSecretSetHandler(
       ValueSetRequestTranslator valueSetRequestTranslator,
-      PasswordSetRequestTranslator passwordSetRequestTranslator,
       CertificateSetRequestTranslator certificateSetRequestTranslator,
       RsaSshSetRequestTranslator rsaSshSetRequestTranslator,
       Encryptor encryptor
   ) {
     this.valueSetRequestTranslator = valueSetRequestTranslator;
-    this.passwordSetRequestTranslator = passwordSetRequestTranslator;
     this.certificateSetRequestTranslator = certificateSetRequestTranslator;
     this.rsaSshSetRequestTranslator = rsaSshSetRequestTranslator;
     this.encryptor = encryptor;
@@ -52,7 +47,7 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new, secretPath, passwordSetRequestTranslator, parsedRequest, encryptor);
+        throw new UnsupportedOperationException();
       }
 
       @Override
