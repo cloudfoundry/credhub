@@ -8,8 +8,8 @@ such secrets.
  
 See additional repos for more info:
 
-* [credhub-cli](https://github.com/pivotal-cf/credhub-cli) :     command line interface for credhub
-* [credhub-acceptance-tests](https://github.com/pivotal-cf/credhub-acceptance-tests) : integration tests written in Go.
+* [credhub-cli](https://github.com/cloudfoundry-incubator/credhub-cli) :     command line interface for credhub
+* [credhub-acceptance-tests](https://github.com/cloudfoundry-incubator/credhub-acceptance-tests) : integration tests written in Go.
 * [credhub-release](https://github.com/pivotal-cf/credhub-release) : BOSH release of CredHub server **[Currently private - Coming Soon]**
 
 
