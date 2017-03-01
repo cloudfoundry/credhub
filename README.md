@@ -22,11 +22,11 @@ Launching in production directly using the `bootRun` target is **unsafe** as you
 
 Configuration for the server is spread across the `application*.yml` files.
 
-The default production configuration is in `application.yml`. 
+* Configuration shared by all environments (dev, test or BOSH-deployed) is in `application.yml`. 
+* Development-specific configuration is placed in `application-dev.yml`. This includes a JWT key intended for development use only.
+* Per-database configuration is placed in `application-dev-h2.yml`,`application-dev-mysql.yml` and `application-dev-postgres.yml`. For convenience, these per-database profiles include the `dev` profile.
 
-Development configurations are in `application-dev*.yml` files.
-
-By default, CredHub launches with the `dev-h2` profile.
+By default, CredHub launches with the `dev-h2` and `dev` profiles enabled.
 
 ### Starting the server with different databases
 
