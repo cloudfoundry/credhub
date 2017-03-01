@@ -16,7 +16,6 @@ import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessEntryResponse;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -104,7 +103,7 @@ public class AccessControlServiceTest {
           AccessEntryResponse response = subject.setAccessControlEntry(request);
 
           assertThat(response.getResource(), equalTo("/lightsaber"));
-          assertThat(response.getAcls().size(), greaterThan(0));
+          assertThat(response.getAcls().size(), equalTo(1));
           assertThat(response.getAcls().get(0).getActor(), equalTo("Luke"));
           assertThat(response.getAcls().get(0).getOperations().size(), equalTo(1));
           assertThat(response.getAcls().get(0).getOperations(), hasItem("read"));
