@@ -114,4 +114,26 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     PasswordGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();
     this.setPasswordAndGenerationParameters(decryptedPassword, decryptedGenerationParameters);
   }
+
+  public NamedPasswordSecret createNewVersion(String password) {
+    NamedPasswordSecret secret = new NamedPasswordSecret();
+    secret.setEncryptor(encryptor);
+    secret.setPasswordAndGenerationParameters(password, null);
+    secret.delegate.setSecretName(this.delegate.getSecretName());
+    return secret;
+  }
+
+  public static NamedPasswordSecret createNewVersion(NamedPasswordSecret existing, String name, String password, Encryptor encryptor) {
+    if (existing != null) {
+      if (!existing.getName().equals(name)) {
+        throw new IllegalArgumentException();
+      }
+      return existing.createNewVersion(password);
+    } else {
+      NamedPasswordSecret secret = new NamedPasswordSecret(name);
+      secret.setEncryptor(encryptor);
+      secret.setPasswordAndGenerationParameters(password, null);
+      return secret;
+    }
+  }
 }

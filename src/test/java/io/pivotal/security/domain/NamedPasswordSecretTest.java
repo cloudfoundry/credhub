@@ -2,20 +2,9 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsNull.notNullValue;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +12,18 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.hamcrest.core.IsNull.notNullValue;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -90,7 +91,6 @@ public class NamedPasswordSecretTest {
         assertThat(subject.getParametersNonce(), nullValue());
       });
 
-
       it("can decrypt values", () -> {
         subject.setPasswordAndGenerationParameters("length10pw", generationParameters);
         assertThat(subject.getGenerationParameters().getLength(), equalTo(10));
@@ -134,6 +134,54 @@ public class NamedPasswordSecretTest {
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
+      });
+    });
+
+    describe("#createNewVersion", () -> {
+      beforeEach(() -> {
+        subject = new NamedPasswordSecret("/existingName");
+        subject.setEncryptor(encryptor);
+      });
+
+      it("copies values from existing, except password", () -> {
+        NamedPasswordSecret newSecret = subject.createNewVersion("new password");
+
+        assertThat(newSecret.getName(), equalTo("/existingName"));
+        assertThat(newSecret.getPassword(), equalTo("new password"));
+      });
+
+      describe("static overload", () -> {
+        it("copies values from existing", () -> {
+          NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
+              subject,
+              "/existingName",
+              "new password",
+              encryptor);
+
+          assertThat(newSecret.getName(), equalTo("/existingName"));
+          assertThat(newSecret.getPassword(), equalTo("new password"));
+        });
+
+        itThrows("complains if new name differs from existing",
+            IllegalArgumentException.class,
+            () -> {
+          NamedPasswordSecret.createNewVersion(
+              subject,
+              "/nonMatchingName",
+              "new password",
+              encryptor);
+        });
+
+        it("creates new if no existing", () -> {
+          NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
+              null,
+              "/newName",
+              "new password",
+              encryptor);
+
+          assertThat(newSecret.getName(), equalTo("/newName"));
+          assertThat(newSecret.getPassword(), equalTo("new password"));
+        });
       });
     });
   }

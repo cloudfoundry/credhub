@@ -13,7 +13,7 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.mapper.PasswordSetRequestTranslator;
+import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.model.SecretSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
@@ -73,7 +73,6 @@ public class SecretsController {
   private MessageSource messageSource;
   private AuditLogService auditLogService;
   private MessageSourceAccessor messageSourceAccessor;
-  private PasswordSetRequestTranslator passwordSetRequestTranslator;
   private Encryptor encryptor;
 
   public SecretsController(SecretDataService secretDataService,
@@ -82,7 +81,6 @@ public class SecretsController {
                            JsonContextFactory jsonContextFactory,
                            MessageSource messageSource,
                            AuditLogService auditLogService,
-                           PasswordSetRequestTranslator passwordSetRequestTranslator,
                            Encryptor encryptor
   ) {
     this.secretDataService = secretDataService;
@@ -92,7 +90,6 @@ public class SecretsController {
     this.messageSource = messageSource;
     this.auditLogService = auditLogService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
-    this.passwordSetRequestTranslator = passwordSetRequestTranslator;
     this.encryptor = encryptor;
   }
 
@@ -123,50 +120,6 @@ public class SecretsController {
 
       return retryingAuditedStoreSecret(request, authentication, namedSecretSetHandler, parsedRequestBody);
     }
-  }
-
-  private ResponseEntity doSetPassword(HttpServletRequest request, Authentication authentication, DocumentContext parsedRequestBody, SecretSetRequest requestBody) throws Exception {
-    final String secretName = requestBody.getName();
-
-    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
-
-    boolean willBeCreated = existingNamedSecret == null;
-    boolean overwrite = requestBody.isOverwrite();
-
-    boolean willWrite = willBeCreated || overwrite;
-    AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
-      try {
-        if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals("password")) {
-          throw new ParameterizedValidationException("error.type_mismatch");
-        }
-
-        NamedPasswordSecret storedNamedSecret = (NamedPasswordSecret) existingNamedSecret;
-        if (willWrite) {
-          storedNamedSecret = new NamedPasswordSecret(secretName);
-          storedNamedSecret.setEncryptor(encryptor);
-
-          if (existingNamedSecret != null) {
-            existingNamedSecret.copyInto(storedNamedSecret);
-          }
-
-          passwordSetRequestTranslator.validatePathName(secretName);
-          passwordSetRequestTranslator.validateJsonKeys(parsedRequestBody);
-          passwordSetRequestTranslator.populateEntityFromJson(storedNamedSecret, parsedRequestBody);
-
-          storedNamedSecret = secretDataService.save(storedNamedSecret);
-        }
-
-        SecretView secretView = SecretView.fromEntity(storedNamedSecret);
-        return new ResponseEntity<>(secretView, HttpStatus.OK);
-      } catch (ParameterizedValidationException ve) {
-        return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
-      } catch (NoSuchAlgorithmException e) {
-        throw new RuntimeException(e);
-      } catch (KeyNotFoundException e) {
-          return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
-      }
-    });
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
@@ -303,8 +256,8 @@ public class SecretsController {
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.type_invalid"), HttpStatus.BAD_REQUEST);
       case "name":
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_name"), HttpStatus.BAD_REQUEST);
-//      case "value":
-//        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"), HttpStatus.BAD_REQUEST);
+      case "value":
+        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"), HttpStatus.BAD_REQUEST);
       default:
         return new ResponseEntity<>(new ResponseError(ResponseErrorType.BAD_REQUEST).getError(), HttpStatus.BAD_REQUEST);
     }
@@ -423,5 +376,47 @@ public class SecretsController {
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
     return findWithAuditing(path, secretDataService::findStartingWithPath, request, authentication);
+  }
+
+  private ResponseEntity doSetPassword(HttpServletRequest request, Authentication authentication, DocumentContext parsedRequestBody, SecretSetRequest requestBody) throws Exception {
+    final String secretName = requestBody.getName();
+
+    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
+
+    boolean willBeCreated = existingNamedSecret == null;
+    boolean overwrite = requestBody.isOverwrite();
+    boolean willWrite = willBeCreated || overwrite;
+
+    AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+
+    return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
+      try {
+        if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals("password")) {
+          throw new ParameterizedValidationException("error.type_mismatch");
+        }
+
+        NamedPasswordSecret storablePassword = (NamedPasswordSecret) existingNamedSecret;
+        if (willWrite) {
+          RequestTranslator.validatePathName(secretName);
+          storablePassword = NamedPasswordSecret.createNewVersion(
+              storablePassword,
+              secretName,
+              (String) requestBody.getValue(),
+              encryptor
+          );
+
+          storablePassword = secretDataService.save(storablePassword);
+        }
+
+        SecretView secretView = SecretView.fromEntity(storablePassword);
+        return new ResponseEntity<>(secretView, HttpStatus.OK);
+      } catch (ParameterizedValidationException ve) {
+        return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
+      } catch (NoSuchAlgorithmException e) {
+        throw new RuntimeException(e);
+      } catch (KeyNotFoundException e) {
+        return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    });
   }
 }

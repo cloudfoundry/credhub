@@ -1,8 +1,6 @@
 package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -12,16 +10,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "type",
-    visible = true,
-    defaultImpl = PasswordSetRequest.class
-)
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = PasswordSetRequest.class, name = "password"),
-})
 public class SecretSetRequest {
   @NotEmpty
   private String name;

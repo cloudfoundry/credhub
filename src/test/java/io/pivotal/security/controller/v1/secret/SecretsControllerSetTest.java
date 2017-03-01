@@ -457,6 +457,21 @@ public class SecretsControllerSetTest {
             .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
       });
 
+      it("returns 400 when value is missing", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"name\":\"some-name\"," +
+                "  \"type\":\"password\"" +
+                "}");
+
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("A non-empty value must be specified for the credential. Please validate and retry your request."));
+      });
+
       it("returns a parameterized error message when json key is invalid", () -> {
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
             .accept(APPLICATION_JSON)

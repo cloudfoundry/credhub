@@ -27,7 +27,7 @@ public interface SecretKindMappingFactory {
       existingNamedSecret.copyInto(result);
     }
 
-    requestTranslator.validatePathName(secretPath);
+    RequestTranslator.validatePathName(secretPath);
     requestTranslator.validateJsonKeys(parsedRequest);
     requestTranslator.populateEntityFromJson(result, parsedRequest);
 

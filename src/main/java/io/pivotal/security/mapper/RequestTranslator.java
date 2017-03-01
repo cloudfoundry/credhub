@@ -29,7 +29,7 @@ public interface RequestTranslator<ET> {
     }
   }
 
-  default void validatePathName(String name) {
+  static void validatePathName(String name) {
     if (name.contains("//") || name.endsWith("/")) {
       throw new ParameterizedValidationException("error.invalid_name_has_slash");
     }

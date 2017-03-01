@@ -4,12 +4,14 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.of;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -20,8 +22,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-
-import java.util.Set;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -70,19 +70,19 @@ public class RequestTranslatorTest {
 
     describe("validation", () -> {
       it("should allow a single leading slash", () -> {
-        subject.validatePathName("/dont-do-this");
+        RequestTranslator.validatePathName("/dont-do-this");
       });
 
       itThrows("validates path does not contain trailing slash", ParameterizedValidationException.class, () -> {
-        subject.validatePathName("dont-do-this/");
+        RequestTranslator.validatePathName("dont-do-this/");
       });
 
       itThrows("validates path does not contain double slashes", ParameterizedValidationException.class, () -> {
-        subject.validatePathName("dont//do//this");
+        RequestTranslator.validatePathName("dont//do//this");
       });
 
       itThrows("validates path does not contain any invalid combination of slashes", ParameterizedValidationException.class, () -> {
-        subject.validatePathName("/dont//do//this/");
+        RequestTranslator.validatePathName("/dont//do//this/");
       });
     });
 

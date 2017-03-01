@@ -1,25 +1,27 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
-import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.RequestTranslator;
-import static org.hamcrest.Matchers.sameInstance;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
-import static org.mockito.Matchers.any;
 import org.mockito.Mock;
+
+import java.util.function.Function;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.function.Function;
 
 @RunWith(Spectrum.class)
 public class SecretKindMappingFactoryTest {
@@ -73,9 +75,11 @@ public class SecretKindMappingFactoryTest {
         verify(requestTranslator).validateJsonKeys(parsedRequest);
       });
 
-      it("calls the request translator to validate path", () -> {
+      itThrowsWithMessage("validates the path",
+          ParameterizedValidationException.class,
+          "error.invalid_name_has_slash",
+          () -> {
         subject.createNewSecret(null, NamedPasswordSecret::new, "/dont//do//this/", requestTranslator, parsedRequest, encryptor);
-        verify(requestTranslator).validatePathName(any(String.class));
       });
     });
   }
