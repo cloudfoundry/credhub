@@ -12,9 +12,11 @@ See additional repos for more info:
 * [credhub-acceptance-tests](https://github.com/cloudfoundry-incubator/credhub-acceptance-tests) : integration tests written in Go.
 * [credhub-release](https://github.com/pivotal-cf/credhub-release) : BOSH release of CredHub server **[Currently private - Coming Soon]**
 
-
 ## Development Notes
 
+CredHub is intended to be deployed by BOSH using `credhub-release`. Consequently, this repository is _not intended to be directly deployable_. 
+
+Launching in production directly using the `bootRun` target is **unsafe** as you will launch with a `dev` profile.
 
 ### Configuration
 
