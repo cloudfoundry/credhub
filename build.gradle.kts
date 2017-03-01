@@ -62,6 +62,7 @@ dependencies {
         }
     })
 
+    compile("cz.jirutka.validator:validator-collection:2.1.6")
     compile("org.springframework.boot:spring-boot-starter-log4j2")
     compile("org.passay:passay:1.1.0")
     compile("com.h2database:h2:1.4.192")

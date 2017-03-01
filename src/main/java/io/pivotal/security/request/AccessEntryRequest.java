@@ -3,6 +3,7 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class AccessEntryRequest {
         this.resource = resource;
     }
 
+    @Valid
     public List<AccessControlEntry> getAccessControlEntries() {
         return accessControlEntries;
     }

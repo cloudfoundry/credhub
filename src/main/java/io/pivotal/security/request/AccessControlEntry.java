@@ -1,6 +1,7 @@
 package io.pivotal.security.request;
 
 
+import cz.jirutka.validator.collection.constraints.EachPattern;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 import org.springframework.validation.annotation.Validated;
 
@@ -13,6 +14,7 @@ public class AccessControlEntry {
 
     @NotNull
     private String actor;
+
     @NotNull
     private List<String> operations;
 
@@ -32,6 +34,7 @@ public class AccessControlEntry {
         this.actor = actor;
     }
 
+    @EachPattern(regexp = "(read|write)", message = "The provided operation is not supported. Valid values include read and write.")
     public List<String> getOperations() {
         return operations;
     }

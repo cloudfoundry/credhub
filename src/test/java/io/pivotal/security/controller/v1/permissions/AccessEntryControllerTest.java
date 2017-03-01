@@ -89,5 +89,25 @@ public class AccessEntryControllerTest {
                 assertThat(captor.getValue().getAccessControlEntries().get(0).getOperations().get(0), equalTo("read"));
             });
         });
+
+        describe("When posting access control entry for user and credential with invalid operation", () -> {
+            it("returns an error", () -> {
+                final MockHttpServletRequestBuilder post = post("/api/v1/resources/aces")
+                    .accept(APPLICATION_JSON)
+                    .contentType(APPLICATION_JSON)
+                    .content("{" +
+                        "  \"resource\": \"cred1\",\n" +
+                        "  \"access_control_entries\": [\n" +
+                        "     { \n" +
+                        "       \"actor\": \"dan\",\n" +
+                        "       \"operations\": [\"unicorn\"]\n" +
+                        "     }]" +
+                        "}");
+
+                this.mockMvc.perform(post).andExpect(status().is4xxClientError())
+                    .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                    .andExpect(jsonPath("$.error").value("The provided operation is not supported. Valid values include read and write."));
+            });
+        });
     }
 }
