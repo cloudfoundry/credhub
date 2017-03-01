@@ -109,7 +109,7 @@ getTask<JacocoReport>("jacocoTestReport").apply {
 
 getTask<BootRunTask>("bootRun").apply {
     addResources = true
-    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev")
+    systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev-h2")
 }
 
 task("cleanAndAssemble") {

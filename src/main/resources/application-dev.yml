@@ -8,20 +8,6 @@ encryption:
     active: true
   - dev-key: A673ACF01DB091B08133FBC8C0B5F555
 
-spring:
-  datasource:
-    # postgres/h2
-    username: pivotal
-    # mysql
-#    username: root
-    password:
-#    url: jdbc:postgresql://localhost:5432/credhub
-#    url: jdbc:mariadb://localhost:3306/credhub
-
-flyway:
-  # last value is either postgres/h2/mysql
-  locations: classpath:/db/migration/common,classpath:/db/migration/h2
-
 security:
   oauth2:
     resource:

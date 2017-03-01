@@ -12,24 +12,63 @@ See additional repos for more info:
 * [credhub-acceptance-tests](https://github.com/pivotal-cf/credhub-acceptance-tests) : integration tests written in Go.
 * [credhub-release](https://github.com/pivotal-cf/credhub-release) : BOSH release of CredHub server **[Currently private - Coming Soon]**
 
+
 ## Development Notes
 
-### Starting the server
 
-Start the app: `./start_server.sh`
+### Configuration
 
-### Running against different databases
+Configuration for the server is spread across the `application*.yml` files.
 
-CredHub supports MySql, Postgres, and H2. You can change which database is used by
-adjusting the spring datasource values in the `application-dev.yml` file. Migrations 
-should run automatically during application startup.
+The default production configuration is in `application.yml`. 
 
-Testing with different databases requires you to set a system property with the profile 
-corresponding to your desired database. For example, to test with H2, you'll need to run
-the tests with the `-Dspring.profiles.active=unit-test-h2` profile. 
+Development configurations are in `application-dev*.yml` files.
 
-During development, it is helpful to set up different IntelliJ testing profiles that use
-the following VM Options:
+By default, credhub launches with the `dev-h2` profile.
+
+### Starting the server with different databases
+
+#### H2 (the default)
+
+H2 datasource configuration is in `application-dev-h2.yml`.
+
+```sh
+./start_server.sh
+```
+
+#### PostgreSQL
+
+Postgres datasource configuration is in `application-dev-postgres.yml`.
+
+Before development, you'll need to create the target database.
+
+```sh
+createdb credhub
+```
+
+Then to run in development mode with Postgres
+
+```sh
+./gradlew bootRun -Dspring.profiles.active=dev-postgres
+```
+
+#### MySQL
+
+MySQL datasource configuration is in `application-dev-mysql.yml`.
+
+Log into your MySQL server. Create a database `credhub` with privileges granted to `root`.
+
+Then to run in development mode with MySQL
+
+```sh
+./gradlew bootRun -Dspring.profiles.active=dev-mysql
+```
+
+### Running tests with different databases
+
+Testing with different databases requires you to set a system property with the profile corresponding to your desired database. For example, to test with H2, you'll need to run the tests with the `-Dspring.profiles.active=unit-test-h2` profile.
+
+During development, it is helpful to set up different IntelliJ testing profiles that use the following VM Options:
 
 - `-ea -Dspring.profiles.active=unit-test-h2` for testing with H2
 - `-ea -Dspring.profiles.active=unit-test-mysql` for testing with MySQL

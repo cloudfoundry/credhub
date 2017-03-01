@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    username: pivotal
+    password:
+    url: jdbc:postgresql://localhost:5432/credhub
+  profiles:
+    include: dev
+
+flyway:
+  locations: classpath:/db/migration/common,classpath:/db/migration/postgres
