@@ -1,22 +1,31 @@
 package io.pivotal.security.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.NotNull;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class SecretSetRequest {
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type",
+    visible = true,
+    defaultImpl = DefaultSecretSetRequest.class
+)
+@JsonSubTypes({
+    @JsonSubTypes.Type(name = "password",value = PasswordSetRequest.class),
+})
+public class BaseSecretSetRequest {
   @NotEmpty
   private String name;
   @NotEmpty
   private String type;
-  @NotNull
-  private Object value;
   private boolean overwrite;
 
   public String getName() {
@@ -29,14 +38,6 @@ public class SecretSetRequest {
 
   public String getType() {
     return type;
-  }
-
-  public Object getValue() {
-    return value;
-  }
-
-  public void setValue(Object value) {
-    this.value = value;
   }
 
   public void setType(String type) {

@@ -14,7 +14,8 @@ import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.RequestTranslator;
-import io.pivotal.security.model.SecretSetRequest;
+import io.pivotal.security.model.BaseSecretSetRequest;
+import io.pivotal.security.model.PasswordSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.DataResponse;
@@ -100,19 +101,18 @@ public class SecretsController {
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   public ResponseEntity set(
-      @RequestBody @Valid SecretSetRequest requestBody,
+      @RequestBody @Valid BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
     if (requestBody.getType().equals("password")) {
-      InputStream inputStream = requestBody.getInputStream();
-      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(inputStream);
+      PasswordSetRequest passwordSetRequest = (PasswordSetRequest) requestBody;
 
       try {
-        return doSetPassword(request, authentication, parsedRequestBody, requestBody);
+        return doSetPassword(request, authentication, passwordSetRequest);
       } catch (JpaSystemException | DataIntegrityViolationException e) {
         System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
-        return doSetPassword(request, authentication, parsedRequestBody, requestBody);
+        return doSetPassword(request, authentication, passwordSetRequest);
       }
     } else {
       InputStream inputStream = requestBody.getInputStream();
@@ -257,6 +257,7 @@ public class SecretsController {
       case "name":
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_name"), HttpStatus.BAD_REQUEST);
       case "value":
+      case "password":
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"), HttpStatus.BAD_REQUEST);
       default:
         return new ResponseEntity<>(new ResponseError(ResponseErrorType.BAD_REQUEST).getError(), HttpStatus.BAD_REQUEST);
@@ -378,7 +379,11 @@ public class SecretsController {
     return findWithAuditing(path, secretDataService::findStartingWithPath, request, authentication);
   }
 
-  private ResponseEntity doSetPassword(HttpServletRequest request, Authentication authentication, DocumentContext parsedRequestBody, SecretSetRequest requestBody) throws Exception {
+  private ResponseEntity doSetPassword(
+      HttpServletRequest request,
+      Authentication authentication,
+      PasswordSetRequest requestBody) throws Exception {
+
     final String secretName = requestBody.getName();
 
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
@@ -401,7 +406,7 @@ public class SecretsController {
           storablePassword = NamedPasswordSecret.createNewVersion(
               storablePassword,
               secretName,
-              (String) requestBody.getValue(),
+              requestBody.getPassword(),
               encryptor
           );
 

@@ -8,7 +8,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-
 import java.util.Set;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -18,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
-public class SecretSetRequestTest {
+public class BaseSecretSetRequestTest {
 
   private Validator validator;
 
@@ -35,8 +34,8 @@ public class SecretSetRequestTest {
             "\"name\":\"some-name\"," +
             "\"value\":\"some-value\"" +
             "}";
-        SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
-        Set<ConstraintViolation<SecretSetRequest>> violations = validator.validate(secretSetRequest);
+        BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseSecretSetRequest>> violations = validator.validate(secretSetRequest);
         
         assertThat(violations.size(), equalTo(0));
       });
@@ -47,11 +46,10 @@ public class SecretSetRequestTest {
             "\"name\":\"some-name\"," +
             "\"value\":\"some-value\"" +
           "}";
-        SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+        BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
         assertThat(secretSetRequest.getType(), equalTo("some-type"));
         assertThat(secretSetRequest.getName(), equalTo("some-name"));
-        assertThat(secretSetRequest.getValue(), equalTo("some-value"));
       });
 
       describe("#isOverwrite", () -> {
@@ -61,7 +59,7 @@ public class SecretSetRequestTest {
               "\"name\":\"some-name\"," +
               "\"value\":\"some-value\"" +
             "}";
-          SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
           assertThat(secretSetRequest.isOverwrite(), equalTo(false));
         });
@@ -73,7 +71,7 @@ public class SecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
             "}";
-          SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
           assertThat(secretSetRequest.isOverwrite(), equalTo(true));
         });
@@ -88,9 +86,9 @@ public class SecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
-          Set<ConstraintViolation<SecretSetRequest>> violations = validator.validate(secretSetRequest);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = validator.validate(secretSetRequest);
           assertThat(violations.size(), equalTo(1));
           String invalidField = violations.iterator().next().getPropertyPath().toString();
           assertThat(invalidField, equalTo("name"));
@@ -105,9 +103,9 @@ public class SecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
-          Set<ConstraintViolation<SecretSetRequest>> violations = validator.validate(secretSetRequest);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = validator.validate(secretSetRequest);
           assertThat(violations.size(), equalTo(1));
           String invalidField = violations.iterator().next().getPropertyPath().toString();
           assertThat(invalidField, equalTo("name"));
@@ -121,9 +119,9 @@ public class SecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
-          Set<ConstraintViolation<SecretSetRequest>> violations = validator.validate(secretSetRequest);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = validator.validate(secretSetRequest);
           assertThat(violations.size(), equalTo(1));
           String invalidField = violations.iterator().next().getPropertyPath().toString();
           assertThat(invalidField, equalTo("type"));
@@ -138,9 +136,9 @@ public class SecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
-          Set<ConstraintViolation<SecretSetRequest>> violations = validator.validate(secretSetRequest);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = validator.validate(secretSetRequest);
           assertThat(violations.size(), equalTo(1));
           String invalidField = violations.iterator().next().getPropertyPath().toString();
           assertThat(invalidField, equalTo("type"));
@@ -154,9 +152,9 @@ public class SecretSetRequestTest {
               "\"type\":\"some-type\"," +
               "\"overwrite\":true" +
               "}";
-          SecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, SecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
 
-          Set<ConstraintViolation<SecretSetRequest>> violations = validator.validate(secretSetRequest);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = validator.validate(secretSetRequest);
           assertThat(violations.size(), equalTo(1));
           String invalidField = violations.iterator().next().getPropertyPath().toString();
           assertThat(invalidField, equalTo("value"));

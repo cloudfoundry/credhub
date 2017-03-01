@@ -162,6 +162,17 @@ public class NamedPasswordSecretTest {
           assertThat(newSecret.getPassword(), equalTo("new password"));
         });
 
+        it("handles missing forward slash in name", () -> {
+          NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
+              subject,
+              "existingName",
+              "new password",
+              encryptor);
+
+          assertThat(newSecret.getName(), equalTo("/existingName"));
+          assertThat(newSecret.getPassword(), equalTo("new password"));
+        });
+
         itThrows("complains if new name differs from existing",
             IllegalArgumentException.class,
             () -> {

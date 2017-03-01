@@ -9,10 +9,26 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 
+import static org.apache.commons.lang3.StringUtils.prependIfMissing;
+
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
   private NamedPasswordSecretData delegate;
   private ObjectMapper objectMapper;
+
+  public static NamedPasswordSecret createNewVersion(NamedPasswordSecret existing, String name, String password, Encryptor encryptor) {
+    if (existing != null) {
+      if (!existing.getName().equals(prependIfMissing(name, "/"))) {
+        throw new IllegalArgumentException();
+      }
+      return existing.createNewVersion(password);
+    } else {
+      NamedPasswordSecret secret = new NamedPasswordSecret(name);
+      secret.setEncryptor(encryptor);
+      secret.setPasswordAndGenerationParameters(password, null);
+      return secret;
+    }
+  }
 
   public NamedPasswordSecret(NamedPasswordSecretData delegate) {
     super(delegate);
@@ -121,19 +137,5 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     secret.setPasswordAndGenerationParameters(password, null);
     secret.delegate.setSecretName(this.delegate.getSecretName());
     return secret;
-  }
-
-  public static NamedPasswordSecret createNewVersion(NamedPasswordSecret existing, String name, String password, Encryptor encryptor) {
-    if (existing != null) {
-      if (!existing.getName().equals(name)) {
-        throw new IllegalArgumentException();
-      }
-      return existing.createNewVersion(password);
-    } else {
-      NamedPasswordSecret secret = new NamedPasswordSecret(name);
-      secret.setEncryptor(encryptor);
-      secret.setPasswordAndGenerationParameters(password, null);
-      return secret;
-    }
   }
 }
