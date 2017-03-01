@@ -140,7 +140,7 @@ public class SpectrumHelper {
   }
 
   private static class MyTestContextManager extends TestContextManager {
-    MyTestContextManager(Class<?> testClass) {
+      MyTestContextManager(Class<?> testClass) {
       super(testClass);
     }
 

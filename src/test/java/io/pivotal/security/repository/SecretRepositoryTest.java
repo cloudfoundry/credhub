@@ -34,12 +34,6 @@ public class SecretRepositoryTest {
   SecretRepository subject;
 
   @Autowired
-  JdbcTemplate jdbcTemplate;
-
-  @Autowired
-  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-
-  @Autowired
   SecretNameRepository secretNameRepository;
 
   @Autowired
