@@ -1,33 +1,30 @@
 package io.pivotal.security.exceptions;
 
 import javax.validation.ValidationException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.google.common.collect.Lists.newArrayList;
+import java.util.Arrays;
 
 public class ParameterizedValidationException extends ValidationException {
-  List<String> paramList = newArrayList();
-
-  public ParameterizedValidationException(String messageCode, List<String> parameters) {
-    this(messageCode);
-    this.paramList = parameters;
-  }
+  String parameter = null;
 
   public ParameterizedValidationException(String messageCode, String parameter) {
     this(messageCode);
-    this.paramList = newArrayList(parameter);
+    this.parameter = parameter;
   }
 
   public ParameterizedValidationException(String messageCode) {
     super(messageCode);
   }
 
+  public String getParameter() {
+    return parameter != null ? scrubSpecialCharacter(parameter) : null;
+  }
+
   public Object[] getParameters() {
-    return this.paramList.stream().map(ParameterizedValidationException::scrubSpecialCharacter).collect(Collectors.toList()).toArray();
+    String parameter = getParameter();
+    return parameter != null ? Arrays.asList(parameter).toArray() : null;
   }
 
   private static String scrubSpecialCharacter(String raw) {
-      return raw.replace("$[", "").replace("][", ".").replace("]", "").replace("'", "");
+    return raw.replace("$[", "").replace("][", ".").replace("]", "").replace("'", "");
   }
 }

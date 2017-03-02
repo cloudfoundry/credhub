@@ -3,14 +3,13 @@ package io.pivotal.security.mapper;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.Option;
-import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.util.StringUtil;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.jayway.jsonpath.JsonPath.using;
 
 public interface RequestTranslator<ET> {
@@ -25,7 +24,7 @@ public interface RequestTranslator<ET> {
     pathList = pathList.stream().map(StringUtil::convertJsonArrayRefToWildcard).collect(Collectors.toList());
     pathList.removeAll(keys);
     if (pathList.size() > 0) {
-      throw new ParameterizedValidationException("error.invalid_json_key", newArrayList(pathList.get(0)));
+      throw new ParameterizedValidationException("error.invalid_json_key", pathList.get(0));
     }
   }
 

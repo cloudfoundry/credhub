@@ -1,22 +1,19 @@
 package io.pivotal.security.controller.v1;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.util.CertificateReader;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.*;
+import org.junit.runner.RunWith;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import io.pivotal.security.util.CertificateReader;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.KeyUsage;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import org.junit.runner.RunWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -112,7 +109,7 @@ public class CertificateSecretParametersTest {
           fail();
         } catch (ParameterizedValidationException pve) {
           assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_key_usage"));
-          assertThat(pve.getParameters()[0], equalTo("digital_sinnature"));
+          assertThat(pve.getParameter(), equalTo("digital_sinnature"));
         }
       });
 
@@ -162,7 +159,7 @@ public class CertificateSecretParametersTest {
           fail();
         } catch (ParameterizedValidationException pve) {
           assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
-          assertThat(pve.getParameters()[0], equalTo("server_off"));
+          assertThat(pve.getParameter(), equalTo("server_off"));
         }
       });
 

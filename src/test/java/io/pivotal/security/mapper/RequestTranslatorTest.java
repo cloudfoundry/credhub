@@ -19,7 +19,6 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.collection.IsArrayContainingInOrder.arrayContaining;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -94,7 +93,7 @@ public class RequestTranslatorTest {
       fail();
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_json_key"));
-      assertThat(e.getParameters(), arrayContaining(invalidKey));
+      assertThat(e.getParameter(), equalTo(invalidKey));
     }
   }
 }
