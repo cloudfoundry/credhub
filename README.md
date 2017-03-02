@@ -16,14 +16,16 @@ See additional repos for more info:
 
 CredHub is intended to be deployed by BOSH using `credhub-release`. Consequently, this repository is _not intended to be directly deployable_. 
 
-Launching in production directly using the `bootRun` target is **unsafe** as you will launch with a `dev` profile.
+Launching in production directly using the `bootRun` target is **unsafe** as you will launch with a `dev` profile, which has checked-in secret keys in `application-dev.yml`.
 
 ### Configuration
 
 Configuration for the server is spread across the `application*.yml` files.
 
 * Configuration shared by all environments (dev, test or BOSH-deployed) is in `application.yml`. 
-* Development-specific configuration is placed in `application-dev.yml`. This includes a JWT key intended for development use only.
+* Development-specific configuration is placed in `application-dev.yml`. This includes:
+	* A JWT key intended for development use only, and
+	* two `dev-key`s intended for development use only.
 * Per-database configuration is placed in `application-dev-h2.yml`,`application-dev-mysql.yml` and `application-dev-postgres.yml`. For convenience, these per-database profiles include the `dev` profile.
 
 By default, CredHub launches with the `dev-h2` and `dev` profiles enabled.
