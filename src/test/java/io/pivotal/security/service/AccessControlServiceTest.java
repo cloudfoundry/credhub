@@ -78,11 +78,11 @@ public class AccessControlServiceTest {
 
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
-          assertThat(response.getAcls(), hasItems(
+          assertThat(response.getAccessControlList(), hasItems(
               allOf(hasProperty("actor", equalTo("Luke")),
                     hasProperty("operations", hasItems("read", "write")))
           ));
-          assertThat(response.getAcls(), hasItems(
+          assertThat(response.getAccessControlList(), hasItems(
               allOf(hasProperty("actor", equalTo("Leia")),
                     hasProperty("operations", hasItems("read")))
           ));
@@ -103,10 +103,10 @@ public class AccessControlServiceTest {
           AccessEntryResponse response = subject.setAccessControlEntry(request);
 
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
-          assertThat(response.getAcls().size(), equalTo(1));
-          assertThat(response.getAcls().get(0).getActor(), equalTo("Luke"));
-          assertThat(response.getAcls().get(0).getOperations().size(), equalTo(1));
-          assertThat(response.getAcls().get(0).getOperations(), hasItem("read"));
+          assertThat(response.getAccessControlList().size(), equalTo(1));
+          assertThat(response.getAccessControlList().get(0).getActor(), equalTo("Luke"));
+          assertThat(response.getAccessControlList().get(0).getOperations().size(), equalTo(1));
+          assertThat(response.getAccessControlList().get(0).getOperations(), hasItem("read"));
 
           AccessEntryData data = accessEntryRepository.findAll().stream()
               .filter((entry) -> entry.getActor().equals("Luke")).findFirst().get();

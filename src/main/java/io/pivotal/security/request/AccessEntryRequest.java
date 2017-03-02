@@ -1,6 +1,5 @@
 package io.pivotal.security.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
 
 import javax.validation.Valid;
@@ -11,7 +10,6 @@ import java.util.List;
 public class AccessEntryRequest {
 
     @NotNull
-    @JsonProperty("credential_name")
     private String credentialName;
 
     @SuppressWarnings("unused")
@@ -19,14 +17,13 @@ public class AccessEntryRequest {
         /* this needs to be there for jackson to be happy */
     }
 
-    public AccessEntryRequest(String credentialName, List<AccessControlEntry> accessControlList) {
+    public AccessEntryRequest(String credentialName, List<AccessControlEntry> accessControlEntries) {
         this.credentialName = credentialName;
-        this.accessControlList = accessControlList;
+        this.accessControlEntries = accessControlEntries;
     }
 
     @NotNull
-    @JsonProperty("access_control_list")
-    private List<AccessControlEntry> accessControlList;
+    private List<AccessControlEntry> accessControlEntries;
 
     public String getCredentialName() {
         return credentialName;
@@ -37,12 +34,12 @@ public class AccessEntryRequest {
     }
 
     @Valid
-    public List<AccessControlEntry> getAccessControlList() {
-        return accessControlList;
+    public List<AccessControlEntry> getAccessControlEntries() {
+        return accessControlEntries;
     }
 
     @SuppressWarnings("unused")
-    public void setAccessControlList(List<AccessControlEntry> accessControlList) {
-        this.accessControlList = accessControlList;
+    public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
+        this.accessControlEntries = accessControlEntries;
     }
 }

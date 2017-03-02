@@ -33,7 +33,7 @@ public class AccessControlService {
         SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(request.getCredentialName());
         List<AccessEntryData> accessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
 
-        for (AccessControlEntry ace : request.getAccessControlList()) {
+        for (AccessControlEntry ace : request.getAccessControlEntries()) {
             Optional<AccessEntryData> accessEntry = accessEntries.stream()
                     .filter((accessEntryData -> accessEntryData.getActor().equals(ace.getActor())))
                     .findFirst();

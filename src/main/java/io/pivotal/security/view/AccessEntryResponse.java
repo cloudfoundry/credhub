@@ -9,14 +9,14 @@ import java.util.List;
 public class AccessEntryResponse {
 
     private String credentialName;
-    private List<AccessControlEntry> acls;
+    private List<AccessControlEntry> accessControlList;
 
     public AccessEntryResponse() {
     }
 
-    public AccessEntryResponse(String credentialName, List<AccessControlEntry> acls) {
+    public AccessEntryResponse(String credentialName, List<AccessControlEntry> accessControlList) {
         this.credentialName = credentialName;
-        this.acls = acls;
+        this.accessControlList = accessControlList;
     }
 
     public String getCredentialName() {
@@ -27,11 +27,11 @@ public class AccessEntryResponse {
         this.credentialName = credentialName;
     }
 
-    public List<AccessControlEntry> getAcls() {
-        return acls;
+    public List<AccessControlEntry> getAccessControlList() {
+        return accessControlList;
     }
 
-    public void setAcls(List<AccessControlEntry> acls) {
-        this.acls = acls;
+    public void setAccessControlList(List<AccessControlEntry> accessControlList) {
+        this.accessControlList = accessControlList;
     }
 }

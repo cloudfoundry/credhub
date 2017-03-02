@@ -62,7 +62,7 @@ public class AccessEntryControllerTest {
                         .contentType(APPLICATION_JSON)
                         .content("{" +
                                 "  \"credential_name\": \"cred1\",\n" +
-                                "  \"access_control_list\": [\n" +
+                                "  \"access_control_entries\": [\n" +
                                 "     { \n" +
                                 "       \"actor\": \"dan\",\n" +
                                 "       \"operations\": [\"read\"]\n" +
@@ -77,16 +77,16 @@ public class AccessEntryControllerTest {
                 this.mockMvc.perform(post).andExpect(status().isOk())
                         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                         .andExpect(jsonPath("$.credential_name", equalTo("cred1")))
-                        .andExpect(jsonPath("$.acls", hasSize(1)))
-                        .andExpect(jsonPath("$.acls[0].actor", equalTo("dan")))
-                        .andExpect(jsonPath("$.acls[0].operations[0]", equalTo("read")));
+                        .andExpect(jsonPath("$.access_control_list", hasSize(1)))
+                        .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
+                        .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
 
                 ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor.forClass(AccessEntryRequest.class);
                 verify(accessControlService).setAccessControlEntry(captor.capture());
 
                 assertThat(captor.getValue().getCredentialName(), equalTo("cred1"));
-                assertThat(captor.getValue().getAccessControlList().get(0).getActor(), equalTo("dan"));
-                assertThat(captor.getValue().getAccessControlList().get(0).getOperations().get(0), equalTo("read"));
+                assertThat(captor.getValue().getAccessControlEntries().get(0).getActor(), equalTo("dan"));
+                assertThat(captor.getValue().getAccessControlEntries().get(0).getOperations().get(0), equalTo("read"));
             });
         });
 
@@ -97,7 +97,7 @@ public class AccessEntryControllerTest {
                     .contentType(APPLICATION_JSON)
                     .content("{" +
                         "  \"credential_name\": \"cred1\",\n" +
-                        "  \"access_control_list\": [\n" +
+                        "  \"access_control_entries\": [\n" +
                         "     { \n" +
                         "       \"actor\": \"dan\",\n" +
                         "       \"operations\": [\"unicorn\"]\n" +
