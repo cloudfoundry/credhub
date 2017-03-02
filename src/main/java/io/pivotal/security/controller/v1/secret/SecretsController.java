@@ -36,6 +36,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,7 +48,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -101,7 +101,7 @@ public class SecretsController {
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   public ResponseEntity set(
-      @RequestBody @Valid BaseSecretSetRequest requestBody,
+      @RequestBody @Validated BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
