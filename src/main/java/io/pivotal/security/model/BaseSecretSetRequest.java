@@ -22,10 +22,13 @@ import java.io.InputStream;
     @JsonSubTypes.Type(name = "password",value = PasswordSetRequest.class),
 })
 public class BaseSecretSetRequest {
+
   @NotEmpty
   private String name;
+
   @NotEmpty
   private String type;
+
   private boolean overwrite;
 
   public String getName() {

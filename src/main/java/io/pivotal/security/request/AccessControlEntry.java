@@ -16,6 +16,7 @@ public class AccessControlEntry {
     private String actor;
 
     @NotNull
+    @EachPattern(regexp = "(read|write)", message = "The provided operation is not supported. Valid values include read and write.")
     private List<String> operations;
 
     public AccessControlEntry() {
@@ -34,7 +35,6 @@ public class AccessControlEntry {
         this.actor = actor;
     }
 
-    @EachPattern(regexp = "(read|write)", message = "The provided operation is not supported. Valid values include read and write.")
     public List<String> getOperations() {
         return operations;
     }
