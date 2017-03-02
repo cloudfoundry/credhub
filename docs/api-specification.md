@@ -13,7 +13,7 @@ Contents -
        * [Generate Password](#set-a-generated-password-credential)
     * [Certificate Credentials](#-certificate-credentials)
        * [Get Certificate](#get-a-certificate-credential)
-       * [Set Certificate](#set-a-static-certificate-credential)
+       * [Set Certificate or CA](#set-a-static-certificate-credential)
        * [Generate Certificate](#set-a-generated-certificate-credential)
        * [Generate a CA Certificate](#set-a-generated-ca-certificate-credential)
     * [SSH Credentials](#-ssh-credentials)
@@ -285,7 +285,7 @@ Status: 200
 ```
 ---
 
-##### <a></a>Set a static certificate credential
+##### <a></a>Set a static certificate or CA credential
 
 Method: `PUT`<br>
 URI: `[host]/api/v1/data`
