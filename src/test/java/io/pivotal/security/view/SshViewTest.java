@@ -7,6 +7,9 @@ import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 import org.springframework.test.util.JsonExpectationsHelper;
 
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
@@ -15,9 +18,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 public class SshViewTest {
@@ -41,7 +41,7 @@ public class SshViewTest {
       when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("myprivatekey");
       entity = new NamedSshSecret(secretName)
           .setEncryptor(encryptor)
-          .setPublicKey("mypublickey")
+          .setPublicKey("ssh-rsa mypublickey")
           .setPrivateKey("myprivatekey");
       entity.setUuid(uuid);
     });
@@ -54,7 +54,7 @@ public class SshViewTest {
           "\"name\":\"/foo\"," +
           "\"version_created_at\":null," +
           "\"value\":{" +
-            "\"public_key\":\"mypublickey\"," +
+            "\"public_key\":\"ssh-rsa mypublickey\"," +
             "\"private_key\":\"myprivatekey\"," +
             "\"public_key_fingerprint\": \"MPHy8EJazi2AopguKfVtADl+oDYhM2kgZhPXDNoCA4Q\""+
           "}" +
