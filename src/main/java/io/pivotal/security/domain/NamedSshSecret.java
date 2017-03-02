@@ -43,9 +43,9 @@ public class NamedSshSecret extends NamedRsaSshSecret {
   }
 
   public String getPublicKeyFingerprint() throws NoSuchAlgorithmException {
-    if (delegate.getPublicKey() != null) {
-      String publicKeyWithoutPrefix = delegate.getPublicKey().replace("ssh-rsa ", "");
-      byte[] decodedPublicKey = Base64.getDecoder().decode(publicKeyWithoutPrefix);
+    if (delegate.getPublicKey() != null && delegate.getPublicKey().split("\\s+").length > 1) {
+      String publicKeyWithoutPrefixOrComment = delegate.getPublicKey().split("\\s+")[1];
+      byte[] decodedPublicKey = Base64.getDecoder().decode(publicKeyWithoutPrefixOrComment);
 
       final MessageDigest sha256Digest = DigestUtils.getSha256Digest();
       final byte[] fingerprint = sha256Digest.digest(decodedPublicKey);
