@@ -8,17 +8,21 @@ import io.pivotal.security.controller.v1.ResponseErrorType;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.model.BaseSecretSetRequest;
-import io.pivotal.security.model.PasswordSetRequest;
+import io.pivotal.security.model.DefaultSecretSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.view.*;
+import io.pivotal.security.view.DataResponse;
+import io.pivotal.security.view.FindCredentialResults;
+import io.pivotal.security.view.FindPathResults;
+import io.pivotal.security.view.SecretKind;
+import io.pivotal.security.view.SecretKindFromString;
+import io.pivotal.security.view.SecretView;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.MessageSource;
@@ -33,7 +37,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -45,7 +56,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.*;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -91,20 +104,19 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
-    if (requestBody.getType().equals("password")) {
-      PasswordSetRequest passwordSetRequest = (PasswordSetRequest) requestBody;
-
-      try {
-        return doSetPassword(request, authentication, passwordSetRequest);
-      } catch (JpaSystemException | DataIntegrityViolationException e) {
-        System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
-        return doSetPassword(request, authentication, passwordSetRequest);
-      }
-    } else {
+    // this clause goes away once all types are converted
+    if (requestBody instanceof DefaultSecretSetRequest) {
       InputStream inputStream = requestBody.getInputStream();
       DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(inputStream);
 
       return retryingAuditedStoreSecret(request, authentication, namedSecretSetHandler, parsedRequestBody);
+    } else {
+      try {
+        return performSet(request, authentication, requestBody);
+      } catch (JpaSystemException | DataIntegrityViolationException e) {
+        System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
+        return performSet(request, authentication, requestBody);
+      }
     }
   }
 
@@ -365,10 +377,10 @@ public class SecretsController {
     return findWithAuditing(path, secretDataService::findStartingWithPath, request, authentication);
   }
 
-  private ResponseEntity doSetPassword(
+  private ResponseEntity performSet(
       HttpServletRequest request,
       Authentication authentication,
-      PasswordSetRequest requestBody) throws Exception {
+      BaseSecretSetRequest requestBody) throws Exception {
 
     final String secretName = requestBody.getName();
 
@@ -382,24 +394,23 @@ public class SecretsController {
 
     return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
       try {
-        if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals("password")) {
+        if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals(requestBody.getType())) {
           throw new ParameterizedValidationException("error.type_mismatch");
         }
 
-        NamedPasswordSecret storablePassword = (NamedPasswordSecret) existingNamedSecret;
+        NamedSecret storedEntity = existingNamedSecret;
         if (willWrite) {
           RequestTranslator.validatePathName(secretName);
-          storablePassword = NamedPasswordSecret.createNewVersion(
-              storablePassword,
+          NamedSecret newEntity = requestBody.createNewVersion(
+              existingNamedSecret,
               secretName,
-              requestBody.getPassword(),
               encryptor
           );
 
-          storablePassword = secretDataService.save(storablePassword);
+          storedEntity = secretDataService.save(newEntity);
         }
 
-        SecretView secretView = SecretView.fromEntity(storablePassword);
+        SecretView secretView = SecretView.fromEntity(storedEntity);
         return new ResponseEntity<>(secretView, HttpStatus.OK);
       } catch (ParameterizedValidationException ve) {
         return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);

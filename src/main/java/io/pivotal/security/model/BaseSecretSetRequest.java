@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedSecret;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import java.io.ByteArrayInputStream;
@@ -66,4 +68,10 @@ public class BaseSecretSetRequest {
       throw new RuntimeException(e);
     }
   }
+
+  @JsonIgnore
+  public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
+    throw new RuntimeException("unimplemented");
+  }
+
 }
