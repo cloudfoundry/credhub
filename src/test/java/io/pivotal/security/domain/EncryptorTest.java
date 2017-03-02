@@ -6,7 +6,6 @@ import io.pivotal.security.service.BCNullConnection;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -47,7 +46,7 @@ public class EncryptorTest {
 
         keyMapper = mock(EncryptionKeyCanaryMapper.class);
         BCEncryptionService bcEncryptionService;
-        bcEncryptionService = new BCEncryptionService(new BouncyCastleProvider());
+        bcEncryptionService = new BCEncryptionService();
         RetryingEncryptionService encryptionService = new RetryingEncryptionService(bcEncryptionService, keyMapper, new BCNullConnection());
 
         when(keyMapper.getActiveKey()).thenReturn(newKey);

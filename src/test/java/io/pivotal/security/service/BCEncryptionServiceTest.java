@@ -2,9 +2,11 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.EncryptionKeyMetadata;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hamcrest.CoreMatchers;
 import org.junit.runner.RunWith;
+
+import javax.xml.bind.DatatypeConverter;
+import java.security.Key;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -13,10 +15,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import java.security.Key;
-
-import javax.xml.bind.DatatypeConverter;
 
 @RunWith(Spectrum.class)
 public class BCEncryptionServiceTest {
@@ -27,7 +25,7 @@ public class BCEncryptionServiceTest {
 
   {
     beforeEach(() -> {
-      subject = new BCEncryptionService(new BouncyCastleProvider());
+      subject = new BCEncryptionService();
 
       EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
       keyMetadata.setDevKey("0123456789ABCDEF0123456789ABCDEF");
