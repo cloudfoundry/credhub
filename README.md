@@ -20,15 +20,29 @@ Launching in production directly using the `bootRun` target is **unsafe** as you
 
 ### Configuration
 
+#### Generally
+
 Configuration for the server is spread across the `application*.yml` files.
 
 * Configuration shared by all environments (dev, test or BOSH-deployed) is in `application.yml`. 
 * Development-specific configuration is placed in `application-dev.yml`. This includes:
-	* A JWT key intended for development use only, and
+	* A UAA URL intended for development use only,
+	* A JWT public verification key for use with that UAA, and
 	* two `dev-key`s intended for development use only.
 * Per-database configuration is placed in `application-dev-h2.yml`,`application-dev-mysql.yml` and `application-dev-postgres.yml`. For convenience, these per-database profiles include the `dev` profile.
 
 By default, CredHub launches with the `dev-h2` and `dev` profiles enabled.
+
+#### UAA and the JWT public signing key
+
+CredHub requires a [UAA server](https://github.com/cloudfoundry/uaa) to manage authentication.
+
+In `application-dev.yml` there are two relevant settings:
+
+1. `auth-server.url`. This needs to point to a running UAA server (remote or BOSH-lite, it's up to you).
+2. `security.oauth2.resource.jwt.key-value`. This is the public verification key, corresponding to a private JWT signing key held by your UAA server.
+
+This repository does not provide tooling to launch or manage UAA.
 
 ### Starting the server with different databases
 
