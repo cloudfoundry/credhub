@@ -23,25 +23,20 @@ buildscript {
     }
 }
 
-apply {
-    plugin("java")
-    plugin("idea")
-    plugin("org.springframework.boot")
-    plugin("org.owasp.dependencycheck")
-    plugin("com.github.hierynomus.license")
-    plugin("jacoco")
-}
+apply plugin: "java"
+apply plugin: "idea"
+apply plugin: "org.springframework.boot"
+apply plugin: "org.owasp.dependencycheck"
+apply plugin: "com.github.hierynomus.license"
+apply plugin: "jacoco"
 
-val jar = getTask<Jar>("jar")
-jar.apply {
+jar {
     baseName = "credhub"
     version = "${System.getenv("VERSION") ?: "DEV"}"
 }
 
-configure<JavaPluginConvention> {
-    setSourceCompatibility(1.8)
-    setTargetCompatibility(1.8)
-}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
@@ -49,18 +44,18 @@ repositories {
 }
 
 dependencies {
-    listOf(
+   [
             "org.springframework.boot:spring-boot-starter-web",
             "org.springframework.boot:spring-boot-starter-security",
             "org.springframework.boot:spring-boot-starter-data-jpa",
             "org.springframework.security.oauth:spring-security-oauth2",
             "org.springframework.security:spring-security-jwt"
-    ).forEach({
+    ].each{
         compile(it) {
-            exclude(module = "spring-boot-starter-logging")
-            exclude(module = "logback-classic")
+            exclude module: "spring-boot-starter-logging"
+            exclude module: "logback-classic"
         }
-    })
+    }
 
     compile("cz.jirutka.validator:validator-collection:2.1.6")
     compile("org.springframework.boot:spring-boot-starter-log4j2")
@@ -83,68 +78,50 @@ dependencies {
     testCompile("org.apache.commons:commons-lang3:3.4")
 }
 
-task<Wrapper>("wrapper") {
+task wrapper(type: Wrapper) {
     gradleVersion = "3.1"
 }
 
-getTask<ProcessResources>("processResources").apply {
-    expand(mapOf("buildVersion" to "${jar.version}${if (System.getenv("BUILD_NUMBER") != null) "+build.${System.getenv("BUILD_NUMBER")}" else ""}").toSortedMap())
+processResources {
     outputs.upToDateWhen { false }
 }
 
-getExtension<JacocoPluginExtension>("jacoco").apply {
+jacoco {
     toolVersion = "0.7.6.201602180812"
 }
 
-getTask<JacocoReport>("jacocoTestReport").apply {
+jacocoTestReport {
     group = "Reporting"
-    reports.apply {
-        xml.isEnabled = false
-        csv.isEnabled = false
-        html.apply {
-            isEnabled = true
-            setDestination("${project.buildDir}/reports/jacoco")
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html {
+            enabled true
+            destination "${project.buildDir}/reports/jacoco"
         }
     }
 }
 
-getTask<BootRunTask>("bootRun").apply {
+bootRun {
     addResources = true
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "dev-h2")
 }
 
-task("cleanAndAssemble") {
-    dependsOn("clean")
-    dependsOn("assemble")
-}
+task cleanAndAssemble(dependsOn: ['clean', 'assemble'])
 
-getTask<Task>("assemble").mustRunAfter("clean")
+assemble.mustRunAfter("clean")
 
-getTask<Test>("test").apply {
-    val jacoco = extensions.findByName("jacoco") as JacocoTaskExtension
-    jacoco.apply {
-        isAppend = false
+test {
+    jacoco {
+        append = false
         destinationFile = file("${project.buildDir}/jacoco/jacocoTest.exec")
         classDumpFile = file("${project.buildDir}/jacoco/classpathdumps")
     }
-    testLogging.apply {
-        setEvents(setOf("passed", "failed", "skipped"))
-        setExceptionFormat("full")
+    testLogging {
+        events "passed", "failed", "skipped"
+        exceptionFormat "full"
     }
+
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
     outputs.upToDateWhen { false }
-}
-
-tasks.withType<Test> {
-    val reporting = getExtension<ReportingExtension>("reporting")
-    val name = project.name
-    reports.html.setDestination(file("${reporting.baseDir}/${name}"))
-}
-
-fun <T : Task> getTask(taskName: String): T {
-    return project.tasks.getByName(taskName) as T
-}
-
-fun <E> getExtension(extensionName: String): E {
-    return project.extensions.findByName(extensionName) as E
 }
