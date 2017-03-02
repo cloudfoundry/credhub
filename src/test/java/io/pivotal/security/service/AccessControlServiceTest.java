@@ -53,22 +53,10 @@ public class AccessControlServiceTest {
       describe("when given an existing ACE for a resource", () -> {
         beforeEach(() -> {
 
-          SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("lightsaber"));
-
-          accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
-              "Luke",
-              false,
-              true
-          ));
-
-          accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
-              "Leia",
-              true,
-              false
-          ));
+          seedDatabase();
 
           List<AccessControlEntry> newAces = Collections.singletonList(
-              new AccessControlEntry("Luke", Collections.singletonList("read")));
+            new AccessControlEntry("Luke", Collections.singletonList("read")));
 
           request = new AccessEntryRequest("/lightsaber", newAces);
         });
@@ -79,37 +67,36 @@ public class AccessControlServiceTest {
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
           assertThat(response.getAccessControlList(), hasItems(
-              allOf(hasProperty("actor", equalTo("Luke")),
-                    hasProperty("operations", hasItems("read", "write")))
+            allOf(hasProperty("actor", equalTo("Luke")),
+              hasProperty("operations", hasItems("read", "write")))
           ));
           assertThat(response.getAccessControlList(), hasItems(
-              allOf(hasProperty("actor", equalTo("Leia")),
-                    hasProperty("operations", hasItems("read")))
-          ));
+            allOf(hasProperty("actor", equalTo("Leia")),
+              hasProperty("operations", hasItems("read")))));
         });
       });
 
       describe("when given a new ACE for a resource", () -> {
         beforeEach(() -> {
-          secretName = secretNameRepository.saveAndFlush(new SecretName("lightsaber"));
+          secretName = secretNameRepository.saveAndFlush(new SecretName("lightsaber2"));
 
           List<AccessControlEntry> newAces = Collections.singletonList(
-              new AccessControlEntry("Luke", Collections.singletonList("read")));
+            new AccessControlEntry("Luke", Collections.singletonList("read")));
 
-          request = new AccessEntryRequest("/lightsaber", newAces);
+          request = new AccessEntryRequest("/lightsaber2", newAces);
         });
 
         it("returns the acl for the given resource", () -> {
           AccessEntryResponse response = subject.setAccessControlEntry(request);
 
-          assertThat(response.getCredentialName(), equalTo("/lightsaber"));
+          assertThat(response.getCredentialName(), equalTo("/lightsaber2"));
           assertThat(response.getAccessControlList().size(), equalTo(1));
           assertThat(response.getAccessControlList().get(0).getActor(), equalTo("Luke"));
           assertThat(response.getAccessControlList().get(0).getOperations().size(), equalTo(1));
           assertThat(response.getAccessControlList().get(0).getOperations(), hasItem("read"));
 
           AccessEntryData data = accessEntryRepository.findAll().stream()
-              .filter((entry) -> entry.getActor().equals("Luke")).findFirst().get();
+            .filter((entry) -> entry.getActor().equals("Luke")).findFirst().get();
 
           assertThat(data.getReadPermission(), equalTo(true));
           assertThat(data.getWritePermission(), equalTo(false));
@@ -117,5 +104,41 @@ public class AccessControlServiceTest {
         });
       });
     });
+
+    describe("getAccessControlEntries", () -> {
+      beforeEach(this::seedDatabase);
+
+      describe("when given an existing credential name", () -> {
+        it("returns the access control list", () -> {
+          AccessEntryResponse response = subject.getAccessControlEntries("/lightsaber");
+
+          assertThat(response.getCredentialName(), equalTo("/lightsaber"));
+
+          assertThat(response.getAccessControlList(), hasItems(
+            allOf(hasProperty("actor", equalTo("Luke")),
+              hasProperty("operations", hasItems("write")))
+          ));
+          assertThat(response.getAccessControlList(), hasItems(
+            allOf(hasProperty("actor", equalTo("Leia")),
+              hasProperty("operations", hasItems("read")))));
+        });
+      });
+    });
+  }
+
+  private void seedDatabase() {
+    SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("lightsaber"));
+
+    accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
+      "Luke",
+      false,
+      true
+    ));
+
+    accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
+      "Leia",
+      true,
+      false
+    ));
   }
 }
