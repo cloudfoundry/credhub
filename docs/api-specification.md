@@ -13,7 +13,7 @@ Contents -
        * [Generate Password](#set-a-generated-password-credential)
     * [Certificate Credentials](#-certificate-credentials)
        * [Get Certificate](#get-a-certificate-credential)
-       * [Set Certificate or CA](#set-a-static-certificate-credential)
+       * [Set Certificate or CA](#set-a-static-certificate-or-ca-credential)
        * [Generate Certificate](#set-a-generated-certificate-credential)
        * [Generate a CA Certificate](#set-a-generated-ca-certificate-credential)
     * [SSH Credentials](#-ssh-credentials)
