@@ -10,7 +10,6 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
-import io.pivotal.security.mapper.PasswordSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
 import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
@@ -27,7 +26,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
   private NamedSecretSetHandler subject;
   private ParseContext jsonPath;
   private ValueSetRequestTranslator valueSetRequestTranslator = mock(ValueSetRequestTranslator.class);
-  private PasswordSetRequestTranslator passwordSetRequestTranslator = mock(PasswordSetRequestTranslator.class);
   private CertificateSetRequestTranslator certificateSetRequestTranslator = mock(CertificateSetRequestTranslator.class);
   private RsaSshSetRequestTranslator rsaSshSetRequestTranslator = mock(RsaSshSetRequestTranslator.class);
   private Encryptor encryptor = mock(Encryptor.class);
