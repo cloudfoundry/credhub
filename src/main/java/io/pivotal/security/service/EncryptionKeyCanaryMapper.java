@@ -2,7 +2,6 @@ package io.pivotal.security.service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import static com.google.common.collect.Lists.newArrayList;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
@@ -18,7 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -31,8 +33,8 @@ public class EncryptionKeyCanaryMapper {
   private final BiMap<UUID, Key> encryptionKeyMap;
 
   private UUID activeUuid;
-  private List<Key> keys;
-  private Key activeKey;
+  private List<KeyProxy> keys;
+  private KeyProxy activeKey;
   private EncryptionService encryptionService;
 
   @Autowired
@@ -56,11 +58,11 @@ public class EncryptionKeyCanaryMapper {
   }
 
   public List<Key> getKeys() {
-    return keys;
+    return keys.stream().map(k -> k.getKey()).collect(Collectors.toList());
   }
 
   public Key getActiveKey() {
-    return activeKey;
+    return activeKey.getKey();
   }
 
   public Key getKeyForUuid(UUID uuid) {
@@ -89,9 +91,10 @@ public class EncryptionKeyCanaryMapper {
     keys = newArrayList();
     encryptionKeysConfiguration.getKeys().forEach(keyMetadata -> {
       Key key = encryptionService.createKey(keyMetadata);
-      keys.add(key);
+      final KeyProxy keyProxy = new KeyProxy(key);
+      keys.add(keyProxy);
       if (keyMetadata.isActive()) {
-        activeKey = key;
+        activeKey = keyProxy;
       }
     });
   }
@@ -100,41 +103,41 @@ public class EncryptionKeyCanaryMapper {
     encryptionKeyMap.clear();
     List<EncryptionKeyCanary> encryptionKeyCanaries = encryptionKeyCanaryDataService.findAll();
 
-    ensureKeyIsInList(activeKey, keys);
+    validateActiveKeyInList(activeKey, keys);
     populateActiveCanary(activeKey, encryptionKeyCanaries);
     populateCanariesForNonActiveKeys(activeKey, encryptionKeyCanaries, keys);
   }
 
-  private void ensureKeyIsInList(Key key, List<Key> encryptionKeys) {
-    final Optional<Key> firstMatchingKey = encryptionKeys.stream().filter(k -> key.equals(k)).findFirst();
+  private void validateActiveKeyInList(KeyProxy key, List<KeyProxy> encryptionKeys) {
+    final Optional<KeyProxy> firstMatchingKey = encryptionKeys.stream().filter(k -> key.equals(k)).findFirst();
     // This could be refactored to orElseThrow except there is a bug in the JDK :(
     if (!firstMatchingKey.isPresent()) {
       throw new RuntimeException("No active key was found");
     }
   }
 
-  private void populateActiveCanary(Key activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries) {
+  private void populateActiveCanary(KeyProxy activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries) {
     EncryptionKeyCanary activeCanary = findCanaryMatchingKey(activeEncryptionKey, encryptionKeyCanaries).orElseGet(() -> createCanary(activeEncryptionKey));
     activeUuid = activeCanary.getUuid();
-    encryptionKeyMap.put(activeCanary.getUuid(), activeEncryptionKey);
+    encryptionKeyMap.put(activeCanary.getUuid(), activeEncryptionKey.getKey());
   }
 
-  private void populateCanariesForNonActiveKeys(Key activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries, List<Key> encryptionKeys) {
-    final Stream<Key> nonActiveKeys = encryptionKeys.stream().filter(encryptionKey -> !activeEncryptionKey.equals(encryptionKey));
+  private void populateCanariesForNonActiveKeys(KeyProxy activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries, List<KeyProxy> encryptionKeys) {
+    final Stream<KeyProxy> nonActiveKeys = encryptionKeys.stream().filter(encryptionKey -> !activeEncryptionKey.equals(encryptionKey));
     nonActiveKeys.forEach(encryptionKey -> {
-      findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries).ifPresent(canary -> encryptionKeyMap.put(canary.getUuid(), encryptionKey));
+      findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries).ifPresent(canary -> encryptionKeyMap.put(canary.getUuid(), encryptionKey.getKey()));
     });
   }
 
-  private Optional<EncryptionKeyCanary> findCanaryMatchingKey(Key encryptionKey, List<EncryptionKeyCanary> canaries) {
+  private Optional<EncryptionKeyCanary> findCanaryMatchingKey(KeyProxy encryptionKey, List<EncryptionKeyCanary> canaries) {
     return canaries.stream().filter(canary -> isMatchingCanary(encryptionKey, canary)).findFirst();
   }
 
-  private EncryptionKeyCanary createCanary(Key encryptionKey) {
+  private EncryptionKeyCanary createCanary(KeyProxy encryptionKey) {
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
     try {
-      Encryption encryptionData = encryptionService.encrypt(encryptionKey, CANARY_VALUE);
+      Encryption encryptionData = encryptionService.encrypt(encryptionKey.getKey(), CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
     } catch (Exception e) {
@@ -144,11 +147,11 @@ public class EncryptionKeyCanaryMapper {
     return encryptionKeyCanaryDataService.save(canary);
   }
 
-  private boolean isMatchingCanary(Key encryptionKey, EncryptionKeyCanary canary) {
+  private boolean isMatchingCanary(KeyProxy encryptionKey, EncryptionKeyCanary canary) {
     String plaintext;
 
     try {
-      plaintext = encryptionService.decrypt(encryptionKey, canary.getEncryptedValue(), canary.getNonce());
+      plaintext = encryptionService.decrypt(encryptionKey.getKey(), canary.getEncryptedValue(), canary.getNonce());
     } catch (AEADBadTagException e) {
       // dev_internal key was wrong
       plaintext = WRONG_CANARY_PLAINTEXT;
@@ -171,5 +174,17 @@ public class EncryptionKeyCanaryMapper {
     }
 
     return CANARY_VALUE.equals(plaintext);
+  }
+
+  private static class KeyProxy {
+    private Key key;
+
+    KeyProxy(Key key) {
+      this.key = key;
+    }
+
+    Key getKey() {
+      return key;
+    }
   }
 }
