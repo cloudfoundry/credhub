@@ -9,17 +9,18 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
-import javax.servlet.http.HttpServletRequest;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.Set;
 
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+import javax.servlet.http.HttpServletRequest;
 
 public class AuditRecordBuilder {
   private final String hostName;
@@ -98,10 +99,6 @@ public class AuditRecordBuilder {
     return xForwardedFor;
   }
 
-  public Authentication getAuthentication() {
-    return authentication;
-  }
-
   private static String extractXForwardedFor(Enumeration<String> values) {
     return String.join(",", Collections.list(values));
   }
@@ -169,7 +166,7 @@ public class AuditRecordBuilder {
         (String) accessToken.getAdditionalInformation().get("user_id"),
         (String) accessToken.getAdditionalInformation().get("user_name"),
         (String) accessToken.getAdditionalInformation().get("iss"),
-        claimValueAsLong(accessToken.getAdditionalInformation(),"iat"),
+        claimValueAsLong(accessToken.getAdditionalInformation(), "iat"),
         accessToken.getExpiration().toInstant().getEpochSecond(), // accessToken.getExpiration().getTime() / 1000,?
         getHostName(),
         method,
