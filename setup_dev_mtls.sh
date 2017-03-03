@@ -27,7 +27,7 @@ setup_key_store() {
     echo "Generating a key store for TLS..."
 	keytool -genkey -alias cert \
 	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA -keypass ${PASSWORD} \
-	    -validity 30 -dname ${DNAME} \
+	    -validity 365 -dname ${DNAME} \
 	    -keystore ${KEY_STORE} -storepass ${PASSWORD}
 }
 
@@ -35,7 +35,7 @@ setup_tmp_key_store() {
     echo "Generating a temporary key store to hold the trusted mTLS CA private keys..."
 	keytool -genkey -alias ${CA_NAME} -ext BC=ca:true \
 	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA -keypass ${PASSWORD} \
-	    -validity 3650 -dname ${DNAME_CA} \
+	    -validity 365 -dname ${DNAME_CA} \
 	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
 }
 
@@ -52,16 +52,16 @@ setup_trusted_certificate() {
     # Generate client certificate
     keytool -genkey -alias ${CLIENT_NAME} \
 	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA -keypass ${PASSWORD} \
-	    -validity 3650 -dname ${DNAME_CLIENT} \
+	    -validity 365 -dname ${DNAME_CLIENT} \
 	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
 	# Generate a host certificate signing request
 	keytool -certreq -alias ${CLIENT_NAME} -ext BC=ca:true \
 	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA \
-	    -validity 3650 -file "${CLIENT_NAME}.csr" \
+	    -validity 365 -file "${CLIENT_NAME}.csr" \
 	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
 	# Generate signed certificate with the certificate authority
 	keytool -gencert -alias ca \
-	    -validity 3650 -sigalg SHA512withRSA \
+	    -validity 365 -sigalg SHA512withRSA \
 	    -infile "${CLIENT_NAME}.csr" -outfile "${CLIENT_NAME}.crt" -rfc \
 		-keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
     # Import now-signed cer
