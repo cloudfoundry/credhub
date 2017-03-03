@@ -39,40 +39,15 @@ public class AuditRecordBuilder {
   public AuditRecordBuilder(String credentialName,
                             HttpServletRequest request,
                             Authentication authentication) {
-    this(
-        request.getServerName(),
-        credentialName,
-        request.getMethod(),
-        request.getRequestURI(),
-        request.getQueryString(),
-        request.getRemoteAddr(),
-        extractXForwardedFor(request.getHeaders("X-Forwarded-For")),
-        authentication
-    );
-  }
-
-  AuditRecordBuilder(String hostName,
-                     String credentialName,
-                     String method,
-                     String path,
-                     String queryParameters,
-                     String requesterIp,
-                     String xForwardedFor,
-                     Authentication authentication) {
-    this.hostName = hostName;
     this.credentialName = credentialName;
-    this.method = method;
-    this.path = path;
-    this.queryParameters = queryParameters;
-    this.requesterIp = requesterIp;
-    this.xForwardedFor = xForwardedFor;
+    this.hostName = request.getServerName();
+    this.method = request.getMethod();
+    this.path = request.getRequestURI();
+    this.queryParameters = request.getQueryString();
+    this.requesterIp = request.getRemoteAddr();
+    this.xForwardedFor = extractXForwardedFor(request.getHeaders("X-Forwarded-For"));
     this.authentication = (OAuth2Authentication) authentication;
     this.operationCode = computeOperationCode();
-  }
-
-  public AuditRecordBuilder(AuditingOperationCode operationCode, String secretName, HttpServletRequest request, Authentication authentication) {
-    this(secretName, request, authentication);
-    this.operationCode = operationCode;
   }
 
   public AuditingOperationCode getOperationCode() {
@@ -147,6 +122,11 @@ public class AuditRecordBuilder {
 
   public AuditRecordBuilder setIsSuccess(boolean isSuccess) {
     this.isSuccess = isSuccess;
+    return this;
+  }
+
+  public AuditRecordBuilder setOperationCode(AuditingOperationCode operationCode) {
+    this.operationCode = operationCode;
     return this;
   }
 

@@ -46,7 +46,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -55,10 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -275,7 +276,7 @@ public class SecretsController {
                                           Function<String, List<SecretView>> finder,
                                           HttpServletRequest request,
                                           Authentication authentication) throws Exception {
-    AuditRecordBuilder auditParams = new AuditRecordBuilder(CREDENTIAL_FIND, null, request, authentication);
+    AuditRecordBuilder auditParams = new AuditRecordBuilder(null, request, authentication).setOperationCode(CREDENTIAL_FIND);
     return auditLogService.performWithAuditing(auditParams, () -> {
       List<SecretView> secretViews = finder.apply(nameSubstring);
       return new ResponseEntity<>(FindCredentialResults.fromSecrets(secretViews), HttpStatus.OK);
@@ -283,7 +284,7 @@ public class SecretsController {
   }
 
   private ResponseEntity findPathsWithAuditing(HttpServletRequest request, Authentication authentication) throws Exception {
-    AuditRecordBuilder auditParams = new AuditRecordBuilder(CREDENTIAL_FIND, null, request, authentication);
+    AuditRecordBuilder auditParams = new AuditRecordBuilder(null, request, authentication).setOperationCode(CREDENTIAL_FIND);
     return auditLogService.performWithAuditing(auditParams, () -> {
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
@@ -314,7 +315,9 @@ public class SecretsController {
 
     boolean willWrite = willBeCreated || overwrite || regenerate;
     AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
+    final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(secretName, request, authentication);
+    auditRecordBuilder.setOperationCode(operationCode);
+    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
       if (regenerate && existingNamedSecret == null) {
         return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
       }
@@ -391,8 +394,10 @@ public class SecretsController {
     boolean willWrite = willBeCreated || overwrite;
 
     AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
+    final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(secretName, request, authentication);
+    auditRecordBuilder.setOperationCode(operationCode);
 
-    return auditLogService.performWithAuditing(new AuditRecordBuilder(operationCode, secretName, request, authentication), () -> {
+    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
       try {
         if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals(requestBody.getType())) {
           throw new ParameterizedValidationException("error.type_mismatch");

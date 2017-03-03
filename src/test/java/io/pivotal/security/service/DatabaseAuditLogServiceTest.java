@@ -16,14 +16,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -41,6 +39,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
@@ -85,13 +86,8 @@ public class DatabaseAuditLogServiceTest {
       authentication.setDetails(mockDetails);
 
       auditRecordBuilder = new AuditRecordBuilder(
-          "hostName",
           "keyName",
-          "GET",
-          "requestURI",
-          "foo=bar",
-          "127.0.0.1",
-          "1.2.3.4,5.6.7.8",
+          new MockHttpServletRequest("GET", "requestURI"),
           authentication
       );
       transactionManager = new FakeTransactionManager();
@@ -312,12 +308,8 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.getUaaUrl(), equalTo("https://52.204.49.107:8443/oauth/token"));
     assertThat(actual.getTokenIssued(), equalTo(1469051704L));
     assertThat(actual.getTokenExpires(), equalTo(1469051824L));
-    assertThat(actual.getHostName(), equalTo("hostName"));
     assertThat(actual.getPath(), equalTo("requestURI"));
-    assertThat(actual.getQueryParameters(), equalTo("foo=bar"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
-    assertThat(actual.getRequesterIp(), equalTo("127.0.0.1"));
-    assertThat(actual.getXForwardedFor(), equalTo("1.2.3.4,5.6.7.8"));
     assertThat(actual.getClientId(), equalTo("credhub"));
     assertThat(actual.getScope(), equalTo("credhub.write,credhub.read"));
     assertThat(actual.getGrantType(), equalTo("password"));
