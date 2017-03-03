@@ -1,3 +1,4 @@
+
 # CredHub 
 
 The CredHub server manages secrets like passwords, certificates, ssh keys, rsa keys, strings 
@@ -10,7 +11,7 @@ See additional repos for more info:
 
 * [credhub-cli](https://github.com/cloudfoundry-incubator/credhub-cli) :     command line interface for credhub
 * [credhub-acceptance-tests](https://github.com/cloudfoundry-incubator/credhub-acceptance-tests) : integration tests written in Go.
-* [credhub-release](https://github.com/pivotal-cf/credhub-release) : BOSH release of CredHub server **[Currently private - Coming Soon]**
+* [credhub-release](https://github.com/pivotal-cf/credhub-release) : BOSH release of CredHub server
 
 ## Development Notes
 
