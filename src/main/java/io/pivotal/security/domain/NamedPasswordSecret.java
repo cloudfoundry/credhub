@@ -18,9 +18,6 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
   public static NamedPasswordSecret createNewVersion(NamedPasswordSecret existing, String name, String password, Encryptor encryptor) {
     if (existing != null) {
-      if (!existing.getName().equals(prependIfMissing(name, "/"))) {
-        throw new IllegalArgumentException();
-      }
       return existing.createNewVersion(password);
     } else {
       NamedPasswordSecret secret = new NamedPasswordSecret(name);

@@ -61,5 +61,55 @@ public class NamedValueSecretTest {
         subject.setValue(null);
       });
     });
+
+    describe(".createNewVersion and #createNewVersion", () -> {
+      beforeEach(() -> {
+        subject = new NamedValueSecret("/existingName");
+        subject.setEncryptor(encryptor);
+      });
+
+      it("copies only name from existing", () -> {
+        NamedValueSecret newSecret = subject.createNewVersion("new value");
+
+        assertThat(newSecret.getName(), equalTo("/existingName"));
+        assertThat(newSecret.getValue(), equalTo("new value"));
+      });
+
+      describe("static overload", () -> {
+        it("copies values from existing", () -> {
+          NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
+            subject,
+            "/existingName",
+            "new value",
+            encryptor);
+
+          assertThat(newSecret.getName(), equalTo("/existingName"));
+          assertThat(newSecret.getValue(), equalTo("new value"));
+        });
+
+        it("copies the name from the existing version", () -> {
+          NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
+            subject,
+            "IAMIGNOREDBECAUSEEXISTINGNAMEISUSED",
+            "new value",
+            encryptor);
+
+          assertThat(newSecret.getName(), equalTo("/existingName"));
+          assertThat(newSecret.getValue(), equalTo("new value"));
+        });
+
+        it("creates new if no existing", () -> {
+          NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
+            null,
+            "/newName",
+            "new value",
+            encryptor);
+
+          assertThat(newSecret.getName(), equalTo("/newName"));
+          assertThat(newSecret.getValue(), equalTo("new value"));
+        });
+      });
+    });
+
   }
 }

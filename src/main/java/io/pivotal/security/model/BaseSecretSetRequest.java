@@ -14,14 +14,15 @@ import java.io.IOException;
 import java.io.InputStream;
 
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "type",
-    visible = true,
+    use         = JsonTypeInfo.Id.NAME,
+    include     = JsonTypeInfo.As.PROPERTY,
+    property    = "type",
+    visible     = true,
     defaultImpl = DefaultSecretSetRequest.class
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(name = "password",value = PasswordSetRequest.class),
+    @JsonSubTypes.Type(name = "password", value = PasswordSetRequest.class),
+    @JsonSubTypes.Type(name = "value",    value = ValueSetRequest.class)
 })
 public class BaseSecretSetRequest {
 

@@ -137,7 +137,7 @@ public class NamedPasswordSecretTest {
       });
     });
 
-    describe("#createNewVersion", () -> {
+    describe(".createNewVersion and #createNewVersion", () -> {
       beforeEach(() -> {
         subject = new NamedPasswordSecret("/existingName");
         subject.setEncryptor(encryptor);
@@ -162,25 +162,15 @@ public class NamedPasswordSecretTest {
           assertThat(newSecret.getPassword(), equalTo("new password"));
         });
 
-        it("handles missing forward slash in name", () -> {
+        it("copies the name from the existing version", () -> {
           NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
               subject,
-              "existingName",
+              "IAMIGNOREDBECAUSEEXISTINGNAMEISUSED",
               "new password",
               encryptor);
 
           assertThat(newSecret.getName(), equalTo("/existingName"));
           assertThat(newSecret.getPassword(), equalTo("new password"));
-        });
-
-        itThrows("complains if new name differs from existing",
-            IllegalArgumentException.class,
-            () -> {
-          NamedPasswordSecret.createNewVersion(
-              subject,
-              "/nonMatchingName",
-              "new password",
-              encryptor);
         });
 
         it("creates new if no existing", () -> {

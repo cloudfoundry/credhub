@@ -308,6 +308,7 @@ public class SecretsControllerSetTest {
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value(specialValue))
               .andExpect(jsonPath("$.id").value(expectedUuid.toString()))
+              .andExpect(jsonPath("$.name").value(secretName))
               .andExpect(jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
 
           assertNotNull(expectedUuid);

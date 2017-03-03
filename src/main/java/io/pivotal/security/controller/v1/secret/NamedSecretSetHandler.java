@@ -10,7 +10,6 @@ import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
-import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,19 +18,16 @@ import java.security.NoSuchAlgorithmException;
 
 @Component
 class NamedSecretSetHandler implements SecretKindMappingFactory {
-  private final ValueSetRequestTranslator valueSetRequestTranslator;
   private final CertificateSetRequestTranslator certificateSetRequestTranslator;
   private final RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
   private final Encryptor encryptor;
 
   @Autowired
   public NamedSecretSetHandler(
-      ValueSetRequestTranslator valueSetRequestTranslator,
       CertificateSetRequestTranslator certificateSetRequestTranslator,
       RsaSshSetRequestTranslator rsaSshSetRequestTranslator,
       Encryptor encryptor
   ) {
-    this.valueSetRequestTranslator = valueSetRequestTranslator;
     this.certificateSetRequestTranslator = certificateSetRequestTranslator;
     this.rsaSshSetRequestTranslator = rsaSshSetRequestTranslator;
     this.encryptor = encryptor;
@@ -42,7 +38,7 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
     return new SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException>() {
       @Override
       public NamedSecret value(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedValueSecret) namedSecret, NamedValueSecret::new, secretPath, valueSetRequestTranslator, parsedRequest, encryptor);
+        throw new UnsupportedOperationException();
       }
 
       @Override

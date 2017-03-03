@@ -11,7 +11,6 @@ import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
-import io.pivotal.security.mapper.ValueSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 
@@ -25,7 +24,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
 
   private NamedSecretSetHandler subject;
   private ParseContext jsonPath;
-  private ValueSetRequestTranslator valueSetRequestTranslator = mock(ValueSetRequestTranslator.class);
   private CertificateSetRequestTranslator certificateSetRequestTranslator = mock(CertificateSetRequestTranslator.class);
   private RsaSshSetRequestTranslator rsaSshSetRequestTranslator = mock(RsaSshSetRequestTranslator.class);
   private Encryptor encryptor = mock(Encryptor.class);
@@ -34,7 +32,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     beforeEach(() -> {
       jsonPath = new JsonContextFactory().getObject();
       subject = new NamedSecretSetHandler(
-          valueSetRequestTranslator,
           certificateSetRequestTranslator,
           rsaSshSetRequestTranslator,
           encryptor
@@ -42,16 +39,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     });
 
     describe("it verifies the secret type and secret creation for", () -> {
-      describe(
-          "value",
-          behavesLikeMapper(() -> subject,
-              valueSetRequestTranslator,
-              SecretKind.VALUE,
-              NamedValueSecret.class,
-              new NamedValueSecret()
-          )
-      );
-
       describe(
           "certificate",
           behavesLikeMapper(() -> subject,
@@ -84,15 +71,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     });
 
     describe("verifies full set of keys for", () -> {
-
-      it("value", () -> {
-        valueSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"value\",\"value\":\"myValue\",\"overwrite\":true}"));
-      });
-
-      it("password", () -> {
-        valueSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\",\"value\":\"myValue\",\"overwrite\":true}"));
-      });
-
       it("certificate", () -> {
         certificateSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"certificate\"," +
             "\"overwrite\":true," +

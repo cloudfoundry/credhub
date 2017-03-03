@@ -9,7 +9,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedValueContainer {
-
   protected NamedSecretData delegate;
   protected Encryptor encryptor;
 
