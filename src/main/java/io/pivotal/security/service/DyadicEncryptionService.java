@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
@@ -47,7 +46,7 @@ public class DyadicEncryptionService extends EncryptionServiceWithConnection {
   }
 
   @Override
-  Key createKey(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return createKey(encryptionKeyMetadata, dyadicConnection);
+  KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+    return new KeyProxy(createKey(encryptionKeyMetadata, dyadicConnection));
   }
 }

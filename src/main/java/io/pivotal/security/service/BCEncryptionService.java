@@ -11,7 +11,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -40,7 +39,7 @@ public class BCEncryptionService extends EncryptionService {
   }
 
   @Override
-  Key createKey(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return new SecretKeySpec(DatatypeConverter.parseHexBinary(encryptionKeyMetadata.getDevKey()), 0, 16, "AES");
+  KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+    return new KeyProxy(new SecretKeySpec(DatatypeConverter.parseHexBinary(encryptionKeyMetadata.getDevKey()), 0, 16, "AES"));
   }
 }

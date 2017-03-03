@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -43,7 +42,7 @@ public class LunaEncryptionService extends EncryptionServiceWithConnection {
   }
 
   @Override
-  Key createKey(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return createKey(encryptionKeyMetadata, lunaConnection);
+  KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
+    return new KeyProxy(createKey(encryptionKeyMetadata, lunaConnection));
   }
 }

@@ -8,9 +8,6 @@ import io.pivotal.security.entity.EncryptionKeyCanary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import java.nio.charset.Charset;
 import java.security.Key;
 import java.util.ArrayList;
@@ -27,7 +24,6 @@ public class EncryptionKeyCanaryMapper {
   public static final Charset CHARSET = Charset.defaultCharset();
   public static final String CANARY_VALUE = new String(new byte[128], CHARSET);
 
-  private static final String WRONG_CANARY_PLAINTEXT = "WRONG KEY FOR CANARY";
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
   private final BiMap<UUID, Key> encryptionKeyMap;
@@ -90,8 +86,7 @@ public class EncryptionKeyCanaryMapper {
   private void createKeys() {
     keys = newArrayList();
     encryptionKeysConfiguration.getKeys().forEach(keyMetadata -> {
-      Key key = encryptionService.createKey(keyMetadata);
-      final KeyProxy keyProxy = new KeyProxy(key);
+      KeyProxy keyProxy = encryptionService.createKeyProxy(keyMetadata);
       keys.add(keyProxy);
       if (keyMetadata.isActive()) {
         activeKey = keyProxy;
@@ -130,7 +125,7 @@ public class EncryptionKeyCanaryMapper {
   }
 
   private Optional<EncryptionKeyCanary> findCanaryMatchingKey(KeyProxy encryptionKey, List<EncryptionKeyCanary> canaries) {
-    return canaries.stream().filter(canary -> isMatchingCanary(encryptionKey, canary)).findFirst();
+    return canaries.stream().filter(canary -> encryptionService.isMatchingCanary(encryptionKey, canary)).findFirst();
   }
 
   private EncryptionKeyCanary createCanary(KeyProxy encryptionKey) {
@@ -145,46 +140,5 @@ public class EncryptionKeyCanaryMapper {
     }
 
     return encryptionKeyCanaryDataService.save(canary);
-  }
-
-  private boolean isMatchingCanary(KeyProxy encryptionKey, EncryptionKeyCanary canary) {
-    String plaintext;
-
-    try {
-      plaintext = encryptionService.decrypt(encryptionKey.getKey(), canary.getEncryptedValue(), canary.getNonce());
-    } catch (AEADBadTagException e) {
-      // dev_internal key was wrong
-      plaintext = WRONG_CANARY_PLAINTEXT;
-    } catch (IllegalBlockSizeException e) {
-      // Our guess(es) at "HSM key was wrong":
-      if (e.getMessage().contains("returns 0x40")) { // Could not process input data: function 'C_Decrypt' returns 0x40
-        plaintext = WRONG_CANARY_PLAINTEXT;
-      } else {
-        throw new RuntimeException(e);
-      }
-    } catch (BadPaddingException e) {
-      // Our guess(es) at "DSM key was wrong":
-      if (e.getMessage().contains("rv=48")) { // javax.crypto.BadPaddingException: Decrypt error: rv=48
-        plaintext = WRONG_CANARY_PLAINTEXT;
-      } else {
-        throw new RuntimeException(e);
-      }
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    return CANARY_VALUE.equals(plaintext);
-  }
-
-  private static class KeyProxy {
-    private Key key;
-
-    KeyProxy(Key key) {
-      this.key = key;
-    }
-
-    Key getKey() {
-      return key;
-    }
   }
 }
