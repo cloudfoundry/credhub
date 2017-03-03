@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.request;
 
 import javax.validation.constraints.NotNull;
 

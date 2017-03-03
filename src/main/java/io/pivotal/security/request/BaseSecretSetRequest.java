@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
