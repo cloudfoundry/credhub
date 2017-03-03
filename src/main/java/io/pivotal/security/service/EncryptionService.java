@@ -55,7 +55,11 @@ public abstract class EncryptionService {
   }
 
   boolean isMatchingCanary(KeyProxy encryptionKeyProxy, EncryptionKeyCanary canary) {
-    return isMatchingCanary(encryptionKeyProxy.getKey(), canary);
+    Key key = (canary.getSalt() != null) ?
+        encryptionKeyProxy.getKey(canary.getSalt()) :
+        encryptionKeyProxy.getKey();
+
+    return isMatchingCanary(key, canary);
   }
 
   protected boolean isMatchingCanary(Key encryptionKey, EncryptionKeyCanary canary) {

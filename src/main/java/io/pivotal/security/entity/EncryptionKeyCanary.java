@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
@@ -31,6 +32,9 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
 
   @Column(length = NONCE_SIZE)
   private byte[] nonce;
+
+  @Transient
+  private byte[] salt;
 
   public UUID getUuid() {
     return uuid;
@@ -68,5 +72,13 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
   @Override
   public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
     setUuid(encryptionKeyUuid);
+  }
+
+  public byte[] getSalt() {
+    return salt;
+  }
+
+  public void setSalt(byte[] salt) {
+    this.salt = salt;
   }
 }

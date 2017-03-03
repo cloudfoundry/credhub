@@ -17,6 +17,7 @@ import java.security.SecureRandom;
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
 public class BCEncryptionService extends EncryptionService {
+  private static final int KEYSIZE_BYTES = 16;
   private SecureRandom secureRandom;
 
   public BCEncryptionService() throws Exception {
@@ -40,6 +41,28 @@ public class BCEncryptionService extends EncryptionService {
 
   @Override
   KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return new KeyProxy(new SecretKeySpec(DatatypeConverter.parseHexBinary(encryptionKeyMetadata.getDevKey()), 0, 16, "AES"));
+    if (encryptionKeyMetadata.getDevKey() != null) {
+      return new KeyProxy(new SecretKeySpec(DatatypeConverter.parseHexBinary(encryptionKeyMetadata.getDevKey()), 0, KEYSIZE_BYTES, "AES"));
+    } else {
+      // todo test
+      return new KeyProxy(encryptionKeyMetadata.getPassword());
+    }
   }
+
+  /*@Override
+  boolean isMatchingCanary(KeyProxy encryptionKeyProxy, EncryptionKeyCanary canary) {
+    final String password = encryptionKeyProxy.getPassword();
+    final byte[] salt = canary.getSalt();
+
+    Key key = deriveKey(password, salt);
+
+    boolean isMatching = super.isMatchingCanary(key, canary);
+
+    if (isMatching) {
+      encryptionKeyProxy.setKey(key);
+    }
+
+    return isMatching;
+  }*/
 }
+

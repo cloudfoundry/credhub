@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import org.bouncycastle.util.encoders.Hex;
 import org.hamcrest.CoreMatchers;
 import org.junit.runner.RunWith;
 
@@ -58,24 +59,22 @@ public class BCEncryptionServiceTest {
     });
 
     describe("encryption and decryption", () -> {
-      {
-        beforeEach(() -> {
-          encryption = subject.encrypt(encryptionKey, plaintext);
-        });
+      beforeEach(() -> {
+        encryption = subject.encrypt(encryptionKey, plaintext);
+      });
 
-        it("can encrypt values", () -> {
-          assertThat(encryption.nonce, notNullValue());
-          assertThat(encryption.encryptedValue, not(CoreMatchers.equalTo(plaintext)));
-        });
+      it("can encrypt values", () -> {
+        assertThat(encryption.nonce, notNullValue());
+        assertThat(encryption.encryptedValue, not(CoreMatchers.equalTo(plaintext)));
+      });
 
-        it("can decrypt values", () -> {
-          assertThat(subject.decrypt(encryptionKey, encryption.encryptedValue, encryption.nonce), CoreMatchers.equalTo(plaintext));
-        });
+      it("can decrypt values", () -> {
+        assertThat(subject.decrypt(encryptionKey, encryption.encryptedValue, encryption.nonce), CoreMatchers.equalTo(plaintext));
+      });
 
-        it("does not reuse nonces", () -> {
-          assertThat(subject.encrypt(encryptionKey, plaintext).nonce, not(CoreMatchers.equalTo(encryption.nonce)));
-        });
-      }
+      it("does not reuse nonces", () -> {
+        assertThat(subject.encrypt(encryptionKey, plaintext).nonce, not(CoreMatchers.equalTo(encryption.nonce)));
+      });
     });
 
     describe("#isMatchingCanary", () -> {
@@ -101,6 +100,7 @@ public class BCEncryptionServiceTest {
             }
           };
         });
+
         it("returns false" , () -> {
           assertThat(subject.isMatchingCanary(mock(KeyProxy.class), mock(EncryptionKeyCanary.class)), equalTo(false));
         });
@@ -114,10 +114,12 @@ public class BCEncryptionServiceTest {
             }
           };
         });
+
         it("returns false" , () -> {
           assertThat(subject.isMatchingCanary(mock(KeyProxy.class), mock(EncryptionKeyCanary.class)), equalTo(false));
         });
       });
+
       describe("when decrypt throws AEADBadTagException", () -> {
         beforeEach(() -> {
           subject = new BCEncryptionService() {
@@ -127,6 +129,7 @@ public class BCEncryptionServiceTest {
             }
           };
         });
+
         it("returns false" , () -> {
           assertThat(subject.isMatchingCanary(mock(KeyProxy.class), mock(EncryptionKeyCanary.class)), equalTo(false));
         });
@@ -142,6 +145,7 @@ public class BCEncryptionServiceTest {
           };
           subject.isMatchingCanary(mock(KeyProxy.class), mock(EncryptionKeyCanary.class));
         });
+
         itThrows("RuntimeException for IllegalBlockSizeException", RuntimeException.class, () -> {
           subject = new BCEncryptionService() {
             @Override
@@ -160,6 +164,17 @@ public class BCEncryptionServiceTest {
           };
           subject.isMatchingCanary(mock(KeyProxy.class), mock(EncryptionKeyCanary.class));
         });
+      });
+    });
+
+    describe("deriveKey from fixed salt and password", () -> {
+      it("returns the expected Key", () -> {
+        KeyProxy proxy = new KeyProxy("abcdefghijklmnopqrst");
+        byte[] salt =  Hex.decode("7034522dc85138530e44b38d0569ca67"); // gen'd originally from SecureRandom..
+        String hexOutput = Hex.toHexString(proxy.getKey(salt).getEncoded());
+
+        assertThat(hexOutput, equalTo("23e48f2bafa327a174a46400063cd9e6"));
+
       });
     });
   }

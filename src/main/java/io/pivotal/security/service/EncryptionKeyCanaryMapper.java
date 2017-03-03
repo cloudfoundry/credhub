@@ -135,6 +135,7 @@ public class EncryptionKeyCanaryMapper {
       Encryption encryptionData = encryptionService.encrypt(encryptionKey.getKey(), CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
+
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
