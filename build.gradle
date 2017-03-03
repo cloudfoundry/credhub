@@ -24,8 +24,8 @@ jar {
     baseName = "credhub"
     version = "${System.getenv("VERSION") ?: "DEV"}"
 }
-
 sourceCompatibility = 1.8
+
 targetCompatibility = 1.8
 
 repositories {
@@ -39,7 +39,8 @@ dependencies {
             "org.springframework.boot:spring-boot-starter-security",
             "org.springframework.boot:spring-boot-starter-data-jpa",
             "org.springframework.security.oauth:spring-security-oauth2",
-            "org.springframework.security:spring-security-jwt"
+            "org.springframework.security:spring-security-jwt",
+            "org.springframework.security:spring-security-test"
     ].each{
         compile(it) {
             exclude module: "spring-boot-starter-logging"
@@ -61,6 +62,7 @@ dependencies {
     compile("org.mariadb.jdbc:mariadb-java-client:1.5.8")
     compile("org.flywaydb:flyway-core:4.0.3")
     compile("net.java.dev.jna:jna:4.2.2")
+
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.skyscreamer:jsonassert")
     testCompile("com.jayway.jsonpath:json-path-assert:2.2.0")

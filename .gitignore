@@ -162,3 +162,11 @@ gradle-app.setting
 
 # # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
 # gradle/wrapper/gradle-wrapper.properties
+
+# Ignore certificates and keys used in development
+*.crt
+*.csr
+*.p12
+
+# Ignore any key stores
+*.jks

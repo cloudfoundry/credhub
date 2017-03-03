@@ -23,8 +23,18 @@ security:
           xwIDAQAB
           -----END PUBLIC KEY-----
 
+logging:
+  config: src/main/resources/log4j2.properties
+
 server:
   port: 9000
-
-logging:
-  config: /Users/pivotal/workspace/credhub-release/src/credhub/src/main/resources/log4j2.properties
+  ssl:
+    enabled: true
+    key-store: src/test/resources/key_store.jks
+    key-password: changeit
+    key-alias: cert
+    ciphers: ECDHE-ECDSA-AES128-GCM-SHA256,ECDHE-ECDSA-AES256-GCM-SHA384,ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES256-GCM-SHA384
+    client-auth: want
+    trust-store: src/test/resources/trust_store.jks
+    trust-store-password: changeit
+    trust-store-type: JKS

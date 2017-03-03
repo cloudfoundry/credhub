@@ -33,7 +33,7 @@ public class AuditRecordBuilder {
   private AuditingOperationCode operationCode;
   private int requestStatus;
   private OAuth2AccessToken accessToken;
-  private OAuth2Authentication authentication;
+  private Authentication authentication;
   private boolean isSuccess;
 
   public AuditRecordBuilder(String credentialName,
@@ -46,7 +46,7 @@ public class AuditRecordBuilder {
     this.queryParameters = request.getQueryString();
     this.requesterIp = request.getRemoteAddr();
     this.xForwardedFor = extractXForwardedFor(request.getHeaders("X-Forwarded-For"));
-    this.authentication = (OAuth2Authentication) authentication;
+    this.authentication = authentication;
     this.operationCode = computeOperationCode();
   }
 
@@ -131,15 +131,16 @@ public class AuditRecordBuilder {
   }
 
   public OperationAuditRecord build(Instant now) {
-    OAuth2Request oAuth2Request = authentication.getOAuth2Request();
+    if (authentication instanceof OAuth2Authentication) {
+      OAuth2Request oAuth2Request = ((OAuth2Authentication) authentication).getOAuth2Request();
 
-    String path = getPath();
-    String method = getMethod();
+      String path = getPath();
+      String method = getMethod();
 
-    Set<String> scopes = accessToken.getScope();
-    String scope = scopes == null ? null : String.join(",", scopes);
+      Set<String> scopes = accessToken.getScope();
+      String scope = scopes == null ? null : String.join(",", scopes);
 
-    return new OperationAuditRecord(
+      return new OperationAuditRecord(
         now,
         getCredentialName(),
         getOperationCode().toString(),
@@ -159,7 +160,30 @@ public class AuditRecordBuilder {
         scope,
         oAuth2Request.getGrantType(),
         isSuccess
-    );
+      );
+    } else {
+      return new OperationAuditRecord(
+        now,
+        getCredentialName(),
+        getOperationCode().toString(),
+        "MTLS",
+        "MTLS",
+        "MTLS",
+        0,
+        0,
+        getHostName(),
+        method,
+        path,
+        getQueryParameters(),
+        requestStatus,
+        getRequesterIp(),
+        getXForwardedFor(),
+        "MTLS",
+        "MTLS",
+        "MTLS",
+        isSuccess
+      );
+    }
   }
 
   /*
@@ -171,9 +195,11 @@ public class AuditRecordBuilder {
     return ((Number) additionalInformation.get(claimName)).longValue();
   }
 
-  public AuditRecordBuilder computeAccessToken(ResourceServerTokenServices tokenServices) {
-    OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
-    setAccessToken(tokenServices.readAccessToken(authenticationDetails.getTokenValue()));
+  AuditRecordBuilder computeAccessToken(ResourceServerTokenServices tokenServices) {
+    if (authentication instanceof OAuth2Authentication) {
+      OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
+      setAccessToken(tokenServices.readAccessToken(authenticationDetails.getTokenValue()));
+    }
 
     return this;
   }
