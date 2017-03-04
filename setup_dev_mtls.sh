@@ -74,7 +74,7 @@ setup_trusted_certificate() {
 	    -destkeystore "${CLIENT_NAME}.p12" -deststorepass ${PASSWORD} \
 	    -deststoretype PKCS12
     # Convert the pkcs12 file to PEM
-    openssl pkcs12 -in ${CLIENT_NAME}.p12 -out ${CLIENT_NAME}.pem -clerts \
+    openssl pkcs12 -in ${CLIENT_NAME}.p12 -out ${CLIENT_NAME}.pem -clcerts \
         -password pass:${PASSWORD} -passout pass:${PASSWORD}
 }
 
@@ -93,6 +93,6 @@ pushd ${DIRNAME}/src/test/resources >/dev/null
         echo e.g., curl -H \"Content-Type: application/json\" \
             -X POST -d "'{\"name\":\"cred\",\"type\":\"password\"}'" \
             https://localhost:9000/api/v1/data -k \
-            --cert ${PWD}/${CLIENT_NAME}.p12:changeit
+            --cert ${PWD}/${CLIENT_NAME}.pem:changeit
     fi
 popd >/dev/null
