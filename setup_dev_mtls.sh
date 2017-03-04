@@ -73,6 +73,9 @@ setup_trusted_certificate() {
 	    -srckeystore ${TMP_KEY_STORE} -srcstorepass ${PASSWORD} \
 	    -destkeystore "${CLIENT_NAME}.p12" -deststorepass ${PASSWORD} \
 	    -deststoretype PKCS12
+    # Convert the pkcs12 file to PEM
+    openssl pkcs12 -in ${CLIENT_NAME}.p12 -out ${CLIENT_NAME}.pem -clerts \
+        -password pass:${PASSWORD} -passout pass:${PASSWORD}
 }
 
 pushd ${DIRNAME}/src/test/resources >/dev/null

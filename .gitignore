@@ -167,6 +167,7 @@ gradle-app.setting
 *.crt
 *.csr
 *.p12
+*.pem
 
 # Ignore any key stores
 *.jks
