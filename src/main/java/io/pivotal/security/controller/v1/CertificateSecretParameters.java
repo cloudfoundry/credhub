@@ -1,19 +1,23 @@
 package io.pivotal.security.controller.v1;
 
+import com.google.common.net.InetAddresses;
+import com.google.common.net.InternetDomainName;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.util.CertificateReader;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
 
 import java.util.regex.Pattern;
 
 public class CertificateSecretParameters implements RequestParameters {
-  private static final Pattern IP_ADDRESS_PATTERN = Pattern.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/\\d+)?$");
-  private static final Pattern BAD_IP_ADDRESS_PATTERN = Pattern.compile("^(\\d+\\.){3}\\d+$");
-  private static final Pattern DNS_PATTERN_INCLUDING_LEADING_WILDCARD = Pattern.compile("^(\\*\\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
+  private static final Pattern DNS_WILDCARD_PATTERN = Pattern.compile("^\\*?(?:\\.[a-zA-Z0-9\\-]+)*$");
 
   // Parameters used in RDN; at least one must be set
   private String organization;
@@ -146,13 +150,14 @@ public class CertificateSecretParameters implements RequestParameters {
 
   public CertificateSecretParameters addAlternativeNames(String... alternativeNames) {
     GeneralName[] genNames = new GeneralName[alternativeNames.length];
+
     for (int i = 0; i < alternativeNames.length; i++) {
       String name = alternativeNames[i];
-      if (IP_ADDRESS_PATTERN.matcher(name).matches()) {
+
+      if (InetAddresses.isInetAddress(name)) {
         genNames[i] = new GeneralName(GeneralName.iPAddress, name);
-      } else if (BAD_IP_ADDRESS_PATTERN.matcher(name).matches()) {
-        throw new ParameterizedValidationException("error.invalid_alternate_name");
-      } else if (DNS_PATTERN_INCLUDING_LEADING_WILDCARD.matcher(name).matches()) {
+      } else if (InternetDomainName.isValid(name) || DNS_WILDCARD_PATTERN.matcher(name).matches()) {
+        // Check for wildcard case, as InternetDomainName doesn't cover that.
         genNames[i] = new GeneralName(GeneralName.dNSName, name);
       } else {
         throw new ParameterizedValidationException("error.invalid_alternate_name");

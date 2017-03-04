@@ -5,11 +5,16 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.util.CertificateReader;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -40,11 +45,38 @@ public class CertificateSecretParametersTest {
 
       it("can add alternative names", () -> {
         CertificateSecretParameters params = new CertificateSecretParameters()
-            .addAlternativeNames("alternative-name-1", "alternative-name-2");
+            .addAlternativeNames("alternative-name-1", "alternative-name-2",".foo.com","foo.com.test", "*.foo.com.test");
 
         ASN1Sequence sequence = ASN1Sequence.getInstance(params.getAlternativeNames());
         assertThat(sequence.getObjectAt(0), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-1")));
         assertThat(sequence.getObjectAt(1), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-2")));
+        assertThat(sequence.getObjectAt(2), equalTo(new GeneralName(GeneralName.dNSName, ".foo.com")));
+        assertThat(sequence.getObjectAt(3), equalTo(new GeneralName(GeneralName.dNSName, "foo.com.test")));
+        assertThat(sequence.getObjectAt(4), equalTo(new GeneralName(GeneralName.dNSName, "*.foo.com.test")));
+      });
+
+      it("can add alternative names, that are valid IPs", () ->{
+        CertificateSecretParameters params = new CertificateSecretParameters()
+            .addAlternativeNames("107.23.170.203", "52.72.132.140", "2607:f8b0:4005:808::200e");
+
+        ASN1Sequence sequence = ASN1Sequence.getInstance(params.getAlternativeNames());
+        assertThat(sequence.getObjectAt(0), equalTo(new GeneralName(GeneralName.iPAddress, "107.23.170.203")));
+        assertThat(sequence.getObjectAt(1), equalTo(new GeneralName(GeneralName.iPAddress, "52.72.132.140")));
+        assertThat(sequence.getObjectAt(2), equalTo(new GeneralName(GeneralName.iPAddress, "2607:f8b0:4005:808::200e")));
+      });
+
+      itThrows("with invalid names with many levels", ParameterizedValidationException.class,() ->{
+        CertificateSecretParameters params = new CertificateSecretParameters()
+            .addAlternativeNames(".foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com%");
+
+        ASN1Sequence.getInstance(params.getAlternativeNames());
+      });
+
+      itThrows("when an invalid IP is given", ParameterizedValidationException.class, () -> {
+        CertificateSecretParameters params = new CertificateSecretParameters()
+            .addAlternativeNames("107.23.170.203333", "5...55");
+
+        ASN1Sequence.getInstance(params.getAlternativeNames());
       });
 
       it("can add extended key usages", () -> {
