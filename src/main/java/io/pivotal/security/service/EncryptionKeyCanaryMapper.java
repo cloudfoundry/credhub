@@ -125,7 +125,7 @@ public class EncryptionKeyCanaryMapper {
   }
 
   private Optional<EncryptionKeyCanary> findCanaryMatchingKey(KeyProxy encryptionKey, List<EncryptionKeyCanary> canaries) {
-    return canaries.stream().filter(canary -> encryptionService.isMatchingCanary(encryptionKey, canary)).findFirst();
+    return canaries.stream().filter(canary -> encryptionKey.matchesCanary(canary)).findFirst();
   }
 
   private EncryptionKeyCanary createCanary(KeyProxy encryptionKey) {
@@ -135,6 +135,7 @@ public class EncryptionKeyCanaryMapper {
       Encryption encryptionData = encryptionService.encrypt(encryptionKey.getKey(), CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
+      canary.setSalt(encryptionKey.getSalt());
 
     } catch (Exception e) {
       throw new RuntimeException(e);

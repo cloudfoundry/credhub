@@ -42,27 +42,10 @@ public class BCEncryptionService extends EncryptionService {
   @Override
   KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
     if (encryptionKeyMetadata.getDevKey() != null) {
-      return new KeyProxy(new SecretKeySpec(DatatypeConverter.parseHexBinary(encryptionKeyMetadata.getDevKey()), 0, KEYSIZE_BYTES, "AES"));
+      return new DefaultKeyProxy(new SecretKeySpec(DatatypeConverter.parseHexBinary(encryptionKeyMetadata.getDevKey()), 0, KEYSIZE_BYTES, "AES"), this);
     } else {
-      // todo test
-      return new KeyProxy(encryptionKeyMetadata.getPassword());
+      return new PasswordBasedKeyProxy(encryptionKeyMetadata.getEncryptionPassword(), this);
     }
   }
-
-  /*@Override
-  boolean isMatchingCanary(KeyProxy encryptionKeyProxy, EncryptionKeyCanary canary) {
-    final String password = encryptionKeyProxy.getPassword();
-    final byte[] salt = canary.getSalt();
-
-    Key key = deriveKey(password, salt);
-
-    boolean isMatching = super.isMatchingCanary(key, canary);
-
-    if (isMatching) {
-      encryptionKeyProxy.setKey(key);
-    }
-
-    return isMatching;
-  }*/
 }
 

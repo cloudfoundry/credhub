@@ -47,6 +47,6 @@ public class DyadicEncryptionService extends EncryptionServiceWithConnection {
 
   @Override
   KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return new KeyProxy(createKey(encryptionKeyMetadata, dyadicConnection));
+    return new DefaultKeyProxy(createKey(encryptionKeyMetadata, dyadicConnection), this);
   }
 }

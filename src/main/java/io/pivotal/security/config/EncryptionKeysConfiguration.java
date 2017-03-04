@@ -12,7 +12,7 @@ public class EncryptionKeysConfiguration {
   private final List<EncryptionKeyMetadata> keys;
 
   public EncryptionKeysConfiguration() {
-    this(new ArrayList<EncryptionKeyMetadata>());
+    this(new ArrayList<>());
   }
 
   public EncryptionKeysConfiguration(List<EncryptionKeyMetadata> keys) {

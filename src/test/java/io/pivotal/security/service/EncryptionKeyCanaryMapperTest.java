@@ -18,7 +18,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static java.util.Arrays.asList;
@@ -29,7 +31,10 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class EncryptionKeyCanaryMapperTest {
@@ -75,9 +80,9 @@ public class EncryptionKeyCanaryMapperTest {
       existingKey1 = mock(Key.class, "key 1");
       existingKey2 = mock(Key.class, "key 2");
       unknownKey = mock(Key.class, "key 3");
-      activeKeyProxy = new KeyProxy(activeKey);
-      existingKey1Proxy = new KeyProxy(existingKey1);
-      existingKey2Proxy = new KeyProxy(existingKey2);
+      activeKeyProxy = mock(KeyProxy.class);
+      existingKey1Proxy = mock(KeyProxy.class);
+      existingKey2Proxy = mock(KeyProxy.class);
 
       activeKeyCanary = createEncryptionCanary(activeCanaryUUID, "fake-active-encrypted-value", "fake-active-nonce", activeKey);
       existingKeyCanary1 = createEncryptionCanary(existingCanaryUUID1, "fake-existing-encrypted-value1", "fake-existing-nonce1", existingKey1);
@@ -94,9 +99,13 @@ public class EncryptionKeyCanaryMapperTest {
       when(encryptionService.createKeyProxy(eq(activeKeyData))).thenReturn(activeKeyProxy);
       when(encryptionService.createKeyProxy(eq(existingKey1Data))).thenReturn(existingKey1Proxy);
       when(encryptionService.createKeyProxy(eq(existingKey2Data))).thenReturn(existingKey2Proxy);
-      when(encryptionService.isMatchingCanary(eq(activeKeyProxy), eq(activeKeyCanary))).thenReturn(true);
-      when(encryptionService.isMatchingCanary(eq(existingKey1Proxy), eq(existingKeyCanary1))).thenReturn(true);
-      when(encryptionService.isMatchingCanary(eq(existingKey2Proxy), eq(existingKeyCanary2))).thenReturn(true);
+
+      when(activeKeyProxy.matchesCanary(eq(activeKeyCanary))).thenReturn(true);
+      when(existingKey1Proxy.matchesCanary(eq(existingKeyCanary1))).thenReturn(true);
+      when(existingKey2Proxy.matchesCanary(eq(existingKeyCanary2))).thenReturn(true);
+      when(activeKeyProxy.getKey()).thenReturn(activeKey);
+      when(existingKey1Proxy.getKey()).thenReturn(existingKey1);
+      when(existingKey2Proxy.getKey()).thenReturn(existingKey2);
 
       when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(existingKeyCanary1, activeKeyCanary, existingKeyCanary2));
 
@@ -199,7 +208,7 @@ public class EncryptionKeyCanaryMapperTest {
 
         describe("when decrypting with the wrong key raises an unknown IllegalBlockSizeException error -- HSM", () -> {
           beforeEach(() -> {
-            when(encryptionService.isMatchingCanary(activeKeyProxy, nonMatchingCanary))
+            when(activeKeyProxy.matchesCanary(nonMatchingCanary))
                 .thenThrow(new RuntimeException(new IllegalBlockSizeException("I don't know what 0x41 means and neither do you")));
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
                 .thenReturn(activeKeyCanary);
@@ -212,7 +221,7 @@ public class EncryptionKeyCanaryMapperTest {
 
         describe("when decrypting with the wrong key raises a known BadPaddingException error -- DSM", () -> {
           beforeEach(() -> {
-            when(encryptionService.isMatchingCanary(activeKeyProxy, nonMatchingCanary))
+            when(activeKeyProxy.matchesCanary(nonMatchingCanary))
                 .thenReturn(false);
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
                 .thenReturn(activeKeyCanary);
@@ -227,7 +236,7 @@ public class EncryptionKeyCanaryMapperTest {
 
         describe("when decrypting with the wrong key raises an unknown BadPaddingException error -- DSM", () -> {
           beforeEach(() -> {
-            when(encryptionService.isMatchingCanary(activeKeyProxy, nonMatchingCanary))
+            when(activeKeyProxy.matchesCanary(nonMatchingCanary))
                 .thenThrow(new RuntimeException(new BadPaddingException("Decrypt error: rv=1337 too cool for school")));
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
                 .thenReturn(activeKeyCanary);

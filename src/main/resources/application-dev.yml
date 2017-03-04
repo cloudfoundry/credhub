@@ -9,7 +9,7 @@ encryption:
   - dev-key: D673ACD01DA091B08144FBC8C0B5F524
     active: true
   - dev-key: A673ACF01DB091B08133FBC8C0B5F555
-
+  - encryption-password: correcthorsebatterystaple
 security:
   oauth2:
     resource:

@@ -3,18 +3,18 @@ package io.pivotal.security.config;
 public class EncryptionKeyMetadata {
   private String devKey;
   private String encryptionKeyName;
+  private String encryptionPassword;
   private boolean active;
-  private String password;
 
   public EncryptionKeyMetadata(String devKey, String encryptionKeyName, boolean active) {
     this(devKey, encryptionKeyName, active, null);
   }
 
-  public EncryptionKeyMetadata(String devKey, String encryptionKeyName, boolean active, String password) {
+  public EncryptionKeyMetadata(String devKey, String encryptionKeyName, boolean active, String encryptionPassword) {
     this.devKey = devKey;
     this.encryptionKeyName = encryptionKeyName;
     this.active = active;
-    this.password = password;
+    this.encryptionPassword = encryptionPassword;
   }
 
   public EncryptionKeyMetadata() {
@@ -48,11 +48,11 @@ public class EncryptionKeyMetadata {
   }
 
   @SuppressWarnings("unused")
-  public void setPassword(String password) {
-    this.password = password;
+  public void setEncryptionPassword(String encryptionPassword) {
+    this.encryptionPassword = encryptionPassword;
   }
 
-  public String getPassword() {
-    return password;
+  public String getEncryptionPassword() {
+    return encryptionPassword;
   }
 }

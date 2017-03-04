@@ -1,9 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.entity.EncryptionKeyCanary;
 
-import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -52,41 +50,6 @@ public abstract class EncryptionService {
     byte[] nonce = new byte[NONCE_SIZE];
     secureRandom.nextBytes(nonce);
     return nonce;
-  }
-
-  boolean isMatchingCanary(KeyProxy encryptionKeyProxy, EncryptionKeyCanary canary) {
-    Key key = (canary.getSalt() != null) ?
-        encryptionKeyProxy.getKey(canary.getSalt()) :
-        encryptionKeyProxy.getKey();
-
-    return isMatchingCanary(key, canary);
-  }
-
-  protected boolean isMatchingCanary(Key encryptionKey, EncryptionKeyCanary canary) {
-    String plaintext;
-
-    try {
-      plaintext = decrypt(encryptionKey, canary.getEncryptedValue(), canary.getNonce());
-      return EncryptionKeyCanaryMapper.CANARY_VALUE.equals(plaintext);
-    } catch (AEADBadTagException e) {
-      // dev_internal key was wrong
-    } catch (IllegalBlockSizeException e) {
-      // Our guess(es) at "HSM key was wrong":
-      if (!e.getMessage().contains("returns 0x40")) {
-        throw new RuntimeException(e);
-      }
-      // Could not process input data: function 'C_Decrypt' returns 0x40
-    } catch (BadPaddingException e) {
-      // Our guess(es) at "DSM key was wrong":
-      if (!e.getMessage().contains("rv=48")) {
-        throw new RuntimeException(e);
-      }
-      // javax.crypto.BadPaddingException: Decrypt error: rv=48
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    return false;
   }
 
   static class CipherWrapper {

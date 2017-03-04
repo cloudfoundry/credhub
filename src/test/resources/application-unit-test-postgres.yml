@@ -2,7 +2,7 @@ spring:
   datasource:
     username: root
     password: root
-    url: jdbc:postgresql://localhost:5432/credhub_test
+    url: jdbc:postgresql://localhost:5432/credhub_test?user=root
     tomcat:
       max-active: 20
       max-idle: 10
