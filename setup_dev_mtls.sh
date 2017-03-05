@@ -6,24 +6,21 @@ DIRNAME=$(dirname "$0")
 
 PASSWORD=changeit
 
-DNAME='CN=localhost,C=CC'
+DNAME='CN=localhost'
 DNAME_CA="CN=credhub_test"
-DNAME_CLIENT='CN=${CLIENT_NAME}'
 
 CA_NAME=ca
-CLIENT_NAME=client_cert
+CLIENT_NAME=client
 
 KEY_STORE=key_store.jks
 TRUST_STORE=trust_store.jks
-# Used to store private keys of trusted CAs so we can sign client certificates.
-TMP_KEY_STORE=tmp_key_store.jks
 
 clean() {
     echo "Removing any existing key stores and certs..."
-    rm -f *.jks *.crt *.csr *.p12
+    rm -f *.jks *.csr *.srl *pem
 }
 
-setup_key_store() {
+setup_tls_key_store() {
     echo "Generating a key store for TLS..."
 	keytool -genkey -alias cert \
 	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA -keypass ${PASSWORD} \
@@ -31,51 +28,43 @@ setup_key_store() {
 	    -keystore ${KEY_STORE} -storepass ${PASSWORD}
 }
 
-setup_tmp_key_store() {
-    echo "Generating a temporary key store to hold the trusted mTLS CA private keys..."
-	keytool -genkey -alias ${CA_NAME} -ext BC=ca:true \
-	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA -keypass ${PASSWORD} \
-	    -validity 365 -dname ${DNAME_CA} \
-	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
+generate_ca() {
+    echo "Generating self signed CA..."
+    openssl req \
+      -x509 \
+      -newkey rsa:2048 \
+      -days 30 \
+      -sha256 \
+      -nodes \
+      -subj "/CN=${DNAME_CA}" \
+      -keyout ${CA_NAME}_key.pem\
+      -out ${CA_NAME}.pem
 }
 
-setup_trust_store() {
-    echo "Creating a trust store with the trusted mTLS CA's certificate..."
-    keytool -export -alias ${CA_NAME} -file ${CA_NAME}.crt -rfc \
-	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
-	keytool -import -trustcacerts -noprompt -alias ${CA_NAME} -file ${CA_NAME}.crt \
+add_ca_to_trusted_keystore() {
+    echo "Adding CA to trust store for mTLS..."
+    keytool -import -trustcacerts -noprompt -alias ${CA_NAME} -file ${CA_NAME}.pem \
 	    -keystore ${TRUST_STORE} -storepass ${PASSWORD}
 }
 
-setup_trusted_certificate() {
-    echo "Generating a client certificate for mutual TLS..."
-    # Generate client certificate
-    keytool -genkey -alias ${CLIENT_NAME} \
-	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA -keypass ${PASSWORD} \
-	    -validity 365 -dname ${DNAME_CLIENT} \
-	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
-	# Generate a host certificate signing request
-	keytool -certreq -alias ${CLIENT_NAME} -ext BC=ca:true \
-	    -keyalg RSA -keysize 4096 -sigalg SHA512withRSA \
-	    -validity 365 -file "${CLIENT_NAME}.csr" \
-	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
-	# Generate signed certificate with the certificate authority
-	keytool -gencert -alias ca \
-	    -validity 365 -sigalg SHA512withRSA \
-	    -infile "${CLIENT_NAME}.csr" -outfile "${CLIENT_NAME}.crt" -rfc \
-		-keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
-    # Import now-signed cer
-	keytool -import -trustcacerts -alias ${CLIENT_NAME} \
-	    -file ${CLIENT_NAME}.crt \
-	    -keystore ${TMP_KEY_STORE} -storepass ${PASSWORD}
-	# Export private certificate for importing into a browser
-	keytool -importkeystore -srcalias ${CLIENT_NAME} \
-	    -srckeystore ${TMP_KEY_STORE} -srcstorepass ${PASSWORD} \
-	    -destkeystore "${CLIENT_NAME}.p12" -deststorepass ${PASSWORD} \
-	    -deststoretype PKCS12
-    # Convert the pkcs12 file to PEM
-    openssl pkcs12 -in ${CLIENT_NAME}.p12 -out ${CLIENT_NAME}.pem -clcerts \
-        -password pass:${PASSWORD} -passout pass:${PASSWORD}
+generate_client_cert() {
+    echo "Generating client certificate signed by the trusted CA..."
+    # generate keypair
+    openssl genrsa -out ${CLIENT_NAME}_key.pem 2048
+
+    # create CSR
+    openssl req -new -key ${CLIENT_NAME}_key.pem -out client.csr -subj "/CN=${DNAME}"
+
+    # create client certificate signed by the trusted CA
+    openssl x509 \
+        -req \
+        -in client.csr \
+        -CA ${CA_NAME}.pem \
+        -CAkey ${CA_NAME}_key.pem \
+        -CAcreateserial \
+        -out ${CLIENT_NAME}.pem \
+        -days 30 \
+        -sha256
 }
 
 pushd ${DIRNAME}/src/test/resources >/dev/null
@@ -83,16 +72,15 @@ pushd ${DIRNAME}/src/test/resources >/dev/null
         echo "Key store and trust store are already set up!"
     else
         clean
-        setup_key_store
-        setup_tmp_key_store
-        setup_trust_store
-        setup_trusted_certificate
+        setup_tls_key_store
+        generate_ca
+        add_ca_to_trusted_keystore
+        generate_client_cert
 
         echo "Finished setting up key stores for TLS and mTLS!"
-        echo "There is a client certificate for mTLS requests at ${PWD}/${CLIENT_NAME}.p12"
         echo e.g., curl -H \"Content-Type: application/json\" \
             -X POST -d "'{\"name\":\"cred\",\"type\":\"password\"}'" \
             https://localhost:9000/api/v1/data -k \
-            --cert ${PWD}/${CLIENT_NAME}.pem:changeit
+            --cert ${PWD}/${CLIENT_NAME}.pem --key ${PWD}/${CLIENT_NAME}_key.pem
     fi
 popd >/dev/null
