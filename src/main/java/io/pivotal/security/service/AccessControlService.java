@@ -68,6 +68,10 @@ public class AccessControlService {
   public AccessEntryResponse getAccessControlEntries(String credentialName) {
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
 
+    if (secretName == null) {
+      return null;
+    }
+
     List<AccessControlEntry> responseAces = transformAllAccessEntries(secretName);
 
     return new AccessEntryResponse(credentialName, responseAces);

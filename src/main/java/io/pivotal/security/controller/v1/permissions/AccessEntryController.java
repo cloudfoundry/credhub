@@ -25,6 +25,7 @@ import java.util.Map;
 public class AccessEntryController {
 
   public static final String API_V1 = "/api/v1";
+  static final String RESOURCE_NOT_FOUND = "The request could not be fulfilled because the resource could not be found.";
 
   private AccessControlService accessControlService;
 
@@ -36,7 +37,7 @@ public class AccessEntryController {
   @PostMapping(path = "/aces", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity setAccessControlEntry(@Validated @RequestBody AccessEntryRequest accessEntryRequest, Errors errors) {
     if (errors.hasErrors()) {
-      Map error = constructError(errors);
+      Map error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
       return wrapResponse(accessControlService.setAccessControlEntry(accessEntryRequest), HttpStatus.OK);
@@ -44,17 +45,27 @@ public class AccessEntryController {
   }
 
   @GetMapping(path = "/acls")
-  public AccessEntryResponse getAccessControlEntry(
+  public ResponseEntity getAccessControlEntry(
     @RequestParam("credential_name") String credentialName) {
+    final AccessEntryResponse accessControlEntries = accessControlService.getAccessControlEntries(credentialName);
 
-    return accessControlService.getAccessControlEntries(credentialName);
+    if(accessControlEntries == null){
+      return wrapResponse(constructError(RESOURCE_NOT_FOUND),
+          HttpStatus.NOT_FOUND);
+    }
+
+    return wrapResponse(accessControlEntries, HttpStatus.OK);
   }
 
-  private Map<String, String> constructError(Errors errors) {
-    return Collections.singletonMap("error", errors.getAllErrors().get(0).getDefaultMessage());
+  private Map<String, String> constructError(String error) {
+    return Collections.singletonMap("error", error);
   }
 
   private ResponseEntity wrapResponse(Object wrapped, HttpStatus status) {
     return new ResponseEntity<>(wrapped, status);
+  }
+
+  private String getErrorMessage(Errors errors) {
+    return errors.getAllErrors().get(0).getDefaultMessage();
   }
 }

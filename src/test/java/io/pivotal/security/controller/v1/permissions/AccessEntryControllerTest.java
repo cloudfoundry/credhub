@@ -18,8 +18,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -36,6 +34,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.Collections;
 
 @RunWith(Spectrum.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -66,23 +66,23 @@ public class AccessEntryControllerTest {
     describe("When posting access control entry for user and credential", () -> {
       it("returns the full Access Control List for user", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/aces")
-          .accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content("{" +
-            "  \"credential_name\": \"/cred1\",\n" +
-            "  \"access_control_entries\": [\n" +
-            "     { \n" +
-            "       \"actor\": \"dan\",\n" +
-            "       \"operations\": [\"read\"]\n" +
-            "     }]" +
-            "}");
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"credential_name\": \"/cred1\",\n" +
+                "  \"access_control_entries\": [\n" +
+                "     { \n" +
+                "       \"actor\": \"dan\",\n" +
+                "       \"operations\": [\"read\"]\n" +
+                "     }]" +
+                "}");
 
         this.mockMvc.perform(post).andExpect(status().isOk())
-          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
-          .andExpect(jsonPath("$.access_control_list", hasSize(1)))
-          .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
-          .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
+            .andExpect(jsonPath("$.access_control_list", hasSize(1)))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
 
         ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor.forClass(AccessEntryRequest.class);
         verify(accessControlService).setAccessControlEntry(captor.capture());
@@ -96,34 +96,47 @@ public class AccessEntryControllerTest {
     describe("When posting access control entry for user and credential with invalid operation", () -> {
       it("returns an error", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/aces")
-          .accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content("{" +
-            "  \"credential_name\": \"cred1\",\n" +
-            "  \"access_control_entries\": [\n" +
-            "     { \n" +
-            "       \"actor\": \"dan\",\n" +
-            "       \"operations\": [\"unicorn\"]\n" +
-            "     }]" +
-            "}");
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"credential_name\": \"cred1\",\n" +
+                "  \"access_control_entries\": [\n" +
+                "     { \n" +
+                "       \"actor\": \"dan\",\n" +
+                "       \"operations\": [\"unicorn\"]\n" +
+                "     }]" +
+                "}");
 
         this.mockMvc.perform(post).andExpect(status().is4xxClientError())
-          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.error").value("The provided operation is not supported. Valid values include read and write."));
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("The provided operation is not supported. Valid values include read and write."));
       });
     });
 
     describe("When getting access control list by credential name", () -> {
-      it("returns the full list of access control entries for the credential", () -> {
-        mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
-          .andExpect(status().isOk())
-          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
-          .andExpect(jsonPath("$.access_control_list", hasSize(1)))
-          .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
-          .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
+      describe("and the credential exists", () -> {
+        it("returns the full list of access control entries for the credential", () -> {
+          mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
+              .andExpect(jsonPath("$.access_control_list", hasSize(1)))
+              .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
+              .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+        });
+      });
+
+      describe("and the credential doesn't exit", () -> {
+        final String unicorn = "/unicorn";
+
+        it("returns the full list of access control entries for the credential", () -> {
+          mockMvc.perform(get("/api/v1/acls?credential_name=" + unicorn))
+              .andExpect(status().isNotFound())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error", equalTo(AccessEntryController.RESOURCE_NOT_FOUND)));
+        });
       });
     });
-
   }
 }

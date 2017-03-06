@@ -1,29 +1,31 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.SecretName;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessEntryResponse;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
 import java.util.List;
@@ -121,6 +123,12 @@ public class AccessControlServiceTest {
           assertThat(response.getAccessControlList(), hasItems(
             allOf(hasProperty("actor", equalTo("Leia")),
               hasProperty("operations", hasItems("read")))));
+        });
+      });
+
+      describe("when given a credential name that doesn't exist", () -> {
+        it("returns null", () -> {
+          assertThat(subject.getAccessControlEntries("/unicorn"), nullValue());
         });
       });
     });
