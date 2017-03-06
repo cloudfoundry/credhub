@@ -62,7 +62,7 @@ Postgres datasource configuration is in `application-dev-postgres.yml`.
 Before development, you'll need to create the target database.
 
 ```sh
-createdb credhub
+createdb credhub_dev
 ```
 
 Then to run in development mode with Postgres
@@ -71,13 +71,22 @@ Then to run in development mode with Postgres
 ./start_server.sh -Dspring.profiles.active=dev-postgres
 ```
 
-#### MySQL
+#### MariaDB
 
-MySQL datasource configuration is in `application-dev-mysql.yml`.
+MariaDB datasource configuration is in `application-dev-mysql.yml`.
 
-Log into your MySQL server. Create a database `credhub` with privileges granted to `root`.
+Log into your MariaDB server. Create databases `credhub_dev` and `credhub_test` with privileges granted to `root`.
 
-Then to run in development mode with MySQL
+```shell
+mysql -u root
+create database credhub_test;
+create database credhub_dev;
+```
+
+If you're on a Mac using Homebrew and you run into a problem where you install MariaDB and it isn't running (i.e., `mysql -u root` errors with a socket error),
+you may need to uninstall mysql, delete the `/usr/local/var/mysql` directory (*Warning: this will delete all local mysql & mariadb data!*), and then reinstall mariadb.
+
+Then to run in development mode with MariaDB:
 
 ```sh
 ./start_server.sh -Dspring.profiles.active=dev-mysql
@@ -90,6 +99,6 @@ Testing with different databases requires you to set a system property with the 
 During development, it is helpful to set up different IntelliJ testing profiles that use the following VM Options:
 
 - `-ea -Dspring.profiles.active=unit-test-h2` for testing with H2
-- `-ea -Dspring.profiles.active=unit-test-mysql` for testing with MySQL
+- `-ea -Dspring.profiles.active=unit-test-mysql` for testing with MariaDB
 - `-ea -Dspring.profiles.active=unit-test-postgres` for testing with Postgres
 

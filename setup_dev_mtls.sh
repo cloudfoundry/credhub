@@ -68,7 +68,7 @@ generate_client_cert() {
 }
 
 pushd ${DIRNAME}/src/test/resources >/dev/null
-    if [[ -f ${KEY_STORE} && -f ${TMP_KEY_STORE} ]]; then
+    if [[ -f ${KEY_STORE} && -f ${TRUST_STORE} ]]; then
         echo "Key store and trust store are already set up!"
     else
         clean
