@@ -47,7 +47,7 @@ public class AccessControlEntryTest {
                 "}";
             Set<ConstraintViolation<AccessControlEntry>> constraintViolations = serializeAndValidate(json, AccessControlEntry.class);
             assertThat(constraintViolations.size(), equalTo(1));
-            assertThat(((ConstraintViolation) constraintViolations.toArray()[0]).getMessage(), equalTo("The provided operation is not supported. Valid values include read and write."));
+            assertThat(((ConstraintViolation) constraintViolations.toArray()[0]).getMessage(), equalTo("error.acl.invalid_operation"));
           });
 
           it("should validate on exact strings", () -> {
@@ -57,7 +57,7 @@ public class AccessControlEntryTest {
                 "}";
             Set<ConstraintViolation<AccessControlEntry>> constraintViolations = serializeAndValidate(json, AccessControlEntry.class);
             assertThat(constraintViolations.size(), equalTo(1));
-            assertThat(((ConstraintViolation) constraintViolations.toArray()[0]).getMessage(), equalTo("The provided operation is not supported. Valid values include read and write."));
+            assertThat(((ConstraintViolation) constraintViolations.toArray()[0]).getMessage(), equalTo("error.acl.invalid_operation"));
           });
         });
       });

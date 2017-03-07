@@ -18,6 +18,8 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Collections;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -34,8 +36,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Collections;
 
 @RunWith(Spectrum.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -134,7 +134,7 @@ public class AccessEntryControllerTest {
           mockMvc.perform(get("/api/v1/acls?credential_name=" + unicorn))
               .andExpect(status().isNotFound())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error", equalTo(AccessEntryController.RESOURCE_NOT_FOUND)));
+              .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the resource could not be found.")));
         });
       });
     });

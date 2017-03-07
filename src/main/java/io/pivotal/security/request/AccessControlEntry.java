@@ -16,7 +16,7 @@ public class AccessControlEntry {
     private String actor;
 
     @NotNull
-    @EachPattern(regexp = "(read|write)", message = "The provided operation is not supported. Valid values include read and write.")
+    @EachPattern(regexp = "(read|write)", message = "error.acl.invalid_operation")
     private List<String> operations;
 
     public AccessControlEntry() {

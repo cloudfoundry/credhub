@@ -1,10 +1,11 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.service.AccessControlService;
 import io.pivotal.security.view.AccessEntryResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +21,24 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Collections;
 import java.util.Map;
 
+import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
+
 @RestController
 @RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AccessEntryController {
 
   public static final String API_V1 = "/api/v1";
-  static final String RESOURCE_NOT_FOUND = "The request could not be fulfilled because the resource could not be found.";
 
   private AccessControlService accessControlService;
+  private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
-  public AccessEntryController(AccessControlService accessControlService) {
+  public AccessEntryController(
+      AccessControlService accessControlService,
+      MessageSource messageSource
+  ) {
     this.accessControlService = accessControlService;
+    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
   @PostMapping(path = "/aces", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -49,8 +56,8 @@ public class AccessEntryController {
     @RequestParam("credential_name") String credentialName) {
     final AccessEntryResponse accessControlEntries = accessControlService.getAccessControlEntries(credentialName);
 
-    if(accessControlEntries == null){
-      return wrapResponse(constructError(RESOURCE_NOT_FOUND),
+    if (accessControlEntries == null) {
+      return wrapResponse(constructError("error.resource_not_found"),
           HttpStatus.NOT_FOUND);
     }
 
@@ -58,7 +65,7 @@ public class AccessEntryController {
   }
 
   private Map<String, String> constructError(String error) {
-    return Collections.singletonMap("error", error);
+    return Collections.singletonMap("error", messageSourceAccessor.getMessage(error));
   }
 
   private ResponseEntity wrapResponse(Object wrapped, HttpStatus status) {
