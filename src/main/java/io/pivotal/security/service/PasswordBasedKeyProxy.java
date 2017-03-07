@@ -48,6 +48,10 @@ class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
 
   @Override
   public boolean matchesCanary(EncryptionKeyCanary canary) {
+    if (canary.getSalt() == null || canary.getSalt().length == 0) {
+      return false;
+    }
+
     Key key = deriveKey(password, canary.getSalt());
 
     boolean result = super.matchesCanary(key, canary);

@@ -91,6 +91,20 @@ public class PasswordBasedKeyProxyTest {
           assertThat(subject.getKey(), not(equalTo(derivedKey)));
         });
       });
+
+      describe("when canary does not contain salt", () -> {
+        it("returns false for a null salt", () -> {
+          canary = new EncryptionKeyCanary();
+          canary.setSalt(null);
+          assertFalse(subject.matchesCanary(canary));
+        });
+
+        it("returns false for an empty salt", () -> {
+          canary = new EncryptionKeyCanary();
+          canary.setSalt("".getBytes());
+          assertFalse(subject.matchesCanary(canary));
+        });
+      });
     });
 
     describe("#getKey", () -> {
