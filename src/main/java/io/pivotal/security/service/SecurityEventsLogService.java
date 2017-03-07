@@ -9,11 +9,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SecurityEventsLogService {
-  @Autowired
-  Logger securityEventsLogger;
+  private final Logger securityEventsLogger;
+  private final VersionProvider versionProvider;
 
   @Autowired
-  VersionProvider versionProvider;
+  SecurityEventsLogService(Logger securityEventsLogger, VersionProvider versionProvider) {
+    this.securityEventsLogger = securityEventsLogger;
+    this.versionProvider = versionProvider;
+  }
 
   public void log(OperationAuditRecord operationAuditRecord) {
     String signature = operationAuditRecord.getMethod() + " " + operationAuditRecord.getPath();

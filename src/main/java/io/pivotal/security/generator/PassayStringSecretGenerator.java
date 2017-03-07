@@ -15,9 +15,12 @@ public class PassayStringSecretGenerator implements SecretGenerator<PasswordGene
   public static final int DEFAULT_LENGTH = 30;
   public static final int MIN_LENGTH = 4;
   public static final int MAX_LENGTH = 200;
+  private final PasswordGenerator passwordGenerator;
 
   @Autowired
-  PasswordGenerator passwordGenerator;
+  PassayStringSecretGenerator(PasswordGenerator passwordGenerator) {
+    this.passwordGenerator = passwordGenerator;
+  }
 
   @Override
   public Password generateSecret(PasswordGenerationParameters parameters) {

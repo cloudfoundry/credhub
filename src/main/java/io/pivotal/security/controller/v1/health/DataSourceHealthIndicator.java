@@ -18,7 +18,6 @@ package io.pivotal.security.controller.v1.health;
  * limitations under the License.
  */
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.IncorrectResultSetColumnCountException;
@@ -34,6 +33,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,16 +49,16 @@ import java.util.Map;
  */
 
 @Component
-public class DataSourceHealthIndicator {
+class DataSourceHealthIndicator {
 
   private static final String DEFAULT_QUERY = "SELECT 1";
-
   private String query;
-
   private JdbcTemplate jdbcTemplate;
+  private Map<String, DataSource> dataSources;
 
-  @Autowired(required = false)
-  Map<String, DataSource> dataSources;
+  DataSourceHealthIndicator() {
+    dataSources = new HashMap<>();
+  }
 
   void checkHealth(Health.Builder builder) throws Exception {
     setDataSource(dataSources.get("dataSource"));

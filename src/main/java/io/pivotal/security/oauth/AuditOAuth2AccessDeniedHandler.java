@@ -18,20 +18,26 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
-  @Autowired
-  ResourceServerTokenServices tokenServices;
+  private final ResourceServerTokenServices tokenServices;
+  private final JwtTokenStore tokenStore;
+  private final CurrentTimeProvider currentTimeProvider;
+  private final OperationAuditRecordDataService operationAuditRecordDataService;
+  private final SecurityEventsLogService securityEventsLogService;
 
   @Autowired
-  JwtTokenStore tokenStore;
-
-  @Autowired
-  CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
-  OperationAuditRecordDataService operationAuditRecordDataService;
-
-  @Autowired
-  SecurityEventsLogService securityEventsLogService;
+  public AuditOAuth2AccessDeniedHandler(
+    ResourceServerTokenServices tokenServices,
+    JwtTokenStore tokenStore,
+    CurrentTimeProvider currentTimeProvider,
+    OperationAuditRecordDataService operationAuditRecordDataService,
+    SecurityEventsLogService securityEventsLogService
+  ) {
+    this.tokenServices = tokenServices;
+    this.tokenStore = tokenStore;
+    this.currentTimeProvider = currentTimeProvider;
+    this.operationAuditRecordDataService = operationAuditRecordDataService;
+    this.securityEventsLogService = securityEventsLogService;
+  }
 
   @Override
   public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException authException) throws IOException, ServletException {

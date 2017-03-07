@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -22,6 +23,9 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -40,15 +44,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
 public class DatabaseAuditLogServiceTest {
-
-  @Autowired
   DatabaseAuditLogService subject;
 
   @MockBean
@@ -69,6 +68,9 @@ public class DatabaseAuditLogServiceTest {
 
   @MockBean
   SecurityEventsLogService securityEventsLogService;
+
+  @Autowired
+  MessageSource messageSource;
 
   AuditRecordBuilder auditRecordBuilder;
 
@@ -92,10 +94,19 @@ public class DatabaseAuditLogServiceTest {
       );
       transactionManager = new FakeTransactionManager();
       secretRepository = new FakeSecretRepository(transactionManager);
-      subject.transactionManager = transactionManager;
 
       now = Instant.now();
       when(currentTimeProvider.getInstant()).thenReturn(now);
+
+      subject = new DatabaseAuditLogService(
+          currentTimeProvider,
+          tokenServices,
+          operationAuditRecordDataService,
+          transactionManager,
+          messageSource,
+          securityEventsLogService
+      );
+      subject.init();
     });
 
     describe("logging behavior", () -> {

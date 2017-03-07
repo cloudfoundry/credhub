@@ -21,24 +21,29 @@ import java.util.function.Supplier;
 
 @Service
 public class DatabaseAuditLogService implements AuditLogService {
+  private final CurrentTimeProvider currentTimeProvider;
+  private final ResourceServerTokenServices tokenServices;
+  private final OperationAuditRecordDataService operationAuditRecordDataService;
+  private final PlatformTransactionManager transactionManager;
+  private final MessageSource messageSource;
+  private final SecurityEventsLogService securityEventsLogService;
 
   @Autowired
-  CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
-  ResourceServerTokenServices tokenServices;
-
-  @Autowired
-  OperationAuditRecordDataService operationAuditRecordDataService;
-
-  @Autowired
-  PlatformTransactionManager transactionManager;
-
-  @Autowired
-  MessageSource messageSource;
-
-  @Autowired
-  SecurityEventsLogService securityEventsLogService;
+  DatabaseAuditLogService(
+      CurrentTimeProvider currentTimeProvider,
+      ResourceServerTokenServices tokenServices,
+      OperationAuditRecordDataService operationAuditRecordDataService,
+      PlatformTransactionManager transactionManager,
+      MessageSource messageSource,
+      SecurityEventsLogService securityEventsLogService
+  ) {
+    this.currentTimeProvider = currentTimeProvider;
+    this.tokenServices = tokenServices;
+    this.operationAuditRecordDataService = operationAuditRecordDataService;
+    this.transactionManager = transactionManager;
+    this.messageSource = messageSource;
+    this.securityEventsLogService = securityEventsLogService;
+  }
 
   private MessageSourceAccessor messageSourceAccessor;
 

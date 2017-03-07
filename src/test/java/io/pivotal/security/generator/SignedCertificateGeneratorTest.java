@@ -12,7 +12,6 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.data.auditing.DateTimeProvider;
 
@@ -76,7 +75,6 @@ public class SignedCertificateGeneratorTest {
   private CertificateSecretParameters inputParameters;
   private String isCA;
 
-    @InjectMocks
   SignedCertificateGenerator subject;
 
   {
@@ -89,7 +87,7 @@ public class SignedCertificateGeneratorTest {
     beforeEach(injectMocks(this));
 
     beforeEach(() -> {
-      subject.provider = bouncyCastleProvider;
+      subject = new SignedCertificateGenerator(timeProvider, serialNumberGenerator, bouncyCastleProvider);
 
       nowCalendar.setTime(Date.from(now));
       when(timeProvider.getNow()).thenReturn(nowCalendar);

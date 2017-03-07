@@ -16,15 +16,20 @@ import java.util.Map;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class InfoController {
+  private final AuthServerProperties authServerProperties;
+  private final Environment environment;
+  private final VersionProvider versionProvider;
 
   @Autowired
-  AuthServerProperties authServerProperties;
-
-  @Autowired
-  Environment environment;
-
-  @Autowired
-  VersionProvider versionProvider;
+  InfoController(
+      AuthServerProperties authServerProperties,
+      Environment environment,
+      VersionProvider versionProvider
+  ) {
+    this.authServerProperties = authServerProperties;
+    this.environment = environment;
+    this.versionProvider = versionProvider;
+  }
 
   @RequestMapping(method = RequestMethod.GET, path = "/info")
   public Map<String, ?> info() {

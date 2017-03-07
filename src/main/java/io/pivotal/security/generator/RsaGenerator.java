@@ -10,9 +10,12 @@ import java.security.KeyPair;
 
 @Component
 public class RsaGenerator implements SecretGenerator<RsaSecretParameters, RsaKey> {
+  private final LibcryptoRsaKeyPairGenerator keyGenerator;
 
   @Autowired
-  LibcryptoRsaKeyPairGenerator keyGenerator;
+  RsaGenerator(LibcryptoRsaKeyPairGenerator keyGenerator) {
+    this.keyGenerator = keyGenerator;
+  }
 
   @Override
   public RsaKey generateSecret(RsaSecretParameters parameters) {

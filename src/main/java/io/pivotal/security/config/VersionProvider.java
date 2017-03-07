@@ -8,10 +8,13 @@ import javax.annotation.PostConstruct;
 
 @Component
 public class VersionProvider {
+  private final Environment environment;
   private String version;
 
   @Autowired
-  Environment environment;
+  VersionProvider(Environment environment) {
+    this.environment = environment;
+  }
 
   @PostConstruct
   private void init() {

@@ -7,8 +7,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class OperationAuditRecordDataService {
+  private final OperationAuditRecordRepository operationAuditRecordRepository;
+
   @Autowired
-  OperationAuditRecordRepository operationAuditRecordRepository;
+  OperationAuditRecordDataService(OperationAuditRecordRepository operationAuditRecordRepository) {
+    this.operationAuditRecordRepository = operationAuditRecordRepository;
+  }
 
   public OperationAuditRecord save(OperationAuditRecord record) {
     return operationAuditRecordRepository.save(record);

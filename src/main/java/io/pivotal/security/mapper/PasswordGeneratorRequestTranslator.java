@@ -1,12 +1,11 @@
 package io.pivotal.security.mapper;
 
-import static com.google.common.collect.ImmutableSet.of;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.secret.Password;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,11 +13,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.google.common.collect.ImmutableSet.of;
+
 @Component
 public class PasswordGeneratorRequestTranslator implements RequestTranslator<NamedPasswordSecret>, SecretGeneratorRequestTranslator<PasswordGenerationParameters, NamedPasswordSecret> {
+  private final PassayStringSecretGenerator stringSecretGenerator;
 
   @Autowired
-  PassayStringSecretGenerator stringSecretGenerator;
+  PasswordGeneratorRequestTranslator(PassayStringSecretGenerator stringSecretGenerator) {
+    this.stringSecretGenerator = stringSecretGenerator;
+  }
 
   @Override
   public PasswordGenerationParameters validRequestParameters(DocumentContext parsed, NamedPasswordSecret entity) {

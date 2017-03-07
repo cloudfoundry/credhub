@@ -1,6 +1,9 @@
 package io.pivotal.security.config;
 
+import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.oauth.AuditOAuth2AccessDeniedHandler;
+import io.pivotal.security.service.SecurityEventsLogService;
+import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,8 +55,20 @@ public class OAuth2Configuration {
   }
 
   @Bean
-  public AuditOAuth2AccessDeniedHandler getAuditOAuth2AccessDeniedHandler() {
-    return new AuditOAuth2AccessDeniedHandler();
+  public AuditOAuth2AccessDeniedHandler getAuditOAuth2AccessDeniedHandler(
+      ResourceServerTokenServices tokenServices,
+      JwtTokenStore tokenStore,
+      CurrentTimeProvider timeProvider,
+      OperationAuditRecordDataService operationAuditRecordDataService,
+      SecurityEventsLogService securityEventsLogService
+  ) {
+    return new AuditOAuth2AccessDeniedHandler(
+        tokenServices,
+        tokenStore,
+        timeProvider,
+        operationAuditRecordDataService,
+        securityEventsLogService
+    );
   }
 
   @Bean

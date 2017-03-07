@@ -17,12 +17,17 @@ import static com.google.common.collect.ImmutableSet.of;
 @Component
 public class RsaGeneratorRequestTranslator
     implements RequestTranslator<NamedRsaSecret>, SecretGeneratorRequestTranslator<RsaSecretParameters, NamedRsaSecret> {
+  private final RsaGenerator rsaGenerator;
+  private final RsaSecretParametersFactory rsaSecretParametersFactory;
 
   @Autowired
-  RsaGenerator rsaGenerator;
-
-  @Autowired
-  RsaSecretParametersFactory rsaSecretParametersFactory;
+  RsaGeneratorRequestTranslator(
+      RsaGenerator rsaGenerator,
+      RsaSecretParametersFactory rsaSecretParametersFactory
+  ) {
+    this.rsaGenerator = rsaGenerator;
+    this.rsaSecretParametersFactory = rsaSecretParametersFactory;
+  }
 
   @Override
   public RsaSecretParameters validRequestParameters(DocumentContext parsed, NamedRsaSecret entity) {

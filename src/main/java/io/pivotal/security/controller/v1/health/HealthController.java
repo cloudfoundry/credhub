@@ -13,9 +13,12 @@ import static com.google.common.collect.ImmutableMap.of;
 
 @Controller
 public class HealthController {
+  private final DataSourceHealthIndicator dataSourceHealthIndicator;
 
   @Autowired
-  private DataSourceHealthIndicator dataSourceHealthIndicator;
+  HealthController(DataSourceHealthIndicator dataSourceHealthIndicator) {
+    this.dataSourceHealthIndicator = dataSourceHealthIndicator;
+  }
 
   @RequestMapping(value = "/health", method = RequestMethod.GET)
   public ResponseEntity<Map> getHealth() {

@@ -17,12 +17,17 @@ import static com.google.common.collect.ImmutableSet.of;
 @Component
 public class SshGeneratorRequestTranslator
     implements RequestTranslator<NamedSshSecret>, SecretGeneratorRequestTranslator<SshSecretParameters, NamedSshSecret> {
+  private final SshGenerator sshGenerator;
+  private final SshSecretParametersFactory sshSecretParametersFactory;
 
   @Autowired
-  SshGenerator sshGenerator;
-
-  @Autowired
-  SshSecretParametersFactory sshSecretParametersFactory;
+  SshGeneratorRequestTranslator(
+      SshGenerator sshGenerator,
+      SshSecretParametersFactory sshSecretParametersFactory
+  ) {
+    this.sshGenerator = sshGenerator;
+    this.sshSecretParametersFactory = sshSecretParametersFactory;
+  }
 
   @Override
   public SshSecretParameters validRequestParameters(DocumentContext parsed, NamedSshSecret entity) {

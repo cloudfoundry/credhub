@@ -17,9 +17,6 @@ import org.springframework.security.oauth2.common.util.JsonParser;
 import org.springframework.security.oauth2.common.util.JsonParserFactory;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -36,26 +33,29 @@ import static org.springframework.security.oauth2.provider.token.AccessTokenConv
 
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
+  private final CurrentTimeProvider currentTimeProvider;
+  private final AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
+//  private final JwtAccessTokenConverter jwtAccessTokenConverter;
+//  private final TokenStore jwtTokenStore;
+//  private final ResourceServerTokenServices tokenServices;
+  private final MessageSource messageSource;
+  private final JsonParser objectMapper;
 
   @Autowired
-  CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
-  AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
-
-  @Autowired
-  JwtAccessTokenConverter jwtAccessTokenConverter;
-
-  @Autowired
-  TokenStore jwtTokenStore;
-
-  @Autowired
-  ResourceServerTokenServices tokenServices;
-
-  @Autowired
-  private MessageSource messageSource;
-
-  private JsonParser objectMapper = JsonParserFactory.create();
+  AuditOAuth2AuthenticationExceptionHandler(
+      CurrentTimeProvider currentTimeProvider,
+      AuthFailureAuditRecordDataService authFailureAuditRecordDataService,
+//      JwtAccessTokenConverter jwtAccessToMessageSource messageSourcervices,
+      MessageSource messageSource
+  ) {
+    this.currentTimeProvider = currentTimeProvider;
+    this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
+//    this.jwtAccessTokenConverter = jwtAccessTokenConverter;
+//    this.jwtTokenStore = jwtTokenStore;
+//    this.tokenServices = tokenServices;
+    this.messageSource = messageSource;
+    this.objectMapper = JsonParserFactory.create();
+  }
 
   private MessageSourceAccessor messageSourceAccessor;
 

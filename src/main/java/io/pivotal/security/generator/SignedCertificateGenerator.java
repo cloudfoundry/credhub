@@ -24,14 +24,20 @@ import java.util.Date;
 
 @Component
 public class SignedCertificateGenerator {
-  @Autowired
-  DateTimeProvider timeProvider;
+  private final DateTimeProvider timeProvider;
+  private final RandomSerialNumberGenerator serialNumberGenerator;
+  private final BouncyCastleProvider provider;
 
   @Autowired
-  RandomSerialNumberGenerator serialNumberGenerator;
-
-  @Autowired
-  BouncyCastleProvider provider;
+  SignedCertificateGenerator(
+      DateTimeProvider timeProvider,
+      RandomSerialNumberGenerator serialNumberGenerator,
+      BouncyCastleProvider provider
+  ) {
+    this.timeProvider = timeProvider;
+    this.serialNumberGenerator = serialNumberGenerator;
+    this.provider = provider;
+  }
 
   X509Certificate getSelfSigned(KeyPair keyPair, CertificateSecretParameters params) throws Exception {
     return getSignedByIssuer(params.getDN(), keyPair.getPrivate(), keyPair, params);

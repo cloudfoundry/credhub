@@ -20,15 +20,20 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 @EnableResourceServer
 @EnableWebSecurity
 public class AuthConfiguration extends ResourceServerConfigurerAdapter {
+  private final ResourceServerProperties resourceServerProperties;
+  private final AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
+  private final AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
 
   @Autowired
-  ResourceServerProperties resourceServerProperties;
-
-  @Autowired
-  AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
-
-  @Autowired
-  AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
+  AuthConfiguration(
+      ResourceServerProperties resourceServerProperties,
+      AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler,
+      AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler
+  ) {
+    this.resourceServerProperties = resourceServerProperties;
+    this.auditOAuth2AuthenticationExceptionHandler = auditOAuth2AuthenticationExceptionHandler;
+    this.auditOAuth2AccessDeniedHandler = auditOAuth2AccessDeniedHandler;
+  }
 
   @Override
   public void configure(ResourceServerSecurityConfigurer resources) throws Exception {

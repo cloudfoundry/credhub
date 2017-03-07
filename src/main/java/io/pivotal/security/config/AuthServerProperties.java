@@ -12,9 +12,12 @@ import java.util.Map;
 
 @ConfigurationProperties("auth-server")
 public class AuthServerProperties {
+  private final ConfigurableEnvironment environment;
 
   @Autowired
-  ConfigurableEnvironment environment;
+  AuthServerProperties(ConfigurableEnvironment environment) {
+    this.environment = environment;
+  }
 
   @NotNull(message = "The auth-server.url configuration property is required.")
   private String url;
