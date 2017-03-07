@@ -2,47 +2,44 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
-import static io.pivotal.security.helper.SpectrumHelper.json;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.json;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class CertificateSecretTest {
 
   private static final JsonExpectationsHelper jsonExpectationsHelper = new JsonExpectationsHelper();
-
   private ObjectMapper serializingObjectMapper;
-
   private NamedCertificateSecret entity;
-
   private String secretName;
-
   private UUID uuid;
-
-  @Autowired
-  Encryptor encryptor;
+  private Encryptor encryptor;
 
   {
-    wireAndUnwire(this);
-
     beforeEach(() -> {
+      UUID canaryUuid = UUID.randomUUID();
+      byte[] encryptedValue = "fake-encrypted-value".getBytes();
+      byte[] nonce = "fake-nonce".getBytes();
+
+      encryptor = mock(Encryptor.class);
+      when(encryptor.encrypt("priv")).thenReturn(new Encryption(encryptedValue, nonce));
+      when(encryptor.getActiveUuid()).thenReturn(canaryUuid);
+      when(encryptor.decrypt(canaryUuid, encryptedValue, nonce)).thenReturn("priv");
+
       serializingObjectMapper = new ObjectMapper();
       secretName = "/foo";
       uuid = UUID.randomUUID();

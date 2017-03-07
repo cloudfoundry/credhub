@@ -1,41 +1,48 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsNull.notNullValue;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedCertificateSecretTest {
-  @Autowired
-  JdbcTemplate jdbcTemplate;
-
-  @Autowired
-  Encryptor encryptor;
-
   private NamedCertificateSecret subject;
 
-  {
-    wireAndUnwire(this);
+  private Encryptor encryptor;
 
+  private byte[] encryptedValue;
+
+  private byte[] nonce;
+
+  {
     beforeEach(() -> {
+      encryptor = mock(Encryptor.class);
+      encryptedValue = "fake-encrypted-value".getBytes();
+      nonce = "fake-nonce".getBytes();
+      when(encryptor.encrypt("my-priv")).thenReturn(new Encryption(encryptedValue, nonce));
+      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-priv");
+
       subject = new NamedCertificateSecret("/Foo")
           .setEncryptor(encryptor)
           .setCa("my-ca")

@@ -1,48 +1,40 @@
 package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class PassayStringSecretGeneratorTest {
-
-  @Autowired
-  private PassayStringSecretGenerator subject;
-
-  @MockBean
   private PasswordGenerator passwordGenerator;
+  private PassayStringSecretGenerator subject;
 
   @Captor
   private ArgumentCaptor<List<CharacterRule>> captor;
 
   {
-    wireAndUnwire(this);
+    beforeEach(() -> {
+      passwordGenerator = mock(PasswordGenerator.class);
+      subject = new PassayStringSecretGenerator(passwordGenerator);
+    });
 
     it("can generate secret", () -> {
       PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();

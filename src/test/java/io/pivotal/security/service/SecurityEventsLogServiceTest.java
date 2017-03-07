@@ -1,55 +1,46 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.entity.OperationAuditRecord;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.apache.logging.log4j.Logger;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.number.OrderingComparison.greaterThan;
 import org.junit.runner.RunWith;
-import static org.mockito.Matchers.contains;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.hamcrest.number.OrderingComparison.greaterThan;
+import static org.mockito.Matchers.contains;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class SecurityEventsLogServiceTest {
-  @MockBean
-  Logger securityEventsLoggerMock;
+  private final Instant now = Instant.now();
+  private final String version = "FAKE-VERSION";
 
-  @Autowired
-  SecurityEventsLogService subject;
-
-  @MockBean
-  CurrentTimeProvider currentTimeProvider;
-
-  @Value("${info.app.version}")
-  String version;
-
-  private Instant now;
+  private Logger securityEventsLogger;
+  private CurrentTimeProvider currentTimeProvider;
+  private VersionProvider versionProvider;
+  private SecurityEventsLogService subject;
 
   {
-    wireAndUnwire(this);
-
     beforeEach(() -> {
-      now = Instant.now();
+      securityEventsLogger = mock(Logger.class);
 
+      versionProvider = mock(VersionProvider.class);
+      when(versionProvider.getVersion()).thenReturn(version);
+
+      currentTimeProvider = mock(CurrentTimeProvider.class);
       when(currentTimeProvider.getInstant()).thenReturn(now);
+
+      subject = new SecurityEventsLogService(securityEventsLogger, versionProvider);
     });
 
     describe("log", () -> {
@@ -77,10 +68,7 @@ public class SecurityEventsLogServiceTest {
         );
         subject.log(operationAuditRecord);
 
-        assertThat(version, notNullValue());
-        assertThat(version.length(), greaterThan(0));
-
-        verify(securityEventsLoggerMock).info(
+        verify(securityEventsLogger).info(
             "CEF:0|cloud_foundry|credhub|" +
             version + "|" +
             "GET /api/some-path|" +
@@ -129,7 +117,7 @@ public class SecurityEventsLogServiceTest {
           assertThat(version, notNullValue());
           assertThat(version.length(), greaterThan(0));
 
-          verify(securityEventsLoggerMock).info(contains("request=/api/some-path requestMethod=GET"));
+          verify(securityEventsLogger).info(contains("request=/api/some-path requestMethod=GET"));
         });
       });
 
@@ -161,7 +149,7 @@ public class SecurityEventsLogServiceTest {
           assertThat(version, notNullValue());
           assertThat(version.length(), greaterThan(0));
 
-          verify(securityEventsLoggerMock).info(contains("request=/api/some-path requestMethod=GET"));
+          verify(securityEventsLogger).info(contains("request=/api/some-path requestMethod=GET"));
         });
       });
     });

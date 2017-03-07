@@ -2,13 +2,9 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
-import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -17,39 +13,50 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedPasswordSecretTest {
-  @Autowired
-  ObjectMapper objectMapper;
-
-  @Autowired
-  Encryptor encryptor;
-
-  NamedPasswordSecret subject;
-
-  PasswordGenerationParameters generationParameters;
+  private Encryptor encryptor;
+  private NamedPasswordSecret subject;
+  private PasswordGenerationParameters generationParameters;
 
   {
-    wireAndUnwire(this);
-
     beforeEach(() -> {
-      subject = new NamedPasswordSecret("/Foo");
-      subject.setEncryptor(encryptor);
-
       generationParameters = new PasswordGenerationParameters();
       generationParameters.setExcludeLower(true);
       generationParameters.setIncludeSpecial(false);
       generationParameters.setLength(10);
+
+      encryptor = mock(Encryptor.class);
+
+      when(encryptor.encrypt(null)).thenReturn(new Encryption(null, null));
+
+      byte[] encryptedValue = "fake-encrypted-value".getBytes();
+      byte[] nonce = "fake-nonce".getBytes();
+      when(encryptor.encrypt("my-value")).thenReturn(new Encryption(encryptedValue, nonce));
+      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-value");
+
+      String generationParametersJson = new ObjectMapper().writeValueAsString(generationParameters);
+      byte[] encryptedParametersValue = "fake-encrypted-parameters".getBytes();
+      byte[] parametersNonce = "fake-parameters-nonce".getBytes();
+      when(encryptor.encrypt(generationParametersJson))
+          .thenReturn(new Encryption(encryptedParametersValue, parametersNonce));
+      when(encryptor.decrypt(any(UUID.class), eq(encryptedParametersValue), eq(parametersNonce)))
+          .thenReturn(generationParametersJson);
+
+      subject = new NamedPasswordSecret("/Foo");
+      subject.setEncryptor(encryptor);
+
     });
 
     it("returns type password", () -> {
@@ -70,7 +77,12 @@ public class NamedPasswordSecretTest {
 
       it("can decrypt values", () -> {
         subject.setPasswordAndGenerationParameters("my-value", generationParameters);
+
         assertThat(subject.getPassword(), equalTo("my-value"));
+
+        assertThat(subject.getGenerationParameters().getLength(), equalTo(8));
+        assertThat(subject.getGenerationParameters().isExcludeLower(), equalTo(true));
+        assertThat(subject.getGenerationParameters().isExcludeUpper(), equalTo(false));
       });
 
       itThrows("when setting a value that is null", IllegalArgumentException.class, () -> {
@@ -86,16 +98,9 @@ public class NamedPasswordSecretTest {
       it("should set encrypted generation parameters and nonce to null if parameters are null", () -> {
         subject = new NamedPasswordSecret("password-with-null-parameters");
         subject.setEncryptor(encryptor);
-        subject.setPasswordAndGenerationParameters("password123", null);
+        subject.setPasswordAndGenerationParameters("my-value", null);
         assertThat(subject.getEncryptedGenerationParameters(), nullValue());
         assertThat(subject.getParametersNonce(), nullValue());
-      });
-
-      it("can decrypt values", () -> {
-        subject.setPasswordAndGenerationParameters("length10pw", generationParameters);
-        assertThat(subject.getGenerationParameters().getLength(), equalTo(10));
-        assertThat(subject.getGenerationParameters().isExcludeLower(), equalTo(true));
-        assertThat(subject.getGenerationParameters().isExcludeUpper(), equalTo(false));
       });
     });
 
@@ -109,13 +114,19 @@ public class NamedPasswordSecretTest {
         parameters.setExcludeLower(true);
         parameters.setExcludeUpper(false);
 
+        String generationParametersJson = new ObjectMapper().writeValueAsString(parameters);
+        byte[] encryptedParametersValue = "fake-encrypted-parameters".getBytes();
+        byte[] parametersNonce = "fake-parameters-nonce".getBytes();
+        when(encryptor.encrypt(generationParametersJson))
+            .thenReturn(new Encryption(encryptedParametersValue, parametersNonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedParametersValue), eq(parametersNonce)))
+            .thenReturn(generationParametersJson);
 
         subject = new NamedPasswordSecret("/foo");
         subject.setEncryptor(encryptor);
-        subject.setPasswordAndGenerationParameters("hello", parameters);
+        subject.setPasswordAndGenerationParameters("my-value", parameters);
         subject.setUuid(uuid);
         subject.setVersionCreatedAt(frozenTime);
-
 
         byte[] initialEncryptedValue = subject.getEncryptedValue();
         byte[] initialNonce = subject.getParametersNonce();
@@ -125,7 +136,7 @@ public class NamedPasswordSecretTest {
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("/foo"));
-        assertThat(copy.getPassword(), equalTo("hello"));
+        assertThat(copy.getPassword(), equalTo("my-value"));
         assertThat(copy.getEncryptedValue(), equalTo(initialEncryptedValue));
 
         assertThat(subject.getGenerationParameters(), samePropertyValuesAs(copy.getGenerationParameters()));
@@ -139,6 +150,11 @@ public class NamedPasswordSecretTest {
 
     describe(".createNewVersion and #createNewVersion", () -> {
       beforeEach(() -> {
+        byte[] encryptedValue = "new-fake-encrypted".getBytes();
+        byte[] nonce = "new-fake-nonce".getBytes();
+        when(encryptor.encrypt("new password")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new password");
+
         subject = new NamedPasswordSecret("/existingName");
         subject.setEncryptor(encryptor);
       });

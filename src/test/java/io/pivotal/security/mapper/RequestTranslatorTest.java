@@ -3,32 +3,25 @@ package io.pivotal.security.mapper;
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.of;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class RequestTranslatorTest {
 
-  @Autowired
-  ParseContext jsonPath;
+  private ParseContext jsonPath;
 
   {
     RequestTranslator subject = new RequestTranslator() {
@@ -43,7 +36,9 @@ public class RequestTranslatorTest {
       }
     };
 
-    wireAndUnwire(this);
+    beforeEach(() -> {
+      jsonPath = new JsonContextFactory().getObject();
+    });
 
     describe("populating entity from JSON", () -> {
       it("can accept all these valid keys", () -> {

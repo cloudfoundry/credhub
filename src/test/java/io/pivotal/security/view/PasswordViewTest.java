@@ -1,42 +1,31 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
-import static io.pivotal.security.helper.SpectrumHelper.json;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.UUID;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.json;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class PasswordViewTest {
-
   private NamedPasswordSecret entity;
-
   private UUID uuid;
-
-  @MockBean
   private Encryptor encryptor;
 
   {
-    wireAndUnwire(this);
-
     beforeEach(() -> {
+      encryptor = mock(Encryptor.class);
       uuid = UUID.randomUUID();
       entity = new NamedPasswordSecret("/foo")
         .setEncryptor(encryptor)

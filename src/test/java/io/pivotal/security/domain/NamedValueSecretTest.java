@@ -1,39 +1,37 @@
 package io.pivotal.security.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedValueSecretTest {
-  @Autowired
-  public ObjectMapper objectMapper;
-
-  @Autowired
   private Encryptor encryptor;
 
   NamedValueSecret subject;
 
   {
-    wireAndUnwire(this);
-
     beforeEach(() -> {
+      encryptor = mock(Encryptor.class);
+      byte[] encryptedValue = "fake-encrypted-value".getBytes();
+      byte[] nonce = "fake-nonce".getBytes();
+      when(encryptor.encrypt("my-value")).thenReturn(new Encryption(encryptedValue, nonce));
+      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-value");
+
       subject = new NamedValueSecret("Foo");
     });
 
@@ -65,6 +63,12 @@ public class NamedValueSecretTest {
     describe(".createNewVersion and #createNewVersion", () -> {
       beforeEach(() -> {
         subject = new NamedValueSecret("/existingName");
+
+        byte[] encryptedValue = "new-encrypted-value".getBytes();
+        byte[] nonce = "new-nonce".getBytes();
+        when(encryptor.encrypt("new value")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new value");
+
         subject.setEncryptor(encryptor);
       });
 

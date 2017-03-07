@@ -3,44 +3,52 @@ package io.pivotal.security.mapper;
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class RsaSshSetRequestTranslatorTest {
-  @Autowired
   private ParseContext jsonPath;
-
+  private NamedRsaSecret entity;
+  private Encryptor encryptor;
   private RsaSshSetRequestTranslator subject;
 
-  private NamedRsaSecret entity;
-
-  @Autowired
-  private Encryptor encryptor;
-
   {
-    wireAndUnwire(this);
+    beforeEach(() -> {
+      jsonPath = new JsonContextFactory().getObject();
+    });
 
     describe("populating entity from json", () -> {
-
       beforeEach(() -> {
+        encryptor = mock(Encryptor.class);
+        byte[] encryptedValue = "fake-encrypted-value".getBytes();
+        byte[] nonce = "fake-nonce".getBytes();
+        when(encryptor.encrypt("my-private-key")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-private-key");
+
+        byte[] encryptedEmptyString = "encrypted-empty-string".getBytes();
+        byte[] emptyStringNonce = "empty-string-nonce".getBytes();
+        when(encryptor.encrypt(null)).thenReturn(new Encryption(encryptedEmptyString, emptyStringNonce));
+        when(encryptor.encrypt("")).thenReturn(new Encryption(encryptedEmptyString, emptyStringNonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedEmptyString), eq(emptyStringNonce))).thenReturn(null);
+
         subject = new RsaSshSetRequestTranslator();
         entity = new NamedRsaSecret("Foo");
         entity.setEncryptor(encryptor);
