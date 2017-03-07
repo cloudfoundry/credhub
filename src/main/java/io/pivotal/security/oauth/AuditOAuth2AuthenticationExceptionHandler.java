@@ -35,9 +35,6 @@ import static org.springframework.security.oauth2.provider.token.AccessTokenConv
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
   private final CurrentTimeProvider currentTimeProvider;
   private final AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
-//  private final JwtAccessTokenConverter jwtAccessTokenConverter;
-//  private final TokenStore jwtTokenStore;
-//  private final ResourceServerTokenServices tokenServices;
   private final MessageSource messageSource;
   private final JsonParser objectMapper;
 
@@ -45,14 +42,10 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   AuditOAuth2AuthenticationExceptionHandler(
       CurrentTimeProvider currentTimeProvider,
       AuthFailureAuditRecordDataService authFailureAuditRecordDataService,
-//      JwtAccessTokenConverter jwtAccessToMessageSource messageSourcervices,
       MessageSource messageSource
   ) {
     this.currentTimeProvider = currentTimeProvider;
     this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
-//    this.jwtAccessTokenConverter = jwtAccessTokenConverter;
-//    this.jwtTokenStore = jwtTokenStore;
-//    this.tokenServices = tokenServices;
     this.messageSource = messageSource;
     this.objectMapper = JsonParserFactory.create();
   }
