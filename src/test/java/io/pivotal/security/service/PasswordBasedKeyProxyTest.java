@@ -14,6 +14,7 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -36,13 +37,26 @@ public class PasswordBasedKeyProxyTest {
     });
 
     describe("#deriveKey", () -> {
-      it("returns the expected Key", () -> {
-        final String knownRandomNumber = "7034522dc85138530e44b38d0569ca67";
-        final String knownGeneratedKey = "23e48f2bafa327a174a46400063cd9e6";
+      final String knownRandomNumber = "7034522dc85138530e44b38d0569ca67";
+      final String knownGeneratedKey = "fae3e313f599e8c2327d78c1e959910215f19498fe2c1d199302f5c32c9790c9";
+
+      beforeEach(() -> {
         byte[] salt = Hex.decode(knownRandomNumber); // gen'd originally from SecureRandom..
-        String hexOutput = Hex.toHexString(subject.deriveKey(password, salt).getEncoded());
+        derivedKey = subject.deriveKey(password, salt);
+      });
+
+      it("returns the expected Key", () -> {
+        String hexOutput = Hex.toHexString(derivedKey.getEncoded());
 
         assertThat(hexOutput, equalTo(knownGeneratedKey));
+      });
+
+      it("should use PBKDF2WithHmacSHA384 as the hashing algorithm", () -> {
+        assertThat(derivedKey.getAlgorithm(), equalTo("PBKDF2WithHmacSHA384"));
+      });
+
+      it("should derive the key that is 256 bits long", () -> {
+        assertThat(derivedKey.getEncoded().length, equalTo(32));
       });
     });
 
@@ -65,6 +79,7 @@ public class PasswordBasedKeyProxyTest {
           assertThat(subject.getKey(), equalTo(derivedKey));
         });
       });
+
       describe("when canary does not match", () -> {
         it("does not affect the key", () -> {
           canary = new EncryptionKeyCanary();
@@ -87,6 +102,12 @@ public class PasswordBasedKeyProxyTest {
           assertThat(subject.getKey(), not(equalTo(null)));
           assertThat(subject.getSalt(), not(equalTo(null)));
         });
+      });
+    });
+
+    describe("#generateSalt", () -> {
+      it("should minimally be the size of the hash function output", () -> {
+        assertThat(subject.generateSalt().length, greaterThanOrEqualTo(48));
       });
     });
   }
