@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.permissions;
+package io.pivotal.security.integration;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(Spectrum.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-public class AccessEntryControllerTest {
+public class AccessControlEndpointTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
