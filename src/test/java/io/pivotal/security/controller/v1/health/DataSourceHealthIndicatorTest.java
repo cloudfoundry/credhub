@@ -19,13 +19,14 @@ import static org.mockito.Mockito.mock;
 
 public class DataSourceHealthIndicatorTest {
   private DataSourceHealthIndicator subject;
-  private Map<String, DataSource> dataSources = new HashMap<>();
+  private Map<String, DataSource> dataSources;
 
   @Before
   public void setUp() {
-    this.subject = new DataSourceHealthIndicator();
+    dataSources = new HashMap<>();
+    dataSources.put("dataSource", mock(DataSource.class));
+    this.subject = new DataSourceHealthIndicator(dataSources);
     addSingleConnectionSourceToDataSources();
-    subject.setDataSources(dataSources);
   }
 
   @After
