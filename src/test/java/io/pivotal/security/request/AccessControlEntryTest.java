@@ -5,15 +5,15 @@ import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
-import javax.validation.groups.Default;
 import java.util.Set;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
+import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 
 @RunWith(Spectrum.class)
 public class AccessControlEntryTest {
@@ -34,20 +34,44 @@ public class AccessControlEntryTest {
           String json = "{ \n" +
               "\"operations\": [\"read\"]\n" +
               "}";
-          Set<ConstraintViolation<AccessControlEntry>> constraintViolations = serializeAndValidate(json, AccessControlEntry.class);
-          assertThat(constraintViolations.size(), equalTo(1));
-          assertThat(((ConstraintViolation) constraintViolations.toArray()[0]).getMessage(), equalTo("may not be null"));
+          Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
+          assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.missing_actor")));
+        });
+
+        it("should validate non-emptiness of actor", () -> {
+          String json = "{ \n" +
+              "\"actor\":\"\"," +
+              "\"operations\": [\"read\"]\n" +
+              "}";
+          Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
+          assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.missing_actor")));
         });
 
         describe("on operations", () -> {
+          it("should disallow null", () -> {
+            String json = "{" +
+                "\"actor\": \"dan\"" +
+              "}";
+            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
+            assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.missing_operations")));
+          });
+
+          it("should disallow empty list", () -> {
+            String json = "{" +
+                "\"actor\": \"dan\"," +
+                "\"operations\": []" +
+              "}";
+            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
+            assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.missing_operations")));
+          });
+
           it("should validate allowed values", () -> {
             String json = "{ \n" +
                 "\"actor\": \"dan\",\n" +
                 "\"operations\": [\"foo\", \"read\"]\n" +
                 "}";
-            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = serializeAndValidate(json, AccessControlEntry.class);
-            assertThat(constraintViolations.size(), equalTo(1));
-            assertThat(((ConstraintViolation) constraintViolations.toArray()[0]).getMessage(), equalTo("error.acl.invalid_operation"));
+            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
+            assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.invalid_operation")));
           });
 
           it("should validate on exact strings", () -> {
@@ -55,18 +79,12 @@ public class AccessControlEntryTest {
                 "\"actor\": \"dan\",\n" +
                 "\"operations\": [\"readership\"]\n" +
                 "}";
-            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = serializeAndValidate(json, AccessControlEntry.class);
+            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
             assertThat(constraintViolations.size(), equalTo(1));
-            assertThat(((ConstraintViolation) constraintViolations.toArray()[0]).getMessage(), equalTo("error.acl.invalid_operation"));
+            assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.invalid_operation")));
           });
         });
       });
     });
-  }
-
-  private <T> Set<ConstraintViolation<T>> serializeAndValidate(String json, Class<T> klass) throws java.io.IOException {
-    T object = new ObjectMapper().readValue(json, klass);
-    ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
-    return validatorFactory.getValidator().validate(object, Default.class);
   }
 }

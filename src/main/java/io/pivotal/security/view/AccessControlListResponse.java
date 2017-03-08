@@ -6,15 +6,15 @@ import org.codehaus.jackson.annotate.JsonAutoDetect;
 import java.util.List;
 
 @JsonAutoDetect
-public class AccessEntryResponse {
+public class AccessControlListResponse {
 
     private String credentialName;
     private List<AccessControlEntry> accessControlList;
 
-    public AccessEntryResponse() {
+    public AccessControlListResponse() {
     }
 
-    public AccessEntryResponse(String credentialName, List<AccessControlEntry> accessControlList) {
+    public AccessControlListResponse(String credentialName, List<AccessControlEntry> accessControlList) {
         this.credentialName = credentialName;
         this.accessControlList = accessControlList;
     }

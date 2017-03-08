@@ -6,7 +6,7 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.service.AccessControlService;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessEntryResponse;
+import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +56,7 @@ public class AccessControlEndpointTest {
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
       AccessControlEntry entry = new AccessControlEntry("dan", Collections.singletonList("read"));
-      AccessEntryResponse response = new AccessEntryResponse("/cred1", Collections.singletonList(entry));
+      AccessControlListResponse response = new AccessControlListResponse("/cred1", Collections.singletonList(entry));
 
       when(accessControlService.setAccessControlEntry(any(AccessEntryRequest.class))).thenReturn(response);
       when(accessControlService.getAccessControlEntries("/cred1")).thenReturn(response);

@@ -6,7 +6,7 @@ import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.view.AccessEntryResponse;
+import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +28,7 @@ public class AccessControlService {
     this.secretNameRepository = secretNameRepository;
   }
 
-  public AccessEntryResponse setAccessControlEntry(AccessEntryRequest request) {
+  public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
 
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(request.getCredentialName());
     List<AccessEntryData> accessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
@@ -62,10 +62,10 @@ public class AccessControlService {
 
     List<AccessControlEntry> responseAces = transformAllAccessEntries(secretName);
 
-    return new AccessEntryResponse(request.getCredentialName(), responseAces);
+    return new AccessControlListResponse(request.getCredentialName(), responseAces);
   }
 
-  public AccessEntryResponse getAccessControlEntries(String credentialName) {
+  public AccessControlListResponse getAccessControlEntries(String credentialName) {
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
 
     if (secretName == null) {
@@ -74,7 +74,7 @@ public class AccessControlService {
 
     List<AccessControlEntry> responseAces = transformAllAccessEntries(secretName);
 
-    return new AccessEntryResponse(credentialName, responseAces);
+    return new AccessControlListResponse(credentialName, responseAces);
   }
 
 

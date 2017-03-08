@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1.permissions;
 
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.service.AccessControlService;
-import io.pivotal.security.view.AccessEntryResponse;
+import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
+
 import java.util.Collections;
 import java.util.Map;
-
-import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
 
 @RestController
 @RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -42,7 +42,10 @@ public class AccessEntryController {
   }
 
   @PostMapping(path = "/aces", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  public ResponseEntity setAccessControlEntry(@Validated @RequestBody AccessEntryRequest accessEntryRequest, Errors errors) {
+  ResponseEntity setAccessControlEntry(
+      @Validated @RequestBody AccessEntryRequest accessEntryRequest,
+      Errors errors
+  ) {
     if (errors.hasErrors()) {
       Map error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
@@ -52,9 +55,9 @@ public class AccessEntryController {
   }
 
   @GetMapping(path = "/acls")
-  public ResponseEntity getAccessControlEntry(
-    @RequestParam("credential_name") String credentialName) {
-    final AccessEntryResponse accessControlEntries = accessControlService.getAccessControlEntries(credentialName);
+  @SuppressWarnings("unused")
+  ResponseEntity getAccessControlEntry(@RequestParam("credential_name") String credentialName) {
+    final AccessControlListResponse accessControlEntries = accessControlService.getAccessControlEntries(credentialName);
 
     if (accessControlEntries == null) {
       return wrapResponse(constructError("error.resource_not_found"),

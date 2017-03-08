@@ -1,46 +1,45 @@
 package io.pivotal.security.request;
 
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import cz.jirutka.validator.collection.constraints.EachPattern;
-import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @JsonAutoDetect
 @Validated
 public class AccessControlEntry {
 
-    @NotNull
-    private String actor;
+  @NotEmpty(message = "error.acl.missing_actor")
+  private String actor;
 
-    @NotNull
-    @EachPattern(regexp = "(read|write)", message = "error.acl.invalid_operation")
-    private List<String> operations;
+  @NotEmpty(message = "error.acl.missing_operations")
+  @EachPattern(regexp = "(read|write)", message = "error.acl.invalid_operation")
+  private List<String> operations;
 
-    public AccessControlEntry() {
-    }
+  public AccessControlEntry() {
+  }
 
-    public AccessControlEntry(String actor, List<String> operations) {
-        this.actor = actor;
-        this.operations = operations;
-    }
+  public AccessControlEntry(String actor, List<String> operations) {
+    this.actor = actor;
+    this.operations = operations;
+  }
 
-    public String getActor() {
-        return actor;
-    }
+  public String getActor() {
+    return actor;
+  }
 
-    public void setActor(String actor) {
-        this.actor = actor;
-    }
+  public void setActor(String actor) {
+    this.actor = actor;
+  }
 
-    public List<String> getOperations() {
-        return operations;
-    }
+  public List<String> getOperations() {
+    return operations;
+  }
 
-    public void setOperations(List<String> operations) {
-        this.operations = operations;
-    }
-
+  public void setOperations(List<String> operations) {
+    this.operations = operations;
+  }
 }
