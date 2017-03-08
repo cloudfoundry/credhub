@@ -13,16 +13,16 @@ import static io.pivotal.security.constants.EncryptionConstants.ITERATIONS;
 import static io.pivotal.security.constants.EncryptionConstants.KEY_BIT_LENGTH;
 import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
 
-class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
+public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
   private String password = null;
   private byte[] salt;
 
-  PasswordBasedKeyProxy(String password, EncryptionService encryptionService) {
+  public PasswordBasedKeyProxy(String password, EncryptionService encryptionService) {
     super(null, encryptionService);
     this.password = password;
   }
 
-  protected Key deriveKey(String password, byte[] salt) {
+  public Key deriveKey(byte[] salt) {
     PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_BIT_LENGTH);
 
     try {
@@ -52,7 +52,7 @@ class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
       return false;
     }
 
-    Key key = deriveKey(password, canary.getSalt());
+    Key key = deriveKey(canary.getSalt());
 
     boolean result = super.matchesCanary(key, canary);
     if (result) {
