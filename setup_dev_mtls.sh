@@ -67,6 +67,12 @@ generate_client_cert() {
         -sha256
 }
 
+generate_server_cert(){
+    echo "Generating Server Cert"
+    keytool -certreq -alias cert -file server.csr -keystore ${KEY_STORE} -storepass changeit
+	openssl x509 -req -in server.csr -CA ca.pem -CAkey ca_key.pem -CAserial ca.srl -out server.pem
+}
+
 pushd ${DIRNAME}/src/test/resources >/dev/null
     if [[ -f ${KEY_STORE} && -f ${TRUST_STORE} ]]; then
         echo "Key store and trust store are already set up!"
@@ -76,6 +82,7 @@ pushd ${DIRNAME}/src/test/resources >/dev/null
         generate_ca
         add_ca_to_trusted_keystore
         generate_client_cert
+        generate_server_cert
 
         echo "Finished setting up key stores for TLS and mTLS!"
         echo e.g., curl -H \"Content-Type: application/json\" \
