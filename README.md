@@ -5,7 +5,8 @@ The CredHub server manages secrets like passwords, certificates, ssh keys, rsa k
 (arbitrary values) and CAs. CredHub provides a REST API to get, set, or generate and securely store
 such secrets.
  
-* [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
+* [CredHub Tracker][1]
+[1]:https://www.pivotaltracker.com/n/projects/1977341
  
 See additional repos for more info:
 
