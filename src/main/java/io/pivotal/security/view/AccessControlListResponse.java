@@ -6,6 +6,7 @@ import org.codehaus.jackson.annotate.JsonAutoDetect;
 import java.util.List;
 
 @JsonAutoDetect
+@SuppressWarnings("unused")
 public class AccessControlListResponse {
 
     private String credentialName;

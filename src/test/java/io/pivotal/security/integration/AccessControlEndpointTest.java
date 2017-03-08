@@ -2,37 +2,26 @@ package io.pivotal.security.integration;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.service.AccessControlService;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,9 +34,6 @@ public class AccessControlEndpointTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @MockBean
-  private AccessControlService accessControlService;
-
   private MockMvc mockMvc;
 
   {
@@ -55,12 +41,18 @@ public class AccessControlEndpointTest {
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      AccessControlEntry entry = new AccessControlEntry("dan", Collections.singletonList("read"));
-      AccessControlListResponse response = new AccessControlListResponse("/cred1", Collections.singletonList(entry));
 
-      when(accessControlService.setAccessControlEntry(any(AccessEntryRequest.class))).thenReturn(response);
-      when(accessControlService.getAccessControlEntries("/cred1")).thenReturn(response);
+      final MockHttpServletRequestBuilder put = put("/api/v1/data")
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{" +
+              "  \"name\": \"/cred1\"," +
+              "  \"type\": \"password\"," +
+              "  \"value\": \"testpassword\"" +
+              "}");
 
+      this.mockMvc.perform(put)
+          .andExpect(status().isOk());
     });
 
     describe("When posting access control entry for user and credential", () -> {
@@ -77,6 +69,10 @@ public class AccessControlEndpointTest {
                 "     }]" +
                 "}");
 
+        final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON);
+
         this.mockMvc.perform(post).andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
@@ -84,12 +80,8 @@ public class AccessControlEndpointTest {
             .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
             .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
 
-        ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor.forClass(AccessEntryRequest.class);
-        verify(accessControlService).setAccessControlEntry(captor.capture());
-
-        assertThat(captor.getValue().getCredentialName(), equalTo("/cred1"));
-        assertThat(captor.getValue().getAccessControlEntries().get(0).getActor(), equalTo("dan"));
-        assertThat(captor.getValue().getAccessControlEntries().get(0).getOperations().get(0), equalTo("read"));
+        this.mockMvc.perform(get)
+            .andExpect(status().isOk());
       });
     });
 
@@ -114,8 +106,24 @@ public class AccessControlEndpointTest {
     });
 
     describe("When getting access control list by credential name", () -> {
-
       describe("and the credential exists", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"credential_name\": \"/cred1\",\n" +
+                  "  \"access_control_entries\": [\n" +
+                  "     { \n" +
+                  "       \"actor\": \"dan\",\n" +
+                  "       \"operations\": [\"read\"]\n" +
+                  "     }]" +
+                  "}");
+
+          this.mockMvc.perform(post)
+            .andExpect(status().isOk());
+        });
+
         it("returns the full list of access control entries for the credential", () -> {
           mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
               .andExpect(status().isOk())

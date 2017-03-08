@@ -1,45 +1,45 @@
 package io.pivotal.security.request;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
+import javax.validation.Valid;
+
 @JsonAutoDetect
+@SuppressWarnings("unused")
 public class AccessEntryRequest {
 
-    @NotNull
-    private String credentialName;
+  @NotEmpty(message = "error.missing_name")
+  private String credentialName;
 
-    @SuppressWarnings("unused")
-    public AccessEntryRequest() {
+  public AccessEntryRequest() {
         /* this needs to be there for jackson to be happy */
-    }
+  }
 
-    public AccessEntryRequest(String credentialName, List<AccessControlEntry> accessControlEntries) {
-        this.credentialName = credentialName;
-        this.accessControlEntries = accessControlEntries;
-    }
+  public AccessEntryRequest(String credentialName, List<AccessControlEntry> accessControlEntries) {
+    this.credentialName = credentialName;
+    this.accessControlEntries = accessControlEntries;
+  }
 
-    @NotNull
-    private List<AccessControlEntry> accessControlEntries;
+  @NotEmpty(message = "error.acl.missing_aces")
+  private List<AccessControlEntry> accessControlEntries;
 
-    public String getCredentialName() {
-        return credentialName;
-    }
+  public String getCredentialName() {
+    return credentialName;
+  }
 
-    public void setCredentialName(String credentialName) {
-        this.credentialName = credentialName;
-    }
+  public void setCredentialName(String credentialName) {
+    this.credentialName = credentialName;
+  }
 
-    @Valid
-    public List<AccessControlEntry> getAccessControlEntries() {
-        return accessControlEntries;
-    }
+  @Valid
+  public List<AccessControlEntry> getAccessControlEntries() {
+    return accessControlEntries;
+  }
 
-    @SuppressWarnings("unused")
-    public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
-        this.accessControlEntries = accessControlEntries;
-    }
+  public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
+    this.accessControlEntries = accessControlEntries;
+  }
 }

@@ -12,11 +12,14 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
@@ -63,6 +66,13 @@ public class AccessEntryController {
     }
 
     return wrapResponse(accessControlEntries, HttpStatus.OK);
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
+    String errorMessage = messageSourceAccessor.getMessage("error.missing_query_parameter", new String[]{e.getParameterName()});
+    return new ResponseError(errorMessage);
   }
 
   private ResponseError constructError(String error) {
