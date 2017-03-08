@@ -65,17 +65,17 @@ public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
   public Key getKey() {
     if (super.getKey() == null) {
       salt = generateSalt();
-      setKey(deriveKey(password, salt));
+      setKey(deriveKey(salt));
     }
 
     return super.getKey();
   }
 
-  protected byte[] generateSalt() {
+  public static byte[] generateSalt() {
     SecureRandom sr;
     byte[] salt = new byte[SALT_SIZE];
     try {
-      sr = SecureRandom.getInstance("SHA1PRNG");
+      sr = SecureRandom.getInstance("NativePRNGNonBlocking");
       sr.nextBytes(salt);
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
