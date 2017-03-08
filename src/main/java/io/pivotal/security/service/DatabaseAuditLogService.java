@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -14,10 +15,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import javax.annotation.PostConstruct;
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import javax.annotation.PostConstruct;
 
 @Service
 public class DatabaseAuditLogService implements AuditLogService {
@@ -83,7 +84,7 @@ public class DatabaseAuditLogService implements AuditLogService {
       securityEventsLogService.log(auditRecord);
     } catch (Exception e) {
       if (!transaction.isCompleted()) transactionManager.rollback(transaction);
-      final Map<String, String> error = Collections.singletonMap("error", messageSourceAccessor.getMessage("error.audit_save_failure"));
+      final ResponseError error = new ResponseError(messageSourceAccessor.getMessage("error.audit_save_failure"));
       return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

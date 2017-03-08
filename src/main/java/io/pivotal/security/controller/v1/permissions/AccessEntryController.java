@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1.permissions;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.service.AccessControlService;
 import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -19,9 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
-
-import java.util.Collections;
-import java.util.Map;
 
 @RestController
 @RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -47,7 +45,7 @@ public class AccessEntryController {
       Errors errors
   ) {
     if (errors.hasErrors()) {
-      Map error = constructError(getErrorMessage(errors));
+      ResponseError error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
       return wrapResponse(accessControlService.setAccessControlEntry(accessEntryRequest), HttpStatus.OK);
@@ -67,8 +65,8 @@ public class AccessEntryController {
     return wrapResponse(accessControlEntries, HttpStatus.OK);
   }
 
-  private Map<String, String> constructError(String error) {
-    return Collections.singletonMap("error", messageSourceAccessor.getMessage(error));
+  private ResponseError constructError(String error) {
+    return new ResponseError(messageSourceAccessor.getMessage(error));
   }
 
   private ResponseEntity wrapResponse(Object wrapped, HttpStatus status) {

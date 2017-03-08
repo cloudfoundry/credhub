@@ -6,13 +6,14 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
+
 import java.io.IOException;
 import java.util.Set;
 
-import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 public class JsonHelper {
   private static final ObjectMapper objectMapper = new ObjectMapper()
@@ -22,6 +23,14 @@ public class JsonHelper {
   public static byte[] serialize(Object object) {
     try {
       return objectMapper.writeValueAsBytes(object);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static String serializeToString(Object object) {
+    try {
+      return objectMapper.writeValueAsString(object);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

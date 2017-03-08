@@ -18,6 +18,7 @@ import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
+import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;
@@ -52,7 +53,6 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -232,7 +232,7 @@ public class SecretsController {
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public Map<String, String> handleInputNotReadableException(Exception exception) throws Exception {
+  public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
     final Throwable cause = exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
       return createParameterizedErrorResponse(
@@ -240,13 +240,13 @@ public class SecretsController {
       );
     } else {
       String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-      return Collections.singletonMap("error", errorMessage);
+      return new ResponseError(errorMessage);
     }
   }
 
   @ExceptionHandler({MethodArgumentNotValidException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public Map<String, String> handleInvalidField(MethodArgumentNotValidException exception) throws IOException {
+  public ResponseError handleInvalidField(MethodArgumentNotValidException exception) throws IOException {
     // EWWWW
     FieldError fieldError = exception.getBindingResult().getFieldError();
     switch (fieldError.getField()) {
@@ -259,7 +259,7 @@ public class SecretsController {
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"));
       default:
         String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-        return Collections.singletonMap("error", errorMessage);
+        return new ResponseError(errorMessage);
     }
   }
 
@@ -358,13 +358,13 @@ public class SecretsController {
     }
   }
 
-  private Map<String, String> createErrorResponse(String key) {
+  private ResponseError createErrorResponse(String key) {
     return createParameterizedErrorResponse(new ParameterizedValidationException(key));
   }
 
-  private Map<String, String> createParameterizedErrorResponse(ParameterizedValidationException exception) {
+  private ResponseError createParameterizedErrorResponse(ParameterizedValidationException exception) {
     String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
-    return Collections.singletonMap("error", errorMessage);
+    return new ResponseError(errorMessage);
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {

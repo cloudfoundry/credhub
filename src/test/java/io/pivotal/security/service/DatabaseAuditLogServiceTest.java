@@ -24,14 +24,12 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,6 +41,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
@@ -156,7 +157,7 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
@@ -216,7 +217,7 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500 and original error message", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
@@ -269,7 +270,7 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
@@ -295,7 +296,7 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(responseEntity.getBody(), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
