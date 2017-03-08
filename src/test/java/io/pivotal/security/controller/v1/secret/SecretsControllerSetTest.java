@@ -9,7 +9,7 @@ import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +59,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = { "unit-test", "UseRealAuditLogService" }, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerSetTest {
 
@@ -412,22 +412,6 @@ public class SecretsControllerSetTest {
             .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
       });
 
-      it("returns 400 when name is empty", () -> {
-        final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"type\":\"password\"," +
-                "  \"name\":\"\"," +
-                "  \"value\":\"some password\"" +
-                "}");
-
-        mockMvc.perform(put)
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
-      });
-
       it("returns 400 when name contains double slash (//)", () -> {
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
             .accept(APPLICATION_JSON)
@@ -458,6 +442,22 @@ public class SecretsControllerSetTest {
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.error").value("A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request."));
+      });
+
+      it("returns 400 when name is empty", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"name\":\"\"," +
+                "  \"value\":\"some password\"" +
+                "}");
+
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
       });
 
       it("returns 400 when name is missing", () -> {

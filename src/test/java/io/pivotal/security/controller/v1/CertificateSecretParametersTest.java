@@ -45,7 +45,7 @@ public class CertificateSecretParametersTest {
 
       it("can add alternative names", () -> {
         CertificateSecretParameters params = new CertificateSecretParameters()
-            .addAlternativeNames("alternative-name-1", "alternative-name-2",".foo.com","foo.com.test", "*.foo.com.test");
+            .addAlternativeNames("alternative-name-1", "alternative-name-2", ".foo.com", "foo.com.test", "*.foo.com.test");
 
         ASN1Sequence sequence = ASN1Sequence.getInstance(params.getAlternativeNames());
         assertThat(sequence.getObjectAt(0), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-1")));
@@ -55,7 +55,7 @@ public class CertificateSecretParametersTest {
         assertThat(sequence.getObjectAt(4), equalTo(new GeneralName(GeneralName.dNSName, "*.foo.com.test")));
       });
 
-      it("can add alternative names, that are valid IPs", () ->{
+      it("can add alternative names, that are valid IPs", () -> {
         CertificateSecretParameters params = new CertificateSecretParameters()
             .addAlternativeNames("107.23.170.203", "52.72.132.140", "2607:f8b0:4005:808::200e");
 
@@ -65,18 +65,14 @@ public class CertificateSecretParametersTest {
         assertThat(sequence.getObjectAt(2), equalTo(new GeneralName(GeneralName.iPAddress, "2607:f8b0:4005:808::200e")));
       });
 
-      itThrows("with invalid names with many levels", ParameterizedValidationException.class,() ->{
-        CertificateSecretParameters params = new CertificateSecretParameters()
+      itThrows("with invalid names with many levels", ParameterizedValidationException.class, () -> {
+        new CertificateSecretParameters()
             .addAlternativeNames(".foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com%");
-
-        ASN1Sequence.getInstance(params.getAlternativeNames());
       });
 
       itThrows("when an invalid IP is given", ParameterizedValidationException.class, () -> {
-        CertificateSecretParameters params = new CertificateSecretParameters()
+        new CertificateSecretParameters()
             .addAlternativeNames("107.23.170.203333", "5...55");
-
-        ASN1Sequence.getInstance(params.getAlternativeNames());
       });
 
       it("can add extended key usages", () -> {

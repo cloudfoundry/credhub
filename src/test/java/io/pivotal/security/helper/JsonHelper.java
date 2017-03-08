@@ -84,7 +84,7 @@ public class JsonHelper {
 
       @Override
       public void describeTo(final Description description) {
-        description.appendText("getMessage() should equal").appendValue(expectedMessage);
+        description.appendText("getMessage() should equal ").appendValue(expectedMessage);
       }
     };
   }

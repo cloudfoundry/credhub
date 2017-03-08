@@ -253,7 +253,7 @@ public class SecretsController {
       case "type":
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.type_invalid"));
       case "name":
-        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_name"));
+        return createParameterizedErrorResponse(new ParameterizedValidationException(fieldError.getDefaultMessage()));
       case "value":
       case "password":
         return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"));
@@ -396,7 +396,6 @@ public class SecretsController {
 
         NamedSecret storedEntity = existingNamedSecret;
         if (willWrite) {
-          RequestTranslator.validatePathName(secretName);
           NamedSecret newEntity = requestBody.createNewVersion(
               existingNamedSecret,
               secretName,

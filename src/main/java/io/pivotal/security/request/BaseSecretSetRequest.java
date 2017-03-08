@@ -9,6 +9,7 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.constraints.Pattern;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +27,11 @@ import java.io.InputStream;
 })
 public class BaseSecretSetRequest {
 
-  @NotEmpty
+  @NotEmpty(message = "error.missing_name")
+  @Pattern(regexp = "^(?>(?:/?[^/]+))*$", message = "error.invalid_name_has_slash")
   private String name;
 
-  @NotEmpty
+  @NotEmpty(message = "type may not be empty")
   private String type;
 
   private boolean overwrite;
