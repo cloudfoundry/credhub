@@ -106,7 +106,7 @@ public class SecretsControllerSetTest {
     });
 
     describe("setting secrets in parallel", () -> {
-      beforeEach(()->{
+      beforeEach(() -> {
         responses = new ResultActions[2];
 
         Thread thread1 = new Thread("thread 1") {
@@ -136,7 +136,7 @@ public class SecretsControllerSetTest {
                 .contentType(APPLICATION_JSON)
                 .content("{" +
                     "  \"type\":\"value\"," +
-                    "  \"name\":\"" + secretName + this.getName() +"\"," +
+                    "  \"name\":\"" + secretName + this.getName() + "\"," +
                     "  \"value\":\"" + secretValue + this.getName() + "\"" +
                     "}");
 
@@ -426,6 +426,38 @@ public class SecretsControllerSetTest {
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+      });
+
+      it("returns 400 when name contains double slash (//)", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"name\":\"pass//word\"," +
+                "  \"value\":\"some password\"" +
+                "}");
+
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request."));
+      });
+
+      it("returns 400 when name ends with a slash", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"type\":\"password\"," +
+                "  \"name\":\"password/\"," +
+                "  \"value\":\"some password\"" +
+                "}");
+
+        mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request."));
       });
 
       it("returns 400 when name is missing", () -> {
