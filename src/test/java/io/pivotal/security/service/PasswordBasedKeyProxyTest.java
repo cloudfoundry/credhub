@@ -13,6 +13,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
+import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
@@ -42,7 +43,7 @@ public class PasswordBasedKeyProxyTest {
 
       beforeEach(() -> {
         byte[] salt = Hex.decode(knownRandomNumber); // gen'd originally from SecureRandom..
-        derivedKey = subject.deriveKey(password, salt);
+        derivedKey = subject.deriveKey(salt);
       });
 
       it("returns the expected Key", () -> {
@@ -64,8 +65,8 @@ public class PasswordBasedKeyProxyTest {
       describe("when canary matches", () -> {
         beforeEach(() -> {
           PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, encryptionService);
-          final byte[] salt = oldProxy.generateSalt();
-          derivedKey = oldProxy.deriveKey(password, salt);
+          final byte[] salt = generateSalt();
+          derivedKey = oldProxy.deriveKey(salt);
           final Encryption encryptedCanary = encryptionService.encrypt(derivedKey, CANARY_VALUE);
           canary = new EncryptionKeyCanary();
           canary.setEncryptedValue(encryptedCanary.encryptedValue);
@@ -121,7 +122,7 @@ public class PasswordBasedKeyProxyTest {
 
     describe("#generateSalt", () -> {
       it("should minimally be the size of the hash function output", () -> {
-        assertThat(subject.generateSalt().length, greaterThanOrEqualTo(48));
+        assertThat(generateSalt().length, greaterThanOrEqualTo(48));
       });
     });
   }

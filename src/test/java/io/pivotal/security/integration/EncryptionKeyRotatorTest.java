@@ -2,9 +2,6 @@ package io.pivotal.security.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
@@ -14,33 +11,37 @@ import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import io.pivotal.security.service.EncryptionKeyRotator;
 import io.pivotal.security.service.EncryptionService;
+import io.pivotal.security.service.PasswordBasedKeyProxy;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import static java.util.Collections.singletonList;
-import static javax.xml.bind.DatatypeConverter.parseHexBinary;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsNot.not;
 import org.junit.runner.RunWith;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
+import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.hamcrest.core.IsNot.not;
+import static org.mockito.Mockito.when;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -86,8 +87,8 @@ public class EncryptionKeyRotatorTest {
                   .setPrivateKey("cert-private-key");
 
           secretDataService.save(secretWithCurrentKey);
-
-          Key oldKey = new SecretKeySpec(parseHexBinary("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0, 16, "AES");
+          final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password", encryptionService);
+          Key oldKey = keyProxy.deriveKey(generateSalt());
           oldCanary = new EncryptionKeyCanary();
           final Encryption canaryEncryption = encryptionService.encrypt(oldKey, CANARY_VALUE);
           oldCanary.setEncryptedValue(canaryEncryption.encryptedValue);
