@@ -3,8 +3,6 @@ package io.pivotal.security.controller.v1.secret;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.controller.v1.ResponseError;
-import io.pivotal.security.controller.v1.ResponseErrorType;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
@@ -46,7 +44,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -55,10 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -127,10 +126,10 @@ public class SecretsController {
       auditRecorder.setCredentialName(secretName);
 
       if (StringUtils.isEmpty(secretName)) {
-        return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(createErrorResponse("error.missing_name"), HttpStatus.BAD_REQUEST);
       }
       if (secretDataService.findMostRecent(secretName) == null) {
-        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"), HttpStatus.NOT_FOUND);
       }
 
       secretDataService.delete(secretName);
@@ -192,11 +191,11 @@ public class SecretsController {
     final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
       return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
           if (StringUtils.isEmpty(identifier)) {
-              return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
+              return new ResponseEntity<>(createErrorResponse("error.missing_name"), HttpStatus.BAD_REQUEST);
           }
           List<NamedSecret> namedSecrets = finder.apply(identifier);
           if (namedSecrets.isEmpty()) {
-              return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(createErrorResponse("error.credential_not_found"), HttpStatus.NOT_FOUND);
           } else {
               ResponseEntity success;
               auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
@@ -207,7 +206,7 @@ public class SecretsController {
                       success = new ResponseEntity<>(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
                   }
               } catch (KeyNotFoundException e) {
-                  return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"), HttpStatus.INTERNAL_SERVER_ERROR);
               } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
               }
@@ -233,40 +232,35 @@ public class SecretsController {
 
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseEntity handleInputNotReadableException(Exception exception) throws Exception {
+  public Map<String, String> handleInputNotReadableException(Exception exception) throws Exception {
     final Throwable cause = exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
-      return handleUnknownField((UnrecognizedPropertyException) cause);
+      return createParameterizedErrorResponse(
+          new ParameterizedValidationException("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName())
+      );
     } else {
-      return new ResponseEntity<>(new ResponseError(ResponseErrorType.BAD_REQUEST).getError(), HttpStatus.BAD_REQUEST);
+      String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
+      return Collections.singletonMap("error", errorMessage);
     }
   }
 
   @ExceptionHandler({MethodArgumentNotValidException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseEntity<?> handleInvalidField(MethodArgumentNotValidException exception) throws IOException {
+  public Map<String, String> handleInvalidField(MethodArgumentNotValidException exception) throws IOException {
     // EWWWW
     FieldError fieldError = exception.getBindingResult().getFieldError();
     switch (fieldError.getField()) {
       case "type":
-        return createParameterizedErrorResponse(new ParameterizedValidationException("error.type_invalid"), HttpStatus.BAD_REQUEST);
+        return createParameterizedErrorResponse(new ParameterizedValidationException("error.type_invalid"));
       case "name":
-        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_name"), HttpStatus.BAD_REQUEST);
+        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_name"));
       case "value":
       case "password":
-        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"), HttpStatus.BAD_REQUEST);
+        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"));
       default:
-        return new ResponseEntity<>(new ResponseError(ResponseErrorType.BAD_REQUEST).getError(), HttpStatus.BAD_REQUEST);
+        String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
+        return Collections.singletonMap("error", errorMessage);
     }
-  }
-
-  @ExceptionHandler({UnrecognizedPropertyException.class})
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseEntity<?> handleUnknownField(UnrecognizedPropertyException e) throws IOException {
-    return createParameterizedErrorResponse(
-        new ParameterizedValidationException("error.invalid_json_key", e.getPropertyName()),
-        HttpStatus.BAD_REQUEST
-    );
   }
 
   private ResponseEntity findWithAuditing(String nameSubstring,
@@ -302,7 +296,7 @@ public class SecretsController {
                                                SecretKindMappingFactory handler, DocumentContext parsedRequestBody) throws Exception {
     final String secretName = getSecretName(parsedRequestBody);
     if (StringUtils.isEmpty(secretName)) {
-      return createErrorResponse("error.missing_name", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(createErrorResponse("error.missing_name"), HttpStatus.BAD_REQUEST);
     }
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
@@ -316,7 +310,7 @@ public class SecretsController {
     auditRecordBuilder.setOperationCode(operationCode);
     return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
       if (regenerate && existingNamedSecret == null) {
-        return createErrorResponse("error.credential_not_found", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"), HttpStatus.NOT_FOUND);
       }
 
       return storeSecret(secretName, handler, parsedRequestBody, existingNamedSecret, willWrite);
@@ -356,21 +350,21 @@ public class SecretsController {
       SecretView secretView = SecretView.fromEntity(storedNamedSecret);
       return new ResponseEntity<>(secretView, HttpStatus.OK);
     } catch (ParameterizedValidationException ve) {
-      return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     } catch (KeyNotFoundException e) {
-        return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  private ResponseEntity createErrorResponse(String key, HttpStatus status) {
-    return createParameterizedErrorResponse(new ParameterizedValidationException(key), status);
+  private Map<String, String> createErrorResponse(String key) {
+    return createParameterizedErrorResponse(new ParameterizedValidationException(key));
   }
 
-  private ResponseEntity createParameterizedErrorResponse(ParameterizedValidationException exception, HttpStatus status) {
+  private Map<String, String> createParameterizedErrorResponse(ParameterizedValidationException exception) {
     String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
-    return new ResponseEntity<>(Collections.singletonMap("error", errorMessage), status);
+    return Collections.singletonMap("error", errorMessage);
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request, Authentication authentication) throws Exception {
@@ -415,11 +409,11 @@ public class SecretsController {
         SecretView secretView = SecretView.fromEntity(storedEntity);
         return new ResponseEntity<>(secretView, HttpStatus.OK);
       } catch (ParameterizedValidationException ve) {
-        return createParameterizedErrorResponse(ve, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
       } catch (NoSuchAlgorithmException e) {
         throw new RuntimeException(e);
       } catch (KeyNotFoundException e) {
-        return createErrorResponse("error.missing_encryption_key", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"), HttpStatus.INTERNAL_SERVER_ERROR);
       }
     });
   }
