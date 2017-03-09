@@ -1,7 +1,8 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import io.pivotal.security.request.AccessEntryRequest;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,20 @@ public class AccessEntryController {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
     String errorMessage = messageSourceAccessor.getMessage("error.missing_query_parameter", new String[]{e.getParameterName()});
+    return new ResponseError(errorMessage);
+  }
+
+  @ExceptionHandler(JsonMappingException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleJsonMappingException(JsonMappingException e) {
+    for (JsonMappingException.Reference reference : e.getPath()) {
+      if ("operations".equals(reference.getFieldName())) {
+        String errorMessage = messageSourceAccessor.getMessage("error.acl.invalid_operation");
+        return new ResponseError(errorMessage);
+      }
+    }
+
+    String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
     return new ResponseError(errorMessage);
   }
 

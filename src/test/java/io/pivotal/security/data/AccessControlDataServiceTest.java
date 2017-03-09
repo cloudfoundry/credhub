@@ -7,6 +7,7 @@ import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
@@ -61,7 +62,7 @@ public class AccessControlDataServiceTest {
           seedDatabase();
 
           List<AccessControlEntry> newAces = Collections.singletonList(
-            new AccessControlEntry("Luke", Collections.singletonList("read")));
+            new AccessControlEntry("Luke", Collections.singletonList(AccessControlOperation.READ)));
 
           request = new AccessEntryRequest("/lightsaber", newAces);
         });
@@ -73,11 +74,11 @@ public class AccessControlDataServiceTest {
 
           assertThat(response.getAccessControlList(), hasItems(
             allOf(hasProperty("actor", equalTo("Luke")),
-              hasProperty("operations", hasItems("read", "write")))
+              hasProperty("operations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))
           ));
           assertThat(response.getAccessControlList(), hasItems(
             allOf(hasProperty("actor", equalTo("Leia")),
-              hasProperty("operations", hasItems("read")))));
+              hasProperty("operations", hasItems(AccessControlOperation.READ)))));
         });
       });
 
@@ -86,7 +87,7 @@ public class AccessControlDataServiceTest {
           secretName = secretNameRepository.saveAndFlush(new SecretName("lightsaber2"));
 
           List<AccessControlEntry> newAces = Collections.singletonList(
-            new AccessControlEntry("Luke", Collections.singletonList("read")));
+            new AccessControlEntry("Luke", Collections.singletonList(AccessControlOperation.READ)));
 
           request = new AccessEntryRequest("/lightsaber2", newAces);
         });
@@ -98,7 +99,7 @@ public class AccessControlDataServiceTest {
           assertThat(response.getAccessControlList().size(), equalTo(1));
           assertThat(response.getAccessControlList().get(0).getActor(), equalTo("Luke"));
           assertThat(response.getAccessControlList().get(0).getOperations().size(), equalTo(1));
-          assertThat(response.getAccessControlList().get(0).getOperations(), hasItem("read"));
+          assertThat(response.getAccessControlList().get(0).getOperations(), hasItem(AccessControlOperation.READ));
 
           AccessEntryData data = accessEntryRepository.findAll().stream()
             .filter((entry) -> entry.getActor().equals("Luke")).findFirst().get();
@@ -121,9 +122,9 @@ public class AccessControlDataServiceTest {
 
           assertThat(response.getAccessControlList(), containsInAnyOrder(
             allOf(hasProperty("actor", equalTo("Luke")),
-              hasProperty("operations", hasItems("write"))),
+              hasProperty("operations", hasItems(AccessControlOperation.WRITE))),
             allOf(hasProperty("actor", equalTo("Leia")),
-              hasProperty("operations", hasItems("read"))))
+              hasProperty("operations", hasItems(AccessControlOperation.READ))))
           );
         });
       });
@@ -142,9 +143,9 @@ public class AccessControlDataServiceTest {
         it("removes the ACE from the ACL", () -> {
           assertThat(subject.getAccessControlList("/lightsaber").getAccessControlList(), containsInAnyOrder(
               allOf(hasProperty("actor", equalTo("Luke")),
-                  hasProperty("operations", hasItems("write"))),
+                  hasProperty("operations", hasItems(AccessControlOperation.WRITE))),
               allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("operations", hasItems("read"))))
+                  hasProperty("operations", hasItems(AccessControlOperation.READ))))
           );
           subject.deleteAccessControlEntry("/lightsaber", "Luke");
 
@@ -153,7 +154,7 @@ public class AccessControlDataServiceTest {
               not(hasItem(hasProperty("actor", equalTo("Luke")))));
           assertThat(accessControlList, contains(
               allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("operations", hasItems("read"))))
+                  hasProperty("operations", hasItems(AccessControlOperation.READ))))
           );
         });
       });

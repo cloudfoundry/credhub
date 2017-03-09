@@ -5,6 +5,7 @@ import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,23 +40,23 @@ public class AccessControlDataService {
         .findFirst();
 
       if (accessEntry.isPresent()) {
-        for (String operation : ace.getOperations()) {
+        for (AccessControlOperation operation : ace.getOperations()) {
           switch (operation) {
-            case "read":
+            case READ:
               accessEntry.get().setReadPermission(true);
               break;
-            case "write":
+            case WRITE:
               accessEntry.get().setWritePermission(true);
               break;
           }
         }
         accessEntryRepository.saveAndFlush(accessEntry.get());
       } else {
-        List<String> operations = ace.getOperations();
+        List<AccessControlOperation> operations = ace.getOperations();
         accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
           ace.getActor(),
-          operations.contains("read"),
-          operations.contains("write")
+          operations.contains(AccessControlOperation.READ),
+          operations.contains(AccessControlOperation.WRITE)
         ));
       }
     }
@@ -84,12 +85,12 @@ public class AccessControlDataService {
 
   private AccessControlEntry transformData(AccessEntryData data) {
     AccessControlEntry entry = new AccessControlEntry();
-    List<String> operations = new ArrayList<>();
+    List<AccessControlOperation> operations = new ArrayList<>();
     if (data.getReadPermission()) {
-      operations.add("read");
+      operations.add(AccessControlOperation.READ);
     }
     if (data.getWritePermission()) {
-      operations.add("write");
+      operations.add(AccessControlOperation.WRITE);
     }
     entry.setOperations(operations);
     entry.setActor(data.getActor());

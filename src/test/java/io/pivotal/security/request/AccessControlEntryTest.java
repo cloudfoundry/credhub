@@ -1,19 +1,22 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;
-
-import javax.validation.ConstraintViolation;
-import java.util.Set;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
 
 @RunWith(Spectrum.class)
 public class AccessControlEntryTest {
@@ -65,23 +68,16 @@ public class AccessControlEntryTest {
             assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.missing_operations")));
           });
 
-          it("should validate allowed values", () -> {
+          itThrows("should not allow invalid operations", InvalidFormatException.class, () -> {
             String json = "{ \n" +
                 "\"actor\": \"dan\",\n" +
                 "\"operations\": [\"foo\", \"read\"]\n" +
                 "}";
-            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
-            assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.invalid_operation")));
-          });
-
-          it("should validate on exact strings", () -> {
-            String json = "{ \n" +
-                "\"actor\": \"dan\",\n" +
-                "\"operations\": [\"readership\"]\n" +
-                "}";
-            Set<ConstraintViolation<AccessControlEntry>> constraintViolations = deserializeAndValidate(json, AccessControlEntry.class);
-            assertThat(constraintViolations.size(), equalTo(1));
-            assertThat(constraintViolations, contains(hasViolationWithMessage("error.acl.invalid_operation")));
+            try {
+              deserializeAndValidate(json, AccessControlEntry.class);
+            } catch (RuntimeException e) {
+              throw e.getCause();
+            }
           });
         });
       });

@@ -2,7 +2,6 @@ package io.pivotal.security.request;
 
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import cz.jirutka.validator.collection.constraints.EachPattern;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.validation.annotation.Validated;
 
@@ -16,13 +15,13 @@ public class AccessControlEntry {
   private String actor;
 
   @NotEmpty(message = "error.acl.missing_operations")
-  @EachPattern(regexp = "(read|write)", message = "error.acl.invalid_operation")
-  private List<String> operations;
+//  @EachPattern(regexp = "(read|write)", message = "error.acl.invalid_operation")
+  private List<AccessControlOperation> operations;
 
   public AccessControlEntry() {
   }
 
-  public AccessControlEntry(String actor, List<String> operations) {
+  public AccessControlEntry(String actor, List<AccessControlOperation> operations) {
     this.actor = actor;
     this.operations = operations;
   }
@@ -35,11 +34,11 @@ public class AccessControlEntry {
     this.actor = actor;
   }
 
-  public List<String> getOperations() {
+  public List<AccessControlOperation> getOperations() {
     return operations;
   }
 
-  public void setOperations(List<String> operations) {
+  public void setOperations(List<AccessControlOperation> operations) {
     this.operations = operations;
   }
 }

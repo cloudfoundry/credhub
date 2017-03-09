@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.view.AccessControlListResponse;
@@ -43,6 +44,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -95,7 +97,8 @@ public class AccessEntryControllerTest {
 
         describe("when the request has valid JSON", () -> {
           it("should return a response containing the new ACE", () -> {
-            List<AccessControlEntry> accessControlEntries = newArrayList(new AccessControlEntry("test-actor", newArrayList("read", "write")));
+            final ArrayList<AccessControlOperation> operations = newArrayList(AccessControlOperation.READ, AccessControlOperation.WRITE);
+            List<AccessControlEntry> accessControlEntries = newArrayList(new AccessControlEntry("test-actor", operations));
             AccessEntryRequest accessEntryRequest = new AccessEntryRequest(
                 "test-credential-name",
                 accessControlEntries
@@ -121,7 +124,7 @@ public class AccessEntryControllerTest {
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
             assertThat(actualRequest.getAccessControlEntries(),
                 hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
-                    hasProperty("operations", hasItems("read", "write")))));
+                    hasProperty("operations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
           });
         });
       });
