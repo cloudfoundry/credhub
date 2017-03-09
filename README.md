@@ -34,6 +34,31 @@ Configuration for the server is spread across the `application*.yml` files.
 
 By default, CredHub launches with the `dev-h2` and `dev` profiles enabled.
 
+#### Oracle JDK vs OpenJDK
+
+CredHub relies on the JDK to have uncrippled cryptographic capability -- the slightly deceptively named "Unlimited Strength Jurisdiction Policy".
+
+By default, OpenJDK ships with "Unlimited Strength". Our credhub-release uses OpenJDK as its runtime, and so inherits the full-strength capability.
+
+But the Oracle JDK often installed on workstations does _not_ have the Unlimited Strength policy.
+
+##### How can I tell?
+
+If you see an error like `java.security.InvalidKeyException: Illegal key size`, you probably haven't installed the additional policy into the Oracle JDK. CredHub is trying to use 256-bit keys, but is being blocked by the default policy.
+
+##### Resolving
+
+Oracle makes the Unlimited Strength policy available for [separate download here](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html).
+
+Assuming you are on OS X, you can then:
+
+```
+unzip ~/Downloads/jce_policy-8.zip -d /tmp
+sudo cp /tmp/UnlimitedJCEPolicyJDK8/*.jar "$(/usr/libexec/java_home)/jre/lib/security/"
+```
+
+You will need to restart CredHub locally for changes to take effect.
+
 #### UAA and the JWT public signing key
 
 CredHub requires a [UAA server](https://github.com/cloudfoundry/uaa) to manage authentication.
