@@ -47,15 +47,18 @@ add_ca_to_trusted_keystore() {
 	    -keystore ${TRUST_STORE} -storepass ${PASSWORD}
 }
 
-generate_client_cert() {
+generate_client_certs() {
     echo "Generating client certificate signed by the trusted CA..."
     # generate keypair
     openssl genrsa -out ${CLIENT_NAME}_key.pem 2048
 
-    # create CSR
+    # create valid CSR
     openssl req -new -key ${CLIENT_NAME}_key.pem -out client.csr -subj "/CN=${DNAME}"
 
-    # create client certificate signed by the trusted CA
+    # create expired CSR
+    openssl req -new -key ${CLIENT_NAME}_key.pem -out expired_client.csr -subj "/CN=${DNAME}"
+
+    # create valid client certificate signed by the trusted CA
     openssl x509 \
         -req \
         -in client.csr \
@@ -64,6 +67,17 @@ generate_client_cert() {
         -CAcreateserial \
         -out ${CLIENT_NAME}.pem \
         -days 30 \
+        -sha256
+
+    # create expired client certificate signed by the trusted CA
+    openssl x509 \
+        -req \
+        -in expired_client.csr \
+        -CA ${CA_NAME}.pem \
+        -CAkey ${CA_NAME}_key.pem \
+        -CAserial ca.srl \
+        -out expired_${CLIENT_NAME}.pem \
+        -days -30 \
         -sha256
 }
 
@@ -81,7 +95,7 @@ pushd ${DIRNAME}/src/test/resources >/dev/null
         setup_tls_key_store
         generate_ca
         add_ca_to_trusted_keystore
-        generate_client_cert
+        generate_client_certs
         generate_server_cert
 
         echo "Finished setting up key stores for TLS and mTLS!"
