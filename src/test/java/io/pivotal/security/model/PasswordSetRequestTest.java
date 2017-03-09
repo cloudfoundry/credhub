@@ -19,7 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
-public class PasswordSecretSetRequestTest {
+public class PasswordSetRequestTest {
 
   private Validator validator;
 
