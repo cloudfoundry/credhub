@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.permissions;
 
 import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.service.AccessControlService;
+import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.view.AccessControlListResponse;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,15 +32,15 @@ public class AccessEntryController {
 
   public static final String API_V1 = "/api/v1";
 
-  private AccessControlService accessControlService;
+  private AccessControlDataService accessControlDataService;
   private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   public AccessEntryController(
-      AccessControlService accessControlService,
+      AccessControlDataService accessControlDataService,
       MessageSource messageSource
   ) {
-    this.accessControlService = accessControlService;
+    this.accessControlDataService = accessControlDataService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
@@ -53,13 +53,13 @@ public class AccessEntryController {
       ResponseError error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
-      return wrapResponse(accessControlService.setAccessControlEntry(accessEntryRequest), HttpStatus.OK);
+      return wrapResponse(accessControlDataService.setAccessControlEntry(accessEntryRequest), HttpStatus.OK);
     }
   }
 
   @GetMapping(path = "/acls")
   ResponseEntity getAccessControlList(@RequestParam("credential_name") String credentialName) {
-    final AccessControlListResponse accessControlEntries = accessControlService.getAccessControlList(credentialName);
+    final AccessControlListResponse accessControlEntries = accessControlDataService.getAccessControlList(credentialName);
 
     if (accessControlEntries == null) {
       return wrapResponse(constructError("error.resource_not_found"),
@@ -74,7 +74,7 @@ public class AccessEntryController {
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
-    accessControlService.deleteAccessControlEntry(credentialName, actor);
+    accessControlDataService.deleteAccessControlEntry(credentialName, actor);
     return ResponseEntity.noContent().build();
   }
 

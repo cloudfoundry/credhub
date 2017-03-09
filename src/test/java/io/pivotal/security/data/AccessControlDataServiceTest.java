@@ -1,4 +1,4 @@
-package io.pivotal.security.service;
+package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
@@ -36,10 +36,10 @@ import java.util.List;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class AccessControlServiceTest {
+public class AccessControlDataServiceTest {
 
   @Autowired
-  private AccessControlService subject;
+  private AccessControlDataService subject;
 
   @Autowired
   private SecretNameRepository secretNameRepository;

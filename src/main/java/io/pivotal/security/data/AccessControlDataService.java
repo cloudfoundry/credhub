@@ -1,4 +1,4 @@
-package io.pivotal.security.service;
+package io.pivotal.security.data;
 
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.SecretName;
@@ -17,14 +17,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
-public class AccessControlService {
+public class AccessControlDataService {
 
   private AccessEntryRepository accessEntryRepository;
   private SecretNameRepository secretNameRepository;
 
   @Autowired
-  public AccessControlService(AccessEntryRepository accessEntryRepository,
-                              SecretNameRepository secretNameRepository) {
+  public AccessControlDataService(AccessEntryRepository accessEntryRepository,
+                                  SecretNameRepository secretNameRepository) {
     this.accessEntryRepository = accessEntryRepository;
     this.secretNameRepository = secretNameRepository;
   }

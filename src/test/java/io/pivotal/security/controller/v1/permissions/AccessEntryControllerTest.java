@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.service.AccessControlService;
+import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -48,17 +48,17 @@ import java.util.Locale;
 
 @RunWith(Spectrum.class)
 public class AccessEntryControllerTest {
-  private AccessControlService accessControlService;
+  private AccessControlDataService accessControlDataService;
   private MessageSource messageSource;
   private AccessEntryController subject;
   private MockMvc mockMvc;
 
   {
     beforeEach(() -> {
-      accessControlService = mock(AccessControlService.class);
+      accessControlDataService = mock(AccessControlDataService.class);
       messageSource = mock(MessageSource.class);
       subject = new AccessEntryController(
-          accessControlService,
+          accessControlDataService,
           messageSource
       );
 
@@ -102,7 +102,7 @@ public class AccessEntryControllerTest {
             );
             AccessControlListResponse expectedResponse = new AccessControlListResponse("test-actor", accessControlEntries);
 
-            when(accessControlService.setAccessControlEntry(any(AccessEntryRequest.class)))
+            when(accessControlDataService.setAccessControlEntry(any(AccessEntryRequest.class)))
                 .thenReturn(expectedResponse);
 
             MockHttpServletRequestBuilder request = post("/api/v1/aces")
@@ -115,7 +115,7 @@ public class AccessEntryControllerTest {
                 .andExpect(content().json(jsonContent));
 
             ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor.forClass(AccessEntryRequest.class);
-            verify(accessControlService, times(1)).setAccessControlEntry(captor.capture());
+            verify(accessControlDataService, times(1)).setAccessControlEntry(captor.capture());
 
             AccessEntryRequest actualRequest = captor.getValue();
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
@@ -132,7 +132,7 @@ public class AccessEntryControllerTest {
               .andExpect(status().isNoContent())
               .andExpect(content().string(""));
 
-          verify(accessControlService, times(1))
+          verify(accessControlDataService, times(1))
               .deleteAccessControlEntry("test-name", "test-actor");
         });
       });
@@ -155,7 +155,7 @@ public class AccessEntryControllerTest {
           it("should return an error", () -> {
             when(messageSource.getMessage(eq("error.resource_not_found"), eq(null), any(Locale.class)))
                 .thenReturn("test-error-message");
-            when(accessControlService.getAccessControlList("test_credential_name"))
+            when(accessControlDataService.getAccessControlList("test_credential_name"))
                 .thenReturn(null);
 
             mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
@@ -167,7 +167,7 @@ public class AccessEntryControllerTest {
         describe("when the credential exists", () -> {
           it("should return the ACL for the credential", () -> {
             AccessControlListResponse accessControlListResponse = new AccessControlListResponse("test_credential_name", newArrayList());
-            when(accessControlService.getAccessControlList("test_credential_name"))
+            when(accessControlDataService.getAccessControlList("test_credential_name"))
                 .thenReturn(accessControlListResponse);
 
             ResponseEntity response = subject.getAccessControlList("test_credential_name");
