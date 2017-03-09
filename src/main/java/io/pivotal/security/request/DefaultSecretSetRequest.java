@@ -3,7 +3,7 @@ package io.pivotal.security.request;
 import javax.validation.constraints.NotNull;
 
 public class DefaultSecretSetRequest extends BaseSecretSetRequest {
-  @NotNull
+  @NotNull(message = "error.missing_value")
   private Object value;
 
   public Object getValue() {

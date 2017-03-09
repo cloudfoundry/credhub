@@ -31,7 +31,7 @@ public class BaseSecretSetRequest {
   @Pattern(regexp = "^(?>(?:/?[^/]+))*$", message = "error.invalid_name_has_slash")
   private String name;
 
-  @NotEmpty(message = "type may not be empty")
+  @NotEmpty(message = "error.type_invalid")
   private String type;
 
   private boolean overwrite;

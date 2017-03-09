@@ -1,6 +1,5 @@
 package io.pivotal.security.model;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.BaseSecretSetRequest;
@@ -11,18 +10,16 @@ import java.util.Set;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.JsonHelper.deserialize;
 import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
 public class BaseSecretSetRequestTest {
-
   {
-
     describe("when given valid json", () -> {
       it("should be valid", () -> {
         String json = "{" +
@@ -40,7 +37,7 @@ public class BaseSecretSetRequestTest {
             "\"name\":\"some-name\"," +
             "\"value\":\"some-value\"" +
           "}";
-        BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
+        BaseSecretSetRequest secretSetRequest = deserialize(json, BaseSecretSetRequest.class);
 
         assertThat(secretSetRequest.getType(), equalTo("some-type"));
         assertThat(secretSetRequest.getName(), equalTo("some-name"));
@@ -53,7 +50,7 @@ public class BaseSecretSetRequestTest {
               "\"name\":\"some-name\"," +
               "\"value\":\"some-value\"" +
             "}";
-          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = deserialize(json, BaseSecretSetRequest.class);
 
           assertThat(secretSetRequest.isOverwrite(), equalTo(false));
         });
@@ -65,7 +62,7 @@ public class BaseSecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
             "}";
-          BaseSecretSetRequest secretSetRequest = new ObjectMapper().readValue(json, BaseSecretSetRequest.class);
+          BaseSecretSetRequest secretSetRequest = deserialize(json, BaseSecretSetRequest.class);
 
           assertThat(secretSetRequest.isOverwrite(), equalTo(true));
         });
@@ -81,8 +78,8 @@ public class BaseSecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-
           Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
+
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
         });
       });
@@ -95,8 +92,8 @@ public class BaseSecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-
           Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
+
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
         });
       });
@@ -109,8 +106,8 @@ public class BaseSecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-
           Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
+
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
         });
       });
@@ -123,6 +120,7 @@ public class BaseSecretSetRequestTest {
               "\"overwrite\":true" +
               "}";
           Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
+
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
         });
       });
@@ -135,9 +133,9 @@ public class BaseSecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-
           Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
-          assertThat(violations, hasItems(hasViolationWithMessage("error.missing_name")));
+
+          assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
         });
       });
 
@@ -148,9 +146,9 @@ public class BaseSecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-
           Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
-          assertThat(violations, hasItems(hasViolationWithMessage("type may not be empty")));
+
+          assertThat(violations, contains(hasViolationWithMessage("error.type_invalid")));
         });
       });
 
@@ -162,22 +160,9 @@ public class BaseSecretSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-
           Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
-          assertThat(violations, hasItems(hasViolationWithMessage("type may not be empty")));
-        });
-      });
 
-      describe("when value is not set", () -> {
-        it("should be invalid", () -> {
-          String json = "{" +
-              "\"name\":\"some-name\"," +
-              "\"type\":\"value\"," +
-              "\"overwrite\":true" +
-              "}";
-
-          Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
-          assertThat(violations, hasItems(hasViolationWithMessage("value may not be empty")));
+          assertThat(violations, contains(hasViolationWithMessage("error.type_invalid")));
         });
       });
     });

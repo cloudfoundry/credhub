@@ -6,7 +6,7 @@ import io.pivotal.security.domain.NamedValueSecret;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class ValueSetRequest extends BaseSecretSetRequest {
-  @NotEmpty(message = "value may not be empty")
+  @NotEmpty(message = "error.missing_value")
   private String value;
 
   public String getValue() {

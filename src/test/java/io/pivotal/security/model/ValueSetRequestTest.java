@@ -11,8 +11,10 @@ import java.util.Set;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
+import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
 import static io.pivotal.security.helper.JsonHelper.validate;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -20,6 +22,18 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @RunWith(Spectrum.class)
 public class ValueSetRequestTest {
   {
+    it("should deserialize to ValueSetRequest", () -> {
+      String json = "{" +
+        "\"name\":\"some-name\"," +
+        "\"type\":\"value\"," +
+        "\"overwrite\":true," +
+        "\"value\":\"some-value\"" +
+        "}";
+      BaseSecretSetRequest request = deserialize(json, BaseSecretSetRequest.class);
+
+      assertThat(request, instanceOf(ValueSetRequest.class));
+    });
+
     describe("when value is not set", () -> {
       it("should be invalid", () -> {
         String json = "{" +
@@ -30,7 +44,7 @@ public class ValueSetRequestTest {
         ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json, BaseSecretSetRequest.class);
         Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
-        assertThat(violations, contains(hasViolationWithMessage("value may not be empty")));
+        assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
       });
     });
 
@@ -45,7 +59,7 @@ public class ValueSetRequestTest {
         ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json, BaseSecretSetRequest.class);
         Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
-        assertThat(violations, contains(hasViolationWithMessage("value may not be empty")));
+        assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
       });
     });
 
@@ -57,8 +71,7 @@ public class ValueSetRequestTest {
             "\"overwrite\":true," +
             "\"value\":\"some-value\"" +
             "}";
-        ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json, BaseSecretSetRequest.class);
-        Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(json, BaseSecretSetRequest.class);
 
         assertThat(violations.size(), equalTo(0));
       });

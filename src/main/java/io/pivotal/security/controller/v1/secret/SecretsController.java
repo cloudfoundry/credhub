@@ -10,7 +10,6 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.mapper.RequestTranslator;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.DefaultSecretSetRequest;
 import io.pivotal.security.service.AuditLogService;
@@ -33,7 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,11 +44,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -57,7 +52,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -247,20 +245,9 @@ public class SecretsController {
   @ExceptionHandler({MethodArgumentNotValidException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInvalidField(MethodArgumentNotValidException exception) throws IOException {
-    // EWWWW
-    FieldError fieldError = exception.getBindingResult().getFieldError();
-    switch (fieldError.getField()) {
-      case "type":
-        return createParameterizedErrorResponse(new ParameterizedValidationException("error.type_invalid"));
-      case "name":
-        return createParameterizedErrorResponse(new ParameterizedValidationException(fieldError.getDefaultMessage()));
-      case "value":
-      case "password":
-        return createParameterizedErrorResponse(new ParameterizedValidationException("error.missing_string_secret_value"));
-      default:
-        String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-        return new ResponseError(errorMessage);
-    }
+    ObjectError error = exception.getBindingResult().getAllErrors().get(0);
+    String errorMessage = messageSourceAccessor.getMessage(error.getDefaultMessage());
+    return new ResponseError(errorMessage);
   }
 
   private ResponseEntity findWithAuditing(String nameSubstring,
