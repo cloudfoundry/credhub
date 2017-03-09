@@ -32,17 +32,11 @@ public class CertificateAuthorityServiceTest {
 
   {
     beforeEach(() -> {
-      Security.addProvider(new BouncyCastleProvider());
-
       certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key");
       namedCertificateSecret = mock(NamedCertificateSecret.class);
 
       secretDataService = mock(SecretDataService.class);
       certificateAuthorityService = new CertificateAuthorityService(secretDataService);
-    });
-
-    afterEach(() -> {
-      Security.removeProvider("BC");
     });
 
     describe("when a CA does not exist", () -> {

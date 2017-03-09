@@ -6,6 +6,7 @@ import io.pivotal.security.service.BCNullConnection;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static javax.xml.bind.DatatypeConverter.parseHexBinary;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,7 +48,7 @@ public class EncryptorTest {
 
         keyMapper = mock(EncryptionKeyCanaryMapper.class);
         BCEncryptionService bcEncryptionService;
-        bcEncryptionService = new BCEncryptionService();
+        bcEncryptionService = new BCEncryptionService(getBouncyCastleProvider());
         RetryingEncryptionService encryptionService = new RetryingEncryptionService(bcEncryptionService, keyMapper, new BCNullConnection());
 
         when(keyMapper.getActiveKey()).thenReturn(newKey);

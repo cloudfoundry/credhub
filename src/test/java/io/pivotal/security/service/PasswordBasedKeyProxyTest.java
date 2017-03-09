@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.runner.RunWith;
 
@@ -12,6 +13,7 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,7 +35,7 @@ public class PasswordBasedKeyProxyTest {
   {
     beforeEach(() -> {
       password = "abcdefghijklmnopqrst";
-      encryptionService = new BCEncryptionService();
+      encryptionService = new BCEncryptionService(getBouncyCastleProvider());
       subject = new PasswordBasedKeyProxy(password, encryptionService);
     });
 

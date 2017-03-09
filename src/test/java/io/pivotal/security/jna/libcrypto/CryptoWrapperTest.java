@@ -14,6 +14,7 @@ import java.security.Security;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.jna.libcrypto.Crypto.RSA_NO_PADDING;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -25,12 +26,9 @@ public class CryptoWrapperTest {
 
   private CryptoWrapper subject;
 
-  private final BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
-
   {
     beforeEach(() -> {
-      Security.addProvider(bouncyCastleProvider);
-      subject = new CryptoWrapper(bouncyCastleProvider);
+      subject = new CryptoWrapper(getBouncyCastleProvider());
     });
 
     it("can generate keypairs", () -> {
@@ -71,7 +69,7 @@ public class CryptoWrapperTest {
         KeyPair keyPair = subject.toKeyPair(rsa);
         PrivateKey privateKey = keyPair.getPrivate();
 
-        Cipher cipher = Cipher.getInstance(CryptoWrapper.ALGORITHM, bouncyCastleProvider);
+        Cipher cipher = Cipher.getInstance(CryptoWrapper.ALGORITHM, getBouncyCastleProvider());
         cipher.init(Cipher.ENCRYPT_MODE, privateKey);
         byte[] javaCipherText = cipher.doFinal(plaintext);
 

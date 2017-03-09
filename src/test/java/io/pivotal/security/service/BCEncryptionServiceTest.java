@@ -2,15 +2,18 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.EncryptionKeyMetadata;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hamcrest.CoreMatchers;
 import org.junit.runner.RunWith;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
+import java.security.Security;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -27,7 +30,7 @@ public class BCEncryptionServiceTest {
   {
     describe("with a non-null dev key", () -> {
       beforeEach(() -> {
-        subject = new BCEncryptionService();
+        subject = new BCEncryptionService(getBouncyCastleProvider());
 
         EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
         keyMetadata.setDevKey("0123456789ABCDEF0123456789ABCDEF");
@@ -75,7 +78,7 @@ public class BCEncryptionServiceTest {
 
     describe("with a null dev key", () -> {
       it("should created a password-based key proxy", () -> {
-        subject = new BCEncryptionService();
+        subject = new BCEncryptionService(getBouncyCastleProvider());
 
         EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
         keyMetadata.setEncryptionPassword("foobar");

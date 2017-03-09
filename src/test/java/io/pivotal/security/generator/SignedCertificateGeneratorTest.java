@@ -40,6 +40,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeAll;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -78,16 +79,10 @@ public class SignedCertificateGeneratorTest {
   SignedCertificateGenerator subject;
 
   {
-    BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
-
-    beforeAll(() -> {
-      Security.addProvider(bouncyCastleProvider);
-    });
-
     beforeEach(injectMocks(this));
 
     beforeEach(() -> {
-      subject = new SignedCertificateGenerator(timeProvider, serialNumberGenerator, bouncyCastleProvider);
+      subject = new SignedCertificateGenerator(timeProvider, serialNumberGenerator, getBouncyCastleProvider());
 
       nowCalendar.setTime(Date.from(now));
       when(timeProvider.getNow()).thenReturn(nowCalendar);

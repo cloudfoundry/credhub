@@ -36,6 +36,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static com.greghaskins.spectrum.Spectrum.let;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -53,7 +54,6 @@ public class BCCertificateGeneratorTest {
   private LibcryptoRsaKeyPairGenerator keyGenerator;
   private SignedCertificateGenerator signedCertificateGenerator;
   private CertificateAuthorityService certificateAuthorityService;
-  private BouncyCastleProvider bouncyCastleProvider;
 
   private FakeKeyPairGenerator fakeKeyPairGenerator;
 
@@ -75,11 +75,8 @@ public class BCCertificateGeneratorTest {
       keyGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
       signedCertificateGenerator = mock(SignedCertificateGenerator.class);
       certificateAuthorityService = mock(CertificateAuthorityService.class);
-      bouncyCastleProvider = new BouncyCastleProvider();
 
-      subject = new BCCertificateGenerator(keyGenerator, signedCertificateGenerator, certificateAuthorityService, bouncyCastleProvider);
-
-      Security.addProvider(bouncyCastleProvider);
+      subject = new BCCertificateGenerator(keyGenerator, signedCertificateGenerator, certificateAuthorityService, getBouncyCastleProvider());
 
       fakeKeyPairGenerator = new FakeKeyPairGenerator();
 
@@ -100,8 +97,6 @@ public class BCCertificateGeneratorTest {
         .setCountry("mars")
         .setDurationDays(365);
     });
-
-    afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
 
     describe("when CA exists", () -> {
       final Supplier<KeyPair> childCertificateKeyPair = let(() -> fakeKeyPairGenerator.generate());

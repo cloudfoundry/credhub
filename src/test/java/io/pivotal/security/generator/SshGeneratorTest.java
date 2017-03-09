@@ -32,15 +32,12 @@ public class SshGeneratorTest {
 
   {
     beforeEach(() -> {
-      Security.addProvider(new BouncyCastleProvider());
       keyPairGeneratorMock = mock(LibcryptoRsaKeyPairGenerator.class);
       subject = new SshGenerator(keyPairGeneratorMock);
 
       keyPair = new FakeKeyPairGenerator().generate();
       when(keyPairGeneratorMock.generateKeyPair(anyInt())).thenReturn(keyPair);
     });
-
-    afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {

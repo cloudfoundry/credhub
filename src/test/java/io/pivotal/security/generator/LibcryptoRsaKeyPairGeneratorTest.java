@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -19,7 +20,7 @@ public class LibcryptoRsaKeyPairGeneratorTest {
 
   {
     beforeEach(() -> {
-      subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(new BouncyCastleProvider()));
+      subject = new LibcryptoRsaKeyPairGenerator(new CryptoWrapper(getBouncyCastleProvider()));
     });
 
     it("can generate keypairs", () -> {

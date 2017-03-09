@@ -33,16 +33,12 @@ public class RsaGeneratorTest {
     beforeEach(() -> {
       keyPairGenerator = mock(LibcryptoRsaKeyPairGenerator.class);
 
-      Security.addProvider(new BouncyCastleProvider());
-
       fakeKeyPairGenerator = new FakeKeyPairGenerator();
       keyPair = fakeKeyPairGenerator.generate();
       when(keyPairGenerator.generateKeyPair(anyInt())).thenReturn(keyPair);
 
       subject = new RsaGenerator(keyPairGenerator);
     });
-
-    afterEach(() -> Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME));
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {

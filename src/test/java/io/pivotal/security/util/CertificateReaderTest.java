@@ -26,14 +26,6 @@ import java.security.Security;
 @RunWith(Spectrum.class)
 public class CertificateReaderTest {
   {
-    beforeEach(() -> {
-      Security.addProvider(new BouncyCastleProvider());
-    });
-
-    afterEach(() -> {
-      Security.removeProvider("BC");
-    });
-
     describe("#isCA", () -> {
       describe("when the certificate has basic constraints", () -> {
         it("sets isCA to true if the basic constraint 'CA' is true", () -> {

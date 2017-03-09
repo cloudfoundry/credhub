@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.constants.CipherTypes;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,7 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
 import java.security.SecureRandom;
 
 @Component
@@ -19,9 +21,12 @@ import java.security.SecureRandom;
 public class BCEncryptionService extends EncryptionService {
   private static final int KEYSIZE_BYTES = 16;
   private SecureRandom secureRandom;
+  private Provider bouncyCastleProvider;
 
-  public BCEncryptionService() throws Exception {
+  @Autowired
+  public BCEncryptionService(BouncyCastleProvider bouncyCastleProvider) throws Exception {
     this.secureRandom = SecureRandom.getInstance("SHA1PRNG");
+    this.bouncyCastleProvider = bouncyCastleProvider;
   }
 
   @Override
@@ -31,7 +36,7 @@ public class BCEncryptionService extends EncryptionService {
 
   @Override
   CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return new CipherWrapper(Cipher.getInstance(CipherTypes.GCM.toString(), new BouncyCastleProvider()));
+    return new CipherWrapper(Cipher.getInstance(CipherTypes.GCM.toString(), bouncyCastleProvider));
   }
 
   @Override

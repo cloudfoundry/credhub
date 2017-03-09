@@ -266,10 +266,6 @@ public class CertificateGeneratorRequestTranslatorTest {
     });
 
     describe("regenerating certificates", () -> {
-      beforeEach(() -> {
-        Security.addProvider(new BouncyCastleProvider());
-      });
-
       describe("when a certificate is not self signed", () -> {
         it("creates correct parameters from the entity", () -> {
           NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")

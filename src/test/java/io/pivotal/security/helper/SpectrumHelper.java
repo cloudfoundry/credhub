@@ -10,6 +10,8 @@ import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import static org.junit.Assert.fail;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.mockito.Mockito;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,6 +25,7 @@ import org.springframework.test.context.TestContextManager;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.security.Security;
 import java.util.Calendar;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -139,6 +142,17 @@ public class SpectrumHelper {
     return () -> MockitoAnnotations.initMocks(testInstance);
   }
 
+  public static BouncyCastleProvider getBouncyCastleProvider() {
+    BouncyCastleProvider bouncyCastleProvider = (BouncyCastleProvider) Security.getProvider(BouncyCastleProvider.PROVIDER_NAME);
+
+    if (bouncyCastleProvider == null) {
+      bouncyCastleProvider = new BouncyCastleProvider();
+      Security.addProvider(bouncyCastleProvider);
+    }
+
+    return bouncyCastleProvider;
+  }
+
   private static class MyTestContextManager extends TestContextManager {
       MyTestContextManager(Class<?> testClass) {
       super(testClass);
@@ -159,5 +173,4 @@ public class SpectrumHelper {
     builder.setTimeZone(TimeZone.getTimeZone("UTC"));
     return builder.build();
   }
-
 }
