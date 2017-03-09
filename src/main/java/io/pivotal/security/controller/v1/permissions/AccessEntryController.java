@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +27,7 @@ import static io.pivotal.security.controller.v1.permissions.AccessEntryControlle
 
 @RestController
 @RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@SuppressWarnings("unused")
 public class AccessEntryController {
 
   public static final String API_V1 = "/api/v1";
@@ -56,7 +58,6 @@ public class AccessEntryController {
   }
 
   @GetMapping(path = "/acls")
-  @SuppressWarnings("unused")
   ResponseEntity getAccessControlList(@RequestParam("credential_name") String credentialName) {
     final AccessControlListResponse accessControlEntries = accessControlService.getAccessControlList(credentialName);
 
@@ -66,6 +67,15 @@ public class AccessEntryController {
     }
 
     return wrapResponse(accessControlEntries, HttpStatus.OK);
+  }
+
+  @DeleteMapping(path="/aces")
+  ResponseEntity deleteAccessControlEntry(
+      @RequestParam("credential_name") String credentialName,
+      @RequestParam("actor") String actor
+  ) {
+    accessControlService.deleteAccessControlEntry(credentialName, actor);
+    return ResponseEntity.noContent().build();
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)

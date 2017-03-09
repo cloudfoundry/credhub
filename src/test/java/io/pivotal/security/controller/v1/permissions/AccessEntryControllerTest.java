@@ -36,6 +36,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -122,6 +123,17 @@ public class AccessEntryControllerTest {
                 hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
                     hasProperty("operations", hasItems("read", "write")))));
           });
+        });
+      });
+
+      describe("#DELETE", () -> {
+        it("should delete the ACE from the resource ACL", () -> {
+          mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
+              .andExpect(status().isNoContent())
+              .andExpect(content().string(""));
+
+          verify(accessControlService, times(1))
+              .deleteAccessControlEntry("test-name", "test-actor");
         });
       });
     });

@@ -19,6 +19,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -143,6 +144,40 @@ public class AccessControlEndpointTest {
               .andExpect(status().isNotFound())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the resource could not be found.")));
+        });
+      });
+    });
+
+    describe("when deleting an ACE for a specified credential & actor", () -> {
+      describe("when the specified actor has an ACE with the specified credential", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"credential_name\": \"/cred1\",\n" +
+                  "  \"access_control_entries\": [\n" +
+                  "     { \n" +
+                  "       \"actor\": \"dan\",\n" +
+                  "       \"operations\": [\"read\"]\n" +
+                  "     }]" +
+                  "}");
+
+          mockMvc.perform(post)
+              .andExpect(status().isOk());
+        });
+
+        it("should delete the ACE from the resource's ACL", () -> {
+          mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.access_control_list").isNotEmpty());
+
+          mockMvc.perform(delete("/api/v1/aces?credential_name=/cred1&actor=dan"))
+              .andExpect(status().isNoContent());
+
+          mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.access_control_list").isEmpty());
         });
       });
     });

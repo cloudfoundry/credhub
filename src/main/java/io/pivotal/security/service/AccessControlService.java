@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -29,7 +30,6 @@ public class AccessControlService {
   }
 
   public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
-
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(request.getCredentialName());
     List<AccessEntryData> accessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
 
@@ -77,6 +77,10 @@ public class AccessControlService {
     return new AccessControlListResponse(credentialName, responseAces);
   }
 
+  public void deleteAccessControlEntry(String credentialName, String actor) {
+    UUID secretNameUuid = secretNameRepository.findOneByNameIgnoreCase(credentialName).getUuid();
+    accessEntryRepository.deleteByCredentialNameUuidAndActor(secretNameUuid, actor);
+  }
 
   private AccessControlEntry transformData(AccessEntryData data) {
     AccessControlEntry entry = new AccessControlEntry();

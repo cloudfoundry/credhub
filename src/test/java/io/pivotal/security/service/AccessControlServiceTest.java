@@ -22,7 +22,10 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -116,13 +119,12 @@ public class AccessControlServiceTest {
 
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
-          assertThat(response.getAccessControlList(), hasItems(
+          assertThat(response.getAccessControlList(), containsInAnyOrder(
             allOf(hasProperty("actor", equalTo("Luke")),
-              hasProperty("operations", hasItems("write")))
-          ));
-          assertThat(response.getAccessControlList(), hasItems(
+              hasProperty("operations", hasItems("write"))),
             allOf(hasProperty("actor", equalTo("Leia")),
-              hasProperty("operations", hasItems("read")))));
+              hasProperty("operations", hasItems("read"))))
+          );
         });
       });
 
@@ -132,6 +134,31 @@ public class AccessControlServiceTest {
         });
       });
     });
+
+    describe("deleteAccessControlEntry", () -> {
+      beforeEach(this::seedDatabase);
+
+      describe("when given a credential and actor that exists in the ACL", () -> {
+        it("removes the ACE from the ACL", () -> {
+          assertThat(subject.getAccessControlList("/lightsaber").getAccessControlList(), containsInAnyOrder(
+              allOf(hasProperty("actor", equalTo("Luke")),
+                  hasProperty("operations", hasItems("write"))),
+              allOf(hasProperty("actor", equalTo("Leia")),
+                  hasProperty("operations", hasItems("read"))))
+          );
+          subject.deleteAccessControlEntry("/lightsaber", "Luke");
+
+          final List<AccessControlEntry> accessControlList = subject.getAccessControlList("/lightsaber").getAccessControlList();
+          assertThat(accessControlList,
+              not(hasItem(hasProperty("actor", equalTo("Luke")))));
+          assertThat(accessControlList, contains(
+              allOf(hasProperty("actor", equalTo("Leia")),
+                  hasProperty("operations", hasItems("read"))))
+          );
+        });
+      });
+    });
+
   }
 
   private void seedDatabase() {
