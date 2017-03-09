@@ -66,6 +66,10 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
     return (Z) this;
   }
 
+  void copyNameReferenceFrom(NamedSecret namedSecret) {
+    this.delegate.setSecretName(namedSecret.delegate.getSecretName());
+  }
+
   public void copyInto(Z copy) {
     copy.encryptor = this.encryptor;
     delegate.copyInto(copy.delegate);

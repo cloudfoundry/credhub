@@ -60,60 +60,35 @@ public class NamedValueSecretTest {
       });
     });
 
-    describe(".createNewVersion and #createNewVersion", () -> {
+    describe(".createNewVersion", () -> {
       beforeEach(() -> {
-        subject = new NamedValueSecret("/existingName");
-
-        byte[] encryptedValue = "new-encrypted-value".getBytes();
-        byte[] nonce = "new-nonce".getBytes();
+        byte[] encryptedValue = "new-fake-encrypted".getBytes();
+        byte[] nonce = "new-fake-nonce".getBytes();
         when(encryptor.encrypt("new value")).thenReturn(new Encryption(encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new value");
 
+        subject = new NamedValueSecret("/existingName");
         subject.setEncryptor(encryptor);
+        subject.setEncryptedValue("old encrypted value".getBytes());
       });
 
-      it("copies only name from existing", () -> {
-        NamedValueSecret newSecret = subject.createNewVersion("new value");
+      it("copies values from existing, except value", () -> {
+        NamedValueSecret newSecret = NamedValueSecret.createNewVersion(subject, "anything I AM IGNORED", "new value", encryptor);
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getValue(), equalTo("new value"));
       });
 
-      describe("static overload", () -> {
-        it("copies values from existing", () -> {
-          NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
-            subject,
-            "/existingName",
-            "new value",
-            encryptor);
+      it("creates new if no existing", () -> {
+        NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
+          null,
+          "/newName",
+          "new value",
+          encryptor);
 
-          assertThat(newSecret.getName(), equalTo("/existingName"));
-          assertThat(newSecret.getValue(), equalTo("new value"));
-        });
-
-        it("copies the name from the existing version", () -> {
-          NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
-            subject,
-            "IAMIGNOREDBECAUSEEXISTINGNAMEISUSED",
-            "new value",
-            encryptor);
-
-          assertThat(newSecret.getName(), equalTo("/existingName"));
-          assertThat(newSecret.getValue(), equalTo("new value"));
-        });
-
-        it("creates new if no existing", () -> {
-          NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
-            null,
-            "/newName",
-            "new value",
-            encryptor);
-
-          assertThat(newSecret.getName(), equalTo("/newName"));
-          assertThat(newSecret.getValue(), equalTo("new value"));
-        });
+        assertThat(newSecret.getName(), equalTo("/newName"));
+        assertThat(newSecret.getValue(), equalTo("new value"));
       });
     });
-
   }
 }

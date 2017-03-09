@@ -148,7 +148,7 @@ public class NamedPasswordSecretTest {
       });
     });
 
-    describe(".createNewVersion and #createNewVersion", () -> {
+    describe(".createNewVersion", () -> {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
@@ -157,48 +157,25 @@ public class NamedPasswordSecretTest {
 
         subject = new NamedPasswordSecret("/existingName");
         subject.setEncryptor(encryptor);
+        subject.setEncryptedValue("old encrypted value".getBytes());
       });
 
       it("copies values from existing, except password", () -> {
-        NamedPasswordSecret newSecret = subject.createNewVersion("new password");
+        NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(subject, "anything I AM IGNORED", "new password", encryptor);
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getPassword(), equalTo("new password"));
       });
 
-      describe("static overload", () -> {
-        it("copies values from existing", () -> {
-          NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
-              subject,
-              "/existingName",
-              "new password",
-              encryptor);
+      it("creates new if no existing", () -> {
+        NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
+            null,
+            "/newName",
+            "new password",
+            encryptor);
 
-          assertThat(newSecret.getName(), equalTo("/existingName"));
-          assertThat(newSecret.getPassword(), equalTo("new password"));
-        });
-
-        it("copies the name from the existing version", () -> {
-          NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
-              subject,
-              "IAMIGNOREDBECAUSEEXISTINGNAMEISUSED",
-              "new password",
-              encryptor);
-
-          assertThat(newSecret.getName(), equalTo("/existingName"));
-          assertThat(newSecret.getPassword(), equalTo("new password"));
-        });
-
-        it("creates new if no existing", () -> {
-          NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
-              null,
-              "/newName",
-              "new password",
-              encryptor);
-
-          assertThat(newSecret.getName(), equalTo("/newName"));
-          assertThat(newSecret.getPassword(), equalTo("new password"));
-        });
+        assertThat(newSecret.getName(), equalTo("/newName"));
+        assertThat(newSecret.getPassword(), equalTo("new password"));
       });
     });
   }

@@ -4,21 +4,8 @@ import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
 
-import static org.apache.commons.lang3.StringUtils.prependIfMissing;
-
 public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
   private NamedValueSecretData delegate;
-
-  public static NamedValueSecret createNewVersion(NamedValueSecret existing, String name, String value, Encryptor encryptor) {
-    if (existing != null) {
-      return existing.createNewVersion(value);
-    } else {
-      NamedValueSecret secret = new NamedValueSecret(name);
-      secret.setEncryptor(encryptor);
-      secret.setValue(value);
-      return secret;
-    }
-  }
 
   public NamedValueSecret(NamedValueSecretData delegate) {
     super(delegate);
@@ -69,11 +56,18 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
     this.setValue(decryptedValue);
   }
 
-  public NamedValueSecret createNewVersion(String value) {
-    NamedValueSecret secret = new NamedValueSecret();
+  public static NamedValueSecret createNewVersion(NamedValueSecret existing, String name, String value, Encryptor encryptor) {
+    NamedValueSecret secret;
+
+    if (existing == null) {
+      secret = new NamedValueSecret(name);
+    } else {
+      secret = new NamedValueSecret();
+      secret.copyNameReferenceFrom(existing);
+    }
+
     secret.setEncryptor(encryptor);
     secret.setValue(value);
-    secret.delegate.setSecretName(this.delegate.getSecretName());
     return secret;
   }
 }
