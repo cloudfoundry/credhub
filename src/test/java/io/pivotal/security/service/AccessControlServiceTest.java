@@ -107,12 +107,12 @@ public class AccessControlServiceTest {
       });
     });
 
-    describe("getAccessControlEntries", () -> {
+    describe("getAccessControlList", () -> {
       beforeEach(this::seedDatabase);
 
       describe("when given an existing credential name", () -> {
         it("returns the access control list", () -> {
-          AccessControlListResponse response = subject.getAccessControlEntries("/lightsaber");
+          AccessControlListResponse response = subject.getAccessControlList("/lightsaber");
 
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
@@ -128,7 +128,7 @@ public class AccessControlServiceTest {
 
       describe("when given a credential name that doesn't exist", () -> {
         it("returns null", () -> {
-          assertThat(subject.getAccessControlEntries("/unicorn"), nullValue());
+          assertThat(subject.getAccessControlList("/unicorn"), nullValue());
         });
       });
     });

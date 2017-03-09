@@ -143,7 +143,7 @@ public class AccessEntryControllerTest {
           it("should return an error", () -> {
             when(messageSource.getMessage(eq("error.resource_not_found"), eq(null), any(Locale.class)))
                 .thenReturn("test-error-message");
-            when(accessControlService.getAccessControlEntries("test_credential_name"))
+            when(accessControlService.getAccessControlList("test_credential_name"))
                 .thenReturn(null);
 
             mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
@@ -155,10 +155,10 @@ public class AccessEntryControllerTest {
         describe("when the credential exists", () -> {
           it("should return the ACL for the credential", () -> {
             AccessControlListResponse accessControlListResponse = new AccessControlListResponse("test_credential_name", newArrayList());
-            when(accessControlService.getAccessControlEntries("test_credential_name"))
+            when(accessControlService.getAccessControlList("test_credential_name"))
                 .thenReturn(accessControlListResponse);
 
-            ResponseEntity response = subject.getAccessControlEntry("test_credential_name");
+            ResponseEntity response = subject.getAccessControlList("test_credential_name");
 
             assertThat(response.getStatusCode(), equalTo(OK));
             assertThat(response.getBody(), equalTo(accessControlListResponse));

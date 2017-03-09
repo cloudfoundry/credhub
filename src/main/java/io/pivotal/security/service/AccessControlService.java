@@ -65,7 +65,7 @@ public class AccessControlService {
     return new AccessControlListResponse(request.getCredentialName(), responseAces);
   }
 
-  public AccessControlListResponse getAccessControlEntries(String credentialName) {
+  public AccessControlListResponse getAccessControlList(String credentialName) {
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
 
     if (secretName == null) {

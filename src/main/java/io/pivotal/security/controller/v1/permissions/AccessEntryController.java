@@ -57,8 +57,8 @@ public class AccessEntryController {
 
   @GetMapping(path = "/acls")
   @SuppressWarnings("unused")
-  ResponseEntity getAccessControlEntry(@RequestParam("credential_name") String credentialName) {
-    final AccessControlListResponse accessControlEntries = accessControlService.getAccessControlEntries(credentialName);
+  ResponseEntity getAccessControlList(@RequestParam("credential_name") String credentialName) {
+    final AccessControlListResponse accessControlEntries = accessControlService.getAccessControlList(credentialName);
 
     if (accessControlEntries == null) {
       return wrapResponse(constructError("error.resource_not_found"),
