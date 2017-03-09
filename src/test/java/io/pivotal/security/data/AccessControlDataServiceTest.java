@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
@@ -19,9 +20,9 @@ import org.springframework.test.context.ActiveProfiles;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -130,8 +131,8 @@ public class AccessControlDataServiceTest {
       });
 
       describe("when given a credential name that doesn't exist", () -> {
-        it("returns null", () -> {
-          assertThat(subject.getAccessControlList("/unicorn"), nullValue());
+        itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
+          subject.getAccessControlList("/unicorn");
         });
       });
     });
@@ -156,6 +157,16 @@ public class AccessControlDataServiceTest {
               allOf(hasProperty("actor", equalTo("Leia")),
                   hasProperty("operations", hasItems(AccessControlOperation.READ))))
           );
+        });
+      });
+
+      describe("when the credential/actor combination does not exist in the ACL", () -> {
+        itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
+            subject.deleteAccessControlEntry("/some-thing-that-is-not-here", "Luke");
+        });
+
+        itThrows("when credential does exist, but the ACE does not", EntryNotFoundException.class, () -> {
+          subject.deleteAccessControlEntry("/lightsaber", "HelloKitty");
         });
       });
     });

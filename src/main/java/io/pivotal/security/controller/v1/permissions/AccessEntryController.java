@@ -2,6 +2,7 @@ package io.pivotal.security.controller.v1.permissions;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import io.pivotal.security.view.ResponseError;
@@ -59,36 +60,28 @@ public class AccessEntryController {
   }
 
   @GetMapping(path = "/acls")
-  ResponseEntity getAccessControlList(@RequestParam("credential_name") String credentialName) {
-    final AccessControlListResponse accessControlEntries = accessControlDataService.getAccessControlList(credentialName);
-
-    if (accessControlEntries == null) {
-      return wrapResponse(constructError("error.resource_not_found"),
-          HttpStatus.NOT_FOUND);
-    }
-
-    return wrapResponse(accessControlEntries, HttpStatus.OK);
+  AccessControlListResponse getAccessControlList(@RequestParam("credential_name") String credentialName) {
+    return accessControlDataService.getAccessControlList(credentialName);
   }
 
   @DeleteMapping(path="/aces")
-  ResponseEntity deleteAccessControlEntry(
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  void deleteAccessControlEntry (
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
     accessControlDataService.deleteAccessControlEntry(credentialName, actor);
-    return ResponseEntity.noContent().build();
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
-    String errorMessage = messageSourceAccessor.getMessage("error.missing_query_parameter", new String[]{e.getParameterName()});
-    return new ResponseError(errorMessage);
+  private ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
+    return new ResponseError(messageSourceAccessor.getMessage("error.missing_query_parameter", new String[]{e.getParameterName()}));
   }
 
   @ExceptionHandler(JsonMappingException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleJsonMappingException(JsonMappingException e) {
+  private ResponseError handleJsonMappingException(JsonMappingException e) {
     for (JsonMappingException.Reference reference : e.getPath()) {
       if ("operations".equals(reference.getFieldName())) {
         String errorMessage = messageSourceAccessor.getMessage("error.acl.invalid_operation");
@@ -98,6 +91,12 @@ public class AccessEntryController {
 
     String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
     return new ResponseError(errorMessage);
+  }
+
+  @ExceptionHandler(EntryNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  private ResponseError handleNotFoundException(EntryNotFoundException e){
+    return constructError(e.getMessage());
   }
 
   private ResponseError constructError(String error) {

@@ -3,16 +3,16 @@ package io.pivotal.security.controller.v1.permissions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -32,11 +32,11 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -54,6 +54,7 @@ public class AccessEntryControllerTest {
   private MessageSource messageSource;
   private AccessEntryController subject;
   private MockMvc mockMvc;
+  private String errorKey = "$.error";
 
   {
     beforeEach(() -> {
@@ -91,7 +92,7 @@ public class AccessEntryControllerTest {
 
             mockMvc.perform(request)
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("test-error-message"));
+                .andExpect(jsonPath(errorKey).value("test-error-message"));
           });
         });
 
@@ -130,13 +131,31 @@ public class AccessEntryControllerTest {
       });
 
       describe("#DELETE", () -> {
-        it("should delete the ACE from the resource ACL", () -> {
-          mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
-              .andExpect(status().isNoContent())
-              .andExpect(content().string(""));
+        describe("when accessControlDataService.delete succeeds", () -> {
+          it("should return 204 status ", () -> {
+            mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
 
-          verify(accessControlDataService, times(1))
-              .deleteAccessControlEntry("test-name", "test-actor");
+            verify(accessControlDataService, times(1))
+                .deleteAccessControlEntry("test-name", "test-actor");
+          });
+        });
+        describe("when accessControlDataService.delete throws a NotFound exception", () -> {
+          beforeEach(() -> {
+            doThrow(new EntryNotFoundException("error.acl.not_found"))
+                .when(accessControlDataService)
+                .deleteAccessControlEntry("fake-credential", "some-actor");
+
+            when(messageSource.getMessage(eq("error.acl.not_found"), eq(null), any(Locale.class)))
+                .thenReturn("The request could not be fulfilled because the access control entry could not be found.");
+          });
+
+          it("should return with status 404 and an error message", () -> {
+            mockMvc.perform(delete("/api/v1/aces?credential_name=fake-credential&actor=some-actor"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath(errorKey).value("The request could not be fulfilled because the access control entry could not be found."));
+          });
         });
       });
     });
@@ -150,7 +169,7 @@ public class AccessEntryControllerTest {
 
             mockMvc.perform(get("/api/v1/acls"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("test-error-message"));
+                .andExpect(jsonPath(errorKey).value("test-error-message"));
           });
         });
 
@@ -159,11 +178,11 @@ public class AccessEntryControllerTest {
             when(messageSource.getMessage(eq("error.resource_not_found"), eq(null), any(Locale.class)))
                 .thenReturn("test-error-message");
             when(accessControlDataService.getAccessControlList("test_credential_name"))
-                .thenReturn(null);
+                .thenThrow(new EntryNotFoundException("error.resource_not_found"));
 
             mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("test-error-message"));
+                .andExpect(jsonPath(errorKey).value("test-error-message"));
           });
         });
 
@@ -173,10 +192,10 @@ public class AccessEntryControllerTest {
             when(accessControlDataService.getAccessControlList("test_credential_name"))
                 .thenReturn(accessControlListResponse);
 
-            ResponseEntity response = subject.getAccessControlList("test_credential_name");
+            mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.credential_name").value("test_credential_name"));
 
-            assertThat(response.getStatusCode(), equalTo(OK));
-            assertThat(response.getBody(), equalTo(accessControlListResponse));
           });
         });
       });

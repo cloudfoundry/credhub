@@ -2,6 +2,7 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Component
@@ -68,19 +68,29 @@ public class AccessControlDataService {
 
   public AccessControlListResponse getAccessControlList(String credentialName) {
     SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+    List<AccessControlEntry> responseAces = null;
 
-    if (secretName == null) {
-      return null;
+    if (secretName != null) {
+      responseAces = transformAllAccessEntries(secretName);
     }
 
-    List<AccessControlEntry> responseAces = transformAllAccessEntries(secretName);
+    if (responseAces == null || secretName == null){
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
 
     return new AccessControlListResponse(credentialName, responseAces);
   }
 
   public void deleteAccessControlEntry(String credentialName, String actor) {
-    UUID secretNameUuid = secretNameRepository.findOneByNameIgnoreCase(credentialName).getUuid();
-    accessEntryRepository.deleteByCredentialNameUuidAndActor(secretNameUuid, actor);
+    int rows = 0;
+    final SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+    if (secretName != null) {
+      rows = accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
+    }
+
+    if (secretName == null || rows == 0){
+      throw new EntryNotFoundException("error.acl.not_found");
+    }
   }
 
   private AccessControlEntry transformData(AccessEntryData data) {

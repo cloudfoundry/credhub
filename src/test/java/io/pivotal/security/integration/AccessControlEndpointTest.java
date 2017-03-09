@@ -149,24 +149,24 @@ public class AccessControlEndpointTest {
     });
 
     describe("when deleting an ACE for a specified credential & actor", () -> {
+      beforeEach(() -> {
+        final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"credential_name\": \"/cred1\",\n" +
+                "  \"access_control_entries\": [\n" +
+                "     { \n" +
+                "       \"actor\": \"dan\",\n" +
+                "       \"operations\": [\"read\"]\n" +
+                "     }]" +
+                "}");
+
+        mockMvc.perform(post)
+            .andExpect(status().isOk());
+      });
+
       describe("when the specified actor has an ACE with the specified credential", () -> {
-        beforeEach(() -> {
-          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "  \"credential_name\": \"/cred1\",\n" +
-                  "  \"access_control_entries\": [\n" +
-                  "     { \n" +
-                  "       \"actor\": \"dan\",\n" +
-                  "       \"operations\": [\"read\"]\n" +
-                  "     }]" +
-                  "}");
-
-          mockMvc.perform(post)
-              .andExpect(status().isOk());
-        });
-
         it("should delete the ACE from the resource's ACL", () -> {
           mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
               .andExpect(status().isOk())
@@ -178,6 +178,15 @@ public class AccessControlEndpointTest {
           mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.access_control_list").isEmpty());
+        });
+      });
+
+      describe("when the ACE does not exist", () -> {
+        it("should return a 'not found' error response", () -> {
+          mockMvc.perform(get("/api/v1/acls?credential_name=/not-valid"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("The request could not be fulfilled because the resource could not be found."));
+
         });
       });
     });
