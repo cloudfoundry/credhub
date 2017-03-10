@@ -1,11 +1,7 @@
 package io.pivotal.security;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.pivotal.security.config.AuthServerProperties;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.entity.JpaAuditingHandlerRegistrar;
@@ -19,25 +15,22 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 
-import java.io.IOException;
 import java.security.Security;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 
-import static java.time.format.DateTimeFormatter.ofPattern;
+import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
 
 @SpringBootApplication
 @EnableConfigurationProperties({AuthServerProperties.class})
 @EnableJpaAuditing(dateTimeProviderRef = "currentTimeProvider")
 @Import(JpaAuditingHandlerRegistrar.class)
 public class CredentialManagerApp {
-
-  private final DateTimeFormatter TIMESTAMP_FORMAT = ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
   public static void main(String[] args) {
     SpringApplication.run(CredentialManagerApp.class, args);
+  }
+
+  @Bean
+  public Module javaTimeModule() {
+    return createTimeModule();
   }
 
   @Bean
@@ -48,19 +41,6 @@ public class CredentialManagerApp {
   @Bean(name = "currentTimeProvider")
   public CurrentTimeProvider currentTimeProvider() {
     return new CurrentTimeProvider();
-  }
-
-  @Bean
-  public Module javaTimeModule() {
-    JavaTimeModule javaTimeModule = new JavaTimeModule();
-    javaTimeModule.addSerializer(Instant.class, new JsonSerializer<Instant>() {
-
-      @Override
-      public void serialize(Instant value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-        gen.writeString(ZonedDateTime.ofInstant(value, ZoneId.of("UTC")).format(TIMESTAMP_FORMAT));
-      }
-    });
-    return javaTimeModule;
   }
 
   @Bean

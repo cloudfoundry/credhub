@@ -6,17 +6,18 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
-
-import java.io.IOException;
-import java.util.Set;
-
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.io.IOException;
+import java.util.Set;
+
+import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
+import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
 
 public class JsonHelper {
   private static final ObjectMapper objectMapper = new ObjectMapper()
+      .registerModule(createTimeModule())
       .setPropertyNamingStrategy(SNAKE_CASE);
   private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
