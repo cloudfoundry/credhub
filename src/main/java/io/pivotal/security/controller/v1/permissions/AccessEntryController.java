@@ -1,5 +1,6 @@
 package io.pivotal.security.controller.v1.permissions;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -79,6 +80,12 @@ public class AccessEntryController {
     return new ResponseError(messageSourceAccessor.getMessage("error.missing_query_parameter", new String[]{e.getParameterName()}));
   }
 
+  @ExceptionHandler(JsonParseException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  private ResponseError handleJsonMappingException(JsonParseException e) {
+    return badRequestResponse();
+  }
+
   @ExceptionHandler(JsonMappingException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   private ResponseError handleJsonMappingException(JsonMappingException e) {
@@ -89,8 +96,7 @@ public class AccessEntryController {
       }
     }
 
-    String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-    return new ResponseError(errorMessage);
+    return badRequestResponse();
   }
 
   @ExceptionHandler(EntryNotFoundException.class)
@@ -105,6 +111,11 @@ public class AccessEntryController {
 
   private ResponseEntity wrapResponse(Object wrapped, HttpStatus status) {
     return new ResponseEntity<>(wrapped, status);
+  }
+
+  private ResponseError badRequestResponse() {
+    String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
+    return new ResponseError(errorMessage);
   }
 
   private String getErrorMessage(Errors errors) {

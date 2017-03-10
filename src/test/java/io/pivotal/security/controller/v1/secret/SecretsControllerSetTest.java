@@ -337,6 +337,24 @@ public class SecretsControllerSetTest {
                 .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'response_error'. Please update or remove this parameter and retry your request."));
           });
 
+          it("returns an error message when  the input JSON is malformed", () -> {
+            final String malformedJson = "{" +
+                "  \"type\":\"value\"," +
+                "  \"name\":\"" + secretName + "\"" +
+                "  \"response_error\":\"invalid key\"" +
+                "  \"value\":\"THIS REQUEST some value\"" +
+                "}";
+            final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content(malformedJson);
+
+            mockMvc.perform(put)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request."));
+          });
+
           it("returns errors from the auditing service auditing fails", () -> {
             doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
                 .when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));

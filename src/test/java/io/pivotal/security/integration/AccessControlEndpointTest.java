@@ -126,6 +126,46 @@ public class AccessControlEndpointTest {
             .andExpect(status().isOk());
       });
 
+      describe("when malformed json is sent", () -> {
+        it("returns a nice error message", () -> {
+          final String malformedJSON = "{" +
+              "  \"credential_name\": \"foo\"," +
+              "  \"access_control_entries\": [" +
+              "     {" +
+              "       \"actor\": \"dan\"," +
+              "       \"operations\":" +
+              "     }]" +
+              "}";
+          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content(malformedJSON);
+
+          this.mockMvc.perform(post).andExpect(status().isBadRequest())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.")));
+        });
+
+        it("returns a nice error message for different kinds of payloads", () -> {
+          final String malformedJSON = "{" +
+              "  \"credential_name\": \"foo\"" +
+              "  \"access_control_entries\": [" +
+              "     {" +
+              "       \"actor\": \"dan\"," +
+              "       \"operations\":[\"read\"]" +
+              "     }]" +
+              "}";
+          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content(malformedJSON);
+
+          this.mockMvc.perform(post).andExpect(status().isBadRequest())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.")));
+        });
+      });
+
       it("returns a 404 status and message if the credential does not exist", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/aces")
             .accept(APPLICATION_JSON)
