@@ -1,9 +1,10 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
 
-public class NamedRsaSecret extends NamedRsaSshSecret {
+public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
 
   private NamedRsaSecretData delegate;
 
@@ -22,6 +23,38 @@ public class NamedRsaSecret extends NamedRsaSshSecret {
 
   public int getKeyLength(){
     return delegate.getKeyLength();
+  }
+
+  public String getPublicKey() {
+    return delegate.getPublicKey();
+  }
+
+  public NamedRsaSecret setPublicKey(String publicKey) {
+    this.delegate.setPublicKey(publicKey);
+    return this;
+  }
+
+  public String getPrivateKey() {
+    return encryptor.decrypt(
+      delegate.getEncryptionKeyUuid(),
+      delegate.getEncryptedValue(),
+      delegate.getNonce()
+    );
+  }
+
+  public NamedRsaSecret setPrivateKey(String privateKey) {
+    final Encryption encryption = encryptor.encrypt(privateKey);
+
+    delegate.setEncryptedValue(encryption.encryptedValue);
+    delegate.setNonce(encryption.nonce);
+    delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+
+    return this;
+  }
+
+  public void rotate(){
+    String decryptedValue = this.getPrivateKey();
+    this.setPrivateKey(decryptedValue);
   }
 
   @Override

@@ -1,7 +1,7 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.domain.NamedRsaSshSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +11,10 @@ import static com.google.common.collect.ImmutableSortedSet.of;
 import static io.pivotal.security.util.StringUtil.emptyToNull;
 
 @Component
-public class RsaSshSetRequestTranslator implements RequestTranslator<NamedRsaSshSecret> {
+public class RsaSetRequestTranslator implements RequestTranslator<NamedRsaSecret> {
 
   @Override
-  public void populateEntityFromJson(NamedRsaSshSecret namedRsaSshSecret, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedRsaSecret namedRsaSecret, DocumentContext documentContext) {
     String publicKey = emptyToNull(documentContext.read("$.value.public_key"));
     String privateKey = emptyToNull(documentContext.read("$.value.private_key"));
 
@@ -22,8 +22,8 @@ public class RsaSshSetRequestTranslator implements RequestTranslator<NamedRsaSsh
       throw new ParameterizedValidationException("error.missing_rsa_ssh_parameters");
     }
 
-    namedRsaSshSecret.setPublicKey(publicKey);
-    namedRsaSshSecret.setPrivateKey(privateKey);
+    namedRsaSecret.setPublicKey(publicKey);
+    namedRsaSecret.setPrivateKey(privateKey);
   }
 
   @Override

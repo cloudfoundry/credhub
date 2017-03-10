@@ -8,9 +8,9 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
-import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
+import io.pivotal.security.mapper.RsaSetRequestTranslator;
+import io.pivotal.security.mapper.SshSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 
@@ -25,7 +25,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
   private NamedSecretSetHandler subject;
   private ParseContext jsonPath;
   private CertificateSetRequestTranslator certificateSetRequestTranslator = mock(CertificateSetRequestTranslator.class);
-  private RsaSshSetRequestTranslator rsaSshSetRequestTranslator = mock(RsaSshSetRequestTranslator.class);
+  private SshSetRequestTranslator sshSetRequestTranslator = mock(SshSetRequestTranslator.class);
+  private RsaSetRequestTranslator rsaSetRequestTranslator = mock(RsaSetRequestTranslator.class);
   private Encryptor encryptor = mock(Encryptor.class);
 
   {
@@ -33,7 +34,8 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       jsonPath = new JsonContextFactory().getObject();
       subject = new NamedSecretSetHandler(
           certificateSetRequestTranslator,
-          rsaSshSetRequestTranslator,
+          sshSetRequestTranslator,
+          rsaSetRequestTranslator,
           encryptor
         );
     });
@@ -52,7 +54,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe(
           "ssh",
           behavesLikeMapper(() -> subject,
-              rsaSshSetRequestTranslator,
+              sshSetRequestTranslator,
               SecretKind.SSH,
               NamedSshSecret.class,
               new NamedSshSecret()
@@ -62,7 +64,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       describe(
           "rsa",
           behavesLikeMapper(() -> subject,
-              rsaSshSetRequestTranslator,
+              rsaSetRequestTranslator,
               SecretKind.RSA,
               NamedRsaSecret.class,
               new NamedRsaSecret()
@@ -81,7 +83,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       });
 
       it("ssh", () -> {
-        rsaSshSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"ssh\"," +
+        rsaSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"ssh\"," +
             "\"overwrite\":true," +
             "\"value\":{" +
             "\"public_key\":\"public-key\"," +
@@ -89,7 +91,7 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
       });
 
       it("rsa", () -> {
-        rsaSshSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"rsa\"," +
+        rsaSetRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"rsa\"," +
             "\"overwrite\":true," +
             "\"value\":{" +
             "\"public_key\":\"public-key\"," +

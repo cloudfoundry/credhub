@@ -3,6 +3,7 @@ package io.pivotal.security.entity;
 import io.pivotal.security.view.SecretKind;
 import org.apache.commons.codec.binary.Base64;
 
+import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -14,10 +15,11 @@ import java.util.Arrays;
 @Entity
 @Table(name = "SshSecret")
 @DiscriminatorValue(NamedSshSecretData.SECRET_TYPE)
-public class NamedSshSecretData extends NamedRsaSshSecretData {
-  private final static String SSH_PREFIX = "ssh-rsa ";
-  public static final int SMALL_BUFFER_SIZE = 10;
+public class NamedSshSecretData extends NamedSecretData<NamedSshSecretData> {
   public static final String SECRET_TYPE = "ssh";
+
+  @Column(length = 7000)
+  private String publicKey;
 
   public NamedSshSecretData() {
     this(null);
@@ -25,6 +27,20 @@ public class NamedSshSecretData extends NamedRsaSshSecretData {
 
   public NamedSshSecretData(String name) {
     super(name);
+  }
+
+  public String getPublicKey() {
+    return publicKey;
+  }
+
+  public NamedSshSecretData setPublicKey(String publicKey) {
+    this.publicKey = publicKey;
+    return this;
+  }
+
+  @Override
+  public void copyIntoImpl(NamedSshSecretData copy) {
+    copy.setPublicKey(getPublicKey());
   }
 
   public SecretKind getKind() {

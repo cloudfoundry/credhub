@@ -1,6 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -8,7 +9,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 
-public class NamedSshSecret extends NamedRsaSshSecret {
+public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
 
   private NamedSshSecretData delegate;
 
@@ -23,6 +24,38 @@ public class NamedSshSecret extends NamedRsaSshSecret {
 
   public NamedSshSecret() {
     this(new NamedSshSecretData());
+  }
+
+  public String getPublicKey() {
+    return delegate.getPublicKey();
+  }
+
+  public NamedSshSecret setPublicKey(String publicKey) {
+    this.delegate.setPublicKey(publicKey);
+    return this;
+  }
+
+  public String getPrivateKey() {
+    return encryptor.decrypt(
+      delegate.getEncryptionKeyUuid(),
+      delegate.getEncryptedValue(),
+      delegate.getNonce()
+    );
+  }
+
+  public NamedSshSecret setPrivateKey(String privateKey) {
+    final Encryption encryption = encryptor.encrypt(privateKey);
+
+    delegate.setEncryptedValue(encryption.encryptedValue);
+    delegate.setNonce(encryption.nonce);
+    delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+
+    return this;
+  }
+
+  public void rotate(){
+    String decryptedValue = this.getPrivateKey();
+    this.setPrivateKey(decryptedValue);
   }
 
   public SecretKind getKind() {

@@ -4,6 +4,7 @@ import io.pivotal.security.view.SecretKind;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
+import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -16,11 +17,14 @@ import java.security.spec.X509EncodedKeySpec;
 @Entity
 @Table(name = "RsaSecret")
 @DiscriminatorValue(NamedRsaSecretData.SECRET_TYPE)
-public class NamedRsaSecretData extends NamedRsaSshSecretData {
+public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
   static private final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
   static private final String RSA_END = "\n-----END PUBLIC KEY-----";
   static private final String NEW_LINE = "\n";
   public static final String SECRET_TYPE = "rsa";
+
+  @Column(length = 7000)
+  private String publicKey;
 
   public NamedRsaSecretData() {
     this(null);
@@ -28,6 +32,20 @@ public class NamedRsaSecretData extends NamedRsaSshSecretData {
 
   public NamedRsaSecretData(String name) {
     super(name);
+  }
+
+  public String getPublicKey() {
+    return publicKey;
+  }
+
+  public NamedRsaSecretData setPublicKey(String publicKey) {
+    this.publicKey = publicKey;
+    return this;
+  }
+
+  @Override
+  public void copyIntoImpl(NamedRsaSecretData copy) {
+    copy.setPublicKey(getPublicKey());
   }
 
   public SecretKind getKind() {

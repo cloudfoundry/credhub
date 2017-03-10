@@ -7,9 +7,9 @@ import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.mapper.CertificateSetRequestTranslator;
-import io.pivotal.security.mapper.RsaSshSetRequestTranslator;
+import io.pivotal.security.mapper.RsaSetRequestTranslator;
+import io.pivotal.security.mapper.SshSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -19,17 +19,20 @@ import java.security.NoSuchAlgorithmException;
 @Component
 class NamedSecretSetHandler implements SecretKindMappingFactory {
   private final CertificateSetRequestTranslator certificateSetRequestTranslator;
-  private final RsaSshSetRequestTranslator rsaSshSetRequestTranslator;
+  private final SshSetRequestTranslator sshSetRequestTranslator;
+  private final RsaSetRequestTranslator rsaSetRequestTranslator;
   private final Encryptor encryptor;
 
   @Autowired
   public NamedSecretSetHandler(
-      CertificateSetRequestTranslator certificateSetRequestTranslator,
-      RsaSshSetRequestTranslator rsaSshSetRequestTranslator,
-      Encryptor encryptor
+    CertificateSetRequestTranslator certificateSetRequestTranslator,
+    SshSetRequestTranslator sshSetRequestTranslator,
+    RsaSetRequestTranslator rsaSetRequestTranslator,
+    Encryptor encryptor
   ) {
     this.certificateSetRequestTranslator = certificateSetRequestTranslator;
-    this.rsaSshSetRequestTranslator = rsaSshSetRequestTranslator;
+    this.sshSetRequestTranslator = sshSetRequestTranslator;
+    this.rsaSetRequestTranslator = rsaSetRequestTranslator;
     this.encryptor = encryptor;
   }
 
@@ -53,12 +56,12 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret ssh(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedSshSecret) namedSecret, NamedSshSecret::new, secretPath, rsaSshSetRequestTranslator, parsedRequest, encryptor);
+        return createNewSecret((NamedSshSecret) namedSecret, NamedSshSecret::new, secretPath, sshSetRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override
       public NamedSecret rsa(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaSshSetRequestTranslator, parsedRequest, encryptor);
+        return createNewSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaSetRequestTranslator, parsedRequest, encryptor);
       }
     };
   }

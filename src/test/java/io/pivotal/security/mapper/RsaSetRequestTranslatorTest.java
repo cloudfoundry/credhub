@@ -24,11 +24,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-public class RsaSshSetRequestTranslatorTest {
+public class RsaSetRequestTranslatorTest {
   private ParseContext jsonPath;
   private NamedRsaSecret entity;
   private Encryptor encryptor;
-  private RsaSshSetRequestTranslator subject;
+  private RsaSetRequestTranslator subject;
 
   {
     beforeEach(() -> {
@@ -49,7 +49,7 @@ public class RsaSshSetRequestTranslatorTest {
         when(encryptor.encrypt("")).thenReturn(new Encryption(encryptedEmptyString, emptyStringNonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedEmptyString), eq(emptyStringNonce))).thenReturn(null);
 
-        subject = new RsaSshSetRequestTranslator();
+        subject = new RsaSetRequestTranslator();
         entity = new NamedRsaSecret("Foo");
         entity.setEncryptor(encryptor);
       });
