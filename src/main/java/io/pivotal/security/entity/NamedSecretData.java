@@ -6,16 +6,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -29,14 +19,22 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
+
+import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "NamedSecret")
-@Inheritance(strategy = InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 abstract public class NamedSecretData<Z extends NamedSecretData> implements EncryptedValueContainer {
-  static String SECRET_TYPE;
   // Use VARBINARY to make all 3 DB types happy.
   // H2 doesn't distinguish between "binary" and "varbinary" - see
   // https://hibernate.atlassian.net/browse/HHH-9835 and

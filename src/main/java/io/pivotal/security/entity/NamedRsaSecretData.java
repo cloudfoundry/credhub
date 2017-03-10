@@ -7,7 +7,8 @@ import org.apache.commons.lang.StringUtils;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
@@ -15,15 +16,19 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
 @Entity
-@Table(name = "RsaSecret")
 @DiscriminatorValue(NamedRsaSecretData.SECRET_TYPE)
+@SecondaryTable(
+  name = NamedRsaSecretData.TABLE_NAME,
+  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+)
 public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
   static private final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
   static private final String RSA_END = "\n-----END PUBLIC KEY-----";
   static private final String NEW_LINE = "\n";
+  static final String TABLE_NAME = "RsaSecret";
   public static final String SECRET_TYPE = "rsa";
 
-  @Column(length = 7000)
+  @Column(table = NamedRsaSecretData.TABLE_NAME, length = 7000)
   private String publicKey;
 
   public NamedRsaSecretData() {

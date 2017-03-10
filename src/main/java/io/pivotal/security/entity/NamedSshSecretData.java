@@ -6,19 +6,25 @@ import org.apache.commons.codec.binary.Base64;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.math.BigInteger;
 import java.util.Arrays;
 
 @Entity
-@Table(name = "SshSecret")
 @DiscriminatorValue(NamedSshSecretData.SECRET_TYPE)
+@SecondaryTable(
+  name = NamedSshSecretData.TABLE_NAME,
+  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+)
+
 public class NamedSshSecretData extends NamedSecretData<NamedSshSecretData> {
   public static final String SECRET_TYPE = "ssh";
+  static final String TABLE_NAME = "SshSecret";
 
-  @Column(length = 7000)
+  @Column(table = NamedSshSecretData.TABLE_NAME, length = 7000)
   private String publicKey;
 
   public NamedSshSecretData() {

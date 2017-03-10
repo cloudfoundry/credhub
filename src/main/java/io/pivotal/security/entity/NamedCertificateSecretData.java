@@ -6,21 +6,26 @@ import org.apache.commons.lang3.StringUtils;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 
 @Entity
-@Table(name = "CertificateSecret")
 @DiscriminatorValue("cert")
+@SecondaryTable(
+  name = NamedCertificateSecretData.TABLE_NAME,
+  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+)
 public class NamedCertificateSecretData extends NamedSecretData<NamedCertificateSecretData> {
   public static final String SECRET_TYPE = "certificate";
+  static final String TABLE_NAME = "CertificateSecret";
 
-  @Column(length = 7000)
+  @Column(table = NamedCertificateSecretData.TABLE_NAME, length = 7000)
   private String ca;
 
-  @Column(length = 7000)
+  @Column(table = NamedCertificateSecretData.TABLE_NAME, length = 7000)
   private String certificate;
 
-  @Column
+  @Column(table = NamedCertificateSecretData.TABLE_NAME)
   private String caName;
 
   public NamedCertificateSecretData() {

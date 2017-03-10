@@ -5,19 +5,24 @@ import io.pivotal.security.view.SecretKind;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 
 @Entity
-@Table(name = "PasswordSecret")
 @DiscriminatorValue(NamedPasswordSecretData.SECRET_TYPE)
+@SecondaryTable(
+  name = NamedPasswordSecretData.TABLE_NAME,
+  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+)
 public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecretData> {
+  static final String TABLE_NAME = "PasswordSecret";
 
-  @Column(length = 255 + NONCE_SIZE)
+  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = 255 + NONCE_SIZE)
   private byte[] encryptedGenerationParameters;
 
-  @Column(length = NONCE_SIZE)
+  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = NONCE_SIZE)
   private byte[] parametersNonce;
 
   public static final String SECRET_TYPE = "password";
