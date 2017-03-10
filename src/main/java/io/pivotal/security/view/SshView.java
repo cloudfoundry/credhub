@@ -12,7 +12,7 @@ class SshView extends SecretView {
         namedSshSecret.getUuid(),
         namedSshSecret.getName(),
         namedSshSecret.getSecretType(),
-        new SshKey(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey(), namedSshSecret.getPublicKeyFingerprint())
+        new SshKey(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey(), namedSshSecret.getFingerprint())
     );
   }
 }
