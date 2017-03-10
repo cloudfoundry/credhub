@@ -168,7 +168,7 @@ public class AccessControlEndpointTest {
 
       describe("when the specified actor has an ACE with the specified credential", () -> {
         it("should delete the ACE from the resource's ACL", () -> {
-          mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
+          mockMvc.perform(get("/api/v1/acls?credential_name=cred1"))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.access_control_list").isNotEmpty());
 

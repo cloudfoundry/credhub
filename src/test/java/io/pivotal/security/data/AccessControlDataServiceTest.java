@@ -2,11 +2,8 @@ package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
@@ -22,6 +19,7 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -32,7 +30,6 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(Spectrum.class)
@@ -44,14 +41,9 @@ public class AccessControlDataServiceTest {
   private AccessControlDataService subject;
 
   @Autowired
-  private SecretNameRepository secretNameRepository;
-
-  @Autowired
-  private AccessEntryRepository accessEntryRepository;
+  private SecretDataService secretDataService;
 
   private AccessEntryRequest request;
-
-  private SecretName secretName;
 
   {
     wireAndUnwire(this);
@@ -62,8 +54,8 @@ public class AccessControlDataServiceTest {
 
           seedDatabase();
 
-          List<AccessControlEntry> newAces = Collections.singletonList(
-            new AccessControlEntry("Luke", Collections.singletonList(AccessControlOperation.READ)));
+          List<AccessControlEntry> newAces = singletonList(
+            new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
           request = new AccessEntryRequest("/lightsaber", newAces);
         });
@@ -85,10 +77,9 @@ public class AccessControlDataServiceTest {
 
       describe("when given a new ACE for a resource", () -> {
         beforeEach(() -> {
-          secretName = secretNameRepository.saveAndFlush(new SecretName("lightsaber2"));
-
-          List<AccessControlEntry> newAces = Collections.singletonList(
-            new AccessControlEntry("Luke", Collections.singletonList(AccessControlOperation.READ)));
+          secretDataService.save(new NamedValueSecret("lightsaber2"));
+          List<AccessControlEntry> newAces = singletonList(
+            new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
           request = new AccessEntryRequest("/lightsaber2", newAces);
         });
@@ -101,13 +92,6 @@ public class AccessControlDataServiceTest {
           assertThat(response.getAccessControlList().get(0).getActor(), equalTo("Luke"));
           assertThat(response.getAccessControlList().get(0).getOperations().size(), equalTo(1));
           assertThat(response.getAccessControlList().get(0).getOperations(), hasItem(AccessControlOperation.READ));
-
-          AccessEntryData data = accessEntryRepository.findAll().stream()
-            .filter((entry) -> entry.getActor().equals("Luke")).findFirst().get();
-
-          assertThat(data.getReadPermission(), equalTo(true));
-          assertThat(data.getWritePermission(), equalTo(false));
-          assertThat(data.getCredentialName().getUuid(), equalTo(secretName.getUuid()));
         });
       });
     });
@@ -174,18 +158,21 @@ public class AccessControlDataServiceTest {
   }
 
   private void seedDatabase() {
-    SecretName secretName = secretNameRepository.saveAndFlush(new SecretName("lightsaber"));
 
-    accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
-      "Luke",
-      false,
-      true
-    ));
+    secretDataService.save(new NamedValueSecret("lightsaber"));
 
-    accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
-      "Leia",
-      true,
-      false
-    ));
+    subject.setAccessControlEntry(
+          new AccessEntryRequest(
+              "lightsaber",
+              singletonList(new AccessControlEntry("Luke",
+                  singletonList(AccessControlOperation.WRITE)))
+        ));
+
+    subject.setAccessControlEntry(
+        new AccessEntryRequest(
+            "lightsaber",
+            singletonList(new AccessControlEntry("Leia",
+                singletonList(AccessControlOperation.READ)))
+        ));
   }
 }

@@ -103,6 +103,10 @@ public class SecretDataService {
     }
   }
 
+  protected SecretName findSecretName(String name) {
+    return secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+  }
+
   public NamedSecret findByUuid(String uuid) {
     return wrap(secretRepository.findOneByUuid(UUID.fromString(uuid)));
   }

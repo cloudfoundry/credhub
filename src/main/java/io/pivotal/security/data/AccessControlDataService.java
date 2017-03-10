@@ -4,7 +4,6 @@ import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
@@ -21,17 +20,17 @@ import java.util.stream.Collectors;
 public class AccessControlDataService {
 
   private AccessEntryRepository accessEntryRepository;
-  private SecretNameRepository secretNameRepository;
+  private SecretDataService secretDataService;
 
   @Autowired
   public AccessControlDataService(AccessEntryRepository accessEntryRepository,
-                                  SecretNameRepository secretNameRepository) {
+                                  SecretDataService secretDataService) {
     this.accessEntryRepository = accessEntryRepository;
-    this.secretNameRepository = secretNameRepository;
+    this.secretDataService = secretDataService;
   }
 
   public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(request.getCredentialName());
+    SecretName secretName = secretDataService.findSecretName(request.getCredentialName());
     List<AccessEntryData> accessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
 
     for (AccessControlEntry ace : request.getAccessControlEntries()) {
@@ -67,7 +66,7 @@ public class AccessControlDataService {
   }
 
   public AccessControlListResponse getAccessControlList(String credentialName) {
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+    SecretName secretName = secretDataService.findSecretName(credentialName);
     List<AccessControlEntry> responseAces = null;
 
     if (secretName != null) {
@@ -83,7 +82,7 @@ public class AccessControlDataService {
 
   public void deleteAccessControlEntry(String credentialName, String actor) {
     int rows = 0;
-    final SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+    final SecretName secretName = secretDataService.findSecretName(credentialName);
     if (secretName != null) {
       rows = accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
     }
