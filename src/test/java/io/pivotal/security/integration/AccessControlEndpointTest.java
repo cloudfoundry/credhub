@@ -43,7 +43,7 @@ public class AccessControlEndpointTest {
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-      final MockHttpServletRequestBuilder put = put("/api/v1/data")
+      MockHttpServletRequestBuilder put = put("/api/v1/data")
           .accept(APPLICATION_JSON)
           .contentType(APPLICATION_JSON)
           .content("{" +
@@ -77,6 +77,47 @@ public class AccessControlEndpointTest {
         this.mockMvc.perform(post).andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
+            .andExpect(jsonPath("$.access_control_list", hasSize(1)))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
+        this.mockMvc.perform(get)
+            .andExpect(status().isOk());
+      });
+
+      it("prepends missing '/' in credential name and returns the full Access Control List for user", () -> {
+
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"name\": \"/cred2\"," +
+                "  \"type\": \"password\"," +
+                "  \"value\": \"testpassword\"" +
+                "}");
+
+        this.mockMvc.perform(put)
+            .andExpect(status().isOk());
+
+        final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "  \"credential_name\": \"cred2\",\n" +
+                "  \"access_control_entries\": [\n" +
+                "     { \n" +
+                "       \"actor\": \"dan\",\n" +
+                "       \"operations\": [\"read\"]\n" +
+                "     }]" +
+                "}");
+
+        final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred2")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON);
+
+        this.mockMvc.perform(post).andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.credential_name", equalTo("/cred2")))
             .andExpect(jsonPath("$.access_control_list", hasSize(1)))
             .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
             .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
@@ -127,6 +168,16 @@ public class AccessControlEndpointTest {
 
         it("returns the full list of access control entries for the credential", () -> {
           mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
+              .andExpect(jsonPath("$.access_control_list", hasSize(1)))
+              .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
+              .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+        });
+
+        it("returns the full list of access control entries for the credential when leading '/' is missing", () -> {
+          mockMvc.perform(get("/api/v1/acls?credential_name=cred1"))
               .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))

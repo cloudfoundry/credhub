@@ -62,7 +62,7 @@ public class AccessControlDataService {
 
     List<AccessControlEntry> responseAces = transformAllAccessEntries(secretName);
 
-    return new AccessControlListResponse(request.getCredentialName(), responseAces);
+    return new AccessControlListResponse(secretName.getName(), responseAces);
   }
 
   public AccessControlListResponse getAccessControlList(String credentialName) {
@@ -77,7 +77,7 @@ public class AccessControlDataService {
       throw new EntryNotFoundException("error.resource_not_found");
     }
 
-    return new AccessControlListResponse(credentialName, responseAces);
+    return new AccessControlListResponse(secretName.getName(), responseAces);
   }
 
   public void deleteAccessControlEntry(String credentialName, String actor) {
