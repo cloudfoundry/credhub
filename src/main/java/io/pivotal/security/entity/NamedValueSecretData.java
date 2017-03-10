@@ -4,10 +4,8 @@ import io.pivotal.security.view.SecretKind;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.Table;
 
 @Entity
-@Table(name = "ValueSecret")
 @DiscriminatorValue(NamedValueSecretData.SECRET_TYPE)
 public class NamedValueSecretData extends NamedSecretData<NamedValueSecretData> {
 
