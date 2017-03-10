@@ -22,11 +22,11 @@ import java.io.InputStream;
     defaultImpl = DefaultSecretSetRequest.class
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(name = "password", value = PasswordSetRequest.class),
-    @JsonSubTypes.Type(name = "value",    value = ValueSetRequest.class)
+    @JsonSubTypes.Type(name = "password",     value = PasswordSetRequest.class),
+    @JsonSubTypes.Type(name = "value",        value = ValueSetRequest.class),
+    @JsonSubTypes.Type(name = "certificate",  value = CertificateSetRequest.class)
 })
-public class BaseSecretSetRequest {
-
+abstract public class BaseSecretSetRequest {
   @NotEmpty(message = "error.missing_name")
   @Pattern(regexp = "^(?>(?:/?[^/]+))*$", message = "error.invalid_name_has_slash")
   private String name;
@@ -73,8 +73,5 @@ public class BaseSecretSetRequest {
   }
 
   @JsonIgnore
-  public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
-    throw new RuntimeException("unimplemented");
-  }
-
+  abstract public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor);
 }

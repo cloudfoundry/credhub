@@ -1,8 +1,11 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
+
+import static io.pivotal.security.util.StringUtil.emptyToNull;
 
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
   private NamedCertificateSecretData delegate;
@@ -80,4 +83,20 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     this.setPrivateKey(decryptedPrivateKey);
   }
 
+  public static NamedSecret createNewVersion(NamedCertificateSecret existing, String name, CertificateSetRequestFields fields, Encryptor encryptor) {
+    NamedCertificateSecret secret;
+
+    if (existing == null) {
+      secret = new NamedCertificateSecret(name);
+    } else {
+      secret = new NamedCertificateSecret();
+      secret.copyNameReferenceFrom(existing);
+    }
+
+    secret.setEncryptor(encryptor);
+    secret.setPrivateKey(emptyToNull(fields.getPrivateKey()));
+    secret.setCertificate(emptyToNull(fields.getCertificate()));
+    secret.setCa(emptyToNull(fields.getCa()));
+    return secret;
+  }
 }

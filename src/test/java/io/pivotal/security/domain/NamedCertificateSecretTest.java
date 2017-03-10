@@ -2,6 +2,7 @@ package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -107,6 +108,52 @@ public class NamedCertificateSecretTest {
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
+      });
+    });
+
+    describe(".createNewVersion", () -> {
+      beforeEach(() -> {
+        byte[] encryptedValue = "new-fake-encrypted".getBytes();
+        byte[] nonce = "new-fake-nonce".getBytes();
+        when(encryptor.encrypt("new private key")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new private key");
+
+        subject = new NamedCertificateSecret("/existingName");
+        subject.setEncryptor(encryptor);
+        subject.setEncryptedValue("old encrypted private key".getBytes());
+      });
+
+      it("copies name from existing", () -> {
+        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "certificate", "ca");
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(subject, "anything I AM IGNORED", fields, encryptor);
+
+        assertThat(newSecret.getName(), equalTo("/existingName"));
+        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
+        assertThat(newSecret.getCa(), equalTo("ca"));
+        assertThat(newSecret.getCertificate(), equalTo("certificate"));
+        assertThat(newSecret.getCaName(), equalTo(null));
+      });
+
+      it("creates new if no existing", () -> {
+        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "certificate", "ca");
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor);
+
+        assertThat(newSecret.getName(), equalTo("/newName"));
+        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
+        assertThat(newSecret.getCa(), equalTo("ca"));
+        assertThat(newSecret.getCertificate(), equalTo("certificate"));
+        assertThat(newSecret.getCaName(), equalTo(null));
+      });
+
+      it("converts empty strings to null", () -> {
+        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "", "");
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor);
+
+        assertThat(newSecret.getName(), equalTo("/newName"));
+        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
+        assertThat(newSecret.getCa(), equalTo(null));
+        assertThat(newSecret.getCertificate(), equalTo(null));
+        assertThat(newSecret.getCaName(), equalTo(null));
       });
     });
   }

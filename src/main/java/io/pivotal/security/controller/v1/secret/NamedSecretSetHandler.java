@@ -3,11 +3,9 @@ package io.pivotal.security.controller.v1.secret;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.mapper.CertificateSetRequestTranslator;
 import io.pivotal.security.mapper.RsaSetRequestTranslator;
 import io.pivotal.security.mapper.SshSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
@@ -18,19 +16,16 @@ import java.security.NoSuchAlgorithmException;
 
 @Component
 class NamedSecretSetHandler implements SecretKindMappingFactory {
-  private final CertificateSetRequestTranslator certificateSetRequestTranslator;
   private final SshSetRequestTranslator sshSetRequestTranslator;
   private final RsaSetRequestTranslator rsaSetRequestTranslator;
   private final Encryptor encryptor;
 
   @Autowired
   public NamedSecretSetHandler(
-    CertificateSetRequestTranslator certificateSetRequestTranslator,
     SshSetRequestTranslator sshSetRequestTranslator,
     RsaSetRequestTranslator rsaSetRequestTranslator,
     Encryptor encryptor
   ) {
-    this.certificateSetRequestTranslator = certificateSetRequestTranslator;
     this.sshSetRequestTranslator = sshSetRequestTranslator;
     this.rsaSetRequestTranslator = rsaSetRequestTranslator;
     this.encryptor = encryptor;
@@ -51,7 +46,7 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret certificate(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedCertificateSecret) namedSecret, NamedCertificateSecret::new, secretPath, certificateSetRequestTranslator, parsedRequest, encryptor);
+        throw new UnsupportedOperationException();
       }
 
       @Override
