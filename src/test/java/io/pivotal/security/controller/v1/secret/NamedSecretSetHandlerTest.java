@@ -6,9 +6,7 @@ import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.mapper.RsaSetRequestTranslator;
-import io.pivotal.security.mapper.SshSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 
@@ -22,7 +20,6 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
 
   private NamedSecretSetHandler subject;
   private ParseContext jsonPath;
-  private SshSetRequestTranslator sshSetRequestTranslator = mock(SshSetRequestTranslator.class);
   private RsaSetRequestTranslator rsaSetRequestTranslator = mock(RsaSetRequestTranslator.class);
   private Encryptor encryptor = mock(Encryptor.class);
 
@@ -30,23 +27,12 @@ public class NamedSecretSetHandlerTest extends AbstractNamedSecretHandlerTesting
     beforeEach(() -> {
       jsonPath = new JsonContextFactory().getObject();
       subject = new NamedSecretSetHandler(
-          sshSetRequestTranslator,
           rsaSetRequestTranslator,
           encryptor
         );
     });
 
     describe("it verifies the secret type and secret creation for", () -> {
-      describe(
-          "ssh",
-          behavesLikeMapper(() -> subject,
-              sshSetRequestTranslator,
-              SecretKind.SSH,
-              NamedSshSecret.class,
-              new NamedSshSecret()
-          )
-      );
-
       describe(
           "rsa",
           behavesLikeMapper(() -> subject,
