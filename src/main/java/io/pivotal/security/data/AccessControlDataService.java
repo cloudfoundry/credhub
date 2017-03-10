@@ -31,6 +31,11 @@ public class AccessControlDataService {
 
   public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
     SecretName secretName = secretDataService.findSecretName(request.getCredentialName());
+
+    if (secretName == null){
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
+
     List<AccessEntryData> accessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
 
     for (AccessControlEntry ace : request.getAccessControlEntries()) {
