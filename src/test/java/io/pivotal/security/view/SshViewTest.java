@@ -3,7 +3,9 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.helper.TestConstants;
 import io.pivotal.security.service.Encryption;
+import org.json.JSONObject;
 import org.junit.runner.RunWith;
 import org.springframework.test.util.JsonExpectationsHelper;
 
@@ -37,28 +39,31 @@ public class SshViewTest {
       secretName = "/foo";
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
-      when(encryptor.encrypt("myprivatekey")).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
-      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn("myprivatekey");
+      when(encryptor.encrypt(TestConstants.PRIVATE_KEY_OF_LENGTH_4096)).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
+      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn(TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
       entity = new NamedSshSecret(secretName)
           .setEncryptor(encryptor)
-          .setPublicKey("ssh-rsa mypublickey")
-          .setPrivateKey("myprivatekey");
+          .setPublicKey(TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT)
+          .setPrivateKey(TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
       entity.setUuid(uuid);
     });
 
     it("creates a view from entity", () -> {
       final SecretView subject = SshView.fromEntity(entity);
-      jsonExpectationsHelper.assertJsonEqual("{" +
+
+      JSONObject obj = new JSONObject();
+      obj.put("public_key", TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT);
+      obj.put("private_key", TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
+      obj.put("public_key_fingerprint", "UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc");
+      String expected = "{" +
           "\"id\":\"" + uuid.toString() + "\"," +
           "\"type\":\"ssh\"," +
           "\"name\":\"/foo\"," +
           "\"version_created_at\":null," +
-          "\"value\":{" +
-            "\"public_key\":\"ssh-rsa mypublickey\"," +
-            "\"private_key\":\"myprivatekey\"," +
-            "\"public_key_fingerprint\": \"MPHy8EJazi2AopguKfVtADl+oDYhM2kgZhPXDNoCA4Q\""+
-          "}" +
-        "}", json(subject), true);
+          "\"value\":" + obj.toString() +
+        "}";
+
+      jsonExpectationsHelper.assertJsonEqual(expected, json(subject), true);
     });
 
     it("sets updated-at time on generated view", () -> {
