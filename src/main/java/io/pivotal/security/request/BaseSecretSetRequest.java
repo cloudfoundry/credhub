@@ -24,7 +24,8 @@ import java.io.InputStream;
 @JsonSubTypes({
     @JsonSubTypes.Type(name = "password",     value = PasswordSetRequest.class),
     @JsonSubTypes.Type(name = "value",        value = ValueSetRequest.class),
-    @JsonSubTypes.Type(name = "certificate",  value = CertificateSetRequest.class)
+    @JsonSubTypes.Type(name = "certificate",  value = CertificateSetRequest.class),
+    @JsonSubTypes.Type(name = "json",    value = JsonSetRequest.class)
 })
 abstract public class BaseSecretSetRequest {
   @NotEmpty(message = "error.missing_name")

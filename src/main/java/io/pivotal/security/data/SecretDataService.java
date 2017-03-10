@@ -2,12 +2,14 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedJsonSecretData;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.entity.NamedRsaSecretData;
 import io.pivotal.security.entity.NamedSecretData;
@@ -26,13 +28,13 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -212,6 +214,8 @@ public class SecretDataService {
       returnValue = new NamedSshSecret((NamedSshSecretData) dao);
     } else if (dao instanceof NamedValueSecretData) {
       returnValue = new NamedValueSecret((NamedValueSecretData) dao);
+    } else if (dao instanceof NamedJsonSecretData) {
+      returnValue = new NamedJsonSecret((NamedJsonSecretData) dao);
     } else {
       throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
     }

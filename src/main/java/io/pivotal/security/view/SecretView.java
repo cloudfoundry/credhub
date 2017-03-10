@@ -2,6 +2,7 @@ package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
@@ -63,6 +64,8 @@ public class SecretView extends BaseView {
       result = new SshView((NamedSshSecret) namedSecret);
     } else if (NamedRsaSecret.class.isInstance(namedSecret)) {
       result = new RsaView((NamedRsaSecret) namedSecret);
+    } else if (NamedJsonSecret.class.isInstance(namedSecret)) {
+      result = new JsonView((NamedJsonSecret) namedSecret);
     } else {
       throw new IllegalArgumentException();
     }
