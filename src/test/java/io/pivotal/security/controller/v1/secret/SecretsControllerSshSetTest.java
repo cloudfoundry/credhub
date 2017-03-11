@@ -41,7 +41,7 @@ public class SecretsControllerSshSetTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
-  
+
   @SpyBean
   SecretDataService secretDataService;
 
