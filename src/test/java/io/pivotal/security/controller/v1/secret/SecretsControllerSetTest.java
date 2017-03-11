@@ -6,15 +6,12 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.request.JsonSetRequest;
-import io.pivotal.security.helper.TestConstants;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,13 +27,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -65,6 +55,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = { "unit-test", "UseRealAuditLogService" }, resolver = DatabaseProfileResolver.class)
@@ -589,92 +586,21 @@ public class SecretsControllerSetTest {
               .andExpect(jsonPath("$.error").value(errorMessage));
           });
         });
-      });
-
-      describe("setting SSH keys", () -> {
-        describe("when required values are passed", () -> {
-          beforeEach(() -> {
-            JSONObject obj = new JSONObject();
-            obj.put("public_key", TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT);
-            obj.put("private_key", TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
-
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"ssh\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\":" + obj.toString() +
-                "}");
-
-            response = mockMvc.perform(put);
-          });
-
-          it("returns the secret as json", () -> {
-            NamedSshSecret expected = (NamedSshSecret) secretDataService.findMostRecent(secretName);
-
-            assertThat(expected.getPrivateKey(), equalTo(TestConstants.PRIVATE_KEY_OF_LENGTH_4096));
-
-            response.andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.type").value("ssh"))
-              .andExpect(jsonPath("$.value.public_key").value(TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT))
-              .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_OF_LENGTH_4096))
-              .andExpect(jsonPath("$.id").value(expected.getUuid().toString()))
-              .andExpect(jsonPath("$.version_created_at").value(expected.getVersionCreatedAt().toString()));
-          });
-        });
-
-        describe("when all values are empty", () -> {
-          it("should return an error message", () -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"ssh\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\": { \"public_key\":\"\", \"private_key\":\"\" }" +
-                "}");
-            final String errorMessage = "At least one key value must be set. Please validate your input and retry your request.";
-            mockMvc.perform(put)
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(errorMessage));
-          });
-        });
 
         describe("when the value is an empty hash", () -> {
           it("should return an error message", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"certificate\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\": {}" +
-                "}");
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{" +
+                    "  \"type\":\"certificate\"," +
+                    "  \"name\":\"" + secretName + "\"," +
+                    "  \"value\": {}" +
+                    "}");
             final String errorMessage = "At least one certificate attribute must be set. Please validate your input and retry your request.";
             mockMvc.perform(put)
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(errorMessage));
-          });
-        });
-
-        describe("when the value contains unknown keys", () -> {
-          it("should return an error", () -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"ssh\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\": {" +
-                "    \"foo\":\"bar\"" +
-                "  }" +
-                "}");
-            final String errorMessage = "The request includes an unrecognized parameter 'foo'. Please update or remove this parameter and retry your request.";
-            mockMvc.perform(put)
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(errorMessage));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(errorMessage));
           });
         });
       });
