@@ -15,7 +15,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,11 +37,9 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -103,61 +100,6 @@ public class SecretsControllerSetTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
       resetAuditLogMock();
-    });
-
-    describe("setting secrets in parallel", () -> {
-      beforeEach(() -> {
-        responses = new ResultActions[2];
-
-        Thread thread1 = new Thread("thread 1") {
-          @Override
-          public void run() {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"name\":\"" + secretName + this.getName() + "\"," +
-                "  \"value\":\"" + secretValue + this.getName() + "\"" +
-                "}");
-
-            try {
-              responses[0] = mockMvc.perform(put);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-          }
-        };
-        Thread thread2 = new Thread("thread 2") {
-          @Override
-          public void run() {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"value\"," +
-                "  \"name\":\"" + secretName + this.getName() + "\"," +
-                "  \"value\":\"" + secretValue + this.getName() + "\"" +
-                "}");
-
-            try {
-              responses[1] = mockMvc.perform(put);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-          }
-        };
-
-        thread1.start();
-        thread2.start();
-        thread1.join();
-        thread2.join();
-      });
-
-      it("test", () -> {
-        responses[0].andExpect(jsonPath("$.value").value(secretValue + "thread 1"));
-        responses[1].andExpect(jsonPath("$.value").value(secretValue + "thread 2"));
-      });
     });
 
     describe("setting a secret", () -> {
@@ -406,46 +348,6 @@ public class SecretsControllerSetTest {
             .andExpect(jsonPath("$.value").value(secretValue))
             .andExpect(jsonPath("$.id").value(expected.getUuid().toString()))
             .andExpect(jsonPath("$.version_created_at").value(expected.getVersionCreatedAt().toString()));
-        });
-      });
-
-      describe("when another thread wins a race to write a new value", () -> {
-        beforeEach(() -> {
-          uuid = UUID.randomUUID();
-
-          NamedValueSecret valueSecret = new NamedValueSecret(secretName);
-          valueSecret.setEncryptor(encryptor);
-          valueSecret.setValue(secretValue);
-          valueSecret.setUuid(uuid);
-          valueSecret.setVersionCreatedAt(frozenTime);
-
-          doReturn(null)
-            .doReturn(valueSecret)
-            .when(secretDataService).findMostRecent(anyString());
-
-          doThrow(new DataIntegrityViolationException("we already have one of those"))
-            .when(secretDataService).save(any(NamedSecret.class));
-
-          final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-              "  \"type\":\"value\"," +
-              "  \"name\":\"" + secretName + "\"," +
-              "  \"value\":\"" + secretValue + "\"" +
-              "}");
-
-          response = mockMvc.perform(put);
-        });
-
-        it("retries and finds the value written by the other thread", () -> {
-          verify(secretDataService).save(any(NamedSecret.class));
-          response.andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.type").value("value"))
-            .andExpect(jsonPath("$.value").value(secretValue))
-            .andExpect(jsonPath("$.id").value(uuid.toString()))
-            .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
       });
     });
