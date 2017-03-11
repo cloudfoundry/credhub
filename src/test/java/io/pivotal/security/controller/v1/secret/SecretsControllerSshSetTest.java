@@ -35,7 +35,7 @@ import java.time.Instant;
 import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerSshSetTest {
 

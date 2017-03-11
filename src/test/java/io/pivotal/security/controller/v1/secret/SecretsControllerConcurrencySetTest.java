@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerConcurrencySetTest {
 
