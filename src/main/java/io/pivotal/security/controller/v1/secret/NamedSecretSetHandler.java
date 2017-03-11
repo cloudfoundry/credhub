@@ -35,6 +35,11 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
       }
 
       @Override
+      public NamedSecret json(NamedSecret namedSecret) throws NoSuchAlgorithmException {
+        throw new UnsupportedOperationException();
+      }
+
+      @Override
       public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         throw new UnsupportedOperationException();
       }

@@ -51,6 +51,11 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
       }
 
       @Override
+      public NamedSecret json(NamedSecret namedSecret) {
+        throw new ParameterizedValidationException("error.invalid_generate_type");
+      }
+
+      @Override
       public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
         return createNewSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new, secretPath, passwordGeneratorRequestTranslator, parsedRequest, encryptor);
       }

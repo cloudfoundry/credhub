@@ -30,7 +30,7 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
 
   @Override
   public SecretKind getKind() {
-    throw new UnsupportedOperationException();
+    return SecretKind.JSON;
   }
 
   @Override
