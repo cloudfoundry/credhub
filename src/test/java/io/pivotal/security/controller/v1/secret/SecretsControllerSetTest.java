@@ -7,7 +7,6 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.request.JsonSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -33,7 +32,6 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -57,8 +55,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -384,51 +380,6 @@ public class SecretsControllerSetTest {
               .content("{\"type\":\"value\",\"name\":\"" + testSecretNameWithDot + "\",\"value\":\"" + "def" + "\"}")
               .contentType(MediaType.APPLICATION_JSON_UTF8))
               .andExpect(status().isOk());
-        });
-      });
-
-      describe("and the type is json", () -> {
-        describe("via parameter in request body", () -> {
-          it("returns the secret as json", () -> {
-            Map<String, Object> nestedValue = new HashMap<>();
-            nestedValue.put("num", 10);
-            String[] value = {"foo", "bar"};
-
-            Map<String, Object> jsonValue = new HashMap<>();
-            jsonValue.put("key", "value");
-            jsonValue.put("fancy", nestedValue);
-            jsonValue.put("array", value);
-
-            JsonSetRequest request = new JsonSetRequest();
-            request.setName(secretName);
-            request.setValue(jsonValue);
-            request.setType("json");
-
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content(serializeToString(request));
-
-            response = mockMvc.perform(put);
-
-            NamedSecret expected = secretDataService.findMostRecent(secretName);
-            String expectedResponse = "{" +
-                "\"id\":\"" + expected.getUuid().toString() + "\"," +
-                "\"type\":\"json\"," +
-                "\"version_created_at\":\"" + expected.getVersionCreatedAt().toString() + "\"," +
-                "\"value\":{" +
-                  "\"key\":\"value\"," +
-                  "\"array\":[\"foo\",\"bar\"]," +
-                  "\"fancy\":{" +
-                    "\"num\":10" +
-                  "}" +
-                "}" +
-              "}";
-
-            response.andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(content().json(expectedResponse));
-          });
         });
       });
 
