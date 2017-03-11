@@ -5,8 +5,6 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.helper.TestConstants;
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.json.JSONObject;
 import org.junit.runner.RunWith;
@@ -27,9 +25,6 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.reset;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -38,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Instant;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
@@ -47,14 +41,7 @@ public class SecretsControllerSshSetTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
-
-  @Autowired
-  SecretsController subject;
-
-
-  @SpyBean
-  AuditLogService auditLogService;
-
+  
   @SpyBean
   SecretDataService secretDataService;
 
@@ -76,8 +63,6 @@ public class SecretsControllerSshSetTest {
     beforeEach(() -> {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-
-      resetAuditLogMock();
     });
 
     describe("setting SSH keys", () -> {
@@ -150,13 +135,5 @@ public class SecretsControllerSshSetTest {
         });
       });
     });
-  }
-
-  private void resetAuditLogMock() throws Exception {
-    reset(auditLogService);
-    doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
-      return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }
