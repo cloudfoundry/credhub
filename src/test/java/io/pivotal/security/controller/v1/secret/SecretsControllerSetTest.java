@@ -4,7 +4,6 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
@@ -447,112 +446,6 @@ public class SecretsControllerSetTest {
             .andExpect(jsonPath("$.value").value(secretValue))
             .andExpect(jsonPath("$.id").value(uuid.toString()))
             .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
-        });
-      });
-
-      describe("setting certificates", () -> {
-        describe("when required values are passed", () -> {
-          beforeEach(() -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"certificate\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\": {" +
-                "    \"ca\": \"-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----\"," +
-                "    \"certificate\": \"-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----\"," +
-                "    \"private_key\": \"-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----\"" +
-                "  }" +
-                "}");
-
-            response = mockMvc.perform(put);
-          });
-
-          it("returns the secret as json", () -> {
-            NamedCertificateSecret expected = (NamedCertificateSecret) secretDataService.findMostRecent(secretName);
-
-            assertThat(expected.getPrivateKey(), equalTo("-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"));
-
-            response.andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.type").value("certificate"))
-              .andExpect(jsonPath("$.value.private_key").value("-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"))
-              .andExpect(jsonPath("$.id").value(expected.getUuid().toString()))
-              .andExpect(jsonPath("$.version_created_at").value(expected.getVersionCreatedAt().toString()));
-          });
-        });
-
-        describe("when all values are empty", () -> {
-          it("should return an error with the message 'At least one certificate attribute must be set. Please validate your input and retry your request.'", () -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"certificate\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\": {" +
-                "    \"certificate\": \"\"" +
-                "  }" +
-                "}");
-            final String errorMessage = "At least one certificate attribute must be set. Please validate your input and retry your request.";
-            mockMvc.perform(put)
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(errorMessage));
-          });
-        });
-
-        describe("when the value is an empty hash", () -> {
-          it("should return an error with the message 'At least one certificate attribute must be set. Please validate your input and retry your request.'", () -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"certificate\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\": {}" +
-                "}");
-            final String errorMessage = "At least one certificate attribute must be set. Please validate your input and retry your request.";
-            mockMvc.perform(put)
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(errorMessage));
-          });
-        });
-
-        describe("when the value contains unknown keys", () -> {
-          it("should return an error", () -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"certificate\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"value\": {" +
-                "    \"foo\":\"bar\"" +
-                "  }" +
-                "}");
-            final String errorMessage = "The request includes an unrecognized parameter 'foo'. Please update or remove this parameter and retry your request.";
-            mockMvc.perform(put)
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(errorMessage));
-          });
-        });
-
-        describe("when the value is an empty hash", () -> {
-          it("should return an error message", () -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .content("{" +
-                    "  \"type\":\"certificate\"," +
-                    "  \"name\":\"" + secretName + "\"," +
-                    "  \"value\": {}" +
-                    "}");
-            final String errorMessage = "At least one certificate attribute must be set. Please validate your input and retry your request.";
-            mockMvc.perform(put)
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value(errorMessage));
-          });
         });
       });
     });
