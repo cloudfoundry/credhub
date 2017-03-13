@@ -26,7 +26,8 @@ import java.io.InputStream;
     @JsonSubTypes.Type(name = "value",        value = ValueSetRequest.class),
     @JsonSubTypes.Type(name = "certificate",  value = CertificateSetRequest.class),
     @JsonSubTypes.Type(name = "json",         value = JsonSetRequest.class),
-    @JsonSubTypes.Type(name = "ssh",          value = SshSetRequest.class)
+    @JsonSubTypes.Type(name = "ssh",          value = SshSetRequest.class),
+    @JsonSubTypes.Type(name = "rsa",          value = RsaSetRequest.class)
 })
 abstract public class BaseSecretSetRequest {
   @NotEmpty(message = "error.missing_name")

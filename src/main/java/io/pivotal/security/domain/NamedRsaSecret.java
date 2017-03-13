@@ -1,8 +1,11 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
+
+import static io.pivotal.security.util.StringUtil.emptyToNull;
 
 public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
 
@@ -65,5 +68,22 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
   @Override
   public String getSecretType() {
     return delegate.getSecretType();
+  }
+
+  public static NamedSecret createNewVersion(NamedRsaSecret existing, String name, KeySetRequestFields fields, Encryptor encryptor) {
+    NamedRsaSecret secret;
+
+    if (existing == null) {
+      secret = new NamedRsaSecret(name);
+    } else {
+      secret = new NamedRsaSecret();
+      secret.copyNameReferenceFrom(existing);
+    }
+
+    secret.setEncryptor(encryptor);
+    secret.setPrivateKey(emptyToNull(fields.getPrivateKey()));
+    secret.setPublicKey(emptyToNull(fields.getPublicKey()));
+
+    return secret;
   }
 }

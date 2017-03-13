@@ -3,9 +3,7 @@ package io.pivotal.security.controller.v1.secret;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.mapper.RsaSetRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,15 +12,12 @@ import java.security.NoSuchAlgorithmException;
 
 @Component
 class NamedSecretSetHandler implements SecretKindMappingFactory {
-  private final RsaSetRequestTranslator rsaSetRequestTranslator;
   private final Encryptor encryptor;
 
   @Autowired
   public NamedSecretSetHandler(
-    RsaSetRequestTranslator rsaSetRequestTranslator,
     Encryptor encryptor
   ) {
-    this.rsaSetRequestTranslator = rsaSetRequestTranslator;
     this.encryptor = encryptor;
   }
 
@@ -56,7 +51,7 @@ class NamedSecretSetHandler implements SecretKindMappingFactory {
 
       @Override
       public NamedSecret rsa(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedRsaSecret) namedSecret, NamedRsaSecret::new, secretPath, rsaSetRequestTranslator, parsedRequest, encryptor);
+        throw new UnsupportedOperationException();
       }
     };
   }

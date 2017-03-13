@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.helper.TestConstants;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -33,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class SecretsControllerSshSetTest {
+public class SecretsControllerSshAndRsaSetTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
@@ -121,6 +122,78 @@ public class SecretsControllerSshSetTest {
           mockMvc.perform(put)
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.error").value(errorMessage));
+        });
+      });
+    });
+
+    describe("setting RSA keys", () -> {
+      describe("when required values are passed", () -> {
+        beforeEach(() -> {
+          JSONObject obj = new JSONObject();
+          obj.put("public_key", TestConstants.RSA_PUBLIC_KEY_4096);
+          obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
+
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"rsa\"," +
+              "  \"name\":\"" + secretName + "\"," +
+              "  \"value\":" + obj.toString() +
+              "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        it("returns the secret as json", () -> {
+          NamedRsaSecret expected = (NamedRsaSecret) secretDataService.findMostRecent(secretName);
+
+          assertThat(expected.getPrivateKey(), equalTo(TestConstants.PRIVATE_KEY_4096));
+
+          response.andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.type").value("rsa"))
+            .andExpect(jsonPath("$.value.public_key").value(TestConstants.RSA_PUBLIC_KEY_4096))
+            .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_4096))
+            .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
+        });
+      });
+
+      // TODO: decide if we need these tests again here
+
+      describe("when the value contains unknown keys", () -> {
+        it("should return an error", () -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"rsa\"," +
+              "  \"name\":\"" + secretName + "\"," +
+              "  \"value\": {" +
+              "    \"foo\":\"bar\"" +
+              "  }" +
+              "}");
+          final String errorMessage = "The request includes an unrecognized parameter 'foo'. Please update or remove this parameter and retry your request.";
+          mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value(errorMessage));
+        });
+      });
+
+      describe("when all values are empty", () -> {
+        it("should return an error message", () -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"rsa\"," +
+              "  \"name\":\"" + secretName + "\"," +
+              "  \"value\": { \"public_key\":\"\", \"private_key\":\"\" }" +
+              "}");
+          final String errorMessage = "At least one key value must be set. Please validate your input and retry your request.";
+          mockMvc.perform(put)
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value(errorMessage));
         });
       });
     });
