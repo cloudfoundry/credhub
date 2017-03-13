@@ -21,7 +21,6 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -30,9 +29,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -47,10 +43,6 @@ public class SecretsControllerSshSetTest {
 
   private MockMvc mockMvc;
 
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-
-  private final Consumer<Long> fakeTimeSetter;
-
   private final String secretName = "/my-namespace/secretForSetTest/secret-name";
 
   private ResultActions response;
@@ -58,10 +50,8 @@ public class SecretsControllerSshSetTest {
   {
     wireAndUnwire(this);
 
-    fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
-      fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     });
 
@@ -94,8 +84,7 @@ public class SecretsControllerSshSetTest {
               .andExpect(jsonPath("$.type").value("ssh"))
               .andExpect(jsonPath("$.value.public_key").value(TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT))
               .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_OF_LENGTH_4096))
-              .andExpect(jsonPath("$.id").value(expected.getUuid().toString()))
-              .andExpect(jsonPath("$.version_created_at").value(expected.getVersionCreatedAt().toString()));
+              .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
         });
       });
 

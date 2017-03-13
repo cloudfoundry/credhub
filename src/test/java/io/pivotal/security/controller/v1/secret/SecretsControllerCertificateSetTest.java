@@ -19,7 +19,6 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -28,9 +27,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -45,10 +41,6 @@ public class SecretsControllerCertificateSetTest {
 
   private MockMvc mockMvc;
 
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-
-  private final Consumer<Long> fakeTimeSetter;
-
   private final String secretName = "/my-namespace/secretForSetTest/secret-name";
 
   private ResultActions response;
@@ -56,10 +48,7 @@ public class SecretsControllerCertificateSetTest {
   {
     wireAndUnwire(this);
 
-    fakeTimeSetter = mockOutCurrentTimeProvider(this);
-
     beforeEach(() -> {
-      fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     });
 
@@ -91,8 +80,7 @@ public class SecretsControllerCertificateSetTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("certificate"))
               .andExpect(jsonPath("$.value.private_key").value("-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"))
-              .andExpect(jsonPath("$.id").value(expected.getUuid().toString()))
-              .andExpect(jsonPath("$.version_created_at").value(expected.getVersionCreatedAt().toString()));
+              .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
         });
       });
 
