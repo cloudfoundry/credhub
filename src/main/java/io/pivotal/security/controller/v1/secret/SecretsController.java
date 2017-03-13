@@ -1,7 +1,9 @@
 package io.pivotal.security.controller.v1.secret;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
@@ -233,7 +235,7 @@ public class SecretsController {
     return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request, authentication);
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, com.jayway.jsonpath.InvalidJsonException.class})
+  @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
     final Throwable cause = exception.getCause();

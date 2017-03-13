@@ -195,7 +195,6 @@ public class AccessEntryControllerTest {
             mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.credential_name").value("test_credential_name"));
-
           });
         });
       });

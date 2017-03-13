@@ -25,11 +25,13 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -250,6 +252,40 @@ public class SecretsControllerErrorHandlingSetTest {
 
             mockMvc.perform(put)
                 .andExpect(status().isInternalServerError());
+          });
+
+          describe("when malformed json is sent", () -> {
+            it("returns a nice error message", () -> {
+              final String malformedJSON = "{" +
+                      "  \"type\":\"value\"" +
+                      "  \"name\":\"" + secretName + "\"" +
+                      "  \"value\":\"[]\"" +
+                      "}";
+              final MockHttpServletRequestBuilder post = put("/api/v1/data")
+                      .accept(APPLICATION_JSON)
+                      .contentType(APPLICATION_JSON)
+                      .content(malformedJSON);
+
+              this.mockMvc.perform(post).andExpect(status().isBadRequest())
+                      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                      .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.")));
+            });
+
+            it("returns a nice error message for different kinds of payloads", () -> {
+              final String malformedJSON = "{" +
+                      "  \"type\":\"value\"," +
+                      "  \"name\":\"" + secretName + "\"," +
+                      "  \"value\":\"[\"some\" \"key\"]\"" +
+                      "}";
+              final MockHttpServletRequestBuilder post = put("/api/v1/data")
+                      .accept(APPLICATION_JSON)
+                      .contentType(APPLICATION_JSON)
+                      .content(malformedJSON);
+
+              this.mockMvc.perform(post).andExpect(status().isBadRequest())
+                      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                      .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.")));
+            });
           });
 
         });
