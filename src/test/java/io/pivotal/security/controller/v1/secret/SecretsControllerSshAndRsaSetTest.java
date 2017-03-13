@@ -158,44 +158,6 @@ public class SecretsControllerSshAndRsaSetTest {
             .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
         });
       });
-
-      // TODO: decide if we need these tests again here
-
-      describe("when the value contains unknown keys", () -> {
-        it("should return an error", () -> {
-          final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-              "  \"type\":\"rsa\"," +
-              "  \"name\":\"" + secretName + "\"," +
-              "  \"value\": {" +
-              "    \"foo\":\"bar\"" +
-              "  }" +
-              "}");
-          final String errorMessage = "The request includes an unrecognized parameter 'foo'. Please update or remove this parameter and retry your request.";
-          mockMvc.perform(put)
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.error").value(errorMessage));
-        });
-      });
-
-      describe("when all values are empty", () -> {
-        it("should return an error message", () -> {
-          final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-              "  \"type\":\"rsa\"," +
-              "  \"name\":\"" + secretName + "\"," +
-              "  \"value\": { \"public_key\":\"\", \"private_key\":\"\" }" +
-              "}");
-          final String errorMessage = "At least one key value must be set. Please validate your input and retry your request.";
-          mockMvc.perform(put)
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.error").value(errorMessage));
-        });
-      });
     });
   }
 }
