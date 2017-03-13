@@ -59,8 +59,8 @@ public class SecretsControllerSshSetTest {
       describe("when required values are passed", () -> {
         beforeEach(() -> {
           JSONObject obj = new JSONObject();
-          obj.put("public_key", TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT);
-          obj.put("private_key", TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
+          obj.put("public_key", TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT);
+          obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
@@ -77,13 +77,13 @@ public class SecretsControllerSshSetTest {
         it("returns the secret as json", () -> {
           NamedSshSecret expected = (NamedSshSecret) secretDataService.findMostRecent(secretName);
 
-          assertThat(expected.getPrivateKey(), equalTo(TestConstants.PRIVATE_KEY_OF_LENGTH_4096));
+          assertThat(expected.getPrivateKey(), equalTo(TestConstants.PRIVATE_KEY_4096));
 
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("ssh"))
-              .andExpect(jsonPath("$.value.public_key").value(TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT))
-              .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_OF_LENGTH_4096))
+              .andExpect(jsonPath("$.value.public_key").value(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT))
+              .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_4096))
               .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
         });
       });

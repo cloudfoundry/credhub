@@ -39,12 +39,12 @@ public class SshViewTest {
       secretName = "/foo";
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
-      when(encryptor.encrypt(TestConstants.PRIVATE_KEY_OF_LENGTH_4096)).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
-      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn(TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
+      when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
+      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn(TestConstants.PRIVATE_KEY_4096);
       entity = new NamedSshSecret(secretName)
           .setEncryptor(encryptor)
-          .setPublicKey(TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT)
-          .setPrivateKey(TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
+          .setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
+          .setPrivateKey(TestConstants.PRIVATE_KEY_4096);
       entity.setUuid(uuid);
     });
 
@@ -52,8 +52,8 @@ public class SshViewTest {
       final SecretView subject = SshView.fromEntity(entity);
 
       JSONObject obj = new JSONObject();
-      obj.put("public_key", TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT);
-      obj.put("private_key", TestConstants.PRIVATE_KEY_OF_LENGTH_4096);
+      obj.put("public_key", TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT);
+      obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
       obj.put("public_key_fingerprint", "UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc");
       String expected = "{" +
           "\"id\":\"" + uuid.toString() + "\"," +

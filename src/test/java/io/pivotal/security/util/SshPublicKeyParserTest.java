@@ -5,8 +5,8 @@ import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.TestConstants.PUBLIC_KEY_OF_LENGTH_4096;
-import static io.pivotal.security.helper.TestConstants.PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT;
+import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096;
+import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -36,12 +36,12 @@ public class SshPublicKeyParserTest {
 
     describe("#getKeyLength", () -> {
       it("should return the length of the public key (when no comment)", () -> {
-        assertThat(new SshPublicKeyParser(PUBLIC_KEY_OF_LENGTH_4096).getKeyLength(), equalTo(4096));
+        assertThat(new SshPublicKeyParser(SSH_PUBLIC_KEY_4096).getKeyLength(), equalTo(4096));
       });
 
       it("should still return the length when there is a comment", () -> {
         assertThat(
-          new SshPublicKeyParser(PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT).getKeyLength(),
+          new SshPublicKeyParser(SSH_PUBLIC_KEY_4096_WITH_COMMENT).getKeyLength(),
           equalTo(4096));
       });
     });
@@ -49,13 +49,13 @@ public class SshPublicKeyParserTest {
     describe("#getComment", () -> {
       it("should return a comment when there is one", () -> {
         assertThat(
-          new SshPublicKeyParser(PUBLIC_KEY_OF_LENGTH_4096_WITH_COMMENT).getComment(),
+          new SshPublicKeyParser(SSH_PUBLIC_KEY_4096_WITH_COMMENT).getComment(),
           equalTo("dan@foo"));
       });
 
       it("should return a empty string when there is none", () -> {
         assertThat(
-          new SshPublicKeyParser(PUBLIC_KEY_OF_LENGTH_4096).getComment(),
+          new SshPublicKeyParser(SSH_PUBLIC_KEY_4096).getComment(),
           equalTo(""));
       });
 
