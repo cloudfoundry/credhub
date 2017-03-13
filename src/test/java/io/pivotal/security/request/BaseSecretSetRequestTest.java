@@ -1,8 +1,7 @@
-package io.pivotal.security.model;
+package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.BaseSecretSetRequest;
 import org.junit.runner.RunWith;
 
 import javax.validation.ConstraintViolation;
@@ -13,7 +12,6 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
 import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;

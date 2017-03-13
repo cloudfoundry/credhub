@@ -1,8 +1,6 @@
-package io.pivotal.security.model;
+package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.request.BaseSecretSetRequest;
-import io.pivotal.security.request.JsonSetRequest;
 import org.junit.runner.RunWith;
 
 import javax.validation.ConstraintViolation;

@@ -1,4 +1,4 @@
-package io.pivotal.security.model;
+package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.request.BaseSecretSetRequest;
