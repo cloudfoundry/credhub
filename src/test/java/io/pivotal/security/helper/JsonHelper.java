@@ -47,10 +47,14 @@ public class JsonHelper {
 
   public static <T> T deserialize(String json, Class<T> klass) {
     try {
-      return objectMapper.readValue(json, klass);
+      return deserializeChecked(json, klass);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static <T> T deserializeChecked(String json, Class<T> klass) throws IOException {
+    return objectMapper.readValue(json, klass);
   }
 
   public static <T> Set<ConstraintViolation<T>> validate(T original) {

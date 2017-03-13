@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1.secret;
 
-import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
@@ -13,7 +14,6 @@ import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseSecretSetRequest;
-import io.pivotal.security.request.DefaultSecretSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.view.DataResponse;
@@ -48,11 +48,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
@@ -60,7 +56,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.servlet.http.HttpServletRequest;
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -72,7 +71,6 @@ public class SecretsController {
 
   private SecretDataService secretDataService;
   private NamedSecretGenerateHandler namedSecretGenerateHandler;
-  private NamedSecretSetHandler namedSecretSetHandler;
   private JsonContextFactory jsonContextFactory;
   private AuditLogService auditLogService;
   private MessageSourceAccessor messageSourceAccessor;
@@ -80,7 +78,6 @@ public class SecretsController {
 
   public SecretsController(SecretDataService secretDataService,
                            NamedSecretGenerateHandler namedSecretGenerateHandler,
-                           NamedSecretSetHandler namedSecretSetHandler,
                            JsonContextFactory jsonContextFactory,
                            MessageSource messageSource,
                            AuditLogService auditLogService,
@@ -88,7 +85,6 @@ public class SecretsController {
   ) {
     this.secretDataService = secretDataService;
     this.namedSecretGenerateHandler = namedSecretGenerateHandler;
-    this.namedSecretSetHandler = namedSecretSetHandler;
     this.jsonContextFactory = jsonContextFactory;
     this.auditLogService = auditLogService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
@@ -106,19 +102,11 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
-    // this clause goes away once all types are converted
-    if (requestBody instanceof DefaultSecretSetRequest) {
-      InputStream inputStream = requestBody.getInputStream();
-      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(inputStream);
-
-      return retryingAuditedStoreSecret(request, authentication, namedSecretSetHandler, parsedRequestBody);
-    } else {
-      try {
-        return performSet(request, authentication, requestBody);
-      } catch (JpaSystemException | DataIntegrityViolationException e) {
-        logger.error("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
-        return performSet(request, authentication, requestBody);
-      }
+    try {
+      return performSet(request, authentication, requestBody);
+    } catch (JpaSystemException | DataIntegrityViolationException e) {
+      logger.error("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
+      return performSet(request, authentication, requestBody);
     }
   }
 
@@ -238,15 +226,21 @@ public class SecretsController {
   @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
+    String errorMessage;
     final Throwable cause = exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
       return createParameterizedErrorResponse(
-          new ParameterizedValidationException("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName())
+        new ParameterizedValidationException("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName())
       );
+    } else if (cause instanceof InvalidTypeIdException) {
+      errorMessage = messageSourceAccessor.getMessage("error.type_invalid");
+    } else if (cause instanceof JsonMappingException && cause.getMessage().contains("missing property 'type'")) {
+      errorMessage = messageSourceAccessor.getMessage("error.type_invalid");
     } else {
-      String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-      return new ResponseError(errorMessage);
+      errorMessage = messageSourceAccessor.getMessage("error.bad_request");
     }
+
+    return new ResponseError(errorMessage);
   }
 
   @ExceptionHandler({MethodArgumentNotValidException.class})

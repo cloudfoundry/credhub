@@ -3,23 +3,17 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Pattern;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
 @JsonTypeInfo(
     use         = JsonTypeInfo.Id.NAME,
     include     = JsonTypeInfo.As.PROPERTY,
     property    = "type",
-    visible     = true,
-    defaultImpl = DefaultSecretSetRequest.class
+    visible     = true
 )
 @JsonSubTypes({
     @JsonSubTypes.Type(name = "password",     value = PasswordSetRequest.class),
@@ -61,18 +55,6 @@ abstract public class BaseSecretSetRequest {
 
   public void setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
-  }
-
-  // TEMPORARY: Only needed while we're removing DocumentContext
-  @JsonIgnore
-  public InputStream getInputStream() {
-    try {
-      final ObjectMapper objectMapper = new ObjectMapper()
-          .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-      return new ByteArrayInputStream(objectMapper.writeValueAsBytes(this));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @JsonIgnore

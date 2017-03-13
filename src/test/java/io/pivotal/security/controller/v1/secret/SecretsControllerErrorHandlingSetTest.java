@@ -20,6 +20,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -36,10 +40,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = { "unit-test", "UseRealAuditLogService" }, resolver = DatabaseProfileResolver.class)
@@ -187,6 +187,38 @@ public class SecretsControllerErrorHandlingSetTest {
                 .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
           });
 
+          it("returns 400 when type is blank", () -> {
+            final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{" +
+                    "  \"type\":\"\"," +
+                    "  \"name\":\"some-name\"," +
+                    "  \"value\":\"some password\"" +
+                    "}");
+
+            mockMvc.perform(put)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
+          });
+
+          it("returns 400 when type unknown", () -> {
+            final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{" +
+                    "  \"type\":\"moose\"," +
+                    "  \"name\":\"some-name\"," +
+                    "  \"value\":\"some password\"" +
+                    "}");
+
+            mockMvc.perform(put)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
+          });
+
           it("returns 400 when value is missing", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .accept(APPLICATION_JSON)
@@ -219,7 +251,7 @@ public class SecretsControllerErrorHandlingSetTest {
                 .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'response_error'. Please update or remove this parameter and retry your request."));
           });
 
-          it("returns an error message when  the input JSON is malformed", () -> {
+          it("returns an error message when the input JSON is malformed", () -> {
             final String malformedJson = "{" +
                 "  \"type\":\"value\"," +
                 "  \"name\":\"" + secretName + "\"" +
