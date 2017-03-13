@@ -6,11 +6,6 @@ DIRNAME=$(dirname "$0")
 
 KEYSTORE_PASSWORD=changeit
 
-SERVER_DNAME='localhost'
-CLIENT_DNAME='credhub_client'
-CA_DNAME="credhub_client_ca"
-
-CA_NAME=ca
 CLIENT_NAME=client
 
 KEY_STORE=key_store.jks
@@ -27,10 +22,10 @@ setup_tls_key_store() {
 	openssl genrsa -out server_key.pem 2048
 
 	echo "Create CSR for the server cert"
-    openssl req -new -sha256 -key server_key.pem -subj "/CN=${SERVER_DNAME}" -out server.csr
+    openssl req -new -sha256 -key server_key.pem -subj "/CN=localhost" -out server.csr
 
     echo "Generate server certificate signed by our CA"
-    openssl x509 -req -in server.csr -CA ${CA_NAME}.pem -CAkey ${CA_NAME}_key.pem \
+    openssl x509 -req -in server.csr -CA server_ca_cert.pem -CAkey server_ca_private.pem \
         -CAcreateserial -out server.pem
 
     echo "Create a .p12 file that contains both server cert and private key"
@@ -46,22 +41,35 @@ setup_tls_key_store() {
     rm server.p12 server.csr
 }
 
-generate_ca() {
-    echo "Generating root CA for both client and server certificates into ${CA_NAME}.pem and ${CA_NAME}_key.pem"
+generate_server_ca() {
+    echo "Generating root CA for the server certificates into server_ca_cert.pem and server_ca_private.pem"
     openssl req \
       -x509 \
       -newkey rsa:2048 \
-      -days 30 \
+      -days 365 \
       -sha256 \
       -nodes \
-      -subj "/CN=${CA_DNAME}" \
-      -keyout ${CA_NAME}_key.pem \
-      -out ${CA_NAME}.pem
+      -subj "/CN=credhub_server_ca" \
+      -keyout server_ca_private.pem \
+      -out server_ca_cert.pem
 }
 
-add_ca_to_truststore() {
+generate_client_ca() {
+    echo "Generating root CA for the client certificates into client_ca_cert.pem and client_ca_private.pem"
+    openssl req \
+      -x509 \
+      -newkey rsa:2048 \
+      -days 365 \
+      -sha256 \
+      -nodes \
+      -subj "/CN=credhub_client_ca" \
+      -keyout client_ca_private.pem \
+      -out client_ca_cert.pem
+}
+
+add_client_ca_to_truststore() {
     echo "Adding root CA to servers trust store for mTLS..."
-    keytool -import -trustcacerts -noprompt -alias ${CA_NAME} -file ${CA_NAME}.pem \
+    keytool -import -trustcacerts -noprompt -alias client_ca -file client_ca_cert.pem \
 	    -keystore ${TRUST_STORE} -storepass ${KEYSTORE_PASSWORD}
 }
 
@@ -70,14 +78,18 @@ pushd ${DIRNAME}/src/test/resources >/dev/null
         echo "Key store and trust store are already set up!"
     else
         clean
-        generate_ca
-        add_ca_to_truststore
+        generate_server_ca
+        generate_client_ca
+        add_client_ca_to_truststore
         setup_tls_key_store
 
         echo "Finished setting up key stores for TLS and mTLS!"
+
+        echo "Run run_tests.sh in credhub-acceptance-tests to generate client certs"
         echo e.g., curl -H \"Content-Type: application/json\" \
             -X POST -d "'{\"name\":\"cred\",\"type\":\"password\"}'" \
-            https://localhost:9000/api/v1/data -k \
-            --cert ${PWD}/${CLIENT_NAME}.pem --key ${PWD}/${CLIENT_NAME}_key.pem
+            https://localhost:9000/api/v1/data --cacert ${PWD}/server_ca_cert.pem \
+            --cert ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client.pem \
+            --key ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client_key.pem
     fi
 popd >/dev/null
