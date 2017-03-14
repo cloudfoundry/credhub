@@ -16,10 +16,15 @@ import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
 import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
 
 public class JsonHelper {
-  private static final ObjectMapper objectMapper = new ObjectMapper()
+  private static final ObjectMapper objectMapper = createObjectMapper();
+
+  private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+  public static ObjectMapper createObjectMapper() {
+    return new ObjectMapper()
       .registerModule(createTimeModule())
       .setPropertyNamingStrategy(SNAKE_CASE);
-  private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+  }
 
   public static byte[] serialize(Object object) {
     try {

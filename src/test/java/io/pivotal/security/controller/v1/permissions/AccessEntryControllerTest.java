@@ -1,10 +1,10 @@
 package io.pivotal.security.controller.v1.permissions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
@@ -17,6 +17,10 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -44,10 +48,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 @RunWith(Spectrum.class)
 public class AccessEntryControllerTest {
   private AccessControlDataService accessControlDataService;
@@ -66,8 +66,7 @@ public class AccessEntryControllerTest {
       );
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
-      ObjectMapper objectMapper = new ObjectMapper()
-          .setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+      ObjectMapper objectMapper = JsonHelper.createObjectMapper();
       mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
       mockMvc = MockMvcBuilders.standaloneSetup(subject)
           .setMessageConverters(mappingJackson2HttpMessageConverter)
