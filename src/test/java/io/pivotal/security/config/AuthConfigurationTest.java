@@ -64,7 +64,7 @@ public class AuthConfigurationTest {
 
   private MockMvc mockMvc;
 
-  private String urlPath;
+  private String dataApiPath;
 
   private String secretName;
 
@@ -72,85 +72,113 @@ public class AuthConfigurationTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      urlPath = "/api/v1/data";
-      secretName = "test";
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
           .addFilter(springSecurityFilterChain)
           .build();
-
-      when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
-        NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
-        namedPasswordSecret.setUuid(UUID.randomUUID());
-        namedPasswordSecret.setVersionCreatedAt(Instant.now());
-        return namedPasswordSecret;
-      });
     });
 
     it("/info can be accessed without authentication", withoutAuthCheck("/info", "$.auth-server.url"));
 
     it("/health can be accessed without authentication", withoutAuthCheck("/health", "$.status"));
 
-    it("denies other endpoints", () -> {
-      mockMvc.perform(post(urlPath)
-          .accept(MediaType.APPLICATION_JSON)
-          .contentType(MediaType.APPLICATION_JSON)
-          .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}")
-      ).andExpect(status().isUnauthorized());
-    });
+    describe("/api/v1/data", () -> {
+      beforeEach(() -> {
+        dataApiPath = "/api/v1/data";
+        secretName = "test";
 
-    describe("with a token accepted by our security config", () -> {
-      it("allows access", () -> {
-        final MockHttpServletRequestBuilder post = post(urlPath)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
+        when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
+          NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
+          namedPasswordSecret.setUuid(UUID.randomUUID());
+          namedPasswordSecret.setVersionCreatedAt(Instant.now());
+          return namedPasswordSecret;
+        });
+      });
+
+      it("denies access without authentication", () -> {
+        mockMvc.perform(post(dataApiPath)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+            .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}")
+        ).andExpect(status().isUnauthorized());
+      });
 
-        mockMvc.perform(post)
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.type").value("password"))
-            .andExpect(jsonPath("$.version_created_at").exists())
-            .andExpect(jsonPath("$.value").exists());
+      describe("with a token accepted by our security config", () -> {
+        it("allows access", () -> {
+          final MockHttpServletRequestBuilder post = post(dataApiPath)
+              .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+          mockMvc.perform(post)
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.type").value("password"))
+              .andExpect(jsonPath("$.version_created_at").exists())
+              .andExpect(jsonPath("$.value").exists());
+        });
+      });
+
+      describe("with a token without sufficient scopes", () -> {
+        it("disallows access", () -> {
+          final MockHttpServletRequestBuilder post = post(dataApiPath)
+              .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT)
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+          mockMvc.perform(post).andExpect(status().isForbidden());
+        });
+      });
+
+      describe("without a token", () -> {
+        it("disallows access", () -> {
+          final MockHttpServletRequestBuilder post = post(dataApiPath)
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+          mockMvc.perform(post).andExpect(status().isUnauthorized());
+        });
+      });
+
+      describe("with mutual tls", () -> {
+        it("allows all client certificates if provided", () -> {
+          final MockHttpServletRequestBuilder post = post(dataApiPath)
+              .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT)))
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+          mockMvc.perform(post)
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.type").value("password"))
+              .andExpect(jsonPath("$.version_created_at").exists())
+              .andExpect(jsonPath("$.value").exists());
+        });
       });
     });
 
-    describe("with a token without sufficient scopes", () -> {
-      it("disallows access", () -> {
-        final MockHttpServletRequestBuilder post = post(urlPath)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT)
+    describe("/api/v1/vcap", () -> {
+      it("denies access without authentication", () -> {
+        mockMvc.perform(post("/api/v1/vcap")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
-
-        mockMvc.perform(post).andExpect(status().isForbidden());
+            .content("{}")
+        ).andExpect(status().isUnauthorized());
       });
-    });
 
-    describe("without a token", () -> {
-      it("disallows access", () -> {
-        final MockHttpServletRequestBuilder post = post(urlPath)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+      describe("with a token accepted by our security config", () -> {
+        it("allows access", () -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/vcap")
+              .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{}");
 
-        mockMvc.perform(post).andExpect(status().isUnauthorized());
-      });
-    });
-
-    describe("with mutual tls", () -> {
-      it("allows all client certificates if provided", () -> {
-        final MockHttpServletRequestBuilder post = post(urlPath)
-            .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT)))
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
-
-        mockMvc.perform(post)
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.type").value("password"))
-            .andExpect(jsonPath("$.version_created_at").exists())
-            .andExpect(jsonPath("$.value").exists());
+          mockMvc.perform(post)
+              .andExpect(status().isOk());
+        });
       });
     });
   }
