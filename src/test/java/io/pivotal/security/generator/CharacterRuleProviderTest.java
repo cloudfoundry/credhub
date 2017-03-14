@@ -3,7 +3,7 @@ package io.pivotal.security.generator;
 import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;

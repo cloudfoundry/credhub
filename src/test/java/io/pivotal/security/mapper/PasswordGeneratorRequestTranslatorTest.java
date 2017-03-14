@@ -5,7 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;

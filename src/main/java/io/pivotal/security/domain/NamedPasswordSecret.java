@@ -1,10 +1,10 @@
 package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
 import org.springframework.util.Assert;

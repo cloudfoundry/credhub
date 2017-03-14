@@ -13,9 +13,12 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
+import io.pivotal.security.request.DefaultSecretGenerateRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
@@ -92,13 +95,22 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
-  public ResponseEntity generate(InputStream requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
-    return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler, jsonContextFactory.getObject().parse(requestBody));
+  public ResponseEntity generate(@RequestBody @Validated BaseSecretGenerateRequest requestBody,
+                                 HttpServletRequest request,
+                                 Authentication authentication) throws Exception {
+    if(requestBody instanceof DefaultSecretGenerateRequest){
+      InputStream inputStream = requestBody.getInputStream();
+      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(inputStream);
+      return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler, parsedRequestBody);
+    } else {
+//     requestBody.createNewVersion()
+      return null;
+    }
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   public ResponseEntity set(
-      @RequestBody @Validated BaseSecretSetRequest requestBody,
+      @RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
@@ -325,7 +337,9 @@ public class SecretsController {
 
       NamedSecret storedNamedSecret;
       if (willWrite) {
-        storedNamedSecret = secretKind.lift(namedSecretHandler.make(secretPath, parsedRequest)).apply(existingNamedSecret);
+        SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make = namedSecretHandler.make(secretPath, parsedRequest);
+        CheckedFunction<NamedSecret, NoSuchAlgorithmException> lift = secretKind.lift(make);
+        storedNamedSecret = lift.apply(existingNamedSecret);
         storedNamedSecret = secretDataService.save(storedNamedSecret);
       } else {
         // To catch invalid parameters, validate request even though we throw away the result.

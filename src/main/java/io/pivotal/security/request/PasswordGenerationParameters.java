@@ -1,30 +1,27 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import io.pivotal.security.controller.v1.RequestParameters;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @JsonInclude(NON_DEFAULT)
-public class PasswordGenerationParameters implements RequestParameters {
+public class PasswordGenerationParameters implements RequestParameters{
   // Value Parameters
-  @JsonIgnore
+  @JsonProperty(access = Access.WRITE_ONLY)
   private int length;
 
-  @JsonProperty(value = "exclude_lower", index = 0)
   private boolean excludeLower;
 
-  @JsonProperty(value = "exclude_number", index = 1)
   private boolean excludeNumber;
 
-  @JsonProperty(value = "exclude_upper", index = 2)
   private boolean excludeUpper;
 
-  @JsonProperty(value = "include_special", index = 3)
   private boolean includeSpecial;
 
-  @JsonProperty(value = "only_hex", index = 4)
   private boolean onlyHex;
 
   public int getLength() {

@@ -1,6 +1,6 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;

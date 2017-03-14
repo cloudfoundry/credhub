@@ -99,6 +99,22 @@ public class SecretsControllerSetTest {
     });
 
     describe("setting a secret", () -> {
+      it("should return an error while attempting to create a new secret with an unknown/garbage type", () -> {
+        final MockHttpServletRequestBuilder put = put("/api/v1/data")
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{" +
+            "  \"type\":\"foo\"," +
+            "  \"name\":\"" + secretName + "\"," +
+            "  \"value\":\"" + secretValue + "\"" +
+            "}");
+
+        final String errorMessage = "The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'.";
+        mockMvc.perform(put)
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.error").value(errorMessage));
+      });
+
       describe("via parameter in request body", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")

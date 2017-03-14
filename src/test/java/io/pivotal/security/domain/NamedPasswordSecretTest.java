@@ -2,8 +2,8 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 

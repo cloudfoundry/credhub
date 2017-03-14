@@ -3,7 +3,7 @@ package io.pivotal.security.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;

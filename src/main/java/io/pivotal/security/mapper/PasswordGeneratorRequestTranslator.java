@@ -1,7 +1,7 @@
 package io.pivotal.security.mapper;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.PassayStringSecretGenerator;

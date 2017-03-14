@@ -2,9 +2,10 @@ package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import org.junit.runner.RunWith;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -12,12 +13,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @RunWith(Spectrum.class)
 public class PasswordGenerationParametersTest {
 
-  private ObjectMapper objectMapper;
+  private ObjectMapper objectMapper = JsonHelper.createObjectMapper();
 
   {
-    beforeEach(() -> {
-      objectMapper = new ObjectMapper();
-    });
 
     it("is invalid when all charsets are excluded", () -> {
       assertThat(makeParameters(true, true, false, true, false).isValid(), equalTo(false));
@@ -55,6 +53,7 @@ public class PasswordGenerationParametersTest {
 
   private PasswordGenerationParameters makeParameters(boolean excludeLower, boolean excludeUpper, boolean includeSpecial, boolean excludeNumber, boolean onlyHex) {
     return new PasswordGenerationParameters()
+          .setLength(30)
           .setExcludeLower(excludeLower)
           .setExcludeUpper(excludeUpper)
           .setExcludeNumber(excludeNumber)

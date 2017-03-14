@@ -3,13 +3,13 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.PasswordGenerationParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -36,7 +36,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -48,10 +50,17 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -122,6 +131,18 @@ public class SecretsControllerGenerateTest {
         }).when(secretDataService).save(any(NamedSecret.class));
       });
 
+      it("for a with an unknown/garbage type should return an error message", () -> {
+        final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
+
+        mockMvc.perform(post)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
+      });
+
       it("for a new value secret should return an error message", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/data")
             .accept(APPLICATION_JSON)
@@ -132,6 +153,18 @@ public class SecretsControllerGenerateTest {
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+      });
+
+      it("for a new json secret should return an error message", () -> {
+        final MockHttpServletRequestBuilder post = post("/api/v1/data")
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
+
+        mockMvc.perform(post)
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
       });
 
       describe("when name does not have a leading slash in the request json", () -> {
