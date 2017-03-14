@@ -124,7 +124,7 @@ public class AccessEntryControllerTest {
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
             assertThat(actualRequest.getAccessControlEntries(),
                 hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
-                    hasProperty("operations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
+                    hasProperty("allowedOperations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
           });
         });
       });

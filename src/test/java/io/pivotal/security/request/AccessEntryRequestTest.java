@@ -36,7 +36,7 @@ public class AccessEntryRequestTest {
         assertThat(actual.getAccessControlEntries(), contains(
             allOf(
                 hasProperty("actor", equalTo("someone")),
-                hasProperty("operations", hasItems(AccessControlOperation.READ))
+                hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))
             )
         ));
       });

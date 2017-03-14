@@ -67,11 +67,11 @@ public class AccessControlDataServiceTest {
 
           assertThat(response.getAccessControlList(), hasItems(
             allOf(hasProperty("actor", equalTo("Luke")),
-              hasProperty("operations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))
+              hasProperty("allowedOperations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))
           ));
           assertThat(response.getAccessControlList(), hasItems(
             allOf(hasProperty("actor", equalTo("Leia")),
-              hasProperty("operations", hasItems(AccessControlOperation.READ)))));
+              hasProperty("allowedOperations", hasItems(AccessControlOperation.READ)))));
         });
       });
 
@@ -90,8 +90,8 @@ public class AccessControlDataServiceTest {
           assertThat(response.getCredentialName(), equalTo("/lightsaber2"));
           assertThat(response.getAccessControlList().size(), equalTo(1));
           assertThat(response.getAccessControlList().get(0).getActor(), equalTo("Luke"));
-          assertThat(response.getAccessControlList().get(0).getOperations().size(), equalTo(1));
-          assertThat(response.getAccessControlList().get(0).getOperations(), hasItem(AccessControlOperation.READ));
+          assertThat(response.getAccessControlList().get(0).getAllowedOperations().size(), equalTo(1));
+          assertThat(response.getAccessControlList().get(0).getAllowedOperations(), hasItem(AccessControlOperation.READ));
         });
       });
     });
@@ -107,9 +107,9 @@ public class AccessControlDataServiceTest {
 
           assertThat(response.getAccessControlList(), containsInAnyOrder(
             allOf(hasProperty("actor", equalTo("Luke")),
-              hasProperty("operations", hasItems(AccessControlOperation.WRITE))),
+              hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
             allOf(hasProperty("actor", equalTo("Leia")),
-              hasProperty("operations", hasItems(AccessControlOperation.READ))))
+              hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
           );
         });
       });
@@ -128,9 +128,9 @@ public class AccessControlDataServiceTest {
         it("removes the ACE from the ACL", () -> {
           assertThat(subject.getAccessControlList("/lightsaber").getAccessControlList(), containsInAnyOrder(
               allOf(hasProperty("actor", equalTo("Luke")),
-                  hasProperty("operations", hasItems(AccessControlOperation.WRITE))),
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
               allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("operations", hasItems(AccessControlOperation.READ))))
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
           );
           subject.deleteAccessControlEntry("/lightsaber", "Luke");
 
@@ -139,7 +139,7 @@ public class AccessControlDataServiceTest {
               not(hasItem(hasProperty("actor", equalTo("Luke")))));
           assertThat(accessControlList, contains(
               allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("operations", hasItems(AccessControlOperation.READ))))
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
           );
         });
       });

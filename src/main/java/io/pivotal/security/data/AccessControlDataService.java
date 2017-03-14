@@ -11,7 +11,6 @@ import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,42 +29,15 @@ public class AccessControlDataService {
   }
 
   public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
-    SecretName secretName = secretDataService.findSecretName(request.getCredentialName());
+    SecretName secretName = findSecretName(request);
 
-    if (secretName == null){
-      throw new EntryNotFoundException("error.resource_not_found");
-    }
-
-    List<AccessEntryData> accessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
+    List<AccessEntryData> existingAccessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
 
     for (AccessControlEntry ace : request.getAccessControlEntries()) {
-      Optional<AccessEntryData> accessEntry = accessEntries.stream()
-        .filter((accessEntryData -> accessEntryData.getActor().equals(ace.getActor())))
-        .findFirst();
-
-      if (accessEntry.isPresent()) {
-        for (AccessControlOperation operation : ace.getOperations()) {
-          switch (operation) {
-            case READ:
-              accessEntry.get().setReadPermission(true);
-              break;
-            case WRITE:
-              accessEntry.get().setWritePermission(true);
-              break;
-          }
-        }
-        accessEntryRepository.saveAndFlush(accessEntry.get());
-      } else {
-        List<AccessControlOperation> operations = ace.getOperations();
-        accessEntryRepository.saveAndFlush(new AccessEntryData(secretName,
-          ace.getActor(),
-          operations.contains(AccessControlOperation.READ),
-          operations.contains(AccessControlOperation.WRITE)
-        ));
-      }
+      upsertAccessEntryOperations(secretName, existingAccessEntries, ace.getActor(), ace.getAllowedOperations());
     }
 
-    List<AccessControlEntry> responseAces = transformAllAccessEntries(secretName);
+    List<AccessControlEntry> responseAces = createViewsForAllAcesWithName(secretName);
 
     return new AccessControlListResponse(secretName.getName(), responseAces);
   }
@@ -75,10 +47,10 @@ public class AccessControlDataService {
     List<AccessControlEntry> responseAces = null;
 
     if (secretName != null) {
-      responseAces = transformAllAccessEntries(secretName);
+      responseAces = createViewsForAllAcesWithName(secretName);
     }
 
-    if (responseAces == null || secretName == null){
+    if (responseAces == null || secretName == null) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
 
@@ -92,27 +64,50 @@ public class AccessControlDataService {
       rows = accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
     }
 
-    if (secretName == null || rows == 0){
+    if (secretName == null || rows == 0) {
       throw new EntryNotFoundException("error.acl.not_found");
     }
   }
 
-  private AccessControlEntry transformData(AccessEntryData data) {
+  private void upsertAccessEntryOperations(SecretName secretName, List<AccessEntryData> accessEntries, String actor, List<AccessControlOperation> operations) {
+    AccessEntryData entry = findAccessEntryForActor(accessEntries, actor);
+
+    if (entry == null) {
+      entry = new AccessEntryData(secretName, actor);
+    }
+
+    entry.enableOperations(operations);
+    accessEntryRepository.saveAndFlush(entry);
+  }
+
+  private SecretName findSecretName(AccessEntryRequest request) {
+    final SecretName secretName = secretDataService.findSecretName(request.getCredentialName());
+
+    if (secretName == null) {
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
+    return secretName;
+  }
+
+  private AccessControlEntry createViewFor(AccessEntryData data) {
     AccessControlEntry entry = new AccessControlEntry();
-    List<AccessControlOperation> operations = new ArrayList<>();
-    if (data.getReadPermission()) {
-      operations.add(AccessControlOperation.READ);
-    }
-    if (data.getWritePermission()) {
-      operations.add(AccessControlOperation.WRITE);
-    }
-    entry.setOperations(operations);
+    List<AccessControlOperation> operations = data.generateAccessControlOperations();
+    entry.setAllowedOperations(operations);
     entry.setActor(data.getActor());
     return entry;
   }
 
-  private List<AccessControlEntry> transformAllAccessEntries(SecretName secretName) {
+  private List<AccessControlEntry> createViewsForAllAcesWithName(SecretName secretName) {
     return accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid())
-      .stream().map(this::transformData).collect(Collectors.toList());
+        .stream()
+        .map(this::createViewFor)
+        .collect(Collectors.toList());
+  }
+
+  public AccessEntryData findAccessEntryForActor(List<AccessEntryData> accessEntries, String actor) {
+    Optional<AccessEntryData> temp = accessEntries.stream()
+        .filter(accessEntryData -> accessEntryData.getActor().equals(actor))
+        .findFirst();
+    return temp.isPresent() ? temp.get() : null;
   }
 }
