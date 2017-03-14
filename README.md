@@ -7,7 +7,7 @@ such secrets.
  
 * [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
  
-CredHub is intended to be deployed by [BOSH](bosh.io) using the [credhub-release](https://github.com/pivotal-cf/credhub-release) BOSH release. This repository is **not intended to be directly deployable** and is for development only.
+CredHub is intended to be deployed by [BOSH](bosh.io) using the [credhub-release](https://github.com/pivotal-cf/credhub-release) BOSH release. This repository is for development and is **not intended to be directly deployable**.
 
 Additional repos:
 
@@ -15,11 +15,36 @@ Additional repos:
 * [credhub-release](https://github.com/pivotal-cf/credhub-release): BOSH release of CredHub server
 * [credhub-acceptance-tests](https://github.com/cloudfoundry-incubator/credhub-acceptance-tests): integration tests written in Go.
 
-## Development Notes
+# Contributing to CredHub
+
+The Cloud Foundry team uses GitHub and accepts contributions via [pull request](https://help.github.com/articles/using-pull-requests).
+
+## Contributor License Agreement
+
+Follow these steps to make a contribution to any of our open source repositories:
+
+1. Ensure that you have completed our CLA Agreement for
+  [individuals](https://www.cloudfoundry.org/pdfs/CFF_Individual_CLA.pdf) or
+  [corporations](https://www.cloudfoundry.org/pdfs/CFF_Corporate_CLA.pdf).
+
+1. Set your name and email (these should match the information on your submitted CLA)
+
+        git config --global user.name "Firstname Lastname"
+        git config --global user.email "your_email@example.com"
+
+## General Workflow
+
+1. Fork the repository
+1. Create a feature branch (`git checkout -b <my_new_branch>`)
+1. Make changes on your branch
+1. Test your changes locally (see next section) and in a [bosh-lite](https://github.com/cloudfoundry/bosh-lite) or other test environment.
+1. Push to your fork (`git push origin <my_new_branch>`) and submit a pull request
+
+We favor pull requests with very small, single commits with a single purpose. Your pull request is much more likely to be accepted if it is small and focused with a clear message that conveys the intent of your change.
+
+### Development Configuration
 
 Launching in production directly using the `bootRun` target is **unsafe**, as you will launch with a `dev` profile, which has checked-in secret keys in `application-dev.yml`.
-
-### Configuration
 
 #### Generally
 
@@ -70,9 +95,9 @@ In `application-dev.yml` there are two relevant settings:
 
 For convenience, the CredHub team runs a public UAA whose IP is in the default `application-dev.yml` manifest. The login and password are `credhub`/`password`. This public UAA is for local development usage only! You will need to skip SSL validation in order to use it.
 
-### Starting the server with different databases
+#### Starting the server with different databases
 
-#### H2 (the default)
+##### H2 (the default)
 
 H2 datasource configuration is in `application-dev-h2.yml`.
 
@@ -80,7 +105,7 @@ H2 datasource configuration is in `application-dev-h2.yml`.
 ./start_server.sh
 ```
 
-#### PostgreSQL
+##### PostgreSQL
 
 Postgres datasource configuration is in `application-dev-postgres.yml`.
 
@@ -96,7 +121,7 @@ Then to run in development mode with Postgres
 ./start_server.sh -Dspring.profiles.active=dev-postgres
 ```
 
-#### MariaDB
+##### MariaDB
 
 MariaDB datasource configuration is in `application-dev-mysql.yml`.
 
@@ -116,7 +141,7 @@ Then to run in development mode with MariaDB:
 ./start_server.sh -Dspring.profiles.active=dev-mysql
 ```
 
-### Running tests with different databases
+#### Running tests with different databases
 
 Testing with different databases requires you to set a system property with the profile corresponding to your desired database. For example, to test with H2, you'll need to run the tests with the `-Dspring.profiles.active=unit-test-h2` profile.
 
