@@ -7,7 +7,7 @@ such secrets.
  
 * [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
  
-CredHub is intended to be deployed by [BOSH](bosh.io) using the [credhub-release](https://github.com/pivotal-cf/credhub-release) BOSH release. This repository is _not intended to be directly deployable_ and is for development only.
+CredHub is intended to be deployed by [BOSH](bosh.io) using the [credhub-release](https://github.com/pivotal-cf/credhub-release) BOSH release. This repository is **not intended to be directly deployable** and is for development only.
 
 Additional repos:
 
