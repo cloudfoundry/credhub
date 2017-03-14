@@ -1,6 +1,7 @@
 package io.pivotal.security.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -97,5 +98,9 @@ public class JsonHelper {
         description.appendText("getMessage() should equal ").appendValue(expectedMessage);
       }
     };
+  }
+
+  public static JsonNode parse(String jsonString) throws Exception {
+    return objectMapper.readTree(jsonString);
   }
 }
