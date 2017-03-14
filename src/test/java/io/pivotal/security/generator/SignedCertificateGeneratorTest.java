@@ -238,7 +238,7 @@ public class SignedCertificateGeneratorTest {
 
     describe("a generated issuer-signed childCertificate", () -> {
       beforeEach(() -> {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
         generator.initialize(1024); // doesn't matter for testing
         issuerKeyPair = generator.generateKeyPair();
         issuerPrivateKey = issuerKeyPair.getPrivate();
@@ -277,7 +277,7 @@ public class SignedCertificateGeneratorTest {
         builderParameters.addCertStore(certStore);
         builderParameters.setRevocationEnabled(false);
 
-        final CertPathBuilder certPathBuilder = CertPathBuilder.getInstance("PKIX", "BC");
+        final CertPathBuilder certPathBuilder = CertPathBuilder.getInstance("PKIX", BouncyCastleProvider.PROVIDER_NAME);
         final CertPathBuilderResult builderResult = certPathBuilder.build(builderParameters);
         builderResult.getCertPath();
       });
@@ -285,7 +285,7 @@ public class SignedCertificateGeneratorTest {
 
     describe("a self-signed certificate", () -> {
       beforeEach(() -> {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
         generator.initialize(1024); // doesn't matter for testing
         certKeyPair = generator.generateKeyPair();
 
@@ -310,7 +310,7 @@ public class SignedCertificateGeneratorTest {
 
     describe("a generated self-signed CA", () -> {
       beforeEach(() -> {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", "BC");
+        KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME);
         generator.initialize(1024); // doesn't matter for testing
         issuerKeyPair = generator.generateKeyPair();
 

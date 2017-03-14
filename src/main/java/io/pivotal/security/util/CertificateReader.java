@@ -10,6 +10,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 
 import java.io.ByteArrayInputStream;
@@ -27,7 +28,7 @@ public class CertificateReader {
 
   public CertificateReader(String pemString) {
     try {
-      certificate = (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
+      certificate = (X509Certificate) CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
           .generateCertificate(new ByteArrayInputStream(pemString.getBytes()));
       certificateHolder = (X509CertificateHolder) (new PEMParser((new StringReader(pemString))).readObject());
     } catch (Exception e) {

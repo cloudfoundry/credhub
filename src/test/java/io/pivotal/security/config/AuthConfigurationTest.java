@@ -8,6 +8,7 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,7 +156,7 @@ public class AuthConfigurationTest {
   }
 
   private X509Certificate cert(String string) throws CertificateException, NoSuchProviderException {
-    return (X509Certificate) CertificateFactory.getInstance("X.509", "BC")
+    return (X509Certificate) CertificateFactory.getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
       .generateCertificate(new ByteArrayInputStream(string.getBytes()));
   }
 

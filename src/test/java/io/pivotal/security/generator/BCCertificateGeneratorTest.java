@@ -83,7 +83,7 @@ public class BCCertificateGeneratorTest {
       rootCaDn = new X500Name("O=foo,ST=bar,C=root");
       rootCaKeyPair = fakeKeyPairGenerator.generate();
       X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(), rootCaDn, rootCaDn, true);
-      rootCaX509Certificate = new JcaX509CertificateConverter().setProvider("BC").getCertificate(caX509CertHolder);
+      rootCaX509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
       rootCa = new Certificate(
           null,
           CertificateFormatter.pemOf(rootCaX509Certificate),
@@ -114,7 +114,7 @@ public class BCCertificateGeneratorTest {
           );
 
           childX509Certificate = new JcaX509CertificateConverter()
-              .setProvider("BC")
+              .setProvider(BouncyCastleProvider.PROVIDER_NAME)
               .getCertificate(childCertificateHolder);
 
           when(
@@ -153,7 +153,7 @@ public class BCCertificateGeneratorTest {
           intermediateCaDn = new X500Name("O=foo,ST=bar,C=intermediate");
           intermediateCaKeyPair = fakeKeyPairGenerator.generate();
           X509CertificateHolder intermediateCaCertificateHolder = makeCert(intermediateCaKeyPair, rootCaKeyPair.getPrivate(), rootCaDn, intermediateCaDn, true);
-          intermediateX509Certificate = new JcaX509CertificateConverter().setProvider("BC").getCertificate(intermediateCaCertificateHolder);
+          intermediateX509Certificate = new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(intermediateCaCertificateHolder);
           intermediateCa = new Certificate(
               null,
               CertificateFormatter.pemOf(intermediateX509Certificate),
@@ -170,7 +170,7 @@ public class BCCertificateGeneratorTest {
           );
 
           childX509Certificate = new JcaX509CertificateConverter()
-              .setProvider("BC")
+              .setProvider(BouncyCastleProvider.PROVIDER_NAME)
               .getCertificate(childCertificateHolder);
 
           when(
@@ -198,7 +198,7 @@ public class BCCertificateGeneratorTest {
 
     describe("when the selfSign flag is set", () -> {
       final Supplier<X509Certificate> certificate = let(() ->
-          new JcaX509CertificateConverter().setProvider("BC").getCertificate(generateX509SelfSignedCert())
+          new JcaX509CertificateConverter().setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(generateX509SelfSignedCert())
       );
 
       beforeEach(() -> {
@@ -237,7 +237,7 @@ public class BCCertificateGeneratorTest {
                                          boolean isCA) throws OperatorCreationException, NoSuchAlgorithmException, CertIOException {
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo.getInstance(certKeyPair.getPublic()
         .getEncoded());
-    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider("BC")
+    ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME)
         .build(caPrivateKey);
 
     CurrentTimeProvider currentTimeProvider = new CurrentTimeProvider();
