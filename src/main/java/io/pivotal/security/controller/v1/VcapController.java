@@ -2,10 +2,10 @@ package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
+import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.service.JsonInterpolationService;
 import org.apache.logging.log4j.core.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.StreamUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +25,8 @@ public class VcapController {
   public static final String API_V1 = "/api/v1";
   private final JsonInterpolationService jsonInterpolationService;
 
+  @Autowired
+  SecretDataService secretDataService;
 
   @Autowired
   VcapController(JsonInterpolationService jsonInterpolationService) {
@@ -37,7 +39,7 @@ public class VcapController {
 
     DocumentContext responseJson;
     try {
-      responseJson = jsonInterpolationService.interpolateCredhubReferences(requestAsString);
+      responseJson = jsonInterpolationService.interpolateCredhubReferences(requestAsString, secretDataService);
     } catch (InvalidJsonException e) {
       return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
