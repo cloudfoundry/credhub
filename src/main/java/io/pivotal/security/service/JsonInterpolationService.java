@@ -6,6 +6,7 @@ import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import net.minidev.json.JSONArray;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +55,11 @@ public class JsonInterpolationService {
             }
             String secretName = getSecretNameFromRef((String) credhubRef);
             NamedSecret namedSecret = secretDataService.findMostRecent(secretName);
-            propertiesMap.put("credentials", ((NamedJsonSecret) namedSecret).getValue());
+            if (namedSecret instanceof NamedJsonSecret) {
+              propertiesMap.put("credentials", ((NamedJsonSecret) namedSecret).getValue());
+            } else {
+              throw new ParameterizedValidationException("error.invalid_interpolation_type", secretName);
+            }
           }
         }
       }

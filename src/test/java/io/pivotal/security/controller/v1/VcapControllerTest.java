@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedJsonSecret;
+import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.assertj.core.util.Maps;
 import org.junit.runner.RunWith;
@@ -94,6 +95,36 @@ public class VcapControllerTest {
             ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.VCAP_SERVICES.p-config-server[0].credentials.secret1").value(equalTo("secret1-value")))
                 .andExpect(jsonPath("$.VCAP_SERVICES.p-something-else[0].credentials.secret2").value(equalTo("secret2-value")));
+          });
+        });
+
+        describe("when the requested credential is not a NamedJsonSecret", () -> {
+          it("should return an error", () -> {
+            NamedValueSecret valueSecret = mock(NamedValueSecret.class);
+            doReturn("something").when(valueSecret).getValue();
+
+            doReturn(
+              valueSecret
+            ).when(mockSecretDataService).findMostRecent("/cred1");
+
+            mockMvc.perform(post("/api/v1/vcap")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(
+                "{" +
+                  "  \"VCAP_SERVICES\": {" +
+                  "    \"p-config-server\": [" +
+                  "      {" +
+                  "        \"credentials\": {" +
+                  "          \"credhub-ref\": \"((/cred1))\"" +
+                  "        }," +
+                  "        \"label\": \"p-config-server\"" +
+                  "      }" +
+                  "    ]" +
+                  "  }" +
+                  "}"
+              )
+            ).andExpect(status().is4xxClientError())
+              .andExpect(jsonPath("$.error", equalTo("The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.")));
           });
         });
 
