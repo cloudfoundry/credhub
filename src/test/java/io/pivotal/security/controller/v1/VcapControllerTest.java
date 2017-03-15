@@ -151,7 +151,7 @@ public class VcapControllerTest {
                   "}"
               )
             ).andExpect(status().is4xxClientError())
-              .andExpect(jsonPath("$.error", equalTo("The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.")));
+              .andExpect(jsonPath("$.error", equalTo("The request could not be completed because a reference credential could not be accessed. Please update and retry your request.")));
           });
         });
 

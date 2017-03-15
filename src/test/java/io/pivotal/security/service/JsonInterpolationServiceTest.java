@@ -11,6 +11,7 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.assertj.core.util.Maps;
 import org.junit.runner.RunWith;
 
+import java.io.InvalidObjectException;
 import java.util.Map;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -132,7 +133,7 @@ public class JsonInterpolationServiceTest {
           subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
         });
 
-        itThrows("an exception when credential is not accessible in datastore", ParameterizedValidationException.class, () -> {
+        itThrows("an exception when credential is not accessible in datastore", InvalidObjectException.class, () -> {
           String inputJson = "{" +
             "  \"VCAP_SERVICES\": {" +
             "    \"p-config-server\": [" +

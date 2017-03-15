@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InvalidObjectException;
 
 @SuppressWarnings("unused")
 @RestController
@@ -61,5 +62,11 @@ public class VcapController {
   public ResponseError handleInvalidTypeAccess(ParameterizedValidationException exception) throws IOException {
     String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
     return new ResponseError(errorMessage);
+  }
+
+  @ExceptionHandler({InvalidObjectException.class})
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) throws IOException {
+    return new ResponseError(messageSourceAccessor.getMessage(exception.getMessage()));
   }
 }

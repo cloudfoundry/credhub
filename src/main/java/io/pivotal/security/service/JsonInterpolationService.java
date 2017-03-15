@@ -10,6 +10,7 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import net.minidev.json.JSONArray;
 import org.springframework.stereotype.Service;
 
+import java.io.InvalidObjectException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class JsonInterpolationService {
             String secretName = getSecretNameFromRef((String) credhubRef);
             NamedSecret namedSecret = secretDataService.findMostRecent(secretName);
             if (namedSecret == null)
-              throw new ParameterizedValidationException("error.invalid_interpolation_type", secretName);
+              throw new InvalidObjectException("error.invalid_access");
             if (namedSecret instanceof NamedJsonSecret) {
               propertiesMap.put("credentials", ((NamedJsonSecret) namedSecret).getValue());
             } else {
