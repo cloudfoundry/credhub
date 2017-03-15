@@ -24,8 +24,10 @@ import javax.validation.constraints.Pattern;
     @JsonSubTypes.Type(name = "rsa",          value = RsaSetRequest.class)
 })
 abstract public class BaseSecretSetRequest {
+  public static final String STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES = "^(?>(?:/?[^/]+))*$";
+
   @NotEmpty(message = "error.missing_name")
-  @Pattern(regexp = "^(?>(?:/?[^/]+))*$", message = "error.invalid_name_has_slash")
+  @Pattern(regexp = STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES, message = "error.invalid_name_has_slash")
   private String name;
 
   @NotEmpty(message = "error.type_invalid")
