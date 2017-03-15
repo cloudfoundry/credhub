@@ -55,6 +55,8 @@ public class JsonInterpolationService {
             }
             String secretName = getSecretNameFromRef((String) credhubRef);
             NamedSecret namedSecret = secretDataService.findMostRecent(secretName);
+            if (namedSecret == null)
+              throw new ParameterizedValidationException("error.invalid_interpolation_type", secretName);
             if (namedSecret instanceof NamedJsonSecret) {
               propertiesMap.put("credentials", ((NamedJsonSecret) namedSecret).getValue());
             } else {

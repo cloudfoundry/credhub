@@ -6,6 +6,8 @@ import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedJsonSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import org.assertj.core.util.Maps;
 import org.junit.runner.RunWith;
 
@@ -103,6 +105,54 @@ public class JsonInterpolationServiceTest {
           assertThat(secondServiceCredentials.size(), equalTo(2));
           assertThat(secondServiceCredentials.get("secret3-1"), equalTo("secret3-1-value"));
           assertThat(secondServiceCredentials.get("secret3-2"), equalTo("secret3-2-value"));
+        });
+
+        itThrows("an exception when credential is not NamedJSONSecret", ParameterizedValidationException.class, () -> {
+          String inputJson = "{" +
+            "  \"VCAP_SERVICES\": {" +
+            "    \"p-config-server\": [" +
+            "      {" +
+            "        \"credentials\": {" +
+            "          \"credhub-ref\": \"((/password_cred))\"" +
+            "        }," +
+            "        \"label\": \"p-config-server\"" +
+            "      }" +
+            "    ]" +
+            "  }" +
+            "}";
+
+          NamedPasswordSecret passwordSecret = mock(NamedPasswordSecret.class);
+
+          SecretDataService mockSecretDataService = mock(SecretDataService.class);
+
+          doReturn(
+            passwordSecret
+          ).when(mockSecretDataService).findMostRecent("/password_cred");
+
+          subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
+        });
+
+        itThrows("an exception when credential is not accessible in datastore", ParameterizedValidationException.class, () -> {
+          String inputJson = "{" +
+            "  \"VCAP_SERVICES\": {" +
+            "    \"p-config-server\": [" +
+            "      {" +
+            "        \"credentials\": {" +
+            "          \"credhub-ref\": \"((/missing_cred))\"" +
+            "        }," +
+            "        \"label\": \"p-config-server\"" +
+            "      }" +
+            "    ]" +
+            "  }" +
+            "}";
+
+          SecretDataService mockSecretDataService = mock(SecretDataService.class);
+
+          doReturn(
+            null
+          ).when(mockSecretDataService).findMostRecent("/missing_cred");
+
+          subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
         });
       });
     });

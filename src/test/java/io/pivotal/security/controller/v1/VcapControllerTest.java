@@ -128,6 +128,33 @@ public class VcapControllerTest {
           });
         });
 
+        describe("when the requested credential is not accessible", () -> {
+          it("should return an error", () -> {
+            doReturn(
+              null
+            ).when(mockSecretDataService).findMostRecent("/cred1");
+
+            mockMvc.perform(post("/api/v1/vcap")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(
+                "{" +
+                  "  \"VCAP_SERVICES\": {" +
+                  "    \"p-config-server\": [" +
+                  "      {" +
+                  "        \"credentials\": {" +
+                  "          \"credhub-ref\": \"((/cred1))\"" +
+                  "        }," +
+                  "        \"label\": \"p-config-server\"" +
+                  "      }" +
+                  "    ]" +
+                  "  }" +
+                  "}"
+              )
+            ).andExpect(status().is4xxClientError())
+              .andExpect(jsonPath("$.error", equalTo("The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.")));
+          });
+        });
+
         describe("when the services properties do not have credentials", () -> {
           it("is ignored", () -> {
             String inputJsonString = "{" +
