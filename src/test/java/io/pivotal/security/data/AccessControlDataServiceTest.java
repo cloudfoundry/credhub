@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -29,8 +31,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import java.util.List;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -96,12 +96,12 @@ public class AccessControlDataServiceTest {
       });
     });
 
-    describe("getAccessControlList", () -> {
+    describe("getAccessControlListResponse", () -> {
       beforeEach(this::seedDatabase);
 
       describe("when given an existing credential name", () -> {
         it("returns the access control list", () -> {
-          AccessControlListResponse response = subject.getAccessControlList("/lightsaber");
+          AccessControlListResponse response = subject.getAccessControlListResponse("/lightsaber");
 
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
@@ -116,7 +116,7 @@ public class AccessControlDataServiceTest {
 
       describe("when given a credential name that doesn't exist", () -> {
         itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
-          subject.getAccessControlList("/unicorn");
+          subject.getAccessControlListResponse("/unicorn");
         });
       });
     });
@@ -126,7 +126,7 @@ public class AccessControlDataServiceTest {
 
       describe("when given a credential and actor that exists in the ACL", () -> {
         it("removes the ACE from the ACL", () -> {
-          assertThat(subject.getAccessControlList("/lightsaber").getAccessControlList(), containsInAnyOrder(
+          assertThat(subject.getAccessControlListResponse("/lightsaber").getAccessControlList(), containsInAnyOrder(
               allOf(hasProperty("actor", equalTo("Luke")),
                   hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
               allOf(hasProperty("actor", equalTo("Leia")),
@@ -134,7 +134,8 @@ public class AccessControlDataServiceTest {
           );
           subject.deleteAccessControlEntry("/lightsaber", "Luke");
 
-          final List<AccessControlEntry> accessControlList = subject.getAccessControlList("/lightsaber").getAccessControlList();
+
+          final List<AccessControlEntry> accessControlList = subject.getAccessControlListResponse("/lightsaber").getAccessControlList();
           assertThat(accessControlList,
               not(hasItem(hasProperty("actor", equalTo("Luke")))));
           assertThat(accessControlList, contains(

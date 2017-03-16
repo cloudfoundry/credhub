@@ -42,7 +42,7 @@ public class AccessControlDataService {
     return new AccessControlListResponse(secretName.getName(), responseAces);
   }
 
-  public AccessControlListResponse getAccessControlList(String credentialName) {
+  public AccessControlListResponse getAccessControlListResponse(String credentialName) {
     SecretName secretName = secretDataService.findSecretName(credentialName);
     List<AccessControlEntry> responseAces = null;
 

@@ -62,7 +62,7 @@ public class AccessEntryController {
 
   @GetMapping(path = "/acls")
   AccessControlListResponse getAccessControlList(@RequestParam("credential_name") String credentialName) {
-    return accessControlDataService.getAccessControlList(credentialName);
+    return accessControlDataService.getAccessControlListResponse(credentialName);
   }
 
   @DeleteMapping(path="/aces")

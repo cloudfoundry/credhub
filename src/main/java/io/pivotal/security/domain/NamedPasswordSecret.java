@@ -2,12 +2,16 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
@@ -115,7 +119,12 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     this.setPasswordAndGenerationParameters(decryptedPassword, decryptedGenerationParameters);
   }
 
-  public static NamedPasswordSecret createNewVersion(NamedPasswordSecret existing, String name, String password, Encryptor encryptor) {
+  public static NamedPasswordSecret createNewVersion(
+      NamedPasswordSecret existing,
+      String name,
+      String password,
+      Encryptor encryptor,
+      List<AccessControlEntry> aces) {
     NamedPasswordSecret secret;
 
     if (existing == null) {
@@ -125,6 +134,11 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       secret.copyNameReferenceFrom(existing);
     }
 
+    List<AccessEntryData> acesData = aces.stream()
+        .map((entry) -> AccessEntryData.fromSecretName(secret.delegate.getSecretName(), entry))
+        .collect(Collectors.toList());
+
+    secret.delegate.getSecretName().setAccessControlList(acesData);
     secret.setEncryptor(encryptor);
     secret.setPasswordAndGenerationParameters(password, null);
     return secret;

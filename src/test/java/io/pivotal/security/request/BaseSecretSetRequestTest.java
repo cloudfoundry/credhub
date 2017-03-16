@@ -6,9 +6,6 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.helper.JsonHelper;
 import org.junit.runner.RunWith;
 
-import javax.validation.ConstraintViolation;
-import java.util.Set;
-
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
@@ -16,8 +13,17 @@ import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
 
 @RunWith(Spectrum.class)
 public class BaseSecretSetRequestTest {
@@ -177,6 +183,46 @@ public class BaseSecretSetRequestTest {
 
           JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
         });
+      });
+    });
+
+    describe("access control entries", () -> {
+      it("defaults to an empty list if not sent in the request", () -> {
+        // language=JSON
+        String json = "{\n" +
+            "  \"name\": \"some-name\",\n" +
+            "  \"type\": \"value\",\n" +
+            "  \"value\": \"some-value\",\n" +
+            "  \"overwrite\": true\n" +
+            "}";
+
+        final BaseSecretSetRequest request = JsonHelper.deserialize(json, BaseSecretSetRequest.class);
+        assertThat(request.getAccessControlEntries(), empty());
+      });
+
+      it("should parse access control entry included in the request", () -> {
+        // language=JSON
+        String json = "{\n" +
+            "  \"name\": \"some-name\",\n" +
+            "  \"type\": \"value\",\n" +
+            "  \"value\": \"some-value\",\n" +
+            "  \"overwrite\": true,\n" +
+            "  \"access_control_entries\": [\n" +
+            "    {\n" +
+            "      \"actor\": \"some-actor\",\n" +
+            "      \"operations\": [\n" +
+            "        \"read\",\n" +
+            "        \"write\"\n" +
+            "      ]\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
+        final BaseSecretSetRequest request = JsonHelper.deserialize(json, BaseSecretSetRequest.class);
+
+        final List<AccessControlOperation> operations = new ArrayList<>(Arrays.asList(AccessControlOperation.READ, AccessControlOperation.WRITE));
+        final List<AccessControlEntry> expectedACEs = new ArrayList<>(Arrays.asList(new AccessControlEntry("some-actor", operations)));
+
+        assertThat(request.getAccessControlEntries(), samePropertyValuesAs(expectedACEs));
       });
     });
   }

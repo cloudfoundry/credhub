@@ -3,10 +3,13 @@ package io.pivotal.security.domain;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.controller.v1.PasswordGenerationParameters;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -26,6 +29,8 @@ import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class NamedPasswordSecretTest {
+  private static List<AccessControlEntry> NO_ENTRIES_PROVIDED = new ArrayList<>();
+
   private Encryptor encryptor;
   private NamedPasswordSecret subject;
   private PasswordGenerationParameters generationParameters;
@@ -161,7 +166,7 @@ public class NamedPasswordSecretTest {
       });
 
       it("copies values from existing, except password", () -> {
-        NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(subject, "anything I AM IGNORED", "new password", encryptor);
+        NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(subject, "anything I AM IGNORED", "new password", encryptor, NO_ENTRIES_PROVIDED);
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getPassword(), equalTo("new password"));
@@ -172,7 +177,8 @@ public class NamedPasswordSecretTest {
             null,
             "/newName",
             "new password",
-            encryptor);
+            encryptor,
+            NO_ENTRIES_PROVIDED);
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getPassword(), equalTo("new password"));

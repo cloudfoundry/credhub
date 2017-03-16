@@ -8,6 +8,8 @@ import io.pivotal.security.domain.NamedSecret;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 @JsonTypeInfo(
     use         = JsonTypeInfo.Id.NAME,
@@ -35,6 +37,8 @@ abstract public class BaseSecretSetRequest {
 
   private boolean overwrite;
 
+  private List<AccessControlEntry> accessControlEntries = new ArrayList<>();
+
   public String getName() {
     return name;
   }
@@ -57,6 +61,14 @@ abstract public class BaseSecretSetRequest {
 
   public void setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
+  }
+
+  public List<AccessControlEntry> getAccessControlEntries() {
+    return accessControlEntries;
+  }
+
+  public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
+    this.accessControlEntries = accessControlEntries;
   }
 
   @JsonIgnore
