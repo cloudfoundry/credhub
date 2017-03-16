@@ -1,10 +1,13 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public abstract class BaseSecretPostRequest extends BaseSecretRequest {
-  private Boolean regenerate;
+  @JsonProperty(defaultValue = "false")
+  private boolean regenerate;
 
   public boolean isRegenerate() {
-    return regenerate != null && regenerate;
+    return regenerate;
   }
 
   public void setRegenerate(boolean regenerate) {

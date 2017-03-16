@@ -286,6 +286,7 @@ public class SecretsController {
 
   private BaseSecretPostRequest parseRequestJson(InputStream requestInputStream) throws IOException {
     String requestString = IOUtils.toString(new InputStreamReader(requestInputStream));
+    // First find out whether this is a generate or regenerate request
     boolean isRegenerateRequest;
     try {
       isRegenerateRequest = JsonPath.read(requestString, "$.regenerate");
@@ -293,6 +294,10 @@ public class SecretsController {
       // could have just returned null, that would have been pretty useful
       isRegenerateRequest = false;
     }
+    // If it's a regenerate request deserialization is simple; the generation case requires polymorphic deserialization
+    // See BaseSecretGenerateRequest to see how that's done. It would be nice if Jackson could pick a subclass based on
+    // an arbitrary function, since we want to consider both type and .regenerate. We could do custom deserialization
+    // but then we'd have to do the entire job by hand.
     BaseSecretPostRequest requestBody;
     if (isRegenerateRequest) {
       requestBody = objectMapper.readValue(requestString, SecretRegenerateRequest.class);
