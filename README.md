@@ -5,7 +5,8 @@ The CredHub server manages secrets like passwords, certificates, ssh keys, rsa k
 (arbitrary values), JSON blobs, and CAs. CredHub provides a REST API to get, set, generate, and securely store
 such secrets.
  
-* [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
+* [CredHub Tracker][1]
+[1]:https://www.pivotaltracker.com/n/projects/1977341
  
 CredHub is intended to be deployed by [BOSH](bosh.io) using the [credhub-release](https://github.com/pivotal-cf/credhub-release) BOSH release. This repository is for development and is **not intended to be directly deployable**.
 
