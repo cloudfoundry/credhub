@@ -1,5 +1,6 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.util.InstantMillisecondsConverter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;

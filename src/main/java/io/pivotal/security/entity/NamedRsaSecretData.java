@@ -1,5 +1,6 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.util.NamedRsaSecretHelper;
 import io.pivotal.security.view.SecretKind;
 
 import javax.persistence.Column;

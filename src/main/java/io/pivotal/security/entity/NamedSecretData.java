@@ -1,5 +1,6 @@
 package io.pivotal.security.entity;
 
+import io.pivotal.security.util.InstantMillisecondsConverter;
 import io.pivotal.security.view.SecretKind;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;

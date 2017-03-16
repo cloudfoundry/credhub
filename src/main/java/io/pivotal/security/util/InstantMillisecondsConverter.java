@@ -1,4 +1,4 @@
-package io.pivotal.security.entity;
+package io.pivotal.security.util;
 
 import javax.persistence.AttributeConverter;
 import java.time.Instant;

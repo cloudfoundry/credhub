@@ -1,5 +1,6 @@
-package io.pivotal.security.entity;
+package io.pivotal.security.util;
 
+import io.pivotal.security.entity.NamedRsaSecretData;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 

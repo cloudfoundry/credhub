@@ -1,4 +1,4 @@
-package io.pivotal.security.entity;
+package io.pivotal.security.util;
 
 import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;
