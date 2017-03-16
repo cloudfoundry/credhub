@@ -3,18 +3,11 @@ package io.pivotal.security.helper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import io.pivotal.security.entity.JpaAuditingHandler;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.apache.tomcat.jdbc.pool.DataSource;
-import static org.junit.Assert.fail;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.mockito.Mockito;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -31,6 +24,11 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 public class SpectrumHelper {
 
@@ -100,24 +98,15 @@ public class SpectrumHelper {
     return new ObjectMapper().writeValueAsString(o);
   }
 
-  public static Consumer<Long> mockOutCurrentTimeProvider(Object testInstance) {
-    final Supplier<MyTestContextManager> testContextManagerSupplier = Suppliers.memoize(() -> new MyTestContextManager(testInstance.getClass()))::get;
-    final CurrentTimeProvider mockCurrentTimeProvider = mock(CurrentTimeProvider.class);
-
-    beforeEach(() -> {
-      ApplicationContext applicationContext = testContextManagerSupplier.get().getApplicationContext();
-      final JpaAuditingHandler auditingHandler = applicationContext.getBean(JpaAuditingHandler.class);
-      auditingHandler.setDateTimeProvider(mockCurrentTimeProvider);
-    });
-
-    afterEach(() -> {
-      final ApplicationContext applicationContext = testContextManagerSupplier.get().getApplicationContext();
-      final CurrentTimeProvider realCurrentTimeProvider = applicationContext.getBean(CurrentTimeProvider.class);
-      final JpaAuditingHandler auditingHandler = applicationContext.getBean(JpaAuditingHandler.class);
-      auditingHandler.setDateTimeProvider(realCurrentTimeProvider);
-    });
-
+  public static Consumer<Long> mockOutCurrentTimeProvider(CurrentTimeProvider mockCurrentTimeProvider) {
     return (epochMillis) -> { when(mockCurrentTimeProvider.getNow()).thenReturn(getNow(epochMillis)); };
+  }
+
+  private static Calendar getNow(long epochMillis) {
+    Calendar.Builder builder = new Calendar.Builder();
+    builder.setInstant(epochMillis);
+    builder.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return builder.build();
   }
 
   private static void cleanMockBeans(Object testInstance) {
@@ -154,23 +143,12 @@ public class SpectrumHelper {
   }
 
   private static class MyTestContextManager extends TestContextManager {
-      MyTestContextManager(Class<?> testClass) {
+    MyTestContextManager(Class<?> testClass) {
       super(testClass);
     }
 
     ApplicationContext getApplicationContext() {
       return getTestContext().getApplicationContext();
     }
-
-    void autowireBean(Object existingBean) {
-      getApplicationContext().getAutowireCapableBeanFactory().autowireBean(existingBean);
-    }
-  }
-
-  private static Calendar getNow(long epochMillis) {
-    Calendar.Builder builder = new Calendar.Builder();
-    builder.setInstant(epochMillis);
-    builder.setTimeZone(TimeZone.getTimeZone("UTC"));
-    return builder.build();
   }
 }

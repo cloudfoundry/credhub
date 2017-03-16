@@ -11,6 +11,7 @@ import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -79,11 +80,14 @@ public class SecretsControllerRegenerateTest {
   @Autowired
   private Encryptor encryptor;
 
+  @MockBean
+  CurrentTimeProvider mockCurrentTimeProvider;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
 
-  private final Consumer<Long> fakeTimeSetter;
+  private Consumer<Long> fakeTimeSetter;
 
   private ResultActions response;
 
@@ -91,9 +95,10 @@ public class SecretsControllerRegenerateTest {
 
   {
     wireAndUnwire(this);
-    fakeTimeSetter = mockOutCurrentTimeProvider(this);
 
     beforeEach(() -> {
+      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
       when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new Password("generated-secret"));

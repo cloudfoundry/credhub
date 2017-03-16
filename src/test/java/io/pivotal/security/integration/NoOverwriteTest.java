@@ -5,10 +5,12 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -16,17 +18,15 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import java.time.Instant;
+import java.util.function.Consumer;
+
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
-import java.time.Instant;
-import java.util.function.Consumer;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -37,6 +37,10 @@ public class NoOverwriteTest {
 
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+
+  @MockBean
+  CurrentTimeProvider mockCurrentTimeProvider;
+
   private ResultActions[] responses;
   private Thread thread1;
   private Thread thread2;
@@ -49,9 +53,9 @@ public class NoOverwriteTest {
   {
     wireAndUnwire(this);
 
-    fakeTimeSetter = mockOutCurrentTimeProvider(this);
-
     beforeEach(() -> {
+      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+
       encryptionKeyCanaryMapper.mapUuidsToKeys();
       fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
