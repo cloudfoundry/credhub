@@ -2,8 +2,8 @@ CREATE CACHED TABLE access_entry (
   uuid BINARY(16) NOT NULL,
   secret_name_uuid BINARY(16) NOT NULL,
   actor VARCHAR_IGNORECASE(255) NOT NULL,
-  read_permission BOOL DEFAULT FALSE,
-  write_permission BOOL DEFAULT FALSE
+  read_permission BOOL DEFAULT FALSE NOT NULL,
+  write_permission BOOL DEFAULT FALSE NOT NULL
 );
 
 ALTER TABLE access_entry
