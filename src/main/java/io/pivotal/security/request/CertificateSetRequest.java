@@ -11,7 +11,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @SuppressWarnings("unused")
-public class CertificateSetRequest extends BaseSecretSetRequest {
+public class CertificateSetRequest extends BaseSecretPutRequest {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")

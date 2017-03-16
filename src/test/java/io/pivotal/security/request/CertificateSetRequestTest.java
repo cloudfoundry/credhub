@@ -30,7 +30,7 @@ public class CertificateSetRequestTest {
               "\"ca\":\"fake-ca\"" +
             "}" +
           "}";
-        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(json, BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseSecretPutRequest>> violations = deserializeAndValidate(json, BaseSecretPutRequest.class);
 
         assertThat(violations.size(), equalTo(0));
       });
@@ -45,7 +45,7 @@ public class CertificateSetRequestTest {
               "\"ca\":\"fake-ca\"" +
             "}" +
           "}";
-        BaseSecretSetRequest deserialize = deserialize(json, BaseSecretSetRequest.class);
+        BaseSecretPutRequest deserialize = deserialize(json, BaseSecretPutRequest.class);
 
         assertThat(deserialize, instanceOf(CertificateSetRequest.class));
 
@@ -58,7 +58,7 @@ public class CertificateSetRequestTest {
           "  \"name\": \"/example/certificate\",\n" +
           "  \"type\": \"certificate\"\n" +
           "}";
-        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(json, BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseSecretPutRequest>> violations = deserializeAndValidate(json, BaseSecretPutRequest.class);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
       });
@@ -71,7 +71,7 @@ public class CertificateSetRequestTest {
           "  \"type\": \"certificate\",\n" +
           "  \"value\": {}\n" +
           "}";
-        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(json, BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseSecretPutRequest>> violations = deserializeAndValidate(json, BaseSecretPutRequest.class);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_certificate_credentials")));
       });
@@ -88,7 +88,7 @@ public class CertificateSetRequestTest {
           "    \"private_key\": \"\"" +
           "  }" +
           "}";
-        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(json, BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseSecretPutRequest>> violations = deserializeAndValidate(json, BaseSecretPutRequest.class);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_certificate_credentials")));
       });

@@ -1,10 +1,14 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
@@ -14,8 +18,10 @@ import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
-import io.pivotal.security.request.BaseSecretSetRequest;
+import io.pivotal.security.request.BaseSecretPostRequest;
+import io.pivotal.security.request.BaseSecretPutRequest;
 import io.pivotal.security.request.DefaultSecretGenerateRequest;
+import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CheckedFunction;
@@ -30,6 +36,7 @@ import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.IOUtils;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -52,8 +59,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
@@ -78,39 +87,45 @@ public class SecretsController {
   private AuditLogService auditLogService;
   private MessageSourceAccessor messageSourceAccessor;
   private Encryptor encryptor;
+  private ObjectMapper objectMapper;
 
   public SecretsController(SecretDataService secretDataService,
                            NamedSecretGenerateHandler namedSecretGenerateHandler,
                            JsonContextFactory jsonContextFactory,
                            MessageSource messageSource,
                            AuditLogService auditLogService,
-                           Encryptor encryptor
-  ) {
+                           Encryptor encryptor,
+                           ObjectMapper objectMapper) {
     this.secretDataService = secretDataService;
     this.namedSecretGenerateHandler = namedSecretGenerateHandler;
     this.jsonContextFactory = jsonContextFactory;
     this.auditLogService = auditLogService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
     this.encryptor = encryptor;
+    this.objectMapper = objectMapper;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
-  public ResponseEntity generate(@RequestBody @Validated BaseSecretGenerateRequest requestBody,
+  public ResponseEntity generate(InputStream inputStream,
                                  HttpServletRequest request,
                                  Authentication authentication) throws Exception {
-    if(requestBody instanceof DefaultSecretGenerateRequest){
-      InputStream inputStream = requestBody.getInputStream();
-      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(inputStream);
+    InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
+    BaseSecretPostRequest requestBody = parseRequestJson(requestInputStream);
+    requestBody.validate();
+
+    if(true || requestBody instanceof DefaultSecretGenerateRequest){
+      requestInputStream.reset();
+      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
       return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler, parsedRequestBody);
     } else {
-//     requestBody.createNewVersion()
+//      requestBody.createNewVersion();
       return null;
     }
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   public ResponseEntity set(
-      @RequestBody BaseSecretSetRequest requestBody,
+      @RequestBody @Validated BaseSecretPutRequest requestBody,
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
@@ -235,7 +250,7 @@ public class SecretsController {
     return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request, authentication);
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, ParameterizedValidationException.class, InvalidJsonException.class})
+  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
     String errorMessage;
@@ -255,12 +270,36 @@ public class SecretsController {
     return new ResponseError(errorMessage);
   }
 
+  @ExceptionHandler(ParameterizedValidationException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  public ResponseError handleParameterizedValidationException(ParameterizedValidationException exception) throws Exception {
+    return createParameterizedErrorResponse(exception);
+  }
+
   @ExceptionHandler({MethodArgumentNotValidException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInvalidField(MethodArgumentNotValidException exception) throws IOException {
     ObjectError error = exception.getBindingResult().getAllErrors().get(0);
     String errorMessage = messageSourceAccessor.getMessage(error.getDefaultMessage());
     return new ResponseError(errorMessage);
+  }
+
+  private BaseSecretPostRequest parseRequestJson(InputStream requestInputStream) throws IOException {
+    String requestString = IOUtils.toString(new InputStreamReader(requestInputStream));
+    boolean isRegenerateRequest;
+    try {
+      isRegenerateRequest = JsonPath.read(requestString, "$.regenerate");
+    } catch(PathNotFoundException e) {
+      // could have just returned null, that would have been pretty useful
+      isRegenerateRequest = false;
+    }
+    BaseSecretPostRequest requestBody;
+    if (isRegenerateRequest) {
+      requestBody = objectMapper.readValue(requestString, SecretRegenerateRequest.class);
+    } else {
+      requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
+    }
+    return requestBody;
   }
 
   private ResponseEntity findWithAuditing(String nameSubstring,
@@ -376,7 +415,7 @@ public class SecretsController {
   private ResponseEntity performSet(
       HttpServletRequest request,
       Authentication authentication,
-      BaseSecretSetRequest requestBody) throws Exception {
+      BaseSecretPutRequest requestBody) throws Exception {
 
     final String secretName = requestBody.getName();
 

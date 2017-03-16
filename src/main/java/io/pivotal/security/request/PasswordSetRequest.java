@@ -7,7 +7,7 @@ import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class PasswordSetRequest extends BaseSecretSetRequest {
+public class PasswordSetRequest extends BaseSecretPutRequest {
   @NotEmpty(message = "error.missing_value")
   @JsonProperty("value")
   private String password;

@@ -131,7 +131,7 @@ public class SecretsControllerGenerateTest {
         }).when(secretDataService).save(any(NamedSecret.class));
       });
 
-      it("for a with an unknown/garbage type should return an error message", () -> {
+      it("for an unknown/garbage type should return an error message", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
@@ -356,7 +356,7 @@ public class SecretsControllerGenerateTest {
               .content("{\"name\":\"some-new-secret-name\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
+              .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
         });
 
         it("returns 400 when name is empty", () -> {

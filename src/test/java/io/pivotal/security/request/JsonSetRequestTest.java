@@ -36,7 +36,7 @@ public class JsonSetRequestTest {
       request.setValue(value);
       request.setOverwrite(true);
 
-      BaseSecretSetRequest deserialize = deserialize(serialize(request), BaseSecretSetRequest.class);
+      BaseSecretPutRequest deserialize = deserialize(serialize(request), BaseSecretPutRequest.class);
 
       assertThat(deserialize, instanceOf(JsonSetRequest.class));
     });
@@ -55,7 +55,7 @@ public class JsonSetRequestTest {
       request.setValue(value);
       request.setOverwrite(true);
 
-      Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations = validate(request);
+      Set<ConstraintViolation<BaseSecretPutRequest>> constraintViolations = validate(request);
 
       assertThat(constraintViolations.size(), equalTo(0));
     });
@@ -67,7 +67,7 @@ public class JsonSetRequestTest {
         request.setType("json");
         request.setOverwrite(true);
 
-        Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations = validate(request);
+        Set<ConstraintViolation<BaseSecretPutRequest>> constraintViolations = validate(request);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });

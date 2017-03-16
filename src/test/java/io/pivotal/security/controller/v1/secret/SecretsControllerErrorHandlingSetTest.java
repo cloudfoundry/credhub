@@ -167,7 +167,7 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
+                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
           });
 
           it("returns 400 when type is blank", () -> {
@@ -183,7 +183,7 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
+                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
           });
 
           it("returns 400 when type unknown", () -> {
@@ -199,7 +199,7 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'password', 'certificate', 'ssh' and 'rsa'."));
+                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
           });
 
           it("returns 400 when value is missing", () -> {

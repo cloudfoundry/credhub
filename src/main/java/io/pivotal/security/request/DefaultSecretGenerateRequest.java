@@ -5,15 +5,14 @@ import io.pivotal.security.domain.NamedSecret;
 import org.apache.commons.lang.NotImplementedException;
 
 public class DefaultSecretGenerateRequest extends BaseSecretGenerateRequest {
- // @NotNull(message = "error.missing_value")
-  private Object value;
+  private Object parameters;
 
-  public Object getValue() {
-    return value;
+  public Object getParameters() {
+    return parameters;
   }
 
-  public void setValue(Object value) {
-    this.value = value;
+  public void setParameters(Object parameters) {
+    this.parameters = parameters;
   }
 
   @Override
