@@ -3,17 +3,18 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedJsonSecret;
+import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.JsonSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.SecretView;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -21,22 +22,20 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.JsonHelper.serializeToString;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
@@ -56,14 +55,7 @@ public class SecretsControllerJsonSetTest {
   @SpyBean
   SecretDataService secretDataService;
 
-  @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
-
   private MockMvc mockMvc;
-
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-
-  private Consumer<Long> fakeTimeSetter;
 
   private final String secretName = "/my-namespace/secretForSetTest/secret-name";
 
@@ -73,9 +65,6 @@ public class SecretsControllerJsonSetTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-
-      fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
       resetAuditLogMock();
@@ -105,23 +94,15 @@ public class SecretsControllerJsonSetTest {
 
           response = mockMvc.perform(put);
 
-          NamedSecret expected = secretDataService.findMostRecent(secretName);
-          String expectedResponse = "{" +
-              "\"id\":\"" + expected.getUuid().toString() + "\"," +
-              "\"type\":\"json\"," +
-              "\"version_created_at\":\"" + expected.getVersionCreatedAt().toString() + "\"," +
-              "\"value\":{" +
-              "\"key\":\"value\"," +
-              "\"array\":[\"foo\",\"bar\"]," +
-              "\"fancy\":{" +
-              "\"num\":10" +
-              "}" +
-              "}" +
-              "}";
+          NamedJsonSecret expected = (NamedJsonSecret) secretDataService.findMostRecent(secretName);
 
-          response.andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(content().json(expectedResponse));
+          MockHttpServletResponse result = response.andExpect(status().isOk()).andReturn().getResponse();
+          SecretView secretView = JsonHelper.deserialize(result.getContentAsString(), SecretView.class);
+
+          assertThat(secretView.getUuid(), equalTo(expected.getUuid().toString()));
+          assertThat(secretView.getType(), equalTo("json"));
+          assertThat(secretView.getVersionCreatedAt().getEpochSecond(), equalTo(expected.getVersionCreatedAt().getEpochSecond()));
+          assertThat(secretView.getValue(), equalTo(expected.getValue()));
         });
       });
     });

@@ -6,22 +6,18 @@ import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Arrays;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -40,10 +36,6 @@ public class SecretRepositoryTest {
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
-  @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
-
-  private Consumer<Long> fakeTimeSetter;
   private String name;
 
   private UUID canaryUuid;
@@ -52,11 +44,7 @@ public class SecretRepositoryTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-
       name = "my-secret";
-      fakeTimeSetter.accept(345345L);
-
       canaryUuid = encryptionKeyCanaryMapper.getActiveUuid();
     });
 

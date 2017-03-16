@@ -14,11 +14,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class SecretView extends BaseView {
+  private UUID uuid;
+  private String name;
+  private String type;
+  private Object value;
 
-  private final UUID uuid;
-  private final String name;
-  private final String type;
-  private final Object value;
+  SecretView() { /* Jackson */ }
 
   public SecretView(Instant versionCreatedAt, String name) {
     this(versionCreatedAt, null, name, "", "");

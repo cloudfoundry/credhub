@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 
 public class BaseView {
-  final private Instant versionCreatedAt;
+  private Instant versionCreatedAt;
+
+  BaseView() { /* Jackson */ }
 
   BaseView(Instant versionCreatedAt) {
     this.versionCreatedAt = versionCreatedAt;

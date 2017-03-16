@@ -7,12 +7,10 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +20,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
@@ -56,14 +51,7 @@ public class SecretsControllerErrorHandlingSetTest {
   @SpyBean
   SecretDataService secretDataService;
 
-  @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
-
   private MockMvc mockMvc;
-
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-
-  private Consumer<Long> fakeTimeSetter;
 
   private final String secretName = "/my-namespace/secretForSetTest/secret-name";
 
@@ -73,9 +61,6 @@ public class SecretsControllerErrorHandlingSetTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-
-      fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
       resetAuditLogMock();

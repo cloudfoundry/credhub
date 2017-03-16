@@ -8,12 +8,10 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
@@ -23,13 +21,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -59,14 +54,7 @@ public class SecretsControllerConcurrencySetTest {
   @SpyBean
   SecretDataService secretDataService;
 
-  @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
-
   private MockMvc mockMvc;
-
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-
-  private Consumer<Long> fakeTimeSetter;
 
   private final String secretName = "/my-namespace/secretForSetTest/secret-name";
 
@@ -81,9 +69,6 @@ public class SecretsControllerConcurrencySetTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-
-      fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
       resetAuditLogMock();
@@ -153,7 +138,6 @@ public class SecretsControllerConcurrencySetTest {
           valueSecret.setEncryptor(encryptor);
           valueSecret.setValue(secretValue);
           valueSecret.setUuid(uuid);
-          valueSecret.setVersionCreatedAt(frozenTime);
 
           doReturn(null)
               .doReturn(valueSecret)
@@ -180,8 +164,7 @@ public class SecretsControllerConcurrencySetTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("value"))
               .andExpect(jsonPath("$.value").value(secretValue))
-              .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
+              .andExpect(jsonPath("$.id").value(uuid.toString()));
         });
       });
     });
