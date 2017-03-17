@@ -126,7 +126,7 @@ public class SecretsController {
       }
 
       secretDataService.delete(secretName);
-      return new ResponseEntity(HttpStatus.OK);
+      return new ResponseEntity(HttpStatus.NO_CONTENT);
     });
   }
 

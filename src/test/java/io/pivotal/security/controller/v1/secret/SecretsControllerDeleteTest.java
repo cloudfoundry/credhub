@@ -107,8 +107,8 @@ public class SecretsControllerDeleteTest {
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()));
         });
 
-        it("should return a 200 status", () -> {
-          response.andExpect(status().isOk());
+        it("should return a 204 status", () -> {
+          response.andExpect(status().isNoContent());
         });
 
         it("asks data service to remove it from storage", () -> {
@@ -137,7 +137,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("should succeed", () -> {
-          response.andExpect(status().isOk());
+          response.andExpect(status().isNoContent());
         });
 
         it("should remove them all from the database", () -> {
@@ -165,7 +165,7 @@ public class SecretsControllerDeleteTest {
 
         it("can delete when the name is a query param", () -> {
           mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()))
-            .andExpect(status().isOk());
+            .andExpect(status().isNoContent());
 
           verify(secretDataService, times(1)).delete(secretName.toUpperCase());
         });
