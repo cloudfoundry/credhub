@@ -1,15 +1,9 @@
 package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.OperationAuditRecord;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +13,13 @@ import org.springframework.test.context.ActiveProfiles;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -31,8 +32,8 @@ public class OperationAuditRecordDataServiceTest {
   JdbcTemplate jdbcTemplate;
 
   private final Instant frozenTime = Instant.ofEpochSecond(1400000000L);
-  private final long tokenIssued = frozenTime.getEpochSecond();
-  private final long tokenExpires = tokenIssued + 10000;
+  private final long authValidFrom = frozenTime.getEpochSecond();
+  private final long authValidUntil = authValidFrom + 10000;
 
   {
     wireAndUnwire(this);
@@ -52,8 +53,8 @@ public class OperationAuditRecordDataServiceTest {
               rs.getString("user_id"),
               rs.getString("user_name"),
               rs.getString("uaa_url"),
-              rs.getLong("token_issued"),
-              rs.getLong("token_expires"),
+              rs.getLong("auth_valid_from"),
+              rs.getLong("auth_valid_until"),
               rs.getString("host_name"),
               rs.getString("method"),
               rs.getString("path"),
@@ -83,10 +84,10 @@ public class OperationAuditRecordDataServiceTest {
         assertThat(actual.getUserId(), equalTo(expected.getUserId()));
         assertThat(actual.getUserName(), equalTo(expected.getUserName()));
         assertThat(actual.getUaaUrl(), equalTo(expected.getUaaUrl()));
-        assertThat(actual.getTokenIssued(), equalTo(expected.getTokenIssued()));
-        assertThat(actual.getTokenIssued(), equalTo(tokenIssued));
-        assertThat(actual.getTokenExpires(), equalTo(expected.getTokenExpires()));
-        assertThat(actual.getTokenExpires(), equalTo(tokenExpires));
+        assertThat(actual.getAuthValidFrom(), equalTo(expected.getAuthValidFrom()));
+        assertThat(actual.getAuthValidFrom(), equalTo(authValidFrom));
+        assertThat(actual.getAuthValidUntil(), equalTo(expected.getAuthValidUntil()));
+        assertThat(actual.getAuthValidUntil(), equalTo(authValidUntil));
         assertThat(actual.getHostName(), equalTo(expected.getHostName()));
         assertThat(actual.getMethod(), equalTo(expected.getMethod()));
         assertThat(actual.getPath(), equalTo(expected.getPath()));
@@ -112,8 +113,8 @@ public class OperationAuditRecordDataServiceTest {
         "test-user-id",
         "test-user-name",
         "https://uaa.example.com",
-        tokenIssued,
-        tokenExpires,
+        authValidFrom,
+        authValidUntil,
         "host.example.com",
         "get",
         "/api/some-path",

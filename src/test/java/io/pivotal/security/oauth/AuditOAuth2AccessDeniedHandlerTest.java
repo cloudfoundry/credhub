@@ -121,8 +121,8 @@ public class AuditOAuth2AccessDeniedHandlerTest {
         assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
         assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
         assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
-        assertThat(auditRecord.getTokenIssued(), equalTo(((Number) additionalInformation.get("iat")).longValue())); // 2737304753L (year 2056)
-        assertThat(auditRecord.getTokenExpires(), equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 2737304773L (year 2056)
+        assertThat(auditRecord.getAuthValidFrom(), equalTo(((Number) additionalInformation.get("iat")).longValue())); // 2737304753L (year 2056)
+        assertThat(auditRecord.getAuthValidUntil(), equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 2737304773L (year 2056)
         assertThat(auditRecord.getClientId(), equalTo("credhub"));
         assertThat(auditRecord.getScope(), equalTo("credhub.bad_scope"));
         assertThat(auditRecord.getGrantType(), equalTo("password"));

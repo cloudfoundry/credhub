@@ -318,8 +318,8 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.getUserId(), equalTo("1cc4972f-184c-4581-987b-85b7d97e909c"));
     assertThat(actual.getUserName(), equalTo("credhub_cli"));
     assertThat(actual.getUaaUrl(), equalTo("https://52.204.49.107:8443/oauth/token"));
-    assertThat(actual.getTokenIssued(), equalTo(1469051704L));
-    assertThat(actual.getTokenExpires(), equalTo(1469051824L));
+    assertThat(actual.getAuthValidFrom(), equalTo(1469051704L));
+    assertThat(actual.getAuthValidUntil(), equalTo(1469051824L));
     assertThat(actual.getPath(), equalTo("requestURI"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
     assertThat(actual.getClientId(), equalTo("credhub"));

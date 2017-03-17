@@ -1,15 +1,9 @@
 package io.pivotal.security.data;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +12,13 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.List;
+
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -30,8 +31,8 @@ public class AuthFailureAuditRecordDataServiceTest {
   JdbcTemplate jdbcTemplate;
 
   private final Instant frozenTime = Instant.ofEpochMilli(1400000000123L);
-  private final long tokenIssued = frozenTime.toEpochMilli();
-  private final long tokenExpires = tokenIssued + 10000;
+  private final long authValidFrom = frozenTime.toEpochMilli();
+  private final long authValidUntil = authValidFrom + 10000;
 
   {
     wireAndUnwire(this);
@@ -52,8 +53,8 @@ public class AuthFailureAuditRecordDataServiceTest {
           r.setOperation(rs.getString("operation"));
           r.setPath(rs.getString("path"));
           r.setRequesterIp(rs.getString("requester_ip"));
-          r.setTokenExpires(rs.getLong("token_expires"));
-          r.setTokenIssued(rs.getLong("token_issued"));
+          r.setAuthValidUntil(rs.getLong("auth_valid_until"));
+          r.setAuthValidFrom(rs.getLong("auth_valid_from"));
           r.setUaaUrl(rs.getString("uaa_url"));
           r.setUserId(rs.getString("user_id"));
           r.setUserName(rs.getString("user_name"));
@@ -80,10 +81,10 @@ public class AuthFailureAuditRecordDataServiceTest {
         assertThat(expected.getOperation(), equalTo(actual.getOperation()));
         assertThat(expected.getPath(), equalTo(actual.getPath()));
         assertThat(expected.getRequesterIp(), equalTo(actual.getRequesterIp()));
-        assertThat(expected.getTokenExpires(), equalTo(actual.getTokenExpires()));
-        assertThat(expected.getTokenExpires(), equalTo(tokenExpires));
-        assertThat(expected.getTokenIssued(), equalTo(actual.getTokenIssued()));
-        assertThat(expected.getTokenIssued(), equalTo(tokenIssued));
+        assertThat(expected.getAuthValidUntil(), equalTo(actual.getAuthValidUntil()));
+        assertThat(expected.getAuthValidUntil(), equalTo(authValidUntil));
+        assertThat(expected.getAuthValidFrom(), equalTo(actual.getAuthValidFrom()));
+        assertThat(expected.getAuthValidFrom(), equalTo(authValidFrom));
         assertThat(expected.getUaaUrl(), equalTo(actual.getUaaUrl()));
         assertThat(expected.getUserId(), equalTo(actual.getUserId()));
         assertThat(expected.getUserName(), equalTo(actual.getUserName()));
@@ -106,8 +107,8 @@ public class AuthFailureAuditRecordDataServiceTest {
     record.setOperation("test-operation");
     record.setPath("/api/some-path");
     record.setRequesterIp("127.0.0.1");
-    record.setTokenExpires(tokenExpires);
-    record.setTokenIssued(tokenIssued);
+    record.setAuthValidUntil(authValidUntil);
+    record.setAuthValidFrom(authValidFrom);
     record.setUaaUrl("https://uaa.example.com");
     record.setUserId("test-user-id");
     record.setUserName("test-user-name");

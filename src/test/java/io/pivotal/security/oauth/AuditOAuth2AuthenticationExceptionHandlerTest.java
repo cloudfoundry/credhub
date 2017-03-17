@@ -116,8 +116,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getUserId(), equalTo(null));
         assertThat(auditRecord.getUserName(), equalTo(null));
         assertThat(auditRecord.getUaaUrl(), equalTo(null));
-        assertThat(auditRecord.getTokenIssued(), equalTo(-1L));
-        assertThat(auditRecord.getTokenExpires(), equalTo(-1L));
+        assertThat(auditRecord.getAuthValidFrom(), equalTo(-1L));
+        assertThat(auditRecord.getAuthValidUntil(), equalTo(-1L));
         assertThat(auditRecord.getClientId(), equalTo(null));
         assertThat(auditRecord.getScope(), equalTo(null));
         assertThat(auditRecord.getGrantType(), equalTo(null));
@@ -209,8 +209,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
         assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
         assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
-        assertThat(auditRecord.getTokenIssued(), equalTo(((Number) additionalInformation.get("iat")).longValue())); // 1469051704L
-        assertThat(auditRecord.getTokenExpires(), equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 1469051824L
+        assertThat(auditRecord.getAuthValidFrom(), equalTo(((Number) additionalInformation.get("iat")).longValue())); // 1469051704L
+        assertThat(auditRecord.getAuthValidUntil(), equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 1469051824L
         assertThat(auditRecord.getClientId(), equalTo("credhub"));
         assertThat(auditRecord.getScope(), equalTo("credhub.write,credhub.read"));
         assertThat(auditRecord.getGrantType(), equalTo("password"));
@@ -245,8 +245,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getUserId(), nullValue());
         assertThat(auditRecord.getUserName(), nullValue());
         assertThat(auditRecord.getUaaUrl(), nullValue());
-        assertThat(auditRecord.getTokenIssued(), equalTo(-1L));
-        assertThat(auditRecord.getTokenExpires(), equalTo(-1L));
+        assertThat(auditRecord.getAuthValidFrom(), equalTo(-1L));
+        assertThat(auditRecord.getAuthValidUntil(), equalTo(-1L));
         assertThat(auditRecord.getClientId(), equalTo(null));
         assertThat(auditRecord.getScope(), equalTo(null));
         assertThat(auditRecord.getGrantType(), equalTo(null));

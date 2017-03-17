@@ -10,23 +10,16 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import java.time.Instant;
+import java.util.*;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+import static io.pivotal.security.entity.AuditingOperationCode.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 @RunWith(Spectrum.class)
 public class AuditRecordBuilderTest {
@@ -74,7 +67,7 @@ public class AuditRecordBuilderTest {
         assertThat(builtRecord.getUserId(), equalTo("TEST_USER_ID"));
         assertThat(builtRecord.getUserName(), equalTo("TEST_USER_NAME"));
         assertThat(builtRecord.getUaaUrl(), equalTo("TEST_UAA_URL"));
-        assertThat(builtRecord.getTokenIssued(), equalTo(123L));
+        assertThat(builtRecord.getAuthValidFrom(), equalTo(123L));
         assertThat(builtRecord.getScope(), equalTo("scope1,scope2"));
       });
 
@@ -129,7 +122,7 @@ public class AuditRecordBuilderTest {
         assertThat(builtRecord.getUaaUrl(), equalTo("MTLS"));
         assertThat(builtRecord.getScope(), equalTo("MTLS"));
         assertThat(builtRecord.getGrantType(), equalTo("MTLS"));
-        assertThat(builtRecord.getTokenIssued(), equalTo(0L));
+        assertThat(builtRecord.getAuthValidFrom(), equalTo(0L));
       });
     });
   }

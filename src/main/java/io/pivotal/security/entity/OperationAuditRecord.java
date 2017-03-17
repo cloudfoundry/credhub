@@ -30,8 +30,8 @@ public class OperationAuditRecord {
   private String operation;
   private String path;
   private String queryParameters;
-  private long tokenIssued;
-  private long tokenExpires;
+  private long authValidFrom;
+  private long authValidUntil;
   private boolean success = true;
   private String uaaUrl;
   private String userId;
@@ -54,8 +54,8 @@ public class OperationAuditRecord {
       String userId,
       String userName,
       String uaaUrl,
-      long tokenIssued,
-      long tokenExpires,
+      long authValidFrom,
+      long authValidUntil,
       String hostName,
       String method,
       String path,
@@ -74,8 +74,8 @@ public class OperationAuditRecord {
     setUserId(userId);
     setUserName(userName);
     setUaaUrl(uaaUrl);
-    setTokenIssued(tokenIssued);
-    setTokenExpires(tokenExpires);
+    setAuthValidFrom(authValidFrom);
+    setAuthValidUntil(authValidUntil);
     setHostName(hostName);
     setMethod(method);
     setPath(path);
@@ -117,12 +117,12 @@ public class OperationAuditRecord {
     return queryParameters;
   }
 
-  public long getTokenIssued() {
-    return tokenIssued;
+  public long getAuthValidFrom() {
+    return authValidFrom;
   }
 
-  public long getTokenExpires() {
-    return tokenExpires;
+  public long getAuthValidUntil() {
+    return authValidUntil;
   }
 
   public boolean isSuccess() {
@@ -237,12 +237,12 @@ public class OperationAuditRecord {
     this.uaaUrl = uaaUrl;
   }
 
-  public void setTokenIssued(long tokenIssued) {
-    this.tokenIssued = tokenIssued;
+  public void setAuthValidFrom(long authValidFrom) {
+    this.authValidFrom = authValidFrom;
   }
 
-  public void setTokenExpires(long tokenExpires) {
-    this.tokenExpires = tokenExpires;
+  public void setAuthValidUntil(long authValidUntil) {
+    this.authValidUntil = authValidUntil;
   }
 
   public void setHostName(String hostName) {

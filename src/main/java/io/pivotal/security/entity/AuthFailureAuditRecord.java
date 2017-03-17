@@ -31,8 +31,8 @@ public class AuthFailureAuditRecord {
   private String operation;
   private String path;
 
-  private long tokenIssued;
-  private long tokenExpires;
+  private long authValidFrom;
+  private long authValidUntil;
 
   @Column(length = 2000)
   private String failureDescription;
@@ -80,12 +80,12 @@ public class AuthFailureAuditRecord {
     return queryParameters;
   }
 
-  public long getTokenIssued() {
-    return tokenIssued;
+  public long getAuthValidFrom() {
+    return authValidFrom;
   }
 
-  public long getTokenExpires() {
-    return tokenExpires;
+  public long getAuthValidUntil() {
+    return authValidUntil;
   }
 
   public String getUaaUrl() {
@@ -148,13 +148,13 @@ public class AuthFailureAuditRecord {
     return this;
   }
 
-  public AuthFailureAuditRecord setTokenIssued(long tokenIssued) {
-    this.tokenIssued = tokenIssued;
+  public AuthFailureAuditRecord setAuthValidFrom(long authValidFrom) {
+    this.authValidFrom = authValidFrom;
     return this;
   }
 
-  public AuthFailureAuditRecord setTokenExpires(long tokenExpires) {
-    this.tokenExpires = tokenExpires;
+  public AuthFailureAuditRecord setAuthValidUntil(long authValidUntil) {
+    this.authValidUntil = authValidUntil;
     return this;
   }
 
