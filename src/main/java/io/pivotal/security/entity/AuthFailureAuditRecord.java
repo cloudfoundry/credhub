@@ -33,6 +33,7 @@ public class AuthFailureAuditRecord {
 
   private long authValidFrom;
   private long authValidUntil;
+  private String authMethod;
 
   @Column(length = 2000)
   private String failureDescription;
@@ -128,6 +129,8 @@ public class AuthFailureAuditRecord {
     return statusCode;
   }
 
+  public String getAuthMethod() { return authMethod;}
+
   public AuthFailureAuditRecord setNow(Instant now) {
     this.now = now;
     return this;
@@ -220,6 +223,11 @@ public class AuthFailureAuditRecord {
 
   public AuthFailureAuditRecord setStatusCode(int statusCode) {
     this.statusCode = statusCode;
+    return this;
+  }
+
+  public AuthFailureAuditRecord setAuthMethod(String authMethod) {
+    this.authMethod = authMethod;
     return this;
   }
 }

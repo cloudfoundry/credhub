@@ -43,31 +43,34 @@ public class OperationAuditRecord {
   private String grantType;
   private String method;
   private int statusCode;
+  private String authMethod;
 
   public OperationAuditRecord() {
   }
 
   public OperationAuditRecord(
-      Instant now,
-      String credentialName,
-      String operation,
-      String userId,
-      String userName,
-      String uaaUrl,
-      long authValidFrom,
-      long authValidUntil,
-      String hostName,
-      String method,
-      String path,
-      String queryParameters,
-      int statusCode,
-      String requesterIp,
-      String xForwardedFor,
-      String clientId,
-      String scope,
-      String grantType,
-      boolean success
+    String authMethod,
+    Instant now,
+    String credentialName,
+    String operation,
+    String userId,
+    String userName,
+    String uaaUrl,
+    long authValidFrom,
+    long authValidUntil,
+    String hostName,
+    String method,
+    String path,
+    String queryParameters,
+    int statusCode,
+    String requesterIp,
+    String xForwardedFor,
+    String clientId,
+    String scope,
+    String grantType,
+    boolean success
   ) {
+    setAuthMethod(authMethod);
     setNow(now);
     setCredentialName(credentialName);
     setOperation(operation);
@@ -87,6 +90,10 @@ public class OperationAuditRecord {
     setScope(scope);
     setGrantType(grantType);
     setSuccess(success);
+  }
+
+  public String getAuthMethod() {
+    return authMethod;
   }
 
   public long getId() {
@@ -251,5 +258,9 @@ public class OperationAuditRecord {
 
   public void setSuccess(boolean success) {
     this.success = success;
+  }
+
+  public void setAuthMethod(String authMethod) {
+    this.authMethod = authMethod;
   }
 }

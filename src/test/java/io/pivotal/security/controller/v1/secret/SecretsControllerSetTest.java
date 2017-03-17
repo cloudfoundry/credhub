@@ -126,6 +126,7 @@ public class SecretsControllerSetTest {
 
       describe("via parameter in request body", () -> {
         beforeEach(() -> {
+
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
@@ -406,6 +407,7 @@ public class SecretsControllerSetTest {
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
           .accept(APPLICATION_JSON)
           .contentType(APPLICATION_JSON)
+          // language=JSON
           .content("{" +
             "  \"type\":\"password\"," +
             "  \"name\":\"" + secretName.toUpperCase() + "\"," +

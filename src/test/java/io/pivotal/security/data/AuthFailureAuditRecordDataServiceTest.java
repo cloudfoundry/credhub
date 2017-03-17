@@ -101,6 +101,7 @@ public class AuthFailureAuditRecordDataServiceTest {
 
   AuthFailureAuditRecord createAuthFailureAuditRecord() {
     AuthFailureAuditRecord record = new AuthFailureAuditRecord();
+    record.setAuthMethod("uaa");
     record.setFailureDescription("it failed");
     record.setHostName("host.example.com");
     record.setNow(frozenTime);

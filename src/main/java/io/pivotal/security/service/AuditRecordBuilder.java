@@ -8,8 +8,10 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -137,6 +139,7 @@ public class AuditRecordBuilder {
       String scope = scopes == null ? null : String.join(",", scopes);
 
       return new OperationAuditRecord(
+        "uaa",
         now,
         getCredentialName(),
         getOperationCode().toString(),
@@ -144,7 +147,7 @@ public class AuditRecordBuilder {
         (String) accessToken.getAdditionalInformation().get("user_name"),
         (String) accessToken.getAdditionalInformation().get("iss"),
         claimValueAsLong(accessToken.getAdditionalInformation(), "iat"),
-        accessToken.getExpiration().toInstant().getEpochSecond(), // accessToken.getExpiration().getTime() / 1000,?
+        accessToken.getExpiration().toInstant().getEpochSecond(),
         getHostName(),
         method,
         path,
@@ -158,15 +161,19 @@ public class AuditRecordBuilder {
         isSuccess
       );
     } else {
+      PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) authentication;
+      X509Certificate certificate = (X509Certificate) token.getCredentials();
+
       return new OperationAuditRecord(
+        "mutual_tls",
         now,
         getCredentialName(),
         getOperationCode().toString(),
-        "MTLS",
-        "MTLS",
-        "MTLS",
-        0,
-        0,
+        null,
+        null,
+        null,
+        certificate.getNotBefore().toInstant().getEpochSecond(),
+        certificate.getNotAfter().toInstant().getEpochSecond(),
         getHostName(),
         method,
         path,
@@ -174,9 +181,9 @@ public class AuditRecordBuilder {
         requestStatus,
         getRequesterIp(),
         getXForwardedFor(),
-        "MTLS",
-        "MTLS",
-        "MTLS",
+        certificate.getSubjectDN().getName(),
+        null,
+        null,
         isSuccess
       );
     }

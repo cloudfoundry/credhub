@@ -46,26 +46,27 @@ public class SecurityEventsLogServiceTest {
     describe("log", () -> {
       it("should log an operation audit record to the sys log", () -> {
         OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
-            now,
-            "some-path",
-            "some_operation",
-            "user-id",
-            "user-name",
-            "uaa.example.com",
-            5000,
-            6000,
-            "host.example.com",
-            "GET",
-            "/api/some-path",
-            "foo=bar",
-            200,
-            "127.0.0.1",
-            "1.2.3.4,5.6.7.8",
-            "some-client-id",
-            "credhub.read",
-            "password",
-            true
-        );
+         "uaa",
+          now,
+          "some-path",
+          "some_operation",
+          "user-id",
+          "user-name",
+          "uaa.example.com",
+          5000,
+          6000,
+          "host.example.com",
+          "GET",
+          "/api/some-path",
+          "foo=bar",
+          200,
+          "127.0.0.1",
+          "1.2.3.4,5.6.7.8",
+          "some-client-id",
+          "credhub.read",
+          "password",
+          true
+      );
         subject.log(operationAuditRecord);
 
         verify(securityEventsLogger).info(
@@ -92,6 +93,7 @@ public class SecurityEventsLogServiceTest {
       describe("when the query param string is null", () -> {
         it("should specify only the path in the request", () -> {
           OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
+             "uaa",
               now,
               "some-path",
               "some_operation",
@@ -124,6 +126,7 @@ public class SecurityEventsLogServiceTest {
       describe("when the query param string is an empty string", () -> {
         it("should specify only the path in the request", () -> {
           OperationAuditRecord operationAuditRecord = new OperationAuditRecord(
+             "uaa",
               now,
               "some-path",
               "some_operation",

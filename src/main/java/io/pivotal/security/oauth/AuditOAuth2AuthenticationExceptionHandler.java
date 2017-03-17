@@ -126,6 +126,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     String clientId = null;
     String scope = null;
     String grantType = null;
+    String authMethod = (token != null) ? "uaa" : "unknown";
 
     if (tokenInformation != null) {
       List<String> scopeArray = (List<String>) tokenInformation.get("scope");
@@ -141,6 +142,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
         .setNow(now)
+        .setAuthMethod(authMethod)
         .setOperation(auditRecorder.getOperationCode().toString())
         .setFailureDescription(removeTokenFromMessage(authException.getMessage(), token))
         .setUserId(userId)

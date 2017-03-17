@@ -50,14 +50,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
@@ -70,9 +63,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.*;
 
 @RestController
 @RequestMapping(path = SecretsController.API_V1_DATA, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
