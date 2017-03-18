@@ -4,6 +4,12 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.helper.JsonHelper;
 import org.junit.runner.RunWith;
 
+import javax.validation.ConstraintViolation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
@@ -15,19 +21,13 @@ import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-
 @RunWith(Spectrum.class)
 public class BaseSecretRequestTest {
   // We are using BaseSecretPutRequest as a concrete exemplar of the abstract BaseSecretRequest
   {
     describe("when given valid json", () -> {
       it("should be valid", () -> {
+        // language=JSON
         String json = "{" +
             "\"type\":\"value\"," +
             "\"name\":\"some-name\"," + // it thinks this name has a slash in it
@@ -38,6 +38,7 @@ public class BaseSecretRequestTest {
       });
 
       it("should set the correct fields", () -> {
+        // language=JSON
         String json = "{" +
             "\"type\":\"value\"," +
             "\"name\":\"some-name\"," +
@@ -51,6 +52,7 @@ public class BaseSecretRequestTest {
 
       describe("#isOverwrite", () -> {
         it("should default to false", () -> {
+          // language=JSON
           String json = "{" +
               "\"type\":\"value\"," +
               "\"name\":\"some-name\"," +
@@ -62,6 +64,7 @@ public class BaseSecretRequestTest {
         });
 
         it("should take the provided value if set", () -> {
+          // language=JSON
           String json = "{" +
               "\"type\":\"value\"," +
               "\"name\":\"some-name\"," +
@@ -78,6 +81,7 @@ public class BaseSecretRequestTest {
     describe("validation", () -> {
       describe("when name ends with a slash", () -> {
         it("should be invalid", () -> {
+          // language=JSON
           String json = "{" +
               "\"type\":\"value\"," +
               "\"name\":\"badname/\"," +
@@ -92,6 +96,7 @@ public class BaseSecretRequestTest {
 
       describe("when name contains a double slash", () -> {
         it("should be invalid", () -> {
+          // language=JSON
           String json = "{" +
               "\"type\":\"value\"," +
               "\"name\":\"bad//name\"," +
@@ -106,6 +111,7 @@ public class BaseSecretRequestTest {
 
       describe("when name contains a reDos attack", () -> {
         it("should be invalid", () -> {
+          // language=JSON
           String json = "{" +
               "\"type\":\"value\"," +
               "\"name\":\"/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/foo/com/\"," +
@@ -120,6 +126,7 @@ public class BaseSecretRequestTest {
 
       describe("when name is not set", () -> {
         it("should be invalid", () -> {
+          // language=JSON
           String json = "{" +
               "\"type\":\"value\"," +
               "\"value\":\"some-value\"," +
@@ -133,6 +140,7 @@ public class BaseSecretRequestTest {
 
       describe("when name is an empty string", () -> {
         it("should be invalid", () -> {
+          // language=JSON
           String json = "{" +
               "\"name\":\"\"," +
               "\"type\":\"value\"," +
@@ -149,14 +157,13 @@ public class BaseSecretRequestTest {
     describe("access control entries", () -> {
       it("defaults to an empty list if not sent in the request", () -> {
         // language=JSON
-        String json = "{\n" +
-            "  \"name\": \"some-name\",\n" +
+        String json = "{ \"name\": \"some-name\",\n" +
             "  \"type\": \"value\",\n" +
             "  \"value\": \"some-value\",\n" +
             "  \"overwrite\": true\n" +
             "}";
 
-        final BaseSecretSetRequest request = JsonHelper.deserialize(json, BaseSecretSetRequest.class);
+        final BaseSecretPutRequest request = JsonHelper.deserialize(json, BaseSecretPutRequest.class);
         assertThat(request.getAccessControlEntries(), empty());
       });
 
@@ -177,7 +184,7 @@ public class BaseSecretRequestTest {
             "    }\n" +
             "  ]\n" +
             "}";
-        final BaseSecretSetRequest request = JsonHelper.deserialize(json, BaseSecretSetRequest.class);
+        final BaseSecretPutRequest request = JsonHelper.deserialize(json, BaseSecretPutRequest.class);
 
         final List<AccessControlOperation> operations = new ArrayList<>(Arrays.asList(AccessControlOperation.READ, AccessControlOperation.WRITE));
         final List<AccessControlEntry> expectedACEs = new ArrayList<>(Arrays.asList(new AccessControlEntry("some-actor", operations)));
