@@ -436,24 +436,18 @@ public class SecretsController {
 
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
-    boolean willBeCreated = existingNamedSecret == null;
-    boolean overwrite = requestBody.isOverwrite();
-    boolean willWrite = willBeCreated || overwrite;
+    boolean shouldWriteNewEntity = existingNamedSecret == null || requestBody.isOverwrite();
 
-    AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
     final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(secretName, request, authentication);
-    auditRecordBuilder.setOperationCode(operationCode);
+    auditRecordBuilder.setOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
     return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
       try {
-        if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals(requestBody.getType())) {
-          throw new ParameterizedValidationException("error.type_mismatch");
-        }
+        validateSecretType(existingNamedSecret, requestBody.getType());
 
         NamedSecret storedEntity = existingNamedSecret;
-        if (willWrite) {
+        if (shouldWriteNewEntity) {
           NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
-
           storedEntity = secretDataService.save(newEntity);
         }
 
@@ -468,4 +462,11 @@ public class SecretsController {
       }
     });
   }
+
+  private void validateSecretType(NamedSecret existingNamedSecret, String secretType) {
+    if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals(secretType)) {
+      throw new ParameterizedValidationException("error.type_mismatch");
+    }
+  }
+
 }
