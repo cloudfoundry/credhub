@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -73,7 +74,7 @@ public class NamedValueSecretTest {
       });
 
       it("copies values from existing, except value", () -> {
-        NamedValueSecret newSecret = NamedValueSecret.createNewVersion(subject, "anything I AM IGNORED", "new value", encryptor);
+        NamedValueSecret newSecret = NamedValueSecret.createNewVersion(subject, "anything I AM IGNORED", "new value", encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getValue(), equalTo("new value"));
@@ -84,7 +85,7 @@ public class NamedValueSecretTest {
           null,
           "/newName",
           "new value",
-          encryptor);
+          encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getValue(), equalTo("new value"));

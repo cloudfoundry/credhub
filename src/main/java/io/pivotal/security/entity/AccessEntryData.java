@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
@@ -130,12 +131,14 @@ public class AccessEntryData {
   }
 
   public static AccessEntryData fromSecretName(SecretName secretName, AccessControlEntry accessControlEntry) {
-    if (secretName.getAccessControlList() == null) {
+    if (secretName.getAccessControlList() == null) return new AccessEntryData(secretName, accessControlEntry);
+    Optional<AccessEntryData> accessEntryDataOptional = secretName.getAccessControlList().stream().filter((entry) -> accessControlEntry.getActor().equals(entry.getActor())).findFirst();
+    if (accessEntryDataOptional.isPresent()) {
+      AccessEntryData entryData = accessEntryDataOptional.get();
+      entryData.enableOperations(accessControlEntry.getAllowedOperations());
+      return entryData;
+    } else {
       return new AccessEntryData(secretName, accessControlEntry);
     }
-    AccessEntryData accessEntryData = secretName.getAccessControlList().get(0);
-    accessControlEntry.setActor(accessControlEntry.getActor());
-    accessEntryData.enableOperations(accessControlEntry.getAllowedOperations());
-    return accessEntryData;
   }
 }

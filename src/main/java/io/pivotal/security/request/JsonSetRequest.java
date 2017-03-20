@@ -21,6 +21,6 @@ public class JsonSetRequest extends BaseSecretPutRequest {
 
   @Override
   public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
-    return NamedJsonSecret.createNewVersion((NamedJsonSecret) existing, name, this.getValue(), encryptor);
+    return NamedJsonSecret.createNewVersion((NamedJsonSecret) existing, name, this.getValue(), encryptor, this.getAccessControlEntries());
   }
 }

@@ -6,6 +6,7 @@ import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -77,7 +78,7 @@ public class NamedRsaSecretTest {
 
       it("copies name from existing", () -> {
         KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
-        NamedRsaSecret newSecret = (NamedRsaSecret) NamedRsaSecret.createNewVersion(subject, "anything I AM IGNORED", fields, encryptor);
+        NamedRsaSecret newSecret = (NamedRsaSecret) NamedRsaSecret.createNewVersion(subject, "anything I AM IGNORED", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
@@ -86,7 +87,7 @@ public class NamedRsaSecretTest {
 
       it("creates new if no existing", () -> {
         KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
-        NamedRsaSecret newSecret = (NamedRsaSecret) NamedRsaSecret.createNewVersion(null, "/newName", fields, encryptor);
+        NamedRsaSecret newSecret = (NamedRsaSecret) NamedRsaSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
@@ -95,7 +96,7 @@ public class NamedRsaSecretTest {
 
       it("converts empty strings to null", () -> {
         KeySetRequestFields fields = new KeySetRequestFields("new private key", "");
-        NamedRsaSecret newSecret = (NamedRsaSecret) NamedRsaSecret.createNewVersion(null, "/newName", fields, encryptor);
+        NamedRsaSecret newSecret = (NamedRsaSecret) NamedRsaSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));

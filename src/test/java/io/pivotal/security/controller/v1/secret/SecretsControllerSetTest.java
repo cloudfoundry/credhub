@@ -5,6 +5,9 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.JsonSetRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -25,6 +28,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -34,6 +42,7 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -190,6 +199,199 @@ public class SecretsControllerSetTest {
             .andExpect(jsonPath("$.value").value(secretValue))
             .andExpect(jsonPath("$.id").value(expected.getUuid().toString()))
             .andExpect(jsonPath("$.version_created_at").value(expected.getVersionCreatedAt().toString()));
+        });
+      });
+
+      describe("when a password set request contains access_control_entries", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"password\"," +
+              "  \"name\":\"this-has-an-acl\"," +
+              "  \"value\":\"this-ia-a-fake-password\"," +
+              "\"access_control_entries\": [" +
+            "{\"actor\": \"app1-guid\"," +
+            "\"operations\": [\"read\"]}]" +
+            "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        it("sets the ACL for the resource", () -> {
+          response.andExpect(status().isOk());
+          mockMvc.perform(get("/api/v1/acls?credential_name=this-has-an-acl"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.credential_name").value("/this-has-an-acl"))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app1-guid")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
+        });
+      });
+
+      describe("when a value set request contains access_control_entries", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"value\"," +
+              "  \"name\":\"this-value-has-an-acl\"," +
+              "  \"value\":\"some value\"," +
+              "\"access_control_entries\": [" +
+              "{\"actor\": \"app2-guid\"," +
+              "\"operations\": [\"read\"]}]" +
+              "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        it("sets the ACL for the resource", () -> {
+          response.andExpect(status().isOk());
+          mockMvc.perform(get("/api/v1/acls?credential_name=this-value-has-an-acl"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.credential_name").value("/this-value-has-an-acl"))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
+        });
+      });
+
+      describe("when a json set request contains access_control_entries", () -> {
+        beforeEach(() -> {
+
+          List<AccessControlEntry> accessControlEntries = new ArrayList<>();
+          AccessControlEntry entry = new AccessControlEntry();
+          entry.setActor("app2-guid");
+          entry.setAllowedOperations(Arrays.asList(AccessControlOperation.READ));
+          accessControlEntries.add(entry);
+
+          Map<String, Object> nestedValue = new HashMap<>();
+          nestedValue.put("num", 10);
+          String[] value = {"foo", "bar"};
+
+          Map<String, Object> jsonValue = new HashMap<>();
+          jsonValue.put("key", "value");
+          jsonValue.put("fancy", nestedValue);
+          jsonValue.put("array", value);
+
+          JsonSetRequest request = new JsonSetRequest();
+          request.setName("this-json-has-an-acl");
+          request.setValue(jsonValue);
+          request.setAccessControlEntries(accessControlEntries);
+          request.setType("json");
+
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content(serializeToString(request));
+
+          response = mockMvc.perform(put);
+        });
+
+        it("sets the ACL for the resource", () -> {
+          response.andExpect(status().isOk());
+          mockMvc.perform(get("/api/v1/acls?credential_name=this-json-has-an-acl"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.credential_name").value("/this-json-has-an-acl"))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
+        });
+      });
+
+      describe("when a rsa set request contains access_control_entries", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"rsa\"," +
+              "  \"name\":\"this-rsa-has-an-acl\"," +
+              "\"value\": {" +
+              "\"public_key\":\"fake-public-key\"," +
+              "\"private_key\":\"fake-private-key\"" +
+              "}," +
+              "\"access_control_entries\": [" +
+              "{\"actor\": \"app2-guid\"," +
+              "\"operations\": [\"read\"]}]" +
+              "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        it("sets the ACL for the resource", () -> {
+          response.andExpect(status().isOk());
+          mockMvc.perform(get("/api/v1/acls?credential_name=this-rsa-has-an-acl"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.credential_name").value("/this-rsa-has-an-acl"))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
+        });
+      });
+
+      describe("when a ssh set request contains access_control_entries", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"ssh\"," +
+              "  \"name\":\"this-ssh-has-an-acl\"," +
+              "\"value\": {" +
+              "\"public_key\":\"fake-public-key\"," +
+              "\"private_key\":\"fake-private-key\"" +
+              "}," +
+              "\"access_control_entries\": [" +
+              "{\"actor\": \"app2-guid\"," +
+              "\"operations\": [\"read\"]}]" +
+              "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        it("sets the ACL for the resource", () -> {
+          response.andExpect(status().isOk());
+          mockMvc.perform(get("/api/v1/acls?credential_name=this-ssh-has-an-acl"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.credential_name").value("/this-ssh-has-an-acl"))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
+        });
+      });
+
+      describe("when a certificate set request contains access_control_entries", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+              "  \"type\":\"certificate\"," +
+              "  \"name\":\"this-certificate-has-an-acl\"," +
+              "\"value\": {" +
+              "\"certificate\":\"fake-certificate\"," +
+              "\"private_key\":\"fake-private-key\"," +
+              "\"ca\":\"fake-ca\"" +
+              "}," +
+              "\"access_control_entries\": [" +
+              "{\"actor\": \"app2-guid\"," +
+              "\"operations\": [\"read\"]}]" +
+              "}");
+
+          response = mockMvc.perform(put);
+        });
+
+        it("sets the ACL for the resource", () -> {
+          response.andExpect(status().isOk());
+          mockMvc.perform(get("/api/v1/acls?credential_name=this-certificate-has-an-acl"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.credential_name").value("/this-certificate-has-an-acl"))
+            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
+            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+
         });
       });
     });

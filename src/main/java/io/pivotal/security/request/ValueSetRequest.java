@@ -19,6 +19,6 @@ public class ValueSetRequest extends BaseSecretPutRequest {
 
   @Override
   public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
-    return NamedValueSecret.createNewVersion((NamedValueSecret) existing, name, this.getValue(), encryptor);
+    return NamedValueSecret.createNewVersion((NamedValueSecret) existing, name, this.getValue(), encryptor, this.getAccessControlEntries());
   }
 }

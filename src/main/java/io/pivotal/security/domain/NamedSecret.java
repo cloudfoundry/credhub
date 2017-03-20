@@ -1,21 +1,26 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.EncryptedValueContainer;
 import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.view.SecretKind;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedValueContainer {
   protected NamedSecretData delegate;
   protected Encryptor encryptor;
 
   public abstract SecretKind getKind();
+
   public abstract String getSecretType();
   public abstract void rotate();
-
   public NamedSecret(NamedSecretData delegate) {
     this.delegate = delegate;
   }
@@ -82,5 +87,16 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
 
   public <Z extends NamedSecret> Z save(SecretDataService secretDataService) {
     return (Z) secretDataService.save(delegate);
+  }
+
+  public void setAccessControlList(List<AccessEntryData> accessEntryData) {
+    delegate.getSecretName().setAccessControlList(accessEntryData);
+  }
+
+  static List<AccessEntryData> getAccessEntryData(List<AccessControlEntry> accessControlEntries, NamedSecret secret) {
+    SecretName secretName = secret.delegate.getSecretName();
+    return accessControlEntries.stream()
+      .map((entry) -> AccessEntryData.fromSecretName(secretName, entry))
+      .collect(Collectors.toList());
   }
 }

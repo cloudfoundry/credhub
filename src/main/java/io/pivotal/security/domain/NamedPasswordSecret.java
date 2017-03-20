@@ -11,7 +11,6 @@ import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
@@ -124,7 +123,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       String name,
       String password,
       Encryptor encryptor,
-      List<AccessControlEntry> aces) {
+      List<AccessControlEntry> accessControlEntries) {
     NamedPasswordSecret secret;
 
     if (existing == null) {
@@ -134,11 +133,9 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       secret.copyNameReferenceFrom(existing);
     }
 
-    List<AccessEntryData> acesData = aces.stream()
-        .map((entry) -> AccessEntryData.fromSecretName(secret.delegate.getSecretName(), entry))
-        .collect(Collectors.toList());
+    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
 
-    secret.delegate.getSecretName().setAccessControlList(acesData);
+    secret.setAccessControlList(accessEntryData);
     secret.setEncryptor(encryptor);
     secret.setPasswordAndGenerationParameters(password, null);
     return secret;

@@ -6,6 +6,7 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -98,7 +99,7 @@ public class NamedJsonSecretTest {
         when(encryptor.encrypt(serializedValue)).thenReturn(new Encryption(encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn(serializedValue);
 
-        NamedJsonSecret newSecret = NamedJsonSecret.createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor);
+        NamedJsonSecret newSecret = NamedJsonSecret.createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getValue(), equalTo(newValue));
@@ -109,8 +110,8 @@ public class NamedJsonSecretTest {
           null,
           "/newName",
           value,
-          encryptor
-        );
+          encryptor,
+          new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getValue(), equalTo(value));

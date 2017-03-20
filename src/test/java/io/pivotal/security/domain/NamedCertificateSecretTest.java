@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -125,7 +126,7 @@ public class NamedCertificateSecretTest {
 
       it("copies name from existing", () -> {
         CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "certificate", "ca");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(subject, "anything I AM IGNORED", fields, encryptor);
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(subject, "anything I AM IGNORED", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
@@ -136,7 +137,7 @@ public class NamedCertificateSecretTest {
 
       it("creates new if no existing", () -> {
         CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "certificate", "ca");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor);
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
@@ -147,7 +148,7 @@ public class NamedCertificateSecretTest {
 
       it("converts empty strings to null", () -> {
         CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "", "");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor);
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));

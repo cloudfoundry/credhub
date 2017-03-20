@@ -16,6 +16,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -57,32 +58,78 @@ public class AccessControlEndpointTest {
     });
 
     describe("When posting access control entry for user and credential", () -> {
-      it("returns the full Access Control List for user", () -> {
-        final MockHttpServletRequestBuilder post = post("/api/v1/aces")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-                "  \"credential_name\": \"/cred1\",\n" +
-                "  \"access_control_entries\": [\n" +
-                "     { \n" +
-                "       \"actor\": \"dan\",\n" +
-                "       \"operations\": [\"read\"]\n" +
-                "     }]" +
-                "}");
+      describe("and permissions don't exist", () -> {
+        it("returns the full Access Control List for user", () -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"credential_name\": \"/cred1\",\n" +
+                  "  \"access_control_entries\": [\n" +
+                  "     { \n" +
+                  "       \"actor\": \"dan\",\n" +
+                  "       \"operations\": [\"read\"]\n" +
+                  "     }]" +
+                  "}");
 
-        final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON);
+          final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON);
 
-        this.mockMvc.perform(post).andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
-            .andExpect(jsonPath("$.access_control_list", hasSize(1)))
-            .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
-            .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
+          this.mockMvc.perform(post).andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
+              .andExpect(jsonPath("$.access_control_list", hasSize(1)))
+              .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
+              .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")));
 
-        this.mockMvc.perform(get)
-            .andExpect(status().isOk());
+          this.mockMvc.perform(get)
+              .andExpect(status().isOk());
+        });
+      });
+
+      describe("and permissions does exist", () -> {
+        it("returns the full updated Access Control List for user", () -> {
+          final MockHttpServletRequestBuilder initPost = post("/api/v1/aces")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"credential_name\": \"/cred1\",\n" +
+                  "  \"access_control_entries\": [\n" +
+                  "     { \n" +
+                  "       \"actor\": \"dan\",\n" +
+                  "       \"operations\": [\"read\"]\n" +
+                  "     }]" +
+                  "}");
+
+          final MockHttpServletRequestBuilder updatePost = post("/api/v1/aces")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "  \"credential_name\": \"/cred1\",\n" +
+                  "  \"access_control_entries\": [\n" +
+                  "     { \n" +
+                  "       \"actor\": \"dan\",\n" +
+                  "       \"operations\": [\"write\"]\n" +
+                  "     }]" +
+                  "}");
+
+          final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON);
+
+          this.mockMvc.perform(initPost);
+
+          this.mockMvc.perform(updatePost).andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
+              .andExpect(jsonPath("$.access_control_list", hasSize(1)))
+              .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("dan")))
+              .andExpect(jsonPath("$.access_control_list[0].operations", contains("read", "write")));
+
+          this.mockMvc.perform(get)
+              .andExpect(status().isOk());
+        });
       });
 
       it("prepends missing '/' in credential name and returns the full Access Control List for user", () -> {

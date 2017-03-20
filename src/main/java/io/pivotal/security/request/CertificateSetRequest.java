@@ -24,6 +24,6 @@ public class CertificateSetRequest extends BaseSecretPutRequest {
   @JsonIgnore
   @Override
   public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
-    return NamedCertificateSecret.createNewVersion((NamedCertificateSecret) existing, name, this.getCertificateFields(), encryptor);
+    return NamedCertificateSecret.createNewVersion((NamedCertificateSecret) existing, name, this.getCertificateFields(), encryptor, this.getAccessControlEntries());
   }
 }

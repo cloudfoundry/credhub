@@ -1,10 +1,14 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
 import io.pivotal.security.view.SecretKind;
+
+import java.util.List;
 
 import static io.pivotal.security.util.StringUtil.emptyToNull;
 
@@ -78,7 +82,7 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
     return new SshPublicKeyParser(getPublicKey()).getFingerprint();
   }
 
-  public static NamedSecret createNewVersion(NamedSshSecret existing, String name, KeySetRequestFields fields, Encryptor encryptor) {
+  public static NamedSecret createNewVersion(NamedSshSecret existing, String name, KeySetRequestFields fields, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
     NamedSshSecret secret;
 
     if (existing == null) {
@@ -87,6 +91,10 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
       secret = new NamedSshSecret();
       secret.copyNameReferenceFrom(existing);
     }
+
+    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
+
+    secret.setAccessControlList(accessEntryData);
 
     secret.setEncryptor(encryptor);
     secret.setPrivateKey(emptyToNull(fields.getPrivateKey()));

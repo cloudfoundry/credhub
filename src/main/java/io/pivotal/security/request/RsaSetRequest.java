@@ -24,6 +24,6 @@ public class RsaSetRequest extends BaseSecretPutRequest {
 
   @Override
   public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
-    return NamedRsaSecret.createNewVersion((NamedRsaSecret) existing, name, this.getKeySetRequestFields(), encryptor);
+    return NamedRsaSecret.createNewVersion((NamedRsaSecret) existing, name, this.getKeySetRequestFields(), encryptor, this.getAccessControlEntries());
   }
 }
