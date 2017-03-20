@@ -10,7 +10,17 @@ public class PasswordGenerateRequest extends BaseSecretGenerateRequest{
   private PasswordGenerationParameters generationParameters;
 
   public PasswordGenerationParameters getGenerationParameters() {
+    if (generationParameters == null) {
+      generationParameters = new PasswordGenerationParameters();
+    }
     return generationParameters;
+  }
+
+  @Override
+  public void validate() {
+    super.validate();
+
+    getGenerationParameters().validate();
   }
 
   @Override

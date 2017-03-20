@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import io.pivotal.security.controller.v1.RequestParameters;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.PassayStringSecretGenerator;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
@@ -12,7 +14,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 public class PasswordGenerationParameters implements RequestParameters{
   // Value Parameters
   @JsonProperty(access = Access.WRITE_ONLY)
-  private int length;
+  private Integer length;
 
   private boolean excludeLower;
 
@@ -25,7 +27,7 @@ public class PasswordGenerationParameters implements RequestParameters{
   private boolean onlyHex;
 
   public int getLength() {
-    return length;
+    return length == null ? PassayStringSecretGenerator.DEFAULT_LENGTH : length;
   }
 
   public PasswordGenerationParameters setLength(int length) {
@@ -87,5 +89,11 @@ public class PasswordGenerationParameters implements RequestParameters{
         && excludeLower
         && !onlyHex
     );
+  }
+
+  public void validate() {
+    if (!isValid()) {
+      throw new ParameterizedValidationException("error.excludes_all_charsets");
+    }
   }
 }
