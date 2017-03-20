@@ -2,6 +2,7 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.io.ByteStreams;
@@ -253,7 +254,7 @@ public class SecretsController {
   @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
-    String errorMessage;
+    String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
     final Throwable cause = exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
       return createParameterizedErrorResponse(
@@ -263,10 +264,14 @@ public class SecretsController {
       errorMessage = messageSourceAccessor.getMessage("error.type_invalid");
     } else if (cause instanceof JsonMappingException && cause.getMessage().contains("missing property 'type'")) {
       errorMessage = messageSourceAccessor.getMessage("error.type_invalid");
-    } else {
-      errorMessage = messageSourceAccessor.getMessage("error.bad_request");
+    } else if (cause instanceof InvalidFormatException) {
+      for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause).getPath()) {
+        if ("operations".equals(reference.getFieldName())) {
+          errorMessage = messageSourceAccessor.getMessage("error.acl.invalid_operation");
+          return new ResponseError(errorMessage);
+        }
+      }
     }
-
     return new ResponseError(errorMessage);
   }
 
