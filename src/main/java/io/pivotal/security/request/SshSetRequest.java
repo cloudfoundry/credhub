@@ -23,7 +23,7 @@ public class SshSetRequest extends BaseSecretPutRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
-    return NamedSshSecret.createNewVersion((NamedSshSecret) existing, name, this.getKeySetRequestFields(), encryptor, this.getAccessControlEntries());
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
+    return NamedSshSecret.createNewVersion((NamedSshSecret) existing, getName(), this.getKeySetRequestFields(), encryptor, this.getAccessControlEntries());
   }
 }

@@ -22,5 +22,5 @@ public abstract class BaseSecretRequest {
   }
 
   @JsonIgnore
-  abstract public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor);
+  abstract public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor);
 }

@@ -6,7 +6,7 @@ import org.apache.commons.lang.NotImplementedException;
 
 public class SecretRegenerateRequest extends BaseSecretPostRequest {
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
     throw new NotImplementedException();
   }
 }

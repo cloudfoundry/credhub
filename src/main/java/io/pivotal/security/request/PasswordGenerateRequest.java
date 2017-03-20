@@ -24,7 +24,7 @@ public class PasswordGenerateRequest extends BaseSecretGenerateRequest{
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
     return null;
   }
 }

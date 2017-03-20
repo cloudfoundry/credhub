@@ -22,7 +22,7 @@ public class PasswordSetRequest extends BaseSecretPutRequest {
 
   @Override
   @JsonIgnore
-  public NamedSecret createNewVersion(NamedSecret existing, String name, Encryptor encryptor) {
-    return NamedPasswordSecret.createNewVersion((NamedPasswordSecret) existing, name, this.getPassword(), encryptor, this.getAccessControlEntries());
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
+    return NamedPasswordSecret.createNewVersion((NamedPasswordSecret) existing, getName(), this.getPassword(), encryptor, this.getAccessControlEntries());
   }
 }

@@ -447,11 +447,7 @@ public class SecretsController {
 
         NamedSecret storedEntity = existingNamedSecret;
         if (willWrite) {
-          NamedSecret newEntity = requestBody.createNewVersion(
-              existingNamedSecret,
-              secretName,
-              encryptor
-          );
+          NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
 
           storedEntity = secretDataService.save(newEntity);
         }
