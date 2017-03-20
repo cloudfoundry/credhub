@@ -15,7 +15,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
@@ -97,18 +96,9 @@ public class DatabaseAuditLogService implements AuditLogService {
 
   private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder, int statusCode, boolean success) throws Exception {
     return auditRecordBuilder
-        .computeAccessToken(tokenServices)
         .setRequestStatus(statusCode)
         .setIsSuccess(success)
-        .build(currentTimeProvider.getInstant());
+        .build(currentTimeProvider.getInstant(), tokenServices);
   }
 
-  /*
-   * The "iat" and "exp" claims are parsed by Jackson as integers. That means we have a
-   * Year-2038 bug. In the hope that Jackson will someday be fixed, this function returns
-   * a numeric value as long.
-   */
-  private long claimValueAsLong(Map<String, Object> additionalInformation, String claimName) {
-    return ((Number) additionalInformation.get(claimName)).longValue();
-  }
 }

@@ -239,7 +239,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getAuthMethod(), equalTo("unknown"));
+        assertThat(auditRecord.getAuthMethod(), equalTo("uaa"));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));

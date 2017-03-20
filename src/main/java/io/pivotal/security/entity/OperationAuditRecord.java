@@ -70,26 +70,26 @@ public class OperationAuditRecord {
     String grantType,
     boolean success
   ) {
-    setAuthMethod(authMethod);
-    setNow(now);
-    setCredentialName(credentialName);
-    setOperation(operation);
-    setUserId(userId);
-    setUserName(userName);
-    setUaaUrl(uaaUrl);
-    setAuthValidFrom(authValidFrom);
-    setAuthValidUntil(authValidUntil);
-    setHostName(hostName);
-    setMethod(method);
-    setPath(path);
-    setQueryParameters(queryParameters);
-    setStatusCode(statusCode);
-    setRequesterIp(requesterIp);
-    setXForwardedFor(xForwardedFor);
-    setClientId(clientId);
-    setScope(scope);
-    setGrantType(grantType);
-    setSuccess(success);
+    this.authMethod = authMethod;
+    this.now = now;
+    this.credentialName = credentialName;
+    this.operation = operation;
+    this.userId = userId;
+    this.userName = userName;
+    this.uaaUrl = uaaUrl;
+    this.authValidFrom = authValidFrom;
+    this.authValidUntil = authValidUntil;
+    this.hostName = hostName;
+    this.method =method;
+    this.path = path;
+    this.queryParameters = queryParameters;
+    this.statusCode = statusCode;
+    this.requesterIp = requesterIp;
+    this.xForwardedFor = xForwardedFor;
+    this.clientId = clientId;
+    this.scope = scope;
+    this.grantType = grantType;
+    this.success = success;
   }
 
   public String getAuthMethod() {
@@ -176,91 +176,9 @@ public class OperationAuditRecord {
     return credentialName;
   }
 
-  public void setRequesterIp(String requesterIp) {
-    this.requesterIp = requesterIp;
-  }
-
-  public void setFailed() {
-    this.success = false;
-  }
-
-  public void setOperation(String operation) {
-    this.operation = operation;
-  }
-
-  public void setMethod(String method) {
-    this.method = method;
-  }
-
-  public void setPath(String path) {
-    this.path = path;
-  }
-
-  public void setQueryParameters(String queryParameters) {
-    this.queryParameters = queryParameters;
-  }
-
-  public void setXForwardedFor(String xForwardedFor) {
-    this.xForwardedFor = xForwardedFor;
-  }
 
   public void setId(long id) {
     this.id = id;
   }
 
-  public void setClientId(String clientId) {
-    this.clientId = clientId;
-  }
-
-  public void setScope(String scope) {
-    this.scope = scope;
-  }
-
-  public void setGrantType(String grantType) {
-    this.grantType = grantType;
-  }
-
-  public void setStatusCode(int statusCode) {
-    this.statusCode = statusCode;
-  }
-
-  public void setCredentialName(String credentialName) {
-    this.credentialName = credentialName;
-  }
-
-  public void setNow(Instant now) {
-    this.now = now;
-  }
-
-  public void setUserId(String userId) {
-    this.userId = userId;
-  }
-
-  public void setUserName(String userName) {
-    this.userName = userName;
-  }
-
-  public void setUaaUrl(String uaaUrl) {
-    this.uaaUrl = uaaUrl;
-  }
-
-  public void setAuthValidFrom(long authValidFrom) {
-    this.authValidFrom = authValidFrom;
-  }
-
-  public void setAuthValidUntil(long authValidUntil) {
-    this.authValidUntil = authValidUntil;
-  }
-
-  public void setHostName(String hostName) {
-    this.hostName = hostName;
-  }
-
-  public void setSuccess(boolean success) {
-    this.success = success;
-  }
-
-  public void setAuthMethod(String authMethod) {
-    this.authMethod = authMethod;
-  }
 }

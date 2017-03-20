@@ -7,6 +7,9 @@ import org.junit.runner.RunWith;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.time.Instant;
+import java.util.Date;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -75,8 +78,11 @@ public class TransactionContractTest {
           namedValueSecret.setEncryptedValue("otherValue".getBytes());
           secretRepository.save(namedValueSecret);
 
-          final OperationAuditRecord auditRecord = new OperationAuditRecord();
-          auditRecord.setOperation("operation");
+          final OperationAuditRecord auditRecord = new OperationAuditRecord("", Instant.now(),
+            null, "operation", null, null,
+            null, 0L, 0L, null, null,
+            null, null, 0, null, null,
+            null, null, null, true);
           auditRecordRepository.save(auditRecord);
         });
 

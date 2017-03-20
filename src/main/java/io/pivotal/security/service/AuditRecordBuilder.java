@@ -2,21 +2,15 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.oauth.UserContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-
 import javax.servlet.http.HttpServletRequest;
-import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Map;
-import java.util.Set;
 
 import static io.pivotal.security.entity.AuditingOperationCode.*;
 
@@ -113,11 +107,6 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public AuditRecordBuilder setAccessToken(OAuth2AccessToken accessToken) {
-    this.accessToken = accessToken;
-    return this;
-  }
-
   public AuditRecordBuilder setIsSuccess(boolean isSuccess) {
     this.isSuccess = isSuccess;
     return this;
@@ -128,82 +117,35 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public OperationAuditRecord build(Instant now) {
-    if (authentication instanceof OAuth2Authentication) {
-      OAuth2Request oAuth2Request = ((OAuth2Authentication) authentication).getOAuth2Request();
-
-      String path = getPath();
-      String method = getMethod();
-
-      Set<String> scopes = accessToken.getScope();
-      String scope = scopes == null ? null : String.join(",", scopes);
-
-      return new OperationAuditRecord(
-        "uaa",
-        now,
-        getCredentialName(),
-        getOperationCode().toString(),
-        (String) accessToken.getAdditionalInformation().get("user_id"),
-        (String) accessToken.getAdditionalInformation().get("user_name"),
-        (String) accessToken.getAdditionalInformation().get("iss"),
-        claimValueAsLong(accessToken.getAdditionalInformation(), "iat"),
-        accessToken.getExpiration().toInstant().getEpochSecond(),
-        getHostName(),
-        method,
-        path,
-        getQueryParameters(),
-        requestStatus,
-        getRequesterIp(),
-        getXForwardedFor(),
-        oAuth2Request.getClientId(),
-        scope,
-        oAuth2Request.getGrantType(),
-        isSuccess
-      );
-    } else {
-      PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) authentication;
-      X509Certificate certificate = (X509Certificate) token.getCredentials();
-
-      return new OperationAuditRecord(
-        "mutual_tls",
-        now,
-        getCredentialName(),
-        getOperationCode().toString(),
-        null,
-        null,
-        null,
-        certificate.getNotBefore().toInstant().getEpochSecond(),
-        certificate.getNotAfter().toInstant().getEpochSecond(),
-        getHostName(),
-        method,
-        path,
-        getQueryParameters(),
-        requestStatus,
-        getRequesterIp(),
-        getXForwardedFor(),
-        certificate.getSubjectDN().getName(),
-        null,
-        null,
-        isSuccess
-      );
-    }
+  public OperationAuditRecord build(Instant now, ResourceServerTokenServices tokenServices) {
+    return this.build(now, null, tokenServices);
   }
 
-  /*
-   * The "iat" and "exp" claims are parsed by Jackson as integers. That means we have a
-   * Year-2038 bug. In the hope that Jackson will someday be fixed, this function returns
-   * a numeric value as long.
-   */
-  private long claimValueAsLong(Map<String, Object> additionalInformation, String claimName) {
-    return ((Number) additionalInformation.get(claimName)).longValue();
+  public OperationAuditRecord build(Instant now, String token, ResourceServerTokenServices tokenServices) {
+    UserContext user = UserContext.fromAuthentication(authentication, token, tokenServices);
+
+    return new OperationAuditRecord(
+      user.getAuthMethod(),
+      now,
+      getCredentialName(),
+      getOperationCode().toString(),
+      user.getUserId(),
+      user.getUserName(),
+      user.getIssuer(),
+      user.getValidFrom(),
+      user.getValidUntil(),
+      getHostName(),
+      method,
+      path,
+      getQueryParameters(),
+      requestStatus,
+      getRequesterIp(),
+      getXForwardedFor(),
+      user.getClientId(),
+      user.getScope(),
+      user.getGrantType(),
+      isSuccess
+    );
   }
 
-  AuditRecordBuilder computeAccessToken(ResourceServerTokenServices tokenServices) {
-    if (authentication instanceof OAuth2Authentication) {
-      OAuth2AuthenticationDetails authenticationDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
-      setAccessToken(tokenServices.readAccessToken(authenticationDetails.getTokenValue()));
-    }
-
-    return this;
-  }
 }

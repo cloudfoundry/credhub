@@ -126,7 +126,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     String clientId = null;
     String scope = null;
     String grantType = null;
-    String authMethod = (token != null) ? "uaa" : "unknown";
+    String authMethod = "uaa";
 
     if (tokenInformation != null) {
       List<String> scopeArray = (List<String>) tokenInformation.get("scope");

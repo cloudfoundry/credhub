@@ -8,6 +8,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 import java.security.Principal;
@@ -21,6 +23,7 @@ import static io.pivotal.security.entity.AuditingOperationCode.*;
 import static java.time.LocalDate.now;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -193,6 +196,7 @@ public class AuditRecordBuilderTest {
 
   private OperationAuditRecord build(String method, String url, Authentication authentication, OAuth2AccessToken token) {
     final Instant timestamp = Instant.ofEpochSecond(12345L);
+    ResourceServerTokenServices tokenService = mock(ResourceServerTokenServices.class);
 
     MockHttpServletRequest request = new MockHttpServletRequest(method, url);
     request.setServerName("host-name");
@@ -202,8 +206,9 @@ public class AuditRecordBuilderTest {
     request.setQueryString("name=foo&first=first_value&second=second_value");
 
     final AuditRecordBuilder subject = new AuditRecordBuilder("foo", request, authentication);
-    subject.setAccessToken(token);
+    when(authentication.getDetails()).thenReturn(mock(OAuth2AuthenticationDetails.class));
+    when (tokenService.readAccessToken(any())).thenReturn(token);
 
-    return subject.build(timestamp);
+    return subject.build(timestamp, tokenService);
   }
 }

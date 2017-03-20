@@ -45,17 +45,13 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       super.handle(request, response, authException);
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
-      OperationAuditRecord operationAuditRecord = createOperationAuditRecord(token, new AuditRecordBuilder(null, request, null), response.getStatus());
+      OperationAuditRecord operationAuditRecord = new AuditRecordBuilder(null, request, tokenStore.readAuthentication(token))
+        .setRequestStatus(response.getStatus())
+        .build(currentTimeProvider.getInstant(), token, tokenServices);
+
       operationAuditRecordDataService.save(operationAuditRecord);
       securityEventsLogService.log(operationAuditRecord);
     }
   }
 
-  private OperationAuditRecord createOperationAuditRecord(String token, AuditRecordBuilder auditRecordBuilder, int status) {
-    return auditRecordBuilder
-        .setRequestStatus(status)
-        .setAuthentication(tokenStore.readAuthentication(token))
-        .setAccessToken(tokenServices.readAccessToken(token))
-        .build(currentTimeProvider.getInstant());
-  }
 }
