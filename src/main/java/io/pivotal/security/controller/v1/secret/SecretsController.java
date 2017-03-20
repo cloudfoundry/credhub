@@ -113,7 +113,7 @@ public class SecretsController {
     BaseSecretPostRequest requestBody = parseRequestJson(requestInputStream);
     requestBody.validate();
 
-    if(true || requestBody instanceof DefaultSecretGenerateRequest){
+    if (true || requestBody instanceof DefaultSecretGenerateRequest) {
       requestInputStream.reset();
       DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
       return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler, parsedRequestBody);
@@ -163,14 +163,14 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-        return retrieveSecretWithAuditing(
-                id,
-                findAsList(secretDataService::findByUuid),
-                request,
-                authentication,
-                true
-        );
-    }
+    return retrieveSecretWithAuditing(
+        id,
+        findAsList(secretDataService::findByUuid),
+        request,
+        authentication,
+        true
+    );
+  }
 
   @RequestMapping(path = "", method = RequestMethod.GET)
   public ResponseEntity getSecret(
@@ -179,14 +179,14 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication) throws Exception {
 
-      return retrieveSecretWithAuditing(
-                secretName,
-                selectLookupFunction(current),
-                request,
-                authentication,
-                false
-        );
-    }
+    return retrieveSecretWithAuditing(
+        secretName,
+        selectLookupFunction(current),
+        request,
+        authentication,
+        false
+    );
+  }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
     if (current) {
@@ -204,35 +204,35 @@ public class SecretsController {
   }
 
   private ResponseEntity retrieveSecretWithAuditing(String identifier,
-                                                      Function<String, List<NamedSecret>> finder,
-                                                      HttpServletRequest request,
-                                                      Authentication authentication,
-                                                      boolean returnFirstEntry) throws Exception {
+                                                    Function<String, List<NamedSecret>> finder,
+                                                    HttpServletRequest request,
+                                                    Authentication authentication,
+                                                    boolean returnFirstEntry) throws Exception {
     final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request, authentication);
-      return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
-          if (StringUtils.isEmpty(identifier)) {
-              return new ResponseEntity<>(createErrorResponse("error.missing_name"), HttpStatus.BAD_REQUEST);
-          }
-          List<NamedSecret> namedSecrets = finder.apply(identifier);
-          if (namedSecrets.isEmpty()) {
-            return new ResponseEntity<>(createErrorResponse("error.credential_not_found"), HttpStatus.NOT_FOUND);
+    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
+      if (StringUtils.isEmpty(identifier)) {
+        return new ResponseEntity<>(createErrorResponse("error.missing_name"), HttpStatus.BAD_REQUEST);
+      }
+      List<NamedSecret> namedSecrets = finder.apply(identifier);
+      if (namedSecrets.isEmpty()) {
+        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"), HttpStatus.NOT_FOUND);
+      } else {
+        ResponseEntity success;
+        auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
+        try {
+          if (returnFirstEntry) {
+            success = new ResponseEntity<>(SecretView.fromEntity(namedSecrets.get(0)), HttpStatus.OK);
           } else {
-              ResponseEntity success;
-              auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
-              try {
-                  if (returnFirstEntry) {
-                      success = new ResponseEntity<>(SecretView.fromEntity(namedSecrets.get(0)), HttpStatus.OK);
-                  } else {
-                      success = new ResponseEntity<>(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
-                  }
-              } catch (KeyNotFoundException e) {
-                return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"), HttpStatus.INTERNAL_SERVER_ERROR);
-              } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-              }
-              return success;
+            success = new ResponseEntity<>(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
           }
-      });
+        } catch (KeyNotFoundException e) {
+          return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (NoSuchAlgorithmException e) {
+          throw new RuntimeException(e);
+        }
+        return success;
+      }
+    });
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
@@ -257,7 +257,7 @@ public class SecretsController {
     final Throwable cause = exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
       return createParameterizedErrorResponse(
-        new ParameterizedValidationException("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName())
+          new ParameterizedValidationException("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName())
       );
     } else if (cause instanceof InvalidTypeIdException) {
       errorMessage = messageSourceAccessor.getMessage("error.type_invalid");
@@ -305,7 +305,7 @@ public class SecretsController {
     boolean isRegenerateRequest;
     try {
       isRegenerateRequest = JsonPath.read(requestString, "$.regenerate");
-    } catch(PathNotFoundException e) {
+    } catch (PathNotFoundException e) {
       // could have just returned null, that would have been pretty useful
       isRegenerateRequest = false;
     }
@@ -405,7 +405,7 @@ public class SecretsController {
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     } catch (KeyNotFoundException e) {
-        return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"), HttpStatus.INTERNAL_SERVER_ERROR);
+      return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
