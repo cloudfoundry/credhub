@@ -13,9 +13,14 @@ import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.Filter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
+
 import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -132,12 +137,10 @@ public class SetPermissionAndSecretTest {
               .andDo(print())
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/test-password"))
-              .andExpect(jsonPath("$.access_control_list[1].actor").value("app1-guid"))
-              .andExpect(jsonPath("$.access_control_list[1].operations[0]").value("read"))
-              .andExpect(jsonPath("$.access_control_list[1].operations[1]").value("write"))
-              .andExpect(jsonPath("$.access_control_list[0].actor").value("app2-guid"))
-              .andExpect(jsonPath("$.access_control_list[0].operations[0]").value("read"))
-              .andExpect(jsonPath("$.access_control_list[0].operations[1]").value("write"));
+              .andExpect(jsonPath("$.access_control_list[0].actor").exists())
+              .andExpect(jsonPath("$.access_control_list[0].operations").value(contains("read", "write")))
+              .andExpect(jsonPath("$.access_control_list[1].actor").exists())
+              .andExpect(jsonPath("$.access_control_list[1].operations").value(contains("read", "write")));
         });
       });
     });
