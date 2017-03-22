@@ -1,33 +1,32 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
 import org.junit.runner.RunWith;
+import static org.mockito.Mockito.mock;
 
 import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.mock;
-
 @RunWith(Spectrum.class)
 public class DefaultKeyProxyTest {
-  private EncryptionService hostEncryptionService;
   private DefaultKeyProxy subject;
   private Key encryptionKey;
   private EncryptionKeyCanary canary;
-
+  private EncryptionKeyCanary deprecatedCanary;
 
   {
     beforeEach(() -> {
@@ -40,15 +39,27 @@ public class DefaultKeyProxyTest {
       Encryption encryptionData = encryptionService.encrypt(encryptionKey, CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
+
+      deprecatedCanary = new EncryptionKeyCanary();
+      Encryption deprecatedEncryptionData = encryptionService.encrypt(encryptionKey, DEPRECATED_CANARY_VALUE);
+      deprecatedCanary.setEncryptedValue(deprecatedEncryptionData.encryptedValue);
+      deprecatedCanary.setNonce(deprecatedEncryptionData.nonce);
     });
 
     describe("#isMatchingCanary", () -> {
       beforeEach(() -> {
         subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(new BouncyCastleProvider()));
       });
+
       describe("happy path", () -> {
         it("finds the canary", () -> {
           assertThat(subject.matchesCanary(canary), equalTo(true));
+        });
+      });
+
+      describe("when using the deprecated canary value", () -> {
+        it("finds the canary", () -> {
+          assertThat(subject.matchesCanary(deprecatedCanary), equalTo(true));
         });
       });
 
@@ -66,6 +77,7 @@ public class DefaultKeyProxyTest {
           assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
         });
       });
+
       describe("when decrypt throws BadPaddingException containing \"rv=48\" message", () -> {
         beforeEach(() -> {
           subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {

@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import static com.google.common.collect.Lists.newArrayList;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
@@ -17,12 +18,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 @Component
 public class EncryptionKeyCanaryMapper {
   public static final Charset CHARSET = Charset.defaultCharset();
   public static final String CANARY_VALUE = new String(new byte[128], CHARSET);
+  public static final String DEPRECATED_CANARY_VALUE = new String(new byte[64], CHARSET);
 
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
