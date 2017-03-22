@@ -35,7 +35,7 @@ public class EncryptionKeysConfigurationTest {
       assertThat(firstKey.getDevKey(), equalTo("D673ACD01DA091B08144FBC8C0B5F524"));
       assertThat(firstKey.isActive(), equalTo(true));
 
-      assertThat(secondKey.getDevKey(), equalTo("A673ACF01DB091B08133FBC8C0B5F555"));
+      assertThat(secondKey.getEncryptionPassword(), equalTo("correcthorsebatterystaple"));
       assertThat(secondKey.isActive(), equalTo(false));
     });
   }
