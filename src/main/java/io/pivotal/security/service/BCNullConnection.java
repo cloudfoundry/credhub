@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @SuppressWarnings("unused")
 @Component
-@ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
+@ConditionalOnProperty(value = "encryption.provider", havingValue = "internal")
 public class BCNullConnection implements RemoteEncryptionConnectable {
   @Override
   public void reconnect(Exception reasonForReconnect) throws Exception{

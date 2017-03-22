@@ -176,7 +176,7 @@ public class EncryptionKeyCanaryMapperTest {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(Arrays.asList(nonMatchingCanary));
         });
 
-        describe("when decrypting with the wrong key raises AEADBadTagException -- dev_internal", () -> {
+        describe("when decrypting with the wrong key raises AEADBadTagException -- internal", () -> {
           beforeEach(() -> {
             when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(), nonMatchingCanary.getNonce()))
                 .thenThrow(new AEADBadTagException());

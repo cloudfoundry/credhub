@@ -17,7 +17,7 @@ import java.security.Provider;
 import java.security.SecureRandom;
 
 @Component
-@ConditionalOnProperty(value = "encryption.provider", havingValue = "dev_internal")
+@ConditionalOnProperty(value = "encryption.provider", havingValue = "internal")
 public class BCEncryptionService extends EncryptionService {
   private static final int KEYSIZE_BYTES = 16;
   private SecureRandom secureRandom;

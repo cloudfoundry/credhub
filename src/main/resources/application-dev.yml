@@ -4,7 +4,7 @@ auth-server:
   url: https://34.206.233.195:8443
 
 encryption:
-  provider: dev_internal
+  provider: internal
   keys:
   - dev-key: D673ACD01DA091B08144FBC8C0B5F524
     active: true

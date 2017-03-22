@@ -41,7 +41,7 @@ class DefaultKeyProxy implements KeyProxy {
       plaintext = encryptionService.decrypt(key, canary.getEncryptedValue(), canary.getNonce());
       return EncryptionKeyCanaryMapper.CANARY_VALUE.equals(plaintext);
     } catch (AEADBadTagException e) {
-      // dev_internal key was wrong
+      // internal key was wrong
     } catch (IllegalBlockSizeException e) {
       // Our guess(es) at "HSM key was wrong":
       if (!e.getMessage().contains("returns 0x40")) {
