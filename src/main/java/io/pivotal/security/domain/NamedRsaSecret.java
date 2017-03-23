@@ -9,8 +9,6 @@ import io.pivotal.security.view.SecretKind;
 
 import java.util.List;
 
-import static io.pivotal.security.util.StringUtil.emptyToNull;
-
 public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
 
   private NamedRsaSecretData delegate;
@@ -89,8 +87,8 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
     secret.setAccessControlList(accessEntryData);
 
     secret.setEncryptor(encryptor);
-    secret.setPrivateKey(emptyToNull(fields.getPrivateKey()));
-    secret.setPublicKey(emptyToNull(fields.getPublicKey()));
+    secret.setPrivateKey(fields.getPrivateKey());
+    secret.setPublicKey(fields.getPublicKey());
 
     return secret;
   }

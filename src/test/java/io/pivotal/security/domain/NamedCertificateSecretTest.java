@@ -145,17 +145,6 @@ public class NamedCertificateSecretTest {
         assertThat(newSecret.getCertificate(), equalTo("certificate"));
         assertThat(newSecret.getCaName(), equalTo(null));
       });
-
-      it("converts empty strings to null", () -> {
-        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "", "");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
-
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
-        assertThat(newSecret.getCa(), equalTo(null));
-        assertThat(newSecret.getCertificate(), equalTo(null));
-        assertThat(newSecret.getCaName(), equalTo(null));
-      });
     });
   }
 }

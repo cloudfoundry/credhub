@@ -96,15 +96,6 @@ public class NamedSshSecretTest {
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
         assertThat(newSecret.getPublicKey(), equalTo("public key"));
       });
-
-      it("converts empty strings to null", () -> {
-        KeySetRequestFields fields = new KeySetRequestFields("new private key", "");
-        NamedSshSecret newSecret = (NamedSshSecret) NamedSshSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
-
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
-        assertThat(newSecret.getPublicKey(), equalTo(null));
-      });
     });
   }
 }

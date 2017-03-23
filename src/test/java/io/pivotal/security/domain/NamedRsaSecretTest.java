@@ -93,15 +93,6 @@ public class NamedRsaSecretTest {
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
         assertThat(newSecret.getPublicKey(), equalTo("public key"));
       });
-
-      it("converts empty strings to null", () -> {
-        KeySetRequestFields fields = new KeySetRequestFields("new private key", "");
-        NamedRsaSecret newSecret = (NamedRsaSecret) NamedRsaSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
-
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
-        assertThat(newSecret.getPublicKey(), equalTo(null));
-      });
     });
   }
 }

@@ -9,8 +9,6 @@ import io.pivotal.security.view.SecretKind;
 
 import java.util.List;
 
-import static io.pivotal.security.util.StringUtil.emptyToNull;
-
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
   private NamedCertificateSecretData delegate;
 
@@ -102,9 +100,9 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     secret.setAccessControlList(accessEntryData);
 
     secret.setEncryptor(encryptor);
-    secret.setPrivateKey(emptyToNull(fields.getPrivateKey()));
-    secret.setCertificate(emptyToNull(fields.getCertificate()));
-    secret.setCa(emptyToNull(fields.getCa()));
+    secret.setPrivateKey(fields.getPrivateKey());
+    secret.setCertificate(fields.getCertificate());
+    secret.setCa(fields.getCa());
     return secret;
   }
 }

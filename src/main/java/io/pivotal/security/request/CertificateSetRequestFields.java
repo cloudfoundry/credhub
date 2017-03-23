@@ -1,14 +1,17 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.pivotal.security.util.EmptyStringToNull;
 import io.pivotal.security.validator.RequireAnyOf;
 
 @SuppressWarnings("unused")
-@RequireAnyOf(message = "error.missing_certificate_credentials", fields = { "ca", "certificate", "privateKey" })
+@RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey"})
 public class CertificateSetRequestFields {
+  @JsonDeserialize(using = EmptyStringToNull.class)
   private String ca;
-
+  @JsonDeserialize(using = EmptyStringToNull.class)
   private String certificate;
-
+  @JsonDeserialize(using = EmptyStringToNull.class)
   private String privateKey;
 
   public CertificateSetRequestFields() {}
