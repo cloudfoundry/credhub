@@ -2,13 +2,12 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.EncryptionKeyMetadata;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hamcrest.CoreMatchers;
 import org.junit.runner.RunWith;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
-import java.security.Security;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -27,10 +26,13 @@ public class BCEncryptionServiceTest {
   private Encryption encryption;
   private Key encryptionKey;
 
+  private UUID canaryUuid;
+
   {
     describe("with a non-null dev key", () -> {
       beforeEach(() -> {
         subject = new BCEncryptionService(getBouncyCastleProvider());
+        canaryUuid = UUID.randomUUID();
 
         EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
         keyMetadata.setDevKey("0123456789ABCDEF0123456789ABCDEF");
@@ -58,20 +60,21 @@ public class BCEncryptionServiceTest {
 
       describe("encryption and decryption", () -> {
         beforeEach(() -> {
-          encryption = subject.encrypt(encryptionKey, plaintext);
+          encryption = subject.encrypt(canaryUuid, encryptionKey, plaintext);
         });
 
         it("can encrypt values", () -> {
           assertThat(encryption.nonce, notNullValue());
           assertThat(encryption.encryptedValue, not(CoreMatchers.equalTo(plaintext)));
+          assertThat(encryption.canaryUuid, equalTo(canaryUuid));
         });
 
         it("can decrypt values", () -> {
-          assertThat(subject.decrypt(encryptionKey, encryption.encryptedValue, encryption.nonce), CoreMatchers.equalTo(plaintext));
+          assertThat(subject.decrypt(encryptionKey, encryption.encryptedValue, encryption.nonce), equalTo(plaintext));
         });
 
         it("does not reuse nonces", () -> {
-          assertThat(subject.encrypt(encryptionKey, plaintext).nonce, not(CoreMatchers.equalTo(encryption.nonce)));
+          assertThat(subject.encrypt(canaryUuid, encryptionKey, plaintext).nonce, not(equalTo(encryption.nonce)));
         });
       });
     });

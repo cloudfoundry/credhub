@@ -5,6 +5,12 @@ import io.pivotal.security.exceptions.KeyNotFoundException;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 
+import javax.crypto.IllegalBlockSizeException;
+import java.security.Key;
+import java.security.ProviderException;
+import java.util.UUID;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -23,13 +29,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.security.Key;
-import java.security.ProviderException;
-import java.util.UUID;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import javax.crypto.IllegalBlockSizeException;
 
 @RunWith(Spectrum.class)
 public class RetryingEncryptionServiceTest {
@@ -76,8 +75,8 @@ public class RetryingEncryptionServiceTest {
         it("should encrypt the string without attempting to reconnect", () -> {
           reset(encryptionService);
 
-          Encryption expectedEncryption = mock(Encryption.class, "expected encryption");
-          when(encryptionService.encrypt(firstKey, "fake-plaintext"))
+          Encryption expectedEncryption = mock(Encryption.class);
+          when(encryptionService.encrypt(keyUuid, firstKey, "fake-plaintext"))
               .thenReturn(expectedEncryption);
 
           Encryption encryptedValue = subject.encrypt(keyUuid, "fake-plaintext");
@@ -91,7 +90,7 @@ public class RetryingEncryptionServiceTest {
 
       describe("when encrypt throws errors", () -> {
         beforeEach(() -> {
-          when(encryptionService.encrypt(any(Key.class), anyString()))
+          when(encryptionService.encrypt(any(UUID.class), any(Key.class), anyString()))
               .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
         });
 
@@ -104,9 +103,9 @@ public class RetryingEncryptionServiceTest {
           }
 
           final InOrder inOrder = inOrder(encryptionService, remoteEncryptionConnectable);
-          inOrder.verify(encryptionService).encrypt(eq(firstKey), anyString());
+          inOrder.verify(encryptionService).encrypt(eq(keyUuid), eq(firstKey), anyString());
           inOrder.verify(remoteEncryptionConnectable).reconnect(any(ProviderException.class));
-          inOrder.verify(encryptionService).encrypt(eq(secondKey), anyString());
+          inOrder.verify(encryptionService).encrypt(eq(keyUuid), eq(secondKey), anyString());
         });
 
         it("unlocks after exception and locks again before encrypting", () -> {
@@ -141,9 +140,9 @@ public class RetryingEncryptionServiceTest {
           Encryption expectedEncryption = mock(Encryption.class);
           reset(encryptionService);
 
-          when(encryptionService.encrypt(firstKey, "fake-plaintext"))
+          when(encryptionService.encrypt(keyUuid, firstKey, "fake-plaintext"))
               .thenThrow(new IllegalBlockSizeException("test exception"));
-          when(encryptionService.encrypt(secondKey, "fake-plaintext"))
+          when(encryptionService.encrypt(keyUuid, secondKey, "fake-plaintext"))
               .thenReturn(expectedEncryption);
 
           assertThat(subject.encrypt(keyUuid, "fake-plaintext"), equalTo(expectedEncryption));
@@ -190,7 +189,7 @@ public class RetryingEncryptionServiceTest {
 
           subject = new RacingRetryingEncryptionServiceForTest(firstThread, secondThread, lock);
 
-          when(encryptionService.encrypt(any(Key.class), anyString()))
+          when(encryptionService.encrypt(eq(keyUuid), any(Key.class), anyString()))
               .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
 
           firstThread.start();

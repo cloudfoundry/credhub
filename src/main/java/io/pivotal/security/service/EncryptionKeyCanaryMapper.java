@@ -2,7 +2,6 @@ package io.pivotal.security.service;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import static com.google.common.collect.Lists.newArrayList;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
@@ -17,6 +16,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -132,7 +133,7 @@ public class EncryptionKeyCanaryMapper {
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
     try {
-      Encryption encryptionData = encryptionService.encrypt(encryptionKey.getKey(), CANARY_VALUE);
+      Encryption encryptionData = encryptionService.encrypt(null, encryptionKey.getKey(), CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
       canary.setSalt(encryptionKey.getSalt());

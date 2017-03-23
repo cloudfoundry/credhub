@@ -54,7 +54,7 @@ public class NamedSecretRotationTest {
                 when(encryptionService.decrypt(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(), "old-nonce".getBytes()))
                         .thenReturn("plaintext");
                 when(encryptionService.encrypt(activeEncryptionKeyUuid, "plaintext"))
-                        .thenReturn(new Encryption("new-encrypted-value".getBytes(), "new-nonce".getBytes()));
+                        .thenReturn(new Encryption(activeEncryptionKeyUuid, "new-encrypted-value".getBytes(), "new-nonce".getBytes()));
             });
 
             describe("when the secret contains an encrypted value", () -> {
@@ -109,7 +109,7 @@ public class NamedSecretRotationTest {
                         when(encryptionService.decrypt(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes()))
                                 .thenReturn(stringifiedParameters);
                         when(encryptionService.encrypt(activeEncryptionKeyUuid, stringifiedParameters))
-                                .thenReturn(new Encryption("new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
+                                .thenReturn(new Encryption(activeEncryptionKeyUuid, "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
 
                         password.rotate();
                         assertThat(password.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));

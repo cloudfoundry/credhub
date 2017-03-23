@@ -13,11 +13,10 @@ import io.pivotal.security.generator.BCCertificateGenerator;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.CertificateReader;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.exparity.hamcrest.BeanMatchers;
 import org.junit.runner.RunWith;
 
-import java.security.Security;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -48,12 +47,15 @@ public class CertificateGeneratorRequestTranslatorTest {
   private DocumentContext parsed;
   private CertificateSecretParameters mockParams;
 
+  private UUID canaryUuid;
+
   {
     beforeEach(() -> {
       encryptor = mock(Encryptor.class);
+      canaryUuid = UUID.randomUUID();
 
       when(encryptor.encrypt("my-priv"))
-          .thenReturn(new Encryption("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
+          .thenReturn(new Encryption(canaryUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
 
       certificateGenerator = mock(BCCertificateGenerator.class);
       certificateSecretParametersFactory = mock(CertificateSecretParametersFactory.class);

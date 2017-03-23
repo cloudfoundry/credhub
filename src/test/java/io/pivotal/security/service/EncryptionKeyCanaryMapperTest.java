@@ -89,8 +89,8 @@ public class EncryptionKeyCanaryMapperTest {
       existingKeyCanary2 = createEncryptionCanary(existingCanaryUUID2, "fake-existing-encrypted-value2", "fake-existing-nonce2", existingKey2);
       unknownCanary = createEncryptionCanary(unknownCanaryUUID, "fake-existing-encrypted-value3", "fake-existing-nonce3", unknownKey);
 
-      when(encryptionService.encrypt(activeKey, CANARY_VALUE))
-          .thenReturn(new Encryption("fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
+      when(encryptionService.encrypt(null, activeKey, CANARY_VALUE))
+          .thenReturn(new Encryption(null, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
       when(encryptionKeysConfiguration.getKeys()).thenReturn(newArrayList(
           existingKey1Data,
           activeKeyData,
@@ -277,7 +277,7 @@ public class EncryptionKeyCanaryMapperTest {
         });
 
         it("should not re-encrypt the canary value", () -> {
-          verify(encryptionService, times(0)).encrypt(eq(activeKey), any(String.class));
+          verify(encryptionService, times(0)).encrypt(eq(activeCanaryUUID), eq(activeKey), any(String.class));
         });
 
         it("sets the matching canary's UUID as active", () -> {
@@ -360,7 +360,7 @@ public class EncryptionKeyCanaryMapperTest {
     EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
     assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
     assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
-    verify(encryptionService, times(1)).encrypt(activeKey, CANARY_VALUE);
+    verify(encryptionService, times(1)).encrypt(null, activeKey, CANARY_VALUE);
   }
 
   private EncryptionKeyCanary createEncryptionCanary(UUID canaryUuid, String encryptedValue, String nonce, Key encryptionKey)

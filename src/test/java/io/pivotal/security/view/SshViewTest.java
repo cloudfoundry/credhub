@@ -39,7 +39,7 @@ public class SshViewTest {
       secretName = "/foo";
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
-      when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(new Encryption("encrypted".getBytes(), "nonce".getBytes()));
+      when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(new Encryption(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes()));
       when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn(TestConstants.PRIVATE_KEY_4096);
       entity = new NamedSshSecret(secretName)
           .setEncryptor(encryptor)

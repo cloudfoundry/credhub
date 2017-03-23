@@ -36,13 +36,15 @@ public class NamedCertificateSecretTest {
   private byte[] encryptedValue;
 
   private byte[] nonce;
+  private UUID canaryUuid;
 
   {
     beforeEach(() -> {
       encryptor = mock(Encryptor.class);
       encryptedValue = "fake-encrypted-value".getBytes();
       nonce = "fake-nonce".getBytes();
-      when(encryptor.encrypt("my-priv")).thenReturn(new Encryption(encryptedValue, nonce));
+      canaryUuid = UUID.randomUUID();
+      when(encryptor.encrypt("my-priv")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-priv");
 
       subject = new NamedCertificateSecret("/Foo")
@@ -116,7 +118,7 @@ public class NamedCertificateSecretTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new private key")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.encrypt("new private key")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new private key");
 
         subject = new NamedCertificateSecret("/existingName");

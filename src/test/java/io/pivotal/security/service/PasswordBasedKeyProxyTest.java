@@ -2,7 +2,6 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.runner.RunWith;
 
@@ -69,7 +68,7 @@ public class PasswordBasedKeyProxyTest {
           PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, encryptionService);
           final byte[] salt = generateSalt();
           derivedKey = oldProxy.deriveKey(salt);
-          final Encryption encryptedCanary = encryptionService.encrypt(derivedKey, CANARY_VALUE);
+          final Encryption encryptedCanary = encryptionService.encrypt(null, derivedKey, CANARY_VALUE);
           canary = new EncryptionKeyCanary();
           canary.setEncryptedValue(encryptedCanary.encryptedValue);
           canary.setNonce(encryptedCanary.nonce);

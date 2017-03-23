@@ -36,7 +36,7 @@ public class CertificateSecretTest {
       byte[] nonce = "fake-nonce".getBytes();
 
       encryptor = mock(Encryptor.class);
-      when(encryptor.encrypt("priv")).thenReturn(new Encryption(encryptedValue, nonce));
+      when(encryptor.encrypt("priv")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.getActiveUuid()).thenReturn(canaryUuid);
       when(encryptor.decrypt(canaryUuid, encryptedValue, nonce)).thenReturn("priv");
 

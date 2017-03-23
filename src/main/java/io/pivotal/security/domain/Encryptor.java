@@ -22,9 +22,10 @@ public class Encryptor {
 
   public Encryption encrypt(String clearTextValue) {
     try {
+      final UUID activeUuid = encryptionKeyCanaryMapper.getActiveUuid();
       return clearTextValue == null ?
-          new Encryption(null, null) :
-          encryptionService.encrypt(encryptionKeyCanaryMapper.getActiveUuid(), clearTextValue);
+          new Encryption(activeUuid, null, null) :
+          encryptionService.encrypt(activeUuid, clearTextValue);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

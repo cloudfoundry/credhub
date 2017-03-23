@@ -36,7 +36,7 @@ public class RetryingEncryptionService {
 
   public Encryption encrypt(UUID keyId, final String value) throws Exception {
     logger.info("Attempting encrypt");
-    return retryOnErrorWithRemappedKey(keyId, key -> encryptionService.encrypt(key, value));
+    return retryOnErrorWithRemappedKey(keyId, key -> encryptionService.encrypt(keyId, key, value));
   }
 
   public String decrypt(UUID keyId, final byte[] encryptedValue, final byte[] nonce) throws Exception {

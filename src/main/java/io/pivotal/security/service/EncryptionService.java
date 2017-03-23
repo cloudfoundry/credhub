@@ -12,6 +12,7 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CHARSET;
@@ -25,7 +26,7 @@ public abstract class EncryptionService {
   abstract IvParameterSpec generateParameterSpec(byte[] nonce);
   abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
 
-  public Encryption encrypt(Key key, String value) throws Exception {
+  public Encryption encrypt(UUID canaryUuid, Key key, String value) throws Exception {
     byte[] nonce = generateNonce();
     IvParameterSpec parameterSpec = generateParameterSpec(nonce);
     CipherWrapper encryptionCipher = getCipher();
@@ -34,7 +35,7 @@ public abstract class EncryptionService {
 
     byte[] encrypted = encryptionCipher.doFinal(value.getBytes(CHARSET));
 
-    return new Encryption(encrypted, nonce);
+    return new Encryption(canaryUuid, encrypted, nonce);
   }
 
   public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {

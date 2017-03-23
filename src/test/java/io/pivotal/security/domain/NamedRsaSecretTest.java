@@ -26,8 +26,11 @@ public class NamedRsaSecretTest {
 
   private Encryptor encryptor;
 
+  private UUID canaryUuid;
+
   {
     beforeEach(() -> {
+      canaryUuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
       subject = new NamedRsaSecret("/Foo");
     });
@@ -68,7 +71,7 @@ public class NamedRsaSecretTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new private key")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.encrypt("new private key")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new private key");
 
         subject = new NamedRsaSecret("/existingName");

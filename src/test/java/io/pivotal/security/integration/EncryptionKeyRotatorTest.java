@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.JsonHelper.*;
+import static io.pivotal.security.helper.JsonHelper.parse;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
@@ -41,12 +41,11 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.IsNot.not;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -106,7 +105,7 @@ public class EncryptionKeyRotatorTest {
           final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password", encryptionService);
           Key oldKey = keyProxy.deriveKey(generateSalt());
           oldCanary = new EncryptionKeyCanary();
-          final Encryption canaryEncryption = encryptionService.encrypt(oldKey, CANARY_VALUE);
+          final Encryption canaryEncryption = encryptionService.encrypt(null, oldKey, CANARY_VALUE);
           oldCanary.setEncryptedValue(canaryEncryption.encryptedValue);
           oldCanary.setNonce(canaryEncryption.nonce);
           oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
@@ -114,7 +113,7 @@ public class EncryptionKeyRotatorTest {
           when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys()).thenReturn(singletonList(oldCanary.getUuid()));
 
           secretWithOldKey = new NamedCertificateSecret("/old-key");
-          final Encryption encryption = encryptionService.encrypt(oldKey, "old-certificate-private-key");
+          final Encryption encryption = encryptionService.encrypt(oldCanary.getUuid(), oldKey, "old-certificate-private-key");
           secretWithOldKey.setEncryptedValue(encryption.encryptedValue);
           secretWithOldKey.setNonce(encryption.nonce);
           secretWithOldKey.setEncryptionKeyUuid(oldCanary.getUuid());
@@ -134,12 +133,12 @@ public class EncryptionKeyRotatorTest {
 
           passwordName = "/test-password";
           password = new NamedPasswordSecret(passwordName);
-          final Encryption secretEncryption = encryptionService.encrypt(oldKey, "test-password-plaintext");
+          final Encryption secretEncryption = encryptionService.encrypt(oldCanary.getUuid(), oldKey, "test-password-plaintext");
           password.setEncryptedValue(secretEncryption.encryptedValue);
           password.setNonce(secretEncryption.nonce);
           PasswordGenerationParameters parameters = new PasswordGenerationParameters();
           parameters.setExcludeNumber(true);
-          final Encryption parameterEncryption = encryptionService.encrypt(oldKey, new ObjectMapper().writeValueAsString(parameters));
+          final Encryption parameterEncryption = encryptionService.encrypt(oldCanary.getUuid(), oldKey, new ObjectMapper().writeValueAsString(parameters));
           password.setEncryptedGenerationParameters(parameterEncryption.encryptedValue);
           password.setParametersNonce(parameterEncryption.nonce);
           password.setEncryptionKeyUuid(oldCanary.getUuid());

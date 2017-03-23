@@ -34,9 +34,11 @@ public class NamedPasswordSecretTest {
   private Encryptor encryptor;
   private NamedPasswordSecret subject;
   private PasswordGenerationParameters generationParameters;
+  private UUID canaryUUID;
 
   {
     beforeEach(() -> {
+      canaryUUID = UUID.randomUUID();
       generationParameters = new PasswordGenerationParameters();
       generationParameters.setExcludeLower(true);
       generationParameters.setIncludeSpecial(false);
@@ -44,18 +46,18 @@ public class NamedPasswordSecretTest {
 
       encryptor = mock(Encryptor.class);
 
-      when(encryptor.encrypt(null)).thenReturn(new Encryption(null, null));
+      when(encryptor.encrypt(null)).thenReturn(new Encryption(canaryUUID, null, null));
 
       byte[] encryptedValue = "fake-encrypted-value".getBytes();
       byte[] nonce = "fake-nonce".getBytes();
-      when(encryptor.encrypt("my-value")).thenReturn(new Encryption(encryptedValue, nonce));
+      when(encryptor.encrypt("my-value")).thenReturn(new Encryption(canaryUUID, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-value");
 
       String generationParametersJson = new ObjectMapper().writeValueAsString(generationParameters);
       byte[] encryptedParametersValue = "fake-encrypted-parameters".getBytes();
       byte[] parametersNonce = "fake-parameters-nonce".getBytes();
       when(encryptor.encrypt(generationParametersJson))
-          .thenReturn(new Encryption(encryptedParametersValue, parametersNonce));
+          .thenReturn(new Encryption(canaryUUID, encryptedParametersValue, parametersNonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedParametersValue), eq(parametersNonce)))
           .thenReturn(generationParametersJson);
 
@@ -123,7 +125,7 @@ public class NamedPasswordSecretTest {
         byte[] encryptedParametersValue = "fake-encrypted-parameters".getBytes();
         byte[] parametersNonce = "fake-parameters-nonce".getBytes();
         when(encryptor.encrypt(generationParametersJson))
-            .thenReturn(new Encryption(encryptedParametersValue, parametersNonce));
+            .thenReturn(new Encryption(canaryUUID, encryptedParametersValue, parametersNonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedParametersValue), eq(parametersNonce)))
             .thenReturn(generationParametersJson);
 
@@ -157,7 +159,7 @@ public class NamedPasswordSecretTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new password")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.encrypt("new password")).thenReturn(new Encryption(canaryUUID, encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new password");
 
         subject = new NamedPasswordSecret("/existingName");

@@ -29,6 +29,7 @@ public class NamedJsonSecretTest {
 
   private NamedJsonSecret subject;
   private Map<String, Object> value;
+  private UUID canaryUuid;
 
   {
     beforeEach(() -> {
@@ -44,7 +45,8 @@ public class NamedJsonSecretTest {
       encryptor = mock(Encryptor.class);
       byte[] encryptedValue = "fake-encrypted-value".getBytes();
       byte[] nonce = "fake-nonce".getBytes();
-      when(encryptor.encrypt(serializedValue)).thenReturn(new Encryption(encryptedValue, nonce));
+      canaryUuid = UUID.randomUUID();
+      when(encryptor.encrypt(serializedValue)).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn(serializedValue);
 
       subject = new NamedJsonSecret("Foo");
@@ -79,7 +81,7 @@ public class NamedJsonSecretTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new value")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.encrypt("new value")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new value");
 
         subject = new NamedJsonSecret("/existingName");
@@ -96,7 +98,7 @@ public class NamedJsonSecretTest {
         byte[] encryptedValue = "fake-new-value".getBytes();
         byte[] nonce = "fake-new-nonce".getBytes();
 
-        when(encryptor.encrypt(serializedValue)).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.encrypt(serializedValue)).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn(serializedValue);
 
         NamedJsonSecret newSecret = NamedJsonSecret.createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor, new ArrayList<>());

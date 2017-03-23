@@ -24,13 +24,15 @@ public class NamedValueSecretTest {
   private Encryptor encryptor;
 
   NamedValueSecret subject;
+  private UUID canaryUuid;
 
   {
     beforeEach(() -> {
+      canaryUuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
       byte[] encryptedValue = "fake-encrypted-value".getBytes();
       byte[] nonce = "fake-nonce".getBytes();
-      when(encryptor.encrypt("my-value")).thenReturn(new Encryption(encryptedValue, nonce));
+      when(encryptor.encrypt("my-value")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-value");
 
       subject = new NamedValueSecret("Foo");
@@ -65,7 +67,7 @@ public class NamedValueSecretTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new value")).thenReturn(new Encryption(encryptedValue, nonce));
+        when(encryptor.encrypt("new value")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new value");
 
         subject = new NamedValueSecret("/existingName");
