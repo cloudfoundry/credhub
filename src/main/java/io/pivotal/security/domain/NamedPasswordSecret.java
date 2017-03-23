@@ -55,7 +55,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       delegate.setEncryptedValue(encryptedPassword.encryptedValue);
       delegate.setNonce(encryptedPassword.nonce);
 
-      delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+      delegate.setEncryptionKeyUuid(encryptedPassword.canaryUuid);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

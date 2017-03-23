@@ -49,7 +49,7 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
 
     delegate.setEncryptedValue(encryption.encryptedValue);
     delegate.setNonce(encryption.nonce);
-    delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
 
     return this;
   }

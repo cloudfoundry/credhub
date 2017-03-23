@@ -43,8 +43,4 @@ public class Encryptor {
       throw new RuntimeException(e);
     }
   }
-
-  public UUID getActiveUuid() {
-    return encryptionKeyCanaryMapper.getActiveUuid();
-  }
 }

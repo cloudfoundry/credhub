@@ -39,7 +39,7 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
     final Encryption encryption = encryptor.encrypt(value);
     delegate.setEncryptedValue(encryption.encryptedValue);
     delegate.setNonce(encryption.nonce);
-    delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
 
     return this;
   }

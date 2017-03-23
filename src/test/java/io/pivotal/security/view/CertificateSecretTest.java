@@ -37,7 +37,6 @@ public class CertificateSecretTest {
 
       encryptor = mock(Encryptor.class);
       when(encryptor.encrypt("priv")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-      when(encryptor.getActiveUuid()).thenReturn(canaryUuid);
       when(encryptor.decrypt(canaryUuid, encryptedValue, nonce)).thenReturn("priv");
 
       serializingObjectMapper = new ObjectMapper();

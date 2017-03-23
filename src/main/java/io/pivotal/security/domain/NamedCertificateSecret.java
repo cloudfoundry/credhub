@@ -56,7 +56,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
 
     delegate.setNonce(encryption.nonce);
     delegate.setEncryptedValue(encryption.encryptedValue);
-    delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
 
     return this;
   }

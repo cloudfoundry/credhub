@@ -71,7 +71,7 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
 
       delegate.setEncryptedValue(encryption.encryptedValue);
       delegate.setNonce(encryption.nonce);
-      delegate.setEncryptionKeyUuid(encryptor.getActiveUuid());
+      delegate.setEncryptionKeyUuid(encryption.canaryUuid);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
