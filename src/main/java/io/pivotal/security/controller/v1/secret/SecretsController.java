@@ -81,14 +81,13 @@ public class SecretsController {
   public static final String API_V1_DATA = "/api/v1/data";
 
   private static final Logger logger = LogManager.getLogger(SecretsController.class);
-
-  private SecretDataService secretDataService;
-  private NamedSecretGenerateHandler namedSecretGenerateHandler;
-  private JsonContextFactory jsonContextFactory;
-  private AuditLogService auditLogService;
-  private MessageSourceAccessor messageSourceAccessor;
-  private Encryptor encryptor;
-  private ObjectMapper objectMapper;
+  private final SecretDataService secretDataService;
+  private final NamedSecretGenerateHandler namedSecretGenerateHandler;
+  private final JsonContextFactory jsonContextFactory;
+  private final AuditLogService auditLogService;
+  private final MessageSourceAccessor messageSourceAccessor;
+  private final Encryptor encryptor;
+  private final ObjectMapper objectMapper;
 
   public SecretsController(SecretDataService secretDataService,
                            NamedSecretGenerateHandler namedSecretGenerateHandler,
@@ -261,9 +260,9 @@ public class SecretsController {
           new ParameterizedValidationException("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName())
       );
     } else if (cause instanceof InvalidTypeIdException) {
-      errorMessage = messageSourceAccessor.getMessage("error.type_invalid");
+      errorMessage = messageSourceAccessor.getMessage("error.invalid_type_with_set_prompt");
     } else if (cause instanceof JsonMappingException && cause.getMessage().contains("missing property 'type'")) {
-      errorMessage = messageSourceAccessor.getMessage("error.type_invalid");
+      errorMessage = messageSourceAccessor.getMessage("error.invalid_type_with_set_prompt");
     } else if (cause instanceof InvalidFormatException) {
       for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause).getPath()) {
         if ("operations".equals(reference.getFieldName())) {

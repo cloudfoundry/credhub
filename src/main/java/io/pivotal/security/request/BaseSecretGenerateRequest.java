@@ -7,14 +7,14 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
-    use         = JsonTypeInfo.Id.NAME,
-    include     = JsonTypeInfo.As.PROPERTY,
-    property    = "type",
-    visible     = true,
-    defaultImpl = DefaultSecretGenerateRequest.class  // TEMPORARY: Only needed while we're removing DocumentContext
+  use         = JsonTypeInfo.Id.NAME,
+  include     = JsonTypeInfo.As.PROPERTY,
+  property    = "type",
+  visible     = true,
+  defaultImpl = DefaultSecretGenerateRequest.class  // TEMPORARY: Only needed while we're removing DocumentContext
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
+  @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretPostRequest {
   private String type;
@@ -41,11 +41,11 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretPostRequest {
     super.validate();
 
     if (!isValidSecretType(type)) {
-      throw new ParameterizedValidationException("error.type_invalid");
+      throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
     }
 
     if (!isValidTypeForGeneration(type)) {
-      throw new ParameterizedValidationException("error.invalid_generate_type");
+      throw new ParameterizedValidationException("error.cannot_generate_type");
     }
   }
 

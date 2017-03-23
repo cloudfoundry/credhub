@@ -22,7 +22,7 @@ import java.util.List;
     @JsonSubTypes.Type(name = "rsa",          value = RsaSetRequest.class)
 })
 public abstract class BaseSecretPutRequest extends BaseSecretRequest {
-  @NotEmpty(message = "error.type_invalid")
+  @NotEmpty(message = "error.invalid_type_with_set_prompt")
   private String type;
   private Boolean overwrite;
   private List<AccessControlEntry> accessControlEntries = new ArrayList<>();

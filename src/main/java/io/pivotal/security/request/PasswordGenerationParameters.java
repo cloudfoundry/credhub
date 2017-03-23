@@ -17,13 +17,9 @@ public class PasswordGenerationParameters implements RequestParameters{
   private Integer length;
 
   private boolean excludeLower;
-
   private boolean excludeNumber;
-
   private boolean excludeUpper;
-
   private boolean includeSpecial;
-
   private boolean onlyHex;
 
   public int getLength() {

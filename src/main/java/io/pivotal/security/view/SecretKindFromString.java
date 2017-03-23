@@ -12,7 +12,7 @@ public interface SecretKindFromString {
 
   static SecretKind fromString(String type) {
     if (type == null) {
-      throw new ParameterizedValidationException("error.type_invalid");
+      throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
     }
     switch (type) {
       case NamedValueSecretData.SECRET_TYPE:
@@ -28,6 +28,6 @@ public interface SecretKindFromString {
       case NamedRsaSecretData.SECRET_TYPE:
         return SecretKind.RSA;
     }
-    throw new ParameterizedValidationException("error.type_invalid");
+    throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
   }
 }
