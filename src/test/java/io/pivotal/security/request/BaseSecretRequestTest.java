@@ -23,7 +23,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
 public class BaseSecretRequestTest {
-  // We are using BaseSecretPutRequest as a concrete exemplar of the abstract BaseSecretRequest
+  // We are using BaseSecretSetRequest as a concrete exemplar of the abstract BaseSecretRequest
   {
     describe("when given valid json", () -> {
       it("should be valid", () -> {
@@ -33,7 +33,7 @@ public class BaseSecretRequestTest {
             "\"name\":\"some-name\"," + // it thinks this name has a slash in it
             "\"value\":\"some-value\"" +
             "}";
-        Set<ConstraintViolation<BaseSecretPutRequest>> violations = deserializeAndValidate(json, BaseSecretPutRequest.class);
+        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(json, BaseSecretSetRequest.class);
         assertThat(violations.size(), equalTo(0));
       });
 
@@ -44,7 +44,7 @@ public class BaseSecretRequestTest {
             "\"name\":\"some-name\"," +
             "\"value\":\"some-value\"" +
           "}";
-        BaseSecretPutRequest secretSetRequest = deserialize(json, BaseSecretPutRequest.class);
+        BaseSecretSetRequest secretSetRequest = deserialize(json, BaseSecretSetRequest.class);
 
         assertThat(secretSetRequest.getType(), equalTo("value"));
         assertThat(secretSetRequest.getName(), equalTo("some-name"));
@@ -58,7 +58,7 @@ public class BaseSecretRequestTest {
               "\"name\":\"some-name\"," +
               "\"value\":\"some-value\"" +
             "}";
-          BaseSecretPutRequest secretSetRequest = deserialize(json, BaseSecretPutRequest.class);
+          BaseSecretSetRequest secretSetRequest = deserialize(json, BaseSecretSetRequest.class);
 
           assertThat(secretSetRequest.isOverwrite(), equalTo(false));
         });
@@ -71,7 +71,7 @@ public class BaseSecretRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
             "}";
-          BaseSecretPutRequest secretSetRequest = deserialize(json, BaseSecretPutRequest.class);
+          BaseSecretSetRequest secretSetRequest = deserialize(json, BaseSecretSetRequest.class);
 
           assertThat(secretSetRequest.isOverwrite(), equalTo(true));
         });
@@ -88,7 +88,7 @@ public class BaseSecretRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          Set<ConstraintViolation<BaseSecretPutRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretPutRequest.class);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
         });
@@ -103,7 +103,7 @@ public class BaseSecretRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          Set<ConstraintViolation<BaseSecretPutRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretPutRequest.class);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
         });
@@ -118,7 +118,7 @@ public class BaseSecretRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          Set<ConstraintViolation<BaseSecretPutRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretPutRequest.class);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
         });
@@ -132,7 +132,7 @@ public class BaseSecretRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          Set<ConstraintViolation<BaseSecretPutRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretPutRequest.class);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
         });
@@ -147,7 +147,7 @@ public class BaseSecretRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          Set<ConstraintViolation<BaseSecretPutRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretPutRequest.class);
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper.deserializeAndValidate(json, BaseSecretSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
         });
@@ -163,7 +163,7 @@ public class BaseSecretRequestTest {
             "  \"overwrite\": true\n" +
             "}";
 
-        final BaseSecretPutRequest request = JsonHelper.deserialize(json, BaseSecretPutRequest.class);
+        final BaseSecretSetRequest request = JsonHelper.deserialize(json, BaseSecretSetRequest.class);
         assertThat(request.getAccessControlEntries(), empty());
       });
 
@@ -184,7 +184,7 @@ public class BaseSecretRequestTest {
             "    }\n" +
             "  ]\n" +
             "}";
-        final BaseSecretPutRequest request = JsonHelper.deserialize(json, BaseSecretPutRequest.class);
+        final BaseSecretSetRequest request = JsonHelper.deserialize(json, BaseSecretSetRequest.class);
 
         final List<AccessControlOperation> operations = new ArrayList<>(Arrays.asList(AccessControlOperation.READ, AccessControlOperation.WRITE));
         final List<AccessControlEntry> expectedACEs = new ArrayList<>(Arrays.asList(new AccessControlEntry("some-actor", operations)));

@@ -16,17 +16,8 @@ import static com.google.common.collect.Lists.newArrayList;
 @JsonSubTypes({
   @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
 })
-public abstract class BaseSecretGenerateRequest extends BaseSecretPostRequest {
+public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
   private String type;
-  private Boolean overwrite;
-
-  public Boolean isOverwrite() {
-    return overwrite;
-  }
-
-  public void setOverwrite(boolean overwrite) {
-    this.overwrite = overwrite;
-  }
 
   public String getType() {
     return type;
@@ -36,10 +27,7 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretPostRequest {
     this.type = type;
   }
 
-  @Override
   public void validate() {
-    super.validate();
-
     if (!isValidSecretType(type)) {
       throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
     }
@@ -55,5 +43,11 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretPostRequest {
 
   private boolean isValidTypeForGeneration(String type) {
     return newArrayList("password", "certificate", "rsa", "ssh").contains(type);
+  }
+
+  // These are only here because a set / generate request may have regenerate=false in it.
+  private boolean regenerate;
+  public void setRegenerate(boolean regenerate) {
+    this.regenerate = regenerate;
   }
 }

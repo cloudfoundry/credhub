@@ -7,7 +7,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import java.util.Map;
 
-public class JsonSetRequest extends BaseSecretPutRequest {
+public class JsonSetRequest extends BaseSecretSetRequest {
   @NotEmpty(message = "error.missing_value")
   private Map<String, Object> value;
 

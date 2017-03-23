@@ -26,7 +26,7 @@ public class PasswordSetRequestTest {
         "\"value\":\"fake-password\"," +
         "\"overwrite\":true" +
         "}";
-      BaseSecretPutRequest deserialize = deserialize(json, BaseSecretPutRequest.class);
+      BaseSecretSetRequest deserialize = deserialize(json, BaseSecretSetRequest.class);
 
       assertThat(deserialize, instanceOf(PasswordSetRequest.class));
     });
@@ -38,7 +38,7 @@ public class PasswordSetRequestTest {
         "\"value\":\"fake-password\"," +
         "\"overwrite\":true" +
         "}";
-      Set<ConstraintViolation<BaseSecretPutRequest>> constraintViolations = deserializeAndValidate(json, BaseSecretPutRequest.class);
+      Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations = deserializeAndValidate(json, BaseSecretSetRequest.class);
 
       assertThat(constraintViolations.size(), equalTo(0));
     });
@@ -50,7 +50,7 @@ public class PasswordSetRequestTest {
             "\"type\":\"password\"," +
             "\"overwrite\":true" +
             "}";
-        Set<ConstraintViolation<BaseSecretPutRequest>> constraintViolations = deserializeAndValidate(json, BaseSecretPutRequest.class);
+        Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations = deserializeAndValidate(json, BaseSecretSetRequest.class);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });
@@ -64,7 +64,7 @@ public class PasswordSetRequestTest {
             "\"overwrite\":true," +
             "\"value\":\"\"" +
             "}";
-        Set<ConstraintViolation<BaseSecretPutRequest>> constraintViolations = deserializeAndValidate(json, BaseSecretPutRequest.class);
+        Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations = deserializeAndValidate(json, BaseSecretSetRequest.class);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });

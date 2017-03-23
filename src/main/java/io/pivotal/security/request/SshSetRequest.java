@@ -8,7 +8,7 @@ import io.pivotal.security.domain.NamedSshSecret;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class SshSetRequest extends BaseSecretPutRequest {
+public class SshSetRequest extends BaseSecretSetRequest {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")

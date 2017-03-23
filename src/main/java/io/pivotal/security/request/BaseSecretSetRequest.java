@@ -21,10 +21,9 @@ import java.util.List;
     @JsonSubTypes.Type(name = "ssh",          value = SshSetRequest.class),
     @JsonSubTypes.Type(name = "rsa",          value = RsaSetRequest.class)
 })
-public abstract class BaseSecretPutRequest extends BaseSecretRequest {
+public abstract class BaseSecretSetRequest extends BaseSecretRequest {
   @NotEmpty(message = "error.invalid_type_with_set_prompt")
   private String type;
-  private Boolean overwrite;
   private List<AccessControlEntry> accessControlEntries = new ArrayList<>();
 
   public String getType() {
@@ -33,14 +32,6 @@ public abstract class BaseSecretPutRequest extends BaseSecretRequest {
 
   public void setType(String type) {
     this.type = type;
-  }
-
-  public boolean isOverwrite() {
-    return overwrite != null && overwrite;
-  }
-
-  public void setOverwrite(Boolean overwrite) {
-    this.overwrite = overwrite;
   }
 
   public List<AccessControlEntry> getAccessControlEntries() {

@@ -8,7 +8,7 @@ import io.pivotal.security.domain.NamedSecret;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class RsaSetRequest extends BaseSecretPutRequest {
+public class RsaSetRequest extends BaseSecretSetRequest {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")

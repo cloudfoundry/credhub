@@ -10,7 +10,7 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 
 @RunWith(Spectrum.class)
-public class BaseSecretPutRequestTest {
+public class BaseSecretSetRequestTest {
   {
     describe("when type is not set", () -> {
       itThrows("should throw an JsonMappingException", JsonMappingException.class, () -> {
@@ -20,7 +20,7 @@ public class BaseSecretPutRequestTest {
             "\"overwrite\":true" +
             "}";
 
-        JsonHelper.deserializeChecked(json, BaseSecretPutRequest.class);
+        JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
       });
     });
 
@@ -33,7 +33,7 @@ public class BaseSecretPutRequestTest {
             "\"overwrite\":true" +
             "}";
 
-        JsonHelper.deserializeChecked(json, BaseSecretPutRequest.class);
+        JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
       });
     });
 
@@ -46,7 +46,7 @@ public class BaseSecretPutRequestTest {
             "\"overwrite\":true" +
             "}";
 
-        JsonHelper.deserializeChecked(json, BaseSecretPutRequest.class);
+        JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
       });
     });
   }

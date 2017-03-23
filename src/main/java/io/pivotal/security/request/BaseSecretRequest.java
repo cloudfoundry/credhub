@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 
 public abstract class BaseSecretRequest {
-  private static final String STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES = "^(?>(?:/?[^/]+))*$";
+  public static final String STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES = "^(?>(?:/?[^/]+))*$";
 
   @NotEmpty(message = "error.missing_name")
   @Pattern(regexp = STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES, message = "error.invalid_name_has_slash")
@@ -20,6 +20,16 @@ public abstract class BaseSecretRequest {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  private Boolean overwrite;
+
+  public Boolean isOverwrite() {
+    return overwrite != null && overwrite;
+  }
+
+  public void setOverwrite(Boolean overwrite) {
+    this.overwrite = overwrite;
   }
 
   @JsonIgnore
