@@ -2,10 +2,12 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import org.hibernate.validator.constraints.NotEmpty;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
     use         = JsonTypeInfo.Id.NAME,
@@ -22,17 +24,7 @@ import java.util.List;
     @JsonSubTypes.Type(name = "rsa",          value = RsaSetRequest.class)
 })
 public abstract class BaseSecretSetRequest extends BaseSecretRequest {
-  @NotEmpty(message = "error.invalid_type_with_set_prompt")
-  private String type;
   private List<AccessControlEntry> accessControlEntries = new ArrayList<>();
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
 
   public List<AccessControlEntry> getAccessControlEntries() {
     return accessControlEntries;
@@ -40,5 +32,18 @@ public abstract class BaseSecretSetRequest extends BaseSecretRequest {
 
   public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
     this.accessControlEntries = accessControlEntries;
+  }
+
+  @Override
+  public void validate() {
+    super.validate();
+
+    if (!isValidTypeForSet(getType())) {
+      throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
+    }
+  }
+
+  private boolean isValidTypeForSet(String type) {
+    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json").contains(type);
   }
 }

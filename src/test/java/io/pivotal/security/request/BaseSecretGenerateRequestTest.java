@@ -64,7 +64,7 @@ public class BaseSecretGenerateRequestTest {
       describe("when type is value", () -> {
         itThrowsWithMessage("should throw invalid_type_with_generate_prompt",
           ParameterizedValidationException.class,
-          "error.cannot_generate_type",
+          "error.invalid_type_with_generate_prompt",
           () -> {
           String json = "{" +
             "\"name\":\"some-name\"," +
@@ -80,7 +80,7 @@ public class BaseSecretGenerateRequestTest {
       describe("when type is json", () -> {
         itThrowsWithMessage("should throw invalid_type_with_generate_prompt",
           ParameterizedValidationException.class,
-          "error.cannot_generate_type",
+          "error.invalid_type_with_generate_prompt",
           () -> {
           String json = "{" +
             "\"name\":\"some-name\"," +

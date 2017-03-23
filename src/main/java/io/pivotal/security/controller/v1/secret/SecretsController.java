@@ -18,7 +18,9 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.*;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
+import io.pivotal.security.request.BaseSecretSetRequest;
+import io.pivotal.security.request.DefaultSecretGenerateRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CheckedFunction;
@@ -38,7 +40,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.ObjectError;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -129,10 +130,11 @@ public class SecretsController {
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
   public ResponseEntity set(
-      @RequestBody @Validated BaseSecretSetRequest requestBody,
+      @RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
+    requestBody.validate();
     try {
       return performSet(request, authentication, requestBody);
     } catch (JpaSystemException | DataIntegrityViolationException e) {

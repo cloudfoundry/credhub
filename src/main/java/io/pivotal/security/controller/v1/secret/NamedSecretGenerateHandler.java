@@ -47,12 +47,12 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
     return new SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException>() {
       @Override
       public NamedSecret value(NamedSecret namedSecret) {
-        throw new ParameterizedValidationException("error.cannot_generate_type");
+        throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
       }
 
       @Override
       public NamedSecret json(NamedSecret namedSecret) {
-        throw new ParameterizedValidationException("error.cannot_generate_type");
+        throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
       }
 
       @Override

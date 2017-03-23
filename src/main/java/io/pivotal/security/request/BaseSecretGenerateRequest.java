@@ -17,28 +17,13 @@ import static com.google.common.collect.Lists.newArrayList;
   @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
-  private String type;
-
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
-
+  @Override
   public void validate() {
-    if (!isValidSecretType(type)) {
+    super.validate();
+
+    if (!isValidTypeForGeneration(getType())) {
       throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
     }
-
-    if (!isValidTypeForGeneration(type)) {
-      throw new ParameterizedValidationException("error.cannot_generate_type");
-    }
-  }
-
-  private boolean isValidSecretType(String type) {
-    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json").contains(type);
   }
 
   private boolean isValidTypeForGeneration(String type) {

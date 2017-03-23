@@ -1,6 +1,7 @@
 package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.helper.JsonHelper;
 import org.junit.runner.RunWith;
 
@@ -15,6 +16,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
 import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
@@ -190,6 +192,19 @@ public class BaseSecretRequestTest {
         final List<AccessControlEntry> expectedACEs = new ArrayList<>(Arrays.asList(new AccessControlEntry("some-actor", operations)));
 
         assertThat(request.getAccessControlEntries(), samePropertyValuesAs(expectedACEs));
+      });
+    });
+
+    describe("#validate", () -> {
+      itThrowsWithMessage("throws with error.invalid_name_has_slash", ParameterizedValidationException.class, "error.invalid_name_has_slash", () -> {
+        // language=JSON
+        String json = "{\n" +
+          "  \"name\": \"//some-name\",\n" +
+          "  \"type\": \"value\",\n" +
+          "  \"value\": \"some-value\"\n" +
+          "}";
+        final BaseSecretSetRequest request = JsonHelper.deserialize(json, BaseSecretSetRequest.class);
+        request.validate();
       });
     });
   }

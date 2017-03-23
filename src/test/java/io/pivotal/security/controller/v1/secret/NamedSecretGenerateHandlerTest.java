@@ -1,25 +1,20 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSshSecret;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import io.pivotal.security.domain.*;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
+
+import static com.greghaskins.spectrum.Spectrum.*;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.mockito.Mockito.mock;
 
 @RunWith(Spectrum.class)
@@ -47,11 +42,11 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
     describe("it verifies the secret type and secret creation for", () -> {
       describe("value", () -> {
-        itThrowsWithMessage("cannot be generated", ParameterizedValidationException.class, "error.cannot_generate_type", () -> {
+        itThrowsWithMessage("cannot be generated", ParameterizedValidationException.class, "error.invalid_type_with_generate_prompt", () -> {
           SecretKind.VALUE.lift(subject.make("secret-path", null)).apply(null);
         });
 
-        itThrowsWithMessage("ignores type mismatches and gives the can't generate message", ParameterizedValidationException.class, "error.cannot_generate_type", () -> {
+        itThrowsWithMessage("ignores type mismatches and gives the can't generate message", ParameterizedValidationException.class, "error.invalid_type_with_generate_prompt", () -> {
           SecretKind.VALUE.lift(subject.make("secret-path", null)).apply(new NamedPasswordSecret());
         });
       });
