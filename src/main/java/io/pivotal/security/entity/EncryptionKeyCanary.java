@@ -7,12 +7,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.List;
 import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+import static org.apache.commons.lang3.ArrayUtils.toObject;
 
 @Entity
 @Table(name = "EncryptionKeyCanary")
@@ -74,8 +78,8 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
     setUuid(encryptionKeyUuid);
   }
 
-  public byte[] getSalt() {
-    return salt;
+  public List<Byte> getSalt() {
+    return salt == null ? null : unmodifiableList(asList(toObject(salt)));
   }
 
   public void setSalt(byte[] salt) {

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 
 @Component
 public class EncryptionKeyCanaryMapper {
@@ -136,7 +137,9 @@ public class EncryptionKeyCanaryMapper {
       Encryption encryptionData = encryptionService.encrypt(null, encryptionKey.getKey(), CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
-      canary.setSalt(encryptionKey.getSalt());
+      final List<Byte> salt = encryptionKey.getSalt();
+      final Byte[] saltArray = new Byte[salt.size()];
+      canary.setSalt(toPrimitive(salt.toArray(saltArray)));
 
     } catch (Exception e) {
       throw new RuntimeException(e);

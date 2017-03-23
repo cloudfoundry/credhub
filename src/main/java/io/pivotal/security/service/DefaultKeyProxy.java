@@ -1,22 +1,28 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
 
 import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
+import static java.util.Collections.unmodifiableList;
 
 class DefaultKeyProxy implements KeyProxy {
+  private final List<Byte> salt;
+  private final EncryptionService encryptionService;
   private Key key;
-  private EncryptionService encryptionService;
 
   DefaultKeyProxy(Key key, EncryptionService encryptionService) {
     this.key = key;
     this.encryptionService = encryptionService;
+    this.salt = unmodifiableList(new ArrayList<Byte>());
   }
 
   @Override
@@ -33,8 +39,8 @@ class DefaultKeyProxy implements KeyProxy {
   }
 
   @Override
-  public byte[] getSalt() {
-    return new byte[0];
+  public List<Byte> getSalt() {
+    return salt;
   }
 
   protected boolean matchesCanary(Key key, EncryptionKeyCanary canary) {

@@ -2,10 +2,13 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.runner.RunWith;
 
 import java.security.Key;
+import java.util.Collections;
+import java.util.List;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -15,6 +18,8 @@ import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
@@ -44,7 +49,8 @@ public class PasswordBasedKeyProxyTest {
 
       beforeEach(() -> {
         byte[] salt = Hex.decode(knownRandomNumber); // gen'd originally from SecureRandom..
-        derivedKey = subject.deriveKey(salt);
+
+        derivedKey = subject.deriveKey(Collections.unmodifiableList(asList(ArrayUtils.toObject(salt))));
       });
 
       it("returns the expected Key", () -> {
@@ -66,13 +72,14 @@ public class PasswordBasedKeyProxyTest {
       describe("when canary matches", () -> {
         beforeEach(() -> {
           PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, encryptionService);
-          final byte[] salt = generateSalt();
+          final List<Byte> salt = generateSalt();
           derivedKey = oldProxy.deriveKey(salt);
           final Encryption encryptedCanary = encryptionService.encrypt(null, derivedKey, CANARY_VALUE);
           canary = new EncryptionKeyCanary();
           canary.setEncryptedValue(encryptedCanary.encryptedValue);
           canary.setNonce(encryptedCanary.nonce);
-          canary.setSalt(salt);
+          final Byte[] saltArray = new Byte[salt.size()];
+          canary.setSalt(toPrimitive(salt.toArray(saltArray)));
         });
 
         it("sets the key", () -> {
@@ -123,7 +130,7 @@ public class PasswordBasedKeyProxyTest {
 
     describe("#generateSalt", () -> {
       it("should minimally be the size of the hash function output", () -> {
-        assertThat(generateSalt().length, greaterThanOrEqualTo(48));
+        assertThat(generateSalt().size(), greaterThanOrEqualTo(48));
       });
     });
   }
