@@ -2,7 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.oauth.UserContext;
+import io.pivotal.security.auth.UserContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;

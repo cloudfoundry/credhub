@@ -1,4 +1,4 @@
-package io.pivotal.security.oauth;
+package io.pivotal.security.auth;
 
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;

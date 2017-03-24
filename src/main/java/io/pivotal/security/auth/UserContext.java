@@ -1,4 +1,4 @@
-package io.pivotal.security.oauth;
+package io.pivotal.security.auth;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

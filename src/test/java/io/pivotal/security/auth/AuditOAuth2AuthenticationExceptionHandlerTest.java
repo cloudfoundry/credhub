@@ -1,4 +1,4 @@
-package io.pivotal.security.oauth;
+package io.pivotal.security.auth;
 
 import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;

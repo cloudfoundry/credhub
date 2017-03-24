@@ -1,7 +1,7 @@
 package io.pivotal.security.config;
 
-import io.pivotal.security.oauth.AuditOAuth2AccessDeniedHandler;
-import io.pivotal.security.oauth.AuditOAuth2AuthenticationExceptionHandler;
+import io.pivotal.security.auth.AuditOAuth2AccessDeniedHandler;
+import io.pivotal.security.auth.AuditOAuth2AuthenticationExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
 import org.springframework.context.annotation.Configuration;

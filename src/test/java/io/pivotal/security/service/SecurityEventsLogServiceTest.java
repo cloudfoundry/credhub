@@ -78,7 +78,7 @@ public class SecurityEventsLogServiceTest {
             "suser=user-name " +
             "suid=user-id " +
             "cs1Label=userAuthenticationMechanism " +
-            "cs1=oauth-access-token " +
+            "cs1=auth-access-token " +
             "request=/api/some-path?foo=bar " +
             "requestMethod=GET " +
             "cs3Label=result " +

@@ -27,7 +27,7 @@ public class SecurityEventsLogService {
         "suser=" + operationAuditRecord.getUserName(),
         "suid=" + operationAuditRecord.getUserId(),
         "cs1Label=userAuthenticationMechanism",
-        "cs1=oauth-access-token",
+        "cs1=auth-access-token",
         "request=" + getPathWithQueryParameters(operationAuditRecord),
         "requestMethod=" + operationAuditRecord.getMethod(),
         "cs3Label=result",
