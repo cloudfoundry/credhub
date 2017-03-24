@@ -2,7 +2,9 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -19,6 +22,7 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsNull.notNullValue;
@@ -29,7 +33,10 @@ import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class NamedPasswordSecretTest {
-  private static List<AccessControlEntry> NO_ENTRIES_PROVIDED = new ArrayList<>();
+  private static final List<AccessControlEntry> EMPTY_ENTRIES_LIST = new ArrayList<>();
+  private static final PasswordGenerationParameters NO_PASSWORD_PARAMS = null;
+  private static final NamedPasswordSecret NO_EXISTING_NAMED_PASSWORD_SECRET = null;
+  private static final List<AccessControlEntry> NULL_ENTRIES_LIST = null;
 
   private Encryptor encryptor;
   private NamedPasswordSecret subject;
@@ -165,25 +172,37 @@ public class NamedPasswordSecretTest {
         subject = new NamedPasswordSecret("/existingName");
         subject.setEncryptor(encryptor);
         subject.setEncryptedValue("old encrypted value".getBytes());
+
+        ArrayList<AccessControlOperation> operations = newArrayList(AccessControlOperation.READ, AccessControlOperation.WRITE);
+        List<AccessEntryData> accessControlEntries = newArrayList(new AccessEntryData(subject.getSecretName(), new AccessControlEntry("Bob", operations)));
+        subject.setAccessControlList(accessControlEntries);
       });
 
       it("copies values from existing, except password", () -> {
-        NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(subject, "anything I AM IGNORED", "new password", encryptor, NO_ENTRIES_PROVIDED);
+        NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(subject, "anything I AM IGNORED", "new password", NO_PASSWORD_PARAMS, encryptor, EMPTY_ENTRIES_LIST);
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getPassword(), equalTo("new password"));
+
+        assertThat(newSecret.getSecretName().getAccessControlList(), hasSize(0));
       });
 
       it("creates new if no existing", () -> {
         NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(
-            null,
+            NO_EXISTING_NAMED_PASSWORD_SECRET,
             "/newName",
             "new password",
+            NO_PASSWORD_PARAMS,
             encryptor,
-            NO_ENTRIES_PROVIDED);
+            EMPTY_ENTRIES_LIST);
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getPassword(), equalTo("new password"));
+      });
+
+      it("ignores ACEs if not provided", () -> {
+        NamedPasswordSecret newSecret = NamedPasswordSecret.createNewVersion(subject, "anything I AM IGNORED", "new password", NO_PASSWORD_PARAMS, encryptor, NULL_ENTRIES_LIST);
+        assertThat(newSecret.getSecretName().getAccessControlList(), hasSize(0));
       });
     });
   }

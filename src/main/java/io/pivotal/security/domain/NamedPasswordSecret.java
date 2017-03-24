@@ -10,6 +10,7 @@ import io.pivotal.security.view.SecretKind;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
@@ -122,6 +123,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       NamedPasswordSecret existing,
       String name,
       String password,
+      PasswordGenerationParameters generationParameters,
       Encryptor encryptor,
       List<AccessControlEntry> accessControlEntries) {
     NamedPasswordSecret secret;
@@ -133,11 +135,15 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       secret.copyNameReferenceFrom(existing);
     }
 
-    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
+    if (accessControlEntries == null) {
+      accessControlEntries = new ArrayList<>();
+    }
 
+    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
     secret.setAccessControlList(accessEntryData);
+
     secret.setEncryptor(encryptor);
-    secret.setPasswordAndGenerationParameters(password, null);
+    secret.setPasswordAndGenerationParameters(password, generationParameters);
     return secret;
   }
 }

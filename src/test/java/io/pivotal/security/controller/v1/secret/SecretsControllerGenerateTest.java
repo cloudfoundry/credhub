@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
@@ -36,7 +35,9 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -46,7 +47,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -257,10 +257,6 @@ public class SecretsControllerGenerateTest {
                 .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
           });
 
-          it("validates parameters", () -> {
-            verify(namedSecretGenerateHandler).make(eq(secretName), any(DocumentContext.class));
-          });
-
           it("asks the data service to persist the secret", () -> {
             final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretDataService.findMostRecent(secretName);
             assertThat(namedSecret.getPassword(), equalTo(fakePassword));
@@ -293,10 +289,6 @@ public class SecretsControllerGenerateTest {
                 .andExpect(jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
           });
 
-          it("validates parameters", () -> {
-            verify(namedSecretGenerateHandler).make(eq(secretName), any(DocumentContext.class));
-          });
-
           it("should not persist the secret", () -> {
             verify(secretDataService, times(0)).save(any(NamedSecret.class));
           });
@@ -306,6 +298,25 @@ public class SecretsControllerGenerateTest {
             verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
             assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_ACCESS));
+          });
+        });
+
+        describe("with bad parameters", () -> {
+          beforeEach(() -> {
+            final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                "  \"type\":\"nopeity mcnope\"," +
+                "  \"name\":\"" + secretName + "\"," +
+                "  \"overwrite\":true" +
+                "}");
+
+            response = mockMvc.perform(post);
+          });
+
+          it("returns an error", () -> {
+            response.andExpect(status().isBadRequest());
           });
         });
       });

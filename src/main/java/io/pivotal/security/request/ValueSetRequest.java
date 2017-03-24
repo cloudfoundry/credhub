@@ -4,6 +4,7 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import org.hibernate.validator.constraints.NotEmpty;
+import org.springframework.context.ApplicationContext;
 
 public class ValueSetRequest extends BaseSecretSetRequest {
   @NotEmpty(message = "error.missing_value")
@@ -18,7 +19,7 @@ public class ValueSetRequest extends BaseSecretSetRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, ApplicationContext applicationContext) {
     return NamedValueSecret.createNewVersion((NamedValueSecret) existing, getName(), this.getValue(), encryptor, this.getAccessControlEntries());
   }
 }

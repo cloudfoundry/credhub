@@ -19,6 +19,7 @@ import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
+import io.pivotal.security.request.BaseSecretRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.DefaultSecretGenerateRequest;
 import io.pivotal.security.service.AuditLogService;
@@ -30,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.IOUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -68,6 +70,7 @@ public class SecretsController {
   private final JsonContextFactory jsonContextFactory;
   private final AuditLogService auditLogService;
   private final MessageSourceAccessor messageSourceAccessor;
+  private final ApplicationContext applicationContext;
   private final Encryptor encryptor;
   private final ObjectMapper objectMapper;
 
@@ -76,6 +79,7 @@ public class SecretsController {
                            JsonContextFactory jsonContextFactory,
                            MessageSource messageSource,
                            AuditLogService auditLogService,
+                           ApplicationContext applicationContext,
                            Encryptor encryptor,
                            ObjectMapper objectMapper) {
     this.secretDataService = secretDataService;
@@ -83,6 +87,7 @@ public class SecretsController {
     this.jsonContextFactory = jsonContextFactory;
     this.auditLogService = auditLogService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
+    this.applicationContext = applicationContext;
     this.encryptor = encryptor;
     this.objectMapper = objectMapper;
   }
@@ -110,13 +115,18 @@ public class SecretsController {
     BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
 
-    if (true || requestBody instanceof DefaultSecretGenerateRequest) {
+    final boolean isCurrentlyTrappedInTheMonad = requestBody instanceof DefaultSecretGenerateRequest;
+    if (isCurrentlyTrappedInTheMonad) {
       requestInputStream.reset();
       DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
       return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler, parsedRequestBody);
     } else {
-//      requestBody.createNewVersion();
-      return null;
+      try {
+        return perform(request, authentication, requestBody);
+      } catch (JpaSystemException | DataIntegrityViolationException e) {
+        logger.error("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
+        return perform(request, authentication, requestBody);
+      }
     }
   }
 
@@ -136,10 +146,10 @@ public class SecretsController {
   ) throws Exception {
     requestBody.validate();
     try {
-      return performSet(request, authentication, requestBody);
+      return perform(request, authentication, requestBody);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       logger.error("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
-      return performSet(request, authentication, requestBody);
+      return perform(request, authentication, requestBody);
     }
   }
 
@@ -415,10 +425,10 @@ public class SecretsController {
     return findWithAuditing(path, secretDataService::findStartingWithPath, request, authentication);
   }
 
-  private ResponseEntity performSet(
+  private ResponseEntity perform(
       HttpServletRequest request,
       Authentication authentication,
-      BaseSecretSetRequest requestBody) throws Exception {
+      BaseSecretRequest requestBody) throws Exception {
 
     final String secretName = requestBody.getName();
 
@@ -435,7 +445,7 @@ public class SecretsController {
 
         NamedSecret storedEntity = existingNamedSecret;
         if (shouldWriteNewEntity) {
-          NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
+          NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor, applicationContext);
           storedEntity = secretDataService.save(newEntity);
         }
 

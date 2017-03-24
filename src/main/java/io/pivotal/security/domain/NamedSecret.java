@@ -99,4 +99,8 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
       .map((entry) -> AccessEntryData.fromSecretName(secretName, entry))
       .collect(Collectors.toList());
   }
+
+  public SecretName getSecretName() {
+    return delegate.getSecretName();
+  }
 }
