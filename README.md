@@ -1,10 +1,7 @@
+# CredHub [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 
-# CredHub 
+CredHub manages credentials like passwords, certificates, certificate authorities, ssh keys, rsa keys and arbitrary values (strings and JSON blobs). CredHub provides a CLI and API to get, set, generate and securely store such credentials.
 
-The CredHub server manages secrets like passwords, certificates, ssh keys, rsa keys, strings 
-(arbitrary values), JSON blobs, and CAs. CredHub provides a REST API to get, set, generate, and securely store
-such secrets.
- 
 * [Documentation](docs/)
 * [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
  
