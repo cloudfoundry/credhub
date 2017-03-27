@@ -19,6 +19,7 @@ apply plugin: "org.springframework.boot"
 apply plugin: "org.owasp.dependencycheck"
 apply plugin: "com.github.hierynomus.license"
 apply plugin: "jacoco"
+apply plugin: "checkstyle"
 
 jar {
     baseName = "credhub"
@@ -115,4 +116,8 @@ test {
 
     systemProperties["spring.profiles.active"] = System.getProperty("spring.profiles.active", "unit-test-h2")
     outputs.upToDateWhen { false }
+}
+
+checkstyle {
+    toolVersion "7.6.1"
 }
