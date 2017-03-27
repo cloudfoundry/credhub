@@ -17,6 +17,8 @@ import static com.google.common.collect.Lists.newArrayList;
   @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
+  private boolean regenerate;
+
   @Override
   public void validate() {
     super.validate();
@@ -30,8 +32,6 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
     return newArrayList("password", "certificate", "rsa", "ssh").contains(type);
   }
 
-  // These are only here because a set / generate request may have regenerate=false in it.
-  private boolean regenerate;
   public void setRegenerate(boolean regenerate) {
     this.regenerate = regenerate;
   }
