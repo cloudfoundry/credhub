@@ -23,9 +23,17 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
   public void validate() {
     super.validate();
 
-    if (!isValidTypeForGeneration(getType())) {
+    if (!isValidSecretType(getType())) {
       throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
     }
+
+    if (!isValidTypeForGeneration(getType())) {
+      throw new ParameterizedValidationException("error.cannot_generate_type");
+    }
+  }
+
+  private boolean isValidSecretType(String type) {
+    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json").contains(type);
   }
 
   private boolean isValidTypeForGeneration(String type) {

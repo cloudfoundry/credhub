@@ -150,7 +150,7 @@ public class SecretsControllerGenerateTest {
         mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
+            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
       });
 
       it("for a new json secret should return an error message", () -> {
@@ -162,7 +162,7 @@ public class SecretsControllerGenerateTest {
         mockMvc.perform(post)
           .andExpect(status().isBadRequest())
           .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
+          .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
       });
 
       describe("when name does not have a leading slash in the request json", () -> {
