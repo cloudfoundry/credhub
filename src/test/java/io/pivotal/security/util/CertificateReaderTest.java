@@ -1,5 +1,16 @@
 package io.pivotal.security.util;
 
+import com.greghaskins.spectrum.Spectrum;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.runner.RunWith;
+
+import java.security.Security;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.util.CertificateStringConstants.BIG_TEST_CERT;
@@ -12,17 +23,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import com.greghaskins.spectrum.Spectrum;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.KeyUsage;
-import org.junit.runner.RunWith;
-
 @RunWith(Spectrum.class)
 public class CertificateReaderTest {
-
   {
+    beforeEach(() -> {
+      if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+        Security.addProvider(new BouncyCastleProvider());
+      }
+    });
+
     describe("#isCa", () -> {
       describe("when the certificate has basic constraints", () -> {
         it("sets isCa to true if the basic constraint 'CA' is true", () -> {
