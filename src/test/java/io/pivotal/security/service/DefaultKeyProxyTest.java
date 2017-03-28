@@ -18,6 +18,8 @@ import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
+
+import io.pivotal.security.exceptions.IncorrectKeyException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
@@ -110,7 +112,7 @@ public class DefaultKeyProxyTest {
       });
 
       describe("when decrypt throws other exceptions", () -> {
-        itThrows("RuntimeException for BadPaddingException", RuntimeException.class, () -> {
+        itThrows("IncorrectKeyException for BadPaddingException", IncorrectKeyException.class, () -> {
           subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
             @Override
             public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
@@ -120,7 +122,7 @@ public class DefaultKeyProxyTest {
           subject.matchesCanary(mock(EncryptionKeyCanary.class));
         });
 
-        itThrows("RuntimeException for IllegalBlockSizeException", RuntimeException.class, () -> {
+        itThrows("IncorrectKeyException for IllegalBlockSizeException", IncorrectKeyException.class, () -> {
           subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
             @Override
             public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
@@ -129,7 +131,7 @@ public class DefaultKeyProxyTest {
           });
           subject.matchesCanary(mock(EncryptionKeyCanary.class));
         });
-        itThrows("RuntimeException for Exception", RuntimeException.class, () -> {
+        itThrows("IncorrectKeyException for Exception", IncorrectKeyException.class, () -> {
           subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
             @Override
             public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {

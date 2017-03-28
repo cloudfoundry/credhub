@@ -1,6 +1,7 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.exceptions.IncorrectKeyException;
 
 import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
@@ -55,17 +56,17 @@ class DefaultKeyProxy implements KeyProxy {
     } catch (IllegalBlockSizeException e) {
       // Our guess(es) at "HSM key was wrong":
       if (!e.getMessage().contains("returns 0x40")) {
-        throw new RuntimeException(e);
+        throw new IncorrectKeyException(e);
       }
       // Could not process input data: function 'C_Decrypt' returns 0x40
     } catch (BadPaddingException e) {
       // Our guess(es) at "DSM key was wrong":
       if (!e.getMessage().contains("rv=48")) {
-        throw new RuntimeException(e);
+        throw new IncorrectKeyException(e);
       }
       // javax.crypto.BadPaddingException: Decrypt error: rv=48
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      throw new IncorrectKeyException(e);
     }
 
     return false;
