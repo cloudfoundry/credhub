@@ -1,15 +1,5 @@
 package io.pivotal.security.util;
 
-import com.greghaskins.spectrum.Spectrum;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import java.security.Security;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -22,6 +12,15 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
+
+import com.greghaskins.spectrum.Spectrum;
+import java.security.Security;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class CertificateReaderTest {
@@ -98,12 +97,13 @@ public class CertificateReaderTest {
       it("should still correctly set up certificate fields", () -> {
         CertificateReader certificateReader = new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT);
 
-        assertThat(certificateReader.getSubjectName().toString(), equalTo("CN=foo.example.com"));
+        assertThat(certificateReader.getSubjectName().toString(),
+            equalTo("CN=test.example.com,OU=app:test-app,L=exampletown"));
         assertThat(certificateReader.getKeyLength(), equalTo(2048));
         assertThat(certificateReader.getAlternativeNames(), equalTo(null));
         assertThat(certificateReader.getExtendedKeyUsage(), equalTo(null));
         assertThat(certificateReader.getKeyUsage(), equalTo(null));
-        assertThat(certificateReader.getDurationDays(), equalTo(365));
+        assertThat(certificateReader.getDurationDays(), equalTo(3650));
         assertThat(certificateReader.isSelfSigned(), equalTo(true));
         assertThat(certificateReader.isCa(), equalTo(false));
       });

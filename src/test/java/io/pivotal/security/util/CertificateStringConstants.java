@@ -1,11 +1,10 @@
 package io.pivotal.security.util;
 
 public class CertificateStringConstants {
-
   /**
    * .
-   * openssl x509 -in <(pbpaste) -text -noout:
-   * <pp>
+   * openssl x509 -in <(pbpaste) -text -noout
+   *
    * Subject Name: O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa
    * Duration: 30 days
    * Key Length: 4096
@@ -13,7 +12,6 @@ public class CertificateStringConstants {
    * Extended Key Usage: server_auth, client_auth
    * Key Usage: digital_signature
    * Issuer: CN=foo
-   * </pp>
    */
   public static final String BIG_TEST_CERT = "-----BEGIN CERTIFICATE-----\n"
       + "MIIEbzCCA1egAwIBAgIUYE3pB+BUaAP0YHeofpCmI/xCkmYwDQYJKoZIhvcNAQEL\n"
@@ -44,52 +42,53 @@ public class CertificateStringConstants {
 
   /**
    * Version: 3 (0x2)
-   * Serial Number:
-   * Issuer: CN=foo.example.com
+   * Signature Algorithm: sha256WithRSAEncryption
+   * Issuer: CN=test.example.com, OU=app:test-app, L=exampletown
    * Validity
-   * Not Before: Feb  6 20:00:27 2017 GMT
-   * Not After : Feb  6 20:00:27 2018 GMT
-   * Subject: CN=foo.example.com
+   *    Not Before: Mar 28 23:30:14 2017 GMT
+   *    Not After : Mar 26 23:30:14 2027 GMT
+   * Subject: CN=test.example.com, OU=app:test-app, L=exampletown
    * Subject Public Key Info:
    * Public Key Algorithm: rsaEncryption
    * RSA Public Key: (2048 bit)
    * X509v3 extensions:
-   * X509v3 Basic Constraints: critical
-   * CA:FALSE
+   *    X509v3 Basic Constraints: critical
+   *    CA:FALSE
    */
   public static final String SIMPLE_SELF_SIGNED_TEST_CERT = "-----BEGIN CERTIFICATE-----\n"
-      + "MIIC0jCCAbqgAwIBAgIUW6HcroJaHBMF2VK/6z13iBnNxeAwDQYJKoZIhvcNAQEL\n"
-      + "BQAwGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMB4XDTE3MDIwNjIwMDAyN1oX\n"
-      + "DTE4MDIwNjIwMDAyN1owGjEYMBYGA1UEAwwPZm9vLmV4YW1wbGUuY29tMIIBIjAN\n"
-      + "BgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyy+c0ZPNPmGBzkiC+XzMJkbgJFK7\n"
-      + "2BNgLpzI1AmqFBMBs7dSfxypS7qTfAEUQ1HMY2S9/odhslEUIyBVPguonk++WvGw\n"
-      + "w6P49d3GPK6beyrw+FobBkVWJ64qRZIUJlRanFzs1yGnRJ2omHgJ03sTYiL4t8wt\n"
-      + "Cm9po3gp7QwGXQ2Ol1QEadH095WBdwkN0Wo7WF/4+Fz7cACCBZNQoSYmT3uREH9S\n"
-      + "iVur6H4WLsPEs5QBV+o9204qVZh0er+/LEwzuqZD97gppLVdYk673R2Kje4Gc6mz\n"
-      + "Y61oKlQzSQXPsA1Sx7dOUgMGtzhRrFgUE1WzvTqiDVQB9dEsn1JILJWA7wIDAQAB\n"
-      + "oxAwDjAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBCwUAA4IBAQANE8zWwdjCEmOw\n"
-      + "+wbqVR3RyL1P2T0eQI1ML/epxVNLRoAKihs2ypKFLpLC9P7mucsHxl4FY/pzXOJo\n"
-      + "i0PEG/ZCapRunC3XVwxGUZos2ytPIebyshlp4eRTyuch7ei3aTO2cLrLsgWZxyxc\n"
-      + "i5JveF8PvPZkOR5qzq6P7dMpQde3nL8/kLRwp7aSE8OAKoeyhEDCy+e9lPh9+Q/g\n"
-      + "36dvhRfyD3PUifLC1A6usOedplxEJpf5hNlyVljTXRZXRijltHIxsp2vf8vzSLO4\n"
-      + "zam9Ke7B5YU8lRd5PlyFXDp+vEJ4HaX8FMtUthLvvDQ7l9UOR7r2rf3hfggxC7/s\n"
-      + "s2smQYqB\n"
+      + "MIIDLjCCAhagAwIBAgIUUOffG/UnHhp2xh54rubcAZHG1lcwDQYJKoZIhvcNAQEL\n"
+      + "BQAwSDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEVMBMGA1UECwwMYXBwOnRl\n"
+      + "c3QtYXBwMRQwEgYDVQQHDAtleGFtcGxldG93bjAeFw0xNzAzMjgyMzMwMTRaFw0y\n"
+      + "NzAzMjYyMzMwMTRaMEgxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xFTATBgNV\n"
+      + "BAsMDGFwcDp0ZXN0LWFwcDEUMBIGA1UEBwwLZXhhbXBsZXRvd24wggEiMA0GCSqG\n"
+      + "SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDGUj7+TFvF3qbw9/M6VIJJQNBT5Edp4H6m\n"
+      + "jlc7XYOrwuXkPTOKNJ1dJHhAjceA+Xmj2Yxbo77YS1VCuln3YUGwrC8ReObVdf5k\n"
+      + "fQ5Pm+R99yEelL2N0pJKyMSghv15PAe+BRMBl6QK2n4Grl/+0FdhNxKtNNZ7uJeh\n"
+      + "LJeWO6tT8lxYyts6Ll6liZQJC5URwscWT6ivsPSMInTLuBUltUt3F1WFFNh6QQwy\n"
+      + "PLeIg2RQ1FdN7lG3/8qF2P91LKPypV5nZB07DkNdf0i+/+ThQdLYVd44evOxJOIS\n"
+      + "j92rIWUQ5HTXfr6GoMBJ7+wPomcz8/9eEjDVfEBlcl/vN/hBbu6XAgMBAAGjEDAO\n"
+      + "MAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQELBQADggEBAKgSfRq3cb5uDrhiiIM6\n"
+      + "J3VaDR8Qp10yBbIIZ0dv38HHllswv0nzzjxZ86fMEB7O2POCzzfeUJ9XKjTIDUOp\n"
+      + "wsIMOpqAqbVwOkNYSnOtiBQnh2tBCnUoVcukMqqgzv1sN14Pd9REY8buYXqrB5+R\n"
+      + "5d8TxuE5fgZIhO2sKwqT/WS7aYiORES0lNYycYLZ1vP0H/U+O6bTC2OQHXnPXL/j\n"
+      + "Dy0VW27N4VKeCUyQsGq3VfPD35H7j8Lpx5JixZg8Nt/e5dJqePT/ICDrpCwBnm8a\n"
+      + "GDBkM13woF4B2jSBetfPpLKKR6DSkk5xjwkzILX4N3JH1wflCxasWiqHdNNsP+0q\n"
+      + "T6U=\n"
       + "-----END CERTIFICATE-----";
 
   /**
    * This cert appears to be self-signed (Issuer DN == Subject DN) but is actually
    * signed with a CA of the same name.
-   * <pp>
+
    * Version: 3 (0x2)
    * Signature Algorithm: sha256WithRSAEncryption
    * Issuer: CN=trickster
    * Validity
-   * Not Before: Feb  7 19:41:38 2017 GMT
-   * Not After : Feb  7 19:41:38 2018 GMT
+   *     Not Before: Feb  7 19:41:38 2017 GMT
+   *     Not After : Feb  7 19:41:38 2018 GMT
    * Subject: CN=trickster
    * X509v3 Basic Constraints: critical
-   * CA:FALSE
-   * </pp>
+   *    CA:FALSE
    */
   public static final String MISLEADING_CERT = "-----BEGIN CERTIFICATE-----\n"
       + "MIICxjCCAa6gAwIBAgIUdYAQkigXgqz1FFN0Qi2T6k2dYJswDQYJKoZIhvcNAQEL\n"
@@ -110,18 +109,18 @@ public class CertificateStringConstants {
       + "-----END CERTIFICATE-----";
 
   /**
-   * Version: 3 (0x2)
-   * Serial Number:
-   * 14:7b:69:d1:56:80:9b:07:26:f6:0e:03:0a:1f:7a:ed:96:12:be:c2
-   * Signature Algorithm: sha256WithRSAEncryption
-   * Issuer: CN=foo.com
-   * Validity
-   * Not Before: Feb 10 22:38:59 2017 GMT
-   * Not After : Feb 10 22:38:59 2018 GMT
-   * Subject: CN=foo.com
-   * X509v3 extensions:
-   * X509v3 Basic Constraints: critical
-   * CA:TRUE
+   *  Version: 3 (0x2)
+   *  Serial Number:
+   *      14:7b:69:d1:56:80:9b:07:26:f6:0e:03:0a:1f:7a:ed:96:12:be:c2
+   *  Signature Algorithm: sha256WithRSAEncryption
+   *  Issuer: CN=foo.com
+   *      Validity
+   *  Not Before: Feb 10 22:38:59 2017 GMT
+   *  Not After : Feb 10 22:38:59 2018 GMT
+   *  Subject: CN=foo.com
+   *  X509v3 extensions:
+   *  X509v3 Basic Constraints: critical
+   *  CA:TRUE
    */
   public static final String SELF_SIGNED_CA_CERT = "-----BEGIN CERTIFICATE-----\n"
       + "MIICxTCCAa2gAwIBAgIUFHtp0VaAmwcm9g4DCh967ZYSvsIwDQYJKoZIhvcNAQEL\n"
@@ -142,16 +141,16 @@ public class CertificateStringConstants {
       + "-----END CERTIFICATE-----";
 
   /**
-   * .
-   * Version: 3 (0x2)
-   * Serial Number:
-   * 12:65:5e:4c:79:5e:9c:ac:81:b8:34:1d:98:68:ca:52:d3:47:e5:ed
-   * Signature Algorithm: sha256WithRSAEncryption
-   * Issuer: CN=bar
-   * Validity
-   * Not Before: Feb 13 20:21:34 2017 GMT
-   * Not After : Feb 13 20:21:34 2018 GMT
-   * Subject: CN=bar
+   //.
+   Version: 3 (0x2)
+   Serial Number:
+   12:65:5e:4c:79:5e:9c:ac:81:b8:34:1d:98:68:ca:52:d3:47:e5:ed
+   Signature Algorithm: sha256WithRSAEncryption
+   Issuer: CN=bar
+   Validity
+   Not Before: Feb 13 20:21:34 2017 GMT
+   Not After : Feb 13 20:21:34 2018 GMT
+   Subject: CN=bar
    */
   public static final String V3_CERT_WITHOUT_BASIC_CONSTRAINTS = "-----BEGIN CERTIFICATE-----\n"
       + "MIICqDCCAZCgAwIBAgIUEmVeTHlenKyBuDQdmGjKUtNH5e0wDQYJKoZIhvcNAQEL\n"
