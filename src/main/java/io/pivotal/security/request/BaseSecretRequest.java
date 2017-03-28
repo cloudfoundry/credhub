@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.SecretGenerator;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.context.ApplicationContext;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -46,7 +46,7 @@ public abstract class BaseSecretRequest {
   }
 
   @JsonIgnore
-  abstract public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, ApplicationContext applicationContext);
+  abstract public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator);
 
   public void validate() {
     enforceJSR303AnnotationValidations();

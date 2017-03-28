@@ -68,12 +68,6 @@ public class SecretsControllerGenerateTest {
   @Autowired
   WebApplicationContext webApplicationContext;
 
-  @Autowired
-  SecretsController subject;
-
-  @SpyBean
-  NamedSecretGenerateHandler namedSecretGenerateHandler;
-
   @SpyBean
   FakeAuditLogService auditLogService;
 
@@ -384,6 +378,59 @@ public class SecretsControllerGenerateTest {
           )
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+        });
+
+        it("returns 400 when incorrect params are sent in request", () -> {
+          mockMvc.perform(post("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            //language=JSON
+            .content("{" +
+              "\"type\":\"password\"," +
+              "\"name\":\"" + secretName + "\"," +
+              "\"parameters\":{" +
+              "\"exclude_number\": true" +
+              "}," +
+              "\"some_unknown_param\": false" +
+              "}")
+          )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'some_unknown_param'. Please update or remove this parameter and retry your request."));
+        });
+
+        it("returns 400 for an unknown/garbage type", () -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
+
+          mockMvc.perform(post)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
+        });
+
+        it("returns 400 for a new value secret", () -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
+
+          mockMvc.perform(post)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+        });
+
+        it("returns 400 for a new json secret", () -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
+
+          mockMvc.perform(post)
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
         });
       });
     });

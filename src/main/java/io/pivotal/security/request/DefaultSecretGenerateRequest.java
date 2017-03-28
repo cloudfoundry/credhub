@@ -2,8 +2,8 @@ package io.pivotal.security.request;
 
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.generator.SecretGenerator;
 import org.apache.commons.lang.NotImplementedException;
-import org.springframework.context.ApplicationContext;
 
 public class DefaultSecretGenerateRequest extends BaseSecretGenerateRequest {
   private Object parameters;
@@ -17,7 +17,7 @@ public class DefaultSecretGenerateRequest extends BaseSecretGenerateRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, ApplicationContext applicationContext) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
     throw new NotImplementedException();
   }
 }

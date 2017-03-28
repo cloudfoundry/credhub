@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.generator.SecretGenerator;
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.springframework.context.ApplicationContext;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -24,7 +24,7 @@ public class CertificateSetRequest extends BaseSecretSetRequest {
 
   @JsonIgnore
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, ApplicationContext applicationContext) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
     return NamedCertificateSecret.createNewVersion((NamedCertificateSecret) existing, getName(), this.getCertificateFields(), encryptor, this.getAccessControlEntries());
   }
 }

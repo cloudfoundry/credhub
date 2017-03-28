@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.generator.SecretGenerator;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.context.ApplicationContext;
 
 public class PasswordSetRequest extends BaseSecretSetRequest {
   @NotEmpty(message = "error.missing_value")
@@ -23,7 +23,7 @@ public class PasswordSetRequest extends BaseSecretSetRequest {
 
   @Override
   @JsonIgnore
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, ApplicationContext applicationContext) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
     return NamedPasswordSecret.createNewVersion((NamedPasswordSecret) existing, getName(), this.getPassword(), null, encryptor, this.getAccessControlEntries());
   }
 }

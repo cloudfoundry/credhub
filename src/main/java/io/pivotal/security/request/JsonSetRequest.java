@@ -3,8 +3,8 @@ package io.pivotal.security.request;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.generator.SecretGenerator;
 import org.hibernate.validator.constraints.NotEmpty;
-import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
 
@@ -21,7 +21,7 @@ public class JsonSetRequest extends BaseSecretSetRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, ApplicationContext applicationContext) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
     return NamedJsonSecret.createNewVersion((NamedJsonSecret) existing, getName(), this.getValue(), encryptor, this.getAccessControlEntries());
   }
 }
