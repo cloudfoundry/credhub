@@ -175,3 +175,19 @@ CREDENTIAL_ROOT=/path/to/credhub/repo/plus/src/test/resources ./run_tests.sh
 ```
 
 Assuming it works, that will generate some test client certificates for testing mutual TLS (in `certs/` in the acceptance test directory) and run the acceptance test suite against your locally running credhub server.
+
+#### CheckStyle
+
+#####Set up IntelliJ code style.
+1. Editor -> Code Style -> Java
+2. Next to "Scheme" click gear and import `config/checkstyle/google_style_idea.xml` file into "GoogleStyle".
+
+#####Set up Checkstyle
+1. Install Checkstyle plugin (Checkstyle-IDEA)
+2. Preferences | Other Settings | Checkstyle
+3. Press little plus to add `config/checkstyle/checkstyle.xml`
+4. Set Scan Scope to Java Sources (including tests)
+5. Click activate
+
+#####Gradle Checkstyle
+1. `./gradlew checkstyleMain && ./gradlew checkstyleTest`
