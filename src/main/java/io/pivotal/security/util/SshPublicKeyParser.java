@@ -1,11 +1,12 @@
 package io.pivotal.security.util;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
 
 public class SshPublicKeyParser {
 
@@ -17,7 +18,7 @@ public class SshPublicKeyParser {
   private Base64.Decoder decoder = Base64.getDecoder();
 
   public SshPublicKeyParser(String publicKey) {
-    this.publicKey = publicKey;
+    this.publicKey = publicKey != null ? publicKey.trim() : null;
     parsePublicKey();
   }
 

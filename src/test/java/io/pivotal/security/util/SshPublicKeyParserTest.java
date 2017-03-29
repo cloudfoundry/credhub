@@ -85,15 +85,21 @@ public class SshPublicKeyParserTest {
     });
 
     describe("#getPublicKeyFingerPrint", () -> {
-      it("should compute SHA-256 fingerprint from the public key", () -> {
-        String sshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1Op/vBLg+7pve"
-            + "OtiZqZQK4RVnQlRsttVelIZMn8iafQQxv2xRqb2/n+9ErsTqby+9ninr8E4mxgWCs3Ew/K7Rnuzg9"
-            + "EEyfypB76cSzHZHHtk9j2qejwkZwTrBvRV4NA7irAqX5s6v+tKa/xX0PwB1UhLPJ3Z1yb4oEaAmAv"
-            + "/TAGbrKX7QlHc0TLjjkIIA/fAiD7NFOBaQVaSWvL+SBfgBRbxQ4QXluPF9uOX6XkcgXkn524SrqBR"
-            + "5BBT01WIzEreZzmGlZQMWR1wnO7j7ogubinwulZkVLf/ufX68I2+6sIlFELelKcFMbzgOshcQj6o/"
-            + "XaswSMUH4UR";
+      String validSshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1Op/vBLg+7pve"
+          + "OtiZqZQK4RVnQlRsttVelIZMn8iafQQxv2xRqb2/n+9ErsTqby+9ninr8E4mxgWCs3Ew/K7Rnuzg9"
+          + "EEyfypB76cSzHZHHtk9j2qejwkZwTrBvRV4NA7irAqX5s6v+tKa/xX0PwB1UhLPJ3Z1yb4oEaAmAv"
+          + "/TAGbrKX7QlHc0TLjjkIIA/fAiD7NFOBaQVaSWvL+SBfgBRbxQ4QXluPF9uOX6XkcgXkn524SrqBR"
+          + "5BBT01WIzEreZzmGlZQMWR1wnO7j7ogubinwulZkVLf/ufX68I2+6sIlFELelKcFMbzgOshcQj6o/"
+          + "XaswSMUH4UR";
 
-        assertThat(new SshPublicKeyParser(sshPublicKey).getFingerprint(),
+      it("should compute SHA-256 fingerprint from the public key", () -> {
+        assertThat(new SshPublicKeyParser(validSshPublicKey).getFingerprint(),
+            equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA"));
+      });
+
+      it("should compute SHA-256 fingerprint from the public key even if the key has"
+          + " carriage returns in it", () -> {
+        assertThat(new SshPublicKeyParser(validSshPublicKey + '\n').getFingerprint(),
             equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA"));
       });
 
