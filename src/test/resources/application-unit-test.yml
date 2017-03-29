@@ -18,6 +18,7 @@ security:
   oauth2:
     resource:
       jwt:
+        # /unit/tests/rsa/key in super-bosh
         key-value: |
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzfUQ7qkEYqpunTNf5mgb

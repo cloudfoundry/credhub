@@ -4,6 +4,8 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
@@ -43,8 +45,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test",
-    "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(
+    value = {"unit-test", "UseRealAuditLogService"},
+    resolver = DatabaseProfileResolver.class
+)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class AuthConfigurationTest {
 
@@ -110,8 +114,7 @@ public class AuthConfigurationTest {
       describe("with a token accepted by our security config", () -> {
         it("allows access", () -> {
           final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .header("Authorization",
-                  "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
@@ -127,13 +130,12 @@ public class AuthConfigurationTest {
       describe("with a token without sufficient scopes", () -> {
         it("disallows access", () -> {
           final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .header("Authorization", "Bearer "
-                  + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT)
+              .header("Authorization", "Bearer " + INVALID_SCOPE_SYMMETRIC_KEY_JWT)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
 
-          mockMvc.perform(post).andExpect(status().isForbidden());
+          mockMvc.perform(post).andExpect(status().isUnauthorized());
         });
       });
 
@@ -177,8 +179,7 @@ public class AuthConfigurationTest {
       describe("with a token accepted by our security config", () -> {
         it("allows access", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/vcap")
-              .header("Authorization",
-                  "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.VALID_SYMMETRIC_KEY_JWT)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .content("{}");
