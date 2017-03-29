@@ -97,13 +97,16 @@ public class SshPublicKeyParserTest {
             equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA"));
       });
 
-      it("should compute SHA-256 fingerprint from the public key even if the key has"
-          + " carriage returns in it", () -> {
-        assertThat(new SshPublicKeyParser(validSshPublicKey + '\n').getFingerprint(),
-            equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA"));
+      describe("when the key has carriage returns in it", () -> {
+        it("should compute SHA-256 fingerprint from the public key", () -> {
+          assertThat(
+              new SshPublicKeyParser(validSshPublicKey + '\n').getFingerprint(),
+              equalTo("Ngft7Y3Aap0RoLTVAaOzQE1KXz1wo3bpzz4k9KV7TqA")
+          );
+        });
       });
 
-      it("should compute SHA-256 fingerprint from the public key when a comment is present", () -> {
+      it("should compute SHA-256 fingerprint from the public key if a comment is present", () -> {
         String sshPublicKeyWithComment = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDKGE4+UYSH1O"
             + "p/vBLg+7pveOtiZqZQK4RVnQlRsttVelIZMn8iafQQxv2xRqb2/n+9ErsTqby+9ninr8E4mxgWCs3"
             + "Ew/K7Rnuzg9EEyfypB76cSzHZHHtk9j2qejwkZwTrBvRV4NA7irAqX5s6v+tKa/xX0PwB1UhLPJ3Z"
