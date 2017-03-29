@@ -6,6 +6,7 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
 
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
 import java.time.Instant;
@@ -13,37 +14,50 @@ import java.util.Collections;
 import java.util.Enumeration;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
-public class AuditRecordBuilder {
+import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Enumeration;
 
-  private final String hostName;
-  private final String method;
-  private final String path;
-  private final String requesterIp;
-  private final String xforwardedFor;
-  private final String queryParameters;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+
+public class AuditRecordBuilder {
+  private String hostName;
+  private String method;
+  private String path;
+  private String requesterIp;
+  private String xForwardedFor;
+  private String queryParameters;
   private String credentialName;
   private AuditingOperationCode operationCode;
   private int requestStatus;
-  private OAuth2AccessToken accessToken;
   private Authentication authentication;
   private boolean isSuccess;
 
   public AuditRecordBuilder(String credentialName,
-      HttpServletRequest request,
-      Authentication authentication) {
-    this.credentialName = credentialName;
+                            HttpServletRequest request,
+                            Authentication authentication) {
+    setCredentialName(credentialName);
+    populateFromRequest(request);
+    setAuthentication(authentication);
+  }
+
+  public AuditRecordBuilder() {
+  }
+
+  public void populateFromRequest(HttpServletRequest request) {
     this.hostName = request.getServerName();
     this.method = request.getMethod();
     this.path = request.getRequestURI();
     this.queryParameters = request.getQueryString();
     this.requesterIp = request.getRemoteAddr();
-    this.xforwardedFor = extractXForwardedFor(request.getHeaders("X-Forwarded-For"));
-    this.authentication = authentication;
-    this.operationCode = computeOperationCode();
+    this.xForwardedFor = extractXForwardedFor(request.getHeaders("X-Forwarded-For"));
+    computeOperationCode();
   }
 
   private static String extractXForwardedFor(Enumeration<String> values) {
@@ -76,7 +90,7 @@ public class AuditRecordBuilder {
   }
 
   public String getXForwardedFor() {
-    return xforwardedFor;
+    return xForwardedFor;
   }
 
   public String getQueryParameters() {
@@ -92,17 +106,20 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  private AuditingOperationCode computeOperationCode() {
+  private void computeOperationCode() {
     switch (method) {
       case "GET":
-        return CREDENTIAL_ACCESS;
+        operationCode =  CREDENTIAL_ACCESS;
+        break;
       case "POST":
       case "PUT":
-        return CREDENTIAL_UPDATE;
+        operationCode =  CREDENTIAL_UPDATE;
+        break;
       case "DELETE":
-        return CREDENTIAL_DELETE;
+        operationCode = CREDENTIAL_DELETE;
+        break;
       default:
-        return UNKNOWN_OPERATION;
+        operationCode = UNKNOWN_OPERATION;
     }
   }
 
@@ -111,7 +128,7 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public AuditRecordBuilder setAuthentication(OAuth2Authentication authentication) {
+  public AuditRecordBuilder setAuthentication(Authentication authentication) {
     this.authentication = authentication;
     return this;
   }

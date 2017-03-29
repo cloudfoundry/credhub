@@ -1,10 +1,9 @@
 package io.pivotal.security.service;
 
-import java.util.function.Supplier;
+import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.springframework.http.ResponseEntity;
 
 public interface AuditLogService {
-
-  ResponseEntity<?> performWithAuditing(AuditRecordBuilder auditRecordBuilder,
-      Supplier<ResponseEntity<?>> action) throws Exception;
+  ResponseEntity<?> performWithAuditing(ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action) throws
+      Exception;
 }

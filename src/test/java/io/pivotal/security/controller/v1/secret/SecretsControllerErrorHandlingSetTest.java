@@ -23,7 +23,7 @@ import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.util.function.Supplier;
+import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -282,8 +282,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns errors from the auditing service auditing fails", () -> {
             doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-                .when(auditLogService)
-                .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+                .when(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .accept(APPLICATION_JSON)
@@ -381,14 +380,5 @@ public class SecretsControllerErrorHandlingSetTest {
 
     secretDataService.findMostRecent(name).getUuid();
     reset(secretDataService);
-  }
-
-  private void resetAuditLogMock() throws Exception {
-    reset(auditLogService);
-    doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
-      return action.get();
-    }).when(auditLogService)
-        .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }

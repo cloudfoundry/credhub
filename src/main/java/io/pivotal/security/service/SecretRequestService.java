@@ -57,29 +57,27 @@ public class SecretRequestService {
     auditRecordBuilder
         .setOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
-    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
-      try {
-        final String type = requestBody.getType();
-        validateSecretType(existingNamedSecret, type);
+    try {
+      final String type = requestBody.getType();
+      validateSecretType(existingNamedSecret, type);
 
-        NamedSecret storedEntity = existingNamedSecret;
-        if (shouldWriteNewEntity) {
-          NamedSecret newEntity = requestBody
-              .createNewVersion(existingNamedSecret, encryptor, getGeneratorFor(type));
-          storedEntity = secretDataService.save(newEntity);
-        }
-
-        SecretView secretView = SecretView.fromEntity(storedEntity);
-        return new ResponseEntity<>(secretView, HttpStatus.OK);
-      } catch (ParameterizedValidationException ve) {
-        return new ResponseEntity<>(createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
-      } catch (NoSuchAlgorithmException e) {
-        throw new RuntimeException(e);
-      } catch (KeyNotFoundException e) {
-        return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"),
-            HttpStatus.INTERNAL_SERVER_ERROR);
+      NamedSecret storedEntity = existingNamedSecret;
+      if (shouldWriteNewEntity) {
+        NamedSecret newEntity = requestBody
+            .createNewVersion(existingNamedSecret, encryptor, getGeneratorFor(type));
+        storedEntity = secretDataService.save(newEntity);
       }
-    });
+
+      SecretView secretView = SecretView.fromEntity(storedEntity);
+      return new ResponseEntity<>(secretView, HttpStatus.OK);
+    } catch (ParameterizedValidationException ve) {
+      return new ResponseEntity<>(createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
+    } catch (KeyNotFoundException e) {
+      return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"),
+          HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   private SecretGenerator getGeneratorFor(String type) {

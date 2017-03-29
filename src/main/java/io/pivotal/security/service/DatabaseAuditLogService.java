@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.ResponseError;
 import java.util.function.Supplier;
 import javax.annotation.PostConstruct;
@@ -16,6 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import javax.annotation.PostConstruct;
+import java.util.function.Supplier;
 
 @Service
 public class DatabaseAuditLogService implements AuditLogService {
@@ -63,6 +67,49 @@ public class DatabaseAuditLogService implements AuditLogService {
     RuntimeException thrown = null;
     try {
       responseEntity = action.get();
+      if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+        auditSuccess = false;
+        transactionManager.rollback(transaction);
+        transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+      }
+    } catch (RuntimeException e) {
+      thrown = e;
+      auditSuccess = false;
+      transactionManager.rollback(transaction);
+      transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+    }
+
+    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder, responseEntity.getStatusCodeValue(), auditSuccess);
+
+    try {
+      operationAuditRecordDataService.save(auditRecord);
+      transactionManager.commit(transaction);
+      securityEventsLogService.log(auditRecord);
+    } catch (Exception e) {
+      if (!transaction.isCompleted()) transactionManager.rollback(transaction);
+      final ResponseError error = new ResponseError(messageSourceAccessor.getMessage("error.audit_save_failure"));
+      return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    if (thrown != null) {
+      throw thrown;
+    }
+
+    return responseEntity;
+  }
+
+  @Override
+  public ResponseEntity<?> performWithAuditing(ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action) throws
+      Exception {
+    AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder();
+    TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+    boolean auditSuccess = true;
+
+    ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    RuntimeException thrown = null;
+    try {
+      responseEntity = action.apply(auditRecordBuilder);
       if (!responseEntity.getStatusCode().is2xxSuccessful()) {
         auditSuccess = false;
         transactionManager.rollback(transaction);

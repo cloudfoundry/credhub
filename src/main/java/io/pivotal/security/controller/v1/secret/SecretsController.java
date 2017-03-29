@@ -106,43 +106,51 @@ public class SecretsController {
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   public ResponseEntity generate(InputStream inputStream,
-      HttpServletRequest request,
-      Authentication authentication) throws Exception {
+                                 HttpServletRequest request,
+                                 Authentication authentication) throws Exception {
+    try {
+      return auditedHandlePostRequest(inputStream, request, authentication);
+    } catch (JpaSystemException | DataIntegrityViolationException e) {
+      System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
+      return auditedHandlePostRequest(inputStream, request, authentication);
+    }
+  }
+
+  private ResponseEntity auditedHandlePostRequest(InputStream inputStream, HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing((auditRecordBuilder -> {
+      return deserializeAndHandlePostRequest(inputStream, request, authentication, auditRecordBuilder);
+    }));
+  }
+
+  private ResponseEntity<?> deserializeAndHandlePostRequest(InputStream inputStream, HttpServletRequest request, Authentication authentication, AuditRecordBuilder auditRecordBuilder) throws Exception {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     String requestString = IOUtils.toString(new InputStreamReader(requestInputStream));
     boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
 
+    auditRecordBuilder.populateFromRequest(request);
+    auditRecordBuilder.setAuthentication(authentication);
     if (isRegenerateRequest) {
-      // If it's a regenerate request deserialization is simple;
-      // the generation case requires polymorphic deserialization
-      // See BaseSecretGenerateRequest to see how that's done.
-      // It would be nice if Jackson could pick a subclass based on
-      // an arbitrary function, since we want to consider both type and
-      // .regenerate. We could do custom deserialization
-      // but then we'dp have to do the entire job by hand.
-      return handleRegenerateRequest(request, authentication, requestInputStream, requestString);
+      // If it's a regenerate request deserialization is simple; the generation case requires polymorphic deserialization
+      // See BaseSecretGenerateRequest to see how that's done. It would be nice if Jackson could pick a subclass based on
+      // an arbitrary function, since we want to consider both type and .regenerate. We could do custom deserialization
+      // but then we'd have to do the entire job by hand.
+      return handleRegenerateRequest(auditRecordBuilder, requestInputStream);
     } else {
-      return handleGenerateRequest(request, authentication, requestInputStream, requestString);
+      return handleGenerateRequest(auditRecordBuilder, requestInputStream, requestString);
     }
   }
 
-  private ResponseEntity handleGenerateRequest(HttpServletRequest request,
-      Authentication authentication, InputStream requestInputStream, String requestString)
-      throws Exception {
-    BaseSecretGenerateRequest requestBody = objectMapper
-        .readValue(requestString, BaseSecretGenerateRequest.class);
+  private ResponseEntity handleGenerateRequest(AuditRecordBuilder auditRecordBuilder, InputStream requestInputStream, String requestString) throws Exception {
+    BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
 
-    final boolean isCurrentlyTrappedInTheMonad =
-        requestBody instanceof DefaultSecretGenerateRequest;
+    auditRecordBuilder.setCredentialName(requestBody.getName());
+    final boolean isCurrentlyTrappedInTheMonad = requestBody instanceof DefaultSecretGenerateRequest;
     if (isCurrentlyTrappedInTheMonad) {
       requestInputStream.reset();
       DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
-      return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler,
-          parsedRequestBody);
+      return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
     } else {
-      final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(requestBody.getName(),
-          request, authentication);
       try {
         return secretRequestService.perform(auditRecordBuilder, requestBody);
       } catch (JpaSystemException | DataIntegrityViolationException e) {
@@ -154,24 +162,36 @@ public class SecretsController {
     }
   }
 
-  private ResponseEntity handleRegenerateRequest(HttpServletRequest request,
-      Authentication authentication, InputStream requestInputStream, String requestString)
-      throws Exception {
+  private ResponseEntity handleRegenerateRequest(AuditRecordBuilder auditRecordBuilder, InputStream requestInputStream) throws Exception {
     requestInputStream.reset();
     DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
-    return retryingAuditedStoreSecret(request, authentication, namedSecretGenerateHandler,
-        parsedRequestBody);
+    return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
-  public ResponseEntity set(
-      @RequestBody BaseSecretSetRequest requestBody,
-      HttpServletRequest request,
-      Authentication authentication
-  ) throws Exception {
+  public ResponseEntity set(@RequestBody BaseSecretSetRequest requestBody,
+                            HttpServletRequest request,
+                            Authentication authentication) throws Exception {
     requestBody.validate();
-    final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(requestBody.getName(),
-        request, authentication);
+
+    try {
+      return auditedHandlePutRequest(requestBody, request, authentication);
+    } catch (JpaSystemException | DataIntegrityViolationException e) {
+      System.out.println("Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName() + "\" while storing secret, possibly caused by race condition, retrying...");
+      return auditedHandlePutRequest(requestBody, request, authentication);
+    }
+  }
+
+  private ResponseEntity auditedHandlePutRequest(@RequestBody BaseSecretSetRequest requestBody, HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing(auditRecordBuilder -> {
+      return handlePutRequest(requestBody, request, authentication, auditRecordBuilder);
+    });
+  }
+
+  private ResponseEntity<?> handlePutRequest(@RequestBody BaseSecretSetRequest requestBody, HttpServletRequest request, Authentication authentication, AuditRecordBuilder auditRecordBuilder) throws Exception {
+    auditRecordBuilder.setCredentialName(requestBody.getName());
+    auditRecordBuilder.populateFromRequest(request);
+    auditRecordBuilder.setAuthentication(authentication);
     try {
       return secretRequestService.perform(auditRecordBuilder, requestBody);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
@@ -391,22 +411,8 @@ public class SecretsController {
     });
   }
 
-  private ResponseEntity retryingAuditedStoreSecret(HttpServletRequest request,
-      Authentication authentication, SecretKindMappingFactory requestHandler,
-      DocumentContext parsedRequestBody) throws Exception {
-    try {
-      return auditedStoreSecret(request, authentication, requestHandler, parsedRequestBody);
-    } catch (JpaSystemException | DataIntegrityViolationException e) {
-      System.out.println(
-          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
-              + "\" while storing secret, possibly caused by race condition, retrying...");
-      return auditedStoreSecret(request, authentication, requestHandler, parsedRequestBody);
-    }
-  }
-
-  private ResponseEntity<?> auditedStoreSecret(HttpServletRequest request,
-      Authentication authentication,
-      SecretKindMappingFactory handler, DocumentContext parsedRequestBody) throws Exception {
+  private ResponseEntity<?> storeSecret(AuditRecordBuilder auditRecordBuilder,
+                                        SecretKindMappingFactory handler, DocumentContext parsedRequestBody) throws Exception {
     final String secretName = getSecretName(parsedRequestBody);
     if (StringUtils.isEmpty(secretName)) {
       return new ResponseEntity<>(createErrorResponse("error.missing_name"),
@@ -420,32 +426,16 @@ public class SecretsController {
 
     boolean willWrite = willBeCreated || overwrite || regenerate;
     AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(secretName, request,
-        authentication);
     auditRecordBuilder.setOperationCode(operationCode);
-    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
-      if (regenerate && existingNamedSecret == null) {
-        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"),
-            HttpStatus.NOT_FOUND);
-      }
+    if (regenerate && existingNamedSecret == null) {
+      return new ResponseEntity<>(createErrorResponse("error.credential_not_found"), HttpStatus.NOT_FOUND);
+    }
 
-      return storeSecret(secretName, handler, parsedRequestBody, existingNamedSecret, willWrite);
-    });
-  }
-
-  private String getSecretName(DocumentContext parsed) {
-    return parsed.read("$.name", String.class);
-  }
-
-  private ResponseEntity<?> storeSecret(String secretPath,
-      SecretKindMappingFactory namedSecretHandler,
-      DocumentContext parsedRequest,
-      NamedSecret existingNamedSecret,
-      boolean willWrite) {
+    String secretPath = secretName;
     try {
-      String requestedSecretType = parsedRequest.read("$.type");
-      final SecretKind secretKind = (existingNamedSecret != null
-          ? existingNamedSecret.getKind() :
+      String requestedSecretType = parsedRequestBody.read("$.type");
+      final SecretKind secretKind = (existingNamedSecret != null ?
+          existingNamedSecret.getKind() :
           SecretKindFromString.fromString(requestedSecretType));
       if (existingNamedSecret != null && requestedSecretType != null && !existingNamedSecret
           .getSecretType().equals(requestedSecretType)) {
@@ -455,8 +445,7 @@ public class SecretsController {
 
       NamedSecret storedNamedSecret;
       if (willWrite) {
-        SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make = namedSecretHandler
-            .make(secretPath, parsedRequest);
+        SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make = handler.make(secretPath, parsedRequestBody);
         CheckedFunction<NamedSecret, NoSuchAlgorithmException> lift = secretKind.lift(make);
         storedNamedSecret = lift.apply(existingNamedSecret);
         storedNamedSecret = secretDataService.save(storedNamedSecret);
@@ -466,7 +455,7 @@ public class SecretsController {
         // As above, the unit tests won't catch (all) issues :( ,
         // but there is an integration test to cover it.
         storedNamedSecret = existingNamedSecret;
-        secretKind.lift(namedSecretHandler.make(secretPath, parsedRequest)).apply(null);
+        secretKind.lift(handler.make(secretPath, parsedRequestBody)).apply(null);
       }
 
       SecretView secretView = SecretView.fromEntity(storedNamedSecret);
@@ -479,6 +468,10 @@ public class SecretsController {
       return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"),
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private String getSecretName(DocumentContext parsed) {
+    return parsed.read("$.name", String.class);
   }
 
   private ResponseError createErrorResponse(String key) {

@@ -39,10 +39,7 @@ import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -58,6 +55,34 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -208,12 +233,7 @@ public class SecretsControllerGenerateTest {
         });
 
         it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordBuilder> captor = ArgumentCaptor
-              .forClass(AuditRecordBuilder.class);
-          verify(auditLogService, times(1))
-              .performWithAuditing(captor.capture(), any(Supplier.class));
-          AuditRecordBuilder auditRecorder = captor.getValue();
-          assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
         });
       });
 
@@ -261,12 +281,7 @@ public class SecretsControllerGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            ArgumentCaptor<AuditRecordBuilder> captor = ArgumentCaptor
-                .forClass(AuditRecordBuilder.class);
-            verify(auditLogService, times(1))
-                .performWithAuditing(captor.capture(), any(Supplier.class));
-            AuditRecordBuilder auditRecorder = captor.getValue();
-            assertThat(auditRecorder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+            verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
           });
         });
 
@@ -295,13 +310,7 @@ public class SecretsControllerGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor
-                .forClass(AuditRecordBuilder.class);
-            verify(auditLogService)
-                .performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
-
-            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(),
-                equalTo(CREDENTIAL_ACCESS));
+            verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
           });
         });
 
@@ -469,7 +478,10 @@ public class SecretsControllerGenerateTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService)
-        .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+    doAnswer(invocation -> {
+      final ExceptionThrowingFunction action = invocation.getArgumentAt(0, ExceptionThrowingFunction.class);
+      return action.apply(new AuditRecordBuilder());
+    }).when(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
   }
 }

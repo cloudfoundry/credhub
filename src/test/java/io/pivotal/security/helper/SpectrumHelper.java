@@ -90,6 +90,7 @@ public class SpectrumHelper {
     jdbcTemplate.execute("truncate table auth_failure_audit_record");
     jdbcTemplate.execute("truncate table operation_audit_record");
     jdbcTemplate.execute("delete from encryption_key_canary");
+    jdbcTemplate.execute("truncate table access_entry");
 
     EncryptionKeyCanaryMapper encryptionKeyCanaryMapper = applicationContext
         .getBean(EncryptionKeyCanaryMapper.class);
