@@ -1,25 +1,14 @@
 package io.pivotal.security.auth;
 
 import com.greghaskins.spectrum.Spectrum;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
-import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,15 +25,29 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.time.Instant;
 import java.util.Map;
+
+import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test", "AuditOAuth2AuthenticationEntryPointTest"}, resolver = DatabaseProfileResolver.class)
@@ -108,7 +111,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
         AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getAuthMethod(), equalTo("uaa"));
+        assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
@@ -156,7 +159,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
         AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getAuthMethod(), equalTo("uaa"));
+        assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
@@ -239,7 +242,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getAuthMethod(), equalTo("uaa"));
+        assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));

@@ -1,5 +1,6 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.entity.OperationAuditRecord;
 import org.apache.commons.lang.StringUtils;
@@ -27,7 +28,7 @@ public class SecurityEventsLogService {
         "suser=" + operationAuditRecord.getUserName(),
         "suid=" + operationAuditRecord.getUserId(),
         "cs1Label=userAuthenticationMechanism",
-        "cs1=auth-access-token",
+        "cs1=" + determineCs1(operationAuditRecord),
         "request=" + getPathWithQueryParameters(operationAuditRecord),
         "requestMethod=" + operationAuditRecord.getMethod(),
         "cs3Label=result",
@@ -39,6 +40,11 @@ public class SecurityEventsLogService {
     );
 
     securityEventsLogger.info(String.join("|", header, message));
+  }
+
+  private String determineCs1(OperationAuditRecord operationAuditRecord) {
+    final boolean isMutualTls = UserContext.AUTH_METHOD_MUTUAL_TLS.equals(operationAuditRecord.getAuthMethod());
+    return isMutualTls ? "mutual-tls" : "oauth-access-token";
   }
 
   private String getPathWithQueryParameters(OperationAuditRecord operationAuditRecord) {

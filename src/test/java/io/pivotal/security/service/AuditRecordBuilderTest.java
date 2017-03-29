@@ -12,20 +12,28 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import java.security.Principal;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.*;
-
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.*;
-import static java.time.LocalDate.now;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_MUTUAL_TLS;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.security.Principal;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @RunWith(Spectrum.class)
 public class AuditRecordBuilderTest {
@@ -40,7 +48,7 @@ public class AuditRecordBuilderTest {
         assertThat(builtRecord.getRequesterIp(), equalTo("10.0.0.1"));
         assertThat(builtRecord.getXForwardedFor(), equalTo("my-header,my-header2"));
         assertThat(builtRecord.getQueryParameters(), equalTo("name=foo&first=first_value&second=second_value"));
-        assertThat(builtRecord.getAuthMethod(), equalTo("uaa"));
+        assertThat(builtRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
       });
 
       it("sets operation code to be credential_access for a get request", () -> {
@@ -99,7 +107,7 @@ public class AuditRecordBuilderTest {
         assertThat(builtRecord.getRequesterIp(), equalTo("10.0.0.1"));
         assertThat(builtRecord.getXForwardedFor(), equalTo("my-header,my-header2"));
         assertThat(builtRecord.getQueryParameters(), equalTo("name=foo&first=first_value&second=second_value"));
-        assertThat(builtRecord.getAuthMethod(), equalTo("mutual_tls"));
+        assertThat(builtRecord.getAuthMethod(), equalTo(AUTH_METHOD_MUTUAL_TLS));
       });
 
       it("sets operation code to be credential_access for a get request", () -> {

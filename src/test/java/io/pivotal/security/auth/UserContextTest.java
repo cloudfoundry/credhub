@@ -16,6 +16,15 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_MUTUAL_TLS;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
@@ -24,13 +33,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
@@ -55,7 +57,7 @@ public class UserContextTest {
     assertThat(context.getGrantType(), equalTo("TEST_GRANT_TYPE"));
     assertThat(context.getValidFrom(), equalTo(1413495264L));
     assertThat(context.getValidUntil(), equalTo(1413538464L));
-    assertThat(context.getAuthMethod(), equalTo("uaa"));
+    assertThat(context.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
   }
 
 
@@ -68,7 +70,7 @@ public class UserContextTest {
     assertThat(context.getUserName(), equalTo("credhub_cli"));
     assertThat(context.getIssuer(), containsString("/oauth/token"));
     assertThat(context.getScope(), equalTo("credhub.bad_scope"));
-    assertThat(context.getAuthMethod(), equalTo("uaa"));
+    assertThat(context.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
   }
 
 
@@ -85,7 +87,7 @@ public class UserContextTest {
     assertThat(context.getValidFrom(), equalTo(1413495264L));
     assertThat(context.getValidUntil(), equalTo(1413538464L));
     assertThat(context.getClientId(), equalTo("some name"));
-    assertThat(context.getAuthMethod(), equalTo("mutual_tls"));
+    assertThat(context.getAuthMethod(), equalTo(AUTH_METHOD_MUTUAL_TLS));
   }
 
 

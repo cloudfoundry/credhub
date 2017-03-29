@@ -17,6 +17,8 @@ import java.util.Set;
 
 public class UserContext {
   public static final String VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE = null;
+  public static final String AUTH_METHOD_UAA = "uaa";
+  public static final String AUTH_METHOD_MUTUAL_TLS = "mutual_tls";
 
   private String userId = VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE;
   private String userName = VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE;
@@ -41,7 +43,7 @@ public class UserContext {
     UserContext user = new UserContext();
     OAuth2AccessToken accessToken;
     OAuth2Request oAuth2Request = authentication.getOAuth2Request();
-    user.authMethod = "uaa";
+    user.authMethod = AUTH_METHOD_UAA;
     user.clientId = oAuth2Request.getClientId();
     user.grantType = oAuth2Request.getGrantType();
     user.authorities = authentication.getAuthorities();
@@ -73,7 +75,7 @@ public class UserContext {
 
     X509Certificate certificate = (X509Certificate) authentication.getCredentials();
 
-    user.authMethod = "mutual_tls";
+    user.authMethod = AUTH_METHOD_MUTUAL_TLS;
     user.authorities = authentication.getAuthorities();
     user.validFrom =  certificate.getNotBefore().toInstant().getEpochSecond();
     user.validUntil = certificate.getNotAfter().toInstant().getEpochSecond();

@@ -19,17 +19,19 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
+
 import java.io.IOException;
 import java.security.SignatureException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
@@ -126,7 +128,6 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     String clientId = null;
     String scope = null;
     String grantType = null;
-    String authMethod = "uaa";
 
     if (tokenInformation != null) {
       List<String> scopeArray = (List<String>) tokenInformation.get("scope");
@@ -142,7 +143,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
     AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
         .setNow(now)
-        .setAuthMethod(authMethod)
+        .setAuthMethod(AUTH_METHOD_UAA)
         .setOperation(auditRecorder.getOperationCode().toString())
         .setFailureDescription(removeTokenFromMessage(authException.getMessage(), token))
         .setUserId(userId)
