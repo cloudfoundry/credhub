@@ -43,11 +43,11 @@ public class CertificateStringConstants {
   /**
    * Version: 3 (0x2)
    * Signature Algorithm: sha256WithRSAEncryption
-   * Issuer: CN=test.example.com, OU=app:test-app, L=exampletown
+   * Issuer: CN=test.example.com, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, L=exampletown
    * Validity
-   *    Not Before: Mar 28 23:30:14 2017 GMT
-   *    Not After : Mar 26 23:30:14 2027 GMT
-   * Subject: CN=test.example.com, OU=app:test-app, L=exampletown
+   *    Not Before: Mar 29 20:23:53 2017 GMT
+   *    Not After : Mar 27 20:23:53 2027 GMT
+   * Subject: CN=test.example.com, OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb, L=exampletown
    * Subject Public Key Info:
    * Public Key Algorithm: rsaEncryption
    * RSA Public Key: (2048 bit)
@@ -56,24 +56,136 @@ public class CertificateStringConstants {
    *    CA:FALSE
    */
   public static final String SIMPLE_SELF_SIGNED_TEST_CERT = "-----BEGIN CERTIFICATE-----\n"
-      + "MIIDLjCCAhagAwIBAgIUUOffG/UnHhp2xh54rubcAZHG1lcwDQYJKoZIhvcNAQEL\n"
-      + "BQAwSDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEVMBMGA1UECwwMYXBwOnRl\n"
-      + "c3QtYXBwMRQwEgYDVQQHDAtleGFtcGxldG93bjAeFw0xNzAzMjgyMzMwMTRaFw0y\n"
-      + "NzAzMjYyMzMwMTRaMEgxGTAXBgNVBAMMEHRlc3QuZXhhbXBsZS5jb20xFTATBgNV\n"
-      + "BAsMDGFwcDp0ZXN0LWFwcDEUMBIGA1UEBwwLZXhhbXBsZXRvd24wggEiMA0GCSqG\n"
-      + "SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDGUj7+TFvF3qbw9/M6VIJJQNBT5Edp4H6m\n"
-      + "jlc7XYOrwuXkPTOKNJ1dJHhAjceA+Xmj2Yxbo77YS1VCuln3YUGwrC8ReObVdf5k\n"
-      + "fQ5Pm+R99yEelL2N0pJKyMSghv15PAe+BRMBl6QK2n4Grl/+0FdhNxKtNNZ7uJeh\n"
-      + "LJeWO6tT8lxYyts6Ll6liZQJC5URwscWT6ivsPSMInTLuBUltUt3F1WFFNh6QQwy\n"
-      + "PLeIg2RQ1FdN7lG3/8qF2P91LKPypV5nZB07DkNdf0i+/+ThQdLYVd44evOxJOIS\n"
-      + "j92rIWUQ5HTXfr6GoMBJ7+wPomcz8/9eEjDVfEBlcl/vN/hBbu6XAgMBAAGjEDAO\n"
-      + "MAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQELBQADggEBAKgSfRq3cb5uDrhiiIM6\n"
-      + "J3VaDR8Qp10yBbIIZ0dv38HHllswv0nzzjxZ86fMEB7O2POCzzfeUJ9XKjTIDUOp\n"
-      + "wsIMOpqAqbVwOkNYSnOtiBQnh2tBCnUoVcukMqqgzv1sN14Pd9REY8buYXqrB5+R\n"
-      + "5d8TxuE5fgZIhO2sKwqT/WS7aYiORES0lNYycYLZ1vP0H/U+O6bTC2OQHXnPXL/j\n"
-      + "Dy0VW27N4VKeCUyQsGq3VfPD35H7j8Lpx5JixZg8Nt/e5dJqePT/ICDrpCwBnm8a\n"
-      + "GDBkM13woF4B2jSBetfPpLKKR6DSkk5xjwkzILX4N3JH1wflCxasWiqHdNNsP+0q\n"
-      + "T6U=\n"
+      + "MIIDZjCCAk6gAwIBAgIUD8qb4pWPNR6dhYtZgf5Cn5DymHowDQYJKoZIhvcNAQEL\n"
+      + "BQAwZDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTExMC8GA1UECwwoYXBwOmI2\n"
+      + "NzQ0NmU1LWIyYjAtNDY0OC1hMGQwLTc3MmQzZDM5OWRjYjEUMBIGA1UEBwwLZXhh\n"
+      + "bXBsZXRvd24wHhcNMTcwMzI5MjAyMzUzWhcNMjcwMzI3MjAyMzUzWjBkMRkwFwYD\n"
+      + "VQQDDBB0ZXN0LmV4YW1wbGUuY29tMTEwLwYDVQQLDChhcHA6YjY3NDQ2ZTUtYjJi\n"
+      + "MC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYDVQQHDAtleGFtcGxldG93bjCC\n"
+      + "ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMle5V28ZST5EvfqPLVk6Wg5\n"
+      + "i7poGmtGTkFBhi4YSIhD/cKqMlc3eh7X0cm7JYbMtK7WJ/QTKEKfzrFB/NCmu1C7\n"
+      + "840lo+9tA4jDuZksi6qclTcjPP5tvjeCkRhBXw1qOjHvT5doPIGsGYNzKIEjobRN\n"
+      + "fPT1Z83laKO9x3JXatulpx3VrJCeAVZADEUYonCU+l5cplWxgh1Zy1rbVgx2NSoL\n"
+      + "LYst208h9I6oq0X/u2VmiPIXDE8iblexvhQwrLE31R7AsGfsObGZ05KSBsZBJsyE\n"
+      + "xmb5K44IuKahpZnkX9x95fuJUzYdxcjkR9KgSak2uLFY0pki87PH6bOoApDfnNkC\n"
+      + "AwEAAaMQMA4wDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAQEAvwGXYcQL\n"
+      + "WNzts9Hx6Rih8Vj5ibORRl/49m820dFoxZzGmxwUiHFveni8cbkW3WkFEI6iUFRl\n"
+      + "cH9SilytWi+WnQr8zPUC80OgyOUHd8JRLxn84cJBxqKsMvn2vhFYhCMhJSgzyIOF\n"
+      + "2hCIx4uwTEizCeq/DWZJhSSbEkdGW2CCON97VyNAhUQ+lwkJG5cEDSEDmtqT8MD+\n"
+      + "fCe0Wu650ipk2gGMZnbnRCi4phxb/bx0rEyq5upuOZw5Ja6/Ulikm4pF3mwW1xuR\n"
+      + "OgN3QbqNnD+GGJnsddnTY2o900nXOki+v4tcnRTlfhnkWIXn3kF+ZgmacUQDdq+G\n"
+      + "zNIcsYa7oxP46A==\n"
+      + "-----END CERTIFICATE-----";
+
+  /**
+   * Version: 3 (0x2)
+   * Signature Algorithm: sha256WithRSAEncryption
+   * Issuer: CN=test.example.com, OU=app:7e0fbd7d-14bd-11e7-a8b1-10ddb1aa64b3, L=exampletown
+   * Validity
+   *    Not Before: Mar 29 20:23:06 2017 GMT
+   *    Not After : Mar 27 20:23:06 2027 GMT
+   * Subject: CN=test.example.com, OU=app:7e0fbd7d-14bd-11e7-a8b1-10ddb1aa64b3, L=exampletown
+   * Subject Public Key Info:
+   * Public Key Algorithm: rsaEncryption
+   * RSA Public Key: (2048 bit)
+   * X509v3 extensions:
+   *    X509v3 Basic Constraints: critical
+   *    CA:FALSE
+   */
+  public static final String TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT =
+      "-----BEGIN CERTIFICATE-----\n"
+          + "MIIDZjCCAk6gAwIBAgIULvDbv0eGhurO4sQHPGQzw1JZzBswDQYJKoZIhvcNAQEL\n"
+          + "BQAwZDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTExMC8GA1UECwwoYXBwOjdl\n"
+          + "MGZiZDdkLTE0YmQtMTFlNy1hOGIxLTEwZGRiMWFhNjRiMzEUMBIGA1UEBwwLZXhh\n"
+          + "bXBsZXRvd24wHhcNMTcwMzI5MjAyMzA2WhcNMjcwMzI3MjAyMzA2WjBkMRkwFwYD\n"
+          + "VQQDDBB0ZXN0LmV4YW1wbGUuY29tMTEwLwYDVQQLDChhcHA6N2UwZmJkN2QtMTRi\n"
+          + "ZC0xMWU3LWE4YjEtMTBkZGIxYWE2NGIzMRQwEgYDVQQHDAtleGFtcGxldG93bjCC\n"
+          + "ASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKGehnx7S8uvY3jyuWmkZgY8\n"
+          + "aCYQoIs5jVevYI5ajyyFX2F6sv6+4p0FDB1+9sM2/PIbyKHrqMcvTJwdgbW01nfo\n"
+          + "mRipq91K07u6J387U78RS/XIwKg9OcxSn0RH1f32oSOqiS+miWmgek7kFrGM2hsp\n"
+          + "ySPmTqr36m3Tn5Z0sy9u6B/2U1kfYMNhd0KEHrhQ6zGUfxiMXwVXm5JYsKHadlzq\n"
+          + "xo1VqOSKzbVWayIlo+g2c1mcv0DXeXBcoKh9APAGKyjUwXq69pFsprq3gj45lQVE\n"
+          + "8dp9ukRX4eWYgPxBublToJtUGlKth8s9rfhSVjhnkp7TT9WDor9G4/iPRna/KiUC\n"
+          + "AwEAAaMQMA4wDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAQEAQL89uAb8\n"
+          + "wqS1ZlVNC6mGXLrrORvhCIS+2LI3Cllo87G055kATS3u5yGq/6EzAM+4W6LePg94\n"
+          + "5HT3Jyo1uO/D9rNfgJ7+yxaotwr13p0L7yeKO3XT4jOaav0UIPFDq8TcMfADilOa\n"
+          + "w1FHWyMxn3wSbD6KYzjEnpo932C+CtXfQPX+dtCayR/NO7DxhAbCfIhAZNIbA8xn\n"
+          + "g8GslKQKmPFVpclGjRjeMOgSOdsN/Dg0OwzKBMSoWuUGLavICh0HwlccW6+cxgUs\n"
+          + "Pswa7CjG14hVnFYnj3ISDrXetgwX3Gw4kbwFdWERzDrYvoNzdguKYkrop+mUGqpy\n"
+          + "OeRYsf1HBP8d0w==\n"
+          + "-----END CERTIFICATE-----";
+
+  /**
+   * Version: 3 (0x2)
+   * Signature Algorithm: sha256WithRSAEncryption
+   * Issuer: CN=test.example.com, OU=7e0fbd7d-14bd-11e7-a8b1-10ddb1aa64b3, L=exampletown
+   * Validity
+   *    Not Before: Mar 29 20:35:54 2017 GMT
+   *    Not After : Mar 27 20:35:54 2027 GMT
+   * Subject: CN=test.example.com, OU=7e0fbd7d-14bd-11e7-a8b1-10ddb1aa64b3, L=exampletown
+   * Subject Public Key Info:
+   * Public Key Algorithm: rsaEncryption
+   * RSA Public Key: (2048 bit)
+   * X509v3 extensions:
+   *    X509v3 Basic Constraints: critical
+   *    CA:FALSE
+   */
+  public static final String TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX =
+      "-----BEGIN CERTIFICATE-----\n"
+          + "MIIDXjCCAkagAwIBAgIUf0A6ygebPHdmubKEJHEelx4e/SMwDQYJKoZIhvcNAQEL\n"
+          + "BQAwYDEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEtMCsGA1UECwwkYjY3NDQ2\n"
+          + "ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYDVQQHDAtleGFtcGxl\n"
+          + "dG93bjAeFw0xNzAzMjkyMDM1NTRaFw0yNzAzMjcyMDM1NTRaMGAxGTAXBgNVBAMM\n"
+          + "EHRlc3QuZXhhbXBsZS5jb20xLTArBgNVBAsMJGI2NzQ0NmU1LWIyYjAtNDY0OC1h\n"
+          + "MGQwLTc3MmQzZDM5OWRjYjEUMBIGA1UEBwwLZXhhbXBsZXRvd24wggEiMA0GCSqG\n"
+          + "SIb3DQEBAQUAA4IBDwAwggEKAoIBAQDKKmO/4dYA19ETDA5sCl1Ai9QZ5vtyljnT\n"
+          + "gPW+w/4KIx6pJ+3pEdfnh5D7SEgWqWvK9/TUh37/6gIdMIMMCNPVIV8hN4oL7AAj\n"
+          + "NLdqJJR9KtwvWiHzr/2VHrwRtYReJJ2MoUKhDvz3aRykJxFL4kVoCHtKpkTyVFtK\n"
+          + "WOTKoRgBvF9hz0nUe27sHABy4hRafuLXM+gG5cwTuXTRYg3mXhLN6V9e6hV1cS4C\n"
+          + "cRp10N+ncE+9FmO1i0jjSv4F1d4/nE6dNicJqhpfqJhIwVCp+W+VAYyOhOiel1ae\n"
+          + "BJBx6ju5Qvwp8X5l1BXTNdHU5c93llNttaFOh9bvIA0MlVWMy4t/AgMBAAGjEDAO\n"
+          + "MAwGA1UdEwEB/wQCMAAwDQYJKoZIhvcNAQELBQADggEBAAPMSsGhCP18oEiteTDO\n"
+          + "rFXgoXdlQi8zZuynn5cEAVgWyqV7repy3XRoq7A7n3Y7vUDNDpKixBHp15wXAP93\n"
+          + "edrwfoPFowZVXEicdMjlqhf62esa/A0gNo6vQvBIsos/OZZxhpY8kxskdlKAPY4v\n"
+          + "XAHiXsOKw767M9qDeBA3SFSrEL4YMfdhoMoUZr/ayK1Y/j8xPn0CL33rNWkv7SoX\n"
+          + "jnfmsSqWxhg/t/mIjvCR3EfOfpSHpPE4tCCEKD2TvrRxrZO2UBOZ+Y1mc6L33GGV\n"
+          + "fpgSc+FTem/FObrbCUDruX3hCVTQY3Gn1YiSvblPRay29eeR4JeIyPYnzWW06zN8\n"
+          + "IMg=\n"
+          + "-----END CERTIFICATE-----";
+
+  /**
+   * Version: 3 (0x2)
+   * Signature Algorithm: sha256WithRSAEncryption
+   * Issuer: CN=test.example.com, L=exampletown
+   * Validity
+   *    Not Before: Mar 28 23:36:57 2017 GMT
+   *    Not After : Mar 26 23:36:57 2027 GMT
+   * Subject: CN=test.example.com, L=exampletown
+   * Subject Public Key Info:
+   * Public Key Algorithm: rsaEncryption
+   * RSA Public Key: (2048 bit)
+   * X509v3 extensions:
+   *    X509v3 Basic Constraints: critical
+   *    CA:FALSE
+   */
+  public static final String TEST_CERT_WITHOUT_ORGANIZATION_UNIT = "-----BEGIN CERTIFICATE-----\n"
+      + "MIIDADCCAeigAwIBAgIUEkUiS0BpLu5eITSbvH3g8HjYplEwDQYJKoZIhvcNAQEL\n"
+      + "BQAwMTEZMBcGA1UEAwwQdGVzdC5leGFtcGxlLmNvbTEUMBIGA1UEBwwLZXhhbXBs\n"
+      + "ZXRvd24wHhcNMTcwMzI4MjMzNjU3WhcNMjcwMzI2MjMzNjU3WjAxMRkwFwYDVQQD\n"
+      + "DBB0ZXN0LmV4YW1wbGUuY29tMRQwEgYDVQQHDAtleGFtcGxldG93bjCCASIwDQYJ\n"
+      + "KoZIhvcNAQEBBQADggEPADCCAQoCggEBANViOGj5z5ExS1e0BsBJ0HObG9u6c2Bx\n"
+      + "VgDGTNS7UeeN9mBjI7XCvMy/en1awqTayVJeA2QPWZKnPahjvC+02/VSOizBy1Vp\n"
+      + "PTeM9cetdO94dKadYQqMbMn2163Z1F/kPLjL/8FcBpl+FmrB4rPl/+Oo1TjoUvXp\n"
+      + "z/Ys2625RnC4sNlNs0B2Yq3xXg4ysdvS2rD4n8Q4LHKPugkdcRRel0WqPNuMbkGY\n"
+      + "IXJNc7zD8CngO7KI8TGsjPkkwSdVdyihAc/DuZRNqdm7YH4KEUeTPHlQVrjxFlR6\n"
+      + "1xHATn0q4gTwRMmqqYb9Vs1HMhWz1TFaDQAbZplkapW7fcbnGXwF1o0CAwEAAaMQ\n"
+      + "MA4wDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAQEAdyHwsKBuCGjRc/2i\n"
+      + "I/vrNTZrn0GYUCH8zdFxs0c/h59feYM6SWjm9iBIIFxxtGP/F/xxLeblNHDPeTdp\n"
+      + "O5CTU1c+mfjaExXIxJXdzKA7IyfCljc0G1tANGqL/P12/POExiDBaIBWwu+AC2ED\n"
+      + "VPx5tsfOxNxQB1axMaDIGHeJ+SB2/3FhY6VcD6DoCY6TwpJ0mwGP6sgQhJr3qCbE\n"
+      + "P/3asUqyGfS5qkFmvwTytnydR/69RZquVJn9m6ZWeOaEekJ7tTy3AiDKN+OYYpzT\n"
+      + "ZC7Tw5ZqvuWhXUIkFmAqkTW2CFI8zqSbpLjTHvjxP14Ck9zSuV4oojhvtfjA/wOz\n"
+      + "mAeI1w==\n"
       + "-----END CERTIFICATE-----";
 
   /**

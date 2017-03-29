@@ -97,8 +97,9 @@ public class CertificateReaderTest {
       it("should still correctly set up certificate fields", () -> {
         CertificateReader certificateReader = new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT);
 
-        assertThat(certificateReader.getSubjectName().toString(),
-            equalTo("CN=test.example.com,OU=app:test-app,L=exampletown"));
+        assertThat(certificateReader.getSubjectName().toString(), equalTo(
+            "CN=test.example.com,OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb,L=exampletown")
+        );
         assertThat(certificateReader.getKeyLength(), equalTo(2048));
         assertThat(certificateReader.getAlternativeNames(), equalTo(null));
         assertThat(certificateReader.getExtendedKeyUsage(), equalTo(null));
