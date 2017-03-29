@@ -6,6 +6,7 @@ import io.pivotal.security.generator.SecretGenerator;
 import org.apache.commons.lang.NotImplementedException;
 
 public class DefaultSecretGenerateRequest extends BaseSecretGenerateRequest {
+
   private Object parameters;
 
   public Object getParameters() {
@@ -17,7 +18,8 @@ public class DefaultSecretGenerateRequest extends BaseSecretGenerateRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor,
+      SecretGenerator secretGenerator) {
     throw new NotImplementedException();
   }
 }

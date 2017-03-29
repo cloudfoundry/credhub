@@ -5,8 +5,10 @@ import io.pivotal.security.util.EmptyStringToNull;
 import io.pivotal.security.validator.RequireAnyOf;
 
 @SuppressWarnings("unused")
-@RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey"})
+@RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate",
+    "privateKey"})
 public class CertificateSetRequestFields {
+
   @JsonDeserialize(using = EmptyStringToNull.class)
   private String ca;
   @JsonDeserialize(using = EmptyStringToNull.class)
@@ -14,7 +16,8 @@ public class CertificateSetRequestFields {
   @JsonDeserialize(using = EmptyStringToNull.class)
   private String privateKey;
 
-  public CertificateSetRequestFields() {}
+  public CertificateSetRequestFields() {
+  }
 
   public CertificateSetRequestFields(String privateKey, String certificate, String ca) {
     this.privateKey = privateKey;

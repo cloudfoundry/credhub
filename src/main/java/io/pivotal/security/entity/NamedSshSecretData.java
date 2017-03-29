@@ -1,7 +1,6 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.view.SecretKind;
-
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -11,11 +10,12 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue(NamedSshSecretData.SECRET_TYPE)
 @SecondaryTable(
-  name = NamedSshSecretData.TABLE_NAME,
-  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+    name = NamedSshSecretData.TABLE_NAME,
+    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 
 public class NamedSshSecretData extends NamedSecretData<NamedSshSecretData> {
+
   public static final String SECRET_TYPE = "ssh";
   static final String TABLE_NAME = "SshSecret";
 

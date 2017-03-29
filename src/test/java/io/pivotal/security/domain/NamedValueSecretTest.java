@@ -1,12 +1,5 @@
 package io.pivotal.security.domain;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.service.Encryption;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -19,11 +12,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.service.Encryption;
+import java.util.ArrayList;
+import java.util.UUID;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class NamedValueSecretTest {
-  private Encryptor encryptor;
 
   NamedValueSecret subject;
+  private Encryptor encryptor;
   private UUID canaryUuid;
 
   {
@@ -32,8 +31,10 @@ public class NamedValueSecretTest {
       encryptor = mock(Encryptor.class);
       byte[] encryptedValue = "fake-encrypted-value".getBytes();
       byte[] nonce = "fake-nonce".getBytes();
-      when(encryptor.encrypt("my-value")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-value");
+      when(encryptor.encrypt("my-value"))
+          .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+          .thenReturn("my-value");
 
       subject = new NamedValueSecret("Foo");
     });
@@ -67,8 +68,10 @@ public class NamedValueSecretTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new value")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new value");
+        when(encryptor.encrypt("new value"))
+            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn("new value");
 
         subject = new NamedValueSecret("/existingName");
         subject.setEncryptor(encryptor);
@@ -76,7 +79,9 @@ public class NamedValueSecretTest {
       });
 
       it("copies values from existing, except value", () -> {
-        NamedValueSecret newSecret = NamedValueSecret.createNewVersion(subject, "anything I AM IGNORED", "new value", encryptor, new ArrayList<>());
+        NamedValueSecret newSecret = NamedValueSecret
+            .createNewVersion(subject, "anything I AM IGNORED", "new value", encryptor,
+                new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getValue(), equalTo("new value"));
@@ -84,10 +89,10 @@ public class NamedValueSecretTest {
 
       it("creates new if no existing", () -> {
         NamedValueSecret newSecret = NamedValueSecret.createNewVersion(
-          null,
-          "/newName",
-          "new value",
-          encryptor, new ArrayList<>());
+            null,
+            "/newName",
+            "new value",
+            encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getValue(), equalTo("new value"));

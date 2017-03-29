@@ -1,31 +1,28 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.SecretKind;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 
+import io.pivotal.security.view.SecretKind;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-
 @Entity
 @DiscriminatorValue(NamedPasswordSecretData.SECRET_TYPE)
 @SecondaryTable(
-  name = NamedPasswordSecretData.TABLE_NAME,
-  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+    name = NamedPasswordSecretData.TABLE_NAME,
+    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecretData> {
-  static final String TABLE_NAME = "PasswordSecret";
-
-  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = 255 + NONCE_SIZE)
-  private byte[] encryptedGenerationParameters;
-
-  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = NONCE_SIZE)
-  private byte[] parametersNonce;
 
   public static final String SECRET_TYPE = "password";
+  static final String TABLE_NAME = "PasswordSecret";
+  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = 255 + NONCE_SIZE)
+  private byte[] encryptedGenerationParameters;
+  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = NONCE_SIZE)
+  private byte[] parametersNonce;
 
   @SuppressWarnings("unused")
   public NamedPasswordSecretData() {
@@ -39,7 +36,8 @@ public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecret
     return encryptedGenerationParameters;
   }
 
-  public NamedPasswordSecretData setEncryptedGenerationParameters(byte[] encryptedGenerationParameters) {
+  public NamedPasswordSecretData setEncryptedGenerationParameters(
+      byte[] encryptedGenerationParameters) {
     this.encryptedGenerationParameters = encryptedGenerationParameters;
     return this;
   }

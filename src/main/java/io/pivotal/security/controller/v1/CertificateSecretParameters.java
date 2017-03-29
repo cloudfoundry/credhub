@@ -4,6 +4,7 @@ import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.util.CertificateReader;
+import java.util.regex.Pattern;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -14,10 +15,10 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
 
-import java.util.regex.Pattern;
-
 public class CertificateSecretParameters implements RequestParameters {
-  private static final Pattern DNS_WILDCARD_PATTERN = Pattern.compile("^\\*?(?:\\.[a-zA-Z0-9\\-]+)*$");
+
+  private static final Pattern DNS_WILDCARD_PATTERN = Pattern
+      .compile("^\\*?(?:\\.[a-zA-Z0-9\\-]+)*$");
 
   // Parameters used in RDN; at least one must be set
   private String organization;
@@ -32,7 +33,7 @@ public class CertificateSecretParameters implements RequestParameters {
   private int durationDays = 365;
   private boolean selfSigned = false;
   private String caName;
-  private boolean isCA = false;
+  private boolean isCa = false;
 
   // Used for regen; contains RDN (NOT key length, duration days, or alternative names)
   private X500Name x500Name;
@@ -41,7 +42,8 @@ public class CertificateSecretParameters implements RequestParameters {
   private ExtendedKeyUsage extendedKeyUsage;
   private KeyUsage keyUsage;
 
-  public CertificateSecretParameters() {}
+  public CertificateSecretParameters() {
+  }
 
   public CertificateSecretParameters(CertificateReader certificateReader, String caName) {
     try {
@@ -53,7 +55,7 @@ public class CertificateSecretParameters implements RequestParameters {
       this.extendedKeyUsage = certificateReader.getExtendedKeyUsage();
       this.alternativeNames = certificateReader.getAlternativeNames();
       this.keyUsage = certificateReader.getKeyUsage();
-      this.isCA = certificateReader.isCA();
+      this.isCa = certificateReader.isCa();
 
       this.caName = caName;
     } catch (Exception e) {
@@ -99,7 +101,7 @@ public class CertificateSecretParameters implements RequestParameters {
         && StringUtils.isEmpty(commonName)
         && StringUtils.isEmpty(country)) {
       throw new ParameterizedValidationException("error.missing_certificate_parameters");
-    } else if (StringUtils.isEmpty(caName) && !selfSigned && !isCA) {
+    } else if (StringUtils.isEmpty(caName) && !selfSigned && !isCa) {
       throw new ParameterizedValidationException("error.missing_signing_ca");
     } else if (!StringUtils.isEmpty(caName) && selfSigned) {
       throw new ParameterizedValidationException("error.ca_and_self_sign");
@@ -119,7 +121,7 @@ public class CertificateSecretParameters implements RequestParameters {
     }
   }
 
-  public X500Name getDN() {
+  public X500Name getDn() {
     if (this.x500Name != null) {
       return this.x500Name;
     }
@@ -189,7 +191,8 @@ public class CertificateSecretParameters implements RequestParameters {
           keyPurposeIds[i] = KeyPurposeId.id_kp_timeStamping;
           break;
         default:
-          throw new ParameterizedValidationException("error.invalid_extended_key_usage", extendedKeyUsageList[i]);
+          throw new ParameterizedValidationException("error.invalid_extended_key_usage",
+              extendedKeyUsageList[i]);
       }
     }
     this.extendedKeyUsage = new ExtendedKeyUsage(keyPurposeIds);
@@ -247,22 +250,22 @@ public class CertificateSecretParameters implements RequestParameters {
     return keyUsage;
   }
 
+  public int getKeyLength() {
+    return keyLength;
+  }
+
   public CertificateSecretParameters setKeyLength(int keyLength) {
     this.keyLength = keyLength;
     return this;
   }
 
-  public int getKeyLength() {
-    return keyLength;
+  public int getDurationDays() {
+    return durationDays;
   }
 
   public CertificateSecretParameters setDurationDays(int durationDays) {
     this.durationDays = durationDays;
     return this;
-  }
-
-  public int getDurationDays() {
-    return durationDays;
   }
 
   public String getCaName() {
@@ -283,12 +286,12 @@ public class CertificateSecretParameters implements RequestParameters {
     return this;
   }
 
-  public boolean isCA() {
-    return isCA;
+  public boolean isCa() {
+    return isCa;
   }
 
-  public CertificateSecretParameters setIsCa(boolean isCA) {
-    this.isCA = isCA;
+  public CertificateSecretParameters setIsCa(boolean isCa) {
+    this.isCa = isCa;
     return this;
   }
 }

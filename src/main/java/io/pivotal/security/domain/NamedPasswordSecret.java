@@ -7,11 +7,10 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
-import org.springframework.util.Assert;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.util.Assert;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
@@ -30,93 +29,6 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
   public NamedPasswordSecret() {
     this(new NamedPasswordSecretData());
-  }
-
-  public String getPassword() {
-    return encryptor.decrypt(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()
-    );
-  }
-
-  public NamedPasswordSecret setPasswordAndGenerationParameters(String password, PasswordGenerationParameters generationParameters) {
-    if(password == null) {
-      throw new IllegalArgumentException("password cannot be null");
-    }
-
-    try {
-      String generationParameterJson = generationParameters != null ? objectMapper.writeValueAsString(generationParameters) : null;
-
-      Encryption encryptedParameters = encryptor.encrypt(generationParameterJson);
-      delegate.setEncryptedGenerationParameters(encryptedParameters.encryptedValue);
-      delegate.setParametersNonce(encryptedParameters.nonce);
-
-      Encryption encryptedPassword = encryptor.encrypt(password);
-      delegate.setEncryptedValue(encryptedPassword.encryptedValue);
-      delegate.setNonce(encryptedPassword.nonce);
-
-      delegate.setEncryptionKeyUuid(encryptedPassword.canaryUuid);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-    return this;
-  }
-
-  public byte[] getEncryptedGenerationParameters() {
-    return delegate.getEncryptedGenerationParameters();
-  }
-
-  public NamedPasswordSecret setEncryptedGenerationParameters(byte[] encryptedGenerationParameters) {
-    delegate.setEncryptedGenerationParameters(encryptedGenerationParameters);
-    return this;
-  }
-
-  public byte[] getParametersNonce() {
-    return delegate.getParametersNonce();
-  }
-
-  public NamedPasswordSecret setParametersNonce(byte[] parametersNonce) {
-    delegate.setParametersNonce(parametersNonce);
-    return this;
-  }
-
-  public PasswordGenerationParameters getGenerationParameters() {
-    String password = getPassword();
-    Assert.notNull(password, "Password length generation parameter cannot be restored without an existing password");
-
-    String parameterJson = encryptor.decrypt(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedGenerationParameters(),
-        delegate.getParametersNonce()
-    );
-    if (parameterJson == null) {
-      return null;
-    }
-
-    try {
-      PasswordGenerationParameters passwordGenerationParameters = objectMapper.readValue(parameterJson, PasswordGenerationParameters.class);
-      passwordGenerationParameters.setLength(password.length());
-      return passwordGenerationParameters;
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
-  }
-
-  @Override
-  public SecretKind getKind() {
-    return delegate.getKind();
-  }
-
-  public void rotate(){
-    String decryptedPassword = this.getPassword();
-    PasswordGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();
-    this.setPasswordAndGenerationParameters(decryptedPassword, decryptedGenerationParameters);
   }
 
   public static NamedPasswordSecret createNewVersion(
@@ -145,5 +57,98 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     secret.setEncryptor(encryptor);
     secret.setPasswordAndGenerationParameters(password, generationParameters);
     return secret;
+  }
+
+  public String getPassword() {
+    return encryptor.decrypt(
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedValue(),
+        delegate.getNonce()
+    );
+  }
+
+  public NamedPasswordSecret setPasswordAndGenerationParameters(String password,
+      PasswordGenerationParameters generationParameters) {
+    if (password == null) {
+      throw new IllegalArgumentException("password cannot be null");
+    }
+
+    try {
+      String generationParameterJson =
+          generationParameters != null ? objectMapper.writeValueAsString(generationParameters)
+              : null;
+
+      Encryption encryptedParameters = encryptor.encrypt(generationParameterJson);
+      delegate.setEncryptedGenerationParameters(encryptedParameters.encryptedValue);
+      delegate.setParametersNonce(encryptedParameters.nonce);
+
+      Encryption encryptedPassword = encryptor.encrypt(password);
+      delegate.setEncryptedValue(encryptedPassword.encryptedValue);
+      delegate.setNonce(encryptedPassword.nonce);
+
+      delegate.setEncryptionKeyUuid(encryptedPassword.canaryUuid);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+    return this;
+  }
+
+  public byte[] getEncryptedGenerationParameters() {
+    return delegate.getEncryptedGenerationParameters();
+  }
+
+  public NamedPasswordSecret setEncryptedGenerationParameters(
+      byte[] encryptedGenerationParameters) {
+    delegate.setEncryptedGenerationParameters(encryptedGenerationParameters);
+    return this;
+  }
+
+  public byte[] getParametersNonce() {
+    return delegate.getParametersNonce();
+  }
+
+  public NamedPasswordSecret setParametersNonce(byte[] parametersNonce) {
+    delegate.setParametersNonce(parametersNonce);
+    return this;
+  }
+
+  public PasswordGenerationParameters getGenerationParameters() {
+    String password = getPassword();
+    Assert.notNull(password,
+        "Password length generation parameter cannot be restored without an existing password");
+
+    String parameterJson = encryptor.decrypt(
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedGenerationParameters(),
+        delegate.getParametersNonce()
+    );
+    if (parameterJson == null) {
+      return null;
+    }
+
+    try {
+      PasswordGenerationParameters passwordGenerationParameters = objectMapper
+          .readValue(parameterJson, PasswordGenerationParameters.class);
+      passwordGenerationParameters.setLength(password.length());
+      return passwordGenerationParameters;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public String getSecretType() {
+    return delegate.getSecretType();
+  }
+
+  @Override
+  public SecretKind getKind() {
+    return delegate.getKind();
+  }
+
+  public void rotate() {
+    String decryptedPassword = this.getPassword();
+    PasswordGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();
+    this.setPasswordAndGenerationParameters(decryptedPassword, decryptedGenerationParameters);
   }
 }

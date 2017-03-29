@@ -1,17 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.OperationAuditRecord;
-import org.junit.runner.RunWith;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_MUTUAL_TLS;
@@ -26,6 +14,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.OperationAuditRecord;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
@@ -34,6 +24,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.junit.runner.RunWith;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
 @RunWith(Spectrum.class)
 public class AuditRecordBuilderTest {
@@ -47,8 +46,12 @@ public class AuditRecordBuilderTest {
         assertThat(builtRecord.getPath(), equalTo("/api/v1/data"));
         assertThat(builtRecord.getRequesterIp(), equalTo("10.0.0.1"));
         assertThat(builtRecord.getXForwardedFor(), equalTo("my-header,my-header2"));
-        assertThat(builtRecord.getQueryParameters(), equalTo("name=foo&first=first_value&second=second_value"));
+        assertThat(builtRecord.getQueryParameters(),
+            equalTo("name=foo&first=first_value&second=second_value"));
         assertThat(builtRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
+        assertThat(builtRecord.getQueryParameters(),
+            equalTo("name=foo&first=first_value&second=second_value"));
+        assertThat(builtRecord.getAuthMethod(), equalTo("uaa"));
       });
 
       it("sets operation code to be credential_access for a get request", () -> {
@@ -72,7 +75,8 @@ public class AuditRecordBuilderTest {
       });
 
       it("sets operations code to be UNKNOWN_OPERATION in other cases", () -> {
-        OperationAuditRecord builtRecord = buildFromOAuth2("UNRECOGNIZED_HTTP_METHOD", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromOAuth2("UNRECOGNIZED_HTTP_METHOD",
+            "/api/v1/data");
         assertThat(builtRecord.getOperation(), equalTo(UNKNOWN_OPERATION.toString()));
       });
 
@@ -100,43 +104,48 @@ public class AuditRecordBuilderTest {
 
     describe("with mTLS authentication", () -> {
       it("extracts relevant properties from the request", () -> {
-        OperationAuditRecord builtRecord = buildFromMTLS("GET", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("GET", "/api/v1/data");
         assertThat(builtRecord.getHostName(), equalTo("host-name"));
         assertThat(builtRecord.getCredentialName(), equalTo("foo"));
         assertThat(builtRecord.getPath(), equalTo("/api/v1/data"));
         assertThat(builtRecord.getRequesterIp(), equalTo("10.0.0.1"));
         assertThat(builtRecord.getXForwardedFor(), equalTo("my-header,my-header2"));
-        assertThat(builtRecord.getQueryParameters(), equalTo("name=foo&first=first_value&second=second_value"));
+        assertThat(builtRecord.getQueryParameters(),
+            equalTo("name=foo&first=first_value&second=second_value"));
         assertThat(builtRecord.getAuthMethod(), equalTo(AUTH_METHOD_MUTUAL_TLS));
+        assertThat(builtRecord.getQueryParameters(),
+            equalTo("name=foo&first=first_value&second=second_value"));
+        assertThat(builtRecord.getAuthMethod(), equalTo("mutual_tls"));
       });
 
       it("sets operation code to be credential_access for a get request", () -> {
-        OperationAuditRecord builtRecord = buildFromMTLS("GET", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("GET", "/api/v1/data");
         assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
       });
 
       it("sets operation code to be credential_update for a post request", () -> {
-        OperationAuditRecord builtRecord = buildFromMTLS("POST", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("POST", "/api/v1/data");
         assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
       });
 
       it("sets operation code to be credential_update for a put request", () -> {
-        OperationAuditRecord builtRecord = buildFromMTLS("PUT", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("PUT", "/api/v1/data");
         assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
       });
 
       it("sets operation code to be credential_delete for a delete request", () -> {
-        OperationAuditRecord builtRecord = buildFromMTLS("DELETE", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("DELETE", "/api/v1/data");
         assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
       });
 
       it("sets operations code to be UNKNOWN_OPERATION in other cases", () -> {
-        OperationAuditRecord builtRecord = buildFromMTLS("UNRECOGNIZED_HTTP_METHOD", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("UNRECOGNIZED_HTTP_METHOD",
+            "/api/v1/data");
         assertThat(builtRecord.getOperation(), equalTo(UNKNOWN_OPERATION.toString()));
       });
 
       it("specifies that the user was authenticated through MTLS", () -> {
-        OperationAuditRecord builtRecord = buildFromMTLS("GET", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("GET", "/api/v1/data");
 
         assertThat(builtRecord.getUserId(), equalTo(null));
         assertThat(builtRecord.getUserName(), equalTo(null));
@@ -149,20 +158,20 @@ public class AuditRecordBuilderTest {
 
       it("records auth_valid_from and auth_valid_to", () -> {
         // client cert not valid before / after
-        OperationAuditRecord builtRecord = buildFromMTLS("GET", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("GET", "/api/v1/data");
         assertThat(builtRecord.getAuthValidFrom(), equalTo(1413495264L));
         assertThat(builtRecord.getAuthValidUntil(), equalTo(1413538464L));
       });
 
       it("records client_id", () -> {
         // cert common name
-        OperationAuditRecord builtRecord = buildFromMTLS("GET", "/api/v1/data");
+        OperationAuditRecord builtRecord = buildFromMtls("GET", "/api/v1/data");
         assertThat(builtRecord.getClientId(), equalTo("some name"));
       });
     });
   }
 
-  private OperationAuditRecord buildFromMTLS(String method, String url) {
+  private OperationAuditRecord buildFromMtls(String method, String url) {
     X509Certificate certificate = mock(X509Certificate.class);
     Principal principal = mock(Principal.class);
     PreAuthenticatedAuthenticationToken token = mock(PreAuthenticatedAuthenticationToken.class);
@@ -174,14 +183,10 @@ public class AuditRecordBuilderTest {
     when(certificate.getNotBefore()).thenReturn(Date.from(Instant.ofEpochSecond(1413495264L)));
     when(token.getCredentials()).thenReturn(certificate);
 
-    return build(method, url, token , null);
+    return build(method, url, token, null);
   }
 
   private OperationAuditRecord buildFromOAuth2(String method, String url) {
-    OAuth2Authentication authentication = mock(OAuth2Authentication.class);
-    OAuth2Request oAuth2Request = mock(OAuth2Request.class);
-    OAuth2AccessToken token = mock(OAuth2AccessToken.class);
-
     Map<String, Object> additionalInformation = new HashMap<>();
     additionalInformation.put("user_id", "TEST_USER_ID");
     additionalInformation.put("user_name", "TEST_USER_NAME");
@@ -192,9 +197,14 @@ public class AuditRecordBuilderTest {
     scopes.add("scope1");
     scopes.add("scope2");
 
-    when(oAuth2Request.getGrantType()).thenReturn("TEST_GRANT_TYPE");
+    OAuth2Request oauth2Request = mock(OAuth2Request.class);
 
-    when(authentication.getOAuth2Request()).thenReturn(oAuth2Request);
+    when(oauth2Request.getGrantType()).thenReturn("TEST_GRANT_TYPE");
+
+    OAuth2AccessToken token = mock(OAuth2AccessToken.class);
+    OAuth2Authentication authentication = mock(OAuth2Authentication.class);
+
+    when(authentication.getOAuth2Request()).thenReturn(oauth2Request);
     when(token.getAdditionalInformation()).thenReturn(additionalInformation);
     when(token.getExpiration()).thenReturn(Date.from(Instant.ofEpochSecond(1413538464)));
     when(token.getScope()).thenReturn(scopes);
@@ -202,9 +212,9 @@ public class AuditRecordBuilderTest {
     return build(method, url, authentication, token);
   }
 
-  private OperationAuditRecord build(String method, String url, Authentication authentication, OAuth2AccessToken token) {
+  private OperationAuditRecord build(String method, String url, Authentication authentication,
+      OAuth2AccessToken token) {
     final Instant timestamp = Instant.ofEpochSecond(12345L);
-    ResourceServerTokenServices tokenService = mock(ResourceServerTokenServices.class);
 
     MockHttpServletRequest request = new MockHttpServletRequest(method, url);
     request.setServerName("host-name");
@@ -215,7 +225,10 @@ public class AuditRecordBuilderTest {
 
     final AuditRecordBuilder subject = new AuditRecordBuilder("foo", request, authentication);
     when(authentication.getDetails()).thenReturn(mock(OAuth2AuthenticationDetails.class));
-    when (tokenService.readAccessToken(any())).thenReturn(token);
+
+    ResourceServerTokenServices tokenService = mock(ResourceServerTokenServices.class);
+
+    when(tokenService.readAccessToken(any())).thenReturn(token);
 
     return subject.build(timestamp, tokenService);
   }

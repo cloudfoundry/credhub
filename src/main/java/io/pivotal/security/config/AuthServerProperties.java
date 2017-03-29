@@ -1,29 +1,27 @@
 package io.pivotal.security.config;
 
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
-import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.Map;
-
 @ConfigurationProperties("auth-server")
 public class AuthServerProperties {
+
   private final ConfigurableEnvironment environment;
+  private final String client = "credhub_cli";
+  private final String clientSecret = "";
+  @NotNull(message = "The auth-server.url configuration property is required.")
+  private String url;
 
   @Autowired
   AuthServerProperties(ConfigurableEnvironment environment) {
     this.environment = environment;
   }
-
-  @NotNull(message = "The auth-server.url configuration property is required.")
-  private String url;
-
-  private final String client = "credhub_cli";
-  private final String clientSecret = "";
 
   public String getUrl() {
     return url;

@@ -1,5 +1,8 @@
 package io.pivotal.security.data;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
+
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedJsonSecret;
@@ -20,6 +23,10 @@ import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.SecretView;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -28,34 +35,26 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
-
 @Service
 public class SecretDataService {
+
   protected final SecretRepository secretRepository;
   private final SecretNameRepository secretNameRepository;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private final String findMatchingNameQuery =
+      " select name.name, secret.version_created_at from ("
+          + "   select"
+          + "     max(version_created_at) as version_created_at,"
+          + "     secret_name_uuid"
+          + "   from named_secret group by secret_name_uuid"
+          + " ) as secret inner join ("
+          + "   select * from secret_name"
+          + "     where lower(name) like lower(?)"
+          + " ) as name"
+          + " on secret.secret_name_uuid = name.uuid"
+          + " order by version_created_at desc";
   private Encryptor encryptor;
-
-  private final String FIND_MATCHING_NAME_QUERY =
-      " select name.name, secret.version_created_at from (" +
-          "   select" +
-          "     max(version_created_at) as version_created_at," +
-          "     secret_name_uuid" +
-          "   from named_secret group by secret_name_uuid" +
-          " ) as secret inner join (" +
-          "   select * from secret_name" +
-          "     where lower(name) like lower(?)" +
-          " ) as name" +
-          " on secret.secret_name_uuid = name.uuid" +
-          " order by version_created_at desc";
   private NamedSecretData dao;
 
   @Autowired
@@ -71,6 +70,10 @@ public class SecretDataService {
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.encryptor = encryptor;
+  }
+
+  private static String addLeadingSlashIfMissing(String name) {
+    return StringUtils.prependIfMissing(name, "/");
   }
 
   public <Z extends NamedSecret> Z save(Z namedSecret) {
@@ -95,13 +98,28 @@ public class SecretDataService {
     return findAllPaths(true);
   }
 
+  private List<String> findAllPaths(Boolean findPaths) {
+    if (!findPaths) {
+      return newArrayList();
+    }
+
+    return secretRepository.findAll().stream()
+        .map(namedSecretData -> namedSecretData.getSecretName().getName())
+        .flatMap(NamedSecretData::fullHierarchyForPath)
+        .distinct()
+        .sorted()
+        .collect(Collectors.toList());
+  }
+
   public NamedSecret findMostRecent(String name) {
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+    SecretName secretName = secretNameRepository
+        .findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
 
     if (secretName == null) {
       return null;
     } else {
-      return wrap(secretRepository.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid()));
+      return wrap(secretRepository
+          .findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid()));
     }
   }
 
@@ -129,7 +147,8 @@ public class SecretDataService {
   }
 
   public long delete(String name) {
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+    SecretName secretName = secretNameRepository
+        .findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
 
     if (secretName != null) {
       return secretNameRepository.deleteByName(secretName.getName());
@@ -139,9 +158,11 @@ public class SecretDataService {
   }
 
   public List<NamedSecret> findAllByName(String name) {
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+    SecretName secretName = secretNameRepository
+        .findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
 
-    return secretName != null ? wrap(secretRepository.findAllBySecretNameUuid(secretName.getUuid())) : newArrayList();
+    return secretName != null ? wrap(secretRepository.findAllBySecretNameUuid(secretName.getUuid()))
+        : newArrayList();
   }
 
   public Long count() {
@@ -166,33 +187,17 @@ public class SecretDataService {
     return new SliceImpl(wrap(namedSecretDataSlice.getContent()));
   }
 
-  private List<String> findAllPaths(Boolean findPaths) {
-    if (!findPaths) {
-      return newArrayList();
-    }
-
-    return secretRepository.findAll().stream()
-            .map(namedSecretData -> namedSecretData.getSecretName().getName())
-            .flatMap(NamedSecretData::fullHierarchyForPath)
-            .distinct()
-            .sorted()
-            .collect(Collectors.toList());
-  }
-
   private List<SecretView> findMatchingName(String nameLike) {
     return jdbcTemplate.query(
-        FIND_MATCHING_NAME_QUERY,
+        findMatchingNameQuery,
         new Object[]{nameLike},
         (rowSet, rowNum) -> {
-          final Instant versionCreatedAt = Instant.ofEpochMilli(rowSet.getLong("version_created_at"));
+          final Instant versionCreatedAt = Instant
+              .ofEpochMilli(rowSet.getLong("version_created_at"));
           final String name = rowSet.getString("name");
           return new SecretView(versionCreatedAt, name);
         }
     );
-  }
-
-  private static String addLeadingSlashIfMissing(String name) {
-    return StringUtils.prependIfMissing(name, "/");
   }
 
   private List<NamedSecret> wrap(List<NamedSecretData> daos) {

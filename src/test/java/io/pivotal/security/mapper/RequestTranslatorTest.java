@@ -1,14 +1,5 @@
 package io.pivotal.security.mapper;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.junit.runner.RunWith;
-
-import java.util.Set;
-
 import static com.google.common.collect.ImmutableSet.of;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -17,6 +8,14 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.config.JsonContextFactory;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import java.util.Set;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class RequestTranslatorTest {
@@ -32,7 +31,8 @@ public class RequestTranslatorTest {
 
       @Override
       public Set<String> getValidKeys() {
-        return of("$['foo']", "$['bar']", "$['baz']", "$['baz']['quux']", "$['dynamic']", "$['dynamic'][*]");
+        return of("$['foo']", "$['bar']", "$['baz']", "$['baz']['quux']", "$['dynamic']",
+            "$['dynamic'][*]");
       }
     };
 
@@ -67,17 +67,20 @@ public class RequestTranslatorTest {
         RequestTranslator.validatePathName("/dont-do-this");
       });
 
-      itThrows("validates path does not contain trailing slash", ParameterizedValidationException.class, () -> {
-        RequestTranslator.validatePathName("dont-do-this/");
-      });
+      itThrows("validates path does not contain trailing slash",
+          ParameterizedValidationException.class, () -> {
+            RequestTranslator.validatePathName("dont-do-this/");
+          });
 
-      itThrows("validates path does not contain double slashes", ParameterizedValidationException.class, () -> {
-        RequestTranslator.validatePathName("dont//do//this");
-      });
+      itThrows("validates path does not contain double slashes",
+          ParameterizedValidationException.class, () -> {
+            RequestTranslator.validatePathName("dont//do//this");
+          });
 
-      itThrows("validates path does not contain any invalid combination of slashes", ParameterizedValidationException.class, () -> {
-        RequestTranslator.validatePathName("/dont//do//this/");
-      });
+      itThrows("validates path does not contain any invalid combination of slashes",
+          ParameterizedValidationException.class, () -> {
+            RequestTranslator.validatePathName("/dont//do//this/");
+          });
     });
 
   }

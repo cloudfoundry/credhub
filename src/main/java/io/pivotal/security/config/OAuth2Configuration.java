@@ -1,7 +1,7 @@
 package io.pivotal.security.config;
 
-import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.auth.AuditOAuth2AccessDeniedHandler;
+import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 @Configuration
 public class OAuth2Configuration {
+
   @Bean
   public ResourceServerProperties resourceServerProperties() {
     return new ResourceServerProperties();
@@ -34,7 +35,8 @@ public class OAuth2Configuration {
   }
 
   @Bean
-  public JwtAccessTokenConverter jwtAccessTokenConverter(DefaultAccessTokenConverter defaultAccessTokenConverter) throws Exception {
+  public JwtAccessTokenConverter jwtAccessTokenConverter(
+      DefaultAccessTokenConverter defaultAccessTokenConverter) throws Exception {
     JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
     jwtAccessTokenConverter.setAccessTokenConverter(defaultAccessTokenConverter);
     jwtAccessTokenConverter.setVerifierKey(resourceServerProperties().getJwt().getKeyValue());
@@ -73,12 +75,14 @@ public class OAuth2Configuration {
 
   @Bean
   public AuthenticationManagerBuilder authenticationManagerBuilder() {
-    final AuthenticationManagerBuilder authenticationManagerBuilder = new AuthenticationManagerBuilder(new ObjectPostProcessor<Object>() {
+    final ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<Object>() {
       @Override
       public <O extends Object> O postProcess(O object) {
         return object;
       }
-    });
+    };
+    final AuthenticationManagerBuilder authenticationManagerBuilder =
+        new AuthenticationManagerBuilder(objectPostProcessor);
     authenticationManagerBuilder.parentAuthenticationManager(authenticationManager());
     return authenticationManagerBuilder;
   }
@@ -87,7 +91,8 @@ public class OAuth2Configuration {
   public AuthenticationManager authenticationManager() {
     return new AuthenticationManager() {
       @Override
-      public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+      public Authentication authenticate(Authentication authentication)
+          throws AuthenticationException {
         return authentication;
       }
     };

@@ -7,7 +7,6 @@ import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
 import io.pivotal.security.view.SecretKind;
-
 import java.util.List;
 
 public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
@@ -27,6 +26,29 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
     this(new NamedSshSecretData());
   }
 
+  public static NamedSecret createNewVersion(NamedSshSecret existing, String name,
+      KeySetRequestFields fields, Encryptor encryptor,
+      List<AccessControlEntry> accessControlEntries) {
+    NamedSshSecret secret;
+
+    if (existing == null) {
+      secret = new NamedSshSecret(name);
+    } else {
+      secret = new NamedSshSecret();
+      secret.copyNameReferenceFrom(existing);
+    }
+
+    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
+
+    secret.setAccessControlList(accessEntryData);
+
+    secret.setEncryptor(encryptor);
+    secret.setPrivateKey(fields.getPrivateKey());
+    secret.setPublicKey(fields.getPublicKey());
+
+    return secret;
+  }
+
   public String getPublicKey() {
     return delegate.getPublicKey();
   }
@@ -38,9 +60,9 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
 
   public String getPrivateKey() {
     return encryptor.decrypt(
-      delegate.getEncryptionKeyUuid(),
-      delegate.getEncryptedValue(),
-      delegate.getNonce()
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedValue(),
+        delegate.getNonce()
     );
   }
 
@@ -54,7 +76,7 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
     return this;
   }
 
-  public void rotate(){
+  public void rotate() {
     String decryptedValue = this.getPrivateKey();
     this.setPrivateKey(decryptedValue);
   }
@@ -78,26 +100,5 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
 
   public String getFingerprint() {
     return new SshPublicKeyParser(getPublicKey()).getFingerprint();
-  }
-
-  public static NamedSecret createNewVersion(NamedSshSecret existing, String name, KeySetRequestFields fields, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
-    NamedSshSecret secret;
-
-    if (existing == null) {
-      secret = new NamedSshSecret(name);
-    } else {
-      secret = new NamedSshSecret();
-      secret.copyNameReferenceFrom(existing);
-    }
-
-    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
-
-    secret.setAccessControlList(accessEntryData);
-
-    secret.setEncryptor(encryptor);
-    secret.setPrivateKey(fields.getPrivateKey());
-    secret.setPublicKey(fields.getPublicKey());
-
-    return secret;
   }
 }

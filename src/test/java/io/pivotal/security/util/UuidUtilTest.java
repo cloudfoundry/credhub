@@ -1,14 +1,14 @@
 package io.pivotal.security.util;
 
-import org.junit.Test;
-
-import java.nio.ByteBuffer;
-import java.util.UUID;
-
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.nio.ByteBuffer;
+import java.util.UUID;
+import org.junit.Test;
+
 public class UuidUtilTest {
+
   @Test
   public void roundtripUuid() throws Exception {
     UUID originalUuid = UUID.randomUUID();

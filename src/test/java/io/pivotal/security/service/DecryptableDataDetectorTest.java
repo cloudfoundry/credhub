@@ -1,17 +1,20 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.SecretDataService;
-import org.junit.runner.RunWith;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.data.SecretDataService;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class DecryptableDataDetectorTest {
+
   private SecretDataService secretDataService;
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private DecryptableDataDetector decryptableDataDetector;
@@ -30,7 +33,8 @@ public class DecryptableDataDetectorTest {
         });
 
         it("does not error", () -> {
-          decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper, secretDataService);
+          decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+              secretDataService);
           decryptableDataDetector.check();
         });
       });
@@ -42,10 +46,14 @@ public class DecryptableDataDetectorTest {
             when(secretDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
           });
 
-          itThrowsWithMessage("stuff", RuntimeException.class, "The encryption keys provided cannot decrypt any of the 4 value(s) in the database. Please make sure you've provided the necessary encryption keys.", () -> {
-            decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper, secretDataService);
-            decryptableDataDetector.check();
-          });
+          itThrowsWithMessage("stuff", RuntimeException.class,
+              "The encryption keys provided cannot decrypt any of the 4 value(s) in the database."
+                  + " Please make sure you've provided the necessary encryption keys.",
+              () -> {
+                decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+                    secretDataService);
+                decryptableDataDetector.check();
+              });
         });
 
         describe("when some can be decrypted", () -> {
@@ -55,7 +63,8 @@ public class DecryptableDataDetectorTest {
           });
 
           it("does not error", () -> {
-            decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper, secretDataService);
+            decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
+                secretDataService);
             decryptableDataDetector.check();
           });
         });

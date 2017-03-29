@@ -1,7 +1,6 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.util.CheckedFunction;
-
 import java.util.Objects;
 
 public enum SecretKind implements SecretKindFromString {
@@ -51,11 +50,17 @@ public enum SecretKind implements SecretKindFromString {
   public abstract <T, E extends Throwable> CheckedFunction<T, E> lift(CheckedMapping<T, E> mapping);
 
   public interface CheckedMapping<T, E extends Throwable> {
+
     T value(T t) throws E;
+
     T json(T t) throws E;
+
     T password(T t) throws E;
+
     T certificate(T t) throws E;
+
     T ssh(T t) throws E;
+
     T rsa(T t) throws E;
   }
 }

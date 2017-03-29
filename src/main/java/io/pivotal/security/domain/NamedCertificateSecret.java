@@ -6,10 +6,10 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
-
 import java.util.List;
 
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
+
   private NamedCertificateSecretData delegate;
 
   public NamedCertificateSecret(NamedCertificateSecretData delegate) {
@@ -23,6 +23,29 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
 
   public NamedCertificateSecret() {
     this(new NamedCertificateSecretData());
+  }
+
+  public static NamedSecret createNewVersion(NamedCertificateSecret existing, String name,
+      CertificateSetRequestFields fields, Encryptor encryptor,
+      List<AccessControlEntry> accessControlEntries) {
+    NamedCertificateSecret secret;
+
+    if (existing == null) {
+      secret = new NamedCertificateSecret(name);
+    } else {
+      secret = new NamedCertificateSecret();
+      secret.copyNameReferenceFrom(existing);
+    }
+
+    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
+
+    secret.setAccessControlList(accessEntryData);
+
+    secret.setEncryptor(encryptor);
+    secret.setPrivateKey(fields.getPrivateKey());
+    secret.setCertificate(fields.getCertificate());
+    secret.setCa(fields.getCa());
+    return secret;
   }
 
   public String getCa() {
@@ -61,13 +84,13 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return this;
   }
 
+  public String getCaName() {
+    return delegate.getCaName();
+  }
+
   public NamedCertificateSecret setCaName(String caName) {
     delegate.setCaName(caName);
     return this;
-  }
-
-  public String getCaName() {
-    return delegate.getCaName();
   }
 
   @Override
@@ -83,26 +106,5 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
   public void rotate() {
     String decryptedPrivateKey = this.getPrivateKey();
     this.setPrivateKey(decryptedPrivateKey);
-  }
-
-  public static NamedSecret createNewVersion(NamedCertificateSecret existing, String name, CertificateSetRequestFields fields, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
-    NamedCertificateSecret secret;
-
-    if (existing == null) {
-      secret = new NamedCertificateSecret(name);
-    } else {
-      secret = new NamedCertificateSecret();
-      secret.copyNameReferenceFrom(existing);
-    }
-
-    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
-
-    secret.setAccessControlList(accessEntryData);
-
-    secret.setEncryptor(encryptor);
-    secret.setPrivateKey(fields.getPrivateKey());
-    secret.setCertificate(fields.getCertificate());
-    secret.setCa(fields.getCa());
-    return secret;
   }
 }

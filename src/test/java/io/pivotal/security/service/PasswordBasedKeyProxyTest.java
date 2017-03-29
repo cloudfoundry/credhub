@@ -1,15 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.EncryptionKeyCanary;
-import org.apache.commons.lang3.ArrayUtils;
-import org.bouncycastle.util.encoders.Hex;
-import org.junit.runner.RunWith;
-
-import java.security.Key;
-import java.util.Collections;
-import java.util.List;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -27,30 +17,42 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import java.security.Key;
+import java.util.Collections;
+import java.util.List;
+import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.util.encoders.Hex;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class PasswordBasedKeyProxyTest {
+
   private PasswordBasedKeyProxy subject;
   private String password;
 
-  private BCEncryptionService encryptionService;
+  private BcEncryptionService encryptionService;
   private Key derivedKey;
   private EncryptionKeyCanary canary;
 
   {
     beforeEach(() -> {
       password = "abcdefghijklmnopqrst";
-      encryptionService = new BCEncryptionService(getBouncyCastleProvider());
+      encryptionService = new BcEncryptionService(getBouncyCastleProvider());
       subject = new PasswordBasedKeyProxy(password, encryptionService);
     });
 
     describe("#deriveKey", () -> {
       final String knownRandomNumber = "7034522dc85138530e44b38d0569ca67";
-      final String knownGeneratedKey = "fae3e313f599e8c2327d78c1e959910215f19498fe2c1d199302f5c32c9790c9";
+      final String knownGeneratedKey = "fae3e313f599e8c2327d78c1e9599102"
+          + "15f19498fe2c1d199302f5c32c9790c9";
 
       beforeEach(() -> {
-        byte[] salt = Hex.decode(knownRandomNumber); // gen'd originally from SecureRandom..
+        byte[] salt = Hex.decode(knownRandomNumber); // gen'dp originally from SecureRandom..
 
-        derivedKey = subject.deriveKey(Collections.unmodifiableList(asList(ArrayUtils.toObject(salt))));
+        derivedKey = subject
+            .deriveKey(Collections.unmodifiableList(asList(ArrayUtils.toObject(salt))));
       });
 
       it("returns the expected Key", () -> {
@@ -74,7 +76,8 @@ public class PasswordBasedKeyProxyTest {
           PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, encryptionService);
           final List<Byte> salt = generateSalt();
           derivedKey = oldProxy.deriveKey(salt);
-          final Encryption encryptedCanary = encryptionService.encrypt(null, derivedKey, CANARY_VALUE);
+          final Encryption encryptedCanary = encryptionService
+              .encrypt(null, derivedKey, CANARY_VALUE);
           canary = new EncryptionKeyCanary();
           canary.setEncryptedValue(encryptedCanary.encryptedValue);
           canary.setNonce(encryptedCanary.nonce);

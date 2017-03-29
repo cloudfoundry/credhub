@@ -2,15 +2,14 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.constants.CipherTypes;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
-
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 @SuppressWarnings("unused")
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
@@ -33,7 +32,8 @@ public class LunaEncryptionService extends EncryptionServiceWithConnection {
 
   @Override
   CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
-    return new CipherWrapper(Cipher.getInstance(CipherTypes.GCM.toString(), lunaConnection.getProvider()));
+    return new CipherWrapper(
+        Cipher.getInstance(CipherTypes.GCM.toString(), lunaConnection.getProvider()));
   }
 
   @Override

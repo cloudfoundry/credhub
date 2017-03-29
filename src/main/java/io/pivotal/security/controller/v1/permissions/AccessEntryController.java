@@ -1,5 +1,7 @@
 package io.pivotal.security.controller.v1.permissions;
 
+import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.data.AccessControlDataService;
@@ -26,17 +28,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
-
 @RestController
 @RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 @SuppressWarnings("unused")
 public class AccessEntryController {
 
   public static final String API_V1 = "/api/v1";
-
-  private AccessControlDataService accessControlDataService;
   private final MessageSourceAccessor messageSourceAccessor;
+  private AccessControlDataService accessControlDataService;
 
   @Autowired
   public AccessEntryController(
@@ -56,18 +55,20 @@ public class AccessEntryController {
       ResponseError error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
-      return wrapResponse(accessControlDataService.setAccessControlEntry(accessEntryRequest), HttpStatus.OK);
+      return wrapResponse(accessControlDataService.setAccessControlEntry(accessEntryRequest),
+          HttpStatus.OK);
     }
   }
 
   @GetMapping(path = "/acls")
-  AccessControlListResponse getAccessControlList(@RequestParam("credential_name") String credentialName) {
+  AccessControlListResponse getAccessControlList(
+      @RequestParam("credential_name") String credentialName) {
     return accessControlDataService.getAccessControlListResponse(credentialName);
   }
 
-  @DeleteMapping(path="/aces")
+  @DeleteMapping(path = "/aces")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void deleteAccessControlEntry (
+  void deleteAccessControlEntry(
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
@@ -77,7 +78,8 @@ public class AccessEntryController {
   @ExceptionHandler(MissingServletRequestParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   private ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
-    return new ResponseError(messageSourceAccessor.getMessage("error.missing_query_parameter", new String[]{e.getParameterName()}));
+    return new ResponseError(messageSourceAccessor
+        .getMessage("error.missing_query_parameter", new String[]{e.getParameterName()}));
   }
 
   @ExceptionHandler(JsonParseException.class)
@@ -101,7 +103,7 @@ public class AccessEntryController {
 
   @ExceptionHandler(EntryNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  private ResponseError handleNotFoundException(EntryNotFoundException e){
+  private ResponseError handleNotFoundException(EntryNotFoundException e) {
     return constructError(e.getMessage());
   }
 

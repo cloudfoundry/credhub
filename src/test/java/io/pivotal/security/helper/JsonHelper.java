@@ -1,35 +1,36 @@
 package io.pivotal.security.helper;
 
+import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
+import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import java.io.IOException;
-import java.util.Set;
-
-import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
-import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
-
 public class JsonHelper {
-  private static final ObjectMapper objectMapper = createObjectMapper();
 
-  private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+  private static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
+
+  private static final Validator VALIDATOR = Validation.buildDefaultValidatorFactory()
+      .getValidator();
 
   public static ObjectMapper createObjectMapper() {
     return new ObjectMapper()
-      .registerModule(createTimeModule())
-      .setPropertyNamingStrategy(SNAKE_CASE);
+        .registerModule(createTimeModule())
+        .setPropertyNamingStrategy(SNAKE_CASE);
   }
 
   public static byte[] serialize(Object object) {
     try {
-      return objectMapper.writeValueAsBytes(object);
+      return OBJECT_MAPPER.writeValueAsBytes(object);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -37,7 +38,7 @@ public class JsonHelper {
 
   public static String serializeToString(Object object) {
     try {
-      return objectMapper.writeValueAsString(object);
+      return OBJECT_MAPPER.writeValueAsString(object);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -45,7 +46,7 @@ public class JsonHelper {
 
   public static <T> T deserialize(byte[] json, Class<T> klass) {
     try {
-      return objectMapper.readValue(json, klass);
+      return OBJECT_MAPPER.readValue(json, klass);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -60,26 +61,28 @@ public class JsonHelper {
   }
 
   public static <T> T deserializeChecked(String json, Class<T> klass) throws IOException {
-    return objectMapper.readValue(json, klass);
+    return OBJECT_MAPPER.readValue(json, klass);
   }
 
   public static <T> Set<ConstraintViolation<T>> validate(T original) {
-    return validator.validate(original);
+    return VALIDATOR.validate(original);
   }
 
-  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(String json, Class<T> klass) {
+  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(String json,
+      Class<T> klass) {
     try {
-      T object = objectMapper.readValue(json, klass);
-      return validator.validate(object);
+      T object = OBJECT_MAPPER.readValue(json, klass);
+      return VALIDATOR.validate(object);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
-  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(byte[] json, Class<T> klass) {
+  public static <T> Set<ConstraintViolation<T>> deserializeAndValidate(byte[] json,
+      Class<T> klass) {
     try {
-      T object = objectMapper.readValue(json, klass);
-      return validator.validate(object);
+      T object = OBJECT_MAPPER.readValue(json, klass);
+      return VALIDATOR.validate(object);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -101,6 +104,6 @@ public class JsonHelper {
   }
 
   public static JsonNode parse(String jsonString) throws Exception {
-    return objectMapper.readTree(jsonString);
+    return OBJECT_MAPPER.readTree(jsonString);
   }
 }

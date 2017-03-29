@@ -1,25 +1,29 @@
 package io.pivotal.security.service;
 
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.auth.UserContext;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Enumeration;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Enumeration;
-
-import static io.pivotal.security.entity.AuditingOperationCode.*;
 
 public class AuditRecordBuilder {
+
   private final String hostName;
   private final String method;
   private final String path;
   private final String requesterIp;
-  private final String xForwardedFor;
+  private final String xforwardedFor;
   private final String queryParameters;
   private String credentialName;
   private AuditingOperationCode operationCode;
@@ -29,21 +33,30 @@ public class AuditRecordBuilder {
   private boolean isSuccess;
 
   public AuditRecordBuilder(String credentialName,
-                            HttpServletRequest request,
-                            Authentication authentication) {
+      HttpServletRequest request,
+      Authentication authentication) {
     this.credentialName = credentialName;
     this.hostName = request.getServerName();
     this.method = request.getMethod();
     this.path = request.getRequestURI();
     this.queryParameters = request.getQueryString();
     this.requesterIp = request.getRemoteAddr();
-    this.xForwardedFor = extractXForwardedFor(request.getHeaders("X-Forwarded-For"));
+    this.xforwardedFor = extractXForwardedFor(request.getHeaders("X-Forwarded-For"));
     this.authentication = authentication;
     this.operationCode = computeOperationCode();
   }
 
+  private static String extractXForwardedFor(Enumeration<String> values) {
+    return String.join(",", Collections.list(values));
+  }
+
   public AuditingOperationCode getOperationCode() {
     return operationCode;
+  }
+
+  public AuditRecordBuilder setOperationCode(AuditingOperationCode operationCode) {
+    this.operationCode = operationCode;
+    return this;
   }
 
   public String getHostName() {
@@ -63,24 +76,20 @@ public class AuditRecordBuilder {
   }
 
   public String getXForwardedFor() {
-    return xForwardedFor;
-  }
-
-  private static String extractXForwardedFor(Enumeration<String> values) {
-    return String.join(",", Collections.list(values));
+    return xforwardedFor;
   }
 
   public String getQueryParameters() {
     return queryParameters;
   }
 
+  public String getCredentialName() {
+    return credentialName;
+  }
+
   public AuditRecordBuilder setCredentialName(String credentialName) {
     this.credentialName = credentialName;
     return this;
-  }
-
-  public String getCredentialName() {
-    return credentialName;
   }
 
   private AuditingOperationCode computeOperationCode() {
@@ -112,39 +121,35 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public AuditRecordBuilder setOperationCode(AuditingOperationCode operationCode) {
-    this.operationCode = operationCode;
-    return this;
-  }
-
   public OperationAuditRecord build(Instant now, ResourceServerTokenServices tokenServices) {
     return this.build(now, null, tokenServices);
   }
 
-  public OperationAuditRecord build(Instant now, String token, ResourceServerTokenServices tokenServices) {
+  public OperationAuditRecord build(Instant now, String token,
+      ResourceServerTokenServices tokenServices) {
     UserContext user = UserContext.fromAuthentication(authentication, token, tokenServices);
 
     return new OperationAuditRecord(
-      user.getAuthMethod(),
-      now,
-      getCredentialName(),
-      getOperationCode().toString(),
-      user.getUserId(),
-      user.getUserName(),
-      user.getIssuer(),
-      user.getValidFrom(),
-      user.getValidUntil(),
-      getHostName(),
-      method,
-      path,
-      getQueryParameters(),
-      requestStatus,
-      getRequesterIp(),
-      getXForwardedFor(),
-      user.getClientId(),
-      user.getScope(),
-      user.getGrantType(),
-      isSuccess
+        user.getAuthMethod(),
+        now,
+        getCredentialName(),
+        getOperationCode().toString(),
+        user.getUserId(),
+        user.getUserName(),
+        user.getIssuer(),
+        user.getValidFrom(),
+        user.getValidUntil(),
+        getHostName(),
+        method,
+        path,
+        getQueryParameters(),
+        requestStatus,
+        getRequesterIp(),
+        getXForwardedFor(),
+        user.getClientId(),
+        user.getScope(),
+        user.getGrantType(),
+        isSuccess
     );
   }
 

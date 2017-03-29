@@ -1,23 +1,5 @@
 package io.pivotal.security.mapper;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.BCCertificateGenerator;
-import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.service.Encryption;
-import io.pivotal.security.util.CertificateReader;
-import org.exparity.hamcrest.BeanMatchers;
-import org.junit.runner.RunWith;
-
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -36,10 +18,28 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.config.JsonContextFactory;
+import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.BcCertificateGenerator;
+import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.CertificateReader;
+import java.util.UUID;
+import org.exparity.hamcrest.BeanMatchers;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class CertificateGeneratorRequestTranslatorTest {
+
   private Encryptor encryptor;
-  private BCCertificateGenerator certificateGenerator;
+  private BcCertificateGenerator certificateGenerator;
   private CertificateSecretParametersFactory certificateSecretParametersFactory;
   private CertificateGeneratorRequestTranslator subject;
 
@@ -55,11 +55,13 @@ public class CertificateGeneratorRequestTranslatorTest {
       canaryUuid = UUID.randomUUID();
 
       when(encryptor.encrypt("my-priv"))
-          .thenReturn(new Encryption(canaryUuid, "fake-encrypted-value".getBytes(), "fake-nonce".getBytes()));
+          .thenReturn(new Encryption(canaryUuid, "fake-encrypted-value".getBytes(),
+              "fake-nonce".getBytes()));
 
-      certificateGenerator = mock(BCCertificateGenerator.class);
+      certificateGenerator = mock(BcCertificateGenerator.class);
       certificateSecretParametersFactory = mock(CertificateSecretParametersFactory.class);
-      subject = new CertificateGeneratorRequestTranslator(certificateGenerator, certificateSecretParametersFactory);
+      subject = new CertificateGeneratorRequestTranslator(certificateGenerator,
+          certificateSecretParametersFactory);
 
       when(certificateSecretParametersFactory.get()).thenCallRealMethod();
 
@@ -67,27 +69,27 @@ public class CertificateGeneratorRequestTranslatorTest {
     });
 
     it("knows keys for all valid parameters", () -> {
-      String json = "{" +
-          "\"type\":\"certificate\"," +
-          "\"name\":\"My Name\"," +
-          "\"regenerate\":false," +
-          "\"overwrite\":false," +
-          "\"parameters\":{" +
-          "\"common_name\":\"My Common Name\", " +
-          "\"organization\": \"organization.io\"," +
-          "\"organization_unit\": \"My Unit\"," +
-          "\"locality\": \"My Locality\"," +
-          "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"," +
-          "\"key_length\": 3072," +
-          "\"duration\": 1000," +
-          "\"self_sign\": false," +
-          "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
-          "\"extended_key_usage\": [\"server_auth\", \"client_auth\"]," +
-          "\"key_usage\": [\"data_encipherment\", \"non_repudiation\"]," +
-          "\"ca\": \"My Ca\"" +
-          "}" +
-          "}";
+      String json = "{"
+          + "\"type\":\"certificate\","
+          + "\"name\":\"My Name\","
+          + "\"regenerate\":false,"
+          + "\"overwrite\":false,"
+          + "\"parameters\":{"
+          + "\"common_name\":\"My Common Name\", "
+          + "\"organization\": \"organization.io\","
+          + "\"organization_unit\": \"My Unit\","
+          + "\"locality\": \"My Locality\","
+          + "\"state\": \"My State\","
+          + "\"country\": \"My Country\","
+          + "\"key_length\": 3072,"
+          + "\"duration\": 1000,"
+          + "\"self_sign\": false,"
+          + "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"],"
+          + "\"extended_key_usage\": [\"server_auth\", \"client_auth\"],"
+          + "\"key_usage\": [\"data_encipherment\", \"non_repudiation\"],"
+          + "\"ca\": \"My Ca\""
+          + "}"
+          + "}";
       CertificateSecretParameters expectedParameters = new CertificateSecretParameters();
       expectedParameters.setCommonName("My Common Name");
       expectedParameters.setOrganization("organization.io");
@@ -111,16 +113,16 @@ public class CertificateGeneratorRequestTranslatorTest {
     });
 
     it("ensures that all of the necessary parameters have been provided", () -> {
-      String json = "{" +
-          "\"name\":\"My Name\"," +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"state\": \"My State\"," +
-          "\"country\": \"My Country\"," +
-          "\"ca\": \"my-ca\"" +
-          "}" +
-          "}";
+      String json = "{"
+          + "\"name\":\"My Name\","
+          + "\"type\":\"certificate\","
+          + "\"parameters\":{"
+          + "\"organization\": \"organization.io\","
+          + "\"state\": \"My State\","
+          + "\"country\": \"My Country\","
+          + "\"ca\": \"my-ca\""
+          + "}"
+          + "}";
       CertificateSecretParameters expectedParameters = new CertificateSecretParameters()
           .setOrganization("organization.io")
           .setState("My State")
@@ -137,72 +139,75 @@ public class CertificateGeneratorRequestTranslatorTest {
     });
 
     describe("making CAs", () -> {
-      it("is CA when isCA is true and defaults to self-signed when 'ca' params is not present" , () -> {
-        String json = "{" +
-          "\"name\":\"My Name\"," +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"is_ca\": true" +
-          "}" +
-          "}";
+      it("is CA when isCa is true and defaults to self-signed when 'ca' params is not present",
+          () -> {
+            String json = "{"
+                + "\"name\":\"My Name\","
+                + "\"type\":\"certificate\","
+                + "\"parameters\":{"
+                + "\"organization\": \"organization.io\","
+                + "\"is_ca\": true"
+                + "}"
+                + "}";
 
-        DocumentContext parsed = jsonPath.parse(json);
-        NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
-        CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
-        assertThat(params.isCA(), equalTo(true));
-        assertThat(params.isSelfSigned(), equalTo(true));
-        assertThat(params.getCaName(), equalTo(null));
-      });
+            DocumentContext parsed = jsonPath.parse(json);
+            NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
+            CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
+            assertThat(params.isCa(), equalTo(true));
+            assertThat(params.isSelfSigned(), equalTo(true));
+            assertThat(params.getCaName(), equalTo(null));
+          });
 
-      it("is CA when isCA is true and respects CA param (which will be used to sign this CA)", () -> {
-        String json = "{" +
-          "\"name\":\"My Name\"," +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-          "\"organization\": \"organization.io\"," +
-          "\"is_ca\": true," +
-          "\"ca\": \"My Ca\"" +
-          "}" +
-          "}";
+      it("is CA when isCa is true and respects CA param (which will be used to sign this CA)",
+          () -> {
+            String json = "{"
+                + "\"name\":\"My Name\","
+                + "\"type\":\"certificate\","
+                + "\"parameters\":{"
+                + "\"organization\": \"organization.io\","
+                + "\"is_ca\": true,"
+                + "\"ca\": \"My Ca\""
+                + "}"
+                + "}";
 
-        DocumentContext parsed = jsonPath.parse(json);
-        NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
-        CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
-        assertThat(params.isCA(), equalTo(true));
-        assertThat(params.isSelfSigned(), equalTo(false));
-        assertThat(params.getCaName(), equalTo("My Ca"));
-      });
+            DocumentContext parsed = jsonPath.parse(json);
+            NamedCertificateSecret entity = new NamedCertificateSecret("my-secret");
+            CertificateSecretParameters params = subject.validRequestParameters(parsed, entity);
+            assertThat(params.isCa(), equalTo(true));
+            assertThat(params.isSelfSigned(), equalTo(false));
+            assertThat(params.getCaName(), equalTo("My Ca"));
+          });
     });
 
     describe("when all parameters are omitted", () -> {
       beforeEach(() -> {
-        String json = "{" +
-            "\"type\":\"certificate\"," +
-            "\"parameters\":{" +
-            "}" +
-            "}";
+        String json = "{"
+            + "\"type\":\"certificate\","
+            + "\"parameters\":{"
+            + "}"
+            + "}";
         parsed = jsonPath.parse(json);
       });
 
-      itThrowsWithMessage("for a certificate generation request", ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
-          subject.validRequestParameters(parsed, null);
-      });
+      itThrowsWithMessage("for a certificate generation request",
+          ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
+            subject.validRequestParameters(parsed, null);
+          });
     });
 
     describe("params that should be excluded are excluded", () -> {
       itThrows("only allowed parameters", ParameterizedValidationException.class, () -> {
-        String json = "{" +
-            "\"type\":\"root\"," +
-            "\"parameters\":{" +
-            "\"organization\": \"Organization\"," +
-            "\"state\": \"My State\"," +
-            "\"country\": \"My Country\"," +
-            "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"]," +
-            "\"ca\":\"my-ca\"," +
-            "\"foo\": \"bar\"," +
-            "}" +
-            "}";
+        String json = "{"
+            + "\"type\":\"root\","
+            + "\"parameters\":{"
+            + "\"organization\": \"Organization\","
+            + "\"state\": \"My State\","
+            + "\"country\": \"My Country\","
+            + "\"alternative_names\": [\"my-alternative-name-1\", \"my-alternative-name-2\"],"
+            + "\"ca\":\"my-ca\","
+            + "\"foo\": \"bar\","
+            + "}"
+            + "}";
         parsed = jsonPath.parse(json);
         subject.validateJsonKeys(parsed);
       });
@@ -222,16 +227,16 @@ public class CertificateGeneratorRequestTranslatorTest {
     });
 
     it("ensures that key length is added", () -> {
-      String json = "{" +
-          "\"type\":\"certificate\"," +
-          "\"parameters\":{" +
-            "\"organization\": \"organization.io\"," +
-            "\"state\": \"My State\"," +
-            "\"country\": \"My Country\"," +
-            "\"key_length\": 3072," +
-            "\"self_sign\": true" +
-          "}" +
-        "}";
+      String json = "{"
+          + "\"type\":\"certificate\","
+          + "\"parameters\":{"
+          + "\"organization\": \"organization.io\","
+          + "\"state\": \"My State\","
+          + "\"country\": \"My Country\","
+          + "\"key_length\": 3072,"
+          + "\"self_sign\": true"
+          + "}"
+          + "}";
 
       CertificateSecretParameters expectedParameters = new CertificateSecretParameters()
           .setOrganization("organization.io")
@@ -240,7 +245,8 @@ public class CertificateGeneratorRequestTranslatorTest {
           .setKeyLength(3072)
           .setSelfSigned(true);
 
-      CertificateSecretParameters params = subject.validRequestParameters(jsonPath.parse(json), new NamedCertificateSecret("my-ca"));
+      CertificateSecretParameters params = subject
+          .validRequestParameters(jsonPath.parse(json), new NamedCertificateSecret("my-ca"));
       assertThat(params, BeanMatchers.theSameAs(expectedParameters));
     });
 
@@ -255,7 +261,8 @@ public class CertificateGeneratorRequestTranslatorTest {
       });
 
       it("can populate an entity from JSON", () -> {
-        String requestJson = "{\"type\":\"certificate\",\"parameters\":{\"common_name\":\"abc.com\",\"ca\":\"/my-ca-name\"}}";
+        String requestJson = "{\"type\":\"certificate\",\"parameters\":"
+            + "{\"common_name\":\"abc.com\",\"ca\":\"/my-ca-name\"}}";
         parsed = jsonPath.parse(requestJson);
         subject.populateEntityFromJson(secret, parsed);
 
@@ -274,8 +281,10 @@ public class CertificateGeneratorRequestTranslatorTest {
               .setEncryptor(encryptor)
               .setCertificate(BIG_TEST_CERT)
               .setCaName("my-ca");
-          CertificateSecretParameters expectedParameters = new CertificateSecretParameters(new CertificateReader(BIG_TEST_CERT), certificateSecret.getCaName());
-          CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
+          CertificateSecretParameters expectedParameters = new CertificateSecretParameters(
+              new CertificateReader(BIG_TEST_CERT), certificateSecret.getCaName());
+          CertificateSecretParameters actualParameters = subject
+              .validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
           assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
         });
       });
@@ -284,37 +293,45 @@ public class CertificateGeneratorRequestTranslatorTest {
         it("can creates correct parameters from entity from the entity", () -> {
           NamedCertificateSecret certificateSecret = new NamedCertificateSecret("my-cert")
               .setCertificate(SIMPLE_SELF_SIGNED_TEST_CERT);
-          CertificateSecretParameters expectedParameters = new CertificateSecretParameters(new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT), certificateSecret.getCaName());
-          CertificateSecretParameters actualParameters = subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
+          CertificateSecretParameters expectedParameters = new CertificateSecretParameters(
+              new CertificateReader(SIMPLE_SELF_SIGNED_TEST_CERT), certificateSecret.getCaName());
+          CertificateSecretParameters actualParameters = subject
+              .validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), certificateSecret);
           assertThat(actualParameters, samePropertyValuesAs(expectedParameters));
         });
       });
 
-      itThrowsWithMessage("regeneration is not allowed if caName is not present and it is not a self signed certificate", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_certificate", () -> {
-        NamedCertificateSecret entity = new NamedCertificateSecret("foo")
-            .setCertificate(BIG_TEST_CERT);
-        subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
-      });
+      itThrowsWithMessage(
+          "regeneration is not allowed if caName is not present and it is"
+              + " not a self signed certificate",
+          ParameterizedValidationException.class,
+          "error.cannot_regenerate_non_generated_certificate", () -> {
+            NamedCertificateSecret entity = new NamedCertificateSecret("foo")
+                .setCertificate(BIG_TEST_CERT);
+            subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
+          });
 
-      itThrowsWithMessage("when certificate cannot be parsed", ParameterizedValidationException.class, "error.cannot_regenerate_non_generated_certificate", () -> {
-        NamedCertificateSecret entity = new NamedCertificateSecret("foo")
-            .setCertificate("moose");
-        subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
-      });
+      itThrowsWithMessage("when certificate cannot be parsed",
+          ParameterizedValidationException.class,
+          "error.cannot_regenerate_non_generated_certificate", () -> {
+            NamedCertificateSecret entity = new NamedCertificateSecret("foo")
+                .setCertificate("moose");
+            subject.validRequestParameters(jsonPath.parse("{\"regenerate\":true}"), entity);
+          });
     });
 
     describe("self-signed certificates", () -> {
       it("should set name of the ca to the name of the credential", () -> {
-        String json = "{" +
-            "\"type\":\"certificate\"," +
-            "\"name\":\"My Name\"," +
-            "\"parameters\":{" +
-            "\"organization\": \"organization.io\"," +
-            "\"state\": \"My State\"," +
-            "\"country\": \"My Country\"," +
-            "\"self_sign\": true" +
-            "}" +
-            "}";
+        String json = "{"
+            + "\"type\":\"certificate\","
+            + "\"name\":\"My Name\","
+            + "\"parameters\":{"
+            + "\"organization\": \"organization.io\","
+            + "\"state\": \"My State\","
+            + "\"country\": \"My Country\","
+            + "\"self_sign\": true"
+            + "}"
+            + "}";
         DocumentContext parsed = jsonPath.parse(json);
 
         CertificateSecretParameters expectedParameters = new CertificateSecretParameters()

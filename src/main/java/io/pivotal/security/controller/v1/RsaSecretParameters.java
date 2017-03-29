@@ -4,4 +4,5 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RsaSecretParameters extends RsaSshSecretParameters {
+
 }

@@ -1,13 +1,15 @@
 package io.pivotal.security.db.migration;
 
-import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+
+import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import java.util.UUID;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.runner.RunWith;
@@ -19,29 +21,22 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.UUID;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class EarlySecretMigrationTest {
 
-  private long id = 0;
-
   @Autowired
   Flyway flyway;
-
   @Autowired
   Environment environment;
-
   @Autowired
   NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
   @Autowired
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-
   @Autowired
   JdbcTemplate jdbcTemplate;
+  private long id = 0;
 
   {
     wireAndUnwire(this);
@@ -83,16 +78,18 @@ public class EarlySecretMigrationTest {
     paramSource.addValue("uuid", uuid);
 
     boolean isPostgres = environment.acceptsProfiles("unit-test-postgres");
-    String sql = "INSERT INTO named_secret(" +
-        (isPostgres ? "id, " : "") +
-        "type, encrypted_value, name, nonce, updated_at, uuid) values (" +
-        (isPostgres ? ":id, " : "") +
-        ":type, :encrypted_value, :name, :nonce, :updated_at, :uuid)";
+    String sql = "INSERT INTO named_secret("
+        + (isPostgres ? "id, " : "")
+        + "type, encrypted_value, name, nonce, updated_at, uuid) values ("
+        + (isPostgres ? ":id, " : "")
+        + ":type, :encrypted_value, :name, :nonce, :updated_at, :uuid)";
     namedParameterJdbcTemplate.update(sql, paramSource);
 
-    long id = namedParameterJdbcTemplate.queryForObject("SELECT id FROM named_secret WHERE name = :name", new MapSqlParameterSource("name", secretName), Long.class);
+    long id = namedParameterJdbcTemplate
+        .queryForObject("SELECT id FROM named_secret WHERE name = :name",
+            new MapSqlParameterSource("name", secretName), Long.class);
 
-    namedParameterJdbcTemplate.update("INSERT INTO value_secret" +
-        "(id) values (:id)", new MapSqlParameterSource("id", id));
+    namedParameterJdbcTemplate.update("INSERT INTO value_secret"
+        + "(id) values (:id)", new MapSqlParameterSource("id", id));
   }
 }

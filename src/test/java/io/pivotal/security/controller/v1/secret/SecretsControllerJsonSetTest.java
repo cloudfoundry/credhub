@@ -1,5 +1,19 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.JsonHelper.serializeToString;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.reset;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
@@ -10,6 +24,9 @@ import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.SecretView;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,43 +39,21 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.reset;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerJsonSetTest {
 
+  private final String secretName = "/my-namespace/secretForSetTest/secret-name";
   @Autowired
   WebApplicationContext webApplicationContext;
-
   @Autowired
   SecretsController subject;
-
   @SpyBean
   AuditLogService auditLogService;
-
   @SpyBean
   SecretDataService secretDataService;
-
   private MockMvc mockMvc;
-
-  private final String secretName = "/my-namespace/secretForSetTest/secret-name";
-
   private ResultActions response;
 
   {
@@ -96,12 +91,15 @@ public class SecretsControllerJsonSetTest {
 
           NamedJsonSecret expected = (NamedJsonSecret) secretDataService.findMostRecent(secretName);
 
-          MockHttpServletResponse result = response.andExpect(status().isOk()).andReturn().getResponse();
-          SecretView secretView = JsonHelper.deserialize(result.getContentAsString(), SecretView.class);
+          MockHttpServletResponse result = response.andExpect(status().isOk()).andReturn()
+              .getResponse();
+          SecretView secretView = JsonHelper
+              .deserialize(result.getContentAsString(), SecretView.class);
 
           assertThat(secretView.getUuid(), equalTo(expected.getUuid().toString()));
           assertThat(secretView.getType(), equalTo("json"));
-          assertThat(secretView.getVersionCreatedAt().getEpochSecond(), equalTo(expected.getVersionCreatedAt().getEpochSecond()));
+          assertThat(secretView.getVersionCreatedAt().getEpochSecond(),
+              equalTo(expected.getVersionCreatedAt().getEpochSecond()));
           assertThat(secretView.getValue(), equalTo(expected.getValue()));
         });
       });
@@ -113,6 +111,7 @@ public class SecretsControllerJsonSetTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+    }).when(auditLogService)
+        .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }

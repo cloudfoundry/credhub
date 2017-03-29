@@ -1,31 +1,5 @@
 package io.pivotal.security.config;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.secret.SecretsController;
-import io.pivotal.security.data.OperationAuditRecordDataService;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.service.DatabaseAuditLogService;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -48,13 +22,38 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.controller.v1.secret.SecretsController;
+import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.service.DatabaseAuditLogService;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import java.util.Arrays;
 import java.util.UUID;
-
 import javax.servlet.Filter;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService",
+    "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerAuditLogTest {
 
@@ -100,10 +99,12 @@ public class SecretsControllerAuditLogTest {
           mockMvc.perform(get(API_V1_DATA + "?name=foo")
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+              .header("Authorization", "Bearer "
+                  + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
               .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
 
-          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+              .forClass(OperationAuditRecord.class);
           verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
           OperationAuditRecord auditRecord = recordCaptor.getValue();
@@ -121,10 +122,12 @@ public class SecretsControllerAuditLogTest {
           mockMvc.perform(get(API_V1_DATA + "/foo-id")
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+              .header("Authorization", "Bearer "
+                  + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
               .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
 
-          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+              .forClass(OperationAuditRecord.class);
           verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
           OperationAuditRecord auditRecord = recordCaptor.getValue();
@@ -147,7 +150,8 @@ public class SecretsControllerAuditLogTest {
         MockHttpServletRequestBuilder set = put(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization",
+                "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .content("{\"type\":\"value\",\"name\":\"foo\",\"value\":\"secret\"}")
             .with(request -> {
@@ -160,7 +164,8 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential update operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(OperationAuditRecord.class);
 
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
@@ -177,7 +182,8 @@ public class SecretsControllerAuditLogTest {
     describe("when a request to generate a credential is served", () -> {
       beforeEach(() -> {
         when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
-          NamedPasswordSecret namedPasswordSecret = invocation.getArgumentAt(0, NamedPasswordSecret.class);
+          NamedPasswordSecret namedPasswordSecret = invocation
+              .getArgumentAt(0, NamedPasswordSecret.class);
           namedPasswordSecret.setUuid(UUID.randomUUID());
           return namedPasswordSecret;
         });
@@ -185,7 +191,8 @@ public class SecretsControllerAuditLogTest {
         MockHttpServletRequestBuilder post = post(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization",
+                "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .content("{\"type\":\"password\",\"name\":\"foo\"}")
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .with(request -> {
@@ -198,7 +205,8 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_update operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(OperationAuditRecord.class);
 
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
@@ -217,7 +225,8 @@ public class SecretsControllerAuditLogTest {
         MockHttpServletRequestBuilder delete = delete(API_V1_DATA + "?name=foo")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization",
+                "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .with(request -> {
               request.setRemoteAddr("12345");
@@ -229,7 +238,8 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_delete operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(OperationAuditRecord.class);
 
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
@@ -248,7 +258,8 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_access operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(OperationAuditRecord.class);
 
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
@@ -272,7 +283,8 @@ public class SecretsControllerAuditLogTest {
         MockHttpServletRequestBuilder set = put(API_V1_DATA)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+            .header("Authorization",
+                "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .header("X-Forwarded-For", "3.3.3.3")
             .content("{\"type\":\"value\",\"name\":\"foo\",\"value\":\"password\"}")
@@ -286,7 +298,8 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs all X-Forwarded-For values", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(OperationAuditRecord.class);
 
         verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
@@ -301,7 +314,8 @@ public class SecretsControllerAuditLogTest {
     MockHttpServletRequestBuilder get = get(API_V1_DATA + "?name=" + credentialName)
         .accept(MediaType.APPLICATION_JSON)
         .contentType(MediaType.APPLICATION_JSON)
-        .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
+        .header("Authorization",
+            "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT)
         .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
         .with(request -> {
           request.setRemoteAddr("12345");

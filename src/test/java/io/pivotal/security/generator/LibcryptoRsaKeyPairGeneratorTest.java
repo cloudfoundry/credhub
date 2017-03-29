@@ -1,17 +1,15 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.jna.libcrypto.CryptoWrapper;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.jna.libcrypto.CryptoWrapper;
 import java.security.KeyPair;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class LibcryptoRsaKeyPairGeneratorTest {

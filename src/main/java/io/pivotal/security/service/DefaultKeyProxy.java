@@ -1,21 +1,21 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.entity.EncryptionKeyCanary;
-import io.pivotal.security.exceptions.IncorrectKeyException;
-
-import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
 import static java.util.Collections.unmodifiableList;
 
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.exceptions.IncorrectKeyException;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 class DefaultKeyProxy implements KeyProxy {
+
   private final List<Byte> salt;
   private final EncryptionService encryptionService;
   private Key key;
@@ -39,18 +39,13 @@ class DefaultKeyProxy implements KeyProxy {
     return matchesCanary(key, canary);
   }
 
-  @Override
-  public List<Byte> getSalt() {
-    return salt;
-  }
-
   protected boolean matchesCanary(Key key, EncryptionKeyCanary canary) {
     String plaintext;
 
     try {
       plaintext = encryptionService.decrypt(key, canary.getEncryptedValue(), canary.getNonce());
-      return Arrays.equals(CANARY_VALUE.getBytes(), plaintext.getBytes()) ||
-          Arrays.equals(DEPRECATED_CANARY_VALUE.getBytes(), plaintext.getBytes());
+      return Arrays.equals(CANARY_VALUE.getBytes(), plaintext.getBytes())
+          || Arrays.equals(DEPRECATED_CANARY_VALUE.getBytes(), plaintext.getBytes());
     } catch (AEADBadTagException e) {
       // internal key was wrong
     } catch (IllegalBlockSizeException e) {
@@ -70,5 +65,10 @@ class DefaultKeyProxy implements KeyProxy {
     }
 
     return false;
+  }
+
+  @Override
+  public List<Byte> getSalt() {
+    return salt;
   }
 }

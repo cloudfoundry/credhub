@@ -1,10 +1,10 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.List;
 
 public class FindCredentialResults {
+
   private List<SecretView> credentials;
 
   @SuppressWarnings("rawtypes")

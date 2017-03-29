@@ -2,15 +2,15 @@ package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.OperationAuditRecordRepository;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class FakeOperationAuditRecordRepository implements OperationAuditRecordRepository {
+
   private final FakeTransactionManager transactionManager;
   private List<OperationAuditRecord> auditRecords;
 
@@ -48,17 +48,34 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
       );
       auditRecords.add(copy);
     });
-    if (shouldThrow) throw new RuntimeException(getClass().getSimpleName());
+    if (shouldThrow) {
+      throw new RuntimeException(getClass().getSimpleName());
+    }
     return entity;
   }
 
   @Override
-  public OperationAuditRecord findOne(Long aLong) {
+  public <S extends OperationAuditRecord> List<S> save(Iterable<S> entities) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public boolean exists(Long aLong) {
+  public OperationAuditRecord findOne(Long along) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <S extends OperationAuditRecord> S findOne(Example<S> example) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public boolean exists(Long along) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <S extends OperationAuditRecord> boolean exists(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
@@ -83,12 +100,32 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
+  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example, Sort sort) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public <S extends OperationAuditRecord> Page<S> findAll(Example<S> example, Pageable pageable) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public long count() {
     return auditRecords.size();
   }
 
   @Override
-  public void delete(Long aLong) {
+  public <S extends OperationAuditRecord> long count(Example<S> example) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void delete(Long along) {
     throw new UnsupportedOperationException();
   }
 
@@ -123,7 +160,7 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
-  public OperationAuditRecord getOne(Long aLong) {
+  public OperationAuditRecord getOne(Long along) {
     throw new UnsupportedOperationException();
   }
 
@@ -132,42 +169,7 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
     throw new UnsupportedOperationException();
   }
 
-  @Override
-  public <S extends OperationAuditRecord> List<S> save(Iterable<S> entities) {
-    throw new UnsupportedOperationException();
-  }
-
   public void failOnSave() {
     shouldThrow = true;
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example, Sort sort) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> S findOne(Example<S> example) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> Page<S> findAll(Example<S> example, Pageable pageable) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> long count(Example<S> example) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public <S extends OperationAuditRecord> boolean exists(Example<S> example) {
-    throw new UnsupportedOperationException();
   }
 }

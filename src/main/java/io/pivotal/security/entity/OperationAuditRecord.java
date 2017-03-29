@@ -1,8 +1,7 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import java.time.Instant;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -10,13 +9,14 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.time.Instant;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @SuppressWarnings("unused")
 @Entity
 @Table(name = "OperationAuditRecord")
 @EntityListeners(AuditingEntityListener.class)
 public class OperationAuditRecord {
+
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
   private long id;
@@ -37,6 +37,7 @@ public class OperationAuditRecord {
   private String userId;
   private String userName;
   private String requesterIp;
+  @SuppressWarnings("checkstyle:membername")
   private String xForwardedFor;
   private String clientId;
   private String scope;
@@ -48,27 +49,28 @@ public class OperationAuditRecord {
   public OperationAuditRecord() {
   }
 
+  @SuppressWarnings("checkstyle:parametername")
   public OperationAuditRecord(
-    String authMethod,
-    Instant now,
-    String credentialName,
-    String operation,
-    String userId,
-    String userName,
-    String uaaUrl,
-    long authValidFrom,
-    long authValidUntil,
-    String hostName,
-    String method,
-    String path,
-    String queryParameters,
-    int statusCode,
-    String requesterIp,
-    String xForwardedFor,
-    String clientId,
-    String scope,
-    String grantType,
-    boolean success
+      String authMethod,
+      Instant now,
+      String credentialName,
+      String operation,
+      String userId,
+      String userName,
+      String uaaUrl,
+      long authValidFrom,
+      long authValidUntil,
+      String hostName,
+      String method,
+      String path,
+      String queryParameters,
+      int statusCode,
+      String requesterIp,
+      String xForwardedFor,
+      String clientId,
+      String scope,
+      String grantType,
+      boolean success
   ) {
     this.authMethod = authMethod;
     this.now = now;
@@ -80,7 +82,7 @@ public class OperationAuditRecord {
     this.authValidFrom = authValidFrom;
     this.authValidUntil = authValidUntil;
     this.hostName = hostName;
-    this.method =method;
+    this.method = method;
     this.path = path;
     this.queryParameters = queryParameters;
     this.statusCode = statusCode;
@@ -98,6 +100,10 @@ public class OperationAuditRecord {
 
   public long getId() {
     return id;
+  }
+
+  public void setId(long id) {
+    this.id = id;
   }
 
   public String getHostName() {
@@ -174,11 +180,6 @@ public class OperationAuditRecord {
 
   public String getCredentialName() {
     return credentialName;
-  }
-
-
-  public void setId(long id) {
-    this.id = id;
   }
 
 }

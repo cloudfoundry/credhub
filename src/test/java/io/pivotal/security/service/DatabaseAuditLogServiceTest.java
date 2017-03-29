@@ -1,32 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
-import io.pivotal.security.data.OperationAuditRecordDataService;
-import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.fake.FakeSecretRepository;
-import io.pivotal.security.fake.FakeTransactionManager;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -45,10 +18,38 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
+import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.fake.FakeSecretRepository;
+import io.pivotal.security.fake.FakeTransactionManager;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.test.context.ActiveProfiles;
+
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test",
+    "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
 public class DatabaseAuditLogServiceTest {
+
   DatabaseAuditLogService subject;
 
   @MockBean
@@ -83,9 +84,11 @@ public class DatabaseAuditLogServiceTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      OAuth2Authentication authentication = tokenStore.readAuthentication(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
+      OAuth2Authentication authentication = tokenStore.readAuthentication(
+          NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
       OAuth2AuthenticationDetails mockDetails = mock(OAuth2AuthenticationDetails.class);
-      when(mockDetails.getTokenValue()).thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
+      when(mockDetails.getTokenValue())
+          .thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
       authentication.setDetails(mockDetails);
 
       auditRecordBuilder = new AuditRecordBuilder(
@@ -141,7 +144,8 @@ public class DatabaseAuditLogServiceTest {
 
         describe("when the database audit fails", () -> {
           beforeEach(() -> {
-            doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
+            doThrow(new RuntimeException()).when(operationAuditRecordDataService)
+                .save(any(OperationAuditRecord.class));
 
             responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               NamedValueSecretData entity = new NamedValueSecretData("keyName");
@@ -157,7 +161,9 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
+                "The request could not be completed. Please contact your system administrator to"
+                    + " resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
@@ -201,7 +207,8 @@ public class DatabaseAuditLogServiceTest {
 
         describe("when the database audit fails", () -> {
           beforeEach(() -> {
-            doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
+            doThrow(new RuntimeException()).when(operationAuditRecordDataService)
+                .save(any(OperationAuditRecord.class));
 
             responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               NamedValueSecretData entity = new NamedValueSecretData("keyName");
@@ -217,7 +224,9 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500 and original error message", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
+                "The request could not be completed. Please contact your system administrator "
+                    + "to resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
@@ -253,7 +262,8 @@ public class DatabaseAuditLogServiceTest {
 
         describe("when the database audit fails", () -> {
           beforeEach(() -> {
-            doThrow(new RuntimeException()).when(operationAuditRecordDataService).save(any(OperationAuditRecord.class));
+            doThrow(new RuntimeException()).when(operationAuditRecordDataService)
+                .save(any(OperationAuditRecord.class));
 
             responseEntity = subject.performWithAuditing(auditRecordBuilder, () -> {
               NamedValueSecretData entity = new NamedValueSecretData("keyName");
@@ -270,7 +280,9 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
+                "The request could not be completed. Please contact your system administrator"
+                    + " to resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
@@ -296,7 +308,9 @@ public class DatabaseAuditLogServiceTest {
 
           it("returns 500", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo("The request could not be completed. Please contact your system administrator to resolve this issue.")));
+            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
+                "The request could not be completed. Please contact your system administrator"
+                    + " to resolve this issue.")));
           });
 
           it("should not write to the CEF log", () -> {
@@ -308,7 +322,8 @@ public class DatabaseAuditLogServiceTest {
   }
 
   private void checkAuditRecord(boolean successFlag, HttpStatus status) {
-    ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor.forClass(OperationAuditRecord.class);
+    ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
+        .forClass(OperationAuditRecord.class);
     verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
     OperationAuditRecord actual = recordCaptor.getValue();
@@ -326,5 +341,6 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.getScope(), equalTo("credhub.write,credhub.read"));
     assertThat(actual.getGrantType(), equalTo("password"));
     assertThat(actual.getMethod(), equalTo("GET"));
-    assertThat(actual.getStatusCode(), equalTo(status.value()));  }
+    assertThat(actual.getStatusCode(), equalTo(status.value()));
+  }
 }

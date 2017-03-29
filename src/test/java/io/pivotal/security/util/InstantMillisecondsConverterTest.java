@@ -1,16 +1,16 @@
 package io.pivotal.security.util;
 
-import com.greghaskins.spectrum.Spectrum;
-import org.junit.runner.RunWith;
-
-import java.time.Instant;
-
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.greghaskins.spectrum.Spectrum;
+import java.time.Instant;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class InstantMillisecondsConverterTest {
+
   {
     InstantMillisecondsConverter subject = new InstantMillisecondsConverter();
 
@@ -20,7 +20,8 @@ public class InstantMillisecondsConverterTest {
     });
 
     it("can convert a database representation to an Instant", () -> {
-      assertThat(subject.convertToEntityAttribute(234234321L), equalTo(Instant.ofEpochMilli(234234321L)));
+      assertThat(subject.convertToEntityAttribute(234234321L),
+          equalTo(Instant.ofEpochMilli(234234321L)));
     });
   }
 }

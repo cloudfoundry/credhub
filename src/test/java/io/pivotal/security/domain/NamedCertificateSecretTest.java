@@ -1,18 +1,5 @@
 package io.pivotal.security.domain;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.request.CertificateSetRequestFields;
-import io.pivotal.security.service.Encryption;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -25,10 +12,23 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.request.CertificateSetRequestFields;
+import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.UUID;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedCertificateSecretTest {
+
   private NamedCertificateSecret subject;
 
   private Encryptor encryptor;
@@ -44,7 +44,8 @@ public class NamedCertificateSecretTest {
       encryptedValue = "fake-encrypted-value".getBytes();
       nonce = "fake-nonce".getBytes();
       canaryUuid = UUID.randomUUID();
-      when(encryptor.encrypt("my-priv")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+      when(encryptor.encrypt("my-priv"))
+          .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-priv");
 
       subject = new NamedCertificateSecret("/Foo")
@@ -118,8 +119,10 @@ public class NamedCertificateSecretTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new private key")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new private key");
+        when(encryptor.encrypt("new private key"))
+            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn("new private key");
 
         subject = new NamedCertificateSecret("/existingName");
         subject.setEncryptor(encryptor);
@@ -127,8 +130,11 @@ public class NamedCertificateSecretTest {
       });
 
       it("copies name from existing", () -> {
-        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "certificate", "ca");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(subject, "anything I AM IGNORED", fields, encryptor, new ArrayList<>());
+        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
+            "certificate", "ca");
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret
+            .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
+                new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
@@ -138,8 +144,10 @@ public class NamedCertificateSecretTest {
       });
 
       it("creates new if no existing", () -> {
-        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key", "certificate", "ca");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret.createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
+        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
+            "certificate", "ca");
+        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret
+            .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));

@@ -1,15 +1,17 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import org.apache.commons.lang3.StringUtils;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+
+import com.greghaskins.spectrum.Spectrum;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class CredHubCharacterDataTest {
+
   {
     describe("#Special", () -> {
       it("includes only special characters", () -> {

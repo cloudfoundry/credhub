@@ -1,5 +1,17 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
@@ -19,38 +31,21 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerSshAndRsaSetTest {
 
+  private final String secretName = "/my-namespace/secretForSetTest/secret-name";
   @Autowired
   WebApplicationContext webApplicationContext;
-
   @SpyBean
   SecretDataService secretDataService;
-
   private MockMvc mockMvc;
-
-  private final String secretName = "/my-namespace/secretForSetTest/secret-name";
-
   private ResultActions response;
 
   {
     wireAndUnwire(this);
-
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
@@ -66,11 +61,10 @@ public class SecretsControllerSshAndRsaSetTest {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "  \"type\":\"ssh\"," +
-                  "  \"name\":\"" + secretName + "\"," +
-                  "  \"value\":" + obj.toString() +
-                  "}");
+              .content("{"
+                  + "  \"type\":\"ssh\","
+                  + "  \"name\":\"" + secretName + "\",  \"value\":"
+                  + obj.toString() + "}");
 
           response = mockMvc.perform(put);
         });
@@ -83,7 +77,8 @@ public class SecretsControllerSshAndRsaSetTest {
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("ssh"))
-              .andExpect(jsonPath("$.value.public_key").value(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT))
+              .andExpect(jsonPath("$.value.public_key")
+                  .value(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT))
               .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_4096))
               .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
         });
@@ -94,14 +89,15 @@ public class SecretsControllerSshAndRsaSetTest {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "  \"type\":\"ssh\"," +
-                  "  \"name\":\"" + secretName + "\"," +
-                  "  \"value\": {" +
-                  "    \"foo\":\"bar\"" +
-                  "  }" +
-                  "}");
-          final String errorMessage = "The request includes an unrecognized parameter 'foo'. Please update or remove this parameter and retry your request.";
+              .content("{"
+                  + "  \"type\":\"ssh\","
+                  + "  \"name\":\"" + secretName + "\","
+                  + "  \"value\": {"
+                  + "    \"foo\":\"bar\""
+                  + "  }"
+                  + "}");
+          final String errorMessage = "The request includes an unrecognized parameter 'foo'."
+              + " Please update or remove this parameter and retry your request.";
           mockMvc.perform(put)
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.error").value(errorMessage));
@@ -113,12 +109,13 @@ public class SecretsControllerSshAndRsaSetTest {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "  \"type\":\"ssh\"," +
-                  "  \"name\":\"" + secretName + "\"," +
-                  "  \"value\": { \"public_key\":\"\", \"private_key\":\"\" }" +
-                  "}");
-          final String errorMessage = "At least one key value must be set. Please validate your input and retry your request.";
+              .content("{"
+                  + "  \"type\":\"ssh\","
+                  + "  \"name\":\"" + secretName + "\", "
+                  + " \"value\": { \"public_key\":\"\", \"private_key\":\"\" }"
+                  + "}");
+          final String errorMessage = "At least one key value must be set."
+              + " Please validate your input and retry your request.";
           mockMvc.perform(put)
               .andExpect(status().isBadRequest())
               .andExpect(jsonPath("$.error").value(errorMessage));
@@ -134,13 +131,13 @@ public class SecretsControllerSshAndRsaSetTest {
           obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{" +
-              "  \"type\":\"rsa\"," +
-              "  \"name\":\"" + secretName + "\"," +
-              "  \"value\":" + obj.toString() +
-              "}");
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{"
+                  + "  \"type\":\"rsa\","
+                  + "  \"name\":\"" + secretName + "\","
+                  + "  \"value\":"
+                  + obj.toString() + "}");
 
           response = mockMvc.perform(put);
         });
@@ -151,11 +148,11 @@ public class SecretsControllerSshAndRsaSetTest {
           assertThat(expected.getPrivateKey(), equalTo(TestConstants.PRIVATE_KEY_4096));
 
           response.andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.type").value("rsa"))
-            .andExpect(jsonPath("$.value.public_key").value(TestConstants.RSA_PUBLIC_KEY_4096))
-            .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_4096))
-            .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("rsa"))
+              .andExpect(jsonPath("$.value.public_key").value(TestConstants.RSA_PUBLIC_KEY_4096))
+              .andExpect(jsonPath("$.value.private_key").value(TestConstants.PRIVATE_KEY_4096))
+              .andExpect(jsonPath("$.id").value(expected.getUuid().toString()));
         });
       });
     });

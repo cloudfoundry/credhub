@@ -1,8 +1,5 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
-import org.junit.runner.RunWith;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -17,17 +14,20 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import com.greghaskins.spectrum.Spectrum;
 import java.util.List;
 import java.util.Set;
-
 import javax.validation.ConstraintViolation;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class AccessEntryRequestTest {
+
   {
     describe("validation", () -> {
       it("should allow good JSON", () -> {
-        List<AccessControlEntry> entryList = newArrayList(new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
+        List<AccessControlEntry> entryList = newArrayList(
+            new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
         AccessEntryRequest original = new AccessEntryRequest("test-name", entryList);
         byte[] json = serialize(original);
         AccessEntryRequest actual = deserialize(json, AccessEntryRequest.class);
@@ -43,7 +43,8 @@ public class AccessEntryRequestTest {
 
       describe("#credential_name", () -> {
         it("should validate that credential_name is not null", () -> {
-          List<AccessControlEntry> entryList = newArrayList(new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
+          List<AccessControlEntry> entryList = newArrayList(
+              new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
           AccessEntryRequest original = new AccessEntryRequest(null, entryList);
           Set<ConstraintViolation<AccessEntryRequest>> violations = validate(original);
 
@@ -52,7 +53,8 @@ public class AccessEntryRequestTest {
         });
 
         it("should validate that credential_name is not empty", () -> {
-          List<AccessControlEntry> entryList = newArrayList(new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
+          List<AccessControlEntry> entryList = newArrayList(
+              new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
           AccessEntryRequest original = new AccessEntryRequest("", entryList);
           Set<ConstraintViolation<AccessEntryRequest>> violations = validate(original);
 

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EncryptionKeyRotator {
+
   private final SecretDataService secretDataService;
   private final Logger logger;
 
@@ -25,7 +26,8 @@ public class EncryptionKeyRotator {
 
     final long startingNotRotatedRecordCount = secretDataService.countAllNotEncryptedByActiveKey();
 
-    Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService.findEncryptedWithAvailableInactiveKey();
+    Slice<NamedSecret> secretsEncryptedByOldKey = secretDataService
+        .findEncryptedWithAvailableInactiveKey();
     while (secretsEncryptedByOldKey.hasContent()) {
       for (NamedSecret secret : secretsEncryptedByOldKey.getContent()) {
         try {
@@ -48,7 +50,8 @@ public class EncryptionKeyRotator {
     } else {
       logger.info("Finished encryption key rotation in " + duration + " milliseconds. Details:");
       logger.info("  Successfully rotated " + rotatedRecordCount + " item(s)");
-      logger.info("  Skipped " + endingNotRotatedRecordCount + " item(s) due to missing master encryption key(s).");
+      logger.info("  Skipped " + endingNotRotatedRecordCount
+          + " item(s) due to missing master encryption key(s).");
     }
   }
 }

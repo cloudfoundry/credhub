@@ -1,21 +1,21 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.view.SecretKind;
-import org.apache.commons.lang3.StringUtils;
-
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
+import org.apache.commons.lang3.StringUtils;
 
 @Entity
 @DiscriminatorValue("cert")
 @SecondaryTable(
-  name = NamedCertificateSecretData.TABLE_NAME,
-  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+    name = NamedCertificateSecretData.TABLE_NAME,
+    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 public class NamedCertificateSecretData extends NamedSecretData<NamedCertificateSecretData> {
+
   public static final String SECRET_TYPE = "certificate";
   static final String TABLE_NAME = "CertificateSecret";
 
@@ -53,13 +53,13 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
     return this;
   }
 
+  public String getCaName() {
+    return caName;
+  }
+
   public NamedCertificateSecretData setCaName(String caName) {
     this.caName = !StringUtils.isEmpty(caName) ? StringUtils.prependIfMissing(caName, "/") : caName;
     return this;
-  }
-
-  public String getCaName() {
-    return caName;
   }
 
   @Override

@@ -1,5 +1,26 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
@@ -9,6 +30,10 @@ import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.SecretView;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -23,54 +48,25 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import static com.greghaskins.spectrum.Spectrum.*;
-import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerFindTest {
 
+  private final String secretName = "/my-namespace/subTree/secret-name";
   @Autowired
   WebApplicationContext webApplicationContext;
-
   @Autowired
   SecretsController subject;
-
   @SpyBean
   FakeAuditLogService auditLogService;
-
   @SpyBean
   SecretDataService secretDataService;
-
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
-
   private MockMvc mockMvc;
-
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-
   private Consumer<Long> fakeTimeSetter;
-
-  private final String secretName = "/my-namespace/subTree/secret-name";
-
   private ResultActions response;
 
   {
@@ -86,7 +82,7 @@ public class SecretsControllerFindTest {
     });
 
     describe("finding secret", () -> {
-      describe("finding credentials by name-like, i.e. partial names, case-insensitively", () -> {
+      describe("finding credentials by name-like, i.ep. partial names, case-insensitively", () -> {
         describe("when search term does not include a leading slash", () -> {
           beforeEach(() -> {
             String substring = secretName.substring(4).toUpperCase();
@@ -106,14 +102,18 @@ public class SecretsControllerFindTest {
             this.response.andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.credentials[0].name").value(secretName))
-                .andExpect(jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
+                .andExpect(
+                    jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
           });
 
           it("persists an audit entry", () -> {
-            ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
-            verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+            ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor
+                .forClass(AuditRecordBuilder.class);
+            verify(auditLogService)
+                .performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
-            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
+            assertThat(auditRecordParamsCaptor.getValue().getOperationCode(),
+                equalTo(CREDENTIAL_FIND));
           });
         });
       });
@@ -139,21 +139,24 @@ public class SecretsControllerFindTest {
           this.response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.credentials[0].name").value(secretName))
-              .andExpect(jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
+              .andExpect(
+                  jsonPath("$.credentials[0].version_created_at").value(frozenTime.toString()));
         });
 
-        it("should only find paths that start with the specified substring case-independently", () -> {
-          final String path = "namespace";
+        it("should only find paths that start with the specified substring case-independently",
+            () -> {
+              final String path = "namespace";
 
-          assertTrue(secretName.contains(path));
+              assertTrue(secretName.contains(path));
 
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path.toUpperCase())
-              .accept(APPLICATION_JSON);
+              final MockHttpServletRequestBuilder get = get(
+                  "/api/v1/data?path=" + path.toUpperCase())
+                  .accept(APPLICATION_JSON);
 
-          mockMvc.perform(get).andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.credentials", hasSize(0)));
-        });
+              mockMvc.perform(get).andExpect(status().isOk())
+                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                  .andExpect(jsonPath("$.credentials", hasSize(0)));
+            });
 
         it("should return all children which are prefixed with the path case-independently", () -> {
           final String path = "/my-namespace";
@@ -174,24 +177,29 @@ public class SecretsControllerFindTest {
               .andExpect(jsonPath("$.credentials", hasSize(1)));
         });
 
-        it("should not findSecretsUsingPath paths which start an existing path but matches incompletely", () -> {
-          final String path = "/my-namespace/subTr";
+        it("should not findSecretsUsingPath paths which"
+                + " start an existing path but matches incompletely",
+            () -> {
+              final String path = "/my-namespace/subTr";
 
-          assertTrue(secretName.startsWith(path));
+              assertTrue(secretName.startsWith(path));
 
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
-              .accept(APPLICATION_JSON);
+              final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+                  .accept(APPLICATION_JSON);
 
-          mockMvc.perform(get).andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.credentials", hasSize(0)));
-        });
+              mockMvc.perform(get).andExpect(status().isOk())
+                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                  .andExpect(jsonPath("$.credentials", hasSize(0)));
+            });
 
         it("persists an audit entry", () -> {
-          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor.forClass(AuditRecordBuilder.class);
-          verify(auditLogService).performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
+          ArgumentCaptor<AuditRecordBuilder> auditRecordParamsCaptor = ArgumentCaptor
+              .forClass(AuditRecordBuilder.class);
+          verify(auditLogService)
+              .performWithAuditing(auditRecordParamsCaptor.capture(), any(Supplier.class));
 
-          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(), equalTo(CREDENTIAL_FIND));
+          assertThat(auditRecordParamsCaptor.getValue().getOperationCode(),
+              equalTo(CREDENTIAL_FIND));
         });
       });
 
@@ -221,6 +229,7 @@ public class SecretsControllerFindTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+    }).when(auditLogService)
+        .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }

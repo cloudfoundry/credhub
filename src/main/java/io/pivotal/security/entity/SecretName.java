@@ -1,8 +1,9 @@
 package io.pivotal.security.entity;
 
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.GenericGenerator;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
+import java.util.List;
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,14 +11,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import java.util.List;
-import java.util.UUID;
-
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "SecretName")
 public class SecretName {
+
   @Id
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
   @GeneratedValue(generator = "uuid2")

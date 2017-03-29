@@ -1,19 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.InvalidJsonException;
-import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedJsonSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.assertj.core.util.Maps;
-import org.junit.runner.RunWith;
-
-import java.io.InvalidObjectException;
-import java.util.Map;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -25,8 +11,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.InvalidJsonException;
+import io.pivotal.security.config.JsonContextFactory;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.NamedJsonSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import java.io.InvalidObjectException;
+import java.util.Map;
+import org.assertj.core.util.Maps;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class JsonInterpolationServiceTest {
+
   public JsonInterpolationService subject;
 
   {
@@ -37,31 +37,31 @@ public class JsonInterpolationServiceTest {
     describe("#interpolateCredhubReferences", () -> {
       describe("when properly formatted credentials section is found", () -> {
         it("should replace the credhub-ref element with something else", () -> {
-          String inputJson = "{" +
-              "  \"VCAP_SERVICES\": {" +
-              "    \"p-config-server\": [" +
-              "      {" +
-              "        \"credentials\": {" +
-              "          \"credhub-ref\": \"((/cred1))\"" +
-              "        }," +
-              "        \"label\": \"p-config-server\"" +
-              "      }," +
-              "      {" +
-              "        \"credentials\": {" +
-              "          \"credhub-ref\": \"((/cred2))\"" +
-              "        }" +
-              "      }" +
-              "    ]," +
-              "    \"p-something-else\": [" +
-              "      {" +
-              "        \"credentials\": {" +
-              "          \"credhub-ref\": \"((/cred3))\"" +
-              "        }," +
-              "        \"something\": [\"p-config-server\"]" +
-              "      }" +
-              "    ]" +
-              "  }" +
-              "}";
+          String inputJson = "{"
+              + "  \"VCAP_SERVICES\": {"
+              + "    \"pp-config-server\": ["
+              + "      {"
+              + "        \"credentials\": {"
+              + "          \"credhub-ref\": \"((/cred1))\""
+              + "        },"
+              + "        \"label\": \"pp-config-server\""
+              + "      },"
+              + "      {"
+              + "        \"credentials\": {"
+              + "          \"credhub-ref\": \"((/cred2))\""
+              + "        }"
+              + "      }"
+              + "    ],"
+              + "    \"pp-something-else\": ["
+              + "      {"
+              + "        \"credentials\": {"
+              + "          \"credhub-ref\": \"((/cred3))\""
+              + "        },"
+              + "        \"something\": [\"pp-config-server\"]"
+              + "      }"
+              + "    ]"
+              + "  }"
+              + "}";
 
           NamedJsonSecret jsonSecret1 = mock(NamedJsonSecret.class);
           doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonSecret1).getValue();
@@ -77,22 +77,26 @@ public class JsonInterpolationServiceTest {
           SecretDataService mockSecretDataService = mock(SecretDataService.class);
 
           doReturn(
-            jsonSecret1
+              jsonSecret1
           ).when(mockSecretDataService).findMostRecent("/cred1");
 
           doReturn(
-            jsonSecret2
+              jsonSecret2
           ).when(mockSecretDataService).findMostRecent("/cred2");
 
           doReturn(
-            jsonSecret3
+              jsonSecret3
           ).when(mockSecretDataService).findMostRecent("/cred3");
 
-          DocumentContext response = subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
+          DocumentContext response = subject
+              .interpolateCredhubReferences(inputJson, mockSecretDataService);
 
-          Map<String, Object> firstCredentialsBlock = response.read("$.VCAP_SERVICES.p-config-server[0].credentials");
-          Map<String, Object> secondCredentialsBlock = response.read("$.VCAP_SERVICES.p-config-server[1].credentials");
-          Map<String, Object> secondServiceCredentials = response.read("$.VCAP_SERVICES.p-something-else[0].credentials");
+          Map<String, Object> firstCredentialsBlock = response
+              .read("$.VCAP_SERVICES.pp-config-server[0].credentials");
+          Map<String, Object> secondCredentialsBlock = response
+              .read("$.VCAP_SERVICES.pp-config-server[1].credentials");
+          Map<String, Object> secondServiceCredentials = response
+              .read("$.VCAP_SERVICES.pp-something-else[0].credentials");
 
           assertThat(firstCredentialsBlock.get("credhub-ref"), nullValue());
           assertThat(firstCredentialsBlock.size(), equalTo(1));
@@ -108,68 +112,71 @@ public class JsonInterpolationServiceTest {
           assertThat(secondServiceCredentials.get("secret3-2"), equalTo("secret3-2-value"));
         });
 
-        itThrows("an exception when credential is not NamedJSONSecret", ParameterizedValidationException.class, () -> {
-          String inputJson = "{" +
-            "  \"VCAP_SERVICES\": {" +
-            "    \"p-config-server\": [" +
-            "      {" +
-            "        \"credentials\": {" +
-            "          \"credhub-ref\": \"((/password_cred))\"" +
-            "        }," +
-            "        \"label\": \"p-config-server\"" +
-            "      }" +
-            "    ]" +
-            "  }" +
-            "}";
+        itThrows("an exception when credential is not NamedJSONSecret",
+            ParameterizedValidationException.class, () -> {
+              String inputJson = "{"
+                  + "  \"VCAP_SERVICES\": {"
+                  + "    \"pp-config-server\": ["
+                  + "      {"
+                  + "        \"credentials\": {"
+                  + "          \"credhub-ref\": \"((/password_cred))\""
+                  + "        },"
+                  + "        \"label\": \"pp-config-server\""
+                  + "      }"
+                  + "    ]"
+                  + "  }"
+                  + "}";
 
-          NamedPasswordSecret passwordSecret = mock(NamedPasswordSecret.class);
+              NamedPasswordSecret passwordSecret = mock(NamedPasswordSecret.class);
 
-          SecretDataService mockSecretDataService = mock(SecretDataService.class);
+              SecretDataService mockSecretDataService = mock(SecretDataService.class);
 
-          doReturn(
-            passwordSecret
-          ).when(mockSecretDataService).findMostRecent("/password_cred");
+              doReturn(
+                  passwordSecret
+              ).when(mockSecretDataService).findMostRecent("/password_cred");
 
-          subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
-        });
+              subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
+            });
 
-        itThrows("an exception when credential is not accessible in datastore", InvalidObjectException.class, () -> {
-          String inputJson = "{" +
-            "  \"VCAP_SERVICES\": {" +
-            "    \"p-config-server\": [" +
-            "      {" +
-            "        \"credentials\": {" +
-            "          \"credhub-ref\": \"((/missing_cred))\"" +
-            "        }," +
-            "        \"label\": \"p-config-server\"" +
-            "      }" +
-            "    ]" +
-            "  }" +
-            "}";
+        itThrows("an exception when credential is not accessible in datastore",
+            InvalidObjectException.class, () -> {
+              String inputJson = "{"
+                  + "  \"VCAP_SERVICES\": {"
+                  + "    \"pp-config-server\": ["
+                  + "      {"
+                  + "        \"credentials\": {"
+                  + "          \"credhub-ref\": \"((/missing_cred))\""
+                  + "        },"
+                  + "        \"label\": \"pp-config-server\""
+                  + "      }"
+                  + "    ]"
+                  + "  }"
+                  + "}";
 
-          SecretDataService mockSecretDataService = mock(SecretDataService.class);
+              SecretDataService mockSecretDataService = mock(SecretDataService.class);
 
-          doReturn(
-            null
-          ).when(mockSecretDataService).findMostRecent("/missing_cred");
+              doReturn(
+                  null
+              ).when(mockSecretDataService).findMostRecent("/missing_cred");
 
-          subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
-        });
+              subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
+            });
       });
     });
     describe("when the services properties do not have credentials", () -> {
       it("is ignored", () -> {
-        String inputJsonString = "{" +
-            "  \"VCAP_SERVICES\": {" +
-            "    \"p-config-server\": [{" +
-            "      \"blah\": {" +
-            "        \"credhub-ref\": \"((/cred1))\"" +
-            "       }," +
-            "      \"label\": \"p-config-server\"" +
-            "    }]" +
-            "  }" +
-            "}";
-        DocumentContext response = subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        String inputJsonString = "{"
+            + "  \"VCAP_SERVICES\": {"
+            + "    \"pp-config-server\": [{"
+            + "      \"blah\": {"
+            + "        \"credhub-ref\": \"((/cred1))\""
+            + "       },"
+            + "      \"label\": \"pp-config-server\""
+            + "    }]"
+            + "  }"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -177,19 +184,20 @@ public class JsonInterpolationServiceTest {
 
     describe("when credentials is somewhere unexpected", () -> {
       it("is ignored", () -> {
-        String inputJsonString = "{" +
-            "  \"VCAP_SERVICES\": {" +
-            "    \"p-config-server\": [{" +
-            "      \"foo\": {" +
-            "        \"credentials\": {" +
-            "          \"credhub-ref\": \"((/cred1))\"" +
-            "         }" +
-            "       }," +
-            "      \"label\": \"p-config-server\"" +
-            "    }]" +
-            "  }" +
-            "}";
-        DocumentContext response = subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        String inputJsonString = "{"
+            + "  \"VCAP_SERVICES\": {"
+            + "    \"pp-config-server\": [{"
+            + "      \"foo\": {"
+            + "        \"credentials\": {"
+            + "          \"credhub-ref\": \"((/cred1))\""
+            + "         }"
+            + "       },"
+            + "      \"label\": \"pp-config-server\""
+            + "    }]"
+            + "  }"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -197,12 +205,13 @@ public class JsonInterpolationServiceTest {
 
     describe("when properties are not hashes", () -> {
       it("is ignored", () -> {
-        String inputJsonString = "{" +
-            "  \"VCAP_SERVICES\": {" +
-            "    \"p-config-server\": [\"what is this?\"]" +
-            "  }" +
-            "}";
-        DocumentContext response = subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        String inputJsonString = "{"
+            + "  \"VCAP_SERVICES\": {"
+            + "    \"pp-config-server\": [\"what is this?\"]"
+            + "  }"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -210,15 +219,16 @@ public class JsonInterpolationServiceTest {
 
     describe("credentials is not a hash", () -> {
       it("is ignored", () -> {
-        String inputJsonString = "{" +
-            "  \"VCAP_SERVICES\": {" +
-            "    \"p-config-server\": [{" +
-            "      \"credentials\": \"moose\"," +
-            "      \"label\": \"squirrel\"" +
-            "    }]" +
-            "  }" +
-            "}";
-        DocumentContext response = subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        String inputJsonString = "{"
+            + "  \"VCAP_SERVICES\": {"
+            + "    \"pp-config-server\": [{"
+            + "      \"credentials\": \"moose\","
+            + "      \"label\": \"squirrel\""
+            + "    }]"
+            + "  }"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -226,7 +236,8 @@ public class JsonInterpolationServiceTest {
 
     describe("when no properly formatted credentials section exists", () -> {
       it("is ignored", () -> {
-        DocumentContext response = subject.interpolateCredhubReferences("{}", mock(SecretDataService.class));
+        DocumentContext response = subject
+            .interpolateCredhubReferences("{}", mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse("{}")));
       });
@@ -234,12 +245,13 @@ public class JsonInterpolationServiceTest {
 
     describe("when no VCAP_SERVICES key is present", () -> {
       it("is ignored", () -> {
-        String inputJsonString = "{" +
-            "  \"credentials\":{" +
-            "    \"credhub-ref\":\"((/some/known/path))\"" +
-            "  }" +
-            "}";
-        DocumentContext response = subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        String inputJsonString = "{"
+            + "  \"credentials\":{"
+            + "    \"credhub-ref\":\"((/some/known/path))\""
+            + "  }"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -247,10 +259,11 @@ public class JsonInterpolationServiceTest {
 
     describe("when VCAP_SERVICES is not an object", () -> {
       it("is ignored", () -> {
-        String inputJsonString = "{" +
-            "  \"VCAP_SERVICES\":[]" +
-            "}";
-        DocumentContext response = subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        String inputJsonString = "{"
+            + "  \"VCAP_SERVICES\":[]"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -258,17 +271,18 @@ public class JsonInterpolationServiceTest {
 
     describe("when the services properties are not arrays", () -> {
       it("is ignored", () -> {
-        String inputJsonString = "{" +
-            "  \"VCAP_SERVICES\": {" +
-            "    \"p-config-server\": {" +
-            "      \"credentials\": {" +
-            "        \"credhub-ref\": \"((/cred1))\"" +
-            "       }," +
-            "      \"label\": \"p-config-server\"" +
-            "    }" +
-            "  }" +
-            "}";
-        DocumentContext response = subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        String inputJsonString = "{"
+            + "  \"VCAP_SERVICES\": {"
+            + "    \"pp-config-server\": {"
+            + "      \"credentials\": {"
+            + "        \"credhub-ref\": \"((/cred1))\""
+            + "       },"
+            + "      \"label\": \"pp-config-server\""
+            + "    }"
+            + "  }"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });

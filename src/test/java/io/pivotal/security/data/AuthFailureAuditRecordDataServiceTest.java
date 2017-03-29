@@ -1,15 +1,5 @@
 package io.pivotal.security.data;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.AuthFailureAuditRecord;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
@@ -18,22 +8,30 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import java.time.Instant;
 import java.util.List;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class AuthFailureAuditRecordDataServiceTest {
-  @Autowired
-  AuthFailureAuditRecordDataService subject;
-
-  @Autowired
-  JdbcTemplate jdbcTemplate;
 
   private final Instant frozenTime = Instant.ofEpochMilli(1400000000123L);
   private final long authValidFrom = frozenTime.toEpochMilli();
   private final long authValidUntil = authValidFrom + 10000;
+  @Autowired
+  AuthFailureAuditRecordDataService subject;
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
   {
     wireAndUnwire(this);
@@ -45,29 +43,30 @@ public class AuthFailureAuditRecordDataServiceTest {
 
         assertNotNull(record);
 
-        List<AuthFailureAuditRecord> records = jdbcTemplate.query("select * from auth_failure_audit_record", (rs, rowCount) -> {
-          AuthFailureAuditRecord r = new AuthFailureAuditRecord();
-          r.setId(rs.getLong("id"));
-          r.setFailureDescription(rs.getString("failure_description"));
-          r.setHostName(rs.getString("host_name"));
-          r.setNow(Instant.ofEpochMilli(rs.getLong("now")));
-          r.setOperation(rs.getString("operation"));
-          r.setPath(rs.getString("path"));
-          r.setRequesterIp(rs.getString("requester_ip"));
-          r.setAuthValidUntil(rs.getLong("auth_valid_until"));
-          r.setAuthValidFrom(rs.getLong("auth_valid_from"));
-          r.setUaaUrl(rs.getString("uaa_url"));
-          r.setUserId(rs.getString("user_id"));
-          r.setUserName(rs.getString("user_name"));
-          r.setXForwardedFor(rs.getString("x_forwarded_for"));
-          r.setScope(rs.getString("scope"));
-          r.setGrantType(rs.getString("grant_type"));
-          r.setClientId(rs.getString("client_id"));
-          r.setMethod(rs.getString("method"));
-          r.setStatusCode(rs.getInt("status_code"));
-          r.setQueryParameters(rs.getString("query_parameters"));
-          return r;
-        });
+        List<AuthFailureAuditRecord> records = jdbcTemplate
+            .query("select * from auth_failure_audit_record", (rs, rowCount) -> {
+              AuthFailureAuditRecord r = new AuthFailureAuditRecord();
+              r.setId(rs.getLong("id"));
+              r.setFailureDescription(rs.getString("failure_description"));
+              r.setHostName(rs.getString("host_name"));
+              r.setNow(Instant.ofEpochMilli(rs.getLong("now")));
+              r.setOperation(rs.getString("operation"));
+              r.setPath(rs.getString("path"));
+              r.setRequesterIp(rs.getString("requester_ip"));
+              r.setAuthValidUntil(rs.getLong("auth_valid_until"));
+              r.setAuthValidFrom(rs.getLong("auth_valid_from"));
+              r.setUaaUrl(rs.getString("uaa_url"));
+              r.setUserId(rs.getString("user_id"));
+              r.setUserName(rs.getString("user_name"));
+              r.setXForwardedFor(rs.getString("x_forwarded_for"));
+              r.setScope(rs.getString("scope"));
+              r.setGrantType(rs.getString("grant_type"));
+              r.setClientId(rs.getString("client_id"));
+              r.setMethod(rs.getString("method"));
+              r.setStatusCode(rs.getInt("status_code"));
+              r.setQueryParameters(rs.getString("query_parameters"));
+              return r;
+            });
 
         assertThat(records.size(), equalTo(1));
 

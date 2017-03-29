@@ -1,12 +1,12 @@
 package io.pivotal.security.validator;
 
-import org.apache.commons.lang3.StringUtils;
-
+import java.lang.reflect.Field;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.lang.reflect.Field;
+import org.apache.commons.lang3.StringUtils;
 
 public class RequireAnyOfValidator implements ConstraintValidator<RequireAnyOf, Object> {
+
   private String[] fields;
 
   @Override

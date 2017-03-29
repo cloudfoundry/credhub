@@ -1,9 +1,8 @@
 package io.pivotal.security.util;
 
+import java.time.Instant;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.stereotype.Component;
-
-import java.time.Instant;
 
 @Component
 public class InstantFactoryBean implements FactoryBean<Instant> {
@@ -12,7 +11,7 @@ public class InstantFactoryBean implements FactoryBean<Instant> {
   public Instant getObject() {
     try {
       return Instant.now();
-    } catch (Exception e){
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }

@@ -3,6 +3,7 @@ package io.pivotal.security.secret;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Certificate implements Secret {
+
   private final String caCertificate;
   private final String publicKeyCertificate;
   private final String privateKey;

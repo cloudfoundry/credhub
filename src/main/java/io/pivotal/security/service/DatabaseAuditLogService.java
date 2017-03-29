@@ -4,6 +4,8 @@ import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.view.ResponseError;
+import java.util.function.Supplier;
+import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -15,18 +17,16 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.function.Supplier;
-
-import javax.annotation.PostConstruct;
-
 @Service
 public class DatabaseAuditLogService implements AuditLogService {
+
   private final CurrentTimeProvider currentTimeProvider;
   private final ResourceServerTokenServices tokenServices;
   private final OperationAuditRecordDataService operationAuditRecordDataService;
   private final PlatformTransactionManager transactionManager;
   private final MessageSource messageSource;
   private final SecurityEventsLogService securityEventsLogService;
+  private MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   DatabaseAuditLogService(
@@ -45,17 +45,17 @@ public class DatabaseAuditLogService implements AuditLogService {
     this.securityEventsLogService = securityEventsLogService;
   }
 
-  private MessageSourceAccessor messageSourceAccessor;
-
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
   @Override
-  public ResponseEntity<?> performWithAuditing(AuditRecordBuilder auditRecordBuilder, Supplier<ResponseEntity<?>> action) throws
+  public ResponseEntity<?> performWithAuditing(AuditRecordBuilder auditRecordBuilder,
+      Supplier<ResponseEntity<?>> action) throws
       Exception {
-    TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+    TransactionStatus transaction = transactionManager
+        .getTransaction(new DefaultTransactionDefinition());
 
     boolean auditSuccess = true;
 
@@ -75,15 +75,19 @@ public class DatabaseAuditLogService implements AuditLogService {
       transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
 
-    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder, responseEntity.getStatusCodeValue(), auditSuccess);
+    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder,
+        responseEntity.getStatusCodeValue(), auditSuccess);
 
     try {
       operationAuditRecordDataService.save(auditRecord);
       transactionManager.commit(transaction);
       securityEventsLogService.log(auditRecord);
     } catch (Exception e) {
-      if (!transaction.isCompleted()) transactionManager.rollback(transaction);
-      final ResponseError error = new ResponseError(messageSourceAccessor.getMessage("error.audit_save_failure"));
+      if (!transaction.isCompleted()) {
+        transactionManager.rollback(transaction);
+      }
+      final ResponseError error = new ResponseError(
+          messageSourceAccessor.getMessage("error.audit_save_failure"));
       return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -94,7 +98,8 @@ public class DatabaseAuditLogService implements AuditLogService {
     return responseEntity;
   }
 
-  private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder, int statusCode, boolean success) throws Exception {
+  private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder,
+      int statusCode, boolean success) throws Exception {
     return auditRecordBuilder
         .setRequestStatus(statusCode)
         .setIsSuccess(success)

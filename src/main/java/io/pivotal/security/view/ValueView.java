@@ -3,6 +3,7 @@ package io.pivotal.security.view;
 import io.pivotal.security.domain.NamedValueSecret;
 
 class ValueView extends SecretView {
+
   ValueView(NamedValueSecret namedValueSecret) {
     super(
         namedValueSecret.getVersionCreatedAt(),

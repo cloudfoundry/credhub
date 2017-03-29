@@ -5,11 +5,11 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.SecretGenerator;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 public class SshSetRequest extends BaseSecretSetRequest {
+
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
@@ -24,7 +24,10 @@ public class SshSetRequest extends BaseSecretSetRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
-    return NamedSshSecret.createNewVersion((NamedSshSecret) existing, getName(), this.getKeySetRequestFields(), encryptor, this.getAccessControlEntries());
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor,
+      SecretGenerator secretGenerator) {
+    return NamedSshSecret
+        .createNewVersion((NamedSshSecret) existing, getName(), this.getKeySetRequestFields(),
+            encryptor, this.getAccessControlEntries());
   }
 }

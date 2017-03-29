@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthFailureAuditRecordDataService {
+
   private final AuthFailureAuditRecordRepository authFailureAuditRecordRepository;
 
   @Autowired
-  AuthFailureAuditRecordDataService(AuthFailureAuditRecordRepository authFailureAuditRecordRepository) {
+  AuthFailureAuditRecordDataService(
+      AuthFailureAuditRecordRepository authFailureAuditRecordRepository) {
     this.authFailureAuditRecordRepository = authFailureAuditRecordRepository;
   }
 

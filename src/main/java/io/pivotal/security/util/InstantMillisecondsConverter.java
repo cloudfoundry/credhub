@@ -1,7 +1,7 @@
 package io.pivotal.security.util;
 
-import javax.persistence.AttributeConverter;
 import java.time.Instant;
+import javax.persistence.AttributeConverter;
 
 public class InstantMillisecondsConverter implements AttributeConverter<Instant, Long> {
 

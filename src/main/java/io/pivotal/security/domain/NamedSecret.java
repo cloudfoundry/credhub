@@ -7,23 +7,33 @@ import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.view.SecretKind;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedValueContainer {
+public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedValueContainer {
+
   protected NamedSecretData delegate;
   protected Encryptor encryptor;
+
+  public NamedSecret(NamedSecretData delegate) {
+    this.delegate = delegate;
+  }
+
+  static List<AccessEntryData> getAccessEntryData(List<AccessControlEntry> accessControlEntries,
+      NamedSecret secret) {
+    SecretName secretName = secret.delegate.getSecretName();
+    return accessControlEntries.stream()
+        .map((entry) -> AccessEntryData.fromSecretName(secretName, entry))
+        .collect(Collectors.toList());
+  }
 
   public abstract SecretKind getKind();
 
   public abstract String getSecretType();
+
   public abstract void rotate();
-  public NamedSecret(NamedSecretData delegate) {
-    this.delegate = delegate;
-  }
 
   public UUID getUuid() {
     return delegate.getUuid();
@@ -63,7 +73,7 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
   }
 
   public Instant getVersionCreatedAt() {
-    return  delegate.getVersionCreatedAt();
+    return delegate.getVersionCreatedAt();
   }
 
   public Z setVersionCreatedAt(Instant versionCreatedAt) {
@@ -91,13 +101,6 @@ public abstract class NamedSecret<Z extends NamedSecret>  implements EncryptedVa
 
   public void setAccessControlList(List<AccessEntryData> accessEntryData) {
     delegate.getSecretName().setAccessControlList(accessEntryData);
-  }
-
-  static List<AccessEntryData> getAccessEntryData(List<AccessControlEntry> accessControlEntries, NamedSecret secret) {
-    SecretName secretName = secret.delegate.getSecretName();
-    return accessControlEntries.stream()
-      .map((entry) -> AccessEntryData.fromSecretName(secretName, entry))
-      .collect(Collectors.toList());
   }
 
   public SecretName getSecretName() {

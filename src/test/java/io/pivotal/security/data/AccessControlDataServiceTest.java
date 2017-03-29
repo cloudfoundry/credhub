@@ -1,21 +1,5 @@
 package io.pivotal.security.data;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -31,6 +15,21 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.AccessEntryRequest;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import java.util.List;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -55,7 +54,7 @@ public class AccessControlDataServiceTest {
           seedDatabase();
 
           List<AccessControlEntry> newAces = singletonList(
-            new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
+              new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
           request = new AccessEntryRequest("/lightsaber", newAces);
         });
@@ -66,12 +65,13 @@ public class AccessControlDataServiceTest {
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
           assertThat(response.getAccessControlList(), hasItems(
-            allOf(hasProperty("actor", equalTo("Luke")),
-              hasProperty("allowedOperations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))
+              allOf(hasProperty("actor", equalTo("Luke")),
+                  hasProperty("allowedOperations",
+                      hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))
           ));
           assertThat(response.getAccessControlList(), hasItems(
-            allOf(hasProperty("actor", equalTo("Leia")),
-              hasProperty("allowedOperations", hasItems(AccessControlOperation.READ)))));
+              allOf(hasProperty("actor", equalTo("Leia")),
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ)))));
         });
       });
 
@@ -79,7 +79,7 @@ public class AccessControlDataServiceTest {
         beforeEach(() -> {
           secretDataService.save(new NamedValueSecret("lightsaber2"));
           List<AccessControlEntry> newAces = singletonList(
-            new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
+              new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
           request = new AccessEntryRequest("/lightsaber2", newAces);
         });
@@ -90,8 +90,10 @@ public class AccessControlDataServiceTest {
           assertThat(response.getCredentialName(), equalTo("/lightsaber2"));
           assertThat(response.getAccessControlList().size(), equalTo(1));
           assertThat(response.getAccessControlList().get(0).getActor(), equalTo("Luke"));
-          assertThat(response.getAccessControlList().get(0).getAllowedOperations().size(), equalTo(1));
-          assertThat(response.getAccessControlList().get(0).getAllowedOperations(), hasItem(AccessControlOperation.READ));
+          assertThat(response.getAccessControlList().get(0).getAllowedOperations().size(),
+              equalTo(1));
+          assertThat(response.getAccessControlList().get(0).getAllowedOperations(),
+              hasItem(AccessControlOperation.READ));
         });
       });
     });
@@ -106,10 +108,10 @@ public class AccessControlDataServiceTest {
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
           assertThat(response.getAccessControlList(), containsInAnyOrder(
-            allOf(hasProperty("actor", equalTo("Luke")),
-              hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
-            allOf(hasProperty("actor", equalTo("Leia")),
-              hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
+              allOf(hasProperty("actor", equalTo("Luke")),
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
+              allOf(hasProperty("actor", equalTo("Leia")),
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
           );
         });
       });
@@ -126,16 +128,17 @@ public class AccessControlDataServiceTest {
 
       describe("when given a credential and actor that exists in the ACL", () -> {
         it("removes the ACE from the ACL", () -> {
-          assertThat(subject.getAccessControlListResponse("/lightsaber").getAccessControlList(), containsInAnyOrder(
-              allOf(hasProperty("actor", equalTo("Luke")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
-              allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
+          assertThat(subject.getAccessControlListResponse("/lightsaber").getAccessControlList(),
+              containsInAnyOrder(
+                  allOf(hasProperty("actor", equalTo("Luke")),
+                      hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
+                  allOf(hasProperty("actor", equalTo("Leia")),
+                      hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
           );
           subject.deleteAccessControlEntry("/lightsaber", "Luke");
 
-
-          final List<AccessControlEntry> accessControlList = subject.getAccessControlListResponse("/lightsaber").getAccessControlList();
+          final List<AccessControlEntry> accessControlList = subject
+              .getAccessControlListResponse("/lightsaber").getAccessControlList();
           assertThat(accessControlList,
               not(hasItem(hasProperty("actor", equalTo("Luke")))));
           assertThat(accessControlList, contains(
@@ -147,12 +150,13 @@ public class AccessControlDataServiceTest {
 
       describe("when the credential/actor combination does not exist in the ACL", () -> {
         itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
-            subject.deleteAccessControlEntry("/some-thing-that-is-not-here", "Luke");
+          subject.deleteAccessControlEntry("/some-thing-that-is-not-here", "Luke");
         });
 
-        itThrows("when credential does exist, but the ACE does not", EntryNotFoundException.class, () -> {
-          subject.deleteAccessControlEntry("/lightsaber", "HelloKitty");
-        });
+        itThrows("when credential does exist, but the ACE does not", EntryNotFoundException.class,
+            () -> {
+              subject.deleteAccessControlEntry("/lightsaber", "HelloKitty");
+            });
       });
     });
 
@@ -163,10 +167,10 @@ public class AccessControlDataServiceTest {
     secretDataService.save(new NamedValueSecret("lightsaber"));
 
     subject.setAccessControlEntry(
-          new AccessEntryRequest(
-              "lightsaber",
-              singletonList(new AccessControlEntry("Luke",
-                  singletonList(AccessControlOperation.WRITE)))
+        new AccessEntryRequest(
+            "lightsaber",
+            singletonList(new AccessControlEntry("Luke",
+                singletonList(AccessControlOperation.WRITE)))
         ));
 
     subject.setAccessControlEntry(

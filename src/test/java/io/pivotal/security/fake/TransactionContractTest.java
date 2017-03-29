@@ -1,15 +1,5 @@
 package io.pivotal.security.fake;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.OperationAuditRecord;
-import org.junit.runner.RunWith;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-
-import java.time.Instant;
-import java.util.Date;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -17,6 +7,14 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.OperationAuditRecord;
+import java.time.Instant;
+import org.junit.runner.RunWith;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 @RunWith(Spectrum.class)
 public class TransactionContractTest {
@@ -79,10 +77,10 @@ public class TransactionContractTest {
           secretRepository.save(namedValueSecret);
 
           final OperationAuditRecord auditRecord = new OperationAuditRecord("", Instant.now(),
-            null, "operation", null, null,
-            null, 0L, 0L, null, null,
-            null, null, 0, null, null,
-            null, null, null, true);
+              null, "operation", null, null,
+              null, 0L, 0L, null, null,
+              null, null, 0, null, null,
+              null, null, null, true);
           auditRecordRepository.save(auditRecord);
         });
 

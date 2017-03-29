@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm")
 public class LunaProviderProperties {
+
   @Value("${hsm.partition}")
   String partitionName;
 

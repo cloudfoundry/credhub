@@ -1,14 +1,16 @@
 package io.pivotal.security.entity;
 
-import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class SecretNameTest {
+
   {
     describe("#getName", () -> {
       describe("when the original name is prepended with a '/'", () -> {

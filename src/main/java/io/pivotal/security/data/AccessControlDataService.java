@@ -8,12 +8,11 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntryRequest;
 import io.pivotal.security.view.AccessControlListResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessControlDataService {
@@ -23,7 +22,7 @@ public class AccessControlDataService {
 
   @Autowired
   public AccessControlDataService(AccessEntryRepository accessEntryRepository,
-                                  SecretDataService secretDataService) {
+      SecretDataService secretDataService) {
     this.accessEntryRepository = accessEntryRepository;
     this.secretDataService = secretDataService;
   }
@@ -31,10 +30,12 @@ public class AccessControlDataService {
   public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
     SecretName secretName = findSecretName(request);
 
-    List<AccessEntryData> existingAccessEntries = accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid());
+    List<AccessEntryData> existingAccessEntries = accessEntryRepository
+        .findAllByCredentialNameUuid(secretName.getUuid());
 
     for (AccessControlEntry ace : request.getAccessControlEntries()) {
-      upsertAccessEntryOperations(secretName, existingAccessEntries, ace.getActor(), ace.getAllowedOperations());
+      upsertAccessEntryOperations(secretName, existingAccessEntries, ace.getActor(),
+          ace.getAllowedOperations());
     }
 
     List<AccessControlEntry> responseAces = createViewsForAllAcesWithName(secretName);
@@ -69,7 +70,8 @@ public class AccessControlDataService {
     }
   }
 
-  private void upsertAccessEntryOperations(SecretName secretName, List<AccessEntryData> accessEntries, String actor, List<AccessControlOperation> operations) {
+  private void upsertAccessEntryOperations(SecretName secretName,
+      List<AccessEntryData> accessEntries, String actor, List<AccessControlOperation> operations) {
     AccessEntryData entry = findAccessEntryForActor(accessEntries, actor);
 
     if (entry == null) {
@@ -104,7 +106,8 @@ public class AccessControlDataService {
         .collect(Collectors.toList());
   }
 
-  public AccessEntryData findAccessEntryForActor(List<AccessEntryData> accessEntries, String actor) {
+  public AccessEntryData findAccessEntryForActor(List<AccessEntryData> accessEntries,
+      String actor) {
     Optional<AccessEntryData> temp = accessEntries.stream()
         .filter(accessEntryData -> accessEntryData.getActor().equals(actor))
         .findFirst();

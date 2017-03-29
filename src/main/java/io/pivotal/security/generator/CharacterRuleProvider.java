@@ -1,13 +1,13 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.PasswordGenerationParameters;
+import java.util.ArrayList;
+import java.util.List;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class CharacterRuleProvider {
+
   public static List<CharacterRule> getCharacterRules(PasswordGenerationParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();
 

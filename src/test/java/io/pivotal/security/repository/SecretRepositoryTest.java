@@ -1,5 +1,11 @@
 package io.pivotal.security.repository;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecretData;
@@ -7,20 +13,13 @@ import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -63,14 +62,15 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      NamedCertificateSecretData certificateSecret = (NamedCertificateSecretData) subject.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid());
+      NamedCertificateSecretData certificateSecret = (NamedCertificateSecretData) subject
+          .findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid());
       assertThat(certificateSecret.getCa().length(), equalTo(7000));
       assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
       assertThat(certificateSecret.getEncryptedValue(), equalTo(encryptedValue));
       assertThat(certificateSecret.getEncryptedValue().length, equalTo(7016));
     });
 
-    it("can store strings of length 7000, which means 7016 for GCM", ()-> {
+    it("can store strings of length 7000, which means 7016 for GCM", () -> {
       byte[] encryptedValue = new byte[7016];
       Arrays.fill(encryptedValue, (byte) 'A');
 
@@ -83,7 +83,8 @@ public class SecretRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      assertThat(subject.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid()).getEncryptedValue().length, equalTo(7016));
+      assertThat(subject.findFirstBySecretNameUuidOrderByVersionCreatedAtDesc(secretName.getUuid())
+          .getEncryptedValue().length, equalTo(7016));
     });
   }
 }

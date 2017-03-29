@@ -1,10 +1,22 @@
 package io.pivotal.security.auth;
 
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
+
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.exceptions.AccessTokenExpiredException;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
+import java.io.IOException;
+import java.security.SignatureException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.PostConstruct;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -19,26 +31,14 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
 import org.springframework.stereotype.Service;
 
-import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
-
-import java.io.IOException;
-import java.security.SignatureException;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
+
   private final CurrentTimeProvider currentTimeProvider;
   private final AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
   private final MessageSource messageSource;
   private final JsonParser objectMapper;
+  private MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   AuditOAuth2AuthenticationExceptionHandler(
@@ -52,15 +52,14 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     this.objectMapper = JsonParserFactory.create();
   }
 
-  private MessageSourceAccessor messageSourceAccessor;
-
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
   @Override
-  public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+  public void commence(HttpServletRequest request, HttpServletResponse response,
+      AuthenticationException authException)
       throws IOException, ServletException {
 
     String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
@@ -73,23 +72,26 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     if (tokenIsExpired(tokenInformation)) {
       exception = new AccessTokenExpiredException("Access token expired", cause);
     } else if (cause instanceof InvalidSignatureException || cause instanceof SignatureException) {
-      exception = new InvalidTokenException(messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
+      exception = new InvalidTokenException(
+          messageSourceAccessor.getMessage("error.invalid_token_signature"), cause);
     } else {
-      exception = new InvalidTokenException(removeTokenFromMessage(authException.getMessage(), token), cause);
+      exception = new InvalidTokenException(
+          removeTokenFromMessage(authException.getMessage(), token), cause);
     }
     exception.setStackTrace(authException.getStackTrace());
 
     try {
       doHandle(request, response, exception);
     } finally {
-      logAuthFailureToDb(token, tokenInformation, exception, new AuditRecordBuilder(null, request, null), request.getMethod(), response.getStatus());
+      logAuthFailureToDb(token, tokenInformation, exception,
+          new AuditRecordBuilder(null, request, null), request.getMethod(), response.getStatus());
     }
   }
 
   public Throwable extractCause(AuthenticationException e) {
     Throwable cause = e.getCause();
     Throwable nextCause = cause == null ? null : cause.getCause();
-    while(nextCause != null && nextCause != cause) {
+    while (nextCause != null && nextCause != cause) {
       cause = nextCause;
       nextCause = cause.getCause();
     }
@@ -117,7 +119,9 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
   }
 
-  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation, Exception authException, AuditRecordBuilder auditRecorder, String requestMethod, int statusCode) {
+  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation,
+      Exception authException, AuditRecordBuilder auditRecorder, String requestMethod,
+      int statusCode) {
     final Instant now = currentTimeProvider.getInstant();
 
     String userId = null;
@@ -130,13 +134,13 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     String grantType = null;
 
     if (tokenInformation != null) {
-      List<String> scopeArray = (List<String>) tokenInformation.get("scope");
       userId = (String) tokenInformation.get("user_id");
       userName = (String) tokenInformation.get("user_name");
       iss = (String) tokenInformation.get("iss");
       issued = ((Number) tokenInformation.get("iat")).longValue();
       expires = ((Number) tokenInformation.get("exp")).longValue();
       clientId = (String) tokenInformation.get("client_id");
+      List<String> scopeArray = (List<String>) tokenInformation.get("scope");
       scope = scopeArray == null ? null : String.join(",", scopeArray);
       grantType = (String) tokenInformation.get("grant_type");
     }

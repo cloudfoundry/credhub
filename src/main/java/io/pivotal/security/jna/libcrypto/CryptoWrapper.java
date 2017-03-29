@@ -3,11 +3,6 @@ package io.pivotal.security.jna.libcrypto;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import io.pivotal.security.util.CheckedConsumer;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -17,6 +12,10 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 @Component
 public class CryptoWrapper {
@@ -30,7 +29,8 @@ public class CryptoWrapper {
     keyFactory = KeyFactory.getInstance(ALGORITHM, bouncyCastleProvider);
   }
 
-  public synchronized <E extends Throwable> void generateKeyPair(int keyLength, CheckedConsumer<Pointer, E> consumer) throws E {
+  public synchronized <E extends Throwable> void
+      generateKeyPair(int keyLength, CheckedConsumer<Pointer, E> consumer) throws E {
     Pointer bne = Crypto.BN_new();
     try {
       Crypto.BN_set_word(bne, Crypto.RSA_F4);
@@ -68,7 +68,7 @@ public class CryptoWrapper {
     bignum.read();
 
     int ratio = 8;
-    long[] longs = bignum.d.getLongArray(0, bignum.top);
+    long[] longs = bignum.dp.getLongArray(0, bignum.top);
     byte[] bytes = new byte[longs.length * ratio];
     for (int i = 0; i < longs.length; i++) {
       for (int j = 0; j < ratio; j++) {
@@ -88,11 +88,11 @@ public class CryptoWrapper {
 
   private RSAPrivateCrtKeySpec getRsaPrivateCrtKeySpec(RSA.ByReference rsa) {
     return new RSAPrivateCrtKeySpec(
-        convert(rsa.n),
-        convert(rsa.e),
-        convert(rsa.d),
-        convert(rsa.p),
-        convert(rsa.q),
+        convert(rsa.np),
+        convert(rsa.ep),
+        convert(rsa.dp),
+        convert(rsa.pp),
+        convert(rsa.qp),
         convert(rsa.dmp1),
         convert(rsa.dmq1),
         convert(rsa.iqmp)
@@ -100,6 +100,6 @@ public class CryptoWrapper {
   }
 
   private RSAPublicKeySpec getRsaPublicKeySpec(RSA.ByReference rsa) {
-    return new RSAPublicKeySpec(convert(rsa.n), convert(rsa.e));
+    return new RSAPublicKeySpec(convert(rsa.np), convert(rsa.ep));
   }
 }

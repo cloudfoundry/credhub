@@ -1,13 +1,13 @@
 package io.pivotal.security.service;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.nio.charset.Charset;
 import java.security.Key;
 import java.util.ArrayList;
@@ -16,12 +16,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class EncryptionKeyCanaryMapper {
+
   public static final Charset CHARSET = Charset.defaultCharset();
   public static final String CANARY_VALUE = new String(new byte[128], CHARSET);
   public static final String DEPRECATED_CANARY_VALUE = new String(new byte[64], CHARSET);
@@ -106,27 +106,34 @@ public class EncryptionKeyCanaryMapper {
   }
 
   private void validateActiveKeyInList(KeyProxy key, List<KeyProxy> encryptionKeys) {
-    final Optional<KeyProxy> firstMatchingKey = encryptionKeys.stream().filter(k -> key.equals(k)).findFirst();
+    final Optional<KeyProxy> firstMatchingKey = encryptionKeys.stream().filter(k -> key.equals(k))
+        .findFirst();
     // This could be refactored to orElseThrow except there is a bug in the JDK :(
     if (!firstMatchingKey.isPresent()) {
       throw new RuntimeException("No active key was found");
     }
   }
 
-  private void populateActiveCanary(KeyProxy activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries) {
-    EncryptionKeyCanary activeCanary = findCanaryMatchingKey(activeEncryptionKey, encryptionKeyCanaries).orElseGet(() -> createCanary(activeEncryptionKey));
+  private void populateActiveCanary(KeyProxy activeEncryptionKey,
+      List<EncryptionKeyCanary> encryptionKeyCanaries) {
+    EncryptionKeyCanary activeCanary = findCanaryMatchingKey(activeEncryptionKey,
+        encryptionKeyCanaries).orElseGet(() -> createCanary(activeEncryptionKey));
     activeUuid = activeCanary.getUuid();
     encryptionKeyMap.put(activeCanary.getUuid(), activeEncryptionKey.getKey());
   }
 
-  private void populateCanariesForNonActiveKeys(KeyProxy activeEncryptionKey, List<EncryptionKeyCanary> encryptionKeyCanaries, List<KeyProxy> encryptionKeys) {
-    final Stream<KeyProxy> nonActiveKeys = encryptionKeys.stream().filter(encryptionKey -> !activeEncryptionKey.equals(encryptionKey));
+  private void populateCanariesForNonActiveKeys(KeyProxy activeEncryptionKey,
+      List<EncryptionKeyCanary> encryptionKeyCanaries, List<KeyProxy> encryptionKeys) {
+    final Stream<KeyProxy> nonActiveKeys = encryptionKeys.stream()
+        .filter(encryptionKey -> !activeEncryptionKey.equals(encryptionKey));
     nonActiveKeys.forEach(encryptionKey -> {
-      findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries).ifPresent(canary -> encryptionKeyMap.put(canary.getUuid(), encryptionKey.getKey()));
+      findCanaryMatchingKey(encryptionKey, encryptionKeyCanaries)
+          .ifPresent(canary -> encryptionKeyMap.put(canary.getUuid(), encryptionKey.getKey()));
     });
   }
 
-  private Optional<EncryptionKeyCanary> findCanaryMatchingKey(KeyProxy encryptionKey, List<EncryptionKeyCanary> canaries) {
+  private Optional<EncryptionKeyCanary> findCanaryMatchingKey(KeyProxy encryptionKey,
+      List<EncryptionKeyCanary> canaries) {
     return canaries.stream().filter(canary -> encryptionKey.matchesCanary(canary)).findFirst();
   }
 
@@ -134,7 +141,8 @@ public class EncryptionKeyCanaryMapper {
     EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
     try {
-      Encryption encryptionData = encryptionService.encrypt(null, encryptionKey.getKey(), CANARY_VALUE);
+      Encryption encryptionData = encryptionService
+          .encrypt(null, encryptionKey.getKey(), CANARY_VALUE);
       canary.setEncryptedValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
       final List<Byte> salt = encryptionKey.getSalt();

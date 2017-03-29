@@ -6,14 +6,13 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
-
 import java.util.List;
 
 public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
 
   private NamedRsaSecretData delegate;
 
-  public NamedRsaSecret(NamedRsaSecretData delegate){
+  public NamedRsaSecret(NamedRsaSecretData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
@@ -26,53 +25,9 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
     this(new NamedRsaSecretData());
   }
 
-  public int getKeyLength(){
-    return delegate.getKeyLength();
-  }
-
-  public String getPublicKey() {
-    return delegate.getPublicKey();
-  }
-
-  public NamedRsaSecret setPublicKey(String publicKey) {
-    this.delegate.setPublicKey(publicKey);
-    return this;
-  }
-
-  public String getPrivateKey() {
-    return encryptor.decrypt(
-      delegate.getEncryptionKeyUuid(),
-      delegate.getEncryptedValue(),
-      delegate.getNonce()
-    );
-  }
-
-  public NamedRsaSecret setPrivateKey(String privateKey) {
-    final Encryption encryption = encryptor.encrypt(privateKey);
-
-    delegate.setEncryptedValue(encryption.encryptedValue);
-    delegate.setNonce(encryption.nonce);
-    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
-
-    return this;
-  }
-
-  public void rotate(){
-    String decryptedValue = this.getPrivateKey();
-    this.setPrivateKey(decryptedValue);
-  }
-
-  @Override
-  public SecretKind getKind() {
-    return delegate.getKind();
-  }
-
-  @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
-  }
-
-  public static NamedSecret createNewVersion(NamedRsaSecret existing, String name, KeySetRequestFields fields, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
+  public static NamedSecret createNewVersion(NamedRsaSecret existing, String name,
+      KeySetRequestFields fields, Encryptor encryptor,
+      List<AccessControlEntry> accessControlEntries) {
     NamedRsaSecret secret;
 
     if (existing == null) {
@@ -91,5 +46,51 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
     secret.setPublicKey(fields.getPublicKey());
 
     return secret;
+  }
+
+  public int getKeyLength() {
+    return delegate.getKeyLength();
+  }
+
+  public String getPublicKey() {
+    return delegate.getPublicKey();
+  }
+
+  public NamedRsaSecret setPublicKey(String publicKey) {
+    this.delegate.setPublicKey(publicKey);
+    return this;
+  }
+
+  public String getPrivateKey() {
+    return encryptor.decrypt(
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedValue(),
+        delegate.getNonce()
+    );
+  }
+
+  public NamedRsaSecret setPrivateKey(String privateKey) {
+    final Encryption encryption = encryptor.encrypt(privateKey);
+
+    delegate.setEncryptedValue(encryption.encryptedValue);
+    delegate.setNonce(encryption.nonce);
+    delegate.setEncryptionKeyUuid(encryption.canaryUuid);
+
+    return this;
+  }
+
+  public void rotate() {
+    String decryptedValue = this.getPrivateKey();
+    this.setPrivateKey(decryptedValue);
+  }
+
+  @Override
+  public SecretKind getKind() {
+    return delegate.getKind();
+  }
+
+  @Override
+  public String getSecretType() {
+    return delegate.getSecretType();
   }
 }

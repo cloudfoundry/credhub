@@ -1,5 +1,15 @@
 package io.pivotal.security.controller.v1;
 
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.util.CertificateReader;
@@ -12,18 +22,9 @@ import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.junit.runner.RunWith;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @RunWith(Spectrum.class)
 public class CertificateSecretParametersTest {
+
   private CertificateSecretParameters certificateSecretParameters;
 
   {
@@ -38,21 +39,29 @@ public class CertificateSecretParametersTest {
             .setLocality("My Locality");
 
         assertThat(
-            params.getDN().toString(),
-            equalTo("O=My Organization,ST=My State,C=My Country,CN=My Common Name,OU=My Organization Unit,L=My Locality")
+            params.getDn().toString(),
+            equalTo(
+                "O=My Organization,ST=My State,C=My Country,"
+                    + "CN=My Common Name,OU=My Organization Unit,L=My Locality")
         );
       });
 
       it("can add alternative names", () -> {
         CertificateSecretParameters params = new CertificateSecretParameters()
-            .addAlternativeNames("alternative-name-1", "alternative-name-2", ".foo.com", "foo.com.test", "*.foo.com.test");
+            .addAlternativeNames("alternative-name-1", "alternative-name-2", ".foo.com",
+                "foo.com.test", "*.foo.com.test");
 
         ASN1Sequence sequence = ASN1Sequence.getInstance(params.getAlternativeNames());
-        assertThat(sequence.getObjectAt(0), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-1")));
-        assertThat(sequence.getObjectAt(1), equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-2")));
-        assertThat(sequence.getObjectAt(2), equalTo(new GeneralName(GeneralName.dNSName, ".foo.com")));
-        assertThat(sequence.getObjectAt(3), equalTo(new GeneralName(GeneralName.dNSName, "foo.com.test")));
-        assertThat(sequence.getObjectAt(4), equalTo(new GeneralName(GeneralName.dNSName, "*.foo.com.test")));
+        assertThat(sequence.getObjectAt(0),
+            equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-1")));
+        assertThat(sequence.getObjectAt(1),
+            equalTo(new GeneralName(GeneralName.dNSName, "alternative-name-2")));
+        assertThat(sequence.getObjectAt(2),
+            equalTo(new GeneralName(GeneralName.dNSName, ".foo.com")));
+        assertThat(sequence.getObjectAt(3),
+            equalTo(new GeneralName(GeneralName.dNSName, "foo.com.test")));
+        assertThat(sequence.getObjectAt(4),
+            equalTo(new GeneralName(GeneralName.dNSName, "*.foo.com.test")));
       });
 
       it("can add alternative names, that are valid IPs", () -> {
@@ -60,15 +69,23 @@ public class CertificateSecretParametersTest {
             .addAlternativeNames("107.23.170.203", "52.72.132.140", "2607:f8b0:4005:808::200e");
 
         ASN1Sequence sequence = ASN1Sequence.getInstance(params.getAlternativeNames());
-        assertThat(sequence.getObjectAt(0), equalTo(new GeneralName(GeneralName.iPAddress, "107.23.170.203")));
-        assertThat(sequence.getObjectAt(1), equalTo(new GeneralName(GeneralName.iPAddress, "52.72.132.140")));
-        assertThat(sequence.getObjectAt(2), equalTo(new GeneralName(GeneralName.iPAddress, "2607:f8b0:4005:808::200e")));
+        assertThat(sequence.getObjectAt(0),
+            equalTo(new GeneralName(GeneralName.iPAddress, "107.23.170.203")));
+        assertThat(sequence.getObjectAt(1),
+            equalTo(new GeneralName(GeneralName.iPAddress, "52.72.132.140")));
+        assertThat(sequence.getObjectAt(2),
+            equalTo(new GeneralName(GeneralName.iPAddress, "2607:f8b0:4005:808::200e")));
       });
 
-      itThrows("with invalid names with many levels", ParameterizedValidationException.class, () -> {
-        new CertificateSecretParameters()
-            .addAlternativeNames(".foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com%");
-      });
+      itThrows("with invalid names with many levels", ParameterizedValidationException.class,
+          () -> {
+            new CertificateSecretParameters()
+                .addAlternativeNames(
+                    ".foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo"
+                        + ".com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com"
+                        + ".foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo.com.foo"
+                        + ".com.foo.com.foo.com.foo.com.foo.com%");
+          });
 
       itThrows("when an invalid IP is given", ParameterizedValidationException.class, () -> {
         new CertificateSecretParameters()
@@ -77,9 +94,11 @@ public class CertificateSecretParametersTest {
 
       it("can add extended key usages", () -> {
         CertificateSecretParameters params = new CertificateSecretParameters()
-            .addExtendedKeyUsage("server_auth", "client_auth", "code_signing", "email_protection", "time_stamping");
+            .addExtendedKeyUsage("server_auth", "client_auth", "code_signing", "email_protection",
+                "time_stamping");
 
-        ExtendedKeyUsage extendedKeyUsages = ExtendedKeyUsage.getInstance(params.getExtendedKeyUsage());
+        ExtendedKeyUsage extendedKeyUsages = ExtendedKeyUsage
+            .getInstance(params.getExtendedKeyUsage());
         assertThat(extendedKeyUsages.getUsages()[0], equalTo(KeyPurposeId.id_kp_serverAuth));
         assertThat(extendedKeyUsages.getUsages()[1], equalTo(KeyPurposeId.id_kp_clientAuth));
         assertThat(extendedKeyUsages.getUsages()[2], equalTo(KeyPurposeId.id_kp_codeSigning));
@@ -162,17 +181,17 @@ public class CertificateSecretParametersTest {
         GeneralNames alternativeNames = mock(GeneralNames.class);
         when(reader.getAlternativeNames()).thenReturn(alternativeNames);
         when(reader.getKeyUsage()).thenReturn(new KeyUsage(10));
-        when(reader.isCA()).thenReturn(true);
+        when(reader.isCa()).thenReturn(true);
 
         certificateSecretParameters = new CertificateSecretParameters(reader, "some-ca-name");
-        assertThat(certificateSecretParameters.getDN().toString(), equalTo("CN=test-common-name"));
+        assertThat(certificateSecretParameters.getDn().toString(), equalTo("CN=test-common-name"));
         assertThat(certificateSecretParameters.getKeyLength(), equalTo(1024));
         assertThat(certificateSecretParameters.isSelfSigned(), equalTo(true));
         assertThat(certificateSecretParameters.getDurationDays(), equalTo(30));
         assertThat(certificateSecretParameters.getExtendedKeyUsage(), equalTo(extendedKeyUsage));
         assertThat(certificateSecretParameters.getAlternativeNames(), equalTo(alternativeNames));
         assertThat(certificateSecretParameters.getKeyUsage(), equalTo(new KeyUsage(10)));
-        assertThat(certificateSecretParameters.isCA(), equalTo(true));
+        assertThat(certificateSecretParameters.isCa(), equalTo(true));
 
         assertThat(certificateSecretParameters.getCaName(), equalTo("some-ca-name"));
       });
@@ -181,8 +200,8 @@ public class CertificateSecretParametersTest {
     describe("#validate", () -> {
       it("validates extended key usages", () -> {
         try {
-          new CertificateSecretParameters().
-              setCountry("My Country")
+          new CertificateSecretParameters()
+              .setCountry("My Country")
               .addExtendedKeyUsage("client_auth", "server_off");
           fail();
         } catch (ParameterizedValidationException pve) {
@@ -192,12 +211,13 @@ public class CertificateSecretParametersTest {
       });
 
       describe("with self_sign set to true and no ca name", () -> {
-        itThrowsWithMessage("when is_ca is set to false", ParameterizedValidationException.class, "error.missing_signing_ca", () -> {
-          new CertificateSecretParameters()
-              .setCommonName("foo")
-              .setIsCa(false)
-              .validate();
-        });
+        itThrowsWithMessage("when is_ca is set to false", ParameterizedValidationException.class,
+            "error.missing_signing_ca", () -> {
+              new CertificateSecretParameters()
+                  .setCommonName("foo")
+                  .setIsCa(false)
+                  .validate();
+            });
 
         describe("when is_ca is set to true", () -> {
           it("should not throw an exception", () -> {
@@ -210,66 +230,73 @@ public class CertificateSecretParametersTest {
       });
 
       describe("with self_sign set to true and a ca name", () -> {
-        itThrowsWithMessage("", ParameterizedValidationException.class, "error.ca_and_self_sign", () -> {
-          new CertificateSecretParameters()
-              .setCommonName("foo")
-              .setCaName("test-ca")
-              .setSelfSigned(true)
-              .validate();
-        });
+        itThrowsWithMessage("", ParameterizedValidationException.class, "error.ca_and_self_sign",
+            () -> {
+              new CertificateSecretParameters()
+                  .setCommonName("foo")
+                  .setCaName("test-ca")
+                  .setSelfSigned(true)
+                  .validate();
+            });
       });
 
-      itThrowsWithMessage("when duration is less than 1", ParameterizedValidationException.class, "error.invalid_duration", () -> {
-        new CertificateSecretParameters()
-            .setCaName("test-ca")
-            .setCommonName("foo")
-            .setDurationDays(0)
-            .validate();
-      });
+      itThrowsWithMessage("when duration is less than 1", ParameterizedValidationException.class,
+          "error.invalid_duration", () -> {
+            new CertificateSecretParameters()
+                .setCaName("test-ca")
+                .setCommonName("foo")
+                .setDurationDays(0)
+                .validate();
+          });
 
-      itThrowsWithMessage("when duration is greater than 3650", ParameterizedValidationException.class, "error.invalid_duration", () -> {
-        new CertificateSecretParameters()
-            .setCaName("test-ca")
-            .setCommonName("foo")
-            .setDurationDays(3651)
-            .validate();
-      });
+      itThrowsWithMessage("when duration is greater than 3650",
+          ParameterizedValidationException.class, "error.invalid_duration", () -> {
+            new CertificateSecretParameters()
+                .setCaName("test-ca")
+                .setCommonName("foo")
+                .setDurationDays(3651)
+                .validate();
+          });
 
-      itThrowsWithMessage("when all of DN parameters are empty", ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
-        new CertificateSecretParameters()
-            .setCaName("test-ca")
-            .setOrganization("")
-            .setState("")
-            .setCountry("")
-            .setCommonName("")
-            .setOrganizationUnit("")
-            .setLocality("").validate();
-      });
+      itThrowsWithMessage("when all of DN parameters are empty",
+          ParameterizedValidationException.class, "error.missing_certificate_parameters", () -> {
+            new CertificateSecretParameters()
+                .setCaName("test-ca")
+                .setOrganization("")
+                .setState("")
+                .setCountry("")
+                .setCommonName("")
+                .setOrganizationUnit("")
+                .setLocality("").validate();
+          });
 
       describe("when key lengths are invalid", () -> {
-        itThrowsWithMessage("when key length is less than 2048", ParameterizedValidationException.class, "error.invalid_key_length", () -> {
-          new CertificateSecretParameters()
-              .setCaName("test-ca")
-              .setCommonName("foo")
-              .setKeyLength(1024)
-              .validate();
-        });
+        itThrowsWithMessage("when key length is less than 2048",
+            ParameterizedValidationException.class, "error.invalid_key_length", () -> {
+              new CertificateSecretParameters()
+                  .setCaName("test-ca")
+                  .setCommonName("foo")
+                  .setKeyLength(1024)
+                  .validate();
+            });
 
-        itThrowsWithMessage("when key length is between 2048 and 3072", ParameterizedValidationException.class, "error.invalid_key_length", () -> {
-          new CertificateSecretParameters()
-              .setCaName("test-ca")
-              .setCommonName("foo")
-              .setKeyLength(2222)
-              .validate();
-        });
+        itThrowsWithMessage("when key length is between 2048 and 3072",
+            ParameterizedValidationException.class, "error.invalid_key_length", () -> {
+              new CertificateSecretParameters()
+                  .setCaName("test-ca")
+                  .setCommonName("foo")
+                  .setKeyLength(2222)
+                  .validate();
+            });
 
-        itThrowsWithMessage("when key length is greater than 4096", ParameterizedValidationException.class, "error.invalid_key_length", () -> {
-          new CertificateSecretParameters()
-              .setCaName("test-ca")
-              .setCommonName("foo")
-              .setKeyLength(9192)
-              .validate();
-        });
+        itThrowsWithMessage("when key length is greater than 4096",
+            ParameterizedValidationException.class, "error.invalid_key_length", () -> {
+              new CertificateSecretParameters()
+                  .setCaName("test-ca")
+                  .setCommonName("foo")
+                  .setKeyLength(9192)
+                  .validate();
+            });
       });
     });
   }

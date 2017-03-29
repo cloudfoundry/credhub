@@ -1,18 +1,20 @@
 package io.pivotal.security.db.migration;
 
-import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.UuidUtil;
-import org.flywaydb.core.Flyway;
-import org.flywaydb.core.api.MigrationVersion;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.util.UuidUtil;
+import java.util.UUID;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationVersion;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,8 +23,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -70,12 +70,16 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
 
       assertThat(getSecretNameForUuid(existingCertUuid), equalTo("/authority"));
       assertThat(getSecretNameForUuid(otherExistingCertUuid), equalTo("/my-other-ca-cert"));
-      assertThat(getSecretNameForUuid(conflictingNamedCertAuthorityUuid), equalTo("/authority-ca")); // gets -ca appended to it due to conflict
-      assertThat(getSecretNameForUuid(nonConflictingNamedCertAuthorityUuid), equalTo("/one-more")); // no conflict, no -ca appended
+      assertThat(getSecretNameForUuid(conflictingNamedCertAuthorityUuid),
+          equalTo("/authority-ca")); // gets -ca appended to it due to conflict
+      assertThat(getSecretNameForUuid(nonConflictingNamedCertAuthorityUuid),
+          equalTo("/one-more")); // no conflict, no -ca appended
 
       // It's self-signed and the ca_name is correct
-      assertThat(getCaNameFromCertificateSecretForUuid(conflictingNamedCertAuthorityUuid), equalTo("/authority-ca"));
-      assertThat(getCaNameFromCertificateSecretForUuid(nonConflictingNamedCertAuthorityUuid), equalTo("/one-more"));
+      assertThat(getCaNameFromCertificateSecretForUuid(conflictingNamedCertAuthorityUuid),
+          equalTo("/authority-ca"));
+      assertThat(getCaNameFromCertificateSecretForUuid(nonConflictingNamedCertAuthorityUuid),
+          equalTo("/one-more"));
     });
 
     it("updates ca_name values on certs when renaming and copying a ca", () -> {
@@ -110,11 +114,15 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
   }
 
   private String getSecretNameForUuid(UUID uuid) {
-    return namedParameterJdbcTemplate.queryForObject("SELECT name FROM named_secret WHERE uuid = :uuid AND type = 'cert'", new MapSqlParameterSource("uuid", uuidForDb(uuid)), String.class);
+    return namedParameterJdbcTemplate
+        .queryForObject("SELECT name FROM named_secret WHERE uuid = :uuid AND type = 'cert'",
+            new MapSqlParameterSource("uuid", uuidForDb(uuid)), String.class);
   }
 
   private String getCaNameFromCertificateSecretForUuid(UUID uuid) {
-    return namedParameterJdbcTemplate.queryForObject("SELECT ca_name FROM certificate_secret WHERE uuid = :uuid", new MapSqlParameterSource("uuid", uuidForDb(uuid)), String.class);
+    return namedParameterJdbcTemplate
+        .queryForObject("SELECT ca_name FROM certificate_secret WHERE uuid = :uuid",
+            new MapSqlParameterSource("uuid", uuidForDb(uuid)), String.class);
   }
 
   // CREATE TABLE `named_certificate_authority` (
@@ -129,12 +137,13 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
   //  `version_created_at` bigint(20) NOT NULL,
   //    PRIMARY KEY (`uuid`),
   //    KEY `named_certificate_authority_encryption_key_uuid_fkey` (`encryption_key_uuid`),
-  //    CONSTRAINT `named_certificate_authority_encryption_key_uuid_fkey` FOREIGN KEY (`encryption_key_uuid`) REFERENCES `encryption_key_canary` (`uuid`)
+  //    CONSTRAINT `named_certificate_authority_encryption_key_uuid_fkey`
+  //    FOREIGN KEY (`encryption_key_uuid`) REFERENCES `encryption_key_canary` (`uuid`)
   //) ENGINE=InnoDB DEFAULT CHARSET=utf8
   private UUID storeNamedCertificateAuthority(String authorityName) {
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
     UUID uuid = UUID.randomUUID();
-    UUID encryption_key_uuid = createCanary();
+    UUID encryptionKeyUuid = createCanary();
 
     paramSource.addValue("certificate", "some certificate");
     paramSource.addValue("encrypted_value", "encrypted-value".getBytes());
@@ -143,12 +152,15 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
     paramSource.addValue("updated_at", 0);
     paramSource.addValue("version_created_at", 0);
     paramSource.addValue("uuid", uuidForDb(uuid));
-    paramSource.addValue("encryption_key_uuid", uuidForDb(encryption_key_uuid));
+    paramSource.addValue("encryption_key_uuid", uuidForDb(encryptionKeyUuid));
 
-    String sql = "INSERT INTO named_certificate_authority " +
-      "(certificate, encrypted_value, name, nonce, updated_at, version_created_at, uuid, encryption_key_uuid) " +
-      "values " +
-      "(:certificate, :encrypted_value, :name, :nonce, :updated_at, :version_created_at, :uuid, :encryption_key_uuid)";
+    String sql = "INSERT INTO named_certificate_authority "
+        + "(certificate, encrypted_value, name, nonce, updated_at,"
+        + " version_created_at, uuid, encryption_key_uuid) "
+        +
+        "values "
+        + "(:certificate, :encrypted_value, :name, :nonce, :updated_at,"
+        + " :version_created_at, :uuid, :encryption_key_uuid)";
     namedParameterJdbcTemplate.update(sql, paramSource);
 
     return uuid;
@@ -160,7 +172,8 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
   //  `ca_name` varchar(255) DEFAULT NULL,
   //  `uuid` binary(16) NOT NULL,
   //    PRIMARY KEY (`uuid`),
-  //    CONSTRAINT `certificate_secret_uuid_fkey` FOREIGN KEY (`uuid`) REFERENCES `named_secret` (`uuid`) ON DELETE CASCADE
+  //    CONSTRAINT `certificate_secret_uuid_fkey`
+  //    FOREIGN KEY (`uuid`) REFERENCES `named_secret` (`uuid`) ON DELETE CASCADE
   //) ENGINE=InnoDB DEFAULT CHARSET=utf8
   //
   // CREATE TABLE `named_secret` (
@@ -175,7 +188,8 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
   //    PRIMARY KEY (`uuid`),
   //    UNIQUE KEY `named_secret_unique_uuid` (`uuid`),
   //    KEY `named_secret_encryption_key_uuid_fkey` (`encryption_key_uuid`),
-  //    CONSTRAINT `named_secret_encryption_key_uuid_fkey` FOREIGN KEY (`encryption_key_uuid`) REFERENCES `encryption_key_canary` (`uuid`)
+  //    CONSTRAINT `named_secret_encryption_key_uuid_fkey`
+  //    FOREIGN KEY (`encryption_key_uuid`) REFERENCES `encryption_key_canary` (`uuid`)
   //) ENGINE=InnoDB DEFAULT CHARSET=utf8
   private UUID storeSecret(String secretName, String type) {
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
@@ -191,10 +205,12 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
     paramSource.addValue("uuid", uuidForDb(uuid));
     paramSource.addValue("encryption_key_uuid", uuidForDb(encryptionKeyUuid));
 
-    String sql = "INSERT INTO named_secret " +
-      "(type, encrypted_value, name, nonce, updated_at, version_created_at, uuid, encryption_key_uuid) " +
-      "values " +
-      "(:type, :encrypted_value, :name, :nonce, :updated_at, :version_created_at, :uuid, :encryption_key_uuid)";
+    String sql = "INSERT INTO named_secret "
+        + "(type, encrypted_value, name, nonce, updated_at,"
+        + " version_created_at, uuid, encryption_key_uuid) "
+        + "values "
+        + "(:type, :encrypted_value, :name, :nonce, :updated_at,"
+        + " :version_created_at, :uuid, :encryption_key_uuid)";
     namedParameterJdbcTemplate.update(sql, paramSource);
 
     return uuid;
@@ -204,16 +220,16 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
     return storeCertificateSecret(secretName, secretName);  // self-signed
   }
 
-  private UUID storeCertificateSecret(String secretName, String ca_name) {
+  private UUID storeCertificateSecret(String secretName, String caName) {
     UUID uuid = storeSecret(secretName, "cert");
 
     MapSqlParameterSource paramSource = new MapSqlParameterSource();
     paramSource.addValue("certificate", null);
-    paramSource.addValue("ca_name", ca_name);
+    paramSource.addValue("ca_name", caName);
     paramSource.addValue("uuid", uuidForDb(uuid));
 
-    namedParameterJdbcTemplate.update("INSERT INTO certificate_secret" +
-      "(certificate, ca_name, uuid) values (:certificate, :ca_name, :uuid)", paramSource);
+    namedParameterJdbcTemplate.update("INSERT INTO certificate_secret"
+        + "(certificate, ca_name, uuid) values (:certificate, :ca_name, :uuid)", paramSource);
 
     return uuid;
   }
@@ -222,8 +238,8 @@ public class CertificateAuthorityCopyToSecretMigrationTest {
     UUID encryptionKeyUuid = UUID.randomUUID();
 
     jdbcTemplate.update(
-      "insert into encryption_key_canary (encrypted_value, nonce, uuid) values (?, ?, ?)",
-      "encrypted-value".getBytes(), "nonce".getBytes(), uuidForDb(encryptionKeyUuid)
+        "insert into encryption_key_canary (encrypted_value, nonce, uuid) values (?, ?, ?)",
+        "encrypted-value".getBytes(), "nonce".getBytes(), uuidForDb(encryptionKeyUuid)
     );
 
     return encryptionKeyUuid;

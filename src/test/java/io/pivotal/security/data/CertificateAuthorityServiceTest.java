@@ -1,16 +1,5 @@
 package io.pivotal.security.data;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import java.security.Security;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -23,8 +12,16 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.secret.Certificate;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class CertificateAuthorityServiceTest {
+
   CertificateAuthorityService certificateAuthorityService;
   SecretDataService secretDataService;
   Certificate certificate;
@@ -44,9 +41,10 @@ public class CertificateAuthorityServiceTest {
         when(secretDataService.findMostRecent(any(String.class))).thenReturn(null);
       });
 
-      itThrowsWithMessage("error.ca_not_found", ParameterizedValidationException.class, "error.ca_not_found", () -> {
-        certificateAuthorityService.findMostRecent("any ca name");
-      });
+      itThrowsWithMessage("error.ca_not_found", ParameterizedValidationException.class,
+          "error.ca_not_found", () -> {
+            certificateAuthorityService.findMostRecent("any ca name");
+          });
     });
 
     describe("when a CA does exist", () -> {
@@ -57,18 +55,21 @@ public class CertificateAuthorityServiceTest {
       });
 
       it("returns it", () -> {
-        assertThat(certificateAuthorityService.findMostRecent("my-ca-name"), samePropertyValuesAs(certificate));
+        assertThat(certificateAuthorityService.findMostRecent("my-ca-name"),
+            samePropertyValuesAs(certificate));
       });
     });
 
     describe("when the secret found isn't a certificate", () -> {
       beforeEach(() -> {
-        when(secretDataService.findMostRecent("actually-a-password")).thenReturn(new NamedPasswordSecret());
+        when(secretDataService.findMostRecent("actually-a-password"))
+            .thenReturn(new NamedPasswordSecret());
       });
 
-      itThrowsWithMessage("error.ca_not_found", ParameterizedValidationException.class, "error.ca_not_found", () -> {
-        certificateAuthorityService.findMostRecent("actually-a-password");
-      });
+      itThrowsWithMessage("error.ca_not_found", ParameterizedValidationException.class,
+          "error.ca_not_found", () -> {
+            certificateAuthorityService.findMostRecent("actually-a-password");
+          });
     });
 
     describe("when the certificate found isn't a ca", () -> {
@@ -76,12 +77,14 @@ public class CertificateAuthorityServiceTest {
         NamedCertificateSecret notACertificateAuthority = mock(NamedCertificateSecret.class);
         when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
         when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
-        when(secretDataService.findMostRecent("just-a-certificate")).thenReturn(notACertificateAuthority);
+        when(secretDataService.findMostRecent("just-a-certificate"))
+            .thenReturn(notACertificateAuthority);
       });
 
-      itThrowsWithMessage("error.cert_not_ca", ParameterizedValidationException.class, "error.cert_not_ca", () -> {
-        certificateAuthorityService.findMostRecent("just-a-certificate");
-      });
+      itThrowsWithMessage("error.cert_not_ca", ParameterizedValidationException.class,
+          "error.cert_not_ca", () -> {
+            certificateAuthorityService.findMostRecent("just-a-certificate");
+          });
     });
   }
 }

@@ -6,13 +6,13 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.generator.SecretGenerator;
-import org.codehaus.jackson.annotate.JsonIgnore;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 @SuppressWarnings("unused")
 public class CertificateSetRequest extends BaseSecretSetRequest {
+
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
@@ -24,7 +24,10 @@ public class CertificateSetRequest extends BaseSecretSetRequest {
 
   @JsonIgnore
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
-    return NamedCertificateSecret.createNewVersion((NamedCertificateSecret) existing, getName(), this.getCertificateFields(), encryptor, this.getAccessControlEntries());
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor,
+      SecretGenerator secretGenerator) {
+    return NamedCertificateSecret
+        .createNewVersion((NamedCertificateSecret) existing, getName(), this.getCertificateFields(),
+            encryptor, this.getAccessControlEntries());
   }
 }

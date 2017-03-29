@@ -3,6 +3,7 @@ package io.pivotal.security.secret;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RsaKey implements Secret {
+
   private final String publicKey;
   private final String privateKey;
 

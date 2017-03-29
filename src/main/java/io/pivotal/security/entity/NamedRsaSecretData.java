@@ -2,7 +2,6 @@ package io.pivotal.security.entity;
 
 import io.pivotal.security.util.NamedRsaSecretHelper;
 import io.pivotal.security.view.SecretKind;
-
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -12,13 +11,13 @@ import javax.persistence.SecondaryTable;
 @Entity
 @DiscriminatorValue(NamedRsaSecretData.SECRET_TYPE)
 @SecondaryTable(
-  name = NamedRsaSecretData.TABLE_NAME,
-  pkJoinColumns = { @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid") }
+    name = NamedRsaSecretData.TABLE_NAME,
+    pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
-  static final String TABLE_NAME = "RsaSecret";
-  public static final String SECRET_TYPE = "rsa";
 
+  public static final String SECRET_TYPE = "rsa";
+  static final String TABLE_NAME = "RsaSecret";
   @Column(table = NamedRsaSecretData.TABLE_NAME, length = 7000)
   private String publicKey;
 

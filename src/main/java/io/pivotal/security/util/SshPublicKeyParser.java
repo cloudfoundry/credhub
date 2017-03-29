@@ -1,14 +1,14 @@
 package io.pivotal.security.util;
 
-import org.apache.commons.codec.digest.DigestUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Base64;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class SshPublicKeyParser {
+
   private String publicKey;
   private String fingerprint;
   private String comment;
@@ -34,12 +34,17 @@ public class SshPublicKeyParser {
   }
 
   // https://www.ietf.org/rfc/rfc4253.txt - section 6.6
-  // we are parsing the key which consists of multiple precision integers to derive modulus and hence key length
+  // we are parsing the key which consists of multiple precision integers to
+  // derive modulus and hence key length
   private void parsePublicKey() {
-    if (publicKey == null) { return; }
+    if (publicKey == null) {
+      return;
+    }
 
     int endOfPrefix = publicKey.indexOf(' ') + 1;
-    if (endOfPrefix == 0) { return; } // invalid format, does not have ssh- prefix.
+    if (endOfPrefix == 0) {
+      return;
+    } // invalid format, does not have ssh- prefix.
 
     int startOfComment = publicKey.indexOf(' ', endOfPrefix);
 
@@ -53,12 +58,16 @@ public class SshPublicKeyParser {
       comment = "";
     }
 
-    if (isolatedPublicKey.equals("")) { comment = null; return; }
+    if (isolatedPublicKey.equals("")) {
+      comment = null;
+      return;
+    }
 
     byte[] decodedIsolatedPublicKey = decoder.decode(isolatedPublicKey);
     fingerprint = fingerprintOf(decodedIsolatedPublicKey);
 
-    DataInputStream dataStream = new DataInputStream(new ByteArrayInputStream(decodedIsolatedPublicKey));
+    DataInputStream dataStream = new DataInputStream(
+        new ByteArrayInputStream(decodedIsolatedPublicKey));
     readAndRemoveType(dataStream);
     readAndRemoveExponent(dataStream);
     keyLength = readAndRemoveKeyLength(dataStream);

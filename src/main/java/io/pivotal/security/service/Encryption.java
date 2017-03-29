@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import java.util.UUID;
 
 public class Encryption {
+
   public final UUID canaryUuid;
   public final byte[] nonce;
   public final byte[] encryptedValue;

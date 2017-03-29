@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class LogConfiguration {
+
   @Bean
   public Logger securityEventsLogger() {
     return LogManager.getLogger("CREDHUB_SECURITY_EVENTS");

@@ -1,12 +1,12 @@
 package io.pivotal.security.view;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
-
 import static com.google.common.collect.Lists.newArrayList;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+
 public class FindPathResults {
+
   private List<Path> paths;
 
   @SuppressWarnings("rawtypes")
@@ -16,7 +16,7 @@ public class FindPathResults {
 
   public static FindPathResults fromEntity(List<String> pathStrings) {
     List<Path> paths = newArrayList();
-    for(String p: pathStrings) {
+    for (String p : pathStrings) {
       paths.add(new Path(p));
     }
     return new FindPathResults(paths);

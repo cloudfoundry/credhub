@@ -1,5 +1,7 @@
 package io.pivotal.security.request;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,10 +10,9 @@ import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
-
 @JsonInclude(NON_DEFAULT)
-public class PasswordGenerationParameters implements RequestParameters{
+public class PasswordGenerationParameters implements RequestParameters {
+
   // Value Parameters
   @JsonProperty(access = Access.WRITE_ONLY)
   private Integer length;
@@ -84,7 +85,7 @@ public class PasswordGenerationParameters implements RequestParameters{
         && excludeUpper
         && excludeLower
         && !onlyHex
-    );
+      );
   }
 
   public void validate() {

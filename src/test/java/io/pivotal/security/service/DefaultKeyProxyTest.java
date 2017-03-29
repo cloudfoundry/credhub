@@ -1,16 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.entity.EncryptionKeyCanary;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import java.security.Key;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -18,14 +7,24 @@ import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
-
-import io.pivotal.security.exceptions.IncorrectKeyException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.EncryptionKeyMetadata;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.exceptions.IncorrectKeyException;
+import java.security.Key;
+import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class DefaultKeyProxyTest {
+
   private DefaultKeyProxy subject;
   private Key encryptionKey;
   private EncryptionKeyCanary canary;
@@ -33,7 +32,8 @@ public class DefaultKeyProxyTest {
 
   {
     beforeEach(() -> {
-      final BCEncryptionService encryptionService = new BCEncryptionService(getBouncyCastleProvider());
+      final BcEncryptionService encryptionService = new BcEncryptionService(
+          getBouncyCastleProvider());
       EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
       keyMetadata.setDevKey("0123456789ABCDEF0123456789ABCDEF");
 
@@ -44,14 +44,16 @@ public class DefaultKeyProxyTest {
       canary.setNonce(encryptionData.nonce);
 
       deprecatedCanary = new EncryptionKeyCanary();
-      Encryption deprecatedEncryptionData = encryptionService.encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
+      Encryption deprecatedEncryptionData = encryptionService
+          .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
       deprecatedCanary.setEncryptedValue(deprecatedEncryptionData.encryptedValue);
       deprecatedCanary.setNonce(deprecatedEncryptionData.nonce);
     });
 
     describe("#isMatchingCanary", () -> {
       beforeEach(() -> {
-        subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(new BouncyCastleProvider()));
+        subject = new DefaultKeyProxy(encryptionKey,
+            new BcEncryptionService(new BouncyCastleProvider()));
       });
 
       describe("happy path", () -> {
@@ -66,78 +68,93 @@ public class DefaultKeyProxyTest {
         });
       });
 
-      describe("when decrypt throws IllegalBlockSizeException containing \"returns 0x40\" message", () -> {
-        beforeEach(() -> {
-          subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
-            @Override
-            public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
-              throw new IllegalBlockSizeException("returns 0x40");
-            }
-          });
-        });
+      describe("when decrypt throws IllegalBlockSizeException containing \"returns 0x40\" message",
+          () -> {
+            beforeEach(() -> {
+              subject = new DefaultKeyProxy(encryptionKey,
+                  new BcEncryptionService(getBouncyCastleProvider()) {
+                    @Override
+                    public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+                        throws Exception {
+                      throw new IllegalBlockSizeException("returns 0x40");
+                    }
+                  });
+            });
 
-        it("returns false" , () -> {
-          assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
-        });
-      });
+            it("returns false", () -> {
+              assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
+            });
+          });
 
       describe("when decrypt throws BadPaddingException containing \"rv=48\" message", () -> {
         beforeEach(() -> {
-          subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
-            @Override
-            public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
-              throw new BadPaddingException("rv=48");
-            }
-          });
+          subject = new DefaultKeyProxy(encryptionKey,
+              new BcEncryptionService(getBouncyCastleProvider()) {
+                @Override
+                public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+                    throws Exception {
+                  throw new BadPaddingException("rv=48");
+                }
+              });
         });
 
-        it("returns false" , () -> {
+        it("returns false", () -> {
           assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
         });
       });
 
       describe("when decrypt throws AEADBadTagException", () -> {
         beforeEach(() -> {
-          subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
-            @Override
-            public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
-              throw new AEADBadTagException();
-            }
-          });
+          subject = new DefaultKeyProxy(encryptionKey,
+              new BcEncryptionService(getBouncyCastleProvider()) {
+                @Override
+                public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+                    throws Exception {
+                  throw new AEADBadTagException();
+                }
+              });
         });
 
-        it("returns false" , () -> {
+        it("returns false", () -> {
           assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
         });
       });
 
       describe("when decrypt throws other exceptions", () -> {
-        itThrows("IncorrectKeyException for BadPaddingException", IncorrectKeyException.class, () -> {
-          subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
-            @Override
-            public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
-              throw new BadPaddingException("");
-            }
-          });
-          subject.matchesCanary(mock(EncryptionKeyCanary.class));
-        });
+        itThrows("IncorrectKeyException for BadPaddingException", IncorrectKeyException.class,
+            () -> {
+              subject = new DefaultKeyProxy(encryptionKey,
+                  new BcEncryptionService(getBouncyCastleProvider()) {
+                    @Override
+                    public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+                        throws Exception {
+                      throw new BadPaddingException("");
+                    }
+                  });
+              subject.matchesCanary(mock(EncryptionKeyCanary.class));
+            });
 
-        itThrows("IncorrectKeyException for IllegalBlockSizeException", IncorrectKeyException.class, () -> {
-          subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
-            @Override
-            public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
-              throw new IllegalBlockSizeException("");
-            }
-          });
-          subject.matchesCanary(mock(EncryptionKeyCanary.class));
-        });
+        itThrows("IncorrectKeyException for IllegalBlockSizeException", IncorrectKeyException.class,
+            () -> {
+              subject = new DefaultKeyProxy(encryptionKey,
+                  new BcEncryptionService(getBouncyCastleProvider()) {
+                    @Override
+                    public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+                        throws Exception {
+                      throw new IllegalBlockSizeException("");
+                    }
+                  });
+              subject.matchesCanary(mock(EncryptionKeyCanary.class));
+            });
         itThrows("IncorrectKeyException for Exception", IncorrectKeyException.class, () -> {
-          subject = new DefaultKeyProxy(encryptionKey, new BCEncryptionService(getBouncyCastleProvider()) {
-            @Override
-            public String decrypt(Key key, byte[] encryptedValue, byte[] nonce) throws Exception {
-              throw new Exception("");
-            }
-          });
+          subject = new DefaultKeyProxy(encryptionKey,
+              new BcEncryptionService(getBouncyCastleProvider()) {
+                @Override
+                public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+                    throws Exception {
+                  throw new Exception("");
+                }
+              });
           subject.matchesCanary(mock(EncryptionKeyCanary.class));
         });
       });

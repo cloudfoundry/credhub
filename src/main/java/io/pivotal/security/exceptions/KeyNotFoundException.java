@@ -1,4 +1,5 @@
 package io.pivotal.security.exceptions;
 
-public class KeyNotFoundException extends RuntimeException{
+public class KeyNotFoundException extends RuntimeException {
+
 }

@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Res
 @EnableResourceServer
 @EnableWebSecurity
 public class AuthConfiguration extends ResourceServerConfigurerAdapter {
+
   private final ResourceServerProperties resourceServerProperties;
   private final AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
   private final AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
@@ -49,14 +50,16 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
         .authorizeRequests()
         .antMatchers("/info").permitAll()
         .antMatchers("/health").permitAll()
-        .antMatchers("/api/v1/**").access("hasRole('MTLS_USER') or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))");
+        .antMatchers("/api/v1/**").access(
+        "hasRole('MTLS_USER') or (#oauth2.hasScope('credhub.read') and "
+            + "#oauth2.hasScope('credhub.write'))");
 
-    http.x509().userDetailsService(mTLSUserDetailsService());
+    http.x509().userDetailsService(mtlsSUserDetailsService());
 
     http.httpBasic().disable();
   }
 
-  private UserDetailsService mTLSUserDetailsService() {
+  private UserDetailsService mtlsSUserDetailsService() {
     return new UserDetailsService() {
       @Override
       public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

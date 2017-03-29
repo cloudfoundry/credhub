@@ -1,22 +1,24 @@
 package io.pivotal.security.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 @JsonTypeInfo(
-  use         = JsonTypeInfo.Id.NAME,
-  include     = JsonTypeInfo.As.PROPERTY,
-  property    = "type",
-  visible     = true,
-  defaultImpl = DefaultSecretGenerateRequest.class  // TEMPORARY: Only needed while we're removing DocumentContext
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type",
+    visible = true,
+    // TEMPORARY: Only needed while we're removing DocumentContext
+    defaultImpl = DefaultSecretGenerateRequest.class
 )
 @JsonSubTypes({
-  @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
+    @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
+
   private boolean regenerate;
 
   @Override

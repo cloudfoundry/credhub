@@ -1,10 +1,20 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.mockito.Mockito.mock;
+
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
-import io.pivotal.security.domain.*;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
 import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
@@ -13,19 +23,19 @@ import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
 
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static org.mockito.Mockito.mock;
-
 @RunWith(Spectrum.class)
 public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
 
   private NamedSecretGenerateHandler subject;
   private ParseContext jsonPath;
-  private PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator = mock(PasswordGeneratorRequestTranslator.class);
-  private CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator = mock(CertificateGeneratorRequestTranslator.class);
-  private SshGeneratorRequestTranslator sshGeneratorRequestTranslator = mock(SshGeneratorRequestTranslator.class);
-  private RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator = mock(RsaGeneratorRequestTranslator.class);
+  private PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator = mock(
+      PasswordGeneratorRequestTranslator.class);
+  private CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator = mock(
+      CertificateGeneratorRequestTranslator.class);
+  private SshGeneratorRequestTranslator sshGeneratorRequestTranslator = mock(
+      SshGeneratorRequestTranslator.class);
+  private RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator = mock(
+      RsaGeneratorRequestTranslator.class);
   private Encryptor encryptor = mock(Encryptor.class);
 
   {
@@ -42,13 +52,17 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
     describe("it verifies the secret type and secret creation for", () -> {
       describe("value", () -> {
-        itThrowsWithMessage("cannot be generated", ParameterizedValidationException.class, "error.invalid_type_with_generate_prompt", () -> {
-          SecretKind.VALUE.lift(subject.make("secret-path", null)).apply(null);
-        });
+        itThrowsWithMessage("cannot be generated", ParameterizedValidationException.class,
+            "error.invalid_type_with_generate_prompt", () -> {
+              SecretKind.VALUE.lift(subject.make("secret-path", null)).apply(null);
+            });
 
-        itThrowsWithMessage("ignores type mismatches and gives the can't generate message", ParameterizedValidationException.class, "error.invalid_type_with_generate_prompt", () -> {
-          SecretKind.VALUE.lift(subject.make("secret-path", null)).apply(new NamedPasswordSecret());
-        });
+        itThrowsWithMessage("ignores type mismatches and gives the can't generate message",
+            ParameterizedValidationException.class, "error.invalid_type_with_generate_prompt",
+            () -> {
+              SecretKind.VALUE.lift(subject.make("secret-path", null))
+                  .apply(new NamedPasswordSecret());
+            });
       });
 
       describe(
@@ -95,57 +109,59 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
     describe("verifies full set of keys for", () -> {
 
       it("password", () -> {
-            passwordGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"password\"," +
-                "\"overwrite\":true," +
-                "\"regenerate\":true," +
-                "\"parameters\":{\"length\":2048," +
-                "\"exclude_lower\":true," +
-                "\"exclude_upper\":false," +
-                "\"exclude_number\":false," +
-                "\"include_special\":true}" +
-                "}"));
+            passwordGeneratorRequestTranslator
+                .validateJsonKeys(jsonPath.parse("{\"type\":\"password\","
+                    + "\"overwrite\":true,"
+                    + "\"regenerate\":true,"
+                    + "\"parameters\":{\"length\":2048,"
+                    + "\"exclude_lower\":true,"
+                    + "\"exclude_upper\":false,"
+                    + "\"exclude_number\":false,"
+                    + "\"include_special\":true}"
+                    + "}"));
           }
       );
 
       it("certificate", () -> {
-            certificateGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{\"type\":\"certificate\"," +
-                "\"overwrite\":true," +
-                "\"parameters\":{" +
-                "\"common_name\":\"My Common Name\", " +
-                "\"organization\": \"organization.io\"," +
-                "\"organization_unit\": \"My Unit\"," +
-                "\"locality\": \"My Locality\"," +
-                "\"state\": \"My State\"," +
-                "\"country\": \"My Country\"," +
-                "\"key_length\": 3072," +
-                "\"duration\": 1000," +
-                "\"alternative_names\": []," +
-                "\"ca\": \"default\"," +
-                "}" +
-                "}"));
+            certificateGeneratorRequestTranslator
+                .validateJsonKeys(jsonPath.parse("{\"type\":\"certificate\","
+                    + "\"overwrite\":true,"
+                    + "\"parameters\":{"
+                    + "\"common_name\":\"My Common Name\", "
+                    + "\"organization\": \"organization.io\","
+                    + "\"organization_unit\": \"My Unit\","
+                    + "\"locality\": \"My Locality\","
+                    + "\"state\": \"My State\","
+                    + "\"country\": \"My Country\","
+                    + "\"key_length\": 3072,"
+                    + "\"duration\": 1000,"
+                    + "\"alternative_names\": [],"
+                    + "\"ca\": \"default\","
+                    + "}"
+                    + "}"));
           }
       );
 
       it("ssh", () -> {
-            sshGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{" +
-                "\"type\":\"ssh\"," +
-                "\"overwrite\":true," +
-                "\"parameters\":{" +
-                "\"key_length\":3072," +
-                "\"ssh_comment\":\"ssh comment\"" +
-                "}" +
-                "}"));
+            sshGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{"
+                + "\"type\":\"ssh\","
+                + "\"overwrite\":true,"
+                + "\"parameters\":{"
+                + "\"key_length\":3072,"
+                + "\"ssh_comment\":\"ssh comment\""
+                + "}"
+                + "}"));
           }
       );
 
       it("rsa", () -> {
-            rsaGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{" +
-                "\"type\":\"rsa\"," +
-                "\"overwrite\":true," +
-                "\"parameters\":{" +
-                "\"key_length\":2048" +
-                "}" +
-                "}"));
+            rsaGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{"
+                + "\"type\":\"rsa\","
+                + "\"overwrite\":true,"
+                + "\"parameters\":{"
+                + "\"key_length\":2048"
+                + "}"
+                + "}"));
           }
       );
     });

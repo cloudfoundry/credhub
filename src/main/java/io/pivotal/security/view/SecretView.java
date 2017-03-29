@@ -8,12 +8,12 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.domain.NamedValueSecret;
-
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.UUID;
 
 public class SecretView extends BaseView {
+
   private UUID uuid;
   private String name;
   private String type;
@@ -31,26 +31,6 @@ public class SecretView extends BaseView {
     this.name = name;
     this.type = type;
     this.value = value;
-  }
-
-  @JsonProperty
-  public String getType() {
-    return type;
-  }
-
-  @JsonProperty("id")
-  public String getUuid() {
-    return uuid == null ? "" : uuid.toString();
-  }
-
-  @JsonProperty("name")
-  public String getName() {
-    return name;
-  }
-
-  @JsonProperty("value")
-  public Object getValue() {
-    return value;
   }
 
   public static SecretView fromEntity(NamedSecret namedSecret) throws NoSuchAlgorithmException {
@@ -71,5 +51,25 @@ public class SecretView extends BaseView {
       throw new IllegalArgumentException();
     }
     return result;
+  }
+
+  @JsonProperty
+  public String getType() {
+    return type;
+  }
+
+  @JsonProperty("id")
+  public String getUuid() {
+    return uuid == null ? "" : uuid.toString();
+  }
+
+  @JsonProperty("name")
+  public String getName() {
+    return name;
+  }
+
+  @JsonProperty("value")
+  public Object getValue() {
+    return value;
   }
 }

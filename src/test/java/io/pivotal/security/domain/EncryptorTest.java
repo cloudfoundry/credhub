@@ -1,18 +1,5 @@
 package io.pivotal.security.domain;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.service.BCEncryptionService;
-import io.pivotal.security.service.BCNullConnection;
-import io.pivotal.security.service.Encryption;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.RetryingEncryptionService;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import javax.crypto.spec.SecretKeySpec;
-import java.security.Key;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -25,6 +12,17 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.service.BcEncryptionService;
+import io.pivotal.security.service.BcNullConnection;
+import io.pivotal.security.service.Encryption;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.service.RetryingEncryptionService;
+import java.security.Key;
+import java.util.UUID;
+import javax.crypto.spec.SecretKeySpec;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class EncryptorTest {
@@ -41,23 +39,26 @@ public class EncryptorTest {
   {
     describe("Encryptor", () -> {
       beforeEach(() -> {
-        Key oldKey = new SecretKeySpec(parseHexBinary("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0, 16, "AES");
-        Key newKey = new SecretKeySpec(parseHexBinary("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"), 0, 16, "AES");
         oldUuid = UUID.randomUUID();
         newUuid = UUID.randomUUID();
 
         keyMapper = mock(EncryptionKeyCanaryMapper.class);
-        BCEncryptionService bcEncryptionService;
-        bcEncryptionService = new BCEncryptionService(getBouncyCastleProvider());
-        RetryingEncryptionService encryptionService = new RetryingEncryptionService(bcEncryptionService, keyMapper, new BCNullConnection());
+        BcEncryptionService bcEncryptionService;
+        bcEncryptionService = new BcEncryptionService(getBouncyCastleProvider());
 
+        Key newKey = new SecretKeySpec(parseHexBinary("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"), 0, 16,
+            "AES");
         when(keyMapper.getActiveKey()).thenReturn(newKey);
         when(keyMapper.getActiveUuid()).thenReturn(newUuid);
+        Key oldKey = new SecretKeySpec(parseHexBinary("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), 0, 16,
+            "AES");
         when(keyMapper.getKeyForUuid(oldUuid)).thenReturn(oldKey);
         when(keyMapper.getKeyForUuid(newUuid)).thenReturn(newKey);
         when(keyMapper.getUuidForKey(oldKey)).thenReturn(oldUuid);
         when(keyMapper.getUuidForKey(newKey)).thenReturn(newUuid);
 
+        RetryingEncryptionService encryptionService = new RetryingEncryptionService(
+            bcEncryptionService, keyMapper, new BcNullConnection());
         subject = new Encryptor(keyMapper, encryptionService);
       });
 
@@ -91,7 +92,8 @@ public class EncryptorTest {
         });
 
         it("decrypts things that have been encrypted", () -> {
-          assertThat(subject.decrypt(newUuid, encryptedValue, nonce), equalTo("the expected clear text"));
+          assertThat(subject.decrypt(newUuid, encryptedValue, nonce),
+              equalTo("the expected clear text"));
         });
 
         itThrows("fails to encrypt when given the wrong key UUID", RuntimeException.class, () -> {

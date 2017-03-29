@@ -1,16 +1,5 @@
 package io.pivotal.security.jna.libcrypto;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.sun.jna.Pointer;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import javax.crypto.Cipher;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.Security;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -20,6 +9,14 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
+
+import com.greghaskins.spectrum.Spectrum;
+import com.sun.jna.Pointer;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import javax.crypto.Cipher;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class CryptoWrapperTest {
@@ -48,7 +45,8 @@ public class CryptoWrapperTest {
           KeyPair secondKeyPair = subject.toKeyPair(second);
           assertThat(secondKeyPair.getPublic(), notNullValue());
 
-          assertThat(secondKeyPair.getPublic().getEncoded(), not(equalTo(firstKeyPair.getPublic().getEncoded())));
+          assertThat(secondKeyPair.getPublic().getEncoded(),
+              not(equalTo(firstKeyPair.getPublic().getEncoded())));
         });
       });
     });
@@ -60,7 +58,8 @@ public class CryptoWrapperTest {
         System.arraycopy(message, 0, plaintext, 0, message.length);
 
         byte[] ciphertext = new byte[Crypto.RSA_size(rsa)];
-        int result = Crypto.RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_NO_PADDING);
+        int result = Crypto
+            .RSA_private_encrypt(plaintext.length, plaintext, ciphertext, rsa, RSA_NO_PADDING);
         if (result == -1) {
           System.out.println(subject.getError());
         }
@@ -73,7 +72,8 @@ public class CryptoWrapperTest {
         cipher.init(Cipher.ENCRYPT_MODE, privateKey);
         byte[] javaCipherText = cipher.doFinal(plaintext);
 
-        assertThat("Encryption should work the same inside and outside openssl", javaCipherText, equalTo(ciphertext));
+        assertThat("Encryption should work the same inside and outside openssl", javaCipherText,
+            equalTo(ciphertext));
       });
     });
 

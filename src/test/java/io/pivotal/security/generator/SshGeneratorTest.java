@@ -1,13 +1,5 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.SshSecretParameters;
-import io.pivotal.security.secret.SshKey;
-import io.pivotal.security.util.CertificateFormatter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -18,9 +10,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.controller.v1.SshSecretParameters;
+import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.util.CertificateFormatter;
 import java.security.KeyPair;
-import java.security.Security;
 import java.security.interfaces.RSAPublicKey;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class SshGeneratorTest {
@@ -45,7 +41,8 @@ public class SshGeneratorTest {
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
-        assertThat(ssh.getPublicKey(), equalTo(CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())));
+        assertThat(ssh.getPublicKey(),
+            equalTo(CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())));
         assertThat(ssh.getPrivateKey(), equalTo(CertificateFormatter.pemOf(keyPair.getPrivate())));
       });
 
@@ -64,7 +61,8 @@ public class SshGeneratorTest {
 
         final SshKey ssh = subject.generateSecret(sshSecretParameters);
 
-        String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic()) + " this is an ssh comment";
+        String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())
+            + " this is an ssh comment";
 
         assertThat(ssh.getPublicKey(), equalTo(expectedPublicKey));
       });

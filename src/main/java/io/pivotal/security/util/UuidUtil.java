@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.UUID;
 
 public class UuidUtil {
+
   public static Object makeUuid(String databaseName) {
     UUID uuid = UUID.randomUUID();
 

@@ -1,13 +1,14 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
-
-import javax.crypto.SecretKey;
 import java.security.Key;
 import java.security.KeyStore;
+import javax.crypto.SecretKey;
 
 public abstract class EncryptionServiceWithConnection extends EncryptionService {
-  protected Key createKey(EncryptionKeyMetadata encryptionKeyMetadata, KeyGeneratingConnection connection) {
+
+  protected Key createKey(EncryptionKeyMetadata encryptionKeyMetadata,
+      KeyGeneratingConnection connection) {
     try {
       KeyStore keyStore = connection.getKeyStore();
       String encryptionKeyAlias = encryptionKeyMetadata.getEncryptionKeyName();

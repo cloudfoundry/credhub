@@ -1,13 +1,12 @@
 package io.pivotal.security.util;
 
-import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
-
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.interfaces.RSAPublicKey;
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 
 public class CertificateFormatter {
 
@@ -37,7 +36,8 @@ public class CertificateFormatter {
     return SSH_RSA + " " + publicKeyEncoded;
   }
 
-  private static void writeBytesToDataStream(byte[] bytes, DataOutputStream dataStream) throws IOException {
+  private static void writeBytesToDataStream(byte[] bytes, DataOutputStream dataStream)
+      throws IOException {
     dataStream.writeInt(bytes.length);
     dataStream.write(bytes);
   }

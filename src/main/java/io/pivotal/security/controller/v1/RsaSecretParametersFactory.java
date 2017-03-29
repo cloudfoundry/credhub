@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RsaSecretParametersFactory {
+
   public RsaSecretParameters get() {
     return new RsaSecretParameters();
   }

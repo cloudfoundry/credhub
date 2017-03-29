@@ -2,15 +2,15 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
+import java.util.List;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
-public class PassayStringSecretGenerator implements SecretGenerator<PasswordGenerationParameters, Password> {
+public class PassayStringSecretGenerator implements
+    SecretGenerator<PasswordGenerationParameters, Password> {
 
   public static final int DEFAULT_LENGTH = 30;
   public static final int MIN_LENGTH = 4;

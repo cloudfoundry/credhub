@@ -1,16 +1,5 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.RsaSecretParameters;
-import io.pivotal.security.secret.RsaKey;
-import io.pivotal.security.util.CertificateFormatter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
-
-import java.security.KeyPair;
-import java.security.Security;
-
-import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -21,8 +10,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.controller.v1.RsaSecretParameters;
+import io.pivotal.security.secret.RsaKey;
+import io.pivotal.security.util.CertificateFormatter;
+import java.security.KeyPair;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class RsaGeneratorTest {
+
   private LibcryptoRsaKeyPairGenerator keyPairGenerator;
   private RsaGenerator subject;
   private FakeKeyPairGenerator fakeKeyPairGenerator;

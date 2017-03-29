@@ -4,10 +4,10 @@ import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
-
 import java.util.List;
 
 public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
+
   private NamedValueSecretData delegate;
 
   public NamedValueSecret(NamedValueSecretData delegate) {
@@ -23,11 +23,28 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
     this(new NamedValueSecretData());
   }
 
+  public static NamedValueSecret createNewVersion(NamedValueSecret existing, String name,
+      String value, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
+    NamedValueSecret secret;
+
+    if (existing == null) {
+      secret = new NamedValueSecret(name);
+    } else {
+      secret = new NamedValueSecret();
+      secret.copyNameReferenceFrom(existing);
+    }
+
+    secret.setAccessControlList(getAccessEntryData(accessControlEntries, secret));
+    secret.setEncryptor(encryptor);
+    secret.setValue(value);
+    return secret;
+  }
+
   public String getValue() {
     return encryptor.decrypt(
-      delegate.getEncryptionKeyUuid(),
-      delegate.getEncryptedValue(),
-      delegate.getNonce()
+        delegate.getEncryptionKeyUuid(),
+        delegate.getEncryptedValue(),
+        delegate.getNonce()
     );
   }
 
@@ -57,22 +74,6 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
   public void rotate() {
     String decryptedValue = this.getValue();
     this.setValue(decryptedValue);
-  }
-
-  public static NamedValueSecret createNewVersion(NamedValueSecret existing, String name, String value, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
-    NamedValueSecret secret;
-
-    if (existing == null) {
-      secret = new NamedValueSecret(name);
-    } else {
-      secret = new NamedValueSecret();
-      secret.copyNameReferenceFrom(existing);
-    }
-
-    secret.setAccessControlList(getAccessEntryData(accessControlEntries, secret));
-    secret.setEncryptor(encryptor);
-    secret.setValue(value);
-    return secret;
   }
 
 }

@@ -1,12 +1,11 @@
 package io.pivotal.security.fake;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class FakeTransactionManager implements PlatformTransactionManager {
 
@@ -14,7 +13,8 @@ public class FakeTransactionManager implements PlatformTransactionManager {
   private boolean shouldThrow;
 
   @Override
-  public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+  public TransactionStatus getTransaction(TransactionDefinition definition)
+      throws TransactionException {
     if (currentTransaction != null) {
       throw new RuntimeException();
     }
@@ -46,6 +46,7 @@ public class FakeTransactionManager implements PlatformTransactionManager {
   }
 
   static class Tx implements TransactionStatus {
+
     final List<Operation> operations = new ArrayList<>();
     private boolean completed = false;
 
@@ -58,13 +59,17 @@ public class FakeTransactionManager implements PlatformTransactionManager {
     }
 
     void commit() {
-      if (completed) throw new RuntimeException("can't commit completed transaction");
+      if (completed) {
+        throw new RuntimeException("can't commit completed transaction");
+      }
       completed = true;
       operations.forEach(Operation::perform);
     }
 
     void rollback() {
-      if (completed) throw new RuntimeException("can't rollback completed transaction");
+      if (completed) {
+        throw new RuntimeException("can't rollback completed transaction");
+      }
     }
 
     @Override
@@ -113,6 +118,7 @@ public class FakeTransactionManager implements PlatformTransactionManager {
     }
 
     interface Operation {
+
       void perform();
     }
   }

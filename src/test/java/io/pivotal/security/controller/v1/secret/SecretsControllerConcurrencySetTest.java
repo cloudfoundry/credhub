@@ -1,5 +1,23 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
@@ -9,6 +27,8 @@ import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,48 +41,26 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.UUID;
-import java.util.function.Supplier;
-
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerConcurrencySetTest {
 
+  final String secretValue = "secret-value";
+  private final String secretName = "/my-namespace/secretForSetTest/secret-name";
   @Autowired
   WebApplicationContext webApplicationContext;
-
   @Autowired
   SecretsController subject;
-
-  @Autowired
-  private Encryptor encryptor;
-
   @SpyBean
   AuditLogService auditLogService;
-
   @SpyBean
   SecretDataService secretDataService;
-
+  @Autowired
+  private Encryptor encryptor;
   private MockMvc mockMvc;
-
-  private final String secretName = "/my-namespace/secretForSetTest/secret-name";
-
   private ResultActions response;
-
   private UUID uuid;
-  final String secretValue = "secret-value";
-
   private ResultActions[] responses;
 
   {
@@ -84,11 +82,11 @@ public class SecretsControllerConcurrencySetTest {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content("{" +
-                    "  \"type\":\"value\"," +
-                    "  \"name\":\"" + secretName + this.getName() + "\"," +
-                    "  \"value\":\"" + secretValue + this.getName() + "\"" +
-                    "}");
+                .content("{"
+                    + "  \"type\":\"value\","
+                    + "  \"name\":\""
+                    + secretName + this.getName() + "\",  \"value\":\""
+                    + secretValue + this.getName() + "\"}");
 
             try {
               responses[0] = mockMvc.perform(put);
@@ -103,11 +101,11 @@ public class SecretsControllerConcurrencySetTest {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content("{" +
-                    "  \"type\":\"value\"," +
-                    "  \"name\":\"" + secretName + this.getName() + "\"," +
-                    "  \"value\":\"" + secretValue + this.getName() + "\"" +
-                    "}");
+                .content("{"
+                    + "  \"type\":\"value\","
+                    + "  \"name\":\""
+                    + secretName + this.getName() + "\",  \"value\":\""
+                    + secretValue + this.getName() + "\"}");
 
             try {
               responses[1] = mockMvc.perform(put);
@@ -124,8 +122,10 @@ public class SecretsControllerConcurrencySetTest {
       });
 
       it("test", () -> {
-        responses[0].andExpect(jsonPath("$.value").value(secretValue + "thread 1"));
-        responses[1].andExpect(jsonPath("$.value").value(secretValue + "thread 2"));
+        responses[0].andExpect(jsonPath("$.value").value(secretValue
+            + "thread 1"));
+        responses[1].andExpect(jsonPath("$.value").value(secretValue
+            + "thread 2"));
       });
     });
 
@@ -149,11 +149,11 @@ public class SecretsControllerConcurrencySetTest {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "  \"type\":\"value\"," +
-                  "  \"name\":\"" + secretName + "\"," +
-                  "  \"value\":\"" + secretValue + "\"" +
-                  "}");
+              .content("{"
+                  + "  \"type\":\"value\","
+                  + "  \"name\":\""
+                  + secretName + "\",  \"value\":\""
+                  + secretValue + "\"}");
 
           response = mockMvc.perform(put);
         });
@@ -175,6 +175,7 @@ public class SecretsControllerConcurrencySetTest {
     doAnswer(invocation -> {
       final Supplier action = invocation.getArgumentAt(1, Supplier.class);
       return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+    }).when(auditLogService)
+        .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }

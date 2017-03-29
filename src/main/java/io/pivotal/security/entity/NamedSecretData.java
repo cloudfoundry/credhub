@@ -1,12 +1,16 @@
 package io.pivotal.security.entity;
 
+import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+
 import io.pivotal.security.util.InstantMillisecondsConverter;
 import io.pivotal.security.view.SecretKind;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Stream;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -20,22 +24,19 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-
-import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = "NamedSecret")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-abstract public class NamedSecretData<Z extends NamedSecretData> implements EncryptedValueContainer {
+public abstract class NamedSecretData<Z extends NamedSecretData> implements
+    EncryptedValueContainer {
+
   // Use VARBINARY to make all 3 DB types happy.
   // H2 doesn't distinguish between "binary" and "varbinary" - see
   // https://hibernate.atlassian.net/browse/HHH-9835 and
@@ -85,6 +86,22 @@ abstract public class NamedSecretData<Z extends NamedSecretData> implements Encr
 
   public NamedSecretData() {
     this((String) null);
+  }
+
+  public static Stream<String> fullHierarchyForPath(String path) {
+    String[] components = path.split("/");
+    if (components.length > 1) {
+      StringBuilder currentPath = new StringBuilder();
+      List<String> pathSet = new ArrayList<>();
+      for (int i = 0; i < components.length - 1; i++) {
+        String element = components[i];
+        currentPath.append(element).append('/');
+        pathSet.add(currentPath.toString());
+      }
+      return pathSet.stream();
+    } else {
+      return Stream.of();
+    }
   }
 
   public UUID getUuid() {
@@ -139,22 +156,6 @@ abstract public class NamedSecretData<Z extends NamedSecretData> implements Encr
   public Z setVersionCreatedAt(Instant versionCreatedAt) {
     this.versionCreatedAt = versionCreatedAt;
     return (Z) this;
-  }
-
-  public static Stream<String> fullHierarchyForPath(String path) {
-    String[] components = path.split("/");
-    if (components.length > 1) {
-      StringBuilder currentPath = new StringBuilder();
-      List<String> pathSet = new ArrayList<>();
-      for (int i = 0; i < components.length - 1; i++) {
-        String element = components[i];
-        currentPath.append(element).append('/');
-        pathSet.add(currentPath.toString());
-      }
-      return pathSet.stream();
-    } else {
-      return Stream.of();
-    }
   }
 
   abstract void copyIntoImpl(Z copy);

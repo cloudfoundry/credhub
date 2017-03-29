@@ -7,6 +7,7 @@ import com.jayway.jsonpath.ParseContext;
 import org.springframework.beans.factory.FactoryBean;
 
 public class JsonContextFactory implements FactoryBean<ParseContext> {
+
   @Override
   public ParseContext getObject() throws Exception {
     Configuration configuration = Configuration.defaultConfiguration()

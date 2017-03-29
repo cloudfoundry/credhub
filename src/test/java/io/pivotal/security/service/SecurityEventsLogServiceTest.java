@@ -1,13 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.VersionProvider;
-import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.util.CurrentTimeProvider;
-import org.apache.logging.log4j.Logger;
-import org.junit.runner.RunWith;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -22,10 +14,18 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.VersionProvider;
+import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.util.CurrentTimeProvider;
 import java.time.Instant;
+import org.apache.logging.log4j.Logger;
+import org.junit.runner.RunWith;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RunWith(Spectrum.class)
 public class SecurityEventsLogServiceTest {
+
   private final Instant now = Instant.now();
   private final String version = "FAKE-VERSION";
 
@@ -50,61 +50,66 @@ public class SecurityEventsLogServiceTest {
     afterEach(SecurityContextHolder::clearContext);
 
     describe("log", () -> {
-      it("should log an operation audit record to the sys log when using oauth", () -> {
-        OperationAuditRecord operationAuditRecord = makeOperationAuditRecord("foo=bar", AUTH_METHOD_UAA);
+      it("should log an operation audit record to the sys logwhen using oauth", () -> {
+        OperationAuditRecord operationAuditRecord = makeOperationAuditRecord(
+            "foo=bar",
+            AUTH_METHOD_UAA);
 
         subject.log(operationAuditRecord);
 
         verify(securityEventsLogger).info(
-            "CEF:0|cloud_foundry|credhub|" +
-            version + "|" +
-            "GET /api/some-path|" +
-            "GET /api/some-path|0|rt=" +
-            String.valueOf(now.toEpochMilli()) + " " +
-            "suser=user-name " +
-            "suid=user-id " +
-            "cs1Label=userAuthenticationMechanism " +
-            "cs1=oauth-access-token " +
-            "request=/api/some-path?foo=bar " +
-            "requestMethod=GET " +
-            "cs3Label=result " +
-            "cs3=success " +
-            "cs4Label=httpStatusCode " +
-            "cs4=200 " +
-            "src=127.0.0.1 " +
-            "dst=host.example.com"
+            "CEF:0|cloud_foundry|credhub|"
+                + version + "|GET /api/some-path|"
+                + "GET /api/some-path|0|rt="
+                + String.valueOf(now.toEpochMilli())
+                + " suser=user-name "
+                + "suid=user-id "
+                + "cs1Label=userAuthenticationMechanism "
+                + "cs1=oauth-access-token "
+                + "request=/api/some-path?foo=bar "
+                + "requestMethod=GET "
+                + "cs3Label=result "
+                + "cs3=success "
+                + "cs4Label=httpStatusCode "
+                + "cs4=200 "
+                + "src=127.0.0.1 "
+                + "dst=host.example.com"
         );
       });
 
       it("should log an operation audit record to the sys log when using mTLS", () -> {
-        OperationAuditRecord operationAuditRecord = makeOperationAuditRecord("foo=bar", AUTH_METHOD_MUTUAL_TLS);
+        OperationAuditRecord operationAuditRecord = makeOperationAuditRecord("foo=bar",
+            AUTH_METHOD_MUTUAL_TLS);
 
         subject.log(operationAuditRecord);
 
         verify(securityEventsLogger).info(
-            "CEF:0|cloud_foundry|credhub|" +
-                version + "|" +
-                "GET /api/some-path|" +
-                "GET /api/some-path|0|rt=" +
-                String.valueOf(now.toEpochMilli()) + " " +
-                "suser=user-name " +
-                "suid=user-id " +
-                "cs1Label=userAuthenticationMechanism " +
-                "cs1=mutual-tls " +
-                "request=/api/some-path?foo=bar " +
-                "requestMethod=GET " +
-                "cs3Label=result " +
-                "cs3=success " +
-                "cs4Label=httpStatusCode " +
-                "cs4=200 " +
-                "src=127.0.0.1 " +
-                "dst=host.example.com"
+            "CEF:0|cloud_foundry|credhub|"
+                + version
+                + "|GET /api/some-path|"
+                + "GET /api/some-path|0|rt="
+                + String.valueOf(now.toEpochMilli())
+                + " suser=user-name "
+                + "suid=user-id "
+                + "cs1Label=userAuthenticationMechanism "
+                + "cs1=mutual-tls "
+                + "request=/api/some-path?foo=bar "
+                + "requestMethod=GET "
+                + "cs3Label=result "
+                + "cs3=success "
+                + "cs4Label=httpStatusCode "
+                + "cs4=200 "
+                + "src=127.0.0.1 "
+                + "dst=host.example.com"
         );
       });
 
       describe("when the query param string is null", () -> {
         it("should specify only the path in the request", () -> {
-          OperationAuditRecord operationAuditRecord = makeOperationAuditRecord(null, AUTH_METHOD_UAA);
+          OperationAuditRecord operationAuditRecord = makeOperationAuditRecord(
+              null,
+              AUTH_METHOD_UAA
+          );
           subject.log(operationAuditRecord);
 
           assertThat(version, notNullValue());
@@ -151,5 +156,6 @@ public class SecurityEventsLogServiceTest {
         "password",
         true
     );
+
   }
 }

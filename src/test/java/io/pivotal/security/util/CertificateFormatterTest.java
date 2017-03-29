@@ -1,16 +1,17 @@
 package io.pivotal.security.util;
 
-import com.greghaskins.spectrum.Spectrum;
-import org.junit.runner.RunWith;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.interfaces.RSAPublicKey;
-
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+
+import com.greghaskins.spectrum.Spectrum;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.RSAPublicKey;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class CertificateFormatterTest {

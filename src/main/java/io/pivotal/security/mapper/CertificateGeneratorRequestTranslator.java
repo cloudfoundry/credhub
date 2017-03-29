@@ -1,25 +1,27 @@
 package io.pivotal.security.mapper;
 
 import static com.google.common.collect.ImmutableSet.of;
+import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.controller.v1.CertificateSecretParametersFactory;
 import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.SecretGenerator;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateReader;
-import static io.pivotal.security.util.StringUtil.INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
+import java.util.Optional;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-import java.util.Set;
-
 @Component
-public class CertificateGeneratorRequestTranslator implements RequestTranslator<NamedCertificateSecret>, SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {
+public class CertificateGeneratorRequestTranslator implements
+    RequestTranslator<NamedCertificateSecret>,
+    SecretGeneratorRequestTranslator<CertificateSecretParameters, NamedCertificateSecret> {
 
   private SecretGenerator<CertificateSecretParameters, Certificate> certificateSecretGenerator;
   private CertificateSecretParametersFactory parametersFactory;
@@ -33,15 +35,18 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   }
 
   @Override
-  public CertificateSecretParameters validRequestParameters(DocumentContext parsed, NamedCertificateSecret entity) {
+  public CertificateSecretParameters validRequestParameters(DocumentContext parsed,
+      NamedCertificateSecret entity) {
     Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
 
     if (Boolean.TRUE.equals(regenerate)) {
       CertificateReader certificateReader = new CertificateReader(entity.getCertificate());
       if (!certificateReader.isValid()) {
-        throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_certificate");
+        throw new ParameterizedValidationException(
+            "error.cannot_regenerate_non_generated_certificate");
       } else if (isEmpty(entity.getCaName()) && !certificateReader.isSelfSigned()) {
-        throw new ParameterizedValidationException("error.cannot_regenerate_non_generated_certificate");
+        throw new ParameterizedValidationException(
+            "error.cannot_regenerate_non_generated_certificate");
       }
 
       return new CertificateSecretParameters(certificateReader, entity.getCaName());
@@ -49,35 +54,35 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
 
     CertificateSecretParameters secretParameters = parametersFactory.get();
     Optional.ofNullable(parsed.read("$.parameters.common_name", String.class))
-      .ifPresent(secretParameters::setCommonName);
+        .ifPresent(secretParameters::setCommonName);
     Optional.ofNullable(parsed.read("$.parameters.organization", String.class))
-      .ifPresent(secretParameters::setOrganization);
+        .ifPresent(secretParameters::setOrganization);
     Optional.ofNullable(parsed.read("$.parameters.organization_unit", String.class))
-      .ifPresent(secretParameters::setOrganizationUnit);
+        .ifPresent(secretParameters::setOrganizationUnit);
     Optional.ofNullable(parsed.read("$.parameters.locality", String.class))
-      .ifPresent(secretParameters::setLocality);
+        .ifPresent(secretParameters::setLocality);
     Optional.ofNullable(parsed.read("$.parameters.state", String.class))
-      .ifPresent(secretParameters::setState);
+        .ifPresent(secretParameters::setState);
     Optional.ofNullable(parsed.read("$.parameters.country", String.class))
-      .ifPresent(secretParameters::setCountry);
+        .ifPresent(secretParameters::setCountry);
     Optional.ofNullable(parsed.read("$.parameters.key_length", Integer.class))
-      .ifPresent(secretParameters::setKeyLength);
+        .ifPresent(secretParameters::setKeyLength);
     Optional.ofNullable(parsed.read("$.parameters.duration", Integer.class))
-      .ifPresent(secretParameters::setDurationDays);
+        .ifPresent(secretParameters::setDurationDays);
     Optional.ofNullable(parsed.read("$.parameters.alternative_names", String[].class))
-      .ifPresent(secretParameters::addAlternativeNames);
+        .ifPresent(secretParameters::addAlternativeNames);
     Optional.ofNullable(parsed.read("$.parameters.key_usage", String[].class))
-      .ifPresent(secretParameters::addKeyUsage);
+        .ifPresent(secretParameters::addKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.extended_key_usage", String[].class))
-      .ifPresent(secretParameters::addExtendedKeyUsage);
+        .ifPresent(secretParameters::addExtendedKeyUsage);
     Optional.ofNullable(parsed.read("$.parameters.self_sign", Boolean.class))
-      .ifPresent(secretParameters::setSelfSigned);
+        .ifPresent(secretParameters::setSelfSigned);
     Optional.ofNullable(parsed.read("$.parameters.is_ca", Boolean.class))
-      .ifPresent(secretParameters::setIsCa);
+        .ifPresent(secretParameters::setIsCa);
     Optional.ofNullable(parsed.read("$.parameters.ca", String.class))
-      .ifPresent(secretParameters::setCaName);
+        .ifPresent(secretParameters::setCaName);
 
-    if (secretParameters.isCA() && StringUtils.isEmpty(secretParameters.getCaName())) {
+    if (secretParameters.isCa() && StringUtils.isEmpty(secretParameters.getCaName())) {
       secretParameters.setSelfSigned(true);
     }
 
@@ -87,7 +92,8 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
   }
 
   @Override
-  public void populateEntityFromJson(NamedCertificateSecret entity, DocumentContext documentContext) {
+  public void populateEntityFromJson(NamedCertificateSecret entity,
+      DocumentContext documentContext) {
     CertificateSecretParameters requestParameters = validRequestParameters(documentContext, entity);
 
     Certificate secret = certificateSecretGenerator.generateSecret(requestParameters);
@@ -105,7 +111,7 @@ public class CertificateGeneratorRequestTranslator implements RequestTranslator<
         "$['regenerate']",
         "$['parameters']",
         "$['parameters']['alternative_names']",
-        "$['parameters']['alternative_names']"  + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS,
+        "$['parameters']['alternative_names']" + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS,
         "$['parameters']['key_usage']",
         "$['parameters']['key_usage']" + INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS,
         "$['parameters']['extended_key_usage']",

@@ -1,16 +1,5 @@
 package io.pivotal.security.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.service.Encryption;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -23,8 +12,19 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.service.Encryption;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class NamedJsonSecretTest {
+
   private Encryptor encryptor;
 
   private NamedJsonSecret subject;
@@ -46,8 +46,10 @@ public class NamedJsonSecretTest {
       byte[] encryptedValue = "fake-encrypted-value".getBytes();
       byte[] nonce = "fake-nonce".getBytes();
       canaryUuid = UUID.randomUUID();
-      when(encryptor.encrypt(serializedValue)).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn(serializedValue);
+      when(encryptor.encrypt(serializedValue))
+          .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+          .thenReturn(serializedValue);
 
       subject = new NamedJsonSecret("Foo");
     });
@@ -72,17 +74,20 @@ public class NamedJsonSecretTest {
         assertThat(subject.getValue(), equalTo(value));
       });
 
-      itThrowsWithMessage("when setting a value that is null", ParameterizedValidationException.class, "error.missing_value", () -> {
-        subject.setValue(null);
-      });
+      itThrowsWithMessage("when setting a value that is null",
+          ParameterizedValidationException.class, "error.missing_value", () -> {
+            subject.setValue(null);
+          });
     });
 
     describe(".createNewVersion", () -> {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
-        when(encryptor.encrypt("new value")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("new value");
+        when(encryptor.encrypt("new value"))
+            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn("new value");
 
         subject = new NamedJsonSecret("/existingName");
         subject.setEncryptor(encryptor);
@@ -98,10 +103,14 @@ public class NamedJsonSecretTest {
         byte[] encryptedValue = "fake-new-value".getBytes();
         byte[] nonce = "fake-new-nonce".getBytes();
 
-        when(encryptor.encrypt(serializedValue)).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn(serializedValue);
+        when(encryptor.encrypt(serializedValue))
+            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn(serializedValue);
 
-        NamedJsonSecret newSecret = NamedJsonSecret.createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor, new ArrayList<>());
+        NamedJsonSecret newSecret = NamedJsonSecret
+            .createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor,
+                new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/existingName"));
         assertThat(newSecret.getValue(), equalTo(newValue));
@@ -109,11 +118,11 @@ public class NamedJsonSecretTest {
 
       it("creates new if no existing", () -> {
         NamedJsonSecret newSecret = NamedJsonSecret.createNewVersion(
-          null,
-          "/newName",
-          value,
-          encryptor,
-          new ArrayList<>());
+            null,
+            "/newName",
+            value,
+            encryptor,
+            new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));
         assertThat(newSecret.getValue(), equalTo(value));

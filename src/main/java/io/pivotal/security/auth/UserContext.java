@@ -1,5 +1,10 @@
 package io.pivotal.security.auth;
 
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -9,13 +14,8 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 public class UserContext {
+
   public static final String VALUE_MISSING_OR_IRRELEVANT_TO_AUTH_TYPE = null;
   public static final String AUTH_METHOD_UAA = "uaa";
   public static final String AUTH_METHOD_MUTUAL_TLS = "mutual_tls";
@@ -32,27 +32,31 @@ public class UserContext {
   private Collection<? extends GrantedAuthority> authorities;
 
 
-  public static UserContext fromAuthentication (Authentication authentication, String token, ResourceServerTokenServices tokenServices){
-    if (authentication instanceof OAuth2Authentication)
-       return fromOauth((OAuth2Authentication) authentication, token, tokenServices);
-    else
+  public static UserContext fromAuthentication(Authentication authentication, String token,
+      ResourceServerTokenServices tokenServices) {
+    if (authentication instanceof OAuth2Authentication) {
+      return fromOauth((OAuth2Authentication) authentication, token, tokenServices);
+    } else {
       return fromMtls((PreAuthenticatedAuthenticationToken) authentication);
+    }
   }
 
-  private static UserContext fromOauth(OAuth2Authentication authentication, String token, ResourceServerTokenServices tokenServices){
+  private static UserContext fromOauth(OAuth2Authentication authentication, String token,
+      ResourceServerTokenServices tokenServices) {
     UserContext user = new UserContext();
-    OAuth2AccessToken accessToken;
-    OAuth2Request oAuth2Request = authentication.getOAuth2Request();
+    OAuth2Request oauth2Request = authentication.getOAuth2Request();
     user.authMethod = AUTH_METHOD_UAA;
-    user.clientId = oAuth2Request.getClientId();
-    user.grantType = oAuth2Request.getGrantType();
+    user.clientId = oauth2Request.getClientId();
+    user.grantType = oauth2Request.getGrantType();
     user.authorities = authentication.getAuthorities();
 
     if (token == null) {
-      OAuth2AuthenticationDetails authDetails = (OAuth2AuthenticationDetails) authentication.getDetails();
+      OAuth2AuthenticationDetails authDetails = (OAuth2AuthenticationDetails) authentication
+          .getDetails();
       token = authDetails.getTokenValue();
     }
 
+    OAuth2AccessToken accessToken;
     accessToken = tokenServices.readAccessToken(token);
 
     if (accessToken != null) {
@@ -67,25 +71,35 @@ public class UserContext {
       user.validUntil = accessToken.getExpiration().toInstant().getEpochSecond();
     }
 
-   return user;
+    return user;
   }
 
-  private static UserContext fromMtls (PreAuthenticatedAuthenticationToken authentication){
+  private static UserContext fromMtls(PreAuthenticatedAuthenticationToken authentication) {
     UserContext user = new UserContext();
 
     X509Certificate certificate = (X509Certificate) authentication.getCredentials();
 
     user.authMethod = AUTH_METHOD_MUTUAL_TLS;
     user.authorities = authentication.getAuthorities();
-    user.validFrom =  certificate.getNotBefore().toInstant().getEpochSecond();
+    user.validFrom = certificate.getNotBefore().toInstant().getEpochSecond();
     user.validUntil = certificate.getNotAfter().toInstant().getEpochSecond();
     user.clientId = certificate.getSubjectDN().getName();
 
     return user;
   }
 
+  /*
+   * The "iat" and "exp" claims are parsed by Jackson as integers, because JWT defines these
+   * as seconds since Epoch (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
+   * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved, this
+   * function returns a numeric value as long.
+   */
+  private static long claimValueAsLong(Map<String, Object> additionalInformation,
+      String claimName) {
+    return ((Number) additionalInformation.get(claimName)).longValue();
+  }
 
-  public String getUserName(){
+  public String getUserName() {
     return userName;
   }
 
@@ -121,18 +135,8 @@ public class UserContext {
     return authMethod;
   }
 
-  public Collection<? extends GrantedAuthority> getAuthorities(){
+  public Collection<? extends GrantedAuthority> getAuthorities() {
     return authorities;
-  }
-
-  /*
-   * The "iat" and "exp" claims are parsed by Jackson as integers, because JWT defines these
-   * as seconds since Epoch (https://tools.ietf.org/html/rfc7519#section-2). That means it has a
-   * Year-2038 bug. To adapt to our local model, hoping JWT will some day be improved, this
-   * function returns a numeric value as long.
-   */
-  private static long claimValueAsLong(Map<String, Object> additionalInformation, String claimName) {
-    return ((Number) additionalInformation.get(claimName)).longValue();
   }
 }
 

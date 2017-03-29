@@ -2,18 +2,9 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityService;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -24,9 +15,18 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
-public class BCCertificateGenerator implements SecretGenerator<CertificateSecretParameters, Certificate> {
+public class BcCertificateGenerator implements
+    SecretGenerator<CertificateSecretParameters, Certificate> {
 
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
@@ -34,7 +34,7 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   private final BouncyCastleProvider provider;
 
   @Autowired
-  public BCCertificateGenerator(
+  public BcCertificateGenerator(
       LibcryptoRsaKeyPairGenerator keyGenerator,
       SignedCertificateGenerator signedCertificateGenerator,
       CertificateAuthorityService certificateAuthorityService,
@@ -62,7 +62,8 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
         X500Name issuerDn = getSubjectNameOfCa(caCertificate);
         PrivateKey issuerKey = getPrivateKey(ca.getPrivateKey());
 
-        X509Certificate cert = signedCertificateGenerator.getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
+        X509Certificate cert = signedCertificateGenerator
+            .getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
@@ -75,7 +76,8 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
     }
   }
 
-  private PrivateKey getPrivateKey(String privateKey) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+  private PrivateKey getPrivateKey(String privateKey)
+      throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
     PEMParser pemParser = new PEMParser(new StringReader(privateKey));
     PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
     PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
@@ -83,7 +85,8 @@ public class BCCertificateGenerator implements SecretGenerator<CertificateSecret
   }
 
   private X500Name getSubjectNameOfCa(String ca) throws IOException, CertificateException {
-    X509Certificate certificate = (X509Certificate) CertificateFactory.getInstance("X.509", provider)
+    X509Certificate certificate = (X509Certificate) CertificateFactory
+        .getInstance("X.509", provider)
         .generateCertificate(new ByteArrayInputStream(ca.getBytes()));
     return new X500Name(certificate.getSubjectDN().getName());
   }

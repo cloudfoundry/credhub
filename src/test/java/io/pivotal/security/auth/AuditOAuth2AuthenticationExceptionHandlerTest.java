@@ -1,5 +1,21 @@
 package io.pivotal.security.auth;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
@@ -7,6 +23,9 @@ import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import java.time.Instant;
+import java.util.Map;
+import javax.servlet.Filter;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,57 +47,29 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.Map;
-
-import javax.servlet.Filter;
-
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test", "AuditOAuth2AuthenticationEntryPointTest"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test",
+    "AuditOAuth2AuthenticationEntryPointTest"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
 public class AuditOAuth2AuthenticationExceptionHandlerTest {
-
-  @Autowired
-  WebApplicationContext applicationContext;
-
-  @Autowired
-  Filter springSecurityFilterChain;
-
-  @Autowired
-  AuditOAuth2AuthenticationExceptionHandler subject;
-
-  @MockBean
-  AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
-
-  @Autowired
-  ResourceServerTokenServices tokenServices;
-
-  @MockBean
-  CurrentTimeProvider currentTimeProvider;
-
-  private MockMvc mockMvc;
-
-  private Instant now;
 
   private final String credentialUrlPath = "/api/v1/data/foo";
   private final String credentialUrlQueryParams = "?my_name=my_value";
   private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
+  @Autowired
+  WebApplicationContext applicationContext;
+  @Autowired
+  Filter springSecurityFilterChain;
+  @Autowired
+  AuditOAuth2AuthenticationExceptionHandler subject;
+  @MockBean
+  AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
+  @Autowired
+  ResourceServerTokenServices tokenServices;
+  @MockBean
+  CurrentTimeProvider currentTimeProvider;
+  private MockMvc mockMvc;
+  private Instant now;
 
   {
     wireAndUnwire(this);
@@ -97,7 +88,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
     describe("when the token is invalid", () -> {
       it("logs the 'token_invalid' auth exception to the database", () -> {
         mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SYMMETRIC_KEY_JWT)
+            .header("Authorization",
+                "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SYMMETRIC_KEY_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
@@ -106,7 +98,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
               return request;
             }));
 
-        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor
+            .forClass(AuthFailureAuditRecord.class);
         verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
         AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
@@ -116,7 +109,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(), equalTo("Cannot convert access token to JSON"));
+        assertThat(auditRecord.getFailureDescription(),
+            equalTo("Cannot convert access token to JSON"));
         assertThat(auditRecord.getUserId(), equalTo(null));
         assertThat(auditRecord.getUserName(), equalTo(null));
         assertThat(auditRecord.getUaaUrl(), equalTo(null));
@@ -132,9 +126,12 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
     describe("when the token has been signed with a mismatched RSA key", () -> {
       it("should provide a human-friendly response", () -> {
-        String errorMessage = "The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.";
+        String errorMessage = "The request token signature could not be verified. "
+            + "Please validate that your request token was issued by the UAA server "
+            + "authorized by CredHub.";
         mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SIGNATURE_JWT)
+            .header("Authorization",
+                "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SIGNATURE_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON))
@@ -145,7 +142,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
       it("logs the 'token_invalid' auth exception to the database", () -> {
         mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SIGNATURE_JWT)
+            .header("Authorization",
+                "Bearer " + NoExpirationSymmetricKeySecurityConfiguration.INVALID_SIGNATURE_JWT)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
@@ -154,7 +152,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
               return request;
             }));
 
-        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor
+            .forClass(AuthFailureAuditRecord.class);
         verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
         AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
@@ -164,26 +163,32 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(), equalTo("The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub."));
+        assertThat(auditRecord.getFailureDescription(), equalTo(
+            "The request token signature could not be verified."
+                + " Please validate that your request token was issued by the"
+                + " UAA server authorized by CredHub."));
         assertThat(auditRecord.getStatusCode(), equalTo(401));
       });
     });
 
     describe("when the token is expired", () -> {
       beforeEach(() -> {
-        when(currentTimeProvider.getNow()).thenReturn(CurrentTimeProvider.makeCalendar(1489051824000L));
+        when(currentTimeProvider.getNow())
+            .thenReturn(CurrentTimeProvider.makeCalendar(1489051824000L));
       });
 
-      it("returns an 'access_token_expired' error and cleans the token from the error_description field", () -> {
-        mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + EXPIRED_SYMMETRIC_KEY_JWT)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("access_token_expired"))
-            .andExpect(jsonPath("$.error_description").value("Access token expired"));
-      });
+      it("returns an 'access_token_expired' error and "
+              + "cleans the token from the error_description field",
+          () -> {
+            mockMvc.perform(get(credentialUrl)
+                .header("Authorization", "Bearer " + EXPIRED_SYMMETRIC_KEY_JWT)
+                .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("access_token_expired"))
+                .andExpect(jsonPath("$.error_description").value("Access token expired"));
+          });
 
       it("saves the 'token_expired' auth exception to the database", () -> {
         mockMvc.perform(get(credentialUrl)
@@ -196,10 +201,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
               return request;
             }));
 
-        OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_SYMMETRIC_KEY_JWT);
-        Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
-
-        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor
+            .forClass(AuthFailureAuditRecord.class);
         verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
         AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
@@ -211,11 +214,17 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(), equalTo("Access token expired"));
+
+        OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_SYMMETRIC_KEY_JWT);
+        Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+
         assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
         assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
         assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
-        assertThat(auditRecord.getAuthValidFrom(), equalTo(((Number) additionalInformation.get("iat")).longValue())); // 1469051704L
-        assertThat(auditRecord.getAuthValidUntil(), equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 1469051824L
+        assertThat(auditRecord.getAuthValidFrom(),
+            equalTo(((Number) additionalInformation.get("iat")).longValue())); // 1469051704L
+        assertThat(auditRecord.getAuthValidUntil(),
+            equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 1469051824L
         assertThat(auditRecord.getClientId(), equalTo("credhub"));
         assertThat(auditRecord.getScope(), equalTo("credhub.write,credhub.read"));
         assertThat(auditRecord.getGrantType(), equalTo("password"));
@@ -235,7 +244,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
               return request;
             }));
 
-        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor.forClass(AuthFailureAuditRecord.class);
+        ArgumentCaptor<AuthFailureAuditRecord> argumentCaptor = ArgumentCaptor
+            .forClass(AuthFailureAuditRecord.class);
         verify(authFailureAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
         AuthFailureAuditRecord auditRecord = argumentCaptor.getValue();
@@ -247,7 +257,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(), equalTo("Full authentication is required to access this resource"));
+        assertThat(auditRecord.getFailureDescription(),
+            equalTo("Full authentication is required to access this resource"));
         assertThat(auditRecord.getUserId(), nullValue());
         assertThat(auditRecord.getUserName(), nullValue());
         assertThat(auditRecord.getUaaUrl(), nullValue());
@@ -270,7 +281,8 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
       it("extracts the ultimate cause from an AuthenticationException", () -> {
         Throwable cause = new Throwable("foo");
-        AuthenticationException e = new BadCredentialsException("test", new Exception(new Exception(cause)));
+        AuthenticationException e = new BadCredentialsException("test",
+            new Exception(new Exception(cause)));
         assertThat(subject.extractCause(e), equalTo(cause));
       });
 

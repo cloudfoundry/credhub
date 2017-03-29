@@ -4,6 +4,7 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.secret.RsaKey;
 
 public class RsaView extends SecretView {
+
   RsaView(NamedRsaSecret namedRsaSecret) {
     super(
         namedRsaSecret.getVersionCreatedAt(),

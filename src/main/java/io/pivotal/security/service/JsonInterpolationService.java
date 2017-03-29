@@ -7,22 +7,23 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import net.minidev.json.JSONArray;
-import org.springframework.stereotype.Service;
-
 import java.io.InvalidObjectException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import net.minidev.json.JSONArray;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JsonInterpolationService {
+
   private final JsonContextFactory jsonContextFactory;
 
   public JsonInterpolationService(JsonContextFactory jsonContextFactory) {
     this.jsonContextFactory = jsonContextFactory;
   }
 
-  public DocumentContext interpolateCredhubReferences(String requestBody, SecretDataService secretDataService) throws Exception {
+  public DocumentContext interpolateCredhubReferences(String requestBody,
+      SecretDataService secretDataService) throws Exception {
     DocumentContext requestJson = parseToJson(requestBody);
 
     Object request = requestJson.json();
@@ -56,12 +57,14 @@ public class JsonInterpolationService {
             }
             String secretName = getSecretNameFromRef((String) credhubRef);
             NamedSecret namedSecret = secretDataService.findMostRecent(secretName);
-            if (namedSecret == null)
+            if (namedSecret == null) {
               throw new InvalidObjectException("error.invalid_access");
+            }
             if (namedSecret instanceof NamedJsonSecret) {
               propertiesMap.put("credentials", ((NamedJsonSecret) namedSecret).getValue());
             } else {
-              throw new ParameterizedValidationException("error.invalid_interpolation_type", secretName);
+              throw new ParameterizedValidationException("error.invalid_interpolation_type",
+                  secretName);
             }
           }
         }

@@ -1,15 +1,5 @@
 package io.pivotal.security.data;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.ActiveProfiles;
-
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
@@ -18,23 +8,31 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class OperationAuditRecordDataServiceTest {
-  @Autowired
-  OperationAuditRecordDataService subject;
-
-  @Autowired
-  JdbcTemplate jdbcTemplate;
 
   private final Instant frozenTime = Instant.ofEpochSecond(1400000000L);
   private final long authValidFrom = frozenTime.getEpochSecond();
   private final long authValidUntil = authValidFrom + 10000;
+  @Autowired
+  OperationAuditRecordDataService subject;
+  @Autowired
+  JdbcTemplate jdbcTemplate;
 
   {
     wireAndUnwire(this);
@@ -46,32 +44,33 @@ public class OperationAuditRecordDataServiceTest {
 
         assertNotNull(record);
 
-        List<OperationAuditRecord> records = jdbcTemplate.query("select * from operation_audit_record", (rs, rowCount) -> {
-          OperationAuditRecord r = new OperationAuditRecord(
-              rs.getString("auth_method"),
-              new Timestamp(rs.getLong("now")).toInstant(),
-              rs.getString("credential_name"),
-              rs.getString("operation"),
-              rs.getString("user_id"),
-              rs.getString("user_name"),
-              rs.getString("uaa_url"),
-              rs.getLong("auth_valid_from"),
-              rs.getLong("auth_valid_until"),
-              rs.getString("host_name"),
-              rs.getString("method"),
-              rs.getString("path"),
-              rs.getString("query_parameters"),
-              rs.getInt("status_code"),
-              rs.getString("requester_ip"),
-              rs.getString("x_forwarded_for"),
-              rs.getString("client_id"),
-              rs.getString("scope"),
-              rs.getString("grant_type"),
-              rs.getBoolean("success")
-          );
-          r.setId(rs.getLong("id"));
-          return r;
-        });
+        List<OperationAuditRecord> records = jdbcTemplate
+            .query("select * from operation_audit_record", (rs, rowCount) -> {
+              OperationAuditRecord r = new OperationAuditRecord(
+                  rs.getString("auth_method"),
+                  new Timestamp(rs.getLong("now")).toInstant(),
+                  rs.getString("credential_name"),
+                  rs.getString("operation"),
+                  rs.getString("user_id"),
+                  rs.getString("user_name"),
+                  rs.getString("uaa_url"),
+                  rs.getLong("auth_valid_from"),
+                  rs.getLong("auth_valid_until"),
+                  rs.getString("host_name"),
+                  rs.getString("method"),
+                  rs.getString("path"),
+                  rs.getString("query_parameters"),
+                  rs.getInt("status_code"),
+                  rs.getString("requester_ip"),
+                  rs.getString("x_forwarded_for"),
+                  rs.getString("client_id"),
+                  rs.getString("scope"),
+                  rs.getString("grant_type"),
+                  rs.getBoolean("success")
+              );
+              r.setId(rs.getLong("id"));
+              return r;
+            });
 
         assertThat(records.size(), equalTo(1));
 

@@ -1,13 +1,7 @@
 package io.pivotal.security.controller.v1;
 
-import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.mapper.RequestTranslator;
-import io.pivotal.security.util.CheckedFunction;
-import io.pivotal.security.view.SecretKind;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
@@ -16,11 +10,17 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Matchers.same;
-import org.mockito.Mock;
 import static org.mockito.Mockito.verify;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.mapper.RequestTranslator;
+import io.pivotal.security.util.CheckedFunction;
+import io.pivotal.security.view.SecretKind;
 import java.security.NoSuchAlgorithmException;
 import java.util.function.Supplier;
+import org.mockito.Mock;
 
 public abstract class AbstractNamedSecretHandlerTestingUtil {
 

@@ -3,6 +3,7 @@ package io.pivotal.security.secret;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SshKey implements Secret {
+
   private final String publicKey;
   private final String privateKey;
   private final String publicKeyFingerprint;

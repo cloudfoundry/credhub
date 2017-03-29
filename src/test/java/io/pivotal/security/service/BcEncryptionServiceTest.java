@@ -1,14 +1,5 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.EncryptionKeyMetadata;
-import org.hamcrest.CoreMatchers;
-import org.junit.runner.RunWith;
-
-import javax.xml.bind.DatatypeConverter;
-import java.security.Key;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -19,10 +10,19 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.EncryptionKeyMetadata;
+import java.security.Key;
+import java.util.UUID;
+import javax.xml.bind.DatatypeConverter;
+import org.hamcrest.CoreMatchers;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
-public class BCEncryptionServiceTest {
+public class BcEncryptionServiceTest {
+
   private final String plaintext = "this is a string";
-  private BCEncryptionService subject;
+  private BcEncryptionService subject;
   private Encryption encryption;
   private Key encryptionKey;
 
@@ -31,7 +31,7 @@ public class BCEncryptionServiceTest {
   {
     describe("with a non-null dev key", () -> {
       beforeEach(() -> {
-        subject = new BCEncryptionService(getBouncyCastleProvider());
+        subject = new BcEncryptionService(getBouncyCastleProvider());
         canaryUuid = UUID.randomUUID();
 
         EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
@@ -53,7 +53,8 @@ public class BCEncryptionServiceTest {
           });
 
           it("should create a key using the provided dev key value", () -> {
-            assertThat(DatatypeConverter.printHexBinary(encryptionKey.getEncoded()), equalTo("0123456789ABCDEF0123456789ABCDEF"));
+            assertThat(DatatypeConverter.printHexBinary(encryptionKey.getEncoded()),
+                equalTo("0123456789ABCDEF0123456789ABCDEF"));
           });
         });
       });
@@ -70,18 +71,20 @@ public class BCEncryptionServiceTest {
         });
 
         it("can decrypt values", () -> {
-          assertThat(subject.decrypt(encryptionKey, encryption.encryptedValue, encryption.nonce), equalTo(plaintext));
+          assertThat(subject.decrypt(encryptionKey, encryption.encryptedValue, encryption.nonce),
+              equalTo(plaintext));
         });
 
         it("does not reuse nonces", () -> {
-          assertThat(subject.encrypt(canaryUuid, encryptionKey, plaintext).nonce, not(equalTo(encryption.nonce)));
+          assertThat(subject.encrypt(canaryUuid, encryptionKey, plaintext).nonce,
+              not(equalTo(encryption.nonce)));
         });
       });
     });
 
     describe("with a null dev key", () -> {
       it("should created a password-based key proxy", () -> {
-        subject = new BCEncryptionService(getBouncyCastleProvider());
+        subject = new BcEncryptionService(getBouncyCastleProvider());
 
         EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
         keyMetadata.setEncryptionPassword("foobar");

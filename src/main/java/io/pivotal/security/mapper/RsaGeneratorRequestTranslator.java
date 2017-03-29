@@ -1,22 +1,23 @@
 package io.pivotal.security.mapper;
 
+import static com.google.common.collect.ImmutableSet.of;
+
 import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.RsaSecretParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.secret.RsaKey;
+import java.util.Optional;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-import java.util.Set;
-
-import static com.google.common.collect.ImmutableSet.of;
-
 @Component
 public class RsaGeneratorRequestTranslator
-    implements RequestTranslator<NamedRsaSecret>, SecretGeneratorRequestTranslator<RsaSecretParameters, NamedRsaSecret> {
+    implements RequestTranslator<NamedRsaSecret>,
+    SecretGeneratorRequestTranslator<RsaSecretParameters, NamedRsaSecret> {
+
   private final RsaGenerator rsaGenerator;
   private final RsaSecretParametersFactory rsaSecretParametersFactory;
 
@@ -47,8 +48,10 @@ public class RsaGeneratorRequestTranslator
   }
 
   @Override
-  public void populateEntityFromJson(NamedRsaSecret namedRsaSecret, DocumentContext documentContext) {
-    RsaSecretParameters rsaSecretParameters = validRequestParameters(documentContext, namedRsaSecret);
+  public void populateEntityFromJson(NamedRsaSecret namedRsaSecret,
+      DocumentContext documentContext) {
+    RsaSecretParameters rsaSecretParameters = validRequestParameters(documentContext,
+        namedRsaSecret);
     final RsaKey rsaSecret = rsaGenerator.generateSecret(rsaSecretParameters);
 
     namedRsaSecret.setPrivateKey(rsaSecret.getPrivateKey());

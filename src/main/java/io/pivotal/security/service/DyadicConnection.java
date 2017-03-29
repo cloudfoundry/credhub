@@ -1,18 +1,18 @@
 package io.pivotal.security.service;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.spec.IvParameterSpec;
 import java.lang.reflect.Constructor;
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.Security;
+import javax.crypto.KeyGenerator;
+import javax.crypto.spec.IvParameterSpec;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm", matchIfMissing = true)
-class DyadicConnection  implements RemoteEncryptionConnectable, KeyGeneratingConnection {
+class DyadicConnection implements RemoteEncryptionConnectable, KeyGeneratingConnection {
+
   private Provider provider;
   private KeyStore keyStore;
   private KeyGenerator aesKeyGenerator;
@@ -22,7 +22,8 @@ class DyadicConnection  implements RemoteEncryptionConnectable, KeyGeneratingCon
     provider = (Provider) Class.forName("com.dyadicsec.provider.DYCryptoProvider").newInstance();
     Security.addProvider(provider);
 
-    parameterSpecConstructor = Class.forName("com.dyadicsec.provider.CcmParameterSpec").getConstructor(byte[].class, int.class, byte[].class);
+    parameterSpecConstructor = Class.forName("com.dyadicsec.provider.CcmParameterSpec")
+        .getConstructor(byte[].class, int.class, byte[].class);
 
     keyStore = KeyStore.getInstance("PKCS11", provider);
     keyStore.load(null);

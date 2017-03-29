@@ -5,18 +5,20 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.SecretGenerator;
-import org.hibernate.validator.constraints.NotEmpty;
-
+import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.constraints.Pattern;
-import java.util.Set;
+import org.hibernate.validator.constraints.NotEmpty;
 
 public abstract class BaseSecretRequest {
-  public static final String STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES = "^(?>(?:/?[^/]+))*$";
+
+  public static final String STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES
+      = "^(?>(?:/?[^/]+))*$";
 
   @NotEmpty(message = "error.missing_name")
-  @Pattern(regexp = STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES, message = "error.invalid_name_has_slash")
+  @Pattern(regexp = STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES,
+      message = "error.invalid_name_has_slash")
   private String name;
   private String type;
   private Boolean overwrite;
@@ -46,14 +48,16 @@ public abstract class BaseSecretRequest {
   }
 
   @JsonIgnore
-  abstract public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator);
+  public abstract NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor,
+      SecretGenerator secretGenerator);
 
   public void validate() {
-    enforceJSR303AnnotationValidations();
+    enforceJsr303AnnotationValidations();
   }
 
-  private void enforceJSR303AnnotationValidations() {
-    final Set<ConstraintViolation<BaseSecretRequest>> constraintViolations = Validation.buildDefaultValidatorFactory().getValidator().validate(this);
+  private void enforceJsr303AnnotationValidations() {
+    final Set<ConstraintViolation<BaseSecretRequest>> constraintViolations = Validation
+        .buildDefaultValidatorFactory().getValidator().validate(this);
     for (ConstraintViolation<BaseSecretRequest> constraintViolation : constraintViolations) {
       throw new ParameterizedValidationException(constraintViolation.getMessage());
     }

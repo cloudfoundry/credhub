@@ -1,10 +1,9 @@
 package io.pivotal.security.generator;
 
-import org.springframework.stereotype.Component;
-
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import org.springframework.stereotype.Component;
 
 @Component
 public class RandomSerialNumberGenerator {
@@ -16,6 +15,7 @@ public class RandomSerialNumberGenerator {
   private static final int NUM_BITS_IN_CERT_SERIAL_NUM = 159;
 
   public BigInteger generate() throws NoSuchAlgorithmException {
-    return new BigInteger(NUM_BITS_IN_CERT_SERIAL_NUM, SecureRandom.getInstance("NativePRNGNonBlocking"));
+    return new BigInteger(NUM_BITS_IN_CERT_SERIAL_NUM,
+        SecureRandom.getInstance("NativePRNGNonBlocking"));
   }
 }

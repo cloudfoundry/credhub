@@ -1,9 +1,13 @@
 package io.pivotal.security.entity;
 
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import org.hibernate.annotations.GenericGenerator;
-
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,16 +15,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "AccessEntry")
 public class AccessEntryData {
+
   private static final boolean DEFAULT_DENY = false;
 
   @Id
@@ -47,7 +47,8 @@ public class AccessEntryData {
     this(null, null, new ArrayList<>());
   }
 
-  public AccessEntryData(SecretName secretName, String actor, List<AccessControlOperation> operations) {
+  public AccessEntryData(SecretName secretName, String actor,
+      List<AccessControlOperation> operations) {
     this(secretName, actor);
     enableOperations(operations);
   }
@@ -60,6 +61,22 @@ public class AccessEntryData {
   public AccessEntryData(SecretName credentialName, String actor) {
     this.credentialName = credentialName;
     this.actor = actor;
+  }
+
+  public static AccessEntryData fromSecretName(SecretName secretName,
+      AccessControlEntry accessControlEntry) {
+    if (secretName.getAccessControlList() == null) {
+      return new AccessEntryData(secretName, accessControlEntry);
+    }
+    Optional<AccessEntryData> accessEntryDataOptional = secretName.getAccessControlList().stream()
+        .filter((entry) -> accessControlEntry.getActor().equals(entry.getActor())).findFirst();
+    if (accessEntryDataOptional.isPresent()) {
+      AccessEntryData entryData = accessEntryDataOptional.get();
+      entryData.enableOperations(accessControlEntry.getAllowedOperations());
+      return entryData;
+    } else {
+      return new AccessEntryData(secretName, accessControlEntry);
+    }
   }
 
   public UUID getUuid() {
@@ -110,6 +127,8 @@ public class AccessEntryData {
       case WRITE:
         setWritePermission(true);
         break;
+      default:
+        throw new RuntimeException();
     }
   }
 
@@ -128,17 +147,5 @@ public class AccessEntryData {
       operations.add(AccessControlOperation.WRITE);
     }
     return operations;
-  }
-
-  public static AccessEntryData fromSecretName(SecretName secretName, AccessControlEntry accessControlEntry) {
-    if (secretName.getAccessControlList() == null) return new AccessEntryData(secretName, accessControlEntry);
-    Optional<AccessEntryData> accessEntryDataOptional = secretName.getAccessControlList().stream().filter((entry) -> accessControlEntry.getActor().equals(entry.getActor())).findFirst();
-    if (accessEntryDataOptional.isPresent()) {
-      AccessEntryData entryData = accessEntryDataOptional.get();
-      entryData.enableOperations(accessControlEntry.getAllowedOperations());
-      return entryData;
-    } else {
-      return new AccessEntryData(secretName, accessControlEntry);
-    }
   }
 }

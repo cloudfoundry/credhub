@@ -1,14 +1,14 @@
 package io.pivotal.security.controller.v1;
 
+import static com.greghaskins.spectrum.Spectrum.it;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import org.junit.runner.RunWith;
-
-import static com.greghaskins.spectrum.Spectrum.it;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
 public class PasswordGenerationParametersTest {
@@ -38,26 +38,29 @@ public class PasswordGenerationParametersTest {
       assertThat(makeParameters(true, true, false, true, true).isValid(), equalTo(true));
     });
 
-    it("serializes via the object mapper to a compact representation with alphabetical keys", () -> {
-      PasswordGenerationParameters parameters = makeParameters(false, false, false, false, false);
-      assertThat(objectMapper.writeValueAsString(parameters), equalTo("{}"));
+    it("serializes via the object mapper to a compact representation with alphabetical keys",
+        () -> {
+          PasswordGenerationParameters parameters = makeParameters(false, false, false, false,
+              false);
+          assertThat(objectMapper.writeValueAsString(parameters), equalTo("{}"));
 
-      parameters = makeParameters(true, true, true, false, false);
-      assertThat(objectMapper.writeValueAsString(parameters), equalTo("{" +
-          "\"exclude_lower\":true," +
-          "\"exclude_upper\":true," +
-          "\"include_special\":true" +
-          "}"));
-    });
+          parameters = makeParameters(true, true, true, false, false);
+          assertThat(objectMapper.writeValueAsString(parameters), equalTo("{"
+              + "\"exclude_lower\":true,"
+              + "\"exclude_upper\":true,"
+              + "\"include_special\":true"
+              + "}"));
+        });
   }
 
-  private PasswordGenerationParameters makeParameters(boolean excludeLower, boolean excludeUpper, boolean includeSpecial, boolean excludeNumber, boolean onlyHex) {
+  private PasswordGenerationParameters makeParameters(boolean excludeLower, boolean excludeUpper,
+      boolean includeSpecial, boolean excludeNumber, boolean onlyHex) {
     return new PasswordGenerationParameters()
-          .setLength(30)
-          .setExcludeLower(excludeLower)
-          .setExcludeUpper(excludeUpper)
-          .setExcludeNumber(excludeNumber)
-          .setIncludeSpecial(includeSpecial)
-          .setOnlyHex(onlyHex);
+        .setLength(30)
+        .setExcludeLower(excludeLower)
+        .setExcludeUpper(excludeUpper)
+        .setExcludeNumber(excludeNumber)
+        .setIncludeSpecial(includeSpecial)
+        .setOnlyHex(onlyHex);
   }
 }

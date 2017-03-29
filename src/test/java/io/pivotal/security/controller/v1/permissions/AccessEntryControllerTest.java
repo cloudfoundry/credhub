@@ -1,27 +1,5 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.context.MessageSource;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -48,8 +26,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.AccessEntryRequest;
+import io.pivotal.security.view.AccessControlListResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.context.MessageSource;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 @RunWith(Spectrum.class)
 public class AccessEntryControllerTest {
+
   private AccessControlDataService accessControlDataService;
   private MessageSource messageSource;
   private AccessEntryController subject;
@@ -65,7 +65,8 @@ public class AccessEntryControllerTest {
           messageSource
       );
 
-      MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
+      MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
+          new MappingJackson2HttpMessageConverter();
       ObjectMapper objectMapper = JsonHelper.createObjectMapper();
       mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
       mockMvc = MockMvcBuilders.standaloneSetup(subject)
@@ -77,7 +78,9 @@ public class AccessEntryControllerTest {
       describe("#POST", () -> {
         describe("when the request has invalid JSON", () -> {
           it("should return an error", () -> {
-            when(messageSource.getMessage(eq("error.acl.missing_aces"), eq(null), any(Locale.class)))
+            when(
+                messageSource.getMessage(eq("error.acl.missing_aces"),
+                    eq(null), any(Locale.class)))
                 .thenReturn("test-error-message");
 
             AccessEntryRequest accessEntryRequest = new AccessEntryRequest(
@@ -97,13 +100,17 @@ public class AccessEntryControllerTest {
 
         describe("when the request has valid JSON", () -> {
           it("should return a response containing the new ACE", () -> {
-            final ArrayList<AccessControlOperation> operations = newArrayList(AccessControlOperation.READ, AccessControlOperation.WRITE);
-            List<AccessControlEntry> accessControlEntries = newArrayList(new AccessControlEntry("test-actor", operations));
+            final ArrayList<AccessControlOperation> operations = newArrayList(
+                AccessControlOperation.READ, AccessControlOperation.WRITE);
+            List<AccessControlEntry> accessControlEntries = newArrayList(
+                new AccessControlEntry("test-actor", operations));
             AccessEntryRequest accessEntryRequest = new AccessEntryRequest(
                 "test-credential-name",
                 accessControlEntries
             );
-            AccessControlListResponse expectedResponse = new AccessControlListResponse("test-actor", accessControlEntries);
+            AccessControlListResponse expectedResponse =
+                new AccessControlListResponse("test-actor",
+                    accessControlEntries);
 
             when(accessControlDataService.setAccessControlEntry(any(AccessEntryRequest.class)))
                 .thenReturn(expectedResponse);
@@ -117,14 +124,16 @@ public class AccessEntryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().json(jsonContent));
 
-            ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor.forClass(AccessEntryRequest.class);
+            ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor
+                .forClass(AccessEntryRequest.class);
             verify(accessControlDataService, times(1)).setAccessControlEntry(captor.capture());
 
             AccessEntryRequest actualRequest = captor.getValue();
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
             assertThat(actualRequest.getAccessControlEntries(),
                 hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
-                    hasProperty("allowedOperations", hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
+                    hasProperty("allowedOperations",
+                        hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
           });
         });
       });
@@ -147,13 +156,17 @@ public class AccessEntryControllerTest {
                 .deleteAccessControlEntry("fake-credential", "some-actor");
 
             when(messageSource.getMessage(eq("error.acl.not_found"), eq(null), any(Locale.class)))
-                .thenReturn("The request could not be fulfilled because the access control entry could not be found.");
+                .thenReturn(
+                    "The request could not be fulfilled "
+                        + "because the access control entry could not be found.");
           });
 
           it("should return with status 404 and an error message", () -> {
             mockMvc.perform(delete("/api/v1/aces?credential_name=fake-credential&actor=some-actor"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath(errorKey).value("The request could not be fulfilled because the access control entry could not be found."));
+                .andExpect(jsonPath(errorKey).value(
+                    "The request could not be fulfilled beca"
+                        + "use the access control entry could not be found."));
           });
         });
       });
@@ -163,7 +176,8 @@ public class AccessEntryControllerTest {
       describe("#GET", () -> {
         describe("when there is no credential_name", () -> {
           it("should return an error", () -> {
-            when(messageSource.getMessage(eq("error.missing_query_parameter"), eq(new String[]{"credential_name"}), any(Locale.class)))
+            when(messageSource.getMessage(eq("error.missing_query_parameter"),
+                eq(new String[]{"credential_name"}), any(Locale.class)))
                 .thenReturn("test-error-message");
 
             mockMvc.perform(get("/api/v1/acls"))
@@ -174,7 +188,8 @@ public class AccessEntryControllerTest {
 
         describe("when there is no credential with the specified name", () -> {
           it("should return an error", () -> {
-            when(messageSource.getMessage(eq("error.resource_not_found"), eq(null), any(Locale.class)))
+            when(messageSource
+                .getMessage(eq("error.resource_not_found"), eq(null), any(Locale.class)))
                 .thenReturn("test-error-message");
             when(accessControlDataService.getAccessControlListResponse("test_credential_name"))
                 .thenThrow(new EntryNotFoundException("error.resource_not_found"));
@@ -187,7 +202,8 @@ public class AccessEntryControllerTest {
 
         describe("when the credential exists", () -> {
           it("should return the ACL for the credential", () -> {
-            AccessControlListResponse accessControlListResponse = new AccessControlListResponse("test_credential_name", newArrayList());
+            AccessControlListResponse accessControlListResponse = new AccessControlListResponse(
+                "test_credential_name", newArrayList());
             when(accessControlDataService.getAccessControlListResponse("test_credential_name"))
                 .thenReturn(accessControlListResponse);
 

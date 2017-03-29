@@ -1,9 +1,10 @@
 package io.pivotal.security.exceptions;
 
-import javax.validation.ValidationException;
 import java.util.Arrays;
+import javax.validation.ValidationException;
 
 public class ParameterizedValidationException extends ValidationException {
+
   String parameter = null;
 
   public ParameterizedValidationException(String messageCode, String parameter) {
@@ -15,6 +16,10 @@ public class ParameterizedValidationException extends ValidationException {
     super(messageCode);
   }
 
+  private static String scrubSpecialCharacter(String raw) {
+    return raw.replace("$[", "").replace("][", ".").replace("]", "").replace("'", "");
+  }
+
   public String getParameter() {
     return parameter != null ? scrubSpecialCharacter(parameter) : null;
   }
@@ -22,9 +27,5 @@ public class ParameterizedValidationException extends ValidationException {
   public Object[] getParameters() {
     String parameter = getParameter();
     return parameter != null ? Arrays.asList(parameter).toArray() : null;
-  }
-
-  private static String scrubSpecialCharacter(String raw) {
-    return raw.replace("$[", "").replace("][", ".").replace("]", "").replace("'", "");
   }
 }

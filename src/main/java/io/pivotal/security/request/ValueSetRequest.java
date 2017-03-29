@@ -7,6 +7,7 @@ import io.pivotal.security.generator.SecretGenerator;
 import org.hibernate.validator.constraints.NotEmpty;
 
 public class ValueSetRequest extends BaseSecretSetRequest {
+
   @NotEmpty(message = "error.missing_value")
   private String value;
 
@@ -19,7 +20,10 @@ public class ValueSetRequest extends BaseSecretSetRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor, SecretGenerator secretGenerator) {
-    return NamedValueSecret.createNewVersion((NamedValueSecret) existing, getName(), this.getValue(), encryptor, this.getAccessControlEntries());
+  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor,
+      SecretGenerator secretGenerator) {
+    return NamedValueSecret
+        .createNewVersion((NamedValueSecret) existing, getName(), this.getValue(), encryptor,
+            this.getAccessControlEntries());
   }
 }

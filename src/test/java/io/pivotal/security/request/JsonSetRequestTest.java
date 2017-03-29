@@ -1,13 +1,5 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
-import org.junit.runner.RunWith;
-
-import javax.validation.ConstraintViolation;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
@@ -19,8 +11,16 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 
+import com.greghaskins.spectrum.Spectrum;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class JsonSetRequestTest {
+
   {
     it("should deserialize to JsonSetRequest", () -> {
       Map<String, Object> nested = new HashMap<>();
@@ -36,7 +36,8 @@ public class JsonSetRequestTest {
       request.setValue(value);
       request.setOverwrite(true);
 
-      BaseSecretSetRequest deserialize = deserialize(serialize(request), BaseSecretSetRequest.class);
+      BaseSecretSetRequest deserialize = deserialize(serialize(request),
+          BaseSecretSetRequest.class);
 
       assertThat(deserialize, instanceOf(JsonSetRequest.class));
     });

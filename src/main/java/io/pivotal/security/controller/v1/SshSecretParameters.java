@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class SshSecretParameters extends RsaSshSecretParameters {
+
   private String sshComment = "";
 
   public String getSshComment() {

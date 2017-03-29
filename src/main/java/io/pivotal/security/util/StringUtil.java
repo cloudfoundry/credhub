@@ -3,8 +3,6 @@ package io.pivotal.security.util;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 public class StringUtil {
 
   public static final String INTERNAL_SYMBOL_FOR_ALLOW_ARRAY_MEMBERS = "[*]";

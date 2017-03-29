@@ -2,21 +2,21 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.constants.CipherTypes;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 @SuppressWarnings("unused")
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "dsm")
 public class DyadicEncryptionService extends EncryptionServiceWithConnection {
+
   private final DyadicConnection dyadicConnection;
 
   private SecureRandom secureRandom;
@@ -33,7 +33,8 @@ public class DyadicEncryptionService extends EncryptionServiceWithConnection {
   }
 
   @Override
-  EncryptionService.CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException {
+  EncryptionService.CipherWrapper getCipher()
+      throws NoSuchPaddingException, NoSuchAlgorithmException {
     final String ccmCipherName = CipherTypes.CCM.toString();
     final Provider dyadicConnectionProvider = dyadicConnection.getProvider();
 

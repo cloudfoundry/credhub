@@ -27,7 +27,8 @@ public interface SecretKindFromString {
         return SecretKind.SSH;
       case NamedRsaSecretData.SECRET_TYPE:
         return SecretKind.RSA;
+      default:
+        throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
     }
-    throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
   }
 }

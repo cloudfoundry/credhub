@@ -1,15 +1,5 @@
 package io.pivotal.security.view;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedJsonSecret;
-import org.junit.runner.RunWith;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.serializeToString;
@@ -20,8 +10,18 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedJsonSecret;
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.runner.RunWith;
+
 @RunWith(Spectrum.class)
 public class JsonViewTest {
+
   private NamedJsonSecret entity;
   private UUID uuid;
   private Encryptor encryptor;
@@ -40,23 +40,24 @@ public class JsonViewTest {
       encryptor = mock(Encryptor.class);
       uuid = UUID.randomUUID();
       entity = new NamedJsonSecret("/foo")
-        .setEncryptor(encryptor)
-        .setUuid(uuid);
+          .setEncryptor(encryptor)
+          .setUuid(uuid);
       entity.setEncryptedValue("fake-encrypted-value".getBytes());
       entity.setNonce("fake-nonce".getBytes());
 
-      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class))).thenReturn(serializedValue);
+      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class)))
+          .thenReturn(serializedValue);
     });
 
     it("can create view from entity", () -> {
       JsonView actual = (JsonView) JsonView.fromEntity(entity);
-      assertThat(json(actual), equalTo("{" +
-          "\"type\":\"json\"," +
-          "\"version_created_at\":null," +
-          "\"id\":\"" + uuid.toString() + "\"," +
-          "\"name\":\"/foo\"," +
-          "\"value\":" + serializedValue +
-          "}"));
+      assertThat(json(actual), equalTo("{"
+          + "\"type\":\"json\","
+          + "\"version_created_at\":null,"
+          + "\"id\":\"" + uuid.toString() + "\","
+          + "\"name\":\"/foo\","
+          + "\"value\":" + serializedValue
+          + "}"));
     });
 
     it("has version_created_at in the view", () -> {

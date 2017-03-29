@@ -1,17 +1,5 @@
 package io.pivotal.security.controller.v1;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.mapper.RequestTranslator;
-import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-
-import java.util.function.Function;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -23,17 +11,26 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.mapper.RequestTranslator;
+import java.util.function.Function;
+import org.junit.Assert;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+
 @RunWith(Spectrum.class)
 public class SecretKindMappingFactoryTest {
 
   @Mock
+  Encryptor encryptor;
+  @Mock
   private RequestTranslator<NamedPasswordSecret> requestTranslator;
-
   @Mock
   private DocumentContext parsedRequest;
-
-  @Mock
-  Encryptor encryptor;
 
   {
     SecretKindMappingFactory subject = (secretPath, parsed) -> null;
@@ -46,7 +43,9 @@ public class SecretKindMappingFactoryTest {
         NamedPasswordSecret constructedObject = new NamedPasswordSecret("name");
         when(constructor.apply("name")).thenReturn(constructedObject);
 
-        Assert.assertThat(subject.createNewSecret(null, constructor, "name", requestTranslator, parsedRequest, encryptor), sameInstance(constructedObject));
+        Assert.assertThat(subject
+            .createNewSecret(null, constructor, "name", requestTranslator, parsedRequest,
+                encryptor), sameInstance(constructedObject));
         verify(constructor).apply("name");
 
         verify(requestTranslator).populateEntityFromJson(constructedObject, parsedRequest);
@@ -61,7 +60,9 @@ public class SecretKindMappingFactoryTest {
         NamedPasswordSecret constructedObject = new NamedPasswordSecret("name");
         when(constructor.apply("name")).thenReturn(constructedObject);
 
-        Assert.assertThat(subject.createNewSecret(existingObject, constructor, "name", requestTranslator, parsedRequest, encryptor), sameInstance(constructedObject));
+        Assert.assertThat(subject
+            .createNewSecret(existingObject, constructor, "name", requestTranslator, parsedRequest,
+                encryptor), sameInstance(constructedObject));
         verify(constructor).apply("name");
 
         verify(existingObject).copyInto(constructedObject);
@@ -71,7 +72,8 @@ public class SecretKindMappingFactoryTest {
 
     describe("validation", () -> {
       it("calls the request translator to validate JSON keys", () -> {
-        subject.createNewSecret(null, NamedPasswordSecret::new, "name", requestTranslator, parsedRequest, encryptor);
+        subject.createNewSecret(null, NamedPasswordSecret::new, "name", requestTranslator,
+            parsedRequest, encryptor);
         verify(requestTranslator).validateJsonKeys(parsedRequest);
       });
 
@@ -79,8 +81,9 @@ public class SecretKindMappingFactoryTest {
           ParameterizedValidationException.class,
           "error.invalid_name_has_slash",
           () -> {
-        subject.createNewSecret(null, NamedPasswordSecret::new, "/dont//do//this/", requestTranslator, parsedRequest, encryptor);
-      });
+            subject.createNewSecret(null, NamedPasswordSecret::new, "/dont//do//this/",
+                requestTranslator, parsedRequest, encryptor);
+          });
     });
   }
 }
