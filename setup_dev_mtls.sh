@@ -74,22 +74,19 @@ add_client_ca_to_truststore() {
 }
 
 pushd ${DIRNAME}/src/test/resources >/dev/null
-    if [[ -f ${KEY_STORE} && -f ${TRUST_STORE} ]]; then
-        echo "Key store and trust store are already set up!"
-    else
-        clean
-        generate_server_ca
-        generate_client_ca
-        add_client_ca_to_truststore
-        setup_tls_key_store
+    clean
+    generate_server_ca
+    generate_client_ca
+    add_client_ca_to_truststore
+    setup_tls_key_store
 
-        echo "Finished setting up key stores for TLS and mTLS!"
+    echo "Finished setting up key stores for TLS and mTLS!"
 
-        echo "Run run_tests.sh in credhub-acceptance-tests to generate client certs"
-        echo e.g., curl -H \"Content-Type: application/json\" \
-            -X POST -d "'{\"name\":\"cred\",\"type\":\"password\"}'" \
-            https://localhost:9000/api/v1/data --cacert ${PWD}/server_ca_cert.pem \
-            --cert ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client.pem \
-            --key ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client_key.pem
-    fi
+    echo "Run run_tests.sh in credhub-acceptance-tests to generate client certs"
+    echo e.g., curl -H \"Content-Type: application/json\" \
+        -X POST -d "'{\"name\":\"cred\",\"type\":\"password\"}'" \
+        https://localhost:9000/api/v1/data --cacert ${PWD}/server_ca_cert.pem \
+        --cert ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client.pem \
+        --key ${GOPATH}/src/github.com/cloudfoundry-incubator/credhub-acceptance-tests/certs/client_key.pem
+
 popd >/dev/null
