@@ -1,5 +1,32 @@
 package io.pivotal.security.service;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
+import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.fake.FakeSecretRepository;
+import io.pivotal.security.fake.FakeTransactionManager;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -17,32 +44,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
-import io.pivotal.security.data.OperationAuditRecordDataService;
-import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.fake.FakeSecretRepository;
-import io.pivotal.security.fake.FakeTransactionManager;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test",
@@ -83,7 +84,8 @@ public class DatabaseAuditLogServiceTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      authentication = tokenStore.readAuthentication(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
+      authentication = tokenStore.readAuthentication(
+          NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
       OAuth2AuthenticationDetails mockDetails = mock(OAuth2AuthenticationDetails.class);
       when(mockDetails.getTokenValue())
           .thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
@@ -111,14 +113,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
             responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              auditRecordBuilder.setCredentialName("keyName");
-              auditRecordBuilder.populateFromRequest(new MockHttpServletRequest("GET", "requestURI"));
-              auditRecordBuilder.setAuthentication(authentication);
-
-              NamedValueSecretData entity = new NamedValueSecretData("keyName");
-              entity.setEncryptedValue("value".getBytes());
-              final NamedValueSecretData secret = secretRepository.save(entity);
-              return new ResponseEntity<>(secret, HttpStatus.OK);
+              return auditedSaveAndReturnNewValue(auditRecordBuilder);
             });
           });
 
@@ -145,13 +140,7 @@ public class DatabaseAuditLogServiceTest {
                 .save(any(OperationAuditRecord.class));
 
             responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              auditRecordBuilder.setCredentialName("keyName");
-              auditRecordBuilder.populateFromRequest(new MockHttpServletRequest("GET", "requestURI"));
-              auditRecordBuilder.setAuthentication(authentication);
-              NamedValueSecretData entity = new NamedValueSecretData("keyName");
-              entity.setEncryptedValue("value".getBytes());
-              final NamedValueSecretData secret = secretRepository.save(entity);
-              return new ResponseEntity<>(secret, HttpStatus.OK);
+              return auditedSaveAndReturnNewValue(auditRecordBuilder);
             });
           });
 
@@ -182,7 +171,8 @@ public class DatabaseAuditLogServiceTest {
             try {
               subject.performWithAuditing(auditRecordBuilder -> {
                 auditRecordBuilder.setCredentialName("keyName");
-                auditRecordBuilder.populateFromRequest(new MockHttpServletRequest("GET", "requestURI"));
+                auditRecordBuilder.populateFromRequest(
+                    new MockHttpServletRequest("GET", "requestURI"));
                 auditRecordBuilder.setAuthentication(authentication);
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
@@ -216,7 +206,8 @@ public class DatabaseAuditLogServiceTest {
 
             responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
               auditRecordBuilder.setCredentialName("keyName");
-              auditRecordBuilder.populateFromRequest(new MockHttpServletRequest("GET", "requestURI"));
+              auditRecordBuilder.populateFromRequest(
+                  new MockHttpServletRequest("GET", "requestURI"));
               auditRecordBuilder.setAuthentication(authentication);
 
               NamedValueSecretData entity = new NamedValueSecretData("keyName");
@@ -247,14 +238,7 @@ public class DatabaseAuditLogServiceTest {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
             responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              auditRecordBuilder.setCredentialName("keyName");
-              auditRecordBuilder.populateFromRequest(new MockHttpServletRequest("GET", "requestURI"));
-              auditRecordBuilder.setAuthentication(authentication);
-
-              NamedValueSecretData entity = new NamedValueSecretData("keyName");
-              entity.setEncryptedValue("value".getBytes());
-              secretRepository.save(entity);
-              return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+              return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
             });
           });
 
@@ -278,14 +262,7 @@ public class DatabaseAuditLogServiceTest {
                 .save(any(OperationAuditRecord.class));
 
             responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              auditRecordBuilder.setCredentialName("keyName");
-              auditRecordBuilder.populateFromRequest(new MockHttpServletRequest("GET", "requestURI"));
-              auditRecordBuilder.setAuthentication(authentication);
-
-              NamedValueSecretData entity = new NamedValueSecretData("keyName");
-              entity.setEncryptedValue("value".getBytes());
-              secretRepository.save(entity);
-              return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+              return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
             });
           });
 
@@ -310,14 +287,7 @@ public class DatabaseAuditLogServiceTest {
           beforeEach(() -> {
             transactionManager.failOnCommit();
             responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              auditRecordBuilder.setCredentialName("keyName");
-              auditRecordBuilder.populateFromRequest(new MockHttpServletRequest("GET", "requestURI"));
-              auditRecordBuilder.setAuthentication(authentication);
-
-              NamedValueSecretData entity = new NamedValueSecretData("keyName");
-              entity.setEncryptedValue("value".getBytes());
-              secretRepository.save(entity);
-              return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
+              return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
             });
           });
 
@@ -339,6 +309,31 @@ public class DatabaseAuditLogServiceTest {
         });
       });
     });
+  }
+
+  private ResponseEntity<?> auditedSaveAndReturnNewValue(
+      AuditRecordBuilder auditRecordBuilder) {
+    auditRecordBuilder.setCredentialName("keyName");
+    auditRecordBuilder.populateFromRequest(
+        new MockHttpServletRequest("GET", "requestURI"));
+    auditRecordBuilder.setAuthentication(authentication);
+    NamedValueSecretData entity = new NamedValueSecretData("keyName");
+    entity.setEncryptedValue("value".getBytes());
+    final NamedValueSecretData secret = secretRepository.save(entity);
+    return new ResponseEntity<>(secret, HttpStatus.OK);
+  }
+
+  private ResponseEntity<?> auditedSaveNewValueWithBadGateway(
+      AuditRecordBuilder auditRecordBuilder) {
+    auditRecordBuilder.setCredentialName("keyName");
+    auditRecordBuilder.populateFromRequest(
+        new MockHttpServletRequest("GET", "requestURI"));
+    auditRecordBuilder.setAuthentication(authentication);
+
+    NamedValueSecretData entity = new NamedValueSecretData("keyName");
+    entity.setEncryptedValue("value".getBytes());
+    secretRepository.save(entity);
+    return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
   }
 
   private void checkAuditRecord(boolean successFlag, HttpStatus status) {

@@ -17,7 +17,9 @@ public class FakeAuditLogService implements AuditLogService {
   private AuditRecordBuilder auditRecordBuilder;
 
   @Override
-  public ResponseEntity<?> performWithAuditing(ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action) throws Exception {
+  public ResponseEntity<?> performWithAuditing(
+      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action
+  ) throws Exception {
     auditRecordBuilder = new AuditRecordBuilder();
     return action.apply(auditRecordBuilder);
   }

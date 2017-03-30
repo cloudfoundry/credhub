@@ -5,8 +5,6 @@ import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.ResponseError;
-import java.util.function.Supplier;
-import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -54,10 +52,12 @@ public class DatabaseAuditLogService implements AuditLogService {
   }
 
   @Override
-  public ResponseEntity<?> performWithAuditing(ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action) throws
-      Exception {
+  public ResponseEntity<?> performWithAuditing(
+      ExceptionThrowingFunction<AuditRecordBuilder,
+          ResponseEntity<?>, Exception> action) throws Exception {
     AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder();
-    TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+    TransactionStatus transaction =
+        transactionManager.getTransaction(new DefaultTransactionDefinition());
 
     boolean auditSuccess = true;
 

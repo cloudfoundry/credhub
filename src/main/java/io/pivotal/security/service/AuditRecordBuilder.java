@@ -1,18 +1,8 @@
 package io.pivotal.security.service;
 
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
-
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Enumeration;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 
@@ -31,6 +21,7 @@ public class AuditRecordBuilder {
   private String method;
   private String path;
   private String requesterIp;
+  @SuppressWarnings("checkstyle:membername")
   private String xForwardedFor;
   private String queryParameters;
   private String credentialName;
