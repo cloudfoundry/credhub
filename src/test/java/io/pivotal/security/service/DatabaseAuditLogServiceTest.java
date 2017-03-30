@@ -1,7 +1,26 @@
 package io.pivotal.security.service;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.helper.JsonHelper.serializeToString;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.EXPIRED_KEY_JWT;
+import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.OperationAuditRecord;
@@ -9,6 +28,8 @@ import io.pivotal.security.fake.FakeSecretRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,30 +45,8 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test",
-    "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
 public class DatabaseAuditLogServiceTest {
 
@@ -75,7 +74,7 @@ public class DatabaseAuditLogServiceTest {
   @Autowired
   MessageSource messageSource;
 
-  private Instant now;
+  private final Instant now = Instant.ofEpochSecond(1490903353);
 
   private ResponseEntity<?> responseEntity;
   private OAuth2Authentication authentication;
@@ -84,18 +83,16 @@ public class DatabaseAuditLogServiceTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      authentication = tokenStore.readAuthentication(
-          NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
+      authentication = tokenStore.readAuthentication(EXPIRED_KEY_JWT);
       OAuth2AuthenticationDetails mockDetails = mock(OAuth2AuthenticationDetails.class);
-      when(mockDetails.getTokenValue())
-          .thenReturn(NoExpirationSymmetricKeySecurityConfiguration.EXPIRED_SYMMETRIC_KEY_JWT);
+      when(mockDetails.getTokenValue()).thenReturn(EXPIRED_KEY_JWT);
       authentication.setDetails(mockDetails);
 
       transactionManager = new FakeTransactionManager();
       secretRepository = new FakeSecretRepository(transactionManager);
 
-      now = Instant.now();
       when(currentTimeProvider.getInstant()).thenReturn(now);
+      when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
 
       subject = new DatabaseAuditLogService(
           currentTimeProvider,
@@ -345,14 +342,14 @@ public class DatabaseAuditLogServiceTest {
     assertThat(actual.getNow(), equalTo(now));
     assertThat(actual.getCredentialName(), equalTo("keyName"));
     assertThat(actual.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
-    assertThat(actual.getUserId(), equalTo("1cc4972f-184c-4581-987b-85b7d97e909c"));
+    assertThat(actual.getUserId(), equalTo("df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"));
     assertThat(actual.getUserName(), equalTo("credhub_cli"));
-    assertThat(actual.getUaaUrl(), equalTo("https://52.204.49.107:8443/oauth/token"));
-    assertThat(actual.getAuthValidFrom(), equalTo(1469051704L));
-    assertThat(actual.getAuthValidUntil(), equalTo(1469051824L));
+    assertThat(actual.getUaaUrl(), equalTo("https://10.244.0.2:8443/oauth/token"));
+    assertThat(actual.getAuthValidFrom(), equalTo(1090903353L));
+    assertThat(actual.getAuthValidUntil(), equalTo(1290903354L));
     assertThat(actual.getPath(), equalTo("requestURI"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
-    assertThat(actual.getClientId(), equalTo("credhub"));
+    assertThat(actual.getClientId(), equalTo("credhub_cli"));
     assertThat(actual.getScope(), equalTo("credhub.write,credhub.read"));
     assertThat(actual.getGrantType(), equalTo("password"));
     assertThat(actual.getMethod(), equalTo("GET"));

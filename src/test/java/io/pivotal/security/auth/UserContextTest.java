@@ -2,7 +2,7 @@ package io.pivotal.security.auth;
 
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_MUTUAL_TLS;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
+import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
@@ -34,8 +34,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test",
-    "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class UserContextTest {
 
@@ -67,8 +66,7 @@ public class UserContextTest {
 
     OAuth2Authentication oauth2Authentication = setupOAuthMock();
     UserContext context = UserContext
-        .fromAuthentication(oauth2Authentication, INVALID_SCOPE_SYMMETRIC_KEY_JWT,
-            realTokenServices);
+        .fromAuthentication(oauth2Authentication, INVALID_SCOPE_KEY_JWT, realTokenServices);
 
     assertThat(context.getUserName(), equalTo("credhub_cli"));
     assertThat(context.getIssuer(), containsString("/oauth/token"));

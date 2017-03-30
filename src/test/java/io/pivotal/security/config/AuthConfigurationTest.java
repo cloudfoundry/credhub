@@ -4,7 +4,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
+import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT;
@@ -43,7 +43,6 @@ import javax.servlet.Filter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -74,7 +73,6 @@ public class AuthConfigurationTest {
   @MockBean
   SecretDataService secretDataService;
 
-  @InjectMocks
   @Autowired
   SecretsController secretsController;
 
@@ -139,12 +137,13 @@ public class AuthConfigurationTest {
       describe("with a token without sufficient scopes", () -> {
         it("disallows access", () -> {
           final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .header("Authorization", "Bearer " + INVALID_SCOPE_SYMMETRIC_KEY_JWT)
+              .header("Authorization", "Bearer " + INVALID_SCOPE_KEY_JWT)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
 
-          mockMvc.perform(post).andExpect(status().isUnauthorized());
+          mockMvc.perform(post)
+              .andExpect(status().isForbidden());
         });
       });
 

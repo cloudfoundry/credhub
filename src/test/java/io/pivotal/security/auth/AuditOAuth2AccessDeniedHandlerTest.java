@@ -3,9 +3,10 @@ package io.pivotal.security.auth;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.config.NoExpirationSymmetricKeySecurityConfiguration.INVALID_SCOPE_SYMMETRIC_KEY_JWT;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
+import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
@@ -39,8 +40,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test",
-    "NoExpirationSymmetricKeySecurityConfiguration"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class AuditOAuth2AccessDeniedHandlerTest {
 
@@ -63,14 +63,15 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   SecurityEventsLogService securityEventsLogService;
   private MockHttpServletRequestBuilder get;
   private MockMvc mockMvc;
-  private Instant now;
+
+  private final Instant now = Instant.ofEpochSecond(1490903353);
 
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      now = Instant.now();
       when(currentTimeProvider.getInstant()).thenReturn(now);
+      when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
 
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
@@ -80,7 +81,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
 
     describe("when the scope is invalid", () -> {
       beforeEach(() -> {
-        String bearer = "Bearer " + INVALID_SCOPE_SYMMETRIC_KEY_JWT;
+        String bearer = "Bearer " + INVALID_SCOPE_KEY_JWT;
         get = get(credentialUrl)
             .header("Authorization", bearer)
             .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
@@ -109,7 +110,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 
         OAuth2AccessToken accessToken = tokenServices
-            .readAccessToken(INVALID_SCOPE_SYMMETRIC_KEY_JWT);
+            .readAccessToken(INVALID_SCOPE_KEY_JWT);
         Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
         assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
@@ -119,7 +120,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
             ((Number) additionalInformation.get("iat")).longValue())); // 2737304753L (year 2056)
         assertThat(auditRecord.getAuthValidUntil(), equalTo(
             accessToken.getExpiration().toInstant().getEpochSecond())); // 2737304773L (year 2056)
-        assertThat(auditRecord.getClientId(), equalTo("credhub"));
+        assertThat(auditRecord.getClientId(), equalTo("credhub_cli"));
         assertThat(auditRecord.getScope(), equalTo("credhub.bad_scope"));
         assertThat(auditRecord.getGrantType(), equalTo("password"));
         assertThat(auditRecord.getMethod(), equalTo("GET"));

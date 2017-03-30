@@ -21,13 +21,13 @@ security:
         # /unit/tests/rsa/key in super-bosh
         key-value: |
           -----BEGIN PUBLIC KEY-----
-          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzfUQ7qkEYqpunTNf5mgb
-          n5mIl3z/ssuwm9S6lS8vQYoPcuNKIinu2VUvWHRANy1hhGtmxJrDjJ+C6hUL2HeS
-          S/Anh+kCaL1ZVZsdsO+KnC3xbMIvfDwgeql6XAxn8KUBqdUw5eMovobs6uc7d4Fz
-          6ULAG/0+0Q+CD/OH1WvereyrTqSJWPibNdXb9ClFc09ONAKs5YbskdkJtfvECDtq
-          HiAEJ66qKPXJDoBLNTsumk48ELOEXJi2o9fyAh7jcrbK3KtTZg+rEIRWuUrI7ZHv
-          7f9YVy9uYoTK5sYaR3R5rRSrLJjc6jGj1+TtGBUhoBQ8dhnUNqmPyq601O+1RR/6
-          ZQIDAQAB
+          MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApFY/C0eKBerw3pujIBwO
+          0GV2tEAmYTqAOWWsidbMdLJLixx7h34KfoR2dMDhQCXlWY7S/cCINSeLI0KiV73p
+          HrsS57JJN14hFzKiY78UUxdwJO4nsF+2CCIsVk0brU2ffdzC8Ba1vO21i8ex6vxz
+          EmZ7ohXyCyi6svAEa1UOMr0E5KFmTpCL7NwlpSt7IOr6phAD+0jR/hP+B3OSGyzP
+          9ggQ+cV4mEubtEk/S/QDQ0Oxng/RKJGU8S+62g/HaFFKuqFr/+xjf8X1I+tSzysG
+          ssqZxhwgiULSxGvO8w8/CrFBxde+g2CXcGsqcPeGYhURLc3MquGH/c9mlp5I/4f7
+          XQIDAQAB
           -----END PUBLIC KEY-----
 server:
   port: 9000
