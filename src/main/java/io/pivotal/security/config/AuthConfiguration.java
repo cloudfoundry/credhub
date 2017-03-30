@@ -23,8 +23,8 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 @EnableWebSecurity
 public class AuthConfiguration extends ResourceServerConfigurerAdapter {
   // Only valid for v4 UUID by design.
-  private static final String VALID_MTLS_ID = "CN=.+,OU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-"
-      + "[a-f0-9]{4}-[a-f0-9]{12})(?:,|$)";
+  private static final String VALID_MTLS_ID =
+      "(?:,| |^)OU=(app:[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[a-f0-9]{4}-[a-f0-9]{12})(?:,|$)";
 
   private final ResourceServerProperties resourceServerProperties;
   private final AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
