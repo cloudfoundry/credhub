@@ -183,14 +183,14 @@ public class SecretsControllerDeleteTest {
 
         it("can delete when the name is a query param", () -> {
           mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()))
-            .andExpect(status().isNoContent());
+              .andExpect(status().isNoContent());
 
           verify(secretDataService, times(1)).delete(secretName.toUpperCase());
         });
 
         it("handles missing name parameter", () -> {
           mockMvc.perform(delete("/api/v1/data"))
-            .andExpect(status().isBadRequest());
+              .andExpect(status().isBadRequest());
         });
 
         it("handles empty name", () -> {

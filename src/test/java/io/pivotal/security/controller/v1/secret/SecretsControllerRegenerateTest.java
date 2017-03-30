@@ -101,7 +101,8 @@ public class SecretsControllerRegenerateTest {
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new Password("generated-secret"));
+      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
+          .thenReturn(new Password("generated-secret"));
     });
 
     describe("regenerating a password", () -> {
@@ -168,7 +169,10 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("returns an error", () -> {
-        String notFoundJson = "{\"error\": \"Credential not found. Please validate your input and retry your request.\"}";
+        String notFoundJson = "{" +
+            "  \"error\": \"Credential not found. " +
+            "Please validate your input and retry your request.\"" +
+            "}";
 
         response.andExpect(content().json(notFoundJson));
       });
@@ -193,7 +197,10 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("returns an error", () -> {
-        String cannotRegenerateJson = "{\"error\": \"The password could not be regenerated because the value was statically set. Only generated passwords may be regenerated.\"}";
+        String cannotRegenerateJson = "{" +
+            "  \"error\": \"The password could not be regenerated because the value was " +
+            "statically set. Only generated passwords may be regenerated.\"" +
+            "}";
 
         response.andExpect(content().json(cannotRegenerateJson));
       });
@@ -220,7 +227,11 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("returns an error", () -> {
-        String cannotRegenerateJson = "{\"error\": \"The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.\"}";
+        // language=JSON
+        String cannotRegenerateJson = "{\n" +
+            "  \"error\": \"The credential could not be accessed with the provided encryption " +
+            "keys. You must update your deployment configuration to continue.\"\n" +
+            "}";
 
         response
                 .andExpect(status().isInternalServerError())

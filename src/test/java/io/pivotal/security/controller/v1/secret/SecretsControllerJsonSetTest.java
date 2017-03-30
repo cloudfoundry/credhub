@@ -103,7 +103,8 @@ public class SecretsControllerJsonSetTest {
 
           assertThat(secretView.getUuid(), equalTo(expected.getUuid().toString()));
           assertThat(secretView.getType(), equalTo("json"));
-          assertThat(secretView.getVersionCreatedAt().getEpochSecond(), equalTo(expected.getVersionCreatedAt().getEpochSecond()));
+          long epochSecond = secretView.getVersionCreatedAt().getEpochSecond();
+          assertThat(epochSecond, equalTo(expected.getVersionCreatedAt().getEpochSecond()));
           assertThat(secretView.getValue(), equalTo(expected.getValue()));
         });
       });

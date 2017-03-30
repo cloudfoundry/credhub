@@ -109,7 +109,8 @@ public class SecretsControllerGenerateTest {
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new Password(fakePassword));
+      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class)))
+          .thenReturn(new Password(fakePassword));
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -136,7 +137,12 @@ public class SecretsControllerGenerateTest {
         mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
+            .andExpect(
+                jsonPath("$.error")
+                    .value("The request does not include a valid type. " +
+                        "Valid values for generate include 'password', 'certificate', " +
+                        "'ssh' and 'rsa'.")
+            );
       });
 
       it("for a new value secret should return an error message", () -> {
@@ -148,7 +154,11 @@ public class SecretsControllerGenerateTest {
         mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+            .andExpect(
+                jsonPath("$.error")
+                    .value("Credentials of this type cannot be generated. " +
+                        "Please adjust the credential type and retry your request.")
+            );
       });
 
       it("for a new json secret should return an error message", () -> {
@@ -160,7 +170,11 @@ public class SecretsControllerGenerateTest {
         mockMvc.perform(post)
           .andExpect(status().isBadRequest())
           .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+          .andExpect(
+              jsonPath("$.error")
+                  .value("Credentials of this type cannot be generated. " +
+                      "Please adjust the credential type and retry your request.")
+          );
       });
 
       describe("when name does not have a leading slash in the request json", () -> {
@@ -357,7 +371,12 @@ public class SecretsControllerGenerateTest {
               .content("{\"name\":\"some-new-secret-name\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("The request does not include a valid type. " +
+                          "Valid values for generate include 'password', 'certificate', " +
+                          "'ssh' and 'rsa'.")
+              );
         });
 
         it("returns 400 when name is empty", () -> {
@@ -366,7 +385,11 @@ public class SecretsControllerGenerateTest {
               .content("{\"type\":\"password\",\"name\":\"\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("A credential name must be provided. " +
+                          "Please validate your input and retry your request.")
+              );
         });
 
         it("returns 400 when name is missing", () -> {
@@ -375,7 +398,11 @@ public class SecretsControllerGenerateTest {
               .content("{\"type\":\"password\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("A credential name must be provided. " +
+                          "Please validate your input and retry your request.")
+              );
         });
 
         it("returns 400 when incorrect params are sent in request", () -> {
@@ -392,7 +419,12 @@ public class SecretsControllerGenerateTest {
               "}")
           )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'some_unknown_param'. Please update or remove this parameter and retry your request."));
+            .andExpect(
+                jsonPath("$.error")
+                    .value("The request includes an unrecognized parameter " +
+                        "'some_unknown_param'. Please update or remove this parameter and " +
+                        "retry your request.")
+            );
         });
 
         it("returns 400 for an unknown/garbage type", () -> {
@@ -404,7 +436,11 @@ public class SecretsControllerGenerateTest {
           mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
+            .andExpect(
+                jsonPath("$.error")
+                    .value("The request does not include a valid type. " +
+                        "Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'.")
+            );
         });
 
         it("returns 400 for a new value secret", () -> {
@@ -416,7 +452,11 @@ public class SecretsControllerGenerateTest {
           mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+            .andExpect(
+                jsonPath("$.error")
+                    .value("Credentials of this type cannot be generated. " +
+                        "Please adjust the credential type and retry your request.")
+            );
         });
 
         it("returns 400 for a new json secret", () -> {
@@ -428,7 +468,11 @@ public class SecretsControllerGenerateTest {
           mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
+            .andExpect(
+                jsonPath("$.error")
+                    .value("Credentials of this type cannot be generated. " +
+                        "Please adjust the credential type and retry your request.")
+            );
         });
       });
     });

@@ -97,7 +97,12 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The credential type cannot be modified. Please delete the credential if you wish to create it with a different type."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("The credential type cannot be modified. " +
+                            "Please delete the credential if you wish to create it with " +
+                            "a different type.")
+                );
           });
 
           it("returns 400 when name is empty", () -> {
@@ -113,7 +118,11 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("A credential name must be provided. " +
+                            "Please validate your input and retry your request.")
+                );
           });
 
           it("returns 400 when name contains double slash (//)", () -> {
@@ -129,7 +138,13 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("A credential name cannot end with a '/' " +
+                            "character or contain '//'. Credential names should be in the " +
+                            "form of /[path]/[name] or [path]/[name]. Please update and retry " +
+                            "your request.")
+                );
           });
 
           it("returns 400 when name ends with a slash", () -> {
@@ -145,7 +160,13 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("A credential name cannot end with a '/' character or contain '//'. Credential names should be in the form of /[path]/[name] or [path]/[name]. Please update and retry your request."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("A credential name cannot end with a '/' character " +
+                            "or contain '//'. Credential names should be in the form " +
+                            "of /[path]/[name] or [path]/[name]. Please update and retry " +
+                            "your request.")
+                );
           });
 
           it("returns 400 when name is missing", () -> {
@@ -160,7 +181,11 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("A credential name must be provided. " +
+                            "Please validate your input and retry your request.")
+                );
           });
 
           it("returns 400 when type is missing", () -> {
@@ -175,7 +200,12 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("The request does not include a valid type. " +
+                            "Valid values include 'value', 'json', 'password', 'certificate', " +
+                            "'ssh' and 'rsa'.")
+                );
           });
 
           it("returns 400 when type is blank", () -> {
@@ -191,7 +221,12 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("The request does not include a valid type. " +
+                            "Valid values include 'value', 'json', 'password', 'certificate', " +
+                            "'ssh' and 'rsa'.")
+                );
           });
 
           it("returns 400 when type unknown", () -> {
@@ -207,7 +242,12 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values include 'value', 'json', 'password', 'certificate', 'ssh' and 'rsa'."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("The request does not include a valid type. " +
+                            "Valid values include 'value', 'json', 'password', 'certificate', " +
+                            "'ssh' and 'rsa'.")
+                );
           });
 
           it("returns 400 when value is missing", () -> {
@@ -222,7 +262,11 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("A non-empty value must be specified for the credential. Please validate and retry your request."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("A non-empty value must be specified for the " +
+                            "credential. Please validate and retry your request.")
+                );
           });
 
           it("returns an error message when an unknown top-level key is present", () -> {
@@ -239,7 +283,12 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'response_error'. Please update or remove this parameter and retry your request."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("The request includes an unrecognized parameter " +
+                            "'response_error'. Please update or remove this parameter and " +
+                            "retry your request.")
+                );
           });
 
           it("returns an error message when the input JSON is malformed", () -> {
@@ -257,7 +306,12 @@ public class SecretsControllerErrorHandlingSetTest {
             mockMvc.perform(put)
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error").value("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request."));
+                .andExpect(
+                    jsonPath("$.error")
+                        .value("The request could not be fulfilled because the " +
+                            "request path or body did not meet expectation. Please check the " +
+                            "documentation for required formatting and retry your request.")
+                );
           });
 
           it("returns errors from the auditing service auditing fails", () -> {
@@ -279,7 +333,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           describe("when malformed json is sent", () -> {
             it("returns a nice error message", () -> {
-              final String malformedJSON = "{" +
+              final String malformedJson = "{" +
                       "  \"type\":\"value\"" +
                       "  \"name\":\"" + secretName + "\"" +
                       "  \"value\":\"[]\"" +
@@ -287,15 +341,21 @@ public class SecretsControllerErrorHandlingSetTest {
               final MockHttpServletRequestBuilder post = put("/api/v1/data")
                       .accept(APPLICATION_JSON)
                       .contentType(APPLICATION_JSON)
-                      .content(malformedJSON);
+                      .content(malformedJson);
 
               this.mockMvc.perform(post).andExpect(status().isBadRequest())
                       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                      .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.")));
+                      .andExpect(
+                          jsonPath("$.error",
+                              equalTo("The request could not be fulfilled because the " +
+                                  "request path or body did not meet expectation. Please check " +
+                                  "the documentation for required formatting and retry your " +
+                                  "request."))
+                      );
             });
 
             it("returns a nice error message for different kinds of payloads", () -> {
-              final String malformedJSON = "{" +
+              final String malformedJson = "{" +
                       "  \"type\":\"value\"," +
                       "  \"name\":\"" + secretName + "\"," +
                       "  \"value\":\"[\"some\" \"key\"]\"" +
@@ -303,11 +363,18 @@ public class SecretsControllerErrorHandlingSetTest {
               final MockHttpServletRequestBuilder post = put("/api/v1/data")
                       .accept(APPLICATION_JSON)
                       .contentType(APPLICATION_JSON)
-                      .content(malformedJSON);
+                      .content(malformedJson);
 
               this.mockMvc.perform(post).andExpect(status().isBadRequest())
                       .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                      .andExpect(jsonPath("$.error", equalTo("The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.")));
+                      .andExpect(
+                          jsonPath(
+                              "$.error",
+                              equalTo("The request could not be fulfilled " +
+                                  "because the request path or body did not meet " +
+                                  "expectation. Please check the documentation for " +
+                                  "required formatting and retry your request."))
+                      );
             });
           });
 
@@ -331,7 +398,8 @@ public class SecretsControllerErrorHandlingSetTest {
                 "  \"value\":\"my-password\"," +
                 "  \"overwrite\":true" +
                 "}");
-        final String errorMessage = "The credential type cannot be modified. Please delete the credential if you wish to create it with a different type.";
+        final String errorMessage = "The credential type cannot be modified. " +
+            "Please delete the credential if you wish to create it with a different type.";
         mockMvc.perform(put)
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error").value(errorMessage));

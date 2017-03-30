@@ -105,10 +105,16 @@ public class SecretsControllerGetTest {
 
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        NamedValueSecret valueSecret = new NamedValueSecret(secretName).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        NamedValueSecret valueSecret = new NamedValueSecret(secretName)
+            .setEncryptor(encryptor)
+            .setUuid(uuid)
+            .setVersionCreatedAt(frozenTime);
         valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
         valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
-        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
+        NamedValueSecret valueSecret2 = new NamedValueSecret(secretName)
+            .setEncryptor(encryptor)
+            .setUuid(uuid)
+            .setVersionCreatedAt(frozenTime);
         valueSecret2.setEncryptedValue("fake-encrypted-value2".getBytes());
         valueSecret2.setNonce("fake-nonce2".getBytes());
 
@@ -128,7 +134,13 @@ public class SecretsControllerGetTest {
         ).when(secretDataService).findByUuid(uuid.toString());
       });
 
-      describe("getting a secret by name case-insensitively (with name query param, and no leading slash)", makeGetByNameBlock(secretValue, "/api/v1/data?name=" + secretName.toUpperCase(), "/api/v1/data?name=invalid_name", "$.data[0]"));
+      describe(
+          "case insensitive get secret by name (with name query param, and no leading slash)",
+          makeGetByNameBlock(
+              secretValue,
+              "/api/v1/data?name=" + secretName.toUpperCase(),
+          "/api/v1/data?name=invalid_name", "$.data[0]"
+          ));
 
       describe("getting a secret by name when name has multiple leading slashes", () -> {
         it("returns NOT_FOUND", () -> {
@@ -138,7 +150,11 @@ public class SecretsControllerGetTest {
           mockMvc.perform(get)
               .andExpect(status().isNotFound())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("Credential not found. Please validate your input " +
+                          "and retry your request.")
+              );
         });
       });
 
@@ -176,7 +192,11 @@ public class SecretsControllerGetTest {
           mockMvc.perform(get)
               .andExpect(status().is4xxClientError())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("A credential name must be provided. Please " +
+                          "validate your input and retry your request.")
+              );
         });
       });
 
@@ -205,32 +225,43 @@ public class SecretsControllerGetTest {
     });
 
     describe("when key not present", () -> {
-        beforeEach(() -> {
-            uuid = UUID.randomUUID();
-            NamedValueSecret valueSecret = new NamedValueSecret(secretName).setEncryptor(encryptor).setUuid(uuid).setVersionCreatedAt(frozenTime);
-            valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
-            valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
+      beforeEach(() -> {
+        uuid = UUID.randomUUID();
+        NamedValueSecret valueSecret =
+            new NamedValueSecret(secretName)
+                .setEncryptor(encryptor)
+                .setUuid(uuid)
+                .setVersionCreatedAt(frozenTime);
+        valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
+        valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
 
-            doThrow(new KeyNotFoundException()).when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
-            doReturn(Arrays.asList(valueSecret)).when(secretDataService).findAllByName(secretName.toUpperCase());
-        });
+        doThrow(new KeyNotFoundException())
+            .when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
+        doReturn(Arrays.asList(valueSecret)).when(secretDataService).findAllByName(secretName.toUpperCase());
+      });
 
-        it("returns KEY_NOT_PRESENT", () -> {
-            final MockHttpServletRequestBuilder get =
-                    get("/api/v1/data?name=" + secretName.toUpperCase())
-                    .accept(APPLICATION_JSON);
+      it("returns KEY_NOT_PRESENT", () -> {
+        final MockHttpServletRequestBuilder get =
+            get("/api/v1/data?name=" + secretName.toUpperCase())
+                .accept(APPLICATION_JSON);
 
-            mockMvc.perform(get)
-                    .andExpect(status().isInternalServerError())
-                    .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                    .andExpect(jsonPath("$.error")
-                            .value("The credential could not be accessed with the provided" +
-                                        " encryption keys. You must update your deployment configuration to continue."));
-        });
+        mockMvc.perform(get)
+            .andExpect(status().isInternalServerError())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error")
+                .value("The credential could not be accessed with the provided" +
+                    " encryption keys. You must update your deployment configuration " +
+                    "to continue."));
+      });
     });
   }
 
-  private Spectrum.Block makeGetByNameBlock(String secretValue, String validUrl, String invalidUrl, String jsonPathPrefix) {
+  private Spectrum.Block makeGetByNameBlock(
+      String secretValue,
+      String validUrl,
+      String invalidUrl,
+      String jsonPathPrefix
+  ) {
     return () -> {
       beforeEach(() -> {
         final MockHttpServletRequestBuilder get = get(validUrl)
@@ -260,7 +291,11 @@ public class SecretsControllerGetTest {
         mockMvc.perform(get)
             .andExpect(status().isNotFound())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
+            .andExpect(
+                jsonPath("$.error")
+                    .value("Credential not found. Please validate your input and " +
+                        "retry your request.")
+            );
       });
     };
   }
