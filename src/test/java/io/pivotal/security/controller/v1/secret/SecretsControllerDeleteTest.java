@@ -82,7 +82,11 @@ public class SecretsControllerDeleteTest {
           mockMvc.perform(delete)
               .andExpect(status().isNotFound())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value("Credential not found. Please validate your input and retry your request."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("Credential not found. " +
+                          "Please validate your input and retry your request.")
+              );
         });
 
         it("should return an error when name is empty", () -> {
@@ -92,7 +96,11 @@ public class SecretsControllerDeleteTest {
           mockMvc.perform(delete)
               .andExpect(status().is4xxClientError())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("A credential name must be provided. " +
+                          "Please validate your input and retry your request.")
+              );
         });
 
         it("should return an error when name is missing", () -> {
@@ -102,14 +110,20 @@ public class SecretsControllerDeleteTest {
           mockMvc.perform(delete)
               .andExpect(status().is4xxClientError())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("A credential name must be provided. " +
+                          "Please validate your input and retry your request.")
+              );
         });
       });
 
       describe("when there is one secret with the name (case-insensitive)", () -> {
         beforeEach(() -> {
           doReturn(1L).when(secretDataService).delete(secretName.toUpperCase());
-          doReturn(new NamedValueSecret()).when(secretDataService).findMostRecent(secretName.toUpperCase());
+          doReturn(new NamedValueSecret())
+              .when(secretDataService)
+              .findMostRecent(secretName.toUpperCase());
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()));
         });
 
@@ -162,7 +176,9 @@ public class SecretsControllerDeleteTest {
           NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
           doReturn(2L).when(secretDataService).delete(secretName.toUpperCase());
-          doReturn(new NamedValueSecret()).when(secretDataService).findMostRecent(secretName.toUpperCase());
+          doReturn(new NamedValueSecret())
+              .when(secretDataService)
+              .findMostRecent(secretName.toUpperCase());
         });
 
         it("can delete when the name is a query param", () -> {
