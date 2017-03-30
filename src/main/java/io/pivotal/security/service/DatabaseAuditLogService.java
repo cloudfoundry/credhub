@@ -19,7 +19,6 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.annotation.PostConstruct;
-import java.util.function.Supplier;
 
 @Service
 public class DatabaseAuditLogService implements AuditLogService {
@@ -52,50 +51,6 @@ public class DatabaseAuditLogService implements AuditLogService {
   @PostConstruct
   public void init() {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
-  }
-
-  @Override
-  public ResponseEntity<?> performWithAuditing(AuditRecordBuilder auditRecordBuilder,
-      Supplier<ResponseEntity<?>> action) throws
-      Exception {
-    TransactionStatus transaction = transactionManager
-        .getTransaction(new DefaultTransactionDefinition());
-
-    boolean auditSuccess = true;
-
-    ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    RuntimeException thrown = null;
-    try {
-      responseEntity = action.get();
-      if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-        auditSuccess = false;
-        transactionManager.rollback(transaction);
-        transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-      }
-    } catch (RuntimeException e) {
-      thrown = e;
-      auditSuccess = false;
-      transactionManager.rollback(transaction);
-      transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-    }
-
-    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder, responseEntity.getStatusCodeValue(), auditSuccess);
-
-    try {
-      operationAuditRecordDataService.save(auditRecord);
-      transactionManager.commit(transaction);
-      securityEventsLogService.log(auditRecord);
-    } catch (Exception e) {
-      if (!transaction.isCompleted()) transactionManager.rollback(transaction);
-      final ResponseError error = new ResponseError(messageSourceAccessor.getMessage("error.audit_save_failure"));
-      return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    if (thrown != null) {
-      throw thrown;
-    }
-
-    return responseEntity;
   }
 
   @Override

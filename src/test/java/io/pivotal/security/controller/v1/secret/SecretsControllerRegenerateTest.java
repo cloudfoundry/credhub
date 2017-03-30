@@ -1,26 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
@@ -37,7 +16,6 @@ import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -51,13 +29,14 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -95,10 +74,13 @@ public class SecretsControllerRegenerateTest {
 
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
+
   @Autowired
   private Encryptor encryptor;
+
+  @MockBean
+  CurrentTimeProvider mockCurrentTimeProvider;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -109,6 +91,8 @@ public class SecretsControllerRegenerateTest {
 
   private UUID uuid;
 
+  private AuditRecordBuilder auditRecordBuilder;
+
   {
     wireAndUnwire(this);
 
@@ -117,8 +101,7 @@ public class SecretsControllerRegenerateTest {
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
-          .thenReturn(new Password("generated-secret"));
+      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new Password("generated-secret"));
     });
 
     describe("regenerating a password", () -> {
@@ -128,8 +111,7 @@ public class SecretsControllerRegenerateTest {
         originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
         generationParameters.setExcludeNumber(true);
-        originalSecret
-            .setPasswordAndGenerationParameters("original-password", generationParameters);
+        originalSecret.setPasswordAndGenerationParameters("original-password", generationParameters);
         originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
@@ -142,7 +124,8 @@ public class SecretsControllerRegenerateTest {
           return newSecret;
         }).when(secretDataService).save(any(NamedPasswordSecret.class));
 
-        resetAuditLogMock();
+        auditRecordBuilder = new AuditRecordBuilder();
+        resetAuditLogMock(auditLogService, auditRecordBuilder);
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
@@ -157,11 +140,9 @@ public class SecretsControllerRegenerateTest {
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.type").value("password"))
             .andExpect(jsonPath("$.id").value(uuid.toString()))
-            .andExpect(
-                jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
+            .andExpect(jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
 
-        ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor
-            .forClass(NamedPasswordSecret.class);
+        ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
         verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
         NamedPasswordSecret newPassword = argumentCaptor.getValue();
@@ -172,6 +153,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
       });
     });
 
@@ -186,14 +168,14 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("returns an error", () -> {
-        String notFoundJson = "{\"error\": \"Credential not found. "
-            + "Please validate your input and retry your request.\"}";
+        String notFoundJson = "{\"error\": \"Credential not found. Please validate your input and retry your request.\"}";
 
         response.andExpect(content().json(notFoundJson));
       });
 
       it("persists an audit entry", () -> {
         verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
       });
     });
 
@@ -211,53 +193,39 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("returns an error", () -> {
-        String cannotRegenerateJson = "{\"error\":"
-            + " \"The password could not be regenerated because the value was statically set."
-            + " Only generated passwords may be regenerated.\"}";
+        String cannotRegenerateJson = "{\"error\": \"The password could not be regenerated because the value was statically set. Only generated passwords may be regenerated.\"}";
 
         response.andExpect(content().json(cannotRegenerateJson));
       });
 
       it("persists an audit entry", () -> {
         verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
       });
     });
 
-    describe("when attempting to regenerate a password with parameters that can't be decrypted",
-        () -> {
-          beforeEach(() -> {
-            NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
-            originalSecret.setEncryptor(encryptor);
-            originalSecret
-                .setPasswordAndGenerationParameters("abcde", new PasswordGenerationParameters());
-            originalSecret.setEncryptionKeyUuid(UUID.randomUUID());
+    describe("when attempting to regenerate a password with parameters that can't be decrypted", () -> {
+      beforeEach(() -> {
+        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+        originalSecret.setEncryptor(encryptor);
+        originalSecret.setPasswordAndGenerationParameters("abcde", new PasswordGenerationParameters());
+        originalSecret.setEncryptionKeyUuid(UUID.randomUUID());
 
-            doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
+        doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
-            response = mockMvc.perform(post("/api/v1/data")
+        response = mockMvc.perform(post("/api/v1/data")
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"regenerate\":true,\"name\":\"my-password\"}"));
-          });
+      });
 
-          it("returns an error", () -> {
-            String cannotRegenerateJson = "{\"error\": "
-                + "\"The credential could not be accessed with the provided encryption keys. "
-                + "You must update your deployment configuration to continue.\"}";
+      it("returns an error", () -> {
+        String cannotRegenerateJson = "{\"error\": \"The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.\"}";
 
-            response
+        response
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(cannotRegenerateJson));
-          });
-        });
-  }
-
-  private void resetAuditLogMock() throws Exception {
-    Mockito.reset(auditLogService);
-    doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
-      return action.get();
-    }).when(auditLogService)
-        .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
+      });
+    });
   }
 }

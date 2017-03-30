@@ -1,30 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
@@ -59,14 +34,16 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -89,29 +66,40 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerGenerateTest {
 
-  private final String secretName = "/my-namespace/subTree/secret-name";
-  private final String fakePassword = "generated-secret";
   @Autowired
   WebApplicationContext webApplicationContext;
 
-
   @SpyBean
   FakeAuditLogService auditLogService;
+
   @SpyBean
   SecretDataService secretDataService;
+
   @MockBean
   PassayStringSecretGenerator secretGenerator;
+
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
+
   @Autowired
   private Encryptor encryptor;
+
+  @MockBean
+  CurrentTimeProvider mockCurrentTimeProvider;
+
   private MockMvc mockMvc;
+
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
+
   private Consumer<Long> fakeTimeSetter;
+
+  private final String secretName = "/my-namespace/subTree/secret-name";
   private ResultActions response;
   private UUID uuid;
+
+  private final String fakePassword = "generated-secret";
+
+  private AuditRecordBuilder auditRecordBuilder;
 
   {
     wireAndUnwire(this);
@@ -121,10 +109,10 @@ public class SecretsControllerGenerateTest {
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class)))
-          .thenReturn(new Password(fakePassword));
+      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class))).thenReturn(new Password(fakePassword));
 
-      resetAuditLogMock();
+      auditRecordBuilder = new AuditRecordBuilder();
+      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("generating a secret", () -> {
@@ -148,10 +136,7 @@ public class SecretsControllerGenerateTest {
         mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value(
-                "The request does not include a valid type."
-                    + " Valid values for generate include 'password', 'certificate', "
-                    + "'ssh' and 'rsa'."));
+            .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
       });
 
       it("for a new value secret should return an error message", () -> {
@@ -163,23 +148,19 @@ public class SecretsControllerGenerateTest {
         mockMvc.perform(post)
             .andExpect(status().isBadRequest())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value(
-                "Credentials of this type cannot be generated. "
-                    + "Please adjust the credential type and retry your request."));
+            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
       });
 
       it("for a new json secret should return an error message", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
+          .accept(APPLICATION_JSON)
+          .contentType(APPLICATION_JSON)
+          .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
 
         mockMvc.perform(post)
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error").value(
-                "Credentials of this type cannot be generated."
-                    + " Please adjust the credential type and retry your request."));
+          .andExpect(status().isBadRequest())
+          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+          .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
       });
 
       describe("when name does not have a leading slash in the request json", () -> {
@@ -187,9 +168,7 @@ public class SecretsControllerGenerateTest {
           final MockHttpServletRequestBuilder post = post(API_V1_DATA)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content(
-                  "{\"type\":\"password\",\"name\":\"" + StringUtils.stripStart(secretName, "/")
-                      + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + StringUtils.stripStart(secretName, "/") + "\"}");
 
           mockMvc.perform(post)
               .andExpect(status().is2xxSuccessful());
@@ -201,13 +180,13 @@ public class SecretsControllerGenerateTest {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content("{"
-                  + "\"type\":\"password\","
-                  + "\"name\":\"" + secretName + "\","
-                  + "\"parameters\":{"
-                  + "\"exclude_number\": true"
-                  + "}"
-                  + "}");
+              .content("{" +
+                  "\"type\":\"password\"," +
+                  "\"name\":\"" + secretName + "\"," +
+                  "\"parameters\":{" +
+                  "\"exclude_number\": true" +
+                  "}" +
+                  "}");
 
           response = mockMvc.perform(post);
         });
@@ -222,8 +201,7 @@ public class SecretsControllerGenerateTest {
         });
 
         it("asks the data service to persist the secret", () -> {
-          ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor
-              .forClass(NamedPasswordSecret.class);
+          ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
           NamedPasswordSecret newPassword = argumentCaptor.getValue();
@@ -234,6 +212,7 @@ public class SecretsControllerGenerateTest {
 
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
         });
       });
 
@@ -247,8 +226,8 @@ public class SecretsControllerGenerateTest {
           doReturn(expectedSecret
               .setUuid(uuid)
               .setVersionCreatedAt(frozenTime.minusSeconds(1)))
-              .when(secretDataService).findMostRecent(secretName);
-          resetAuditLogMock();
+            .when(secretDataService).findMostRecent(secretName);
+          resetAuditLogMock(auditLogService, auditRecordBuilder);
         });
 
         describe("with the overwrite flag set to true", () -> {
@@ -256,11 +235,11 @@ public class SecretsControllerGenerateTest {
             final MockHttpServletRequestBuilder post = post("/api/v1/data")
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content("{"
-                    + "  \"type\":\"password\","
-                    + "  \"name\":\"" + secretName + "\","
-                    + "  \"overwrite\":true"
-                    + "}");
+                .content("{" +
+                    "  \"type\":\"password\"," +
+                    "  \"name\":\"" + secretName + "\"," +
+                    "  \"overwrite\":true" +
+                    "}");
 
             response = mockMvc.perform(post);
           });
@@ -275,13 +254,13 @@ public class SecretsControllerGenerateTest {
           });
 
           it("asks the data service to persist the secret", () -> {
-            final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretDataService
-                .findMostRecent(secretName);
+            final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretDataService.findMostRecent(secretName);
             assertThat(namedSecret.getPassword(), equalTo(fakePassword));
           });
 
           it("persists an audit entry", () -> {
             verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+            assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
           });
         });
 
@@ -301,8 +280,7 @@ public class SecretsControllerGenerateTest {
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePassword))
                 .andExpect(jsonPath("$.id").value(uuid.toString()))
-                .andExpect(
-                    jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
+                .andExpect(jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
           });
 
           it("should not persist the secret", () -> {
@@ -311,19 +289,20 @@ public class SecretsControllerGenerateTest {
 
           it("persists an audit entry", () -> {
             verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+            assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_ACCESS));
           });
         });
 
         describe("with bad parameters", () -> {
           beforeEach(() -> {
             final MockHttpServletRequestBuilder post = post("/api/v1/data")
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .content("{"
-                    + "  \"type\":\"nopeity mcnope\","
-                    + "  \"name\":\"" + secretName + "\","
-                    + "  \"overwrite\":true"
-                    + "}");
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                "  \"type\":\"nopeity mcnope\"," +
+                "  \"name\":\"" + secretName + "\"," +
+                "  \"overwrite\":true" +
+                "}");
 
             response = mockMvc.perform(post);
           });
@@ -367,8 +346,7 @@ public class SecretsControllerGenerateTest {
               .andExpect(jsonPath("$.type").value("password"))
               .andExpect(jsonPath("$.value").value(fakePassword))
               .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(
-                  jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
         });
       });
 
@@ -379,10 +357,7 @@ public class SecretsControllerGenerateTest {
               .content("{\"name\":\"some-new-secret-name\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(
-                  "The request does not include a valid type."
-                      + " Valid values for generate include 'password', 'certificate', "
-                      + "'ssh' and 'rsa'."));
+              .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
         });
 
         it("returns 400 when name is empty", () -> {
@@ -391,9 +366,7 @@ public class SecretsControllerGenerateTest {
               .content("{\"type\":\"password\",\"name\":\"\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(
-                  "A credential name must be provided."
-                      + " Please validate your input and retry your request."));
+              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
         });
 
         it("returns 400 when name is missing", () -> {
@@ -402,86 +375,62 @@ public class SecretsControllerGenerateTest {
               .content("{\"type\":\"password\"}")
           )
               .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(
-                  "A credential name must be provided."
-                      + " Please validate your input and retry your request."));
+              .andExpect(jsonPath("$.error").value("A credential name must be provided. Please validate your input and retry your request."));
         });
 
         it("returns 400 when incorrect params are sent in request", () -> {
           mockMvc.perform(post("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              //language=JSON
-              .content("{"
-                  + "\"type\":\"password\","
-                  + "\"name\":\""
-                  + secretName + "\",\"parameters\":{"
-                  + "\"exclude_number\": true"
-                  + "},"
-                  + "\"some_unknown_param\": false"
-                  + "}")
+            .accept(APPLICATION_JSON)
+            //language=JSON
+            .content("{" +
+              "\"type\":\"password\"," +
+              "\"name\":\"" + secretName + "\"," +
+              "\"parameters\":{" +
+              "\"exclude_number\": true" +
+              "}," +
+              "\"some_unknown_param\": false" +
+              "}")
           )
-              .andExpect(status().isBadRequest())
-              .andExpect(jsonPath("$.error").value(
-                  "The request includes an unrecognized parameter"
-                      + " 'some_unknown_param'. Please update or remove this parameter"
-                      + " and retry your request."));
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("The request includes an unrecognized parameter 'some_unknown_param'. Please update or remove this parameter and retry your request."));
         });
 
         it("returns 400 for an unknown/garbage type", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
-              .andExpect(status().isBadRequest())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value(
-                  "The request does not include a valid type. "
-                      + "Valid values for generate include 'password', 'certificate', "
-                      + "'ssh' and 'rsa'."));
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("The request does not include a valid type. Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'."));
         });
 
         it("returns 400 for a new value secret", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
-              .andExpect(status().isBadRequest())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value(
-                  "Credentials of this type cannot be generated. "
-                      + "Please adjust the credential type and retry your request."));
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
         });
 
         it("returns 400 for a new json secret", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
-              .andExpect(status().isBadRequest())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value(
-                  "Credentials of this type cannot be generated."
-                      + " Please adjust the credential type and retry your request."));
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.error").value("Credentials of this type cannot be generated. Please adjust the credential type and retry your request."));
         });
       });
     });
-  }
-
-  private void resetAuditLogMock() throws Exception {
-    Mockito.reset(auditLogService);
-    doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
-      return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
-    doAnswer(invocation -> {
-      final ExceptionThrowingFunction action = invocation.getArgumentAt(0, ExceptionThrowingFunction.class);
-      return action.apply(new AuditRecordBuilder());
-    }).when(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
   }
 }

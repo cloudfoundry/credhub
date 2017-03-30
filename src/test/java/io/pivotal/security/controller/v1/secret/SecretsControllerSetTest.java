@@ -61,20 +61,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -109,6 +110,8 @@ public class SecretsControllerSetTest {
   private ResultActions response;
   private UUID uuid;
 
+  private AuditRecordBuilder auditRecordBuilder;
+
   {
     wireAndUnwire(this);
 
@@ -118,7 +121,8 @@ public class SecretsControllerSetTest {
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-      resetAuditLogMock();
+      auditRecordBuilder = new AuditRecordBuilder();
+      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("setting a secret", () -> {
@@ -181,6 +185,7 @@ public class SecretsControllerSetTest {
 
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
         });
 
         it("allows secret with '.' in the name", () -> {
@@ -419,7 +424,7 @@ public class SecretsControllerSetTest {
     describe("updating a secret", () -> {
       beforeEach(() -> {
         putSecretInDatabase(secretName, "original value");
-        resetAuditLogMock();
+        resetAuditLogMock(auditLogService, auditRecordBuilder);
       });
 
       it("should return 400 when trying to update a secret with a mismatching type", () -> {
@@ -490,6 +495,7 @@ public class SecretsControllerSetTest {
 
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
         });
       });
 
@@ -514,6 +520,7 @@ public class SecretsControllerSetTest {
 
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_ACCESS));
         });
       });
     });
@@ -533,17 +540,5 @@ public class SecretsControllerSetTest {
 
     uuid = secretDataService.findMostRecent(name).getUuid();
     reset(secretDataService);
-  }
-
-  private void resetAuditLogMock() throws Exception {
-    reset(auditLogService);
-    doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
-      return action.get();
-    }).when(auditLogService).performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
-    doAnswer(invocation -> {
-      final ExceptionThrowingFunction action = invocation.getArgumentAt(0, ExceptionThrowingFunction.class);
-      return action.apply(new AuditRecordBuilder());
-    }).when(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
   }
 }

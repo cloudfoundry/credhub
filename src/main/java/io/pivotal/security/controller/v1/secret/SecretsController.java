@@ -1,10 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -36,15 +31,6 @@ import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -69,6 +55,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(
@@ -204,11 +205,12 @@ public class SecretsController {
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
   public ResponseEntity delete(@RequestParam(value = "name", required = false) String secretName,
-      HttpServletRequest request,
-      Authentication authentication) throws Exception {
-    AuditRecordBuilder auditRecorder = new AuditRecordBuilder(null, request, authentication);
-    return auditLogService.performWithAuditing(auditRecorder, () -> {
+                               HttpServletRequest request,
+                               Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing(auditRecorder -> {
       auditRecorder.setCredentialName(secretName);
+      auditRecorder.populateFromRequest(request);
+      auditRecorder.setAuthentication(authentication);
 
       if (StringUtils.isEmpty(secretName)) {
         return new ResponseEntity<>(createErrorResponse("error.missing_name"),
@@ -271,13 +273,14 @@ public class SecretsController {
   }
 
   private ResponseEntity retrieveSecretWithAuditing(String identifier,
-      Function<String, List<NamedSecret>> finder,
-      HttpServletRequest request,
-      Authentication authentication,
-      boolean returnFirstEntry) throws Exception {
-    final AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder(null, request,
-        authentication);
-    return auditLogService.performWithAuditing(auditRecordBuilder, () -> {
+                                                    Function<String, List<NamedSecret>> finder,
+                                                    HttpServletRequest request,
+                                                    Authentication authentication,
+                                                    boolean returnFirstEntry) throws Exception {
+    return auditLogService.performWithAuditing(auditRecordBuilder -> {
+      auditRecordBuilder.populateFromRequest(request);
+      auditRecordBuilder.setAuthentication(authentication);
+
       if (StringUtils.isEmpty(identifier)) {
         return new ResponseEntity<>(createErrorResponse("error.missing_name"),
             HttpStatus.BAD_REQUEST);
@@ -390,22 +393,23 @@ public class SecretsController {
   }
 
   private ResponseEntity findWithAuditing(String nameSubstring,
-      Function<String, List<SecretView>> finder,
-      HttpServletRequest request,
-      Authentication authentication) throws Exception {
-    AuditRecordBuilder auditParams = new AuditRecordBuilder(null, request, authentication)
-        .setOperationCode(CREDENTIAL_FIND);
-    return auditLogService.performWithAuditing(auditParams, () -> {
+                                          Function<String, List<SecretView>> finder,
+                                          HttpServletRequest request,
+                                          Authentication authentication) throws Exception {
+      return auditLogService.performWithAuditing(auditParams -> {
+      auditParams.populateFromRequest(request);
+      auditParams.setAuthentication(authentication);
+      auditParams.setOperationCode(CREDENTIAL_FIND);
       List<SecretView> secretViews = finder.apply(nameSubstring);
       return new ResponseEntity<>(FindCredentialResults.fromSecrets(secretViews), HttpStatus.OK);
     });
   }
 
-  private ResponseEntity findPathsWithAuditing(HttpServletRequest request,
-      Authentication authentication) throws Exception {
-    AuditRecordBuilder auditParams = new AuditRecordBuilder(null, request, authentication)
-        .setOperationCode(CREDENTIAL_FIND);
-    return auditLogService.performWithAuditing(auditParams, () -> {
+  private ResponseEntity findPathsWithAuditing(HttpServletRequest request, Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing(auditParams -> {
+      auditParams.populateFromRequest(request);
+      auditParams.setAuthentication(authentication);
+      auditParams.setOperationCode(CREDENTIAL_FIND);
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
     });

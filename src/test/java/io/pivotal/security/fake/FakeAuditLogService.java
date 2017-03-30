@@ -14,9 +14,15 @@ import org.springframework.stereotype.Component;
 @ConditionalOnExpression(
     "#{!environment.getProperty('spring.profiles.active').contains('UseRealAuditLogService')}")
 public class FakeAuditLogService implements AuditLogService {
+  private AuditRecordBuilder auditRecordBuilder;
+
   @Override
   public ResponseEntity<?> performWithAuditing(ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action) throws Exception {
-    return action.apply(new AuditRecordBuilder());
+    auditRecordBuilder = new AuditRecordBuilder();
+    return action.apply(auditRecordBuilder);
   }
 
+  public AuditRecordBuilder getAuditRecordBuilder() {
+    return auditRecordBuilder;
+  }
 }

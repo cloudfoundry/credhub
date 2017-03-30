@@ -41,6 +41,24 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.UUID;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -63,13 +81,16 @@ public class SecretsControllerConcurrencySetTest {
   private UUID uuid;
   private ResultActions[] responses;
 
+  private AuditRecordBuilder auditRecordBuilder;
+
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
 
-      resetAuditLogMock();
+      auditRecordBuilder = new AuditRecordBuilder();
+      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("setting secrets in parallel", () -> {
@@ -168,14 +189,5 @@ public class SecretsControllerConcurrencySetTest {
         });
       });
     });
-  }
-
-  private void resetAuditLogMock() throws Exception {
-    reset(auditLogService);
-    doAnswer(invocation -> {
-      final Supplier action = invocation.getArgumentAt(1, Supplier.class);
-      return action.get();
-    }).when(auditLogService)
-        .performWithAuditing(isA(AuditRecordBuilder.class), isA(Supplier.class));
   }
 }
