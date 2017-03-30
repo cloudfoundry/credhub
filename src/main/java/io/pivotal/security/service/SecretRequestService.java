@@ -1,52 +1,57 @@
 package io.pivotal.security.service;
 
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.PassayStringSecretGenerator;
-import io.pivotal.security.generator.SecretGenerator;
-import io.pivotal.security.request.BaseSecretRequest;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
+import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretView;
-import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.security.NoSuchAlgorithmException;
+
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+
 @Service
 public class SecretRequestService {
 
   private final MessageSourceAccessor messageSourceAccessor;
-  private final SecretGenerator passwordGenerator;
   private SecretDataService secretDataService;
-  private AuditLogService auditLogService;
   private Encryptor encryptor;
-  private HashMap<String, SecretGenerator> generators = new HashMap<>();
+  private GeneratorService generatorService;
 
-  public SecretRequestService(SecretDataService secretDataService,
-      AuditLogService auditLogService,
+  @Autowired
+  public SecretRequestService(
+      SecretDataService secretDataService,
       Encryptor encryptor,
       MessageSource messageSource,
-      PassayStringSecretGenerator passwordGenerator) {
+      GeneratorService generatorService) {
     this.secretDataService = secretDataService;
-    this.auditLogService = auditLogService;
     this.encryptor = encryptor;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
-    this.passwordGenerator = passwordGenerator;
+    this.generatorService = generatorService;
   }
 
-  public ResponseEntity perform(
+  public ResponseEntity performGenerate(
       AuditRecordBuilder auditRecordBuilder,
-      BaseSecretRequest requestBody
+      BaseSecretGenerateRequest requestBody
+  ) throws Exception {
+    BaseSecretSetRequest setRequest = requestBody.createSetRequest(generatorService);
+    return performSet(auditRecordBuilder, setRequest);
+  }
+
+  public ResponseEntity performSet(
+      AuditRecordBuilder auditRecordBuilder,
+      BaseSecretSetRequest requestBody
   ) throws Exception {
     final String secretName = requestBody.getName();
 
@@ -63,8 +68,7 @@ public class SecretRequestService {
 
       NamedSecret storedEntity = existingNamedSecret;
       if (shouldWriteNewEntity) {
-        NamedSecret newEntity = requestBody
-            .createNewVersion(existingNamedSecret, encryptor, getGeneratorFor(type));
+        NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
         storedEntity = secretDataService.save(newEntity);
       }
 
@@ -78,11 +82,6 @@ public class SecretRequestService {
       return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"),
           HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  private SecretGenerator getGeneratorFor(String type) {
-    generators.put(NamedPasswordSecretData.SECRET_TYPE, passwordGenerator);
-    return generators.get(type);
   }
 
   private void validateSecretType(NamedSecret existingNamedSecret, String secretType) {
@@ -101,4 +100,5 @@ public class SecretRequestService {
         .getMessage(exception.getMessage(), exception.getParameters());
     return new ResponseError(errorMessage);
   }
+
 }

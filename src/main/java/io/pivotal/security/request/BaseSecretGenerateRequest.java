@@ -1,10 +1,11 @@
 package io.pivotal.security.request;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.service.GeneratorService;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -45,4 +46,6 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
   public void setRegenerate(boolean regenerate) {
     this.regenerate = regenerate;
   }
+
+  public abstract BaseSecretSetRequest createSetRequest(GeneratorService generatorService);
 }

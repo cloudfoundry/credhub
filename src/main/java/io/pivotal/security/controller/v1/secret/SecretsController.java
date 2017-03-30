@@ -36,6 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -88,12 +89,12 @@ public class SecretsController {
   private final ObjectMapper objectMapper;
   private final SecretRequestService secretRequestService;
 
+  @Autowired
   public SecretsController(SecretDataService secretDataService,
                            NamedSecretGenerateHandler namedSecretGenerateHandler,
                            JsonContextFactory jsonContextFactory,
                            MessageSource messageSource,
                            AuditLogService auditLogService,
-
                            ObjectMapper objectMapper,
                            SecretRequestService secretRequestService) {
     this.secretDataService = secretDataService;
@@ -109,10 +110,15 @@ public class SecretsController {
   public ResponseEntity generate(InputStream inputStream,
                                  HttpServletRequest request,
                                  Authentication authentication) throws Exception {
+    InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
-      return auditedHandlePostRequest(inputStream, request, authentication);
+      return auditedHandlePostRequest(requestInputStream, request, authentication);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
-      return auditedHandlePostRequest(inputStream, request, authentication);
+      requestInputStream.reset();
+      LOGGER.error(
+          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
+              + "\" while storing secret, possibly caused by race condition, retrying...");
+      return auditedHandlePostRequest(requestInputStream, request, authentication);
     }
   }
 
@@ -134,9 +140,9 @@ public class SecretsController {
       InputStream inputStream,
       HttpServletRequest request,
       Authentication authentication,
-      AuditRecordBuilder auditRecordBuilder) throws Exception {
-    InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
-    String requestString = IOUtils.toString(new InputStreamReader(requestInputStream));
+      AuditRecordBuilder auditRecordBuilder
+  ) throws Exception {
+    String requestString = IOUtils.toString(new InputStreamReader(inputStream));
     boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
 
     auditRecordBuilder.populateFromRequest(request);
@@ -147,9 +153,9 @@ public class SecretsController {
       // would be nice if Jackson could pick a subclass based on an arbitrary function, since
       // we want to consider both type and .regenerate. We could do custom deserialization but
       // then we'd have to do the entire job by hand.
-      return handleRegenerateRequest(auditRecordBuilder, requestInputStream);
+      return handleRegenerateRequest(auditRecordBuilder, inputStream);
     } else {
-      return handleGenerateRequest(auditRecordBuilder, requestInputStream, requestString);
+      return handleGenerateRequest(auditRecordBuilder, inputStream, requestString);
     }
   }
 
@@ -169,14 +175,7 @@ public class SecretsController {
       DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
       return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
     } else {
-      try {
-        return secretRequestService.perform(auditRecordBuilder, requestBody);
-      } catch (JpaSystemException | DataIntegrityViolationException e) {
-        LOGGER.error(
-            "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
-                + "\" while storing secret, possibly caused by race condition, retrying...");
-        return secretRequestService.perform(auditRecordBuilder, requestBody);
-      }
+      return secretRequestService.performGenerate(auditRecordBuilder, requestBody);
     }
   }
 
@@ -198,6 +197,9 @@ public class SecretsController {
     try {
       return auditedHandlePutRequest(requestBody, request, authentication);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
+      LOGGER.error(
+          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
+              + "\" while storing secret, possibly caused by race condition, retrying...");
       return auditedHandlePutRequest(requestBody, request, authentication);
     }
   }
@@ -221,14 +223,8 @@ public class SecretsController {
     auditRecordBuilder.setCredentialName(requestBody.getName());
     auditRecordBuilder.populateFromRequest(request);
     auditRecordBuilder.setAuthentication(authentication);
-    try {
-      return secretRequestService.perform(auditRecordBuilder, requestBody);
-    } catch (JpaSystemException | DataIntegrityViolationException e) {
-      LOGGER.error(
-          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
-              + "\" while storing secret, possibly caused by race condition, retrying...");
-      return secretRequestService.perform(auditRecordBuilder, requestBody);
-    }
+
+    return secretRequestService.performSet(auditRecordBuilder, requestBody);
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)

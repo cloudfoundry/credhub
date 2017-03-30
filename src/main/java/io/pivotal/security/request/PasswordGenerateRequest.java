@@ -1,11 +1,8 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.generator.PassayStringSecretGenerator;
-import io.pivotal.security.generator.SecretGenerator;
+import io.pivotal.security.service.GeneratorService;
+
 import java.util.List;
 
 public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
@@ -28,13 +25,15 @@ public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
     getGenerationParameters().validate();
   }
 
-  @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor,
-      SecretGenerator secretGenerator) {
-    String newPassword = ((PassayStringSecretGenerator) secretGenerator)
-        .generateSecret(getGenerationParameters()).getPassword();
-    return NamedPasswordSecret
-        .createNewVersion((NamedPasswordSecret) existing, getName(), newPassword,
-            getGenerationParameters(), encryptor, NULL_ACCESS_CONTROL_ENTRIES);
+  public BaseSecretSetRequest createSetRequest(GeneratorService generatorService) {
+    PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
+    passwordSetRequest.setPassword(generatorService.generatePassword(getGenerationParameters()));
+    passwordSetRequest.setGenerationParameters(getGenerationParameters());
+    passwordSetRequest.setType(getType());
+    passwordSetRequest.setName(getName());
+    passwordSetRequest.setOverwrite(isOverwrite());
+    passwordSetRequest.setAccessControlEntries(NULL_ACCESS_CONTROL_ENTRIES);
+
+    return passwordSetRequest;
   }
 }

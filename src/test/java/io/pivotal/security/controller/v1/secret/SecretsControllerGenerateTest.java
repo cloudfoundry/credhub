@@ -8,10 +8,12 @@ import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.service.SecretRequestService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.util.ExceptionThrowingFunction;
@@ -74,6 +76,9 @@ public class SecretsControllerGenerateTest {
 
   @SpyBean
   SecretDataService secretDataService;
+
+  @SpyBean
+  SecretRequestService secretRequestService;
 
   @MockBean
   PassayStringSecretGenerator secretGenerator;
@@ -215,6 +220,8 @@ public class SecretsControllerGenerateTest {
         });
 
         it("asks the data service to persist the secret", () -> {
+          verify(secretRequestService, times(1))
+              .performGenerate(isA(AuditRecordBuilder.class), isA(PasswordGenerateRequest.class));
           ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
 

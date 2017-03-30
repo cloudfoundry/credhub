@@ -1,15 +1,12 @@
 package io.pivotal.security.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.SecretGenerator;
-import java.util.Set;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.NotEmpty;
+import java.util.Set;
 
 public abstract class BaseSecretRequest {
 
@@ -46,10 +43,6 @@ public abstract class BaseSecretRequest {
   public void setOverwrite(Boolean overwrite) {
     this.overwrite = overwrite;
   }
-
-  @JsonIgnore
-  public abstract NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor,
-      SecretGenerator secretGenerator);
 
   public void validate() {
     enforceJsr303AnnotationValidations();
