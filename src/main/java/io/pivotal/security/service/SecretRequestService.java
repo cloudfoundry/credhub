@@ -45,7 +45,7 @@ public class SecretRequestService {
       AuditRecordBuilder auditRecordBuilder,
       BaseSecretGenerateRequest requestBody
   ) throws Exception {
-    BaseSecretSetRequest setRequest = requestBody.createSetRequest(generatorService);
+    BaseSecretSetRequest setRequest = requestBody.generateSetRequest(generatorService);
     return performSet(auditRecordBuilder, setRequest);
   }
 

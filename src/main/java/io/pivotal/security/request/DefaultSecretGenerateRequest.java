@@ -15,7 +15,7 @@ public class DefaultSecretGenerateRequest extends BaseSecretGenerateRequest {
   }
 
   @Override
-  public BaseSecretSetRequest createSetRequest(GeneratorService generatorService) {
+  public BaseSecretSetRequest generateSetRequest(GeneratorService generatorService) {
     return null;
   }
 }

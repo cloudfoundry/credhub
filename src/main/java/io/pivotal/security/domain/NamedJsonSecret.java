@@ -42,7 +42,7 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
       secret = new NamedJsonSecret();
       secret.copyNameReferenceFrom(existing);
     }
-    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
+    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
 
     secret.setAccessControlList(accessEntryData);
     secret.setEncryptor(encryptor);

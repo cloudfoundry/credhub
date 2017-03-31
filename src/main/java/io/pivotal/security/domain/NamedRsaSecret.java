@@ -37,7 +37,7 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
       secret.copyNameReferenceFrom(existing);
     }
 
-    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
+    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
 
     secret.setAccessControlList(accessEntryData);
 

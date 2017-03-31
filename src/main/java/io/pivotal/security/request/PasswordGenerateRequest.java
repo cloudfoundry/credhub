@@ -25,7 +25,7 @@ public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
     getGenerationParameters().validate();
   }
 
-  public BaseSecretSetRequest createSetRequest(GeneratorService generatorService) {
+  public BaseSecretSetRequest generateSetRequest(GeneratorService generatorService) {
     PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
     passwordSetRequest.setPassword(generatorService.generatePassword(getGenerationParameters()));
     passwordSetRequest.setGenerationParameters(getGenerationParameters());

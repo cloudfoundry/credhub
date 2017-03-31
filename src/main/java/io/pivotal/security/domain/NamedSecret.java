@@ -7,6 +7,7 @@ import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.view.SecretKind;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -19,14 +20,6 @@ public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedVal
 
   public NamedSecret(NamedSecretData delegate) {
     this.delegate = delegate;
-  }
-
-  static List<AccessEntryData> getAccessEntryData(List<AccessControlEntry> accessControlEntries,
-      NamedSecret secret) {
-    SecretName secretName = secret.delegate.getSecretName();
-    return accessControlEntries.stream()
-        .map((entry) -> AccessEntryData.fromSecretName(secretName, entry))
-        .collect(Collectors.toList());
   }
 
   public abstract SecretKind getKind();
@@ -81,10 +74,6 @@ public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return (Z) this;
   }
 
-  void copyNameReferenceFrom(NamedSecret namedSecret) {
-    this.delegate.setSecretName(namedSecret.delegate.getSecretName());
-  }
-
   public void copyInto(Z copy) {
     copy.encryptor = this.encryptor;
     delegate.copyInto(copy.delegate);
@@ -105,5 +94,16 @@ public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedVal
 
   public SecretName getSecretName() {
     return delegate.getSecretName();
+  }
+
+  void copyNameReferenceFrom(NamedSecret namedSecret) {
+    this.delegate.setSecretName(namedSecret.delegate.getSecretName());
+  }
+
+  List<AccessEntryData> getAccessEntryData(List<AccessControlEntry> accessControlEntries) {
+    SecretName secretName = delegate.getSecretName();
+    return accessControlEntries.stream()
+        .map((entry) -> AccessEntryData.fromSecretName(secretName, entry))
+        .collect(Collectors.toList());
   }
 }

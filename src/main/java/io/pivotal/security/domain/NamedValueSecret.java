@@ -34,7 +34,7 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
       secret.copyNameReferenceFrom(existing);
     }
 
-    secret.setAccessControlList(getAccessEntryData(accessControlEntries, secret));
+    secret.setAccessControlList(secret.getAccessEntryData(accessControlEntries));
     secret.setEncryptor(encryptor);
     secret.setValue(value);
     return secret;

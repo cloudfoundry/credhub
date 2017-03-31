@@ -25,9 +25,13 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     this(new NamedCertificateSecretData());
   }
 
-  public static NamedSecret createNewVersion(NamedCertificateSecret existing, String name,
-      CertificateSetRequestFields fields, Encryptor encryptor,
-      List<AccessControlEntry> accessControlEntries) {
+  public static NamedSecret createNewVersion(
+      NamedCertificateSecret existing,
+      String name,
+      CertificateSetRequestFields fields,
+      Encryptor encryptor,
+      List<AccessControlEntry> accessControlEntries
+  ) {
     NamedCertificateSecret secret;
 
     if (existing == null) {
@@ -37,7 +41,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
       secret.copyNameReferenceFrom(existing);
     }
 
-    List<AccessEntryData> accessEntryData = getAccessEntryData(accessControlEntries, secret);
+    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
 
     secret.setAccessControlList(accessEntryData);
 

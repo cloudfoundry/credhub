@@ -47,5 +47,5 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
     this.regenerate = regenerate;
   }
 
-  public abstract BaseSecretSetRequest createSetRequest(GeneratorService generatorService);
+  public abstract BaseSecretSetRequest generateSetRequest(GeneratorService generatorService);
 }
