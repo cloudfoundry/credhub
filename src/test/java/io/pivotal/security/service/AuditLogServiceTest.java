@@ -48,9 +48,9 @@ import org.springframework.test.context.ActiveProfiles;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
-public class DatabaseAuditLogServiceTest {
+public class AuditLogServiceTest {
 
-  DatabaseAuditLogService subject;
+  AuditLogService subject;
 
   @MockBean
   OperationAuditRecordDataService operationAuditRecordDataService;
@@ -94,7 +94,7 @@ public class DatabaseAuditLogServiceTest {
       when(currentTimeProvider.getInstant()).thenReturn(now);
       when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
 
-      subject = new DatabaseAuditLogService(
+      subject = new AuditLogService(
           currentTimeProvider,
           tokenServices,
           operationAuditRecordDataService,
