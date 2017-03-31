@@ -1,20 +1,5 @@
 package io.pivotal.security.auth;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
-import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.OperationAuditRecordDataService;
@@ -22,9 +7,6 @@ import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.time.Instant;
-import java.util.Map;
-import javax.servlet.Filter;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +20,26 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.Filter;
+import java.time.Instant;
+import java.util.Map;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
+import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -75,7 +77,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
 
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
-          .addFilter(springSecurityFilterChain)
+          .apply(springSecurity())
           .build();
     });
 

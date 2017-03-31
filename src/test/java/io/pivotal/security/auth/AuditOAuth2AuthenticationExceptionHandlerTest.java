@@ -1,5 +1,29 @@
 package io.pivotal.security.auth;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.data.AuthFailureAuditRecordDataService;
+import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.Filter;
+import java.time.Instant;
+import java.util.Map;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -15,32 +39,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.AuthFailureAuditRecordDataService;
-import io.pivotal.security.entity.AuthFailureAuditRecord;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import java.time.Instant;
-import java.util.Map;
-import javax.servlet.Filter;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -75,7 +77,7 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
-          .addFilter(springSecurityFilterChain)
+          .apply(springSecurity())
           .build();
     });
 
