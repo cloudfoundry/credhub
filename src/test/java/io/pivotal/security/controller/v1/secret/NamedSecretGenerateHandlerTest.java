@@ -1,11 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static org.mockito.Mockito.mock;
-
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.JsonContextFactory;
@@ -22,6 +16,12 @@ import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.mockito.Mockito.mock;
 
 @RunWith(Spectrum.class)
 public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTestingUtil {

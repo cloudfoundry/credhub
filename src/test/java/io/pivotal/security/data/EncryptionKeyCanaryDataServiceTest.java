@@ -3,6 +3,7 @@ package io.pivotal.security.data;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -102,6 +103,40 @@ public class EncryptionKeyCanaryDataServiceTest {
 
           assertThat(canaries.size(), equalTo(2));
           assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
+        });
+      });
+    });
+
+    describe("#delete", () -> {
+      describe("when there are no canaries", () -> {
+        it("should not throw an exception", () -> {
+          subject.delete(new EncryptionKeyCanary());
+        });
+      });
+
+      describe("when there are canaries", () -> {
+        it("should delete the requested encryption key", () -> {
+          EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
+          EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
+
+          subject.save(firstCanary);
+          subject.save(secondCanary);
+
+          List<EncryptionKeyCanary> canaries = subject.findAll();
+          List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
+              .collect(Collectors.toList());
+
+          assertThat(canaries.size(), equalTo(2));
+          assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
+
+          subject.delete(firstCanary);
+
+          canaries = subject.findAll();
+          uuids = canaries.stream().map(canary -> canary.getUuid())
+            .collect(Collectors.toList());
+
+          assertThat(canaries.size(), equalTo(1));
+          assertThat(uuids, containsInAnyOrder(secondCanary.getUuid()));
         });
       });
     });
