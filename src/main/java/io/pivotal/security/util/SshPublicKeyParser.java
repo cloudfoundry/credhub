@@ -1,5 +1,6 @@
 package io.pivotal.security.util;
 
+import java.io.IOException;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.ByteArrayInputStream;
@@ -68,40 +69,44 @@ public class SshPublicKeyParser {
     fingerprint = fingerprintOf(decodedIsolatedPublicKey);
 
     DataInputStream dataStream = new DataInputStream(
-        new ByteArrayInputStream(decodedIsolatedPublicKey));
-    readAndRemoveType(dataStream);
-    readAndRemoveExponent(dataStream);
-    keyLength = readAndRemoveKeyLength(dataStream);
+        new ByteArrayInputStream(decodedIsolatedPublicKey)
+    );
+
+    try {
+      readAndRemoveType(dataStream);
+      readAndRemoveExponent(dataStream);
+      keyLength = readAndRemoveKeyLength(dataStream);
+    } catch (Exception e) {
+      comment = null;
+      fingerprint = null;
+      keyLength = 0;
+    }
   }
 
   private String fingerprintOf(byte[] decodedIsolatedPublicKey) {
     return encoder.encodeToString(DigestUtils.getSha256Digest().digest(decodedIsolatedPublicKey));
   }
 
-  private byte[] readAndRemoveType(DataInputStream dataStream) {
+  private byte[] readAndRemoveType(DataInputStream dataStream) throws IOException {
     return readIntAsBytesFrom(dataStream);
   }
 
-  private byte[] readAndRemoveExponent(DataInputStream dataStream) {
+  private byte[] readAndRemoveExponent(DataInputStream dataStream) throws IOException {
     return readIntAsBytesFrom(dataStream);
   }
 
-  private int readAndRemoveKeyLength(DataInputStream dataStream) {
+  private int readAndRemoveKeyLength(DataInputStream dataStream) throws IOException {
     byte[] buf = readIntAsBytesFrom(dataStream);
     BigInteger modulus = new BigInteger(Arrays.copyOf(buf, buf.length));
     // calculate key length
     return modulus.bitLength();
   }
 
-  private byte[] readIntAsBytesFrom(DataInputStream dataStream) {
+  private byte[] readIntAsBytesFrom(DataInputStream dataStream) throws IOException {
     byte[] buf;
-    try {
-      int length = dataStream.readInt();
-      buf = new byte[length];
-      dataStream.read(buf, 0, length);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    int length = dataStream.readInt();
+    buf = new byte[length];
+    dataStream.read(buf, 0, length);
     return buf;
   }
 }

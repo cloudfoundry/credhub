@@ -129,6 +129,25 @@ public class SecretsControllerSshAndRsaSetTest {
               .andExpect(jsonPath("$.error").value(errorMessage));
         });
       });
+
+      describe("when the public key is not a valid key", () -> {
+        it("should return the secret without the fingerprint", () -> {
+          final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{"
+                  + "  \"type\":\"ssh\","
+                  + "  \"name\":\"" + secretName + "\", "
+                  + " \"value\": { \"public_key\":\"foobar\" }"
+                  + "}");
+
+          mockMvc.perform(put)
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.value.public_key").value("foobar"))
+              .andExpect(jsonPath("$.value.fingerprint").doesNotExist());
+        });
+      });
     });
 
     describe("setting RSA keys", () -> {

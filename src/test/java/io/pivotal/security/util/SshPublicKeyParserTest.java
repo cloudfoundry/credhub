@@ -41,6 +41,28 @@ public class SshPublicKeyParserTest {
       assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
     });
 
+    describe("when the key is not base64-encoded", () -> {
+      it("should return null", () -> {
+        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("invalid");
+
+        assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
+        assertThat(sshPublicKeyParser.getComment(), equalTo(null));
+        assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
+      });
+    });
+
+    describe("when the key is base64-encoded but invalid", () -> {
+      it("should return null", () -> {
+        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser(
+            "as qwe0qwe qwe qwe qweqwe das"
+        );
+
+        assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
+        assertThat(sshPublicKeyParser.getComment(), equalTo(null));
+        assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
+      });
+    });
+
     describe("#getKeyLength", () -> {
       it("should return the length of the public key (when no comment)", () -> {
         assertThat(new SshPublicKeyParser(SSH_PUBLIC_KEY_4096).getKeyLength(), equalTo(4096));
