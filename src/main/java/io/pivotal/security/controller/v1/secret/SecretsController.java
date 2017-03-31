@@ -22,7 +22,8 @@ import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.DefaultSecretGenerateRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.SecretRequestService;
+import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.service.SetService;
 import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
@@ -87,7 +88,8 @@ public class SecretsController {
   private final AuditLogService auditLogService;
   private final MessageSourceAccessor messageSourceAccessor;
   private final ObjectMapper objectMapper;
-  private final SecretRequestService secretRequestService;
+  private final GenerateService generateService;
+  private final SetService setService;
 
   @Autowired
   public SecretsController(SecretDataService secretDataService,
@@ -96,14 +98,16 @@ public class SecretsController {
                            MessageSource messageSource,
                            AuditLogService auditLogService,
                            ObjectMapper objectMapper,
-                           SecretRequestService secretRequestService) {
+                           GenerateService generateService,
+                           SetService setService) {
     this.secretDataService = secretDataService;
     this.namedSecretGenerateHandler = namedSecretGenerateHandler;
     this.jsonContextFactory = jsonContextFactory;
     this.auditLogService = auditLogService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
     this.objectMapper = objectMapper;
-    this.secretRequestService = secretRequestService;
+    this.generateService = generateService;
+    this.setService = setService;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -175,7 +179,7 @@ public class SecretsController {
       DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
       return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
     } else {
-      return secretRequestService.performGenerate(auditRecordBuilder, requestBody);
+      return generateService.performGenerate(auditRecordBuilder, requestBody);
     }
   }
 
@@ -224,7 +228,7 @@ public class SecretsController {
     auditRecordBuilder.populateFromRequest(request);
     auditRecordBuilder.setAuthentication(authentication);
 
-    return secretRequestService.performSet(auditRecordBuilder, requestBody);
+    return setService.performSet(auditRecordBuilder, requestBody);
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)

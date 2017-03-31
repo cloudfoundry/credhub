@@ -5,7 +5,6 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretView;
@@ -22,36 +21,22 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
-public class SecretRequestService {
-
+public class SetService {
   private final MessageSourceAccessor messageSourceAccessor;
-  private SecretDataService secretDataService;
-  private Encryptor encryptor;
-  private GeneratorService generatorService;
+  private final Encryptor encryptor;
+  private final SecretDataService secretDataService;
 
   @Autowired
-  public SecretRequestService(
-      SecretDataService secretDataService,
-      Encryptor encryptor,
-      MessageSource messageSource,
-      GeneratorService generatorService) {
+  public SetService(SecretDataService secretDataService,
+                    Encryptor encryptor,
+                    MessageSource messageSource
+  ) {
     this.secretDataService = secretDataService;
     this.encryptor = encryptor;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
-    this.generatorService = generatorService;
   }
 
-  public ResponseEntity performGenerate(
-      AuditRecordBuilder auditRecordBuilder,
-      BaseSecretGenerateRequest requestBody
-  ) throws Exception {
-    BaseSecretSetRequest setRequest = requestBody.generateSetRequest(generatorService);
-    return performSet(auditRecordBuilder, setRequest);
-  }
-
-  public ResponseEntity performSet(
-      AuditRecordBuilder auditRecordBuilder,
-      BaseSecretSetRequest requestBody
+  public ResponseEntity performSet(AuditRecordBuilder auditRecordBuilder, BaseSecretSetRequest requestBody
   ) throws Exception {
     final String secretName = requestBody.getName();
 
@@ -96,9 +81,7 @@ public class SecretRequestService {
 
   private ResponseError createParameterizedErrorResponse(
       ParameterizedValidationException exception) {
-    String errorMessage = messageSourceAccessor
-        .getMessage(exception.getMessage(), exception.getParameters());
+    String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
     return new ResponseError(errorMessage);
   }
-
 }
