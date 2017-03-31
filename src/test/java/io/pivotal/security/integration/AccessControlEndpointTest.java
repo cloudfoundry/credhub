@@ -4,10 +4,12 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,9 +44,13 @@ public class AccessControlEndpointTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
 
       MockHttpServletRequestBuilder put = put("/api/v1/data")
+          .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
           .accept(APPLICATION_JSON)
           .contentType(APPLICATION_JSON)
           .content("{"
@@ -61,6 +67,7 @@ public class AccessControlEndpointTest {
       describe("and permissions don't exist", () -> {
         it("returns the full Access Control List for user", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -73,6 +80,7 @@ public class AccessControlEndpointTest {
                   + "}");
 
           final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON);
 
@@ -91,6 +99,7 @@ public class AccessControlEndpointTest {
       describe("and permissions does exist", () -> {
         it("returns the full updated Access Control List for user", () -> {
           final MockHttpServletRequestBuilder initPost = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -103,6 +112,7 @@ public class AccessControlEndpointTest {
                   + "}");
 
           final MockHttpServletRequestBuilder updatePost = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -115,6 +125,7 @@ public class AccessControlEndpointTest {
                   + "}");
 
           final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON);
 
@@ -138,6 +149,7 @@ public class AccessControlEndpointTest {
           () -> {
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
@@ -150,6 +162,7 @@ public class AccessControlEndpointTest {
                 .andExpect(status().isOk());
 
             final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
@@ -162,6 +175,7 @@ public class AccessControlEndpointTest {
                     + "}");
 
             final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred2")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON);
 
@@ -187,6 +201,7 @@ public class AccessControlEndpointTest {
               + "     }]"
               + "}";
           final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content(malformedJson);
@@ -209,6 +224,7 @@ public class AccessControlEndpointTest {
               + "     }]"
               + "}";
           final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content(malformedJson);
@@ -224,6 +240,7 @@ public class AccessControlEndpointTest {
 
       it("returns a 404 status and message if the credential does not exist", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
@@ -245,6 +262,7 @@ public class AccessControlEndpointTest {
           () -> {
             it("returns an error", () -> {
               final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                   .accept(APPLICATION_JSON)
                   .contentType(APPLICATION_JSON)
                   .content("{"
@@ -268,6 +286,7 @@ public class AccessControlEndpointTest {
         describe("and the credential exists", () -> {
           beforeEach(() -> {
             final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
@@ -284,7 +303,10 @@ public class AccessControlEndpointTest {
           });
 
           it("returns the full list of access control entries for the credential", () -> {
-            mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=/cred1")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
@@ -296,7 +318,10 @@ public class AccessControlEndpointTest {
           it("returns the full list of access control entries for the credential"
                   + " when leading '/' is missing",
               () -> {
-                mockMvc.perform(get("/api/v1/acls?credential_name=cred1"))
+                mockMvc.perform(
+                    get("/api/v1/acls?credential_name=cred1")
+                        .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                )
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                     .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
@@ -310,8 +335,10 @@ public class AccessControlEndpointTest {
           final String unicorn = "/unicorn";
 
           it("returns the full list of access control entries for the credential", () -> {
-            mockMvc.perform(get("/api/v1/acls?credential_name="
-                + unicorn)).andExpect(status().isNotFound())
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=" + unicorn)
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            ).andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.error", equalTo(
                     "The request could not be fulfilled "
@@ -323,6 +350,7 @@ public class AccessControlEndpointTest {
       describe("when deleting an ACE for a specified credential & actor", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -340,14 +368,23 @@ public class AccessControlEndpointTest {
 
         describe("when the specified actor has an ACE with the specified credential", () -> {
           it("should delete the ACE from the resource's ACL", () -> {
-            mockMvc.perform(get("/api/v1/acls?credential_name=cred1"))
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=cred1")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.access_control_list").isNotEmpty());
 
-            mockMvc.perform(delete("/api/v1/aces?credential_name=/cred1&actor=dan"))
+            mockMvc.perform(
+                delete("/api/v1/aces?credential_name=/cred1&actor=dan")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            )
                 .andExpect(status().isNoContent());
 
-            mockMvc.perform(get("/api/v1/acls?credential_name=/cred1"))
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=/cred1")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.access_control_list").isEmpty());
           });
@@ -355,7 +392,10 @@ public class AccessControlEndpointTest {
 
         describe("when the ACE does not exist", () -> {
           it("should return a 'not found' error response", () -> {
-            mockMvc.perform(get("/api/v1/acls?credential_name=/not-valid"))
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=/not-valid")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value(
                     "The request could not be fulfilled because the resource could not be found."));

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.security.Security;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Objects;
 import java.util.TimeZone;
@@ -109,6 +110,7 @@ public class SpectrumHelper {
       CurrentTimeProvider mockCurrentTimeProvider) {
     return (epochMillis) -> {
       when(mockCurrentTimeProvider.getNow()).thenReturn(getNow(epochMillis));
+      when(mockCurrentTimeProvider.getInstant()).thenReturn(Instant.ofEpochMilli(epochMillis));
     };
   }
 

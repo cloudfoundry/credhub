@@ -7,6 +7,7 @@ import static io.pivotal.security.helper.JsonHelper.parse;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -16,6 +17,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -204,11 +206,15 @@ public class EncryptionKeyRotatorTest {
 
     describe("rotation", () -> {
       beforeEach(() -> {
-        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        mockMvc = MockMvcBuilders
+            .webAppContextSetup(webApplicationContext)
+            .apply(springSecurity())
+            .build();
       });
 
       it("can rotate password secrets", () -> {
         MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
@@ -235,13 +241,15 @@ public class EncryptionKeyRotatorTest {
         assertThat(firstEncryption.getEncryptedGenerationParameters(),
             not(equalTo(secondEncryption.getEncryptedGenerationParameters())));
 
-        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1");
+        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN);
         this.mockMvc.perform(get).andExpect(status().isOk())
             .andExpect(jsonPath(".data[0].value").value(originalPassword));
       });
 
       it("can rotate certificate secrets", () -> {
         MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
@@ -269,7 +277,8 @@ public class EncryptionKeyRotatorTest {
         assertThat(firstEncryption.getEncryptedValue(),
             not(equalTo(secondEncryption.getEncryptedValue())));
 
-        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1");
+        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN);
         this.mockMvc.perform(get).andExpect(status().isOk())
             .andExpect(jsonPath("$.data[0].value.private_key").value(originalCert));
       });

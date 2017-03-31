@@ -5,8 +5,10 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 
 import com.greghaskins.spectrum.Spectrum;
@@ -56,7 +58,10 @@ public class NoOverwriteTest {
 
       encryptionKeyCanaryMapper.mapUuidsToKeys();
       fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
     });
 
     describe(
@@ -69,6 +74,7 @@ public class NoOverwriteTest {
               @Override
               public void run() {
                 final MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON)
                     .content("{"
@@ -88,6 +94,7 @@ public class NoOverwriteTest {
               @Override
               public void run() {
                 final MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON)
                     .content("{"

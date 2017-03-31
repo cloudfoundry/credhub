@@ -32,11 +32,11 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.fake.FakeAuditLogService;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.secret.Password;
+import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.SecretRequestService;
@@ -71,7 +71,7 @@ public class SecretsControllerGenerateTest {
   WebApplicationContext webApplicationContext;
 
   @SpyBean
-  FakeAuditLogService auditLogService;
+  AuditLogService auditLogService;
 
   @SpyBean
   SecretDataService secretDataService;

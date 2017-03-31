@@ -4,9 +4,11 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,7 +50,10 @@ public class SecretsControllerSshAndRsaSetTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
     });
 
     describe("setting SSH keys", () -> {
@@ -59,6 +64,7 @@ public class SecretsControllerSshAndRsaSetTest {
           obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -87,6 +93,7 @@ public class SecretsControllerSshAndRsaSetTest {
       describe("when the value contains unknown keys", () -> {
         it("should return an error", () -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -107,6 +114,7 @@ public class SecretsControllerSshAndRsaSetTest {
       describe("when all values are empty", () -> {
         it("should return an error message", () -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -131,6 +139,7 @@ public class SecretsControllerSshAndRsaSetTest {
           obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
