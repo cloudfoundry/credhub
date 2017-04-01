@@ -1,12 +1,13 @@
 package io.pivotal.security.util;
 
-import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096;
 import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+
+import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
