@@ -1,10 +1,10 @@
 package io.pivotal.security.util;
 
-import java.io.IOException;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Base64;
@@ -65,14 +65,14 @@ public class SshPublicKeyParser {
       return;
     }
 
-    byte[] decodedIsolatedPublicKey = decoder.decode(isolatedPublicKey);
-    fingerprint = fingerprintOf(decodedIsolatedPublicKey);
-
-    DataInputStream dataStream = new DataInputStream(
-        new ByteArrayInputStream(decodedIsolatedPublicKey)
-    );
-
     try {
+      byte[] decodedIsolatedPublicKey = decoder.decode(isolatedPublicKey);
+      fingerprint = fingerprintOf(decodedIsolatedPublicKey);
+
+      DataInputStream dataStream = new DataInputStream(
+          new ByteArrayInputStream(decodedIsolatedPublicKey)
+      );
+
       readAndRemoveType(dataStream);
       readAndRemoveExponent(dataStream);
       keyLength = readAndRemoveKeyLength(dataStream);

@@ -1,13 +1,12 @@
 package io.pivotal.security.util;
 
+import com.greghaskins.spectrum.Spectrum;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096;
 import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-
-import com.greghaskins.spectrum.Spectrum;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
@@ -41,9 +40,19 @@ public class SshPublicKeyParserTest {
       assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
     });
 
-    describe("when the key is not base64-encoded", () -> {
+    describe("when the key is missing a valid prefix", () -> {
       it("should return null", () -> {
         SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("invalid");
+
+        assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
+        assertThat(sshPublicKeyParser.getComment(), equalTo(null));
+        assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
+      });
+    });
+
+    describe("when the key is not valid base64", () -> {
+      it("should return null", () -> {
+        SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("ssh-rsa so=invalid");
 
         assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
         assertThat(sshPublicKeyParser.getComment(), equalTo(null));
