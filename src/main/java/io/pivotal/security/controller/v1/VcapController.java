@@ -6,11 +6,6 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.JsonInterpolationService;
 import io.pivotal.security.view.ResponseError;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.InvalidObjectException;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.core.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -24,6 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.InvalidObjectException;
 
 @SuppressWarnings("unused")
 @RestController
@@ -63,8 +64,7 @@ public class VcapController {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInvalidTypeAccess(ParameterizedValidationException exception)
       throws IOException {
-    String errorMessage = messageSourceAccessor
-        .getMessage(exception.getMessage(), exception.getParameters());
+    String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
     return new ResponseError(errorMessage);
   }
 

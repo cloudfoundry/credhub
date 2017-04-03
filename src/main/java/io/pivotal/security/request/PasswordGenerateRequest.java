@@ -18,6 +18,10 @@ public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
     return generationParameters;
   }
 
+  public void setGenerationParameters(PasswordGenerationParameters generationParameters) {
+    this.generationParameters = generationParameters;
+  }
+
   @Override
   public void validate() {
     super.validate();

@@ -9,8 +9,6 @@ import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -22,30 +20,28 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 
 @Service
 public class SetService {
-  private final MessageSourceAccessor messageSourceAccessor;
+  private final ErrorResponseService errorResponseService;
   private final Encryptor encryptor;
   private final SecretDataService secretDataService;
 
   @Autowired
-  public SetService(SecretDataService secretDataService,
-                    Encryptor encryptor,
-                    MessageSource messageSource
+  public SetService(ErrorResponseService errorResponseService,
+                    SecretDataService secretDataService,
+                    Encryptor encryptor
   ) {
+    this.errorResponseService = errorResponseService;
     this.secretDataService = secretDataService;
     this.encryptor = encryptor;
-    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
-  public ResponseEntity performSet(AuditRecordBuilder auditRecordBuilder, BaseSecretSetRequest requestBody
-  ) throws Exception {
+  public ResponseEntity performSet(AuditRecordBuilder auditRecordBuilder, BaseSecretSetRequest requestBody) {
     final String secretName = requestBody.getName();
 
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
     boolean shouldWriteNewEntity = existingNamedSecret == null || requestBody.isOverwrite();
 
-    auditRecordBuilder
-        .setOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
+    auditRecordBuilder.setOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
     try {
       final String type = requestBody.getType();
@@ -60,12 +56,12 @@ public class SetService {
       SecretView secretView = SecretView.fromEntity(storedEntity);
       return new ResponseEntity<>(secretView, HttpStatus.OK);
     } catch (ParameterizedValidationException ve) {
-      return new ResponseEntity<>(createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(errorResponseService.createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     } catch (KeyNotFoundException e) {
-      return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
+      ResponseError errorResponse = errorResponseService.createErrorResponse("error.missing_encryption_key");
+      return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -73,15 +69,5 @@ public class SetService {
     if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals(secretType)) {
       throw new ParameterizedValidationException("error.type_mismatch");
     }
-  }
-
-  private ResponseError createErrorResponse(String key) {
-    return createParameterizedErrorResponse(new ParameterizedValidationException(key));
-  }
-
-  private ResponseError createParameterizedErrorResponse(
-      ParameterizedValidationException exception) {
-    String errorMessage = messageSourceAccessor.getMessage(exception.getMessage(), exception.getParameters());
-    return new ResponseError(errorMessage);
   }
 }

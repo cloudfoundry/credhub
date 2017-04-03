@@ -52,8 +52,8 @@ public class AuditLogService {
   }
 
   public ResponseEntity<?> performWithAuditing(
-      ExceptionThrowingFunction<AuditRecordBuilder,
-          ResponseEntity<?>, Exception> action) throws Exception {
+      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action
+  ) throws Exception {
     AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder();
     TransactionStatus transaction =
         transactionManager.getTransaction(new DefaultTransactionDefinition());

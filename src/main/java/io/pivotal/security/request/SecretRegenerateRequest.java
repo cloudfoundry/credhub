@@ -1,9 +1,10 @@
 package io.pivotal.security.request;
 
-import static io.pivotal.security.request.BaseSecretRequest.STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.constraints.Pattern;
-import org.hibernate.validator.constraints.NotEmpty;
+
+import static io.pivotal.security.request.BaseSecretRequest.STARTS_WITH_SLASH_AND_AT_LEAST_ONE_NONSLASH_AND_HAS_NO_DOUBLE_SLASHES;
 
 public class SecretRegenerateRequest {
 
@@ -17,15 +18,17 @@ public class SecretRegenerateRequest {
     return name;
   }
 
-  public void setName(String name) {
+  public SecretRegenerateRequest setName(String name) {
     this.name = name;
+    return this;
   }
 
   public void validate() {
     // Fill me out when switching to using this object.
   }
 
-  public void setRegenerate(boolean regenerate) {
+  public SecretRegenerateRequest setRegenerate(boolean regenerate) {
     this.regenerate = regenerate;
+    return this;
   }
 }

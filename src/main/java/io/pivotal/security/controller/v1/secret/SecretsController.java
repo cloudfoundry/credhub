@@ -20,6 +20,7 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.DefaultSecretGenerateRequest;
+import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
@@ -90,6 +91,7 @@ public class SecretsController {
   private final ObjectMapper objectMapper;
   private final GenerateService generateService;
   private final SetService setService;
+  private final RegenerateService regenerateService;
 
   @Autowired
   public SecretsController(SecretDataService secretDataService,
@@ -99,7 +101,9 @@ public class SecretsController {
                            AuditLogService auditLogService,
                            ObjectMapper objectMapper,
                            GenerateService generateService,
-                           SetService setService) {
+                           SetService setService,
+                           RegenerateService regenerateService
+  ) {
     this.secretDataService = secretDataService;
     this.namedSecretGenerateHandler = namedSecretGenerateHandler;
     this.jsonContextFactory = jsonContextFactory;
@@ -108,6 +112,7 @@ public class SecretsController {
     this.objectMapper = objectMapper;
     this.generateService = generateService;
     this.setService = setService;
+    this.regenerateService = regenerateService;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -157,7 +162,7 @@ public class SecretsController {
       // would be nice if Jackson could pick a subclass based on an arbitrary function, since
       // we want to consider both type and .regenerate. We could do custom deserialization but
       // then we'd have to do the entire job by hand.
-      return handleRegenerateRequest(auditRecordBuilder, inputStream);
+      return handleRegenerateRequest(auditRecordBuilder, inputStream, requestString);
     } else {
       return handleGenerateRequest(auditRecordBuilder, inputStream, requestString);
     }
@@ -165,15 +170,14 @@ public class SecretsController {
 
   private ResponseEntity handleGenerateRequest(
       AuditRecordBuilder auditRecordBuilder,
-      InputStream requestInputStream, String requestString
+      InputStream requestInputStream,
+      String requestString
   ) throws Exception {
-    BaseSecretGenerateRequest requestBody =
-        objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
+    BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
 
     auditRecordBuilder.setCredentialName(requestBody.getName());
-    final boolean isCurrentlyTrappedInTheMonad =
-        requestBody instanceof DefaultSecretGenerateRequest;
+    final boolean isCurrentlyTrappedInTheMonad = requestBody instanceof DefaultSecretGenerateRequest;
     if (isCurrentlyTrappedInTheMonad) {
       requestInputStream.reset();
       DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
@@ -185,11 +189,21 @@ public class SecretsController {
 
   private ResponseEntity handleRegenerateRequest(
       AuditRecordBuilder auditRecordBuilder,
-      InputStream requestInputStream
+      InputStream requestInputStream,
+      String requestString
   ) throws Exception {
-    requestInputStream.reset();
-    DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
-    return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
+    SecretRegenerateRequest requestBody = objectMapper.readValue(requestString, SecretRegenerateRequest.class);
+
+    ResponseEntity responseEntity = regenerateService.performRegenerate(auditRecordBuilder, requestBody);
+
+    boolean isCurrentlyTrappedInTheMonad = responseEntity == null;
+    if (isCurrentlyTrappedInTheMonad) {
+      requestInputStream.reset();
+      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
+      return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
+    } else {
+      return responseEntity;
+    }
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
