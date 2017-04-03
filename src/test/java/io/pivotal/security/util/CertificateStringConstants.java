@@ -281,4 +281,85 @@ public class CertificateStringConstants {
       + "+NHBdPGyKlnRkvI4xIodUXfn7FrS3KWL8k9NzL5FGXCvzXoGZKBvcJuu0/2XXl+3\n"
       + "Jykws+qOGWF351JZ\n"
       + "-----END CERTIFICATE-----";
+
+  /**
+   *
+   *  Version: 3 (0x2)
+   Serial Number:
+   c7:0b:53:ea:27:6e:9f:26
+   Signature Algorithm: sha1WithRSAEncryption
+   Issuer: C=US, ST=NY, O=Test Org, OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,
+   CN=example.com/emailAddress=test@example.com
+   Validity
+   Not Before: Mar 30 18:34:52 2017 GMT
+   Not After : Mar 30 18:34:52 2018 GMT
+   Subject: C=US, ST=NY, O=Test Org, OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,
+   CN=example.com/emailAddress=test@example.com
+   X509v3 extensions:
+   X509v3 Subject Key Identifier:
+   01:69:9A:20:83:EB:49:5D:7C:16:68:A0:7F:B9:D6:A5:D4:5B:FC:06
+   X509v3 Authority Key Identifier:
+   keyid:01:69:9A:20:83:EB:49:5D:7C:16:68:A0:7F:B9:D6:A5:D4:5B:FC:06
+
+   X509v3 Key Usage:
+   Digital Signature, Key Encipherment
+   X509v3 Extended Key Usage:
+   TLS Web Client Authentication
+   */
+  public static final String SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT = "-----BEGIN CERTIFICATE-----\n"
+      + "MIIDEjCCAnugAwIBAgIJAMcLU+onbp8mMA0GCSqGSIb3DQEBBQUAMIGXMQswCQYD\n"
+      + "VQQGEwJVUzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQL\n"
+      + "DChhcHA6YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYD\n"
+      + "VQQDDAtleGFtcGxlLmNvbTEfMB0GCSqGSIb3DQEJARYQdGVzdEBleGFtcGxlLmNv\n"
+      + "bTAeFw0xNzAzMzAxODM0NTJaFw0xODAzMzAxODM0NTJaMIGXMQswCQYDVQQGEwJV\n"
+      + "UzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQLDChhcHA6\n"
+      + "YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYDVQQDDAtl\n"
+      + "eGFtcGxlLmNvbTEfMB0GCSqGSIb3DQEJARYQdGVzdEBleGFtcGxlLmNvbTCBnzAN\n"
+      + "BgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAtyHjDd5AYxUr0KFvlyeiDysyFuzoIW5y\n"
+      + "9AS8LblFEsYwfVF7MU8kQ4O0HzosWbCv72U6vYBz0vmolcK5F/4LBbgqCFZQRrFV\n"
+      + "jzkW60ertb2te3OHeRuxKYcA7EE4UosXulQ/3lJmS1XHBPtZOJRdelTLoHyUZ37y\n"
+      + "BUa6ZkGvi90CAwEAAaNkMGIwHQYDVR0OBBYEFAFpmiCD60ldfBZooH+51qXUW/wG\n"
+      + "MB8GA1UdIwQYMBaAFAFpmiCD60ldfBZooH+51qXUW/wGMAsGA1UdDwQEAwIFoDAT\n"
+      + "BgNVHSUEDDAKBggrBgEFBQcDAjANBgkqhkiG9w0BAQUFAAOBgQAg6sfi3lMbWMUY\n"
+      + "ObbubrWB2pPWo7W6GCsem2M0Qri8RuMUqzHNvatUnaIuD9yatdP+vDuFdGbX3PTF\n"
+      + "wjh44yBrxcRGcYFdzBOIos+i5MMtDWorJY/0IH8mVEd3ckMcfVgMVP25ZvlYjhdY\n"
+      + "dCNw/Rku+LafRQJOlSBZqy7K7qtzbA==\n"
+      + "-----END CERTIFICATE-----";
+
+  /**
+   * Version: 3 (0x2)
+   Serial Number:
+   fb:bd:39:9b:59:d5:98:4d
+   Signature Algorithm: sha1WithRSAEncryption
+   Issuer: C=US, ST=NY, O=Test Org, OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,
+   CN=example.com/emailAddress=test@example.com
+   Validity
+   Not Before: Mar 30 19:04:56 2017 GMT
+   Not After : Mar 30 19:04:56 2018 GMT
+   Subject: C=US, ST=NY, O=Test Org, OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,
+   CN=example.com/emailAddress=test@example.com
+   X509v3 extensions:
+   X509v3 Subject Key Identifier:
+   2B:77:1B:63:E2:92:6B:29:9D:31:D4:0E:E0:79:0D:5F:61:E9:77:1A
+   X509v3 Authority Key Identifier:
+   keyid:2B:77:1B:63:E2:92:6B:29:9D:31:D4:0E:E0:79:0D:5F:61:E9:77:1A
+   */
+  public static final String SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT = "-----BEGIN CERTIFICATE-----\n"
+      + "MIIC8DCCAlmgAwIBAgIJAPu9OZtZ1ZhNMA0GCSqGSIb3DQEBBQUAMIGXMQswCQYD\n"
+      + "VQQGEwJVUzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQL\n"
+      + "DChhcHA6YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYD\n"
+      + "VQQDDAtleGFtcGxlLmNvbTEfMB0GCSqGSIb3DQEJARYQdGVzdEBleGFtcGxlLmNv\n"
+      + "bTAeFw0xNzAzMzAxOTA0NTZaFw0xODAzMzAxOTA0NTZaMIGXMQswCQYDVQQGEwJV\n"
+      + "UzELMAkGA1UECAwCTlkxETAPBgNVBAoMCFRlc3QgT3JnMTEwLwYDVQQLDChhcHA6\n"
+      + "YTEyMzQ1ZTUtYjJiMC00NjQ4LWEwZDAtNzcyZDNkMzk5ZGNiMRQwEgYDVQQDDAtl\n"
+      + "eGFtcGxlLmNvbTEfMB0GCSqGSIb3DQEJARYQdGVzdEBleGFtcGxlLmNvbTCBnzAN\n"
+      + "BgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwnMy7/SfQIzPe+9GJujQVHb2OP5dOMvz\n"
+      + "LSQLBwJtHdzv2xtnDL+vFB4F1Cv6NeTbhnWi89ebyOqGgqyeX7wga8UN9Pmih16Q\n"
+      + "/i8Bx//+TJjUqj1umhGZmGL4sWx8NwrP9QiuvrNf/sdq0ilbclWgn5UBuiAKty48\n"
+      + "BjaEpEGf0AMCAwEAAaNCMEAwHQYDVR0OBBYEFCt3G2PikmspnTHUDuB5DV9h6Xca\n"
+      + "MB8GA1UdIwQYMBaAFCt3G2PikmspnTHUDuB5DV9h6XcaMA0GCSqGSIb3DQEBBQUA\n"
+      + "A4GBAJ9SipBB/J17usRtaDp59iIlTiyF1N14Qw1XuR0ZpVGXCx5r46DQVHQIdno+\n"
+      + "EPa2sOCml5CIOlNko6Edr0GlWOWkhZyTyZTW6oHaDxVQXrhbVemmKOUY0LM9r2l+\n"
+      + "TqtBv192PPCKbrJChCVmrDltpc5F5TeyTAWn/ElIVz6Za+y/\n"
+      + "-----END CERTIFICATE-----";
 }

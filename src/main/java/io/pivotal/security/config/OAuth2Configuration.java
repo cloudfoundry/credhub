@@ -1,6 +1,7 @@
 package io.pivotal.security.config;
 
 import io.pivotal.security.auth.AuditOAuth2AccessDeniedHandler;
+import io.pivotal.security.auth.X509AuthenticationProvider;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;

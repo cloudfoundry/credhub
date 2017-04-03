@@ -8,7 +8,7 @@ import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
+import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
 import static io.pivotal.security.util.X509TestUtil.cert;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -31,9 +31,8 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import javax.servlet.Filter;
-
 import io.pivotal.security.view.AccessControlListResponse;
+import javax.servlet.Filter;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -139,7 +138,7 @@ public class SetPermissionAndSecretTest {
                 + "}";
 
             mockMvc.perform(put("/api/v1/data")
-                .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT)))
+                .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content(requestBody))
@@ -148,12 +147,12 @@ public class SetPermissionAndSecretTest {
                 .andExpect(jsonPath("$.type", equalTo("password")));
 
             mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
-                .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT))))
+                .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT))))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.credential_name").value("/test-password"))
                 .andExpect(jsonPath("$.access_control_list[0].actor")
-                    .value("mtls:app:b67446e5-b2b0-4648-a0d0-772d3d399dcb"))
+                    .value("mtls:app:a12345e5-b2b0-4648-a0d0-772d3d399dcb"))
                 .andExpect(jsonPath("$.access_control_list[0].operations[0]").value("read"))
                 .andExpect(jsonPath("$.access_control_list[0].operations[1]").value("write"));
           });

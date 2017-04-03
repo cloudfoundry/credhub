@@ -3,19 +3,20 @@ package io.pivotal.security.config;
 import io.pivotal.security.auth.AuditOAuth2AccessDeniedHandler;
 import io.pivotal.security.auth.AuditOAuth2AuthenticationExceptionHandler;
 import io.pivotal.security.auth.PreAuthenticationFailureFilter;
+import io.pivotal.security.auth.X509AuthenticationProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
 
 @Configuration
@@ -54,28 +55,41 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
 
   @Override
   public void configure(HttpSecurity http) throws Exception {
-    http.addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class);
+    /*
+      Even though the configuration is non order specific, it's ordered here so one can understand
+      the flow of operations. Before the Authenticate Override can be called in the http filter
+      the subject principal must be correctly extracted, hence why the UserDetails for that sets
+      the "NO_AUTHORITIES", leaving it to the x509v3 checker to set the final authority.
 
-    http
-        .authorizeRequests()
-        .antMatchers("/info").permitAll()
-        .antMatchers("/health").permitAll()
-        .antMatchers("/api/v1/**").access("hasRole('MTLS_USER') or "
-        + "(#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))");
+      The aggregate of all this is consumed in the final .access() method.
+     */
 
     http.x509()
         .subjectPrincipalRegex(VALID_MTLS_ID)
         .userDetailsService(mtlsSUserDetailsService());
 
+    http.addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
+        .authenticationProvider(getPreAuthenticatedAuthenticationProvider());
+
+    http
+        .authorizeRequests()
+        .antMatchers("/info").permitAll()
+        .antMatchers("/health").permitAll()
+        .antMatchers("/api/v1/**")
+          .access(String.format("hasRole('%s') "
+                  + "or (#oauth2.hasScope('credhub.read') and #oauth2.hasScope('credhub.write'))",
+              X509AuthenticationProvider.MTLS_USER));
+
     http.httpBasic().disable();
   }
 
   private UserDetailsService mtlsSUserDetailsService() {
-    return new UserDetailsService() {
-      @Override
-      public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return new User(username, "", AuthorityUtils.createAuthorityList("ROLE_MTLS_USER"));
-      }
-    };
+    return username -> new User(username, "", AuthorityUtils.NO_AUTHORITIES);
   }
+
+  @Bean
+  public PreAuthenticatedAuthenticationProvider getPreAuthenticatedAuthenticationProvider() {
+    return new X509AuthenticationProvider();
+  }
+
 }

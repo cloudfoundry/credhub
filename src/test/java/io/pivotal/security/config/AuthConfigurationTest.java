@@ -6,7 +6,8 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
+import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
+import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT;
@@ -24,10 +25,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedPasswordSecret;
@@ -36,7 +35,6 @@ import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import java.time.Instant;
 import java.util.UUID;
-import javax.servlet.Filter;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,17 +58,10 @@ public class AuthConfigurationTest {
   @Autowired
   WebApplicationContext applicationContext;
 
-  @Autowired
-  Filter springSecurityFilterChain;
-
-  @Autowired
-  ObjectMapper serializingObjectMapper;
 
   @MockBean
   SecretDataService secretDataService;
 
-  @Autowired
-  SecretsController secretsController;
 
   @MockBean
   OperationAuditRecordDataService operationAuditRecordDataService;
@@ -155,23 +146,9 @@ public class AuthConfigurationTest {
       });
 
       describe("with mutual tls", () -> {
-        it("allows all client certificates with a valid organizational_unit if provided", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT)))
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
-
-          mockMvc.perform(post)
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.type").value("password"))
-              .andExpect(jsonPath("$.version_created_at").exists())
-              .andExpect(jsonPath("$.value").exists());
-        });
-
         it("logs the organization_unit from the DN", () -> {
           final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT)))
+              .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
@@ -186,7 +163,7 @@ public class AuthConfigurationTest {
 
           OperationAuditRecord operationAuditRecord = argumentCaptor.getValue();
           assertThat(operationAuditRecord.getClientId(), equalTo(
-              "CN=test.example.com,OU=app:b67446e5-b2b0-4648-a0d0-772d3d399dcb,L=exampletown")
+              "C=US,ST=NY,O=Test Org,OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,CN=example.com,E=test@example.com")
           );
         });
 
@@ -234,6 +211,39 @@ public class AuthConfigurationTest {
           mockMvc.perform(post)
               .andExpect(status().isUnauthorized())
               .andExpect(jsonPath("$.error").value(expectedError));
+        });
+
+        describe("new addition to mtls requirements", () -> {
+          it("allows all client certificates with a valid organizational_unit and client_auth extension",
+              () -> {
+                final MockHttpServletRequestBuilder post = post(dataApiPath)
+                    .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+                    .accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+                mockMvc.perform(post)
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.type").value("password"))
+                    .andExpect(jsonPath("$.version_created_at").exists())
+                    .andExpect(jsonPath("$.value").exists());
+              });
+
+          it("denies client certificates without the client_auth extension", () -> {
+            final MockHttpServletRequestBuilder post = post(dataApiPath)
+                .with(x509(cert(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+            final String expectedError = "The provided authentication mechanism does not provide a "
+                + "valid identity. Please contact your system administrator.";
+
+            mockMvc.perform(post)
+                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("invalid_token"));
+          });
         });
       });
     });
