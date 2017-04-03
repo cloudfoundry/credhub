@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-@SuppressWarnings("unused")
 public class AccessEntryController {
 
   public static final String API_V1 = "/api/v1";
@@ -47,7 +46,7 @@ public class AccessEntryController {
   }
 
   @PostMapping(path = "/aces", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  ResponseEntity setAccessControlEntry(
+  public ResponseEntity setAccessControlEntry(
       @Validated @RequestBody AccessEntryRequest accessEntryRequest,
       Errors errors
   ) {
@@ -61,14 +60,14 @@ public class AccessEntryController {
   }
 
   @GetMapping(path = "/acls")
-  AccessControlListResponse getAccessControlList(
+  public AccessControlListResponse getAccessControlList(
       @RequestParam("credential_name") String credentialName) {
     return accessControlDataService.getAccessControlListResponse(credentialName);
   }
 
   @DeleteMapping(path = "/aces")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  void deleteAccessControlEntry(
+  public void deleteAccessControlEntry(
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
@@ -77,20 +76,20 @@ public class AccessEntryController {
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  private ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
+  public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
     return new ResponseError(messageSourceAccessor
         .getMessage("error.missing_query_parameter", new String[]{e.getParameterName()}));
   }
 
   @ExceptionHandler(JsonParseException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  private ResponseError handleJsonMappingException(JsonParseException e) {
+  public ResponseError handleJsonMappingException(JsonParseException e) {
     return badRequestResponse();
   }
 
   @ExceptionHandler(JsonMappingException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  private ResponseError handleJsonMappingException(JsonMappingException e) {
+  public ResponseError handleJsonMappingException(JsonMappingException e) {
     for (JsonMappingException.Reference reference : e.getPath()) {
       if ("operations".equals(reference.getFieldName())) {
         String errorMessage = messageSourceAccessor.getMessage("error.acl.invalid_operation");
@@ -103,7 +102,7 @@ public class AccessEntryController {
 
   @ExceptionHandler(EntryNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  private ResponseError handleNotFoundException(EntryNotFoundException e) {
+  public ResponseError handleNotFoundException(EntryNotFoundException e) {
     return constructError(e.getMessage());
   }
 
