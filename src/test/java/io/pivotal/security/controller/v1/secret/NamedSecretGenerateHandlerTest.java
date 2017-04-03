@@ -11,7 +11,6 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
-import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.SecretKind;
@@ -28,8 +27,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
   private NamedSecretGenerateHandler subject;
   private ParseContext jsonPath;
-  private PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator = mock(
-      PasswordGeneratorRequestTranslator.class);
   private CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator = mock(
       CertificateGeneratorRequestTranslator.class);
   private SshGeneratorRequestTranslator sshGeneratorRequestTranslator = mock(
