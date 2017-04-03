@@ -51,50 +51,49 @@ public class AuditLogService {
     messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
+  @SuppressWarnings("ReturnInsideFinallyBlock")
   public ResponseEntity<?> performWithAuditing(
-      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> action
+      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> respondToRequestFunction
   ) throws Exception {
     AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder();
-    TransactionStatus transaction =
-        transactionManager.getTransaction(new DefaultTransactionDefinition());
 
     ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    RuntimeException thrown = null;
+    boolean responseSucceeded = false;
+
+    TransactionStatus transaction =
+        transactionManager.getTransaction(new DefaultTransactionDefinition());
     try {
-      responseEntity = action.apply(auditRecordBuilder);
-      if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-        transactionManager.rollback(transaction);
-        transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-      } else {
-        auditRecordBuilder.setIsSuccess(true);
+      responseEntity = respondToRequestFunction.apply(auditRecordBuilder);
+      responseSucceeded = responseEntity.getStatusCode().is2xxSuccessful();
+    } finally {
+      try {
+        if (!responseSucceeded) {
+          transactionManager.rollback(transaction);
+          transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        }
+        auditRecordBuilder.setIsSuccess(responseSucceeded);
+
+        OperationAuditRecord auditRecord = writeAuditRecord(auditRecordBuilder, responseEntity);
+        transactionManager.commit(transaction);
+        securityEventsLogService.log(auditRecord);
+      } catch (Exception e) {
+        if (!transaction.isCompleted()) {
+          transactionManager.rollback(transaction);
+        }
+        ResponseError error = new ResponseError(
+            messageSourceAccessor.getMessage("error.audit_save_failure"));
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
       }
-    } catch (RuntimeException e) {
-      thrown = e;
-      transactionManager.rollback(transaction);
-      transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-    }
-
-    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder,
-        responseEntity.getStatusCodeValue());
-
-    try {
-      operationAuditRecordDataService.save(auditRecord);
-      transactionManager.commit(transaction);
-      securityEventsLogService.log(auditRecord);
-    } catch (Exception e) {
-      if (!transaction.isCompleted()) {
-        transactionManager.rollback(transaction);
-      }
-      final ResponseError error = new ResponseError(
-          messageSourceAccessor.getMessage("error.audit_save_failure"));
-      return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    if (thrown != null) {
-      throw thrown;
     }
 
     return responseEntity;
+  }
+
+  private OperationAuditRecord writeAuditRecord(AuditRecordBuilder auditRecordBuilder, ResponseEntity<?> responseEntity) throws Exception {
+    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder,
+        responseEntity.getStatusCodeValue());
+    operationAuditRecordDataService.save(auditRecord);
+    return auditRecord;
   }
 
   private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder,
