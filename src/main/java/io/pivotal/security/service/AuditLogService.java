@@ -58,26 +58,24 @@ public class AuditLogService {
     TransactionStatus transaction =
         transactionManager.getTransaction(new DefaultTransactionDefinition());
 
-    boolean auditSuccess = true;
-
     ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     RuntimeException thrown = null;
     try {
       responseEntity = action.apply(auditRecordBuilder);
       if (!responseEntity.getStatusCode().is2xxSuccessful()) {
-        auditSuccess = false;
         transactionManager.rollback(transaction);
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
+      } else {
+        auditRecordBuilder.setIsSuccess(true);
       }
     } catch (RuntimeException e) {
       thrown = e;
-      auditSuccess = false;
       transactionManager.rollback(transaction);
       transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     }
 
     OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder,
-        responseEntity.getStatusCodeValue(), auditSuccess);
+        responseEntity.getStatusCodeValue());
 
     try {
       operationAuditRecordDataService.save(auditRecord);
@@ -100,10 +98,9 @@ public class AuditLogService {
   }
 
   private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder,
-      int statusCode, boolean success) throws Exception {
+                                                       int statusCode) throws Exception {
     return auditRecordBuilder
         .setRequestStatus(statusCode)
-        .setIsSuccess(success)
         .build(currentTimeProvider.getInstant(), tokenServices);
   }
 
