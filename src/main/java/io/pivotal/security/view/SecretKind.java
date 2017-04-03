@@ -21,8 +21,7 @@ public enum SecretKind implements SecretKindFromString {
   PASSWORD {
     @Override
     public <T, E extends Throwable> CheckedFunction<T, E> lift(CheckedMapping<T, E> mapping) {
-      Objects.requireNonNull(mapping);
-      return mapping::password;
+      throw new RuntimeException("No longer trapped in the monad");
     }
   },
   CERTIFICATE {
@@ -54,8 +53,6 @@ public enum SecretKind implements SecretKindFromString {
     T value(T t) throws E;
 
     T json(T t) throws E;
-
-    T password(T t) throws E;
 
     T certificate(T t) throws E;
 

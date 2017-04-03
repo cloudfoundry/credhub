@@ -18,10 +18,7 @@ public class GenerateService {
     this.setService = setService;
   }
 
-  public ResponseEntity performGenerate(
-      AuditRecordBuilder auditRecordBuilder,
-      BaseSecretGenerateRequest requestBody
-  ) throws Exception {
+  public ResponseEntity performGenerate(AuditRecordBuilder auditRecordBuilder, BaseSecretGenerateRequest requestBody) {
     BaseSecretSetRequest setRequest = requestBody.generateSetRequest(generatorService);
     return setService.performSet(auditRecordBuilder, setRequest);
   }

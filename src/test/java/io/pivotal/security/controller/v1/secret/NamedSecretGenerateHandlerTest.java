@@ -42,7 +42,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
     beforeEach(() -> {
       jsonPath = new JsonContextFactory().getObject();
       subject = new NamedSecretGenerateHandler(
-          passwordGeneratorRequestTranslator,
           certificateGeneratorRequestTranslator,
           sshGeneratorRequestTranslator,
           rsaGeneratorRequestTranslator,
@@ -64,16 +63,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
                   .apply(new NamedPasswordSecret());
             });
       });
-
-      describe(
-          "password",
-          behavesLikeMapper(() -> subject,
-              passwordGeneratorRequestTranslator,
-              SecretKind.PASSWORD,
-              NamedPasswordSecret.class,
-              new NamedPasswordSecret()
-          )
-      );
 
       describe(
           "certificate",
@@ -107,20 +96,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
     });
 
     describe("verifies full set of keys for", () -> {
-
-      it("password", () -> {
-            passwordGeneratorRequestTranslator
-                .validateJsonKeys(jsonPath.parse("{\"type\":\"password\","
-                    + "\"overwrite\":true,"
-                    + "\"regenerate\":true,"
-                    + "\"parameters\":{\"length\":2048,"
-                    + "\"exclude_lower\":true,"
-                    + "\"exclude_upper\":false,"
-                    + "\"exclude_number\":false,"
-                    + "\"include_special\":true}"
-                    + "}"));
-          }
-      );
 
       it("certificate", () -> {
             certificateGeneratorRequestTranslator

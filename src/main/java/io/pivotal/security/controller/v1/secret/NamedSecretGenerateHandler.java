@@ -4,24 +4,22 @@ import com.jayway.jsonpath.DocumentContext;
 import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
-import io.pivotal.security.mapper.PasswordGeneratorRequestTranslator;
 import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
 import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.SecretKind;
-import java.security.NoSuchAlgorithmException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.security.NoSuchAlgorithmException;
 
 @Component
 class NamedSecretGenerateHandler implements SecretKindMappingFactory {
 
-  private final PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator;
   private final CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator;
   private final SshGeneratorRequestTranslator sshGeneratorRequestTranslator;
   private final RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator;
@@ -29,13 +27,11 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
 
   @Autowired
   NamedSecretGenerateHandler(
-      PasswordGeneratorRequestTranslator passwordGeneratorRequestTranslator,
       CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator,
       SshGeneratorRequestTranslator sshGeneratorRequestTranslator,
       RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator,
       Encryptor encryptor
   ) {
-    this.passwordGeneratorRequestTranslator = passwordGeneratorRequestTranslator;
     this.certificateGeneratorRequestTranslator = certificateGeneratorRequestTranslator;
     this.sshGeneratorRequestTranslator = sshGeneratorRequestTranslator;
     this.rsaGeneratorRequestTranslator = rsaGeneratorRequestTranslator;
@@ -54,12 +50,6 @@ class NamedSecretGenerateHandler implements SecretKindMappingFactory {
       @Override
       public NamedSecret json(NamedSecret namedSecret) {
         throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
-      }
-
-      @Override
-      public NamedSecret password(NamedSecret namedSecret) throws NoSuchAlgorithmException {
-        return createNewSecret((NamedPasswordSecret) namedSecret, NamedPasswordSecret::new,
-            secretPath, passwordGeneratorRequestTranslator, parsedRequest, encryptor);
       }
 
       @Override

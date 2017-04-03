@@ -32,7 +32,7 @@ class RegenerateService {
     this.generateService = generateService;
   }
 
-  ResponseEntity performRegenerate(AuditRecordBuilder auditRecordBuilder, SecretRegenerateRequest requestBody) throws Exception {
+  ResponseEntity performRegenerate(AuditRecordBuilder auditRecordBuilder, SecretRegenerateRequest requestBody) {
     NamedSecret secret = secretDataService.findMostRecent(requestBody.getName());
 
     if (secret instanceof NamedPasswordSecret) {
