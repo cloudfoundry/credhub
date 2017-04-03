@@ -20,7 +20,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -48,11 +47,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(Spectrum.class)
-public class AccessEntryControllerTest {
+public class AccessControlEntryControllerTest {
 
   private AccessControlDataService accessControlDataService;
   private MessageSource messageSource;
-  private AccessEntryController subject;
+  private AccessControlEntryController subject;
   private MockMvc mockMvc;
   private String errorKey = "$.error";
 
@@ -60,7 +59,7 @@ public class AccessEntryControllerTest {
     beforeEach(() -> {
       accessControlDataService = mock(AccessControlDataService.class);
       messageSource = mock(MessageSource.class);
-      subject = new AccessEntryController(
+      subject = new AccessControlEntryController(
           accessControlDataService,
           messageSource
       );
@@ -167,49 +166,6 @@ public class AccessEntryControllerTest {
                 .andExpect(jsonPath(errorKey).value(
                     "The request could not be fulfilled beca"
                         + "use the access control entry could not be found."));
-          });
-        });
-      });
-    });
-
-    describe("/acls", () -> {
-      describe("#GET", () -> {
-        describe("when there is no credential_name", () -> {
-          it("should return an error", () -> {
-            when(messageSource.getMessage(eq("error.missing_query_parameter"),
-                eq(new String[]{"credential_name"}), any(Locale.class)))
-                .thenReturn("test-error-message");
-
-            mockMvc.perform(get("/api/v1/acls"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(errorKey).value("test-error-message"));
-          });
-        });
-
-        describe("when there is no credential with the specified name", () -> {
-          it("should return an error", () -> {
-            when(messageSource
-                .getMessage(eq("error.resource_not_found"), eq(null), any(Locale.class)))
-                .thenReturn("test-error-message");
-            when(accessControlDataService.getAccessControlListResponse("test_credential_name"))
-                .thenThrow(new EntryNotFoundException("error.resource_not_found"));
-
-            mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath(errorKey).value("test-error-message"));
-          });
-        });
-
-        describe("when the credential exists", () -> {
-          it("should return the ACL for the credential", () -> {
-            AccessControlListResponse accessControlListResponse = new AccessControlListResponse(
-                "test_credential_name", newArrayList());
-            when(accessControlDataService.getAccessControlListResponse("test_credential_name"))
-                .thenReturn(accessControlListResponse);
-
-            mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.credential_name").value("test_credential_name"));
           });
         });
       });

@@ -1,13 +1,10 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import static io.pivotal.security.controller.v1.permissions.AccessEntryController.API_V1;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessEntryRequest;
-import io.pivotal.security.view.AccessControlListResponse;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -20,7 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,15 +25,14 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-public class AccessEntryController {
+@RequestMapping(path = "/api/v1/aces", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+public class AccessControlEntryController {
 
-  public static final String API_V1 = "/api/v1";
   private final MessageSourceAccessor messageSourceAccessor;
   private AccessControlDataService accessControlDataService;
 
   @Autowired
-  public AccessEntryController(
+  public AccessControlEntryController(
       AccessControlDataService accessControlDataService,
       MessageSource messageSource
   ) {
@@ -45,7 +40,7 @@ public class AccessEntryController {
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
-  @PostMapping(path = "/aces", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity setAccessControlEntry(
       @Validated @RequestBody AccessEntryRequest accessEntryRequest,
       Errors errors
@@ -59,13 +54,7 @@ public class AccessEntryController {
     }
   }
 
-  @GetMapping(path = "/acls")
-  public AccessControlListResponse getAccessControlList(
-      @RequestParam("credential_name") String credentialName) {
-    return accessControlDataService.getAccessControlListResponse(credentialName);
-  }
-
-  @DeleteMapping(path = "/aces")
+  @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAccessControlEntry(
       @RequestParam("credential_name") String credentialName,
