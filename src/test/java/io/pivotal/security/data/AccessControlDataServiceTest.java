@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -46,6 +47,33 @@ public class AccessControlDataServiceTest {
 
   {
     wireAndUnwire(this);
+
+    describe("#getAccessControlList", () -> {
+      beforeEach(this::seedDatabase);
+
+      describe("when given an existing credential name", () -> {
+        it("returns the access control list", () -> {
+          List<AccessControlEntry> accessControlEntries = subject.getAccessControlList("/lightsaber");
+
+          assertThat(accessControlEntries, hasSize(2));
+
+          AccessControlEntry accessControlEntry = accessControlEntries.get(0);
+
+          assertThat(accessControlEntries, containsInAnyOrder(
+              allOf(hasProperty("actor", equalTo("Luke")),
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
+              allOf(hasProperty("actor", equalTo("Leia")),
+                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
+          );
+        });
+      });
+
+      describe("when given a credential name that doesn't exist", () -> {
+        itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
+          subject.getAccessControlList("/unicorn");
+        });
+      });
+    });
 
     describe("setAccessControlEntry", () -> {
       describe("when given an existing ACE for a resource", () -> {
@@ -98,37 +126,12 @@ public class AccessControlDataServiceTest {
       });
     });
 
-    describe("getAccessControlListResponse", () -> {
-      beforeEach(this::seedDatabase);
-
-      describe("when given an existing credential name", () -> {
-        it("returns the access control list", () -> {
-          AccessControlListResponse response = subject.getAccessControlListResponse("/lightsaber");
-
-          assertThat(response.getCredentialName(), equalTo("/lightsaber"));
-
-          assertThat(response.getAccessControlList(), containsInAnyOrder(
-              allOf(hasProperty("actor", equalTo("Luke")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
-              allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
-          );
-        });
-      });
-
-      describe("when given a credential name that doesn't exist", () -> {
-        itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
-          subject.getAccessControlListResponse("/unicorn");
-        });
-      });
-    });
-
     describe("deleteAccessControlEntry", () -> {
       beforeEach(this::seedDatabase);
 
       describe("when given a credential and actor that exists in the ACL", () -> {
         it("removes the ACE from the ACL", () -> {
-          assertThat(subject.getAccessControlListResponse("/lightsaber").getAccessControlList(),
+          assertThat(subject.getAccessControlList("/lightsaber"),
               containsInAnyOrder(
                   allOf(hasProperty("actor", equalTo("Luke")),
                       hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
@@ -138,7 +141,7 @@ public class AccessControlDataServiceTest {
           subject.deleteAccessControlEntries("/lightsaber", "Luke");
 
           final List<AccessControlEntry> accessControlList = subject
-              .getAccessControlListResponse("/lightsaber").getAccessControlList();
+              .getAccessControlList("/lightsaber");
           assertThat(accessControlList,
               not(hasItem(hasProperty("actor", equalTo("Luke")))));
           assertThat(accessControlList, contains(

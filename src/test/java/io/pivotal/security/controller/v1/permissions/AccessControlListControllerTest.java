@@ -14,9 +14,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.service.permissions.AccessControlViewService;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.Locale;
 import org.junit.runner.RunWith;
@@ -28,7 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @RunWith(Spectrum.class)
 public class AccessControlListControllerTest {
 
-  private AccessControlDataService accessControlDataService;
+  private AccessControlViewService accessControlViewService;
   private MessageSource messageSource;
   private AccessControlListController subject;
   private MockMvc mockMvc;
@@ -36,10 +36,10 @@ public class AccessControlListControllerTest {
 
   {
     beforeEach(() -> {
-      accessControlDataService = mock(AccessControlDataService.class);
+      accessControlViewService = mock(AccessControlViewService.class);
       messageSource = mock(MessageSource.class);
       subject = new AccessControlListController(
-          accessControlDataService,
+          accessControlViewService,
           messageSource
       );
 
@@ -71,7 +71,7 @@ public class AccessControlListControllerTest {
             when(messageSource
                 .getMessage(eq("error.resource_not_found"), eq(null), any(Locale.class)))
                 .thenReturn("test-error-message");
-            when(accessControlDataService.getAccessControlListResponse("test_credential_name"))
+            when(accessControlViewService.getAccessControlListResponse("test_credential_name"))
                 .thenThrow(new EntryNotFoundException("error.resource_not_found"));
 
             mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
@@ -84,7 +84,7 @@ public class AccessControlListControllerTest {
           it("should return the ACL for the credential", () -> {
             AccessControlListResponse accessControlListResponse = new AccessControlListResponse(
                 "test_credential_name", newArrayList());
-            when(accessControlDataService.getAccessControlListResponse("test_credential_name"))
+            when(accessControlViewService.getAccessControlListResponse("test_credential_name"))
                 .thenReturn(accessControlListResponse);
 
             mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))

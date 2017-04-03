@@ -27,6 +27,21 @@ public class AccessControlDataService {
     this.secretDataService = secretDataService;
   }
 
+  public List<AccessControlEntry> getAccessControlList(String credentialName) {
+    SecretName secretName = secretDataService.findSecretName(credentialName);
+    List<AccessControlEntry> responseAces = null;
+
+    if (secretName != null) {
+      responseAces = createViewsForAllAcesWithName(secretName);
+    }
+
+    if (responseAces == null) {
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
+
+    return responseAces;
+  }
+
   public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
     SecretName secretName = findSecretName(request);
 
@@ -39,21 +54,6 @@ public class AccessControlDataService {
     }
 
     List<AccessControlEntry> responseAces = createViewsForAllAcesWithName(secretName);
-
-    return new AccessControlListResponse(secretName.getName(), responseAces);
-  }
-
-  public AccessControlListResponse getAccessControlListResponse(String credentialName) {
-    SecretName secretName = secretDataService.findSecretName(credentialName);
-    List<AccessControlEntry> responseAces = null;
-
-    if (secretName != null) {
-      responseAces = createViewsForAllAcesWithName(secretName);
-    }
-
-    if (responseAces == null || secretName == null) {
-      throw new EntryNotFoundException("error.resource_not_found");
-    }
 
     return new AccessControlListResponse(secretName.getName(), responseAces);
   }

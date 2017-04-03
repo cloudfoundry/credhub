@@ -2,8 +2,8 @@ package io.pivotal.security.controller.v1.permissions;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.service.permissions.AccessControlViewService;
 import io.pivotal.security.view.AccessControlListResponse;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,21 +23,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/api/v1/acls", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AccessControlListController {
   private final MessageSourceAccessor messageSourceAccessor;
-  private AccessControlDataService accessControlDataService;
+  private final AccessControlViewService accessControlViewService;
 
   @Autowired
   public AccessControlListController(
-      AccessControlDataService accessControlDataService,
+      AccessControlViewService accessControlViewService,
       MessageSource messageSource
   ) {
-    this.accessControlDataService = accessControlDataService;
+    this.accessControlViewService = accessControlViewService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
   @GetMapping
   public AccessControlListResponse getAccessControlList(
       @RequestParam("credential_name") String credentialName) {
-    return accessControlDataService.getAccessControlListResponse(credentialName);
+    return accessControlViewService.getAccessControlListResponse(credentialName);
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
