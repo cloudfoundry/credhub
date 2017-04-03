@@ -31,9 +31,11 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,7 +68,10 @@ public class SecretsControllerJsonSetTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -90,6 +95,7 @@ public class SecretsControllerJsonSetTest {
           request.setType("json");
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content(serializeToString(request));

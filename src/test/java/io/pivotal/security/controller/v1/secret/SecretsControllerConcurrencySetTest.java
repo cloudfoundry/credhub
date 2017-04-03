@@ -4,6 +4,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
@@ -13,6 +14,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -87,7 +89,10 @@ public class SecretsControllerConcurrencySetTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -101,6 +106,7 @@ public class SecretsControllerConcurrencySetTest {
           @Override
           public void run() {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
@@ -120,6 +126,7 @@ public class SecretsControllerConcurrencySetTest {
           @Override
           public void run() {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
@@ -168,6 +175,7 @@ public class SecretsControllerConcurrencySetTest {
               .when(secretDataService).save(any(NamedSecret.class));
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"

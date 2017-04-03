@@ -9,6 +9,7 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -112,7 +114,10 @@ public class SecretsControllerGenerateTest {
       fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
       when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class)))
           .thenReturn(new Password(fakePassword));
 
@@ -134,6 +139,7 @@ public class SecretsControllerGenerateTest {
 
       it("for an unknown/garbage type should return an error message", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
@@ -151,6 +157,7 @@ public class SecretsControllerGenerateTest {
 
       it("for a new value secret should return an error message", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
@@ -167,9 +174,10 @@ public class SecretsControllerGenerateTest {
 
       it("for a new json secret should return an error message", () -> {
         final MockHttpServletRequestBuilder post = post("/api/v1/data")
-          .accept(APPLICATION_JSON)
-          .contentType(APPLICATION_JSON)
-          .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
 
         mockMvc.perform(post)
           .andExpect(status().isBadRequest())
@@ -184,6 +192,7 @@ public class SecretsControllerGenerateTest {
       describe("when name does not have a leading slash in the request json", () -> {
         it("should return 200", () -> {
           final MockHttpServletRequestBuilder post = post(API_V1_DATA)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + StringUtils.stripStart(secretName, "/") + "\"}");
@@ -196,6 +205,7 @@ public class SecretsControllerGenerateTest {
       describe("for a new non-value secret, name in body, not in path", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{" +
@@ -253,6 +263,7 @@ public class SecretsControllerGenerateTest {
         describe("with the overwrite flag set to true", () -> {
           beforeEach(() -> {
             final MockHttpServletRequestBuilder post = post("/api/v1/data")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -287,6 +298,7 @@ public class SecretsControllerGenerateTest {
         describe("with the overwrite flag set to false", () -> {
           beforeEach(() -> {
             final MockHttpServletRequestBuilder post = post("/api/v1/data")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
@@ -316,13 +328,14 @@ public class SecretsControllerGenerateTest {
         describe("with bad parameters", () -> {
           beforeEach(() -> {
             final MockHttpServletRequestBuilder post = post("/api/v1/data")
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                "  \"type\":\"nopeity mcnope\"," +
-                "  \"name\":\"" + secretName + "\"," +
-                "  \"overwrite\":true" +
-                "}");
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{" +
+                    "  \"type\":\"nopeity mcnope\"," +
+                    "  \"name\":\"" + secretName + "\"," +
+                    "  \"overwrite\":true" +
+                    "}");
 
             response = mockMvc.perform(post);
           });
@@ -352,6 +365,7 @@ public class SecretsControllerGenerateTest {
               .when(secretDataService).save(any(NamedSecret.class));
 
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
@@ -373,6 +387,7 @@ public class SecretsControllerGenerateTest {
       describe("error handling", () -> {
         it("returns 400 when type is not present", () -> {
           mockMvc.perform(post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .content("{\"name\":\"some-new-secret-name\"}")
           )
@@ -387,6 +402,7 @@ public class SecretsControllerGenerateTest {
 
         it("returns 400 when name is empty", () -> {
           mockMvc.perform(post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"\"}")
           )
@@ -400,6 +416,7 @@ public class SecretsControllerGenerateTest {
 
         it("returns 400 when name is missing", () -> {
           mockMvc.perform(post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON)
               .content("{\"type\":\"password\"}")
           )
@@ -413,31 +430,33 @@ public class SecretsControllerGenerateTest {
 
         it("returns 400 when incorrect params are sent in request", () -> {
           mockMvc.perform(post("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            //language=JSON
-            .content("{" +
-              "\"type\":\"password\"," +
-              "\"name\":\"" + secretName + "\"," +
-              "\"parameters\":{" +
-              "\"exclude_number\": true" +
-              "}," +
-              "\"some_unknown_param\": false" +
-              "}")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .accept(APPLICATION_JSON)
+              //language=JSON
+              .content("{" +
+                  "\"type\":\"password\"," +
+                  "\"name\":\"" + secretName + "\"," +
+                  "\"parameters\":{" +
+                  "\"exclude_number\": true" +
+                  "}," +
+                  "\"some_unknown_param\": false" +
+                  "}")
           )
-            .andExpect(status().isBadRequest())
-            .andExpect(
-                jsonPath("$.error")
-                    .value("The request includes an unrecognized parameter " +
-                        "'some_unknown_param'. Please update or remove this parameter and " +
-                        "retry your request.")
-            );
+              .andExpect(status().isBadRequest())
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("The request includes an unrecognized parameter " +
+                          "'some_unknown_param'. Please update or remove this parameter and " +
+                          "retry your request.")
+              );
         });
 
         it("returns 400 for an unknown/garbage type", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
             .andExpect(status().isBadRequest())
@@ -451,9 +470,10 @@ public class SecretsControllerGenerateTest {
 
         it("returns 400 for a new value secret", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
             .andExpect(status().isBadRequest())
@@ -467,9 +487,10 @@ public class SecretsControllerGenerateTest {
 
         it("returns 400 for a new json secret", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/data")
-            .accept(APPLICATION_JSON)
-            .contentType(APPLICATION_JSON)
-            .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
             .andExpect(status().isBadRequest())

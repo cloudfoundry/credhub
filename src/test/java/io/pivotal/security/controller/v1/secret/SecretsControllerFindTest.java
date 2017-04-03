@@ -8,6 +8,7 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +16,7 @@ import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -84,7 +86,10 @@ public class SecretsControllerFindTest {
       fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -102,6 +107,7 @@ public class SecretsControllerFindTest {
                 Arrays.asList(new SecretView(frozenTime, secretName))
             ).when(secretDataService).findContainingName(substring);
             final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON);
 
             this.response = mockMvc.perform(get);
@@ -133,6 +139,7 @@ public class SecretsControllerFindTest {
 
           final String path = substring;
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           this.response = mockMvc.perform(get);
@@ -151,6 +158,7 @@ public class SecretsControllerFindTest {
           assertTrue(secretName.contains(path));
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -170,6 +178,7 @@ public class SecretsControllerFindTest {
           assertTrue(secretName.startsWith(path));
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -183,6 +192,7 @@ public class SecretsControllerFindTest {
           assertTrue(secretName.startsWith(path));
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -199,6 +209,7 @@ public class SecretsControllerFindTest {
       describe("finding all paths", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder get = get("/api/v1/data?paths=true")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
           doReturn(
               Arrays.asList("my-namespace/", "my-namespace/subTree/")

@@ -7,6 +7,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.isA;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -67,7 +69,10 @@ public class SecretsControllerDeleteTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -77,6 +82,7 @@ public class SecretsControllerDeleteTest {
       describe("error handling", () -> {
         it("should return NOT_FOUND when there is no secret with that name", () -> {
           final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(delete)
@@ -91,6 +97,7 @@ public class SecretsControllerDeleteTest {
 
         it("should return an error when name is empty", () -> {
           final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(delete)
@@ -105,6 +112,7 @@ public class SecretsControllerDeleteTest {
 
         it("should return an error when name is missing", () -> {
           final MockHttpServletRequestBuilder delete = delete("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(delete)
@@ -124,7 +132,9 @@ public class SecretsControllerDeleteTest {
           doReturn(new NamedValueSecret())
               .when(secretDataService)
               .findMostRecent(secretName.toUpperCase());
-          response = mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()));
+          response = mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+          );
         });
 
         it("should return a 204 status", () -> {
@@ -151,7 +161,9 @@ public class SecretsControllerDeleteTest {
           doReturn(2L).when(secretDataService).delete(secretName);
           doReturn(new NamedValueSecret()).when(secretDataService).findMostRecent(secretName);
 
-          response = mockMvc.perform(delete("/api/v1/data?name=" + secretName));
+          response = mockMvc.perform(delete("/api/v1/data?name=" + secretName)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+          );
         });
 
         it("should succeed", () -> {
@@ -182,19 +194,22 @@ public class SecretsControllerDeleteTest {
         });
 
         it("can delete when the name is a query param", () -> {
-          mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase()))
+          mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
               .andExpect(status().isNoContent());
 
           verify(secretDataService, times(1)).delete(secretName.toUpperCase());
         });
 
         it("handles missing name parameter", () -> {
-          mockMvc.perform(delete("/api/v1/data"))
+          mockMvc.perform(delete("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
               .andExpect(status().isBadRequest());
         });
 
         it("handles empty name", () -> {
-          mockMvc.perform(delete("/api/v1/data?name="))
+          mockMvc.perform(delete("/api/v1/data?name=")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
               .andExpect(status().isBadRequest());
         });
       });

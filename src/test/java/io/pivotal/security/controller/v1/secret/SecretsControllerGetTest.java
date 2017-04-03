@@ -8,6 +8,7 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -93,7 +95,10 @@ public class SecretsControllerGetTest {
       fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -144,6 +149,7 @@ public class SecretsControllerGetTest {
       describe("getting a secret by name when name has multiple leading slashes", () -> {
         it("returns NOT_FOUND", () -> {
           final MockHttpServletRequestBuilder get = get("/api/v1/data?name=//" + secretName.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get)
@@ -160,6 +166,7 @@ public class SecretsControllerGetTest {
       describe("when passing a 'current' query parameter", () -> {
         it("when true should return only the most recent version", () -> {
           mockMvc.perform(get("/api/v1/data?current=true&name=" + secretName.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON))
               .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -170,6 +177,7 @@ public class SecretsControllerGetTest {
 
         it("when false should return all versions", () -> {
           mockMvc.perform(get("/api/v1/data?current=false&name=" + secretName.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON))
               .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -178,6 +186,7 @@ public class SecretsControllerGetTest {
 
         it("when omitted should return all versions", () -> {
           mockMvc.perform(get("/api/v1/data?name=" + secretName.toUpperCase())
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON))
               .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -186,6 +195,7 @@ public class SecretsControllerGetTest {
 
         it("returns an error when name is not given", () -> {
           final MockHttpServletRequestBuilder get = get("/api/v1/data?name=")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get)
@@ -202,6 +212,7 @@ public class SecretsControllerGetTest {
       describe("getting a secret by id", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
               .accept(APPLICATION_JSON);
 
           this.response = mockMvc.perform(get);
@@ -242,6 +253,7 @@ public class SecretsControllerGetTest {
       it("returns KEY_NOT_PRESENT", () -> {
         final MockHttpServletRequestBuilder get =
             get("/api/v1/data?name=" + secretName.toUpperCase())
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .accept(APPLICATION_JSON);
 
         mockMvc.perform(get)
@@ -264,6 +276,7 @@ public class SecretsControllerGetTest {
     return () -> {
       beforeEach(() -> {
         final MockHttpServletRequestBuilder get = get(validUrl)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
             .accept(APPLICATION_JSON);
 
         this.response = mockMvc.perform(get);
@@ -285,6 +298,7 @@ public class SecretsControllerGetTest {
 
       it("returns NOT_FOUND when the secret does not exist", () -> {
         final MockHttpServletRequestBuilder get = get(invalidUrl)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
             .accept(APPLICATION_JSON);
 
         mockMvc.perform(get)

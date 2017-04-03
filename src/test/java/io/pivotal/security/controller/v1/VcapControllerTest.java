@@ -5,10 +5,12 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.parse;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,7 +48,10 @@ public class VcapControllerTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
     });
 
     describe("/vcap", () -> {
@@ -68,6 +73,7 @@ public class VcapControllerTest {
             ).when(mockSecretDataService).findMostRecent("/cred2");
 
             mockMvc.perform(post("/api/v1/vcap")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
@@ -109,6 +115,7 @@ public class VcapControllerTest {
             ).when(mockSecretDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
@@ -138,6 +145,7 @@ public class VcapControllerTest {
             ).when(mockSecretDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
@@ -173,6 +181,7 @@ public class VcapControllerTest {
                 + "  }"
                 + "}";
             MockHttpServletResponse response = mockMvc.perform(post("/api/v1/vcap")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inputJsonString)
             ).andExpect(status().isOk()).andReturn().getResponse();
@@ -185,6 +194,7 @@ public class VcapControllerTest {
           it("should fail with \"Bad Request\"", () -> {
             String inputJsonString = "</xml?>";
             mockMvc.perform(post("/api/v1/vcap")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inputJsonString)
             ).andExpect(status().isBadRequest());
