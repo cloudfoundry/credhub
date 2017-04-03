@@ -88,7 +88,7 @@ public class AccessControlDataServiceTest {
         });
 
         it("returns the acl for the given resource", () -> {
-          AccessControlListResponse response = subject.setAccessControlEntry(request);
+          AccessControlListResponse response = subject.setAccessControlEntries(request);
 
           assertThat(response.getCredentialName(), equalTo("/lightsaber"));
 
@@ -113,7 +113,7 @@ public class AccessControlDataServiceTest {
         });
 
         it("returns the acl for the given resource", () -> {
-          AccessControlListResponse response = subject.setAccessControlEntry(request);
+          AccessControlListResponse response = subject.setAccessControlEntries(request);
 
           assertThat(response.getCredentialName(), equalTo("/lightsaber2"));
           assertThat(response.getAccessControlList().size(), equalTo(1));
@@ -169,14 +169,14 @@ public class AccessControlDataServiceTest {
 
     secretDataService.save(new NamedValueSecret("lightsaber"));
 
-    subject.setAccessControlEntry(
+    subject.setAccessControlEntries(
         new AccessEntryRequest(
             "lightsaber",
             singletonList(new AccessControlEntry("Luke",
                 singletonList(AccessControlOperation.WRITE)))
         ));
 
-    subject.setAccessControlEntry(
+    subject.setAccessControlEntries(
         new AccessEntryRequest(
             "lightsaber",
             singletonList(new AccessControlEntry("Leia",

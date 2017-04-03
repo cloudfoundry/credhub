@@ -42,7 +42,7 @@ public class AccessControlDataService {
     return responseAces;
   }
 
-  public AccessControlListResponse setAccessControlEntry(AccessEntryRequest request) {
+  public AccessControlListResponse setAccessControlEntries(AccessEntryRequest request) {
     SecretName secretName = findSecretName(request);
 
     List<AccessEntryData> existingAccessEntries = accessEntryRepository

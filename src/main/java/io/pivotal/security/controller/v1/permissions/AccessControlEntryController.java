@@ -41,7 +41,7 @@ public class AccessControlEntryController {
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  public ResponseEntity setAccessControlEntry(
+  public ResponseEntity setAccessControlEntries(
       @Validated @RequestBody AccessEntryRequest accessEntryRequest,
       Errors errors
   ) {
@@ -49,7 +49,7 @@ public class AccessControlEntryController {
       ResponseError error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
-      return wrapResponse(accessControlDataService.setAccessControlEntry(accessEntryRequest),
+      return wrapResponse(accessControlDataService.setAccessControlEntries(accessEntryRequest),
           HttpStatus.OK);
     }
   }

@@ -111,7 +111,7 @@ public class AccessControlEntryControllerTest {
                 new AccessControlListResponse("test-actor",
                     accessControlEntries);
 
-            when(accessControlDataService.setAccessControlEntry(any(AccessEntryRequest.class)))
+            when(accessControlDataService.setAccessControlEntries(any(AccessEntryRequest.class)))
                 .thenReturn(expectedResponse);
 
             MockHttpServletRequestBuilder request = post("/api/v1/aces")
@@ -125,7 +125,7 @@ public class AccessControlEntryControllerTest {
 
             ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor
                 .forClass(AccessEntryRequest.class);
-            verify(accessControlDataService, times(1)).setAccessControlEntry(captor.capture());
+            verify(accessControlDataService, times(1)).setAccessControlEntries(captor.capture());
 
             AccessEntryRequest actualRequest = captor.getValue();
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
