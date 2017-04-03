@@ -58,7 +58,7 @@ public class AccessControlDataService {
     return new AccessControlListResponse(secretName.getName(), responseAces);
   }
 
-  public void deleteAccessControlEntry(String credentialName, String actor) {
+  public void deleteAccessControlEntries(String credentialName, String actor) {
     int rows = 0;
     final SecretName secretName = secretDataService.findSecretName(credentialName);
     if (secretName != null) {

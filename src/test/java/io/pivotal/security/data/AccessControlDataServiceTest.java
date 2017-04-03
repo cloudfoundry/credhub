@@ -135,7 +135,7 @@ public class AccessControlDataServiceTest {
                   allOf(hasProperty("actor", equalTo("Leia")),
                       hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
           );
-          subject.deleteAccessControlEntry("/lightsaber", "Luke");
+          subject.deleteAccessControlEntries("/lightsaber", "Luke");
 
           final List<AccessControlEntry> accessControlList = subject
               .getAccessControlListResponse("/lightsaber").getAccessControlList();
@@ -150,12 +150,12 @@ public class AccessControlDataServiceTest {
 
       describe("when the credential/actor combination does not exist in the ACL", () -> {
         itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
-          subject.deleteAccessControlEntry("/some-thing-that-is-not-here", "Luke");
+          subject.deleteAccessControlEntries("/some-thing-that-is-not-here", "Luke");
         });
 
         itThrows("when credential does exist, but the ACE does not", EntryNotFoundException.class,
             () -> {
-              subject.deleteAccessControlEntry("/lightsaber", "HelloKitty");
+              subject.deleteAccessControlEntries("/lightsaber", "HelloKitty");
             });
       });
     });

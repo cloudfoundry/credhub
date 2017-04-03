@@ -56,11 +56,11 @@ public class AccessControlEntryController {
 
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteAccessControlEntry(
+  public void deleteAccessControlEntries(
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
-    accessControlDataService.deleteAccessControlEntry(credentialName, actor);
+    accessControlDataService.deleteAccessControlEntries(credentialName, actor);
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)

@@ -145,14 +145,14 @@ public class AccessControlEntryControllerTest {
                 .andExpect(content().string(""));
 
             verify(accessControlDataService, times(1))
-                .deleteAccessControlEntry("test-name", "test-actor");
+                .deleteAccessControlEntries("test-name", "test-actor");
           });
         });
         describe("when accessControlDataService.delete throws a NotFound exception", () -> {
           beforeEach(() -> {
             doThrow(new EntryNotFoundException("error.acl.not_found"))
                 .when(accessControlDataService)
-                .deleteAccessControlEntry("fake-credential", "some-actor");
+                .deleteAccessControlEntries("fake-credential", "some-actor");
 
             when(messageSource.getMessage(eq("error.acl.not_found"), eq(null), any(Locale.class)))
                 .thenReturn(
