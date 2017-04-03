@@ -89,7 +89,10 @@ public class AuditLogService {
     return responseEntity;
   }
 
-  private OperationAuditRecord writeAuditRecord(AuditRecordBuilder auditRecordBuilder, ResponseEntity<?> responseEntity) throws Exception {
+  private OperationAuditRecord writeAuditRecord(
+      AuditRecordBuilder auditRecordBuilder,
+      ResponseEntity<?> responseEntity
+  ) throws Exception {
     OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder,
         responseEntity.getStatusCodeValue());
     operationAuditRecordDataService.save(auditRecord);
