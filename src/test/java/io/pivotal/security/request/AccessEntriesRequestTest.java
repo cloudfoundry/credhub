@@ -21,16 +21,16 @@ import javax.validation.ConstraintViolation;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
-public class AccessEntryRequestTest {
+public class AccessEntriesRequestTest {
 
   {
     describe("validation", () -> {
       it("should allow good JSON", () -> {
         List<AccessControlEntry> entryList = newArrayList(
             new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
-        AccessEntryRequest original = new AccessEntryRequest("test-name", entryList);
+        AccessEntriesRequest original = new AccessEntriesRequest("test-name", entryList);
         byte[] json = serialize(original);
-        AccessEntryRequest actual = deserialize(json, AccessEntryRequest.class);
+        AccessEntriesRequest actual = deserialize(json, AccessEntriesRequest.class);
 
         assertThat(actual.getCredentialName(), equalTo("test-name"));
         assertThat(actual.getAccessControlEntries(), contains(
@@ -45,8 +45,8 @@ public class AccessEntryRequestTest {
         it("should validate that credential_name is not null", () -> {
           List<AccessControlEntry> entryList = newArrayList(
               new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
-          AccessEntryRequest original = new AccessEntryRequest(null, entryList);
-          Set<ConstraintViolation<AccessEntryRequest>> violations = validate(original);
+          AccessEntriesRequest original = new AccessEntriesRequest(null, entryList);
+          Set<ConstraintViolation<AccessEntriesRequest>> violations = validate(original);
 
           assertThat(violations.size(), equalTo(1));
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
@@ -55,8 +55,8 @@ public class AccessEntryRequestTest {
         it("should validate that credential_name is not empty", () -> {
           List<AccessControlEntry> entryList = newArrayList(
               new AccessControlEntry("someone", newArrayList(AccessControlOperation.READ)));
-          AccessEntryRequest original = new AccessEntryRequest("", entryList);
-          Set<ConstraintViolation<AccessEntryRequest>> violations = validate(original);
+          AccessEntriesRequest original = new AccessEntriesRequest("", entryList);
+          Set<ConstraintViolation<AccessEntriesRequest>> violations = validate(original);
 
           assertThat(violations.size(), equalTo(1));
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
@@ -65,16 +65,16 @@ public class AccessEntryRequestTest {
 
       describe("#operations", () -> {
         it("should validate that operations is not null", () -> {
-          AccessEntryRequest original = new AccessEntryRequest("foo", null);
-          Set<ConstraintViolation<AccessEntryRequest>> violations = validate(original);
+          AccessEntriesRequest original = new AccessEntriesRequest("foo", null);
+          Set<ConstraintViolation<AccessEntriesRequest>> violations = validate(original);
 
           assertThat(violations.size(), equalTo(1));
           assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));
         });
 
         it("should validate that credential_name is not empty", () -> {
-          AccessEntryRequest original = new AccessEntryRequest("foo", newArrayList());
-          Set<ConstraintViolation<AccessEntryRequest>> violations = validate(original);
+          AccessEntriesRequest original = new AccessEntriesRequest("foo", newArrayList());
+          Set<ConstraintViolation<AccessEntriesRequest>> violations = validate(original);
 
           assertThat(violations.size(), equalTo(1));
           assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));

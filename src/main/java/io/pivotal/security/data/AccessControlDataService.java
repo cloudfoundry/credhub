@@ -6,7 +6,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntryRequest;
+import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +42,7 @@ public class AccessControlDataService {
     return responseAces;
   }
 
-  public AccessControlListResponse setAccessControlEntries(AccessEntryRequest request) {
+  public AccessControlListResponse setAccessControlEntries(AccessEntriesRequest request) {
     SecretName secretName = findSecretName(request);
 
     List<AccessEntryData> existingAccessEntries = accessEntryRepository
@@ -82,7 +82,7 @@ public class AccessControlDataService {
     accessEntryRepository.saveAndFlush(entry);
   }
 
-  private SecretName findSecretName(AccessEntryRequest request) {
+  private SecretName findSecretName(AccessEntriesRequest request) {
     final SecretName secretName = secretDataService.findSecretName(request.getCredentialName());
 
     if (secretName == null) {

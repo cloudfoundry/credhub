@@ -23,7 +23,7 @@ import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntryRequest;
+import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.List;
@@ -43,7 +43,7 @@ public class AccessControlDataServiceTest {
   @Autowired
   private SecretDataService secretDataService;
 
-  private AccessEntryRequest request;
+  private AccessEntriesRequest request;
 
   {
     wireAndUnwire(this);
@@ -84,7 +84,7 @@ public class AccessControlDataServiceTest {
           List<AccessControlEntry> newAces = singletonList(
               new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
-          request = new AccessEntryRequest("/lightsaber", newAces);
+          request = new AccessEntriesRequest("/lightsaber", newAces);
         });
 
         it("returns the acl for the given resource", () -> {
@@ -109,7 +109,7 @@ public class AccessControlDataServiceTest {
           List<AccessControlEntry> newAces = singletonList(
               new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
-          request = new AccessEntryRequest("/lightsaber2", newAces);
+          request = new AccessEntriesRequest("/lightsaber2", newAces);
         });
 
         it("returns the acl for the given resource", () -> {
@@ -170,14 +170,14 @@ public class AccessControlDataServiceTest {
     secretDataService.save(new NamedValueSecret("lightsaber"));
 
     subject.setAccessControlEntries(
-        new AccessEntryRequest(
+        new AccessEntriesRequest(
             "lightsaber",
             singletonList(new AccessControlEntry("Luke",
                 singletonList(AccessControlOperation.WRITE)))
         ));
 
     subject.setAccessControlEntries(
-        new AccessEntryRequest(
+        new AccessEntriesRequest(
             "lightsaber",
             singletonList(new AccessControlEntry("Leia",
                 singletonList(AccessControlOperation.READ)))

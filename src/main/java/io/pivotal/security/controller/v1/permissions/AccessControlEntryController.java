@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessEntryRequest;
+import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -42,14 +42,14 @@ public class AccessControlEntryController {
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   public ResponseEntity setAccessControlEntries(
-      @Validated @RequestBody AccessEntryRequest accessEntryRequest,
+      @Validated @RequestBody AccessEntriesRequest accessEntriesRequest,
       Errors errors
   ) {
     if (errors.hasErrors()) {
       ResponseError error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
-      return wrapResponse(accessControlDataService.setAccessControlEntries(accessEntryRequest),
+      return wrapResponse(accessControlDataService.setAccessControlEntries(accessEntriesRequest),
           HttpStatus.OK);
     }
   }

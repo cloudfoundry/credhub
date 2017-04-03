@@ -32,7 +32,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntryRequest;
+import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,11 +82,11 @@ public class AccessControlEntryControllerTest {
                     eq(null), any(Locale.class)))
                 .thenReturn("test-error-message");
 
-            AccessEntryRequest accessEntryRequest = new AccessEntryRequest(
+            AccessEntriesRequest accessEntriesRequest = new AccessEntriesRequest(
                 "test-credential-name",
                 null
             );
-            byte[] body = serialize(accessEntryRequest);
+            byte[] body = serialize(accessEntriesRequest);
             MockHttpServletRequestBuilder request = post("/api/v1/aces")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body);
@@ -103,7 +103,7 @@ public class AccessControlEntryControllerTest {
                 AccessControlOperation.READ, AccessControlOperation.WRITE);
             List<AccessControlEntry> accessControlEntries = newArrayList(
                 new AccessControlEntry("test-actor", operations));
-            AccessEntryRequest accessEntryRequest = new AccessEntryRequest(
+            AccessEntriesRequest accessEntriesRequest = new AccessEntriesRequest(
                 "test-credential-name",
                 accessControlEntries
             );
@@ -111,23 +111,23 @@ public class AccessControlEntryControllerTest {
                 new AccessControlListResponse("test-actor",
                     accessControlEntries);
 
-            when(accessControlDataService.setAccessControlEntries(any(AccessEntryRequest.class)))
+            when(accessControlDataService.setAccessControlEntries(any(AccessEntriesRequest.class)))
                 .thenReturn(expectedResponse);
 
             MockHttpServletRequestBuilder request = post("/api/v1/aces")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(serialize(accessEntryRequest));
+                .content(serialize(accessEntriesRequest));
 
             final String jsonContent = serializeToString(expectedResponse);
             mockMvc.perform(request)
                 .andExpect(status().isOk())
                 .andExpect(content().json(jsonContent));
 
-            ArgumentCaptor<AccessEntryRequest> captor = ArgumentCaptor
-                .forClass(AccessEntryRequest.class);
+            ArgumentCaptor<AccessEntriesRequest> captor = ArgumentCaptor
+                .forClass(AccessEntriesRequest.class);
             verify(accessControlDataService, times(1)).setAccessControlEntries(captor.capture());
 
-            AccessEntryRequest actualRequest = captor.getValue();
+            AccessEntriesRequest actualRequest = captor.getValue();
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
             assertThat(actualRequest.getAccessControlEntries(),
                 hasItem(allOf(hasProperty("actor", equalTo("test-actor")),

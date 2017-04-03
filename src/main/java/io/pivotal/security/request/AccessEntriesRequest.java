@@ -7,18 +7,18 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
-public class AccessEntryRequest {
+public class AccessEntriesRequest {
 
   @NotEmpty(message = "error.missing_name")
   private String credentialName;
   @NotEmpty(message = "error.acl.missing_aces")
   private List<AccessControlEntry> accessControlEntries;
 
-  public AccessEntryRequest() {
+  public AccessEntriesRequest() {
         /* this needs to be there for jackson to be happy */
   }
 
-  public AccessEntryRequest(String credentialName, List<AccessControlEntry> accessControlEntries) {
+  public AccessEntriesRequest(String credentialName, List<AccessControlEntry> accessControlEntries) {
     this.credentialName = credentialName;
     this.accessControlEntries = accessControlEntries;
   }
