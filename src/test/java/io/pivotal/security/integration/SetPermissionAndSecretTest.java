@@ -4,11 +4,17 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static io.pivotal.security.util.X509TestUtil.cert;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.x509;
@@ -22,13 +28,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import javax.servlet.Filter;
+
+import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -172,17 +183,20 @@ public class SetPermissionAndSecretTest {
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.type", equalTo("password")));
 
-          mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
+          MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-              .andDo(print())
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$.credential_name").value("/test-password"))
-              .andExpect(jsonPath("$.access_control_list[0].actor").value("mtls:app:app1-guid"))
-              .andExpect(jsonPath("$.access_control_list[0].operations").value(contains("read")))
-              .andExpect(jsonPath("$.access_control_list[1].actor")
-                  .value("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"))
-              .andExpect(
-                  jsonPath("$.access_control_list[1].operations").value(contains("read", "write")));
+              .andDo(print())
+              .andReturn();
+          String content = result.getResponse().getContentAsString();
+          AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+          assertThat(acl.getCredentialName(), equalTo("/test-password"));
+          assertThat(acl.getAccessControlList(), containsInAnyOrder(
+              samePropertyValuesAs(
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+              samePropertyValuesAs(
+                  new AccessControlEntry("mtls:app:app1-guid", asList(READ)))
+          ));
         });
       });
 

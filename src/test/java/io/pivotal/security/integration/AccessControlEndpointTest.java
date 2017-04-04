@@ -4,28 +4,38 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.Matchers.contains;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -63,7 +73,7 @@ public class AccessControlEndpointTest {
           .andExpect(status().isOk());
     });
 
-    describe("When posting access control entry for user and credential", () -> {
+    describe("when posting access control entry for user and credential", () -> {
       describe("and permissions don't exist", () -> {
         it("returns the full Access Control List for user", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/aces")
@@ -84,16 +94,21 @@ public class AccessControlEndpointTest {
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON);
 
-          this.mockMvc.perform(post).andExpect(status().isOk())
+          MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
-              .andExpect(jsonPath("$.access_control_list", hasSize(2)))
-              .andExpect(jsonPath("$.access_control_list[0].actor",
-                  equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")))
-              .andExpect(jsonPath("$.access_control_list[0].operations[0]", equalTo("read")))
-              .andExpect(jsonPath("$.access_control_list[0].operations[1]", equalTo("write")))
-              .andExpect(jsonPath("$.access_control_list[1].actor", equalTo("dan")))
-              .andExpect(jsonPath("$.access_control_list[1].operations[0]", equalTo("read")));
+              .andExpect(status().isOk())
+              .andDo(print())
+              .andReturn();
+          String content = result.getResponse().getContentAsString();
+          AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+          assertThat(acl.getAccessControlList(), hasSize(2));
+          assertThat(acl.getCredentialName(), equalTo("/cred1"));
+          assertThat(acl.getAccessControlList(), containsInAnyOrder(
+              samePropertyValuesAs(
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+              samePropertyValuesAs(
+                  new AccessControlEntry("dan", asList(READ)))
+          ));
 
           this.mockMvc.perform(get)
               .andExpect(status().isOk());
@@ -135,16 +150,20 @@ public class AccessControlEndpointTest {
 
           this.mockMvc.perform(initPost);
 
-          this.mockMvc.perform(updatePost).andExpect(status().isOk())
+          MvcResult result = this.mockMvc.perform(updatePost).andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
-              .andExpect(jsonPath("$.access_control_list", hasSize(2)))
-              .andExpect(jsonPath("$.access_control_list[0].actor",
-                  equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")))
-              .andExpect(jsonPath("$.access_control_list[0].operations", contains("read", "write")))
-              .andExpect(jsonPath("$.access_control_list[1].actor", equalTo("dan")))
-              .andExpect(
-                  jsonPath("$.access_control_list[1].operations", contains("read", "write")));
+              .andExpect(status().isOk())
+              .andDo(print())
+              .andReturn();
+          String content = result.getResponse().getContentAsString();
+          AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+          assertThat(acl.getCredentialName(), equalTo("/cred1"));
+          assertThat(acl.getAccessControlList(), containsInAnyOrder(
+              samePropertyValuesAs(
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+              samePropertyValuesAs(
+                  new AccessControlEntry("dan", asList(READ, WRITE)))
+          ));
 
           this.mockMvc.perform(get)
               .andExpect(status().isOk());
@@ -186,15 +205,21 @@ public class AccessControlEndpointTest {
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON);
 
-            this.mockMvc.perform(post).andExpect(status().isOk())
+            MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.credential_name", equalTo("/cred2")))
-                .andExpect(jsonPath("$.access_control_list", hasSize(2)))
-                .andExpect(jsonPath("$.access_control_list[0].actor",
-                    equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")))
-                .andExpect(jsonPath("$.access_control_list[0].operations", contains("read", "write")))
-                .andExpect(jsonPath("$.access_control_list[1].actor", equalTo("dan")))
-                .andExpect(jsonPath("$.access_control_list[1].operations[0]", equalTo("read")));
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+            String content = result.getResponse().getContentAsString();
+            AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+            assertThat(acl.getCredentialName(), equalTo("/cred2"));
+            assertThat(acl.getAccessControlList(), hasSize(2));
+            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("dan", asList(READ)))
+            ));
 
             this.mockMvc.perform(get)
                 .andExpect(status().isOk());
@@ -292,7 +317,7 @@ public class AccessControlEndpointTest {
             });
           });
 
-      describe("When getting access control list by credential name", () -> {
+      describe("when getting access control list by credential name", () -> {
         describe("and the credential exists", () -> {
           beforeEach(() -> {
             final MockHttpServletRequestBuilder post = post("/api/v1/aces")
@@ -313,37 +338,47 @@ public class AccessControlEndpointTest {
           });
 
           it("returns the full list of access control entries for the credential", () -> {
-            mockMvc.perform(
+            MvcResult result = mockMvc.perform(
                 get("/api/v1/acls?credential_name=/cred1")
                     .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             )
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
-                .andExpect(jsonPath("$.access_control_list", hasSize(2)))
-                .andExpect(jsonPath("$.access_control_list[0].actor",
-                    equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")))
-                .andExpect(jsonPath("$.access_control_list[0].operations", contains("read", "write")))
-                .andExpect(jsonPath("$.access_control_list[1].actor", equalTo("dan")))
-                .andExpect(jsonPath("$.access_control_list[1].operations[0]", equalTo("read")));
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+            String content = result.getResponse().getContentAsString();
+            AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+            assertThat(acl.getCredentialName(), equalTo("/cred1"));
+            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("dan", asList(READ)))
+            ));
           });
 
           it("returns the full list of access control entries for the credential"
                   + " when leading '/' is missing",
               () -> {
-                mockMvc.perform(
+                MvcResult result = mockMvc.perform(
                     get("/api/v1/acls?credential_name=cred1")
                         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 )
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                    .andExpect(jsonPath("$.credential_name", equalTo("/cred1")))
-                    .andExpect(jsonPath("$.access_control_list", hasSize(2)))
-                    .andExpect(jsonPath("$.access_control_list[0].actor",
-                        equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")))
-                    .andExpect(jsonPath("$.access_control_list[0].operations", contains("read", "write")))
-                    .andExpect(jsonPath("$.access_control_list[1].actor", equalTo("dan")))
-                    .andExpect(jsonPath("$.access_control_list[1].operations[0]", equalTo("read")));
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn();
+                String content = result.getResponse().getContentAsString();
+                AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+                assertThat(acl.getCredentialName(), equalTo("/cred1"));
+                assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                    samePropertyValuesAs(
+                        new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                    samePropertyValuesAs(
+                        new AccessControlEntry("dan", asList(READ)))
+                ));
               });
         });
 
