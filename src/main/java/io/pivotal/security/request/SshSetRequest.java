@@ -27,6 +27,6 @@ public class SshSetRequest extends BaseSecretSetRequest {
   public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
     return NamedSshSecret
         .createNewVersion((NamedSshSecret) existing, getName(), this.getKeySetRequestFields(),
-            encryptor, this.getAccessControlEntries());
+            encryptor, getAccessControlEntries());
   }
 }

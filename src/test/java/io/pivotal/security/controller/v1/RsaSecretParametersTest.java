@@ -9,16 +9,17 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.RsaGenerationParameters;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class RsaSecretParametersTest {
 
-  private RsaSecretParameters subject;
+  private RsaGenerationParameters subject;
 
   {
     beforeEach(() -> {
-      subject = new RsaSecretParameters();
+      subject = new RsaGenerationParameters();
     });
 
     it("should default to a reasonable key length", () -> {

@@ -7,6 +7,7 @@ import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
 import io.pivotal.security.view.SecretKind;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
@@ -36,6 +37,10 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
     } else {
       secret = new NamedSshSecret();
       secret.copyNameReferenceFrom(existing);
+    }
+
+    if (accessControlEntries == null) {
+      accessControlEntries = new ArrayList<>();
     }
 
     List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);

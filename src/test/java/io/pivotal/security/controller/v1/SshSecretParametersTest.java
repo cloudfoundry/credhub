@@ -9,16 +9,17 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.SshGenerationParameters;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class SshSecretParametersTest {
 
-  private SshSecretParameters subject;
+  private SshGenerationParameters subject;
 
   {
     beforeEach(() -> {
-      subject = new SshSecretParameters();
+      subject = new SshGenerationParameters();
     });
 
     it("should default to a reasonable key length", () -> {

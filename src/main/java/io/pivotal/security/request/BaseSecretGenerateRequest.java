@@ -1,11 +1,11 @@
 package io.pivotal.security.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.GeneratorService;
-
-import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -16,7 +16,8 @@ import static com.google.common.collect.Lists.newArrayList;
     defaultImpl = DefaultSecretGenerateRequest.class
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class)
+    @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class),
+    @JsonSubTypes.Type(name = "ssh", value = SshGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
 

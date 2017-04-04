@@ -17,7 +17,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.RsaSecretParameters;
+import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedRsaSecret;
@@ -49,7 +49,7 @@ public class RsaGeneratorRequestTranslatorTest {
   @Autowired
   private RsaGeneratorRequestTranslator subject;
 
-  private RsaSecretParameters mockParams;
+  private RsaGenerationParameters mockParams;
 
   @Autowired
   private Encryptor encryptor;
@@ -58,7 +58,7 @@ public class RsaGeneratorRequestTranslatorTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockParams = spy(RsaSecretParameters.class);
+      mockParams = spy(RsaGenerationParameters.class);
       when(rsaSecretParametersFactory.get()).thenReturn(mockParams);
     });
 
@@ -90,7 +90,7 @@ public class RsaGeneratorRequestTranslatorTest {
 
     describe("populateEntityFromJson", () -> {
       beforeEach(() -> {
-        when(secretGenerator.generateSecret(any(RsaSecretParameters.class)))
+        when(secretGenerator.generateSecret(any(RsaGenerationParameters.class)))
             .thenReturn(new RsaKey("my-public", "my-private"));
       });
 
@@ -142,14 +142,14 @@ public class RsaGeneratorRequestTranslatorTest {
         secret.setEncryptor(encryptor);
         when(secret.getKeyLength()).thenReturn(3072);
 
-        ArgumentCaptor<RsaSecretParameters> parameterCaptor = ArgumentCaptor
-            .forClass(RsaSecretParameters.class);
+        ArgumentCaptor<RsaGenerationParameters> parameterCaptor = ArgumentCaptor
+            .forClass(RsaGenerationParameters.class);
         when(secretGenerator.generateSecret(parameterCaptor.capture()))
             .thenReturn(new RsaKey("my-new-pub", "my-new-priv"));
 
         subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
 
-        RsaSecretParameters requestParameters = parameterCaptor.getValue();
+        RsaGenerationParameters requestParameters = parameterCaptor.getValue();
         assertThat(requestParameters.getKeyLength(), equalTo(3072));
         assertThat(secret.getPublicKey(), equalTo("my-new-pub"));
         assertThat(secret.getPrivateKey(), equalTo("my-new-priv"));

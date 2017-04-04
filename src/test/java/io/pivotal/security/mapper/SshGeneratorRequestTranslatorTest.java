@@ -16,7 +16,7 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.SshSecretParameters;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSshSecret;
@@ -52,9 +52,9 @@ public class SshGeneratorRequestTranslatorTest {
   @Autowired
   private SshGeneratorRequestTranslator subject;
 
-  private SshSecretParameters mockParams;
+  private SshGenerationParameters mockParams;
 
-  private ArgumentCaptor<SshSecretParameters> secretParameterCaptor;
+  private ArgumentCaptor<SshGenerationParameters> secretParameterCaptor;
 
   @Autowired
   private Encryptor encryptor;
@@ -63,7 +63,7 @@ public class SshGeneratorRequestTranslatorTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      mockParams = spy(SshSecretParameters.class);
+      mockParams = spy(SshGenerationParameters.class);
       when(sshSecretParametersFactory.get()).thenReturn(mockParams);
     });
 
@@ -96,7 +96,7 @@ public class SshGeneratorRequestTranslatorTest {
 
     describe("populateEntityFromJson", () -> {
       beforeEach(() -> {
-        secretParameterCaptor = ArgumentCaptor.forClass(SshSecretParameters.class);
+        secretParameterCaptor = ArgumentCaptor.forClass(SshGenerationParameters.class);
         when(secretGenerator.generateSecret(secretParameterCaptor.capture()))
             .thenReturn(new SshKey("my-public", "my-private", null));
       });
@@ -167,7 +167,7 @@ public class SshGeneratorRequestTranslatorTest {
 
         subject.populateEntityFromJson(secret, jsonPath.parse("{\"regenerate\":true}"));
 
-        SshSecretParameters secretParameters = secretParameterCaptor.getValue();
+        SshGenerationParameters secretParameters = secretParameterCaptor.getValue();
         assertThat(secretParameters.getKeyLength(), equalTo(3072));
         assertThat(secretParameters.getSshComment(), equalTo("foocomment"));
       });

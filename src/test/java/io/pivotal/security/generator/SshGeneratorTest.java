@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.SshSecretParameters;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.util.CertificateFormatter;
 import java.security.KeyPair;
@@ -37,7 +37,7 @@ public class SshGeneratorTest {
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {
-        final SshKey ssh = subject.generateSecret(new SshSecretParameters());
+        final SshKey ssh = subject.generateSecret(new SshGenerationParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
@@ -47,7 +47,7 @@ public class SshGeneratorTest {
       });
 
       it("should use the provided key length", () -> {
-        SshSecretParameters sshSecretParameters = new SshSecretParameters();
+        SshGenerationParameters sshSecretParameters = new SshGenerationParameters();
         sshSecretParameters.setKeyLength(4096);
 
         subject.generateSecret(sshSecretParameters);
@@ -56,7 +56,7 @@ public class SshGeneratorTest {
       });
 
       it("should use the provided ssh comment", () -> {
-        SshSecretParameters sshSecretParameters = new SshSecretParameters();
+        SshGenerationParameters sshSecretParameters = new SshGenerationParameters();
         sshSecretParameters.setSshComment("this is an ssh comment");
 
         final SshKey ssh = subject.generateSecret(sshSecretParameters);

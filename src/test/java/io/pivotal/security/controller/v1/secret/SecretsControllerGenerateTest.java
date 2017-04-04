@@ -11,6 +11,7 @@ import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -34,10 +35,15 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.SshGenerateRequest;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -84,6 +90,9 @@ public class SecretsControllerGenerateTest {
   @MockBean
   PassayStringSecretGenerator secretGenerator;
 
+  @MockBean
+  SshGenerator sshGenerator;
+
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
@@ -104,6 +113,8 @@ public class SecretsControllerGenerateTest {
   private UUID uuid;
 
   private final String fakePassword = "generated-secret";
+  private final String publicKey = "public_key";
+  private final String privateKey = "private_key";
 
   private AuditRecordBuilder auditRecordBuilder;
 
@@ -120,6 +131,9 @@ public class SecretsControllerGenerateTest {
           .build();
       when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class)))
           .thenReturn(new Password(fakePassword));
+
+      when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
+          .thenReturn(new SshKey(publicKey, privateKey, null));
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -238,6 +252,49 @@ public class SecretsControllerGenerateTest {
 
           assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
           assertThat(newPassword.getPassword(), equalTo(fakePassword));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        });
+      });
+
+      describe("generate an ssh secret", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content(
+                  // language=JSON
+                  "{\"type\":\"ssh\",\"name\":\"" + secretName + "\",\"parameters\":null}"
+              );
+
+          response = mockMvc.perform(post);
+        });
+
+        it("should return the expected response", () -> {
+          response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("ssh"))
+              .andExpect(jsonPath("$.value.public_key").value("public_key"))
+              .andExpect(jsonPath("$.value.private_key").value("private_key"))
+              .andExpect(jsonPath("$.value.public_key_fingerprint").value(nullValue()))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
+        });
+
+        it("asks the data service to persist the secret", () -> {
+          verify(generateService, times(1))
+              .performGenerate(isA(AuditRecordBuilder.class), isA(SshGenerateRequest.class));
+          ArgumentCaptor<NamedSshSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSshSecret.class);
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+          NamedSshSecret newSsh = argumentCaptor.getValue();
+
+          assertThat(newSsh.getPublicKey(), equalTo(publicKey));
+          assertThat(newSsh.getPrivateKey(), equalTo(privateKey));
         });
 
         it("persists an audit entry", () -> {

@@ -1,22 +1,23 @@
 package io.pivotal.security.mapper;
 
-import static com.google.common.collect.ImmutableSet.of;
-
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.controller.v1.SshSecretParameters;
 import io.pivotal.security.controller.v1.SshSecretParametersFactory;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.secret.SshKey;
-import java.util.Optional;
-import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.Set;
+
+import static com.google.common.collect.ImmutableSet.of;
 
 @Component
 public class SshGeneratorRequestTranslator
     implements RequestTranslator<NamedSshSecret>,
-    SecretGeneratorRequestTranslator<SshSecretParameters, NamedSshSecret> {
+    SecretGeneratorRequestTranslator<SshGenerationParameters, NamedSshSecret> {
 
   private final SshGenerator sshGenerator;
   private final SshSecretParametersFactory sshSecretParametersFactory;
@@ -31,8 +32,8 @@ public class SshGeneratorRequestTranslator
   }
 
   @Override
-  public SshSecretParameters validRequestParameters(DocumentContext parsed, NamedSshSecret entity) {
-    SshSecretParameters sshSecretParameters = sshSecretParametersFactory.get();
+  public SshGenerationParameters validRequestParameters(DocumentContext parsed, NamedSshSecret entity) {
+    SshGenerationParameters sshSecretParameters = sshSecretParametersFactory.get();
 
     Boolean regenerate = parsed.read("$.regenerate", Boolean.class);
 
@@ -54,7 +55,7 @@ public class SshGeneratorRequestTranslator
   @Override
   public void populateEntityFromJson(NamedSshSecret namedSshSecret,
       DocumentContext documentContext) {
-    SshSecretParameters sshSecretParameters = validRequestParameters(documentContext,
+    SshGenerationParameters sshSecretParameters = validRequestParameters(documentContext,
         namedSshSecret);
     final SshKey sshSecret = sshGenerator.generateSecret(sshSecretParameters);
 

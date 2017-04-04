@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.RsaSecretParameters;
+import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.util.CertificateFormatter;
 import java.security.KeyPair;
@@ -39,7 +39,7 @@ public class RsaGeneratorTest {
 
     describe("generateSecret", () -> {
       it("should return a generated secret", () -> {
-        final RsaKey rsa = subject.generateSecret(new RsaSecretParameters());
+        final RsaKey rsa = subject.generateSecret(new RsaGenerationParameters());
 
         verify(keyPairGenerator).generateKeyPair(2048);
 
@@ -48,7 +48,7 @@ public class RsaGeneratorTest {
       });
 
       it("should use the provided key length", () -> {
-        RsaSecretParameters rsaSecretParameters = new RsaSecretParameters();
+        RsaGenerationParameters rsaSecretParameters = new RsaGenerationParameters();
         rsaSecretParameters.setKeyLength(4096);
 
         subject.generateSecret(rsaSecretParameters);
