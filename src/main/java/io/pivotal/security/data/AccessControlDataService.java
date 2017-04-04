@@ -27,12 +27,8 @@ public class AccessControlDataService {
   }
 
   public List<AccessControlEntry> getAccessControlList(String credentialName) {
-    SecretName secretName = secretDataService.findSecretName(credentialName);
-    List<AccessControlEntry> responseAces = null;
-
-    if (secretName != null) {
-      responseAces = createViewsForAllAcesWithName(secretName);
-    }
+    SecretName secretName = findSecretName(credentialName);
+    List<AccessControlEntry> responseAces = createViewsForAllAcesWithName(secretName);
 
     if (responseAces == null) {
       throw new EntryNotFoundException("error.resource_not_found");
@@ -42,7 +38,7 @@ public class AccessControlDataService {
   }
 
   public List<AccessControlEntry> setAccessControlEntries(AccessEntriesRequest request) {
-    SecretName secretName = findSecretName(request);
+    SecretName secretName = findSecretName(request.getCredentialName());
 
     List<AccessEntryData> existingAccessEntries = accessEntryRepository
         .findAllByCredentialNameUuid(secretName.getUuid());
@@ -56,13 +52,10 @@ public class AccessControlDataService {
   }
 
   public void deleteAccessControlEntries(String credentialName, String actor) {
-    int rows = 0;
-    final SecretName secretName = secretDataService.findSecretName(credentialName);
-    if (secretName != null) {
-      rows = accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
-    }
+    final SecretName secretName = findSecretName(credentialName);
+    int rows = accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
 
-    if (secretName == null || rows == 0) {
+    if (rows == 0) {
       throw new EntryNotFoundException("error.acl.not_found");
     }
   }
@@ -79,8 +72,8 @@ public class AccessControlDataService {
     accessEntryRepository.saveAndFlush(entry);
   }
 
-  private SecretName findSecretName(AccessEntriesRequest request) {
-    final SecretName secretName = secretDataService.findSecretName(request.getCredentialName());
+  private SecretName findSecretName(String credentialName) {
+    final SecretName secretName = secretDataService.findSecretName(credentialName);
 
     if (secretName == null) {
       throw new EntryNotFoundException("error.resource_not_found");
@@ -103,7 +96,7 @@ public class AccessControlDataService {
         .collect(Collectors.toList());
   }
 
-  public AccessEntryData findAccessEntryForActor(List<AccessEntryData> accessEntries,
+  private AccessEntryData findAccessEntryForActor(List<AccessEntryData> accessEntries,
       String actor) {
     Optional<AccessEntryData> temp = accessEntries.stream()
         .filter(accessEntryData -> accessEntryData.getActor().equals(actor))
