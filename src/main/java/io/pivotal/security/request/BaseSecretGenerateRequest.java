@@ -17,7 +17,8 @@ import io.pivotal.security.service.GeneratorService;
 )
 @JsonSubTypes({
     @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class),
-    @JsonSubTypes.Type(name = "ssh", value = SshGenerateRequest.class)
+    @JsonSubTypes.Type(name = "ssh", value = SshGenerateRequest.class),
+    @JsonSubTypes.Type(name = "rsa", value = RsaGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
 

@@ -2,6 +2,7 @@ package io.pivotal.security.controller.v1.secret;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fdescribe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -34,15 +35,20 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.RsaGenerateRequest;
+import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerateRequest;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
@@ -93,6 +99,9 @@ public class SecretsControllerGenerateTest {
   @MockBean
   SshGenerator sshGenerator;
 
+  @MockBean
+  RsaGenerator rsaGenerator;
+
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
@@ -134,6 +143,9 @@ public class SecretsControllerGenerateTest {
 
       when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
           .thenReturn(new SshKey(publicKey, privateKey, null));
+
+      when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
+          .thenReturn(new RsaKey(publicKey, privateKey));
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -295,6 +307,48 @@ public class SecretsControllerGenerateTest {
 
           assertThat(newSsh.getPublicKey(), equalTo(publicKey));
           assertThat(newSsh.getPrivateKey(), equalTo(privateKey));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        });
+      });
+
+      describe("generate a RSA secret", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content(
+                  // language=JSON
+                  "{\"type\":\"rsa\",\"name\":\"" + secretName + "\",\"parameters\":null}"
+              );
+
+          response = mockMvc.perform(post);
+        });
+
+        it("should return the expected response", () -> {
+          response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("rsa"))
+              .andExpect(jsonPath("$.value.public_key").value("public_key"))
+              .andExpect(jsonPath("$.value.private_key").value("private_key"))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
+        });
+
+        it("asks the data service to persist the secret", () -> {
+          verify(generateService, times(1))
+              .performGenerate(isA(AuditRecordBuilder.class), isA(RsaGenerateRequest.class));
+          ArgumentCaptor<NamedRsaSecret> argumentCaptor = ArgumentCaptor.forClass(NamedRsaSecret.class);
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+          NamedRsaSecret newRsa = argumentCaptor.getValue();
+
+          assertThat(newRsa.getPublicKey(), equalTo(publicKey));
+          assertThat(newRsa.getPrivateKey(), equalTo(privateKey));
         });
 
         it("persists an audit entry", () -> {

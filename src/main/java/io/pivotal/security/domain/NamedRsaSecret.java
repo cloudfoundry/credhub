@@ -6,6 +6,7 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.view.SecretKind;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
@@ -35,6 +36,10 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
     } else {
       secret = new NamedRsaSecret();
       secret.copyNameReferenceFrom(existing);
+    }
+
+    if (accessControlEntries == null) {
+      accessControlEntries = new ArrayList<>();
     }
 
     List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
