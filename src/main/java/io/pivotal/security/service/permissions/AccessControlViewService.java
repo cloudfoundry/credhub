@@ -2,6 +2,7 @@ package io.pivotal.security.service.permissions;
 
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,19 @@ public class AccessControlViewService {
     AccessControlListResponse response = new AccessControlListResponse();
     response.setCredentialName(credentialName);
     response.setAccessControlList(accessControlList);
+
+    return response;
+  }
+
+  public AccessControlListResponse setAccessControlEntries(AccessEntriesRequest request) {
+    String credentialName = addLeadingSlashIfMissing(request.getCredentialName());
+
+    List<AccessControlEntry> accessControlEntryList = accessControlDataService
+        .setAccessControlEntries(request);
+
+    AccessControlListResponse response = new AccessControlListResponse();
+    response.setCredentialName(credentialName);
+    response.setAccessControlList(accessControlEntryList);
 
     return response;
   }

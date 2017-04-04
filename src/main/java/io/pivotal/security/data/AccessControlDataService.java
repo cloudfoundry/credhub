@@ -7,7 +7,6 @@ import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.view.AccessControlListResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,7 +41,7 @@ public class AccessControlDataService {
     return responseAces;
   }
 
-  public AccessControlListResponse setAccessControlEntries(AccessEntriesRequest request) {
+  public List<AccessControlEntry> setAccessControlEntries(AccessEntriesRequest request) {
     SecretName secretName = findSecretName(request);
 
     List<AccessEntryData> existingAccessEntries = accessEntryRepository
@@ -53,9 +52,7 @@ public class AccessControlDataService {
           ace.getAllowedOperations());
     }
 
-    List<AccessControlEntry> responseAces = createViewsForAllAcesWithName(secretName);
-
-    return new AccessControlListResponse(secretName.getName(), responseAces);
+    return createViewsForAllAcesWithName(secretName);
   }
 
   public void deleteAccessControlEntries(String credentialName, String actor) {

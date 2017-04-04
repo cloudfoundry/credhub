@@ -33,6 +33,7 @@ import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.service.permissions.AccessControlViewService;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,17 +50,20 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @RunWith(Spectrum.class)
 public class AccessControlEntryControllerTest {
 
+  private AccessControlEntryController subject;
+  private AccessControlViewService accessControlViewService;
   private AccessControlDataService accessControlDataService;
   private MessageSource messageSource;
-  private AccessControlEntryController subject;
   private MockMvc mockMvc;
   private String errorKey = "$.error";
 
   {
     beforeEach(() -> {
+      accessControlViewService = mock(AccessControlViewService.class);
       accessControlDataService = mock(AccessControlDataService.class);
       messageSource = mock(MessageSource.class);
       subject = new AccessControlEntryController(
+          accessControlViewService,
           accessControlDataService,
           messageSource
       );
@@ -111,7 +115,7 @@ public class AccessControlEntryControllerTest {
                 new AccessControlListResponse("test-actor",
                     accessControlEntries);
 
-            when(accessControlDataService.setAccessControlEntries(any(AccessEntriesRequest.class)))
+            when(accessControlViewService.setAccessControlEntries(any(AccessEntriesRequest.class)))
                 .thenReturn(expectedResponse);
 
             MockHttpServletRequestBuilder request = post("/api/v1/aces")
@@ -125,7 +129,7 @@ public class AccessControlEntryControllerTest {
 
             ArgumentCaptor<AccessEntriesRequest> captor = ArgumentCaptor
                 .forClass(AccessEntriesRequest.class);
-            verify(accessControlDataService, times(1)).setAccessControlEntries(captor.capture());
+            verify(accessControlViewService, times(1)).setAccessControlEntries(captor.capture());
 
             AccessEntriesRequest actualRequest = captor.getValue();
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));

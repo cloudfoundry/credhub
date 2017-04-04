@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.service.permissions.AccessControlViewService;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -28,14 +29,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/api/v1/aces", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AccessControlEntryController {
 
-  private final MessageSourceAccessor messageSourceAccessor;
+  private AccessControlViewService accessControlViewService;
   private AccessControlDataService accessControlDataService;
+  private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   public AccessControlEntryController(
+      AccessControlViewService accessControlViewService,
       AccessControlDataService accessControlDataService,
       MessageSource messageSource
   ) {
+    this.accessControlViewService = accessControlViewService;
     this.accessControlDataService = accessControlDataService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
@@ -49,7 +53,8 @@ public class AccessControlEntryController {
       ResponseError error = constructError(getErrorMessage(errors));
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
-      return wrapResponse(accessControlDataService.setAccessControlEntries(accessEntriesRequest),
+      return wrapResponse(
+          accessControlViewService.setAccessControlEntries(accessEntriesRequest),
           HttpStatus.OK);
     }
   }

@@ -25,7 +25,6 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
 import java.util.List;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,10 +74,9 @@ public class AccessControlDataServiceTest {
       });
     });
 
-    describe("setAccessControlEntry", () -> {
+    describe("#setAccessControlEntries", () -> {
       describe("when given an existing ACE for a resource", () -> {
         beforeEach(() -> {
-
           seedDatabase();
 
           List<AccessControlEntry> newAces = singletonList(
@@ -88,16 +86,12 @@ public class AccessControlDataServiceTest {
         });
 
         it("returns the acl for the given resource", () -> {
-          AccessControlListResponse response = subject.setAccessControlEntries(request);
+          List<AccessControlEntry> response = subject.setAccessControlEntries(request);
 
-          assertThat(response.getCredentialName(), equalTo("/lightsaber"));
-
-          assertThat(response.getAccessControlList(), hasItems(
+          assertThat(response, containsInAnyOrder(
               allOf(hasProperty("actor", equalTo("Luke")),
                   hasProperty("allowedOperations",
-                      hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))
-          ));
-          assertThat(response.getAccessControlList(), hasItems(
+                      hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE))),
               allOf(hasProperty("actor", equalTo("Leia")),
                   hasProperty("allowedOperations", hasItems(AccessControlOperation.READ)))));
         });
@@ -113,14 +107,13 @@ public class AccessControlDataServiceTest {
         });
 
         it("returns the acl for the given resource", () -> {
-          AccessControlListResponse response = subject.setAccessControlEntries(request);
+          List<AccessControlEntry> response = subject.setAccessControlEntries(request);
 
-          assertThat(response.getCredentialName(), equalTo("/lightsaber2"));
-          assertThat(response.getAccessControlList().size(), equalTo(1));
-          assertThat(response.getAccessControlList().get(0).getActor(), equalTo("Luke"));
-          assertThat(response.getAccessControlList().get(0).getAllowedOperations().size(),
+          assertThat(response.size(), equalTo(1));
+          assertThat(response.get(0).getActor(), equalTo("Luke"));
+          assertThat(response.get(0).getAllowedOperations().size(),
               equalTo(1));
-          assertThat(response.getAccessControlList().get(0).getAllowedOperations(),
+          assertThat(response.get(0).getAllowedOperations(),
               hasItem(AccessControlOperation.READ));
         });
       });
