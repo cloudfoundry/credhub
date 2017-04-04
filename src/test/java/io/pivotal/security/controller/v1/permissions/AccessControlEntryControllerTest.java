@@ -27,7 +27,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
@@ -52,7 +51,6 @@ public class AccessControlEntryControllerTest {
 
   private AccessControlEntryController subject;
   private AccessControlViewService accessControlViewService;
-  private AccessControlDataService accessControlDataService;
   private MessageSource messageSource;
   private MockMvc mockMvc;
   private String errorKey = "$.error";
@@ -60,11 +58,9 @@ public class AccessControlEntryControllerTest {
   {
     beforeEach(() -> {
       accessControlViewService = mock(AccessControlViewService.class);
-      accessControlDataService = mock(AccessControlDataService.class);
       messageSource = mock(MessageSource.class);
       subject = new AccessControlEntryController(
           accessControlViewService,
-          accessControlDataService,
           messageSource
       );
 
@@ -148,14 +144,14 @@ public class AccessControlEntryControllerTest {
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
-            verify(accessControlDataService, times(1))
+            verify(accessControlViewService, times(1))
                 .deleteAccessControlEntries("test-name", "test-actor");
           });
         });
-        describe("when accessControlDataService.delete throws a NotFound exception", () -> {
+        describe("when delete throws a NotFound exception", () -> {
           beforeEach(() -> {
             doThrow(new EntryNotFoundException("error.acl.not_found"))
-                .when(accessControlDataService)
+                .when(accessControlViewService)
                 .deleteAccessControlEntries("fake-credential", "some-actor");
 
             when(messageSource.getMessage(eq("error.acl.not_found"), eq(null), any(Locale.class)))

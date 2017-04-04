@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1.permissions;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.service.permissions.AccessControlViewService;
@@ -30,17 +29,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccessControlEntryController {
 
   private AccessControlViewService accessControlViewService;
-  private AccessControlDataService accessControlDataService;
   private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   public AccessControlEntryController(
       AccessControlViewService accessControlViewService,
-      AccessControlDataService accessControlDataService,
       MessageSource messageSource
   ) {
     this.accessControlViewService = accessControlViewService;
-    this.accessControlDataService = accessControlDataService;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
@@ -65,7 +61,7 @@ public class AccessControlEntryController {
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
-    accessControlDataService.deleteAccessControlEntries(credentialName, actor);
+    accessControlViewService.deleteAccessControlEntries(credentialName, actor);
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)

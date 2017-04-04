@@ -55,8 +55,6 @@ public class AccessControlDataServiceTest {
 
           assertThat(accessControlEntries, hasSize(2));
 
-          AccessControlEntry accessControlEntry = accessControlEntries.get(0);
-
           assertThat(accessControlEntries, containsInAnyOrder(
               allOf(hasProperty("actor", equalTo("Luke")),
                   hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
@@ -146,7 +144,7 @@ public class AccessControlDataServiceTest {
 
         itThrows("when credential does exist, but the ACE does not", EntryNotFoundException.class,
             () -> {
-              subject.deleteAccessControlEntries("/lightsaber", "HelloKitty");
+              subject.deleteAccessControlEntries("/lightsaber", "HelloKity");
             });
       });
     });

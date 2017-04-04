@@ -10,6 +10,8 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
@@ -127,6 +129,15 @@ public class AccessControlViewServiceTest {
         AccessControlEntry entry2 = accessControlEntries.get(1);
         assertThat(entry2.getActor(), equalTo("someone-else"));
         assertThat(entry2.getAllowedOperations(), contains(equalTo(AccessControlOperation.READ)));
+      });
+    });
+
+    describe("#deleteAccessControlListResponse", () -> {
+      it("should delete the actor's ACEs for the specified credential", () -> {
+        subject.deleteAccessControlEntries("/test-credential", "test-actor");
+
+        verify(accessControlDataService, times(1)).deleteAccessControlEntries("/test-credential",
+            "test-actor");
       });
     });
   }

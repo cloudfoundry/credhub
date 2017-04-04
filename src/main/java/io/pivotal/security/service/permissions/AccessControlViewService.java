@@ -42,6 +42,10 @@ public class AccessControlViewService {
     return response;
   }
 
+  public void deleteAccessControlEntries(String credentialName, String actor) {
+    accessControlDataService.deleteAccessControlEntries(credentialName, actor);
+  }
+
   private static String addLeadingSlashIfMissing(String name) {
     return StringUtils.prependIfMissing(name, "/");
   }
