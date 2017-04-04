@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="FindBugs-IDEA">
+    <analysisEffort>max</analysisEffort>
+    <plugins>
+      <plugin id="com.h3xstream.findsecbugs" enabled="true" bundled="true" />
+      <plugin id="com.mebigfatguy.fbcontrib" enabled="true" bundled="true" />
+    </plugins>
+  </component>
+</project>
