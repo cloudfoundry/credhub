@@ -32,7 +32,7 @@ import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.service.permissions.AccessControlViewService;
+import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,17 +50,17 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 public class AccessControlEntryControllerTest {
 
   private AccessControlEntryController subject;
-  private AccessControlViewService accessControlViewService;
+  private AccessControlHandler accessControlHandler;
   private MessageSource messageSource;
   private MockMvc mockMvc;
   private String errorKey = "$.error";
 
   {
     beforeEach(() -> {
-      accessControlViewService = mock(AccessControlViewService.class);
+      accessControlHandler = mock(AccessControlHandler.class);
       messageSource = mock(MessageSource.class);
       subject = new AccessControlEntryController(
-          accessControlViewService,
+          accessControlHandler,
           messageSource
       );
 
@@ -111,7 +111,7 @@ public class AccessControlEntryControllerTest {
                 new AccessControlListResponse("test-actor",
                     accessControlEntries);
 
-            when(accessControlViewService.setAccessControlEntries(any(AccessEntriesRequest.class)))
+            when(accessControlHandler.setAccessControlEntries(any(AccessEntriesRequest.class)))
                 .thenReturn(expectedResponse);
 
             MockHttpServletRequestBuilder request = post("/api/v1/aces")
@@ -125,7 +125,7 @@ public class AccessControlEntryControllerTest {
 
             ArgumentCaptor<AccessEntriesRequest> captor = ArgumentCaptor
                 .forClass(AccessEntriesRequest.class);
-            verify(accessControlViewService, times(1)).setAccessControlEntries(captor.capture());
+            verify(accessControlHandler, times(1)).setAccessControlEntries(captor.capture());
 
             AccessEntriesRequest actualRequest = captor.getValue();
             assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
@@ -144,14 +144,14 @@ public class AccessControlEntryControllerTest {
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
-            verify(accessControlViewService, times(1))
+            verify(accessControlHandler, times(1))
                 .deleteAccessControlEntries("test-name", "test-actor");
           });
         });
         describe("when delete throws a NotFound exception", () -> {
           beforeEach(() -> {
             doThrow(new EntryNotFoundException("error.acl.not_found"))
-                .when(accessControlViewService)
+                .when(accessControlHandler)
                 .deleteAccessControlEntries("fake-credential", "some-actor");
 
             when(messageSource.getMessage(eq("error.acl.not_found"), eq(null), any(Locale.class)))

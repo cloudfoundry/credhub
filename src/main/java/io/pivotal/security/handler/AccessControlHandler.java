@@ -1,4 +1,4 @@
-package io.pivotal.security.service.permissions;
+package io.pivotal.security.handler;
 
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.request.AccessControlEntry;
@@ -10,11 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AccessControlViewService {
+public class AccessControlHandler {
   private final AccessControlDataService accessControlDataService;
 
   @Autowired
-  AccessControlViewService(AccessControlDataService accessControlDataService) {
+  AccessControlHandler(AccessControlDataService accessControlDataService) {
     this.accessControlDataService = accessControlDataService;
   }
 

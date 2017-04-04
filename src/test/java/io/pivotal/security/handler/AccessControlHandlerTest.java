@@ -1,4 +1,4 @@
-package io.pivotal.security.service.permissions;
+package io.pivotal.security.handler;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -25,14 +25,14 @@ import java.util.List;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
-public class AccessControlViewServiceTest {
-  private AccessControlViewService subject;
+public class AccessControlHandlerTest {
+  private AccessControlHandler subject;
   private AccessControlDataService accessControlDataService;
 
   {
     beforeEach(() -> {
       accessControlDataService = mock(AccessControlDataService.class);
-      subject = new AccessControlViewService(accessControlDataService);
+      subject = new AccessControlHandler(accessControlDataService);
     });
 
     describe("#getAccessControlListResponse", () -> {

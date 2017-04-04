@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.service.permissions.AccessControlViewService;
+import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -28,15 +28,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/api/v1/aces", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AccessControlEntryController {
 
-  private AccessControlViewService accessControlViewService;
+  private AccessControlHandler accessControlHandler;
   private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   public AccessControlEntryController(
-      AccessControlViewService accessControlViewService,
+      AccessControlHandler accessControlHandler,
       MessageSource messageSource
   ) {
-    this.accessControlViewService = accessControlViewService;
+    this.accessControlHandler = accessControlHandler;
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
@@ -50,7 +50,7 @@ public class AccessControlEntryController {
       return wrapResponse(error, HttpStatus.BAD_REQUEST);
     } else {
       return wrapResponse(
-          accessControlViewService.setAccessControlEntries(accessEntriesRequest),
+          accessControlHandler.setAccessControlEntries(accessEntriesRequest),
           HttpStatus.OK);
     }
   }
@@ -61,7 +61,7 @@ public class AccessControlEntryController {
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor
   ) {
-    accessControlViewService.deleteAccessControlEntries(credentialName, actor);
+    accessControlHandler.deleteAccessControlEntries(credentialName, actor);
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
