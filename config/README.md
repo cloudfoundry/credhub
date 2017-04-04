@@ -4,7 +4,7 @@ This directory holds configuration files intended to support our development env
 
 ## Checkstyle
 
-Should be straightforward.
+Temporarily empty, until we can ensure we can distribute the configs.
 
 ## FindBugs
 
