@@ -27,13 +27,7 @@ public class AccessControlDataService {
 
   public List<AccessControlEntry> getAccessControlList(String credentialName) {
     SecretName secretName = findSecretName(credentialName);
-    List<AccessControlEntry> responseAces = createViewsForAllAcesWithName(secretName);
-
-    if (responseAces == null) {
-      throw new EntryNotFoundException("error.resource_not_found");
-    }
-
-    return responseAces;
+    return createViewsForAllAcesWithName(secretName);
   }
 
   public List<AccessControlEntry> setAccessControlEntries(
@@ -55,11 +49,7 @@ public class AccessControlDataService {
 
   public void deleteAccessControlEntries(String credentialName, String actor) {
     final SecretName secretName = findSecretName(credentialName);
-    int rows = accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
-
-    if (rows == 0) {
-      throw new EntryNotFoundException("error.acl.not_found");
-    }
+    accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
   }
 
   private void upsertAccessEntryOperations(SecretName secretName,

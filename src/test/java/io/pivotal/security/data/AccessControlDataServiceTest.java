@@ -142,10 +142,12 @@ public class AccessControlDataServiceTest {
           subject.deleteAccessControlEntries("/some-thing-that-is-not-here", "Luke");
         });
 
-        itThrows("when credential does exist, but the ACE does not", EntryNotFoundException.class,
-            () -> {
-              subject.deleteAccessControlEntries("/lightsaber", "HelloKity");
-            });
+        describe("when the credential exists, but the ACE does not", () -> {
+          it("should not throw", () -> {
+            subject.deleteAccessControlEntries("/lightsaber", "HelloKity");
+            // passes
+          });
+        });
       });
     });
 
