@@ -49,6 +49,62 @@ public class UserContext {
     }
   }
 
+  public String getUserName() {
+    return userName;
+  }
+
+  public String getUserId() {
+    return userId;
+  }
+
+  public String getIssuer() {
+    return issuer;
+  }
+
+  public long getValidFrom() {
+    return validFrom;
+  }
+
+  public long getValidUntil() {
+    return validUntil;
+  }
+
+  public String getClientId() {
+    return clientId;
+  }
+
+  public String getScope() {
+    return scope;
+  }
+
+  public String getGrantType() {
+    return grantType;
+  }
+
+  public String getAuthMethod() {
+    return authMethod;
+  }
+
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return authorities;
+  }
+
+  public String getAclUser() {
+    if (this.getAuthMethod() == AUTH_METHOD_UAA) {
+      if (UAA_PASSWORD_GRANT_TYPE.equals(this.getGrantType())) {
+        return UAA_USER_ACTOR_PREFIX + ":" + this.getUserId();
+      } else if (UAA_CLIENT_CREDENTIALS_GRANT_TYPE.equals(this.getGrantType())) {
+        return UAA_CLIENT_ACTOR_PREFIX + ":" + this.getClientId();
+      }
+    }
+
+    if (this.getAuthMethod() == AUTH_METHOD_MUTUAL_TLS) {
+      return MTLS_ACTOR_PREFIX + ":" + parseAppIdentifier(this.getClientId());
+    }
+
+    return null;
+  }
+
   private static UserContext fromOauth(OAuth2Authentication authentication, String token,
       ResourceServerTokenServices tokenServices) {
     UserContext user = new UserContext();
@@ -105,62 +161,6 @@ public class UserContext {
   private static long claimValueAsLong(Map<String, Object> additionalInformation,
       String claimName) {
     return ((Number) additionalInformation.get(claimName)).longValue();
-  }
-
-  public String getUserName() {
-    return userName;
-  }
-
-  public String getUserId() {
-    return userId;
-  }
-
-  public String getIssuer() {
-    return issuer;
-  }
-
-  public long getValidFrom() {
-    return validFrom;
-  }
-
-  public long getValidUntil() {
-    return validUntil;
-  }
-
-  public String getClientId() {
-    return clientId;
-  }
-
-  public String getScope() {
-    return scope;
-  }
-
-  public String getGrantType() {
-    return grantType;
-  }
-
-  public String getAuthMethod() {
-    return authMethod;
-  }
-
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    return authorities;
-  }
-
-  public String getAclUser() {
-    if (this.getAuthMethod() == AUTH_METHOD_UAA) {
-      if (UAA_PASSWORD_GRANT_TYPE.equals(this.getGrantType())) {
-        return UAA_USER_ACTOR_PREFIX + ":" + this.getUserId();
-      } else if (UAA_CLIENT_CREDENTIALS_GRANT_TYPE.equals(this.getGrantType())) {
-        return UAA_CLIENT_ACTOR_PREFIX + ":" + this.getClientId();
-      }
-    }
-
-    if (this.getAuthMethod() == AUTH_METHOD_MUTUAL_TLS) {
-      return MTLS_ACTOR_PREFIX + ":" + parseAppIdentifier(this.getClientId());
-    }
-
-    return null;
   }
 
   private String parseAppIdentifier(String subjectDn) {
