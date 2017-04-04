@@ -83,7 +83,7 @@ public class AccessControlViewServiceTest {
           AccessEntriesRequest request = new AccessEntriesRequest("test-credential", newArrayList());
 
           List<AccessControlEntry> accessControlList = newArrayList();
-          when(accessControlDataService.setAccessControlEntries(any(AccessEntriesRequest.class)))
+          when(accessControlDataService.setAccessControlEntries(any(String.class), any(List.class)))
               .thenReturn(accessControlList);
 
           AccessControlListResponse response = subject.setAccessControlEntries(request);
@@ -106,7 +106,7 @@ public class AccessControlViewServiceTest {
         List<AccessControlEntry> expectedControlList = newArrayList(accessControlEntry, preexistingAccessControlEntry);
 
         AccessEntriesRequest request = new AccessEntriesRequest("/test-credential", accessControlList);
-        when(accessControlDataService.setAccessControlEntries(request))
+        when(accessControlDataService.setAccessControlEntries("/test-credential", accessControlList))
             .thenReturn(expectedControlList);
 
 

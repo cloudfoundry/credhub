@@ -23,7 +23,6 @@ import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import java.util.List;
 import org.junit.runner.RunWith;
@@ -42,7 +41,7 @@ public class AccessControlDataServiceTest {
   @Autowired
   private SecretDataService secretDataService;
 
-  private AccessEntriesRequest request;
+  private List<AccessControlEntry> aces;
 
   {
     wireAndUnwire(this);
@@ -79,14 +78,12 @@ public class AccessControlDataServiceTest {
         beforeEach(() -> {
           seedDatabase();
 
-          List<AccessControlEntry> newAces = singletonList(
+          aces = singletonList(
               new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
-
-          request = new AccessEntriesRequest("/lightsaber", newAces);
         });
 
         it("returns the acl for the given resource", () -> {
-          List<AccessControlEntry> response = subject.setAccessControlEntries(request);
+          List<AccessControlEntry> response = subject.setAccessControlEntries("/lightsaber", aces);
 
           assertThat(response, containsInAnyOrder(
               allOf(hasProperty("actor", equalTo("Luke")),
@@ -100,14 +97,12 @@ public class AccessControlDataServiceTest {
       describe("when given a new ACE for a resource", () -> {
         beforeEach(() -> {
           secretDataService.save(new NamedValueSecret("lightsaber2"));
-          List<AccessControlEntry> newAces = singletonList(
+          aces = singletonList(
               new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
-
-          request = new AccessEntriesRequest("/lightsaber2", newAces);
         });
 
         it("returns the acl for the given resource", () -> {
-          List<AccessControlEntry> response = subject.setAccessControlEntries(request);
+          List<AccessControlEntry> response = subject.setAccessControlEntries("lightsaber2", aces);
 
           assertThat(response.size(), equalTo(1));
           assertThat(response.get(0).getActor(), equalTo("Luke"));
@@ -163,17 +158,15 @@ public class AccessControlDataServiceTest {
     secretDataService.save(new NamedValueSecret("lightsaber"));
 
     subject.setAccessControlEntries(
-        new AccessEntriesRequest(
-            "lightsaber",
-            singletonList(new AccessControlEntry("Luke",
-                singletonList(AccessControlOperation.WRITE)))
-        ));
+        "lightsaber",
+        singletonList(new AccessControlEntry("Luke",
+            singletonList(AccessControlOperation.WRITE)))
+    );
 
     subject.setAccessControlEntries(
-        new AccessEntriesRequest(
-            "lightsaber",
-            singletonList(new AccessControlEntry("Leia",
-                singletonList(AccessControlOperation.READ)))
-        ));
+        "lightsaber",
+        singletonList(new AccessControlEntry("Leia",
+            singletonList(AccessControlOperation.READ)))
+    );
   }
 }

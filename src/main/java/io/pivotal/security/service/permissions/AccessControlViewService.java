@@ -33,7 +33,7 @@ public class AccessControlViewService {
     String credentialName = addLeadingSlashIfMissing(request.getCredentialName());
 
     List<AccessControlEntry> accessControlEntryList = accessControlDataService
-        .setAccessControlEntries(request);
+        .setAccessControlEntries(credentialName, request.getAccessControlEntries());
 
     AccessControlListResponse response = new AccessControlListResponse();
     response.setCredentialName(credentialName);
