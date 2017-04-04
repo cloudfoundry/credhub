@@ -1,16 +1,16 @@
 package io.pivotal.security.request;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.google.common.collect.Lists.newArrayList;
+import java.util.stream.Collectors;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -36,6 +36,14 @@ public abstract class BaseSecretSetRequest extends BaseSecretRequest {
 
   public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
     this.accessControlEntries = accessControlEntries;
+  }
+
+  public void addCurrentUser(AccessControlEntry entry) {
+    accessControlEntries = accessControlEntries
+        .stream()
+        .filter(ace -> !(ace.getActor().equals(entry.getActor())))
+        .collect(Collectors.toList());
+    accessControlEntries.add(entry);
   }
 
   @JsonIgnore

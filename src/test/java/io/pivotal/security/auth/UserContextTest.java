@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import io.pivotal.security.CredentialManagerApp;
@@ -33,6 +34,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+
+//not using Spectrum runner, since Spring Context was not coming up correctly with it :(
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -46,7 +49,7 @@ public class UserContextTest {
 
   @Test
   public void fromAuthenication_readsFromOAuthDetails() throws Exception {
-    OAuth2Authentication oauth2Authentication = setupOAuthMock();
+    OAuth2Authentication oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE");
     UserContext context = UserContext
         .fromAuthentication(oauth2Authentication, null, tokenServicesMock);
 
@@ -64,7 +67,7 @@ public class UserContextTest {
   @Test
   public void fromAuthentication_handlesAccessDeniedToken() throws Exception {
 
-    OAuth2Authentication oauth2Authentication = setupOAuthMock();
+    OAuth2Authentication oauth2Authentication = setupOAuthMock("TEST_GRANT_TYPE");
     UserContext context = UserContext
         .fromAuthentication(oauth2Authentication, INVALID_SCOPE_KEY_JWT, realTokenServices);
 
@@ -87,14 +90,56 @@ public class UserContextTest {
     assertThat(context.getScope(), equalTo(null));
     assertThat(context.getValidFrom(), equalTo(1413495264L));
     assertThat(context.getValidUntil(), equalTo(1413538464L));
-    assertThat(context.getClientId(), equalTo("some name"));
+    assertThat(context.getClientId(), equalTo("CN=test_cn,OU=app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
     assertThat(context.getAuthMethod(), equalTo(AUTH_METHOD_MUTUAL_TLS));
   }
 
+  @Test
+  public void getAclUser_fromOAuthPasswordGrant_returnsTheUserGuid() throws Exception {
+    OAuth2Authentication oauth2Authentication = setupOAuthMock("password");
+    UserContext context = UserContext.fromAuthentication(oauth2Authentication,
+        null,
+        tokenServicesMock);
 
-  private OAuth2Authentication setupOAuthMock() {
+    assertThat(context.getAclUser(),
+        equalTo("uaa-user:TEST_USER_ID"));
+  }
+
+  @Test
+  public void getAclUser_fromOAuthClientGrant_returnsTheClientId() throws Exception {
+    OAuth2Authentication oauth2Authentication = setupOAuthMock("client_credentials");
+    UserContext context = UserContext.fromAuthentication(oauth2Authentication,
+        null,
+        tokenServicesMock);
+
+    assertThat(context.getAclUser(),
+        equalTo("uaa-client:TEST_CLIENT_ID"));
+  }
+
+  @Test
+  public void getAclUser_fromMtlsCertificate_returnsAppGuid() throws Exception {
+    final PreAuthenticatedAuthenticationToken authenticationToken = setupMtlsMock();
+    UserContext context = UserContext.fromAuthentication(authenticationToken,
+        null,
+        tokenServicesMock);
+
+    assertThat(context.getAclUser(),
+        equalTo("mtls:app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
+  }
+
+
+  private OAuth2Authentication setupOAuthMock(String grantType) {
     OAuth2Authentication authentication = mock(OAuth2Authentication.class);
-    OAuth2Request oauth2Request = mock(OAuth2Request.class);
+    OAuth2Request oauth2Request = spy(new OAuth2Request(
+        null,
+        "TEST_CLIENT_ID",
+        null,
+        false,
+        null,
+        null,
+        null,
+        null,
+        null));
     OAuth2AccessToken token = mock(OAuth2AccessToken.class);
     OAuth2AuthenticationDetails authDetails = mock(OAuth2AuthenticationDetails.class);
 
@@ -108,7 +153,7 @@ public class UserContextTest {
     scopes.add("scope1");
     scopes.add("scope2");
 
-    when(oauth2Request.getGrantType()).thenReturn("TEST_GRANT_TYPE");
+    when(oauth2Request.getGrantType()).thenReturn(grantType);
     when(authentication.getDetails()).thenReturn(authDetails);
     when(authDetails.getTokenValue()).thenReturn("tokenValue");
 
@@ -128,7 +173,7 @@ public class UserContextTest {
     PreAuthenticatedAuthenticationToken token = mock(PreAuthenticatedAuthenticationToken.class);
 
     when(certificate.getSubjectDN()).thenReturn(principal);
-    when(principal.getName()).thenReturn("some name");
+    when(principal.getName()).thenReturn("CN=test_cn,OU=app:e054393e-c9c3-478b-9047-e6d05c307bf2");
 
     when(certificate.getNotAfter()).thenReturn(Date.from(Instant.ofEpochSecond(1413538464L)));
     when(certificate.getNotBefore()).thenReturn(Date.from(Instant.ofEpochSecond(1413495264L)));

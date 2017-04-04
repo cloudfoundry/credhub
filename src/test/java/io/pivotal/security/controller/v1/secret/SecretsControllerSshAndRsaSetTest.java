@@ -4,7 +4,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -64,7 +64,7 @@ public class SecretsControllerSshAndRsaSetTest {
           obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -93,7 +93,7 @@ public class SecretsControllerSshAndRsaSetTest {
       describe("when the value contains unknown keys", () -> {
         it("should return an error", () -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -114,7 +114,7 @@ public class SecretsControllerSshAndRsaSetTest {
       describe("when all values are empty", () -> {
         it("should return an error message", () -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -133,7 +133,7 @@ public class SecretsControllerSshAndRsaSetTest {
       describe("when the public key is not a valid key", () -> {
         it("should return the secret without the fingerprint", () -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -158,7 +158,7 @@ public class SecretsControllerSshAndRsaSetTest {
           obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"

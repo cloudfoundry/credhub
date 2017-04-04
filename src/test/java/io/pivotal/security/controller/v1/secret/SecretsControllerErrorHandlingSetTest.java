@@ -26,7 +26,7 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
@@ -91,7 +91,7 @@ public class SecretsControllerErrorHandlingSetTest {
             ).when(secretDataService).findMostRecent(secretName);
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -113,7 +113,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when name is empty", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -134,7 +134,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when name contains double slash (//)", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -157,7 +157,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when name ends with a slash", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -180,7 +180,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when name is missing", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -200,7 +200,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when type is missing", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -221,7 +221,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when type is blank", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -243,7 +243,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when type unknown", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -265,7 +265,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns 400 when value is missing", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -285,7 +285,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns an error message when an unknown top-level key is present", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -314,7 +314,7 @@ public class SecretsControllerErrorHandlingSetTest {
                 "  \"value\":\"THIS REQUEST some value\"" +
                 "}";
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content(malformedJson);
@@ -335,7 +335,7 @@ public class SecretsControllerErrorHandlingSetTest {
                 .when(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
@@ -356,7 +356,7 @@ public class SecretsControllerErrorHandlingSetTest {
                       "  \"value\":\"[]\"" +
                       "}";
               final MockHttpServletRequestBuilder post = put("/api/v1/data")
-                      .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                       .accept(APPLICATION_JSON)
                       .contentType(APPLICATION_JSON)
                       .content(malformedJson);
@@ -379,7 +379,7 @@ public class SecretsControllerErrorHandlingSetTest {
                       "  \"value\":\"[\"some\" \"key\"]\"" +
                       "}";
               final MockHttpServletRequestBuilder post = put("/api/v1/data")
-                      .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                       .accept(APPLICATION_JSON)
                       .contentType(APPLICATION_JSON)
                       .content(malformedJson);
@@ -409,7 +409,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
       it("should return 400 when trying to update a secret with a mismatching type", () -> {
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{" +
@@ -429,7 +429,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
   private void putSecretInDatabase(String name, String value) throws Exception {
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +

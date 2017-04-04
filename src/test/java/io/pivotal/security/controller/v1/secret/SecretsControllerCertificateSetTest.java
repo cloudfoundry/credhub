@@ -4,7 +4,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -57,7 +57,7 @@ public class SecretsControllerCertificateSetTest {
       describe("when required values are passed", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -100,7 +100,7 @@ public class SecretsControllerCertificateSetTest {
             ()
                 -> {
               final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                  .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                   .accept(APPLICATION_JSON)
                   .contentType(APPLICATION_JSON)
                   .content("{"
@@ -121,7 +121,7 @@ public class SecretsControllerCertificateSetTest {
       describe("when the value is an empty hash", () -> {
         it("should return an error message", () -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -140,7 +140,7 @@ public class SecretsControllerCertificateSetTest {
       describe("when the value contains unknown keys", () -> {
         it("should return an error", () -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"

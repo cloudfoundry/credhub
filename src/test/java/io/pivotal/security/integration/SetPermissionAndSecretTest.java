@@ -1,8 +1,29 @@
 package io.pivotal.security.integration;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
+import static io.pivotal.security.util.X509TestUtil.cert;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.x509;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import javax.servlet.Filter;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,24 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.Filter;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test",
@@ -54,7 +57,99 @@ public class SetPermissionAndSecretTest {
     });
 
     describe("#put", () -> {
-      describe("with a new secret", () -> {
+      describe("with a secret and no ace", () -> {
+        describe("and UAA authentication", () -> {
+          describe("and a password grant", () -> {
+            it("should set the secret giving current user read and write permission", () -> {
+              String requestBody = "{\n"
+                  + "  \"type\":\"password\",\n"
+                  + "  \"name\":\"/test-password\",\n"
+                  + "  \"value\":\"ORIGINAL-VALUE\""
+                  + "}";
+
+              mockMvc.perform(put("/api/v1/data")
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+                  .accept(APPLICATION_JSON)
+                  .contentType(APPLICATION_JSON)
+                  .content(requestBody))
+
+                  .andExpect(status().isOk())
+                  .andExpect(jsonPath("$.type", equalTo("password")));
+
+              mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+                  .andDo(print())
+                  .andExpect(status().isOk())
+                  .andExpect(jsonPath("$.credential_name").value("/test-password"))
+                  .andExpect(jsonPath("$.access_control_list[0].actor")
+                      .value("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"))
+                  .andExpect(jsonPath("$.access_control_list[0].operations[0]").value("read"))
+                  .andExpect(jsonPath("$.access_control_list[0].operations[1]").value("write"));
+            });
+          });
+
+          describe("and a client credential", () -> {
+            it("should set the secret giving current user read and write permission", () -> {
+              String requestBody = "{\n"
+                  + "  \"type\":\"password\",\n"
+                  + "  \"name\":\"/test-password\",\n"
+                  + "  \"value\":\"ORIGINAL-VALUE\""
+                  + "}";
+
+              mockMvc.perform(put("/api/v1/data")
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+                  .accept(APPLICATION_JSON)
+                  .contentType(APPLICATION_JSON)
+                  .content(requestBody))
+
+                  .andExpect(status().isOk())
+                  .andExpect(jsonPath("$.type", equalTo("password")));
+
+              mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN))
+                  .andDo(print())
+                  .andExpect(status().isOk())
+                  .andExpect(jsonPath("$.credential_name").value("/test-password"))
+                  .andExpect(jsonPath("$.access_control_list[0].actor")
+                      .value("uaa-client:credhub_test"))
+                  .andExpect(jsonPath("$.access_control_list[0].operations[0]").value("read"))
+                  .andExpect(jsonPath("$.access_control_list[0].operations[1]").value("write"));
+            });
+          });
+        });
+
+        describe("and mTLS authentication", () -> {
+          it("should set the secret giving current user read and write permission", () -> {
+            // language=JSON
+            String requestBody = "{\n"
+                + "  \"type\":\"password\",\n"
+                + "  \"name\":\"/test-password\",\n"
+                + "  \"value\":\"ORIGINAL-VALUE\""
+                + "}";
+
+            mockMvc.perform(put("/api/v1/data")
+                .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT)))
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content(requestBody))
+
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type", equalTo("password")));
+
+            mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
+                .with(x509(cert(SIMPLE_SELF_SIGNED_TEST_CERT))))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.credential_name").value("/test-password"))
+                .andExpect(jsonPath("$.access_control_list[0].actor")
+                    .value("mtls:app:b67446e5-b2b0-4648-a0d0-772d3d399dcb"))
+                .andExpect(jsonPath("$.access_control_list[0].operations[0]").value("read"))
+                .andExpect(jsonPath("$.access_control_list[0].operations[1]").value("write"));
+          });
+        });
+      });
+
+      describe("with a new secret and an ace", () -> {
         it("should allow the secret and ACEs to be created", () -> {
           // language=JSON
           String requestBody = "{\n"
@@ -63,13 +158,13 @@ public class SetPermissionAndSecretTest {
               + "  \"value\":\"ORIGINAL-VALUE\",\n"
               + "  \"overwrite\":true, \n"
               + "  \"access_control_entries\": [{\n"
-              + "    \"actor\": \"app1-guid\",\n"
+              + "    \"actor\": \"mtls:app:app1-guid\",\n"
               + "    \"operations\": [\"read\"]\n"
               + "  }]\n"
               + "}";
 
           mockMvc.perform(put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content(requestBody))
@@ -78,16 +173,20 @@ public class SetPermissionAndSecretTest {
               .andExpect(jsonPath("$.type", equalTo("password")));
 
           mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andDo(print())
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/test-password"))
-              .andExpect(jsonPath("$.access_control_list[0].actor").value("app1-guid"))
-              .andExpect(jsonPath("$.access_control_list[0].operations[0]").value("read"));
+              .andExpect(jsonPath("$.access_control_list[0].actor").value("mtls:app:app1-guid"))
+              .andExpect(jsonPath("$.access_control_list[0].operations").value(contains("read")))
+              .andExpect(jsonPath("$.access_control_list[1].actor")
+                  .value("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"))
+              .andExpect(
+                  jsonPath("$.access_control_list[1].operations").value(contains("read", "write")));
         });
       });
 
-      describe("with an existing secret", () -> {
+      describe("with an existing secret and an ace", () -> {
         beforeEach(() -> {
           // language=JSON
           String requestBody = "{\n"
@@ -96,13 +195,13 @@ public class SetPermissionAndSecretTest {
               + "  \"value\":\"ORIGINAL-VALUE\",\n"
               + "  \"overwrite\":true, \n"
               + "  \"access_control_entries\": [{\n"
-              + "    \"actor\": \"app1-guid\",\n"
+              + "    \"actor\": \"mtls:app:app1-guid\",\n"
               + "    \"operations\": [\"read\"]\n"
               + "  }]\n"
               + "}";
 
           mockMvc.perform(put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content(requestBody))
@@ -119,15 +218,15 @@ public class SetPermissionAndSecretTest {
               + "  \"value\":\"ORIGINAL-VALUE\",\n"
               + "  \"overwrite\":true, \n"
               + "  \"access_control_entries\": [{\n"
-              + "    \"actor\": \"app1-guid\",\n"
+              + "    \"actor\": \"mtls:app:app1-guid\",\n"
               + "    \"operations\": [\"write\"]},\n"
-              + "    {\"actor\": \"app2-guid\",\n"
+              + "    {\"actor\": \"mtls:app:app2-guid\",\n"
               + "    \"operations\": [\"read\", \"write\"]\n"
               + "  }]\n"
               + "}";
 
           mockMvc.perform(put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content(requestBodyWithNewAces))
@@ -136,7 +235,7 @@ public class SetPermissionAndSecretTest {
               .andExpect(jsonPath("$.type", equalTo("password")));
 
           mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andDo(print())
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/test-password"))
@@ -145,34 +244,36 @@ public class SetPermissionAndSecretTest {
                   jsonPath("$.access_control_list[0].operations").value(contains("read", "write")))
               .andExpect(jsonPath("$.access_control_list[1].actor").exists())
               .andExpect(
-                  jsonPath("$.access_control_list[1].operations").value(contains("read", "write")));
+                  jsonPath("$.access_control_list[1].operations").value(contains("read", "write")))
+              .andExpect(jsonPath("$.access_control_list[2].actor").exists())
+              .andExpect(
+                  jsonPath("$.access_control_list[2].operations").value(contains("read", "write")));
         });
 
-        describe("When posting access control entry for user and credential with invalid operation",
-            () -> {
-              it("returns an error", () -> {
-                final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
-                    .accept(APPLICATION_JSON)
-                    .contentType(APPLICATION_JSON)
-                    .content("{\n"
-                        + "  \"type\":\"password\",\n"
-                        + "  \"name\":\"/test-password\",\n"
-                        + "  \"value\":\"ORIGINAL-VALUE\",\n"
-                        + "  \"overwrite\":true, \n"
-                        + "  \"access_control_entries\": [{\n"
-                        + "    \"actor\": \"app1-guid\",\n"
-                        + "    \"operations\": [\"unicorn\"]\n"
-                        + "  }]\n"
-                        + "}");
+        describe("when posting access control entry for user and credential with invalid operation", () -> {
+          it("returns an error", () -> {
+            final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{\n"
+                    + "  \"type\":\"password\",\n"
+                    + "  \"name\":\"/test-password\",\n"
+                    + "  \"value\":\"ORIGINAL-VALUE\",\n"
+                    + "  \"overwrite\":true, \n"
+                    + "  \"access_control_entries\": [{\n"
+                    + "    \"actor\": \"mtls:app:app1-guid\",\n"
+                    + "    \"operations\": [\"unicorn\"]\n"
+                    + "  }]\n"
+                    + "}");
 
-                this.mockMvc.perform(put).andExpect(status().is4xxClientError())
-                    .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                    .andExpect(jsonPath("$.error").value(
-                        "The provided operation is not supported."
-                            + " Valid values include read and write."));
-              });
-            });
+            this.mockMvc.perform(put).andExpect(status().is4xxClientError())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(jsonPath("$.error").value(
+                    "The provided operation is not supported."
+                        + " Valid values include read and write."));
+          });
+        });
       });
     });
   }

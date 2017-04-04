@@ -17,7 +17,7 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -60,7 +60,7 @@ public class UpdatingASecretTest {
             + "}";
         mockMvc.perform(put("/api/v1/data")
             .header("Authorization", "Bearer "
-                + UAA_OAUTH2_TOKEN).accept(APPLICATION_JSON)
+                + UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content(requestBody)
         )
@@ -76,7 +76,7 @@ public class UpdatingASecretTest {
 
         mockMvc.perform(put("/api/v1/data")
             .header("Authorization", "Bearer "
-                + UAA_OAUTH2_TOKEN).accept(APPLICATION_JSON)
+                + UAA_OAUTH2_PASSWORD_GRANT_TOKEN).accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content(requestBody)
         )

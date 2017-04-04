@@ -5,7 +5,7 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -74,7 +74,7 @@ public class NoOverwriteTest {
               @Override
               public void run() {
                 final MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON)
                     .content("{"
@@ -94,7 +94,7 @@ public class NoOverwriteTest {
               @Override
               public void run() {
                 final MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                     .accept(APPLICATION_JSON)
                     .contentType(APPLICATION_JSON)
                     .content("{"

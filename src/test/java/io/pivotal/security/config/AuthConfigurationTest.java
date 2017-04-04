@@ -5,11 +5,12 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITHOUT_ORGANIZATION_UNIT;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX;
 import static io.pivotal.security.util.CertificateStringConstants.TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT;
+import static io.pivotal.security.util.X509TestUtil.cert;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
@@ -33,15 +34,9 @@ import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.io.ByteArrayInputStream;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.UUID;
 import javax.servlet.Filter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,7 +117,7 @@ public class AuthConfigurationTest {
       describe("with a token accepted by our security config", () -> {
         it("allows access", () -> {
           final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
@@ -255,7 +250,7 @@ public class AuthConfigurationTest {
       describe("with a token accepted by our security config", () -> {
         it("allows access", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/vcap")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
               .content("{}");
@@ -265,12 +260,6 @@ public class AuthConfigurationTest {
         });
       });
     });
-  }
-
-  private X509Certificate cert(String string) throws CertificateException, NoSuchProviderException {
-    return (X509Certificate) CertificateFactory
-        .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
-        .generateCertificate(new ByteArrayInputStream(string.getBytes()));
   }
 
   private Spectrum.Block withoutAuthCheck(String path, String expectedJsonSpec) {

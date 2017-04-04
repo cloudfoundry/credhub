@@ -1,5 +1,28 @@
 package io.pivotal.security.integration;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.JsonHelper.parse;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
+import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.hamcrest.core.IsNot.not;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
@@ -19,6 +42,11 @@ import io.pivotal.security.service.EncryptionKeyRotator;
 import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.service.PasswordBasedKeyProxy;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,35 +57,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.parse;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsNot.not;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -215,7 +214,7 @@ public class EncryptionKeyRotatorTest {
 
       it("can rotate password secrets", () -> {
         MockHttpServletRequestBuilder post = post("/api/v1/data")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
@@ -243,14 +242,14 @@ public class EncryptionKeyRotatorTest {
             not(equalTo(secondEncryption.getEncryptedGenerationParameters())));
 
         final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN);
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
         this.mockMvc.perform(get).andExpect(status().isOk())
             .andExpect(jsonPath(".data[0].value").value(originalPassword));
       });
 
       it("can rotate certificate secrets", () -> {
         MockHttpServletRequestBuilder post = post("/api/v1/data")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
@@ -279,7 +278,7 @@ public class EncryptionKeyRotatorTest {
             not(equalTo(secondEncryption.getEncryptedValue())));
 
         final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN);
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
         this.mockMvc.perform(get).andExpect(status().isOk())
             .andExpect(jsonPath("$.data[0].value.private_key").value(originalCert));
       });

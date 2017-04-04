@@ -7,7 +7,7 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.isA;
@@ -82,7 +82,7 @@ public class SecretsControllerDeleteTest {
       describe("error handling", () -> {
         it("should return NOT_FOUND when there is no secret with that name", () -> {
           final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(delete)
@@ -97,7 +97,7 @@ public class SecretsControllerDeleteTest {
 
         it("should return an error when name is empty", () -> {
           final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(delete)
@@ -112,7 +112,7 @@ public class SecretsControllerDeleteTest {
 
         it("should return an error when name is missing", () -> {
           final MockHttpServletRequestBuilder delete = delete("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(delete)
@@ -133,7 +133,7 @@ public class SecretsControllerDeleteTest {
               .when(secretDataService)
               .findMostRecent(secretName.toUpperCase());
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase())
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
           );
         });
 
@@ -162,7 +162,7 @@ public class SecretsControllerDeleteTest {
           doReturn(new NamedValueSecret()).when(secretDataService).findMostRecent(secretName);
 
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
           );
         });
 
@@ -195,7 +195,7 @@ public class SecretsControllerDeleteTest {
 
         it("can delete when the name is a query param", () -> {
           mockMvc.perform(delete("/api/v1/data?name=" + secretName.toUpperCase())
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isNoContent());
 
           verify(secretDataService, times(1)).delete(secretName.toUpperCase());
@@ -203,13 +203,13 @@ public class SecretsControllerDeleteTest {
 
         it("handles missing name parameter", () -> {
           mockMvc.perform(delete("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isBadRequest());
         });
 
         it("handles empty name", () -> {
           mockMvc.perform(delete("/api/v1/data?name=")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isBadRequest());
         });
       });

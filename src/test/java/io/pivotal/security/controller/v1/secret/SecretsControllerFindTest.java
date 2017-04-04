@@ -8,7 +8,7 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -107,7 +107,7 @@ public class SecretsControllerFindTest {
                 Arrays.asList(new SecretView(frozenTime, secretName))
             ).when(secretDataService).findContainingName(substring);
             final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON);
 
             this.response = mockMvc.perform(get);
@@ -139,7 +139,7 @@ public class SecretsControllerFindTest {
 
           final String path = substring;
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
           this.response = mockMvc.perform(get);
@@ -158,7 +158,7 @@ public class SecretsControllerFindTest {
           assertTrue(secretName.contains(path));
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path.toUpperCase())
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -178,7 +178,7 @@ public class SecretsControllerFindTest {
           assertTrue(secretName.startsWith(path));
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path.toUpperCase())
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -192,7 +192,7 @@ public class SecretsControllerFindTest {
           assertTrue(secretName.startsWith(path));
 
           final MockHttpServletRequestBuilder get = get("/api/v1/data?path=" + path)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
           mockMvc.perform(get).andExpect(status().isOk())
@@ -209,7 +209,7 @@ public class SecretsControllerFindTest {
       describe("finding all paths", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder get = get("/api/v1/data?paths=true")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
           doReturn(
               Arrays.asList("my-namespace/", "my-namespace/subTree/")

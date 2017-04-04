@@ -5,7 +5,7 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.parse;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doReturn;
@@ -73,7 +73,7 @@ public class VcapControllerTest {
             ).when(mockSecretDataService).findMostRecent("/cred2");
 
             mockMvc.perform(post("/api/v1/vcap")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
@@ -115,7 +115,7 @@ public class VcapControllerTest {
             ).when(mockSecretDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
@@ -145,7 +145,7 @@ public class VcapControllerTest {
             ).when(mockSecretDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
@@ -181,7 +181,7 @@ public class VcapControllerTest {
                 + "  }"
                 + "}";
             MockHttpServletResponse response = mockMvc.perform(post("/api/v1/vcap")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inputJsonString)
             ).andExpect(status().isOk()).andReturn().getResponse();
@@ -194,7 +194,7 @@ public class VcapControllerTest {
           it("should fail with \"Bad Request\"", () -> {
             String inputJsonString = "</xml?>";
             mockMvc.perform(post("/api/v1/vcap")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inputJsonString)
             ).andExpect(status().isBadRequest());

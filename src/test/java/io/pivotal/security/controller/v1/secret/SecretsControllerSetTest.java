@@ -8,14 +8,13 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_TOKEN;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -64,29 +63,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test",
@@ -135,7 +120,7 @@ public class SecretsControllerSetTest {
               + "with an unknown/garbage type",
           () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
@@ -156,7 +141,7 @@ public class SecretsControllerSetTest {
         beforeEach(() -> {
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -199,7 +184,7 @@ public class SecretsControllerSetTest {
           final String testSecretNameWithDot = "test.response";
 
           mockMvc.perform(put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .content("{\"type\":\"value\",\"name\":\"" + testSecretNameWithDot + "\",\"value\":\""
                   + "def" + "\"}")
               .contentType(MediaType.APPLICATION_JSON_UTF8))
@@ -210,7 +195,7 @@ public class SecretsControllerSetTest {
       describe("when name does not have a leading slash", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -239,7 +224,7 @@ public class SecretsControllerSetTest {
       describe("when a password set request contains access_control_entries", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -257,7 +242,7 @@ public class SecretsControllerSetTest {
         it("sets the ACL for the resource", () -> {
           response.andExpect(status().isOk());
           mockMvc.perform(get("/api/v1/acls?credential_name=this-has-an-acl")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/this-has-an-acl"))
               .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app1-guid")))
@@ -269,7 +254,7 @@ public class SecretsControllerSetTest {
       describe("when a value set request contains access_control_entries", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -287,7 +272,7 @@ public class SecretsControllerSetTest {
         it("sets the ACL for the resource", () -> {
           response.andExpect(status().isOk());
           mockMvc.perform(get("/api/v1/acls?credential_name=this-value-has-an-acl")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/this-value-has-an-acl"))
               .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
@@ -321,7 +306,7 @@ public class SecretsControllerSetTest {
           request.setType("json");
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content(serializeToString(request));
@@ -332,7 +317,7 @@ public class SecretsControllerSetTest {
         it("sets the ACL for the resource", () -> {
           response.andExpect(status().isOk());
           mockMvc.perform(get("/api/v1/acls?credential_name=this-json-has-an-acl")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/this-json-has-an-acl"))
               .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
@@ -344,7 +329,7 @@ public class SecretsControllerSetTest {
       describe("when a rsa set request contains access_control_entries", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -365,7 +350,7 @@ public class SecretsControllerSetTest {
         it("sets the ACL for the resource", () -> {
           response.andExpect(status().isOk());
           mockMvc.perform(get("/api/v1/acls?credential_name=this-rsa-has-an-acl")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/this-rsa-has-an-acl"))
               .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
@@ -377,7 +362,7 @@ public class SecretsControllerSetTest {
       describe("when a ssh set request contains access_control_entries", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -398,7 +383,7 @@ public class SecretsControllerSetTest {
         it("sets the ACL for the resource", () -> {
           response.andExpect(status().isOk());
           mockMvc.perform(get("/api/v1/acls?credential_name=this-ssh-has-an-acl")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/this-ssh-has-an-acl"))
               .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
@@ -410,7 +395,7 @@ public class SecretsControllerSetTest {
       describe("when a certificate set request contains access_control_entries", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -432,7 +417,7 @@ public class SecretsControllerSetTest {
         it("sets the ACL for the resource", () -> {
           response.andExpect(status().isOk());
           mockMvc.perform(get("/api/v1/acls?credential_name=this-certificate-has-an-acl")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.credential_name").value("/this-certificate-has-an-acl"))
               .andExpect(jsonPath("$.access_control_list[0].actor", equalTo("app2-guid")))
@@ -450,7 +435,7 @@ public class SecretsControllerSetTest {
 
       it("should return 400 when trying to update a secret with a mismatching type", () -> {
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
-            .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             // language=JSON
@@ -474,7 +459,7 @@ public class SecretsControllerSetTest {
           fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -511,7 +496,7 @@ public class SecretsControllerSetTest {
 
         it("should retain the previous value at the previous id", () -> {
           mockMvc.perform(get("/api/v1/data/" + uuid.toString())
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN))
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.value").value("original value"))
               .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
@@ -526,7 +511,7 @@ public class SecretsControllerSetTest {
       describe("with the overwrite flag set to false", () -> {
         beforeEach(() -> {
           final MockHttpServletRequestBuilder put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{"
@@ -553,7 +538,7 @@ public class SecretsControllerSetTest {
 
   private void putSecretInDatabase(String name, String value) throws Exception {
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_TOKEN)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
