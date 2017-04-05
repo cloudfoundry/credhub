@@ -14,6 +14,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +38,7 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -44,7 +47,9 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaCertStoreBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
@@ -74,17 +79,20 @@ public class SignedCertificateGeneratorTest {
   private PrivateKey issuerPrivateKey;
   private CertificateSecretParameters inputParameters;
   private String isCa;
-
+  private X509ExtensionUtils x509ExtensionUtils = mock(X509ExtensionUtils.class);
+  private SubjectKeyIdentifier fakeSubjectKeyIdentifier = new SubjectKeyIdentifier("what's up doc".getBytes());
   {
     beforeEach(injectMocks(this));
 
     beforeEach(() -> {
       subject = new SignedCertificateGenerator(timeProvider, serialNumberGenerator,
-          getBouncyCastleProvider());
+          getBouncyCastleProvider(), x509ExtensionUtils);
 
       nowCalendar.setTime(Date.from(now));
       when(timeProvider.getNow()).thenReturn(nowCalendar);
       when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(12));
+      when(x509ExtensionUtils.createSubjectKeyIdentifier(any()))
+          .thenReturn(fakeSubjectKeyIdentifier);
     });
 
     final SuiteBuilder validCertificateSuite = (makeCert) -> () -> {
@@ -130,6 +138,13 @@ public class SignedCertificateGeneratorTest {
         it("sets the correct basic constraints based on type parameter", () -> {
           assertEquals(convertDerBytesToString(
               generatedCert.getExtensionValue(Extension.basicConstraints.getId())), isCa);
+        });
+
+        it("contains the subject key identifier", () -> {
+          byte[] actual = generatedCert.getExtensionValue(Extension.subjectKeyIdentifier.getId());
+          byte[] expected = fakeSubjectKeyIdentifier.getKeyIdentifier();
+          // four bit type field is added at the beginning as per RFC 5280
+          assertThat(Arrays.copyOfRange(actual, 4, actual.length), equalTo(expected));
         });
       });
 
@@ -365,7 +380,7 @@ public class SignedCertificateGeneratorTest {
   }
 
   private ASN1Primitive bytesToDerConversion(byte[] data) throws IOException {
-    return data == null ? null : new ASN1InputStream(new ByteArrayInputStream(data)).readObject();
+      return data == null ? null : new ASN1InputStream(new ByteArrayInputStream(data)).readObject();
   }
 
   interface ThrowingRunnable {

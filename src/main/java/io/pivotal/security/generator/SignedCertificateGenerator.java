@@ -12,6 +12,7 @@ import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -27,16 +28,19 @@ public class SignedCertificateGenerator {
   private final DateTimeProvider timeProvider;
   private final RandomSerialNumberGenerator serialNumberGenerator;
   private final BouncyCastleProvider provider;
+  private final X509ExtensionUtils x509ExtensionUtils;
 
   @Autowired
   SignedCertificateGenerator(
       DateTimeProvider timeProvider,
       RandomSerialNumberGenerator serialNumberGenerator,
-      BouncyCastleProvider provider
-  ) {
+      BouncyCastleProvider provider,
+      X509ExtensionUtils x509ExtensionUtils
+  ) throws Exception {
     this.timeProvider = timeProvider;
     this.serialNumberGenerator = serialNumberGenerator;
     this.provider = provider;
+    this.x509ExtensionUtils = x509ExtensionUtils;
   }
 
   X509Certificate getSelfSigned(KeyPair keyPair, CertificateSecretParameters params)
@@ -62,6 +66,7 @@ public class SignedCertificateGenerator {
         publicKeyInfo
     );
 
+    certificateBuilder.addExtension(Extension.subjectKeyIdentifier, false, x509ExtensionUtils.createSubjectKeyIdentifier(publicKeyInfo));
     if (params.getAlternativeNames() != null) {
       certificateBuilder
           .addExtension(Extension.subjectAlternativeName, false, params.getAlternativeNames());

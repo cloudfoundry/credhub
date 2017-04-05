@@ -8,7 +8,12 @@ import io.pivotal.security.config.AuthServerProperties;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.util.CurrentTimeProvider;
 import java.security.Security;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -50,9 +55,15 @@ public class CredentialManagerApp {
   }
 
   @Bean
-  BouncyCastleProvider bouncyCastleProvider() {
+  public BouncyCastleProvider bouncyCastleProvider() {
     BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
     Security.addProvider(bouncyCastleProvider);
     return bouncyCastleProvider;
+  }
+
+  @Bean
+  public X509ExtensionUtils x509ExtensionUtils() throws OperatorCreationException {
+    return new X509ExtensionUtils(new BcDigestCalculatorProvider().get(
+        AlgorithmIdentifier.getInstance(OIWObjectIdentifiers.idSHA1)));
   }
 }
