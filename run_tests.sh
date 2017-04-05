@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./gradlew --no-daemon clean checkstyleMain checkstyleTest test
+./gradlew --no-daemon clean test
