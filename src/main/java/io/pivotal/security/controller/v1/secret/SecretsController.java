@@ -43,6 +43,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -141,18 +142,20 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
-  public ResponseEntity delete(@RequestParam(value = "name", required = false) String secretName,
+  public ResponseEntity delete(
+      @RequestParam(value = "name") String secretName,
       HttpServletRequest request,
-      Authentication authentication) throws Exception {
+      Authentication authentication
+  ) throws Exception {
+    if (StringUtils.isEmpty(secretName)) {
+      throw new MissingServletRequestParameterException("name", "String");
+    }
+
     return auditLogService.performWithAuditing(auditRecorder -> {
       auditRecorder.setCredentialName(secretName);
       auditRecorder.populateFromRequest(request);
       auditRecorder.setAuthentication(authentication);
 
-      if (StringUtils.isEmpty(secretName)) {
-        return new ResponseEntity<>(createErrorResponse("error.missing_name"),
-            HttpStatus.BAD_REQUEST);
-      }
       if (secretDataService.findMostRecent(secretName) == null) {
         return new ResponseEntity<>(createErrorResponse("error.credential_not_found"),
             HttpStatus.NOT_FOUND);
@@ -347,8 +350,7 @@ public class SecretsController {
       auditRecordBuilder.setAuthentication(authentication);
 
       if (StringUtils.isEmpty(identifier)) {
-        return new ResponseEntity<>(createErrorResponse("error.missing_name"),
-            HttpStatus.BAD_REQUEST);
+        throw new MissingServletRequestParameterException("name", "String");
       }
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
@@ -419,8 +421,7 @@ public class SecretsController {
   ) throws Exception {
     final String secretName = getSecretName(parsedRequestBody);
     if (StringUtils.isEmpty(secretName)) {
-      return new ResponseEntity<>(createErrorResponse("error.missing_name"),
-          HttpStatus.BAD_REQUEST);
+      throw new ParameterizedValidationException("error.missing_name");
     }
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
 
@@ -467,8 +468,6 @@ public class SecretsController {
 
       SecretView secretView = SecretView.fromEntity(storedNamedSecret);
       return new ResponseEntity<>(secretView, HttpStatus.OK);
-    } catch (ParameterizedValidationException ve) {
-      return new ResponseEntity<>(createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
     } catch (KeyNotFoundException e) {
