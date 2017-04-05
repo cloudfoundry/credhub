@@ -122,6 +122,103 @@ public class SecretsController {
     }
   }
 
+  @RequestMapping(path = "", method = RequestMethod.PUT)
+  public ResponseEntity set(@RequestBody BaseSecretSetRequest requestBody,
+      HttpServletRequest request,
+      Authentication authentication,
+      AccessControlEntry currentUserAccessControlEntry) throws Exception {
+    requestBody.validate();
+
+    requestBody.addCurrentUser(currentUserAccessControlEntry);
+    try {
+      return auditedHandlePutRequest(requestBody, request, authentication);
+    } catch (JpaSystemException | DataIntegrityViolationException e) {
+      LOGGER.error(
+          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
+              + "\" while storing secret, possibly caused by race condition, retrying...");
+      return auditedHandlePutRequest(requestBody, request, authentication);
+    }
+  }
+
+  @RequestMapping(path = "", method = RequestMethod.DELETE)
+  public ResponseEntity delete(@RequestParam(value = "name", required = false) String secretName,
+      HttpServletRequest request,
+      Authentication authentication) throws Exception {
+    return auditLogService.performWithAuditing(auditRecorder -> {
+      auditRecorder.setCredentialName(secretName);
+      auditRecorder.populateFromRequest(request);
+      auditRecorder.setAuthentication(authentication);
+
+      if (StringUtils.isEmpty(secretName)) {
+        return new ResponseEntity<>(createErrorResponse("error.missing_name"),
+            HttpStatus.BAD_REQUEST);
+      }
+      if (secretDataService.findMostRecent(secretName) == null) {
+        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"),
+            HttpStatus.NOT_FOUND);
+      }
+
+      secretDataService.delete(secretName);
+      return new ResponseEntity(HttpStatus.NO_CONTENT);
+    });
+  }
+
+  @RequestMapping(path = "/{id}", method = RequestMethod.GET)
+  public ResponseEntity getSecretById(
+      @PathVariable String id,
+      HttpServletRequest request,
+      Authentication authentication) throws Exception {
+
+    return retrieveSecretWithAuditing(
+        id,
+        findAsList(secretDataService::findByUuid),
+        request,
+        authentication,
+        true
+    );
+  }
+
+  @RequestMapping(path = "", method = RequestMethod.GET)
+  public ResponseEntity getSecret(
+      @RequestParam(value = "name", required = false) String secretName,
+      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
+      HttpServletRequest request,
+      Authentication authentication) throws Exception {
+
+    return retrieveSecretWithAuditing(
+        secretName,
+        selectLookupFunction(current),
+        request,
+        authentication,
+        false
+    );
+  }
+
+  @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
+  public ResponseEntity findByPath(
+      @RequestParam Map<String, String> params,
+      HttpServletRequest request,
+      Authentication authentication
+  ) throws Exception {
+    return findStartingWithAuditing(params.get("path"), request, authentication);
+  }
+
+  @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
+  public ResponseEntity findPaths(HttpServletRequest request, Authentication authentication)
+      throws Exception {
+    return findPathsWithAuditing(request, authentication);
+  }
+
+  @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
+  public ResponseEntity findByNameLike(
+      @RequestParam Map<String, String> params,
+      HttpServletRequest request,
+      Authentication authentication
+  ) throws Exception {
+    return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request,
+        authentication);
+  }
+
   private ResponseEntity auditedHandlePostRequest(
       InputStream inputStream,
       HttpServletRequest request,
@@ -202,24 +299,6 @@ public class SecretsController {
     }
   }
 
-  @RequestMapping(path = "", method = RequestMethod.PUT)
-  public ResponseEntity set(@RequestBody BaseSecretSetRequest requestBody,
-      HttpServletRequest request,
-      Authentication authentication,
-      AccessControlEntry currentUserAccessControlEntry) throws Exception {
-    requestBody.validate();
-
-    requestBody.addCurrentUser(currentUserAccessControlEntry);
-    try {
-      return auditedHandlePutRequest(requestBody, request, authentication);
-    } catch (JpaSystemException | DataIntegrityViolationException e) {
-      LOGGER.error(
-          "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
-              + "\" while storing secret, possibly caused by race condition, retrying...");
-      return auditedHandlePutRequest(requestBody, request, authentication);
-    }
-  }
-
   private ResponseEntity auditedHandlePutRequest(
       @RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
@@ -241,60 +320,6 @@ public class SecretsController {
     auditRecordBuilder.setAuthentication(authentication);
 
     return setService.performSet(auditRecordBuilder, requestBody);
-  }
-
-  @RequestMapping(path = "", method = RequestMethod.DELETE)
-  public ResponseEntity delete(@RequestParam(value = "name", required = false) String secretName,
-      HttpServletRequest request,
-      Authentication authentication) throws Exception {
-    return auditLogService.performWithAuditing(auditRecorder -> {
-      auditRecorder.setCredentialName(secretName);
-      auditRecorder.populateFromRequest(request);
-      auditRecorder.setAuthentication(authentication);
-
-      if (StringUtils.isEmpty(secretName)) {
-        return new ResponseEntity<>(createErrorResponse("error.missing_name"),
-            HttpStatus.BAD_REQUEST);
-      }
-      if (secretDataService.findMostRecent(secretName) == null) {
-        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"),
-            HttpStatus.NOT_FOUND);
-      }
-
-      secretDataService.delete(secretName);
-      return new ResponseEntity(HttpStatus.NO_CONTENT);
-    });
-  }
-
-  @RequestMapping(path = "/{id}", method = RequestMethod.GET)
-  public ResponseEntity getSecretById(
-      @PathVariable String id,
-      HttpServletRequest request,
-      Authentication authentication) throws Exception {
-
-    return retrieveSecretWithAuditing(
-        id,
-        findAsList(secretDataService::findByUuid),
-        request,
-        authentication,
-        true
-    );
-  }
-
-  @RequestMapping(path = "", method = RequestMethod.GET)
-  public ResponseEntity getSecret(
-      @RequestParam(value = "name", required = false) String secretName,
-      @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
-      HttpServletRequest request,
-      Authentication authentication) throws Exception {
-
-    return retrieveSecretWithAuditing(
-        secretName,
-        selectLookupFunction(current),
-        request,
-        authentication,
-        false
-    );
   }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
@@ -348,31 +373,6 @@ public class SecretsController {
         return success;
       }
     });
-  }
-
-  @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
-  public ResponseEntity findByPath(
-      @RequestParam Map<String, String> params,
-      HttpServletRequest request,
-      Authentication authentication
-  ) throws Exception {
-    return findStartingWithAuditing(params.get("path"), request, authentication);
-  }
-
-  @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
-  public ResponseEntity findPaths(HttpServletRequest request, Authentication authentication)
-      throws Exception {
-    return findPathsWithAuditing(request, authentication);
-  }
-
-  @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
-  public ResponseEntity findByNameLike(
-      @RequestParam Map<String, String> params,
-      HttpServletRequest request,
-      Authentication authentication
-  ) throws Exception {
-    return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request,
-        authentication);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {
