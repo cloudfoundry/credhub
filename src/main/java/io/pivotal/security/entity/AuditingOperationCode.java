@@ -7,7 +7,8 @@ public enum AuditingOperationCode {
   CREDENTIAL_UPDATE("credential_update"),
   CA_ACCESS("ca_access"),
   CA_UPDATE("ca_update"),
-  UNKNOWN_OPERATION("unknown_operation");
+  UNKNOWN_OPERATION("unknown_operation"),
+  ACL_ACCESS("acl_access");
 
   private String operation;
 
