@@ -42,6 +42,15 @@ public class AccessEntryData {
   @Column(name = "write_permission", nullable = false)
   private Boolean writePermission = DEFAULT_DENY;
 
+  @Column(name = "delete_permission", nullable = false)
+  private Boolean deletePermission = DEFAULT_DENY;
+
+  @Column(name = "read_acl_permission", nullable = false)
+  private Boolean readAclPermission = DEFAULT_DENY;
+
+  @Column(name = "write_acl_permission", nullable = false)
+  private Boolean writeAclPermission = DEFAULT_DENY;
+
   @SuppressWarnings("unused")
   public AccessEntryData() {
     this(null, null, new ArrayList<>());
@@ -119,6 +128,30 @@ public class AccessEntryData {
     this.writePermission = writePermission;
   }
 
+  public Boolean getDeletePermission() {
+    return deletePermission;
+  }
+
+  public void setDeletePermission(Boolean deletePermission) {
+    this.deletePermission = deletePermission;
+  }
+
+  public Boolean getReadAclPermission() {
+    return readAclPermission;
+  }
+
+  public void setReadAclPermission(Boolean readAclPermission) {
+    this.readAclPermission = readAclPermission;
+  }
+
+  public Boolean getWriteAclPermission() {
+    return writeAclPermission;
+  }
+
+  public void setWriteAclPermission(Boolean writeAclPermission) {
+    this.writeAclPermission = writeAclPermission;
+  }
+
   public void enableOperation(AccessControlOperation operation) {
     switch (operation) {
       case READ:
@@ -126,6 +159,15 @@ public class AccessEntryData {
         break;
       case WRITE:
         setWritePermission(true);
+        break;
+      case DELETE:
+        setDeletePermission(true);
+        break;
+      case WRITE_ACL:
+        setWriteAclPermission(true);
+        break;
+      case READ_ACL:
+        setReadAclPermission(true);
         break;
       default:
         throw new RuntimeException();
@@ -145,6 +187,15 @@ public class AccessEntryData {
     }
     if (getWritePermission()) {
       operations.add(AccessControlOperation.WRITE);
+    }
+    if (getDeletePermission()){
+      operations.add(AccessControlOperation.DELETE);
+    }
+    if (getReadAclPermission()){
+      operations.add(AccessControlOperation.READ_ACL);
+    }
+    if (getWriteAclPermission()){
+      operations.add(AccessControlOperation.WRITE_ACL);
     }
     return operations;
   }

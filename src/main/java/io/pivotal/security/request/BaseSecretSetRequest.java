@@ -8,9 +8,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -27,24 +24,6 @@ import java.util.stream.Collectors;
     @JsonSubTypes.Type(name = "rsa", value = RsaSetRequest.class)
 })
 public abstract class BaseSecretSetRequest extends BaseSecretRequest {
-
-  private List<AccessControlEntry> accessControlEntries = new ArrayList<>();
-
-  public List<AccessControlEntry> getAccessControlEntries() {
-    return accessControlEntries;
-  }
-
-  public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
-    this.accessControlEntries = accessControlEntries;
-  }
-
-  public void addCurrentUser(AccessControlEntry entry) {
-    accessControlEntries = accessControlEntries
-        .stream()
-        .filter(ace -> !(ace.getActor().equals(entry.getActor())))
-        .collect(Collectors.toList());
-    accessControlEntries.add(entry);
-  }
 
   @JsonIgnore
   public abstract NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor);

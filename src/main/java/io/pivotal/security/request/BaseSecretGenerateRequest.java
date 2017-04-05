@@ -21,7 +21,6 @@ import io.pivotal.security.service.GeneratorService;
     @JsonSubTypes.Type(name = "rsa", value = RsaGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
-
   private boolean regenerate;
 
   @Override

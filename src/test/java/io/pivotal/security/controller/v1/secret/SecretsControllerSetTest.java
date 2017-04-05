@@ -8,8 +8,12 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
+import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -45,6 +49,13 @@ import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.AccessControlListResponse;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -60,16 +71,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Consumer;
-
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test",
@@ -249,7 +250,7 @@ public class SecretsControllerSetTest {
           assertThat(acl.getCredentialName(), equalTo("/this-has-an-acl"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("app1-guid", asList(READ)))
           ));
@@ -286,7 +287,7 @@ public class SecretsControllerSetTest {
           assertThat(acl.getCredentialName(), equalTo("/this-value-has-an-acl"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("app2-guid", asList(READ)))
           ));
@@ -337,7 +338,7 @@ public class SecretsControllerSetTest {
           assertThat(acl.getCredentialName(), equalTo("/this-json-has-an-acl"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("app2-guid", asList(READ)))
           ));
@@ -377,7 +378,7 @@ public class SecretsControllerSetTest {
           assertThat(acl.getCredentialName(), equalTo("/this-rsa-has-an-acl"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("app2-guid", asList(READ)))
           ));
@@ -417,7 +418,7 @@ public class SecretsControllerSetTest {
           assertThat(acl.getCredentialName(), equalTo("/this-ssh-has-an-acl"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("app2-guid", asList(READ)))
           ));
@@ -457,7 +458,7 @@ public class SecretsControllerSetTest {
           assertThat(acl.getCredentialName(), equalTo("/this-certificate-has-an-acl"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("app2-guid", asList(READ)))
           ));

@@ -1,6 +1,9 @@
 package io.pivotal.security.request;
 
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.ConstraintViolation;
@@ -19,6 +22,7 @@ public abstract class BaseSecretRequest {
   private String name;
   private String type;
   private Boolean overwrite;
+  private List<AccessControlEntry> accessControlEntries = new ArrayList<>();
 
   public String getType() {
     return type;
@@ -42,6 +46,22 @@ public abstract class BaseSecretRequest {
 
   public void setOverwrite(Boolean overwrite) {
     this.overwrite = overwrite;
+  }
+
+  public List<AccessControlEntry> getAccessControlEntries() {
+    return accessControlEntries;
+  }
+
+  public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
+    this.accessControlEntries = accessControlEntries;
+  }
+
+  public void addCurrentUser(AccessControlEntry entry) {
+    accessControlEntries = accessControlEntries
+        .stream()
+        .filter(ace -> !(ace.getActor().equals(entry.getActor())))
+        .collect(Collectors.toList());
+    accessControlEntries.add(entry);
   }
 
   public void validate() {

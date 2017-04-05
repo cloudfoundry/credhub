@@ -118,30 +118,33 @@ public class SecretsController {
   @RequestMapping(path = "", method = RequestMethod.POST)
   public ResponseEntity generate(InputStream inputStream,
       HttpServletRequest request,
-      Authentication authentication) throws Exception {
+      Authentication authentication,
+      AccessControlEntry currentUserAccessControlEntry) throws Exception {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
-      return auditedHandlePostRequest(requestInputStream, request, authentication);
+      return auditedHandlePostRequest(requestInputStream, request, authentication,currentUserAccessControlEntry);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       requestInputStream.reset();
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing secret, possibly caused by race condition, retrying...");
-      return auditedHandlePostRequest(requestInputStream, request, authentication);
+      return auditedHandlePostRequest(requestInputStream, request, authentication,currentUserAccessControlEntry);
     }
   }
 
   private ResponseEntity auditedHandlePostRequest(
       InputStream inputStream,
       HttpServletRequest request,
-      Authentication authentication
+      Authentication authentication,
+      AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
     return auditLogService.performWithAuditing((auditRecordBuilder -> {
       return deserializeAndHandlePostRequest(
           inputStream,
           request,
           authentication,
-          auditRecordBuilder);
+          auditRecordBuilder,
+          currentUserAccessControlEntry);
     }));
   }
 
@@ -149,7 +152,8 @@ public class SecretsController {
       InputStream inputStream,
       HttpServletRequest request,
       Authentication authentication,
-      AuditRecordBuilder auditRecordBuilder
+      AuditRecordBuilder auditRecordBuilder,
+      AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
     String requestString = IOUtils.toString(new InputStreamReader(inputStream));
     boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
@@ -164,17 +168,19 @@ public class SecretsController {
       // then we'd have to do the entire job by hand.
       return handleRegenerateRequest(auditRecordBuilder, inputStream, requestString);
     } else {
-      return handleGenerateRequest(auditRecordBuilder, inputStream, requestString);
+      return handleGenerateRequest(auditRecordBuilder, inputStream, requestString,currentUserAccessControlEntry);
     }
   }
 
   private ResponseEntity handleGenerateRequest(
       AuditRecordBuilder auditRecordBuilder,
       InputStream requestInputStream,
-      String requestString
+      String requestString,
+      AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
     BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
+    requestBody.addCurrentUser(currentUserAccessControlEntry);
 
     auditRecordBuilder.setCredentialName(requestBody.getName());
     final boolean isCurrentlyTrappedInTheMonad = requestBody instanceof DefaultSecretGenerateRequest;
@@ -379,11 +385,11 @@ public class SecretsController {
         authentication);
   }
 
-  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class})
+  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
     String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-    final Throwable cause = exception.getCause();
+    final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
       return createParameterizedErrorResponse(
           new ParameterizedValidationException("error.invalid_json_key",

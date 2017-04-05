@@ -4,8 +4,11 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
+import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -136,7 +139,7 @@ public class AccessControlEndpointTest {
           assertThat(acl.getCredentialName(), equalTo("/cred1"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("dan", asList(READ)))
           ));
@@ -191,7 +194,7 @@ public class AccessControlEndpointTest {
           assertThat(acl.getCredentialName(), equalTo("/cred1"));
           assertThat(acl.getAccessControlList(), containsInAnyOrder(
               samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
                   new AccessControlEntry("dan", asList(READ, WRITE)))
           ));
@@ -233,21 +236,21 @@ public class AccessControlEndpointTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON);
 
-        MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andDo(print())
-            .andReturn();
-        String content = result.getResponse().getContentAsString();
-        AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-        assertThat(acl.getCredentialName(), equalTo("/cred2"));
-        assertThat(acl.getAccessControlList(), hasSize(2));
-        assertThat(acl.getAccessControlList(), containsInAnyOrder(
-            samePropertyValuesAs(
-                new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
-            samePropertyValuesAs(
-                new AccessControlEntry("dan", asList(READ)))
-        ));
+            MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+            String content = result.getResponse().getContentAsString();
+            AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+            assertThat(acl.getCredentialName(), equalTo("/cred2"));
+            assertThat(acl.getAccessControlList(), hasSize(2));
+            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("dan", asList(READ)))
+            ));
 
         this.mockMvc.perform(get)
             .andExpect(status().isOk());
@@ -379,32 +382,34 @@ public class AccessControlEndpointTest {
             assertThat(acl.getCredentialName(), equalTo("/cred1"));
             assertThat(acl.getAccessControlList(), containsInAnyOrder(
                 samePropertyValuesAs(
-                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
                 samePropertyValuesAs(
                     new AccessControlEntry("dan", asList(READ)))
             ));
           });
 
-          it("returns the full list of access control entries for the credential when leading '/' is missing", () -> {
-            MvcResult result = mockMvc.perform(
-                get("/api/v1/acls?credential_name=cred1")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            )
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andReturn();
-            String content = result.getResponse().getContentAsString();
-            AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-            assertThat(acl.getCredentialName(), equalTo("/cred1"));
-            assertThat(acl.getAccessControlList(), containsInAnyOrder(
-                samePropertyValuesAs(
-                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE))),
-                samePropertyValuesAs(
-                    new AccessControlEntry("dan", asList(READ)))
-            ));
-          });
+          it("returns the full list of access control entries for the credential"
+                  + " when leading '/' is missing",
+              () -> {
+                MvcResult result = mockMvc.perform(
+                    get("/api/v1/acls?credential_name=cred1")
+                        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+                )
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andDo(print())
+                    .andReturn();
+                String content = result.getResponse().getContentAsString();
+                AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+                assertThat(acl.getCredentialName(), equalTo("/cred1"));
+                assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                    samePropertyValuesAs(
+                        new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                    samePropertyValuesAs(
+                        new AccessControlEntry("dan", asList(READ)))
+                ));
+              });
         });
 
         describe("and the credential doesn't exit", () -> {

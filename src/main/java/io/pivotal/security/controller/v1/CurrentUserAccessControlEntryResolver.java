@@ -1,8 +1,13 @@
 package io.pivotal.security.controller.v1;
 
+import static io.pivotal.security.request.AccessControlOperation.DELETE;
+import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
+import static io.pivotal.security.request.AccessControlOperation.WRITE;
+import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
 import java.util.Arrays;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
@@ -33,7 +38,7 @@ public class CurrentUserAccessControlEntryResolver implements HandlerMethodArgum
             UserContext.fromAuthentication(((Authentication) webRequest.getUserPrincipal()), null, tokenServices);
     AccessControlEntry accessControlEntry = new AccessControlEntry(
         userContext.getAclUser(),
-        Arrays.asList(AccessControlOperation.READ, AccessControlOperation.WRITE));
+        Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
     return accessControlEntry;
   }
 }

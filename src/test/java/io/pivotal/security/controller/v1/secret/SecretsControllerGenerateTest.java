@@ -8,15 +8,22 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.request.AccessControlOperation.DELETE;
+import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
+import static io.pivotal.security.request.AccessControlOperation.WRITE;
+import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
 import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -24,7 +31,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +47,8 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.request.PasswordGenerateRequest;
@@ -56,6 +67,7 @@ import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.util.ExceptionThrowingFunction;
+import io.pivotal.security.view.AccessControlListResponse;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -70,6 +82,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -153,13 +166,6 @@ public class SecretsControllerGenerateTest {
     describe("generating a secret", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-
-        doAnswer(invocation -> {
-          NamedSecret secret = invocation.getArgumentAt(0, NamedSecret.class);
-          secret.setUuid(uuid);
-          secret.setVersionCreatedAt(frozenTime);
-          return secret;
-        }).when(secretDataService).save(any(NamedSecret.class));
       });
 
       it("for an unknown/garbage type should return an error message", () -> {
@@ -247,11 +253,13 @@ public class SecretsControllerGenerateTest {
         });
 
         it("should return the expected response", () -> {
+          ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("password"))
               .andExpect(jsonPath("$.value").value(fakePassword))
-              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.id").value(argumentCaptor.getValue().getUuid().toString()))
               .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
 
@@ -272,6 +280,23 @@ public class SecretsControllerGenerateTest {
           verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
           assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
         });
+
+        it("should create an ACL with the current user having read and write permissions", () -> {
+          response.andExpect(status().isOk());
+          MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + secretName)
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+              .andDo(print())
+              .andExpect(status().isOk())
+              .andReturn();
+          String content = result.getResponse().getContentAsString();
+          AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+
+          assertThat(acl.getCredentialName(), equalTo(secretName));
+          assertThat(acl.getAccessControlList(), containsInAnyOrder(
+              samePropertyValuesAs(
+                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                      asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
+        });
       });
 
       describe("generate an ssh secret", () -> {
@@ -289,13 +314,15 @@ public class SecretsControllerGenerateTest {
         });
 
         it("should return the expected response", () -> {
+          ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("ssh"))
               .andExpect(jsonPath("$.value.public_key").value("public_key"))
               .andExpect(jsonPath("$.value.private_key").value("private_key"))
               .andExpect(jsonPath("$.value.public_key_fingerprint").value(nullValue()))
-              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.id").value(argumentCaptor.getValue().getUuid().toString()))
               .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
 
@@ -354,12 +381,14 @@ public class SecretsControllerGenerateTest {
         });
 
         it("should return the expected response", () -> {
+          ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("rsa"))
               .andExpect(jsonPath("$.value.public_key").value("public_key"))
               .andExpect(jsonPath("$.value.private_key").value("private_key"))
-              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.id").value(argumentCaptor.getValue().getUuid().toString()))
               .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
 
@@ -433,11 +462,14 @@ public class SecretsControllerGenerateTest {
           });
 
           it("should return the correct response", () -> {
+            ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
+            verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
             response.andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePassword))
-                .andExpect(jsonPath("$.id").value(uuid.toString()))
+                .andExpect(jsonPath("$.id").value(argumentCaptor.getValue().getUuid().toString()))
                 .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
           });
 
