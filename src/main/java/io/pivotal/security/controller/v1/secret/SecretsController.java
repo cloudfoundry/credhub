@@ -49,8 +49,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
-import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -62,7 +60,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.NoSuchAlgorithmException;
@@ -420,15 +417,6 @@ public class SecretsController {
         new ParameterizedValidationException("error.invalid_json_key", exception.getPropertyName())
     );
 
-  }
-
-  @ExceptionHandler({MethodArgumentNotValidException.class})
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleInvalidField(MethodArgumentNotValidException exception)
-      throws IOException {
-    ObjectError error = exception.getBindingResult().getAllErrors().get(0);
-    String errorMessage = messageSourceAccessor.getMessage(error.getDefaultMessage());
-    return new ResponseError(errorMessage);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {
