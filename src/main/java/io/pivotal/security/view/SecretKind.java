@@ -34,15 +34,13 @@ public enum SecretKind implements SecretKindFromString {
   SSH {
     @Override
     public <T, E extends Throwable> CheckedFunction<T, E> lift(CheckedMapping<T, E> mapping) {
-      Objects.requireNonNull(mapping);
-      return mapping::ssh;
+      throw new RuntimeException("No longer trapped in the monad");
     }
   },
   RSA {
     @Override
     public <T, E extends Throwable> CheckedFunction<T, E> lift(CheckedMapping<T, E> mapping) {
-      Objects.requireNonNull(mapping);
-      return mapping::rsa;
+      throw new RuntimeException("No longer trapped in the monad");
     }
   };
 
@@ -55,9 +53,5 @@ public enum SecretKind implements SecretKindFromString {
     T json(T t) throws E;
 
     T certificate(T t) throws E;
-
-    T ssh(T t) throws E;
-
-    T rsa(T t) throws E;
   }
 }

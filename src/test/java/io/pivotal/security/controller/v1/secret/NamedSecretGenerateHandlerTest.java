@@ -1,5 +1,11 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.mockito.Mockito.mock;
+
 import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.ParseContext;
 import io.pivotal.security.config.JsonContextFactory;
@@ -7,20 +13,10 @@ import io.pivotal.security.controller.v1.AbstractNamedSecretHandlerTestingUtil;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.mapper.CertificateGeneratorRequestTranslator;
-import io.pivotal.security.mapper.RsaGeneratorRequestTranslator;
-import io.pivotal.security.mapper.SshGeneratorRequestTranslator;
 import io.pivotal.security.view.SecretKind;
 import org.junit.runner.RunWith;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static org.mockito.Mockito.mock;
 
 @RunWith(Spectrum.class)
 public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTestingUtil {
@@ -29,10 +25,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
   private ParseContext jsonPath;
   private CertificateGeneratorRequestTranslator certificateGeneratorRequestTranslator = mock(
       CertificateGeneratorRequestTranslator.class);
-  private SshGeneratorRequestTranslator sshGeneratorRequestTranslator = mock(
-      SshGeneratorRequestTranslator.class);
-  private RsaGeneratorRequestTranslator rsaGeneratorRequestTranslator = mock(
-      RsaGeneratorRequestTranslator.class);
   private Encryptor encryptor = mock(Encryptor.class);
 
   {
@@ -40,8 +32,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
       jsonPath = new JsonContextFactory().getObject();
       subject = new NamedSecretGenerateHandler(
           certificateGeneratorRequestTranslator,
-          sshGeneratorRequestTranslator,
-          rsaGeneratorRequestTranslator,
           encryptor
       );
     });
@@ -70,26 +60,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
               new NamedCertificateSecret()
           )
       );
-
-      describe(
-          "ssh",
-          behavesLikeMapper(() -> subject,
-              sshGeneratorRequestTranslator,
-              SecretKind.SSH,
-              NamedSshSecret.class,
-              new NamedSshSecret()
-          )
-      );
-
-      describe(
-          "rsa",
-          behavesLikeMapper(() -> subject,
-              rsaGeneratorRequestTranslator,
-              SecretKind.RSA,
-              NamedRsaSecret.class,
-              new NamedRsaSecret()
-          )
-      );
     });
 
     describe("verifies full set of keys for", () -> {
@@ -111,29 +81,6 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
                     + "\"ca\": \"default\","
                     + "}"
                     + "}"));
-          }
-      );
-
-      it("ssh", () -> {
-            sshGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{"
-                + "\"type\":\"ssh\","
-                + "\"overwrite\":true,"
-                + "\"parameters\":{"
-                + "\"key_length\":3072,"
-                + "\"ssh_comment\":\"ssh comment\""
-                + "}"
-                + "}"));
-          }
-      );
-
-      it("rsa", () -> {
-            rsaGeneratorRequestTranslator.validateJsonKeys(jsonPath.parse("{"
-                + "\"type\":\"rsa\","
-                + "\"overwrite\":true,"
-                + "\"parameters\":{"
-                + "\"key_length\":2048"
-                + "}"
-                + "}"));
           }
       );
     });
