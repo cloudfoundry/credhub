@@ -409,16 +409,6 @@ public class SecretsController {
     return new ResponseError(errorMessage);
   }
 
-  @ExceptionHandler(UnrecognizedPropertyException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception)
-      throws Exception {
-    return createParameterizedErrorResponse(
-        new ParameterizedValidationException("error.invalid_json_key", exception.getPropertyName())
-    );
-
-  }
-
   private boolean readRegenerateFlagFrom(String requestString) {
     boolean isRegenerateRequest;
     try {

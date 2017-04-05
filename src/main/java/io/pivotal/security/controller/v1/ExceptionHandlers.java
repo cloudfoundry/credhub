@@ -2,6 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.ResponseError;
@@ -63,8 +64,17 @@ public class ExceptionHandlers {
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   @ResponseBody
   public ResponseError handleParameterizedValidationException(
-      ParameterizedValidationException exception) throws Exception {
-    return createParameterizedErrorResponse(exception);
+      ParameterizedValidationException exception
+  ) throws Exception {
+    return constructError(exception.getMessage());
+  }
+
+  @ExceptionHandler(UnrecognizedPropertyException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception)
+      throws Exception {
+    return constructError("error.invalid_json_key", exception.getPropertyName());
   }
 
   private ResponseError badRequestResponse() {
@@ -75,12 +85,7 @@ public class ExceptionHandlers {
     return new ResponseError(messageSourceAccessor.getMessage(error));
   }
 
-  private ResponseError createParameterizedErrorResponse(
-      ParameterizedValidationException exception) {
-    String errorMessage = messageSourceAccessor.getMessage(
-        exception.getMessage(),
-        exception.getParameters()
-    );
-    return new ResponseError(errorMessage);
+  private ResponseError constructError(String error, String... args) {
+    return new ResponseError(messageSourceAccessor.getMessage(error, args));
   }
 }
