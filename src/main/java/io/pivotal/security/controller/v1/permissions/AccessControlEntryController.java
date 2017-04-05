@@ -1,22 +1,13 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.view.ResponseError;
+import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,30 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccessControlEntryController {
 
   private AccessControlHandler accessControlHandler;
-  private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
-  public AccessControlEntryController(
-      AccessControlHandler accessControlHandler,
-      MessageSource messageSource
-  ) {
+  public AccessControlEntryController(AccessControlHandler accessControlHandler) {
     this.accessControlHandler = accessControlHandler;
-    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-  public ResponseEntity setAccessControlEntries(
-      @Validated @RequestBody AccessEntriesRequest accessEntriesRequest,
-      Errors errors
+  @ResponseStatus(HttpStatus.OK)
+  public AccessControlListResponse setAccessControlEntries(
+      @Validated @RequestBody AccessEntriesRequest accessEntriesRequest
   ) {
-    if (errors.hasErrors()) {
-      ResponseError error = constructError(getErrorMessage(errors));
-      return wrapResponse(error, HttpStatus.BAD_REQUEST);
-    } else {
-      return wrapResponse(
-          accessControlHandler.setAccessControlEntries(accessEntriesRequest),
-          HttpStatus.OK);
-    }
+    return accessControlHandler.setAccessControlEntries(accessEntriesRequest);
   }
 
   @DeleteMapping
@@ -62,54 +41,5 @@ public class AccessControlEntryController {
       @RequestParam("actor") String actor
   ) {
     accessControlHandler.deleteAccessControlEntries(credentialName, actor);
-  }
-
-  @ExceptionHandler(MissingServletRequestParameterException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
-    return new ResponseError(messageSourceAccessor
-        .getMessage("error.missing_query_parameter", new String[]{e.getParameterName()}));
-  }
-
-  @ExceptionHandler(JsonParseException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleJsonMappingException(JsonParseException e) {
-    return badRequestResponse();
-  }
-
-  @ExceptionHandler(JsonMappingException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseError handleJsonMappingException(JsonMappingException e) {
-    for (JsonMappingException.Reference reference : e.getPath()) {
-      if ("operations".equals(reference.getFieldName())) {
-        String errorMessage = messageSourceAccessor.getMessage("error.acl.invalid_operation");
-        return new ResponseError(errorMessage);
-      }
-    }
-
-    return badRequestResponse();
-  }
-
-  @ExceptionHandler(EntryNotFoundException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseError handleNotFoundException(EntryNotFoundException e) {
-    return constructError(e.getMessage());
-  }
-
-  private ResponseError constructError(String error) {
-    return new ResponseError(messageSourceAccessor.getMessage(error));
-  }
-
-  private ResponseEntity wrapResponse(Object wrapped, HttpStatus status) {
-    return new ResponseEntity<>(wrapped, status);
-  }
-
-  private ResponseError badRequestResponse() {
-    String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-    return new ResponseError(errorMessage);
-  }
-
-  private String getErrorMessage(Errors errors) {
-    return errors.getAllErrors().get(0).getDefaultMessage();
   }
 }

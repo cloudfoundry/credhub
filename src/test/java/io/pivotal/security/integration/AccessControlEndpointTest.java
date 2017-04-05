@@ -73,6 +73,37 @@ public class AccessControlEndpointTest {
           .andExpect(status().isOk());
     });
 
+    describe("#GET /acls", () -> {
+      it("should return an appropriate error if the credential_name parameter is missing", () -> {
+        MockHttpServletRequestBuilder getRequest = get(
+            "/api/v1/acls")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        mockMvc.perform(getRequest)
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error", equalTo("The query parameter credential_name is required for this request.")));
+      });
+    });
+
+    describe("#DELETE /aces", () -> {
+      it("should return an appropriate error if the credential_name parameter is missing", () -> {
+        MockHttpServletRequestBuilder deleteRequest = delete(
+            "/api/v1/aces?actor=dan")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        mockMvc.perform(deleteRequest)
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error", equalTo("The query parameter credential_name is required for this request.")));
+      });
+
+      it("should return an appropriate error if the actor parameter is missing", () -> {
+        MockHttpServletRequestBuilder deleteRequest = delete(
+            "/api/v1/aces?credential_name=octopus")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+        mockMvc.perform(deleteRequest)
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error", equalTo("The query parameter actor is required for this request.")));
+      });
+    });
+
     describe("when posting access control entry for user and credential", () -> {
       describe("and permissions don't exist", () -> {
         it("returns the full Access Control List for user", () -> {
@@ -305,7 +336,7 @@ public class AccessControlEndpointTest {
                   + "     }]"
                   + "}");
 
-          this.mockMvc.perform(post).andExpect(status().is4xxClientError())
+          this.mockMvc.perform(post).andExpect(status().isBadRequest())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.error").value(
                   "The provided operation is not supported."

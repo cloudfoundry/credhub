@@ -13,8 +13,6 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,24 +20,20 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,18 +45,12 @@ public class AccessControlEntryControllerTest {
 
   private AccessControlEntryController subject;
   private AccessControlHandler accessControlHandler;
-  private MessageSource messageSource;
   private MockMvc mockMvc;
-  private String errorKey = "$.error";
 
   {
     beforeEach(() -> {
       accessControlHandler = mock(AccessControlHandler.class);
-      messageSource = mock(MessageSource.class);
-      subject = new AccessControlEntryController(
-          accessControlHandler,
-          messageSource
-      );
+      subject = new AccessControlEntryController(accessControlHandler);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
           new MappingJackson2HttpMessageConverter();
@@ -75,98 +63,52 @@ public class AccessControlEntryControllerTest {
 
     describe("/aces", () -> {
       describe("#POST", () -> {
-        describe("when the request has invalid JSON", () -> {
-          it("should return an error", () -> {
-            when(
-                messageSource.getMessage(eq("error.acl.missing_aces"),
-                    eq(null), any(Locale.class)))
-                .thenReturn("test-error-message");
+        it("should return a response containing the new ACE", () -> {
+          final ArrayList<AccessControlOperation> operations = newArrayList(
+              AccessControlOperation.READ, AccessControlOperation.WRITE);
+          List<AccessControlEntry> accessControlEntries = newArrayList(
+              new AccessControlEntry("test-actor", operations));
+          AccessEntriesRequest accessEntriesRequest = new AccessEntriesRequest(
+              "test-credential-name",
+              accessControlEntries
+          );
+          AccessControlListResponse expectedResponse =
+              new AccessControlListResponse("test-actor",
+                  accessControlEntries);
 
-            AccessEntriesRequest accessEntriesRequest = new AccessEntriesRequest(
-                "test-credential-name",
-                null
-            );
-            byte[] body = serialize(accessEntriesRequest);
-            MockHttpServletRequestBuilder request = post("/api/v1/aces")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body);
+          when(accessControlHandler.setAccessControlEntries(any(AccessEntriesRequest.class)))
+              .thenReturn(expectedResponse);
 
-            mockMvc.perform(request)
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath(errorKey).value("test-error-message"));
-          });
-        });
+          MockHttpServletRequestBuilder request = post("/api/v1/aces")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(serialize(accessEntriesRequest));
 
-        describe("when the request has valid JSON", () -> {
-          it("should return a response containing the new ACE", () -> {
-            final ArrayList<AccessControlOperation> operations = newArrayList(
-                AccessControlOperation.READ, AccessControlOperation.WRITE);
-            List<AccessControlEntry> accessControlEntries = newArrayList(
-                new AccessControlEntry("test-actor", operations));
-            AccessEntriesRequest accessEntriesRequest = new AccessEntriesRequest(
-                "test-credential-name",
-                accessControlEntries
-            );
-            AccessControlListResponse expectedResponse =
-                new AccessControlListResponse("test-actor",
-                    accessControlEntries);
+          final String jsonContent = serializeToString(expectedResponse);
+          mockMvc.perform(request)
+              .andExpect(status().isOk())
+              .andExpect(content().json(jsonContent));
 
-            when(accessControlHandler.setAccessControlEntries(any(AccessEntriesRequest.class)))
-                .thenReturn(expectedResponse);
+          ArgumentCaptor<AccessEntriesRequest> captor = ArgumentCaptor
+              .forClass(AccessEntriesRequest.class);
+          verify(accessControlHandler, times(1)).setAccessControlEntries(captor.capture());
 
-            MockHttpServletRequestBuilder request = post("/api/v1/aces")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(serialize(accessEntriesRequest));
-
-            final String jsonContent = serializeToString(expectedResponse);
-            mockMvc.perform(request)
-                .andExpect(status().isOk())
-                .andExpect(content().json(jsonContent));
-
-            ArgumentCaptor<AccessEntriesRequest> captor = ArgumentCaptor
-                .forClass(AccessEntriesRequest.class);
-            verify(accessControlHandler, times(1)).setAccessControlEntries(captor.capture());
-
-            AccessEntriesRequest actualRequest = captor.getValue();
-            assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
-            assertThat(actualRequest.getAccessControlEntries(),
-                hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
-                    hasProperty("allowedOperations",
-                        hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
-          });
+          AccessEntriesRequest actualRequest = captor.getValue();
+          assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
+          assertThat(actualRequest.getAccessControlEntries(),
+              hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
+                  hasProperty("allowedOperations",
+                      hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
         });
       });
 
       describe("#DELETE", () -> {
-        describe("when accessControlDataService.delete succeeds", () -> {
-          it("should return 204 status ", () -> {
-            mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
-                .andExpect(status().isNoContent())
-                .andExpect(content().string(""));
+        it("should return 204 status ", () -> {
+          mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
+              .andExpect(status().isNoContent())
+              .andExpect(content().string(""));
 
-            verify(accessControlHandler, times(1))
-                .deleteAccessControlEntries("test-name", "test-actor");
-          });
-        });
-        describe("when delete throws a NotFound exception", () -> {
-          beforeEach(() -> {
-            doThrow(new EntryNotFoundException("error.acl.not_found"))
-                .when(accessControlHandler)
-                .deleteAccessControlEntries("fake-credential", "some-actor");
-
-            when(messageSource.getMessage(eq("error.acl.not_found"), eq(null), any(Locale.class)))
-                .thenReturn(
-                    "The request could not be fulfilled "
-                        + "because the access control entry could not be found.");
-          });
-
-          it("should return with status 404 and an error message", () -> {
-            mockMvc.perform(delete("/api/v1/aces?credential_name=fake-credential&actor=some-actor"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath(errorKey).value(
-                    "The request could not be fulfilled beca"
-                        + "use the access control entry could not be found."));
-          });
+          verify(accessControlHandler, times(1))
+              .deleteAccessControlEntries("test-name", "test-actor");
         });
       });
     });
