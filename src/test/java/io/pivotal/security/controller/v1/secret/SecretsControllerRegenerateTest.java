@@ -29,9 +29,17 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.RsaKey;
+import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -73,6 +81,12 @@ public class SecretsControllerRegenerateTest {
   @MockBean
   PassayStringSecretGenerator passwordGenerator;
 
+  @MockBean
+  SshGenerator sshGenerator;
+
+  @MockBean
+  RsaGenerator rsaGenerator;
+
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
@@ -105,18 +119,19 @@ public class SecretsControllerRegenerateTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
-          .thenReturn(new Password("generated-secret"));
     });
 
     describe("regenerating a password", () -> {
       beforeEach(() -> {
+        when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
+            .thenReturn(new Password("generated-secret"));
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
         originalSecret.setEncryptor(encryptor);
         originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
         generationParameters.setExcludeNumber(true);
-        originalSecret.setPasswordAndGenerationParameters("original-password", generationParameters);
+        originalSecret
+            .setPasswordAndGenerationParameters("original-password", generationParameters);
         originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
@@ -141,20 +156,132 @@ public class SecretsControllerRegenerateTest {
             .content("{\"regenerate\":true,\"name\":\"my-password\"}"));
       });
 
-      it("should regenerate the secret", () -> {
+      it("should regenerate the password", () -> {
         response.andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath("$.type").value("password"))
             .andExpect(jsonPath("$.id").value(uuid.toString()))
-            .andExpect(jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
+            .andExpect(
+                jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
 
-        ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
+        ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor
+            .forClass(NamedPasswordSecret.class);
         verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
         NamedPasswordSecret newPassword = argumentCaptor.getValue();
 
         assertThat(newPassword.getPassword(), equalTo("generated-secret"));
         assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
+      });
+
+      it("persists an audit entry", () -> {
+        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+      });
+    });
+
+    describe("regenerating an rsa", () -> {
+      beforeEach(() -> {
+        when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
+            .thenReturn(new RsaKey("public_key", "private_key"));
+        NamedRsaSecret originalSecret = new NamedRsaSecret("my-rsa");
+        originalSecret.setEncryptor(encryptor);
+        originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+        originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
+
+        doReturn(originalSecret).when(secretDataService).findMostRecent("my-rsa");
+
+        doAnswer(invocation -> {
+          NamedRsaSecret newSecret = invocation.getArgumentAt(0, NamedRsaSecret.class);
+          uuid = UUID.randomUUID();
+          newSecret.setUuid(uuid);
+          newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
+          return newSecret;
+        }).when(secretDataService).save(any(NamedRsaSecret.class));
+
+        auditRecordBuilder = new AuditRecordBuilder();
+        resetAuditLogMock(auditLogService, auditRecordBuilder);
+
+        fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
+
+        response = mockMvc.perform(post("/api/v1/data")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"regenerate\":true,\"name\":\"my-rsa\"}"));
+      });
+
+      it("should regenerate the rsa", () -> {
+        response.andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.type").value("rsa"))
+            .andExpect(jsonPath("$.id").value(uuid.toString()))
+            .andExpect(
+                jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
+
+        ArgumentCaptor<NamedRsaSecret> argumentCaptor = ArgumentCaptor
+            .forClass(NamedRsaSecret.class);
+        verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+        NamedRsaSecret newRsa = argumentCaptor.getValue();
+
+        assertThat(newRsa.getPrivateKey(), equalTo("private_key"));
+        assertThat(newRsa.getPublicKey(), equalTo("public_key"));
+      });
+
+      it("persists an audit entry", () -> {
+        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+      });
+    });
+
+    describe("regenerating an ssh", () -> {
+      beforeEach(() -> {
+        when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
+            .thenReturn(new SshKey("public_key", "private_key", null));
+        NamedSshSecret originalSecret = new NamedSshSecret("my-ssh");
+        originalSecret.setEncryptor(encryptor);
+        originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+        originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
+
+        doReturn(originalSecret).when(secretDataService).findMostRecent("my-ssh");
+
+        doAnswer(invocation -> {
+          NamedSshSecret newSecret = invocation.getArgumentAt(0, NamedSshSecret.class);
+          uuid = UUID.randomUUID();
+          newSecret.setUuid(uuid);
+          newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
+          return newSecret;
+        }).when(secretDataService).save(any(NamedSshSecret.class));
+
+        auditRecordBuilder = new AuditRecordBuilder();
+        resetAuditLogMock(auditLogService, auditRecordBuilder);
+
+        fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
+
+        response = mockMvc.perform(post("/api/v1/data")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{\"regenerate\":true,\"name\":\"my-ssh\"}"));
+      });
+
+      it("should regenerate the ssh", () -> {
+        response.andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(jsonPath("$.type").value("ssh"))
+            .andExpect(jsonPath("$.id").value(uuid.toString()))
+            .andExpect(
+                jsonPath("$.version_created_at").value(frozenTime.plusSeconds(10).toString()));
+
+        ArgumentCaptor<NamedSshSecret> argumentCaptor = ArgumentCaptor
+            .forClass(NamedSshSecret.class);
+        verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+        NamedSshSecret newSsh = argumentCaptor.getValue();
+
+        assertThat(newSsh.getPrivateKey(), equalTo("private_key"));
+        assertThat(newSsh.getPublicKey(), equalTo("public_key"));
       });
 
       it("persists an audit entry", () -> {
@@ -218,33 +345,36 @@ public class SecretsControllerRegenerateTest {
       });
     });
 
-    describe("when attempting to regenerate a password with parameters that can't be decrypted", () -> {
-      beforeEach(() -> {
-        NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
-        originalSecret.setEncryptor(encryptor);
-        originalSecret.setPasswordAndGenerationParameters("abcde", new PasswordGenerationParameters());
-        originalSecret.setEncryptionKeyUuid(UUID.randomUUID());
+    describe("when attempting to regenerate a password with parameters that can't be decrypted",
+        () -> {
+          beforeEach(() -> {
+            NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+            originalSecret.setEncryptor(encryptor);
+            originalSecret
+                .setPasswordAndGenerationParameters("abcde", new PasswordGenerationParameters());
+            originalSecret.setEncryptionKeyUuid(UUID.randomUUID());
 
-        doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
+            doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
-        response = mockMvc.perform(post("/api/v1/data")
+            response = mockMvc.perform(post("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{\"regenerate\":true,\"name\":\"my-password\"}"));
-      });
+          });
 
-      it("returns an error", () -> {
-        // language=JSON
-        String cannotRegenerateJson = "{\n" +
-            "  \"error\": \"The credential could not be accessed with the provided encryption " +
-            "keys. You must update your deployment configuration to continue.\"\n" +
-            "}";
+          it("returns an error", () -> {
+            // language=JSON
+            String cannotRegenerateJson = "{\n" +
+                "  \"error\": \"The credential could not be accessed with the provided encryption "
+                +
+                "keys. You must update your deployment configuration to continue.\"\n" +
+                "}";
 
-        response
+            response
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(cannotRegenerateJson));
-      });
-    });
+          });
+        });
   }
 }

@@ -5,6 +5,8 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.regeneratables.NotRegeneratable;
 import io.pivotal.security.regeneratables.PasswordSecret;
 import io.pivotal.security.regeneratables.Regeneratable;
+import io.pivotal.security.regeneratables.RsaSecret;
+import io.pivotal.security.regeneratables.SshSecret;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.ErrorResponseService;
@@ -34,8 +36,9 @@ class RegenerateService {
 
   private void constructGeneratorMap() {
     this.regeneratableTypes = new HashMap<>();
-    this.regeneratableTypes
-        .put("password", new PasswordSecret(errorResponseService, generateService));
+    this.regeneratableTypes.put("password", new PasswordSecret(errorResponseService, generateService));
+    this.regeneratableTypes.put("ssh", new SshSecret(errorResponseService, generateService));
+    this.regeneratableTypes.put("rsa", new RsaSecret(errorResponseService, generateService));
   }
 
   public ResponseEntity performRegenerate(AuditRecordBuilder auditRecordBuilder,
