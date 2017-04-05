@@ -2,7 +2,10 @@ package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.ResponseError;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -75,6 +79,28 @@ public class ExceptionHandlers {
   public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception)
       throws Exception {
     return constructError("error.invalid_json_key", exception.getPropertyName());
+  }
+
+  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
+    final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+    if (cause instanceof UnrecognizedPropertyException) {
+      return constructError("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName());
+    } else if (cause instanceof InvalidTypeIdException
+        || (cause instanceof JsonMappingException && cause.getMessage()
+        .contains("missing property 'type'"))) {
+      return constructError("error.invalid_type_with_set_prompt");
+    } else if (cause instanceof InvalidFormatException) {
+      for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
+          .getPath()) {
+        if ("operations".equals(reference.getFieldName())) {
+          return constructError("error.acl.invalid_operation");
+        }
+      }
+    }
+    return constructError("error.bad_request");
   }
 
   private ResponseError badRequestResponse() {

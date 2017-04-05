@@ -1,13 +1,8 @@
 package io.pivotal.security.controller.v1.secret;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.InvalidJsonException;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import io.pivotal.security.config.JsonContextFactory;
@@ -46,16 +41,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -381,32 +373,6 @@ public class SecretsController {
   ) throws Exception {
     return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request,
         authentication);
-  }
-
-  @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
-    String errorMessage = messageSourceAccessor.getMessage("error.bad_request");
-    final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
-    if (cause instanceof UnrecognizedPropertyException) {
-      return createParameterizedErrorResponse(
-          new ParameterizedValidationException("error.invalid_json_key",
-              ((UnrecognizedPropertyException) cause).getPropertyName())
-      );
-    } else if (cause instanceof InvalidTypeIdException
-        || (cause instanceof JsonMappingException && cause.getMessage()
-        .contains("missing property 'type'"))) {
-      errorMessage = messageSourceAccessor.getMessage("error.invalid_type_with_set_prompt");
-    } else if (cause instanceof InvalidFormatException) {
-      for (InvalidFormatException.Reference reference : ((InvalidFormatException) cause)
-          .getPath()) {
-        if ("operations".equals(reference.getFieldName())) {
-          errorMessage = messageSourceAccessor.getMessage("error.acl.invalid_operation");
-          return new ResponseError(errorMessage);
-        }
-      }
-    }
-    return new ResponseError(errorMessage);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {
