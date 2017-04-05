@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1.secret;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.fdescribe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -206,13 +205,13 @@ public class SecretsControllerGenerateTest {
             .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
 
         mockMvc.perform(post)
-          .andExpect(status().isBadRequest())
-          .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-          .andExpect(
-              jsonPath("$.error")
-                  .value("Credentials of this type cannot be generated. " +
-                      "Please adjust the credential type and retry your request.")
-          );
+            .andExpect(status().isBadRequest())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(
+                jsonPath("$.error")
+                    .value("Credentials of this type cannot be generated. " +
+                        "Please adjust the credential type and retry your request.")
+            );
       });
 
       describe("when name does not have a leading slash in the request json", () -> {
@@ -221,7 +220,9 @@ public class SecretsControllerGenerateTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + StringUtils.stripStart(secretName, "/") + "\"}");
+              .content(
+                  "{\"type\":\"password\",\"name\":\"" + StringUtils.stripStart(secretName, "/")
+                      + "\"}");
 
           mockMvc.perform(post)
               .andExpect(status().is2xxSuccessful());
@@ -257,7 +258,8 @@ public class SecretsControllerGenerateTest {
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
               .performGenerate(isA(AuditRecordBuilder.class), isA(PasswordGenerateRequest.class));
-          ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor.forClass(NamedPasswordSecret.class);
+          ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor
+              .forClass(NamedPasswordSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
           NamedPasswordSecret newPassword = argumentCaptor.getValue();
@@ -300,7 +302,8 @@ public class SecretsControllerGenerateTest {
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
               .performGenerate(isA(AuditRecordBuilder.class), isA(SshGenerateRequest.class));
-          ArgumentCaptor<NamedSshSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSshSecret.class);
+          ArgumentCaptor<NamedSshSecret> argumentCaptor = ArgumentCaptor
+              .forClass(NamedSshSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
           NamedSshSecret newSsh = argumentCaptor.getValue();
@@ -312,6 +315,27 @@ public class SecretsControllerGenerateTest {
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
           assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        });
+
+        it("should not generate SSH secret of invalid length", () -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content(
+                  // language=JSON
+                  "{\"type\":\"ssh\",\"name\":\"" + secretName
+                      + "\",\"parameters\":{\"key_length\" : 1337}}"
+              );
+
+          response = mockMvc.perform(post)
+              .andExpect(status().isBadRequest())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("The provided key length is not supported. "
+                          + "Valid values include '2048', '3072' and '4096'.")
+              );
         });
       });
 
@@ -342,7 +366,8 @@ public class SecretsControllerGenerateTest {
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
               .performGenerate(isA(AuditRecordBuilder.class), isA(RsaGenerateRequest.class));
-          ArgumentCaptor<NamedRsaSecret> argumentCaptor = ArgumentCaptor.forClass(NamedRsaSecret.class);
+          ArgumentCaptor<NamedRsaSecret> argumentCaptor = ArgumentCaptor
+              .forClass(NamedRsaSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
 
           NamedRsaSecret newRsa = argumentCaptor.getValue();
@@ -354,6 +379,27 @@ public class SecretsControllerGenerateTest {
         it("persists an audit entry", () -> {
           verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
           assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        });
+
+        it("should not generate RSA secret of invalid length", () -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content(
+                  // language=JSON
+                  "{\"type\":\"rsa\",\"name\":\"" + secretName
+                      + "\",\"parameters\":{\"key_length\" : 1337}}"
+              );
+
+          response = mockMvc.perform(post)
+              .andExpect(status().isBadRequest())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("The provided key length is not supported. "
+                          + "Valid values include '2048', '3072' and '4096'.")
+              );
         });
       });
 
@@ -367,7 +413,7 @@ public class SecretsControllerGenerateTest {
           doReturn(expectedSecret
               .setUuid(uuid)
               .setVersionCreatedAt(frozenTime.minusSeconds(1)))
-            .when(secretDataService).findMostRecent(secretName);
+              .when(secretDataService).findMostRecent(secretName);
           resetAuditLogMock(auditLogService, auditRecordBuilder);
         });
 
@@ -396,7 +442,8 @@ public class SecretsControllerGenerateTest {
           });
 
           it("asks the data service to persist the secret", () -> {
-            final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretDataService.findMostRecent(secretName);
+            final NamedPasswordSecret namedSecret = (NamedPasswordSecret) secretDataService
+                .findMostRecent(secretName);
             assertThat(namedSecret.getPassword(), equalTo(fakePassword));
           });
 
@@ -423,7 +470,8 @@ public class SecretsControllerGenerateTest {
                 .andExpect(jsonPath("$.type").value("password"))
                 .andExpect(jsonPath("$.value").value(fakePassword))
                 .andExpect(jsonPath("$.id").value(uuid.toString()))
-                .andExpect(jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
+                .andExpect(
+                    jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
           });
 
           it("should not persist the secret", () -> {
@@ -491,7 +539,8 @@ public class SecretsControllerGenerateTest {
               .andExpect(jsonPath("$.type").value("password"))
               .andExpect(jsonPath("$.value").value(fakePassword))
               .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
+              .andExpect(
+                  jsonPath("$.version_created_at").value(frozenTime.minusSeconds(1).toString()));
         });
       });
 
@@ -570,13 +619,13 @@ public class SecretsControllerGenerateTest {
               .content("{\"type\":\"foo\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(
-                jsonPath("$.error")
-                    .value("The request does not include a valid type. " +
-                        "Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'.")
-            );
+              .andExpect(status().isBadRequest())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("The request does not include a valid type. " +
+                          "Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'.")
+              );
         });
 
         it("returns 400 for a new value secret", () -> {
@@ -587,13 +636,13 @@ public class SecretsControllerGenerateTest {
               .content("{\"type\":\"value\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(
-                jsonPath("$.error")
-                    .value("Credentials of this type cannot be generated. " +
-                        "Please adjust the credential type and retry your request.")
-            );
+              .andExpect(status().isBadRequest())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("Credentials of this type cannot be generated. " +
+                          "Please adjust the credential type and retry your request.")
+              );
         });
 
         it("returns 400 for a new json secret", () -> {
@@ -604,13 +653,13 @@ public class SecretsControllerGenerateTest {
               .content("{\"type\":\"json\",\"name\":\"" + secretName + "\"}");
 
           mockMvc.perform(post)
-            .andExpect(status().isBadRequest())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(
-                jsonPath("$.error")
-                    .value("Credentials of this type cannot be generated. " +
-                        "Please adjust the credential type and retry your request.")
-            );
+              .andExpect(status().isBadRequest())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(
+                  jsonPath("$.error")
+                      .value("Credentials of this type cannot be generated. " +
+                          "Please adjust the credential type and retry your request.")
+              );
         });
       });
     });
