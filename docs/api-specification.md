@@ -27,6 +27,9 @@ Contents -
     * [Value Credentials](#-value-credentials)
        * [Get Value](#get-a-value-credential)
        * [Set Value](#set-a-static-value-credential)
+    * [JSON Credentials](#-json-credentials)
+       * [Get Value](#get-a-json-credential)
+       * [Set Value](#set-a-static-json-credential)
 
 
 ---
@@ -439,7 +442,8 @@ Status: 200
     "value":
       {
         "public_key": "ssh-rsa AAAAB3NzaC...p+p3QPLx comment",
-        "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
+        "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----",
+        "public_key_fingerprint": "EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI"
       },
     "version_created_at": "2016-01-01T12:00:00Z"
   }]
@@ -475,7 +479,8 @@ Status: 200
   "value":
     {
       "public_key": "ssh-rsa AAAAB3NzaC...p+p3QPLx comment",
-      "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
+      "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----",
+      "public_key_fingerprint": "EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI"
     },
   "version_created_at": "2016-01-01T12:00:00Z"
 }
@@ -512,7 +517,8 @@ Status: 200
   "value":
     {
       "public_key": "ssh-rsa AAAAB3NzaC...p+p3QPLx user@location",
-      "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----"
+      "private_key": "-----BEGIN RSA PRIVATE KEY-----...-----END RSA PRIVATE KEY-----",
+      "public_key_fingerprint": "EvI0/GIUgDjcoCzUQM+EtwnVTryNsKRd6TrHAGKJJSI"
     },
   "version_created_at": "2016-01-01T12:00:00Z"
 }
@@ -669,5 +675,75 @@ Status: 200
    "type": "value",
    "value": "/usr/local/app.sh",
    "version_created_at": "2016-01-01T12:00:00Z"
+}
+```
+#### <a></a> JSON Credentials
+
+JSON credentials hold an arbitrary JSON object. A value credential should be used for configuration strings and non-password values. Values credentials must be statically set.
+
+##### <a></a>Get a JSON credential
+
+Method: `GET`<br>
+URI: `[host]/api/v1/data?name=[cred name]`
+
+Success Response - 
+Status: 200
+```json
+{
+  "data": [
+    {
+      "type": "json",
+      "version_created_at": "2017-04-05T20:46:08Z",
+      "id": "9142ca0b-9d52-45dd-847d-7fb30ea20e6d",
+      "name": "/example/json",
+      "value": {
+        "key": 123,
+        "key_list": [
+          "val1",
+          "val2",
+          "val3"
+        ],
+        "is_true": true
+      }
+    }
+  ]
+}
+```
+---
+##### <a></a>Set a static JSON credential
+
+Method: `PUT`<br>
+URI: `[host]/api/v1/data`
+
+Request -
+```json
+{
+  "name": "/example/json",
+  "type": "json",
+  "value": {
+    "key": 123,
+    "key_list": [ "val1", "val2", "val3" ],
+    "is_true": true
+  }
+}
+```
+
+Success Response - 
+Status: 200
+```json
+{
+  "type": "json",
+  "version_created_at": "2017-04-05T20:46:08Z",
+  "id": "9142ca0b-9d52-45dd-847d-7fb30ea20e6d",
+  "name": "/example/json",
+  "value": {
+    "key": 123,
+    "key_list": [
+      "val1",
+      "val2",
+      "val3"
+    ],
+    "is_true": true
+  }
 }
 ```
