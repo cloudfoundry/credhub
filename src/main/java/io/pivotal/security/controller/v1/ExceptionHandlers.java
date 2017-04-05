@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -58,11 +59,28 @@ public class ExceptionHandlers {
     return badRequestResponse();
   }
 
+  @ExceptionHandler(ParameterizedValidationException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ResponseError handleParameterizedValidationException(
+      ParameterizedValidationException exception) throws Exception {
+    return createParameterizedErrorResponse(exception);
+  }
+
   private ResponseError badRequestResponse() {
     return constructError("error.bad_request");
   }
 
   private ResponseError constructError(String error) {
     return new ResponseError(messageSourceAccessor.getMessage(error));
+  }
+
+  private ResponseError createParameterizedErrorResponse(
+      ParameterizedValidationException exception) {
+    String errorMessage = messageSourceAccessor.getMessage(
+        exception.getMessage(),
+        exception.getParameters()
+    );
+    return new ResponseError(errorMessage);
   }
 }

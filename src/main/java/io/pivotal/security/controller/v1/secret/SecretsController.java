@@ -1,10 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -39,15 +34,6 @@ import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -73,6 +59,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(
@@ -409,13 +410,6 @@ public class SecretsController {
       }
     }
     return new ResponseError(errorMessage);
-  }
-
-  @ExceptionHandler(ParameterizedValidationException.class)
-  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  public ResponseError handleParameterizedValidationException(
-      ParameterizedValidationException exception) throws Exception {
-    return createParameterizedErrorResponse(exception);
   }
 
   @ExceptionHandler(UnrecognizedPropertyException.class)
