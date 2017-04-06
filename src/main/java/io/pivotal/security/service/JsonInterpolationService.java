@@ -78,6 +78,6 @@ public class JsonInterpolationService {
   }
 
   private DocumentContext parseToJson(String requestBody) throws Exception {
-    return jsonContextFactory.getObject().parse(requestBody);
+    return jsonContextFactory.getParseContext().parse(requestBody);
   }
 }

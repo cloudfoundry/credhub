@@ -37,7 +37,7 @@ public class NamedSecretGenerateHandlerTest extends AbstractNamedSecretHandlerTe
 
   {
     beforeEach(() -> {
-      jsonPath = new JsonContextFactory().getObject();
+      jsonPath = new JsonContextFactory().getParseContext();
       subject = new NamedSecretGenerateHandler(
           certificateGeneratorRequestTranslator,
           sshGeneratorRequestTranslator,

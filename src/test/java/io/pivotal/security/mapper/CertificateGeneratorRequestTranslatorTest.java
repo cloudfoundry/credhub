@@ -65,7 +65,7 @@ public class CertificateGeneratorRequestTranslatorTest {
 
       when(certificateSecretParametersFactory.get()).thenCallRealMethod();
 
-      jsonPath = new JsonContextFactory().getObject();
+      jsonPath = new JsonContextFactory().getParseContext();
     });
 
     it("knows keys for all valid parameters", () -> {

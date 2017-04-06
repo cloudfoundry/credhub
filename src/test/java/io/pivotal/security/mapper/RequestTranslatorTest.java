@@ -37,7 +37,7 @@ public class RequestTranslatorTest {
     };
 
     beforeEach(() -> {
-      jsonPath = new JsonContextFactory().getObject();
+      jsonPath = new JsonContextFactory().getParseContext();
     });
 
     describe("populating entity from JSON", () -> {

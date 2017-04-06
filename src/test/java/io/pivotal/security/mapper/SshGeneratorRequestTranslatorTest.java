@@ -1,5 +1,26 @@
 package io.pivotal.security.mapper;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.JsonContextFactory;
+import io.pivotal.security.controller.v1.SshSecretParametersFactory;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -12,33 +33,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.controller.v1.SshSecretParametersFactory;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.secret.SshKey;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SshGeneratorRequestTranslatorTest {
 
   @Autowired
-  ParseContext jsonPath;
+  JsonContextFactory jsonContextFactory;
 
   @MockBean
   SshGenerator secretGenerator;
@@ -59,10 +60,12 @@ public class SshGeneratorRequestTranslatorTest {
   @Autowired
   private Encryptor encryptor;
 
+  private ParseContext jsonPath;
+
   {
     wireAndUnwire(this);
-
     beforeEach(() -> {
+      jsonPath = jsonContextFactory.getParseContext();
       mockParams = spy(SshGenerationParameters.class);
       when(sshSecretParametersFactory.get()).thenReturn(mockParams);
     });

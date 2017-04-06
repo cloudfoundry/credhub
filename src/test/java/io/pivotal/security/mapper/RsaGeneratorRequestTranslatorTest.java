@@ -1,5 +1,25 @@
 package io.pivotal.security.mapper;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.ParseContext;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.config.JsonContextFactory;
+import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.secret.RsaKey;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -13,32 +33,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.ParseContext;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.controller.v1.RsaSecretParametersFactory;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.secret.RsaKey;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class RsaGeneratorRequestTranslatorTest {
 
   @Autowired
-  ParseContext jsonPath;
+  JsonContextFactory jsonContextFactory;
 
   @MockBean
   RsaGenerator secretGenerator;
@@ -54,11 +55,14 @@ public class RsaGeneratorRequestTranslatorTest {
   @Autowired
   private Encryptor encryptor;
 
+  private ParseContext jsonPath;
+
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
       mockParams = spy(RsaGenerationParameters.class);
+      jsonPath = jsonContextFactory.getParseContext();
       when(rsaSecretParametersFactory.get()).thenReturn(mockParams);
     });
 

@@ -53,6 +53,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.NoSuchAlgorithmException;
@@ -244,7 +245,7 @@ public class SecretsController {
       Authentication authentication,
       AuditRecordBuilder auditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
-  ) throws Exception {
+  ) throws IOException {
     String requestString = IOUtils.toString(new InputStreamReader(inputStream));
     boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
 
@@ -267,7 +268,7 @@ public class SecretsController {
       InputStream requestInputStream,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
-  ) throws Exception {
+  ) throws IOException {
     BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
     requestBody.addCurrentUser(currentUserAccessControlEntry);
@@ -276,7 +277,7 @@ public class SecretsController {
     final boolean isCurrentlyTrappedInTheMonad = requestBody instanceof DefaultSecretGenerateRequest;
     if (isCurrentlyTrappedInTheMonad) {
       requestInputStream.reset();
-      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
+      DocumentContext parsedRequestBody = jsonContextFactory.getParseContext().parse(requestInputStream);
       return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
     } else {
       return generateService.performGenerate(auditRecordBuilder, requestBody);
@@ -287,7 +288,7 @@ public class SecretsController {
       AuditRecordBuilder auditRecordBuilder,
       InputStream requestInputStream,
       String requestString
-  ) throws Exception {
+  ) throws IOException {
     SecretRegenerateRequest requestBody = objectMapper.readValue(requestString, SecretRegenerateRequest.class);
 
     ResponseEntity responseEntity = regenerateService.performRegenerate(auditRecordBuilder, requestBody);
@@ -295,7 +296,7 @@ public class SecretsController {
     boolean isCurrentlyTrappedInTheMonad = responseEntity == null;
     if (isCurrentlyTrappedInTheMonad) {
       requestInputStream.reset();
-      DocumentContext parsedRequestBody = jsonContextFactory.getObject().parse(requestInputStream);
+      DocumentContext parsedRequestBody = jsonContextFactory.getParseContext().parse(requestInputStream);
       return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
     } else {
       return responseEntity;
@@ -418,7 +419,7 @@ public class SecretsController {
       AuditRecordBuilder auditRecordBuilder,
       SecretKindMappingFactory handler,
       DocumentContext parsedRequestBody
-  ) throws Exception {
+  ) {
     final String secretName = getSecretName(parsedRequestBody);
     if (StringUtils.isEmpty(secretName)) {
       throw new ParameterizedValidationException("error.missing_name");
