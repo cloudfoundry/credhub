@@ -1,7 +1,5 @@
 package io.pivotal.security.fake;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -9,16 +7,15 @@ import org.springframework.transaction.TransactionStatus;
 
 public class FakeTransactionManager implements PlatformTransactionManager {
 
-  Tx currentTransaction;
+  FakeTransactionStatus currentTransaction;
   private boolean shouldThrow;
 
   @Override
-  public TransactionStatus getTransaction(TransactionDefinition definition)
-      throws TransactionException {
-    if (currentTransaction != null) {
-      throw new RuntimeException();
+  public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
+    if (currentTransaction == null || currentTransaction.isCompleted()) {
+      currentTransaction = new FakeTransactionStatus();
     }
-    currentTransaction = new Tx();
+
     return currentTransaction;
   }
 
@@ -26,7 +23,7 @@ public class FakeTransactionManager implements PlatformTransactionManager {
   public void commit(TransactionStatus status) throws TransactionException {
     if (shouldThrow) {
       currentTransaction.complete();
-      throw new RuntimeException("can't commit transaction");
+      throw new TestTransactionException("can't commit transaction");
     }
     currentTransaction.commit();
   }
@@ -34,7 +31,6 @@ public class FakeTransactionManager implements PlatformTransactionManager {
   @Override
   public void rollback(TransactionStatus status) throws TransactionException {
     currentTransaction.rollback();
-    currentTransaction = null;
   }
 
   public void failOnCommit() {
@@ -43,83 +39,5 @@ public class FakeTransactionManager implements PlatformTransactionManager {
 
   public boolean hasOpenTransaction() {
     return currentTransaction != null && !currentTransaction.isCompleted();
-  }
-
-  static class Tx implements TransactionStatus {
-
-    final List<Operation> operations = new ArrayList<>();
-    private boolean completed = false;
-
-    void enqueue(Operation o) {
-      operations.add(o);
-    }
-
-    void complete() {
-      completed = true;
-    }
-
-    void commit() {
-      if (completed) {
-        throw new RuntimeException("can't commit completed transaction");
-      }
-      completed = true;
-      operations.forEach(Operation::perform);
-    }
-
-    void rollback() {
-      if (completed) {
-        throw new RuntimeException("can't rollback completed transaction");
-      }
-    }
-
-    @Override
-    public boolean isNewTransaction() {
-      return false;
-    }
-
-    @Override
-    public boolean hasSavepoint() {
-      return false;
-    }
-
-    @Override
-    public void setRollbackOnly() {
-
-    }
-
-    @Override
-    public boolean isRollbackOnly() {
-      return false;
-    }
-
-    @Override
-    public void flush() {
-
-    }
-
-    @Override
-    public boolean isCompleted() {
-      return completed;
-    }
-
-    @Override
-    public Object createSavepoint() throws TransactionException {
-      return null;
-    }
-
-    @Override
-    public void rollbackToSavepoint(Object savepoint) throws TransactionException {
-
-    }
-
-    @Override
-    public void releaseSavepoint(Object savepoint) throws TransactionException {
-
-    }
-
-    interface Operation {
-
-      void perform();
-    }
   }
 }

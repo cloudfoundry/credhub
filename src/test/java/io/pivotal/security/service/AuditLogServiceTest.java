@@ -4,7 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.fake.FakeSecretRepository;
+import io.pivotal.security.fake.FakeRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -22,6 +22,9 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -43,9 +46,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-import java.util.concurrent.atomic.AtomicReference;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
@@ -56,7 +56,7 @@ public class AuditLogServiceTest {
   @MockBean
   OperationAuditRecordDataService operationAuditRecordDataService;
 
-  FakeSecretRepository secretRepository;
+  FakeRepository secretRepository;
 
   FakeTransactionManager transactionManager;
 
@@ -90,7 +90,7 @@ public class AuditLogServiceTest {
       authentication.setDetails(mockDetails);
 
       transactionManager = new FakeTransactionManager();
-      secretRepository = new FakeSecretRepository(transactionManager);
+      secretRepository = new FakeRepository(transactionManager);
 
       when(currentTimeProvider.getInstant()).thenReturn(now);
       when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
@@ -289,7 +289,7 @@ public class AuditLogServiceTest {
             });
           });
 
-          it("doesn't rollback transaction", () -> {
+          it("rolls back commit", () -> {
             assertThat(transactionManager.hasOpenTransaction(), is(false));
             assertThat(secretRepository.count(), equalTo(0L));
           });

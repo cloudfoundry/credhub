@@ -2,12 +2,13 @@ package io.pivotal.security.fake;
 
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.repository.OperationAuditRecordRepository;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FakeOperationAuditRecordRepository implements OperationAuditRecordRepository {
 
@@ -49,7 +50,7 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
       auditRecords.add(copy);
     });
     if (shouldThrow) {
-      throw new RuntimeException(getClass().getSimpleName());
+      throw new TestTransactionException(getClass().getSimpleName());
     }
     return entity;
   }

@@ -1,25 +1,28 @@
 package io.pivotal.security.fake;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.OperationAuditRecord;
+import org.junit.runner.RunWith;
+import org.springframework.transaction.TransactionException;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+
+import java.time.Instant;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.OperationAuditRecord;
-import java.time.Instant;
-import org.junit.runner.RunWith;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-
 @RunWith(Spectrum.class)
 public class TransactionContractTest {
 
-  FakeSecretRepository secretRepository;
+  FakeRepository fakeRepository;
 
   FakeOperationAuditRecordRepository auditRecordRepository;
 
@@ -30,7 +33,7 @@ public class TransactionContractTest {
   {
     beforeEach(() -> {
       transactionManager = new FakeTransactionManager();
-      secretRepository = new FakeSecretRepository(transactionManager);
+      fakeRepository = new FakeRepository(transactionManager);
       auditRecordRepository = new FakeOperationAuditRecordRepository(transactionManager);
     });
 
@@ -39,16 +42,12 @@ public class TransactionContractTest {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       });
 
-      itThrows("does not allow nesting", RuntimeException.class, () -> {
-        transactionManager.getTransaction(new DefaultTransactionDefinition());
-      });
-
       describe("audit repository in dangerous mode when saving", () -> {
         beforeEach(() -> {
           auditRecordRepository.failOnSave();
         });
 
-        itThrows("save audit record", RuntimeException.class, () -> {
+        itThrows("save audit record", TransactionException.class, () -> {
           auditRecordRepository.save(new OperationAuditRecord());
         });
 
@@ -62,7 +61,7 @@ public class TransactionContractTest {
           transactionManager.failOnCommit();
         });
 
-        itThrows("save audit record", RuntimeException.class, () -> {
+        itThrows("save audit record", TransactionException.class, () -> {
           transactionManager.commit(transaction);
         });
       });
@@ -71,10 +70,10 @@ public class TransactionContractTest {
         beforeEach(() -> {
           NamedValueSecretData entity = new NamedValueSecretData("test");
           entity.setEncryptedValue("value".getBytes());
-          secretRepository.save(entity);
+          fakeRepository.save(entity);
           NamedValueSecretData namedValueSecret = new NamedValueSecretData("otherTest");
           namedValueSecret.setEncryptedValue("otherValue".getBytes());
-          secretRepository.save(namedValueSecret);
+          fakeRepository.save(namedValueSecret);
 
           final OperationAuditRecord auditRecord = new OperationAuditRecord("", Instant.now(),
               null, "operation", null, null,
@@ -90,7 +89,7 @@ public class TransactionContractTest {
           });
 
           it("is visible", () -> {
-            assertThat(secretRepository.count(), equalTo(2L));
+            assertThat(fakeRepository.count(), equalTo(2L));
             assertThat(auditRecordRepository.count(), equalTo(1L));
             assertThat(auditRecordRepository.findAll().get(0).getOperation(), equalTo("operation"));
           });
@@ -106,8 +105,12 @@ public class TransactionContractTest {
           });
 
           it("revokes the data", () -> {
-            assertThat(secretRepository.count(), equalTo(0L));
+            assertThat(fakeRepository.count(), equalTo(0L));
             assertThat(auditRecordRepository.count(), equalTo(0L));
+          });
+
+          itThrowsWithMessage("does not allow another commit", TransactionException.class, "can't commit completed transaction", () -> {
+            transactionManager.commit(transaction);
           });
 
           describe("when another transaction is opened", () -> {
@@ -115,12 +118,12 @@ public class TransactionContractTest {
               transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
               NamedValueSecretData entity = new NamedValueSecretData("test3");
               entity.setEncryptedValue("value3".getBytes());
-              secretRepository.save(entity);
+              fakeRepository.save(entity);
               transactionManager.commit(transaction);
             });
 
             it("it works as usual", () -> {
-              assertThat(secretRepository.count(), equalTo(1L));
+              assertThat(fakeRepository.count(), equalTo(1L));
             });
           });
         });
