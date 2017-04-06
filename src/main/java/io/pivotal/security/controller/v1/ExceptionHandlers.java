@@ -70,7 +70,7 @@ public class ExceptionHandlers {
   public ResponseError handleParameterizedValidationException(
       ParameterizedValidationException exception
   ) throws Exception {
-    return constructError(exception.getMessage());
+    return constructError(exception.getMessage(), exception.getParameters());
   }
 
   @ExceptionHandler(UnrecognizedPropertyException.class)
@@ -112,6 +112,10 @@ public class ExceptionHandlers {
   }
 
   private ResponseError constructError(String error, String... args) {
+    return new ResponseError(messageSourceAccessor.getMessage(error, args));
+  }
+
+  private ResponseError constructError(String error, Object[] args) {
     return new ResponseError(messageSourceAccessor.getMessage(error, args));
   }
 }
