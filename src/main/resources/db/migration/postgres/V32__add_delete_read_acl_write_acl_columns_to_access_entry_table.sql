@@ -8,7 +8,7 @@ ALTER TABLE access_entry
   ADD COLUMN write_acl_permission BOOL DEFAULT FALSE NOT NULL;
 
 ALTER TABLE access_entry
-  ADD CONSTRAINT read_permission_not_null_constraint NOT NULL(read_permission);
+  ALTER COLUMN read_permission SET NOT NULL;
 
 ALTER TABLE access_entry
-  ADD CONSTRAINT write_permission_not_null_constraint NOT NULL(write_permission);
+  ALTER COLUMN write_permission SET NOT NULL;
