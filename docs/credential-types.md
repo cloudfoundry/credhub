@@ -15,6 +15,21 @@ CredHub supports the following credential types:
   }
   ```
 
+* **JSON** - This type holds an arbitrary json object. It is meant for static configurations with many values where it is not efficient to separate out specific values into typed credentials. 
+
+  ```json
+  {
+    "name": "/example/value",
+    "type": "value",
+    "value": {
+      "key": 123,
+      "key_list": [ "val1", "val2", "val3" ],
+      "is_true": true
+    }
+    "version_created_at": "2016-10-13T20:59:28Z"
+  }
+  ```
+
 * **Password** - This type holds a single string value. It is meant for passwords and other random string credentials. Values for this type may be automatically generated. 
 
   ```json
