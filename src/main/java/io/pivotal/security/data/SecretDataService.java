@@ -1,8 +1,5 @@
 package io.pivotal.security.data;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
-
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedJsonSecret;
@@ -23,10 +20,6 @@ import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.SecretView;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -34,6 +27,14 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
 
 @Service
 public class SecretDataService {
@@ -146,15 +147,9 @@ public class SecretDataService {
     return findMatchingName(path + "%");
   }
 
-  public long delete(String name) {
-    SecretName secretName = secretNameRepository
-        .findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
-
-    if (secretName != null) {
-      return secretNameRepository.deleteByName(secretName.getName());
-    } else {
-      return 0;
-    }
+  public boolean delete(String name) {
+    long numDeleted = secretNameRepository.deleteByName(addLeadingSlashIfMissing(name));
+    return numDeleted > 0;
   }
 
   public List<NamedSecret> findAllByName(String name) {

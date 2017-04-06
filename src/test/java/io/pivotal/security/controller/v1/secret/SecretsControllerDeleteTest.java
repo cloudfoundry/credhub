@@ -126,7 +126,7 @@ public class SecretsControllerDeleteTest {
 
       describe("when there is one secret with the name (case-insensitive)", () -> {
         beforeEach(() -> {
-          doReturn(1L).when(secretDataService).delete(secretName.toUpperCase());
+          doReturn(true).when(secretDataService).delete(secretName.toUpperCase());
           doReturn(new NamedValueSecret())
               .when(secretDataService)
               .findMostRecent(secretName.toUpperCase());
@@ -156,7 +156,7 @@ public class SecretsControllerDeleteTest {
           value1.setEncryptedValue("value1".getBytes());
           NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
-          doReturn(2L).when(secretDataService).delete(secretName);
+          doReturn(true).when(secretDataService).delete(secretName);
           doReturn(new NamedValueSecret()).when(secretDataService).findMostRecent(secretName);
 
           response = mockMvc.perform(delete("/api/v1/data?name=" + secretName)
@@ -185,7 +185,7 @@ public class SecretsControllerDeleteTest {
           value1.setEncryptedValue("value1".getBytes());
           NamedValueSecret value2 = new NamedValueSecret(secretName);
           value2.setEncryptedValue("value2".getBytes());
-          doReturn(2L).when(secretDataService).delete(secretName.toUpperCase());
+          doReturn(true).when(secretDataService).delete(secretName.toUpperCase());
           doReturn(new NamedValueSecret())
               .when(secretDataService)
               .findMostRecent(secretName.toUpperCase());

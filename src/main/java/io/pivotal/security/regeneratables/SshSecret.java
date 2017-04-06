@@ -5,7 +5,6 @@ import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.request.SshGenerateRequest;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.ErrorResponseService;
 import io.pivotal.security.service.GenerateService;
 import org.springframework.http.ResponseEntity;
 
@@ -13,7 +12,7 @@ public class SshSecret implements Regeneratable {
 
   private GenerateService generateService;
 
-  public SshSecret(ErrorResponseService responseService, GenerateService generateService) {
+  public SshSecret(GenerateService generateService) {
     this.generateService = generateService;
   }
 

@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.fake.FakeRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -13,7 +14,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -29,9 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static com.jayway.jsonpath.matchers.JsonPathMatchers.hasJsonPath;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.EXPIRED_KEY_JWT;
 import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
@@ -49,6 +48,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
+@SuppressWarnings("EmptyCatchBlock")
 public class AuditLogServiceTest {
 
   AuditLogService subject;
@@ -71,9 +71,6 @@ public class AuditLogServiceTest {
 
   @MockBean
   SecurityEventsLogService securityEventsLogService;
-
-  @Autowired
-  MessageSource messageSource;
 
   private final Instant now = Instant.ofEpochSecond(1490903353);
 
@@ -100,10 +97,8 @@ public class AuditLogServiceTest {
           tokenServices,
           operationAuditRecordDataService,
           transactionManager,
-          messageSource,
           securityEventsLogService
       );
-      subject.init();
     });
 
     describe("logging behavior", () -> {
@@ -133,28 +128,18 @@ public class AuditLogServiceTest {
         });
 
         describe("when the database audit fails", () -> {
-          beforeEach(() -> {
+          itThrowsWithMessage("does not perform the action or write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService)
                 .save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              return auditedSaveAndReturnNewValue(auditRecordBuilder);
-            });
-          });
-
-          it("does not perform the action", () -> {
-            assertThat(secretRepository.count(), equalTo(0L));
-          });
-
-          it("returns 500", () -> {
-            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
-                "The request could not be completed. Please contact your system administrator to"
-                    + " resolve this issue.")));
-          });
-
-          it("should not write to the CEF log", () -> {
-            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+            try {
+              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+                return auditedSaveAndReturnNewValue(auditRecordBuilder);
+              });
+            } finally {
+              assertThat(secretRepository.count(), equalTo(0L));
+              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+            }
           });
         });
       });
@@ -198,36 +183,28 @@ public class AuditLogServiceTest {
         });
 
         describe("when the database audit fails", () -> {
-          beforeEach(() -> {
+          itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService)
                 .save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              auditRecordBuilder.setCredentialName("keyName");
-              auditRecordBuilder.populateFromRequest(
-                  new MockHttpServletRequest("GET", "requestURI"));
-              auditRecordBuilder.setAuthentication(authentication);
+            try {
+              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+                auditRecordBuilder.setCredentialName("keyName");
+                auditRecordBuilder.populateFromRequest(
+                    new MockHttpServletRequest("GET", "requestURI"));
+                auditRecordBuilder.setAuthentication(authentication);
 
-              NamedValueSecretData entity = new NamedValueSecretData("keyName");
-              entity.setEncryptedValue("value".getBytes());
-              secretRepository.save(entity);
-              throw new RuntimeException("controller method failed");
-            });
-          });
+                NamedValueSecretData entity = new NamedValueSecretData("keyName");
+                entity.setEncryptedValue("value".getBytes());
+                secretRepository.save(entity);
+                throw new RuntimeException("controller method failed");
+              });
+            } finally {
+              assertThat(transactionManager.hasOpenTransaction(), is(false));
+              assertThat(secretRepository.count(), equalTo(0L));
 
-          it("rolls back both original and audit repository transactions", () -> {
-            assertThat(secretRepository.count(), equalTo(0L));
-          });
-
-          it("returns 500 and original error message", () -> {
-            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
-                "The request could not be completed. Please contact your system administrator "
-                    + "to resolve this issue.")));
-          });
-
-          it("should not write to the CEF log", () -> {
-            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+            }
           });
         });
       });
@@ -255,54 +232,36 @@ public class AuditLogServiceTest {
         });
 
         describe("when the database audit fails", () -> {
-          beforeEach(() -> {
+          itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
             doThrow(new RuntimeException()).when(operationAuditRecordDataService)
                 .save(any(OperationAuditRecord.class));
 
-            responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
-            });
-          });
+            try {
+              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+                return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
+              });
+            } finally {
+              assertThat(transactionManager.hasOpenTransaction(), is(false));
+              assertThat(secretRepository.count(), equalTo(0L));
 
-          it("rolls back both original and audit repository transactions", () -> {
-            assertThat(transactionManager.hasOpenTransaction(), is(false));
-            assertThat(secretRepository.count(), equalTo(0L));
-          });
-
-          it("returns 500", () -> {
-            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
-                "The request could not be completed. Please contact your system administrator"
-                    + " to resolve this issue.")));
-          });
-
-          it("should not write to the CEF log", () -> {
-            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+            }
           });
         });
 
         describe("when audit transaction fails to commit", () -> {
-          beforeEach(() -> {
-            transactionManager.failOnCommit();
-            responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
-            });
-          });
+          itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
+            try {
+              transactionManager.failOnCommit();
+              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+                return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
+              });
+            } finally {
+              assertThat(transactionManager.hasOpenTransaction(), is(false));
+              assertThat(secretRepository.count(), equalTo(0L));
 
-          it("rolls back commit", () -> {
-            assertThat(transactionManager.hasOpenTransaction(), is(false));
-            assertThat(secretRepository.count(), equalTo(0L));
-          });
-
-          it("returns 500", () -> {
-            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.INTERNAL_SERVER_ERROR));
-            assertThat(serializeToString(responseEntity.getBody()), hasJsonPath("$.error", equalTo(
-                "The request could not be completed. Please contact your system administrator"
-                    + " to resolve this issue.")));
-          });
-
-          it("should not write to the CEF log", () -> {
-            verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+            }
           });
         });
       });

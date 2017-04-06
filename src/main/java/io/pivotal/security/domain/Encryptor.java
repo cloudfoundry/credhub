@@ -1,12 +1,12 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 public class Encryptor {
@@ -38,8 +38,6 @@ public class Encryptor {
     }
     try {
       return encryptionService.decrypt(keyUuid, encryptedValue, nonce);
-    } catch (KeyNotFoundException e) {
-      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

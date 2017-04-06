@@ -1,5 +1,26 @@
 package io.pivotal.security.controller.v1.secret;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
+import io.pivotal.security.request.PasswordGenerateRequest;
+import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.RsaGenerateRequest;
+import io.pivotal.security.request.SecretRegenerateRequest;
+import io.pivotal.security.request.SshGenerateRequest;
+import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.view.ResponseError;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -15,33 +36,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.exceptions.KeyNotFoundException;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.BaseSecretGenerateRequest;
-import io.pivotal.security.request.PasswordGenerateRequest;
-import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.request.RsaGenerateRequest;
-import io.pivotal.security.request.SecretRegenerateRequest;
-import io.pivotal.security.request.SshGenerateRequest;
-import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.ErrorResponseService;
-import io.pivotal.security.service.GenerateService;
-import io.pivotal.security.view.ResponseError;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 @RunWith(Spectrum.class)
 public class RegenerateServiceTest {
 
-  private ErrorResponseService errorResponseService;
   private SecretDataService secretDataService;
   private GenerateService generateService;
   private RegenerateService subject;
@@ -56,7 +53,6 @@ public class RegenerateServiceTest {
 
   {
     beforeEach(() -> {
-      errorResponseService = mock(ErrorResponseService.class);
       secretDataService = mock(SecretDataService.class);
       generateService = mock(GenerateService.class);
       namedPasswordSecret = mock(NamedPasswordSecret.class);
@@ -70,7 +66,7 @@ public class RegenerateServiceTest {
           .performGenerate(isA(AuditRecordBuilder.class), isA(BaseSecretGenerateRequest.class)))
           .thenReturn(new ResponseEntity(HttpStatus.OK));
       secretOfUnsupportedType = new NamedCertificateSecret();
-      subject = new RegenerateService(errorResponseService, secretDataService, generateService);
+      subject = new RegenerateService(secretDataService, generateService);
     });
 
     describe("#performRegenerate", () -> {
@@ -90,8 +86,6 @@ public class RegenerateServiceTest {
               .thenReturn(expectedParameters);
 
           expectedResponseEntity = new ResponseError("some error");
-          when(errorResponseService.createErrorResponse(eq("error.missing_encryption_key")))
-              .thenReturn(expectedResponseEntity);
           responseEntity = subject
               .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
         });
@@ -136,23 +130,6 @@ public class RegenerateServiceTest {
                 responseEntity = subject
                     .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
               });
-        });
-
-        describe("when regenerating password whose parameters can't be decrypted", () -> {
-          beforeEach(() -> {
-            when(namedPasswordSecret.getGenerationParameters())
-                .thenThrow(new KeyNotFoundException());
-          });
-
-          it("returns an error response", () -> {
-            SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
-                .setName("password");
-
-            responseEntity = subject
-                .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
-
-            assertThat(responseEntity.getBody(), equalTo(expectedResponseEntity));
-          });
         });
       });
 

@@ -10,7 +10,7 @@ import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.entity.AuditingOperationCode;
-import io.pivotal.security.exceptions.KeyNotFoundException;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
@@ -25,7 +25,6 @@ import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
-import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretKind;
 import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;
@@ -35,8 +34,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
-import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -79,7 +76,6 @@ public class SecretsController {
   private final NamedSecretGenerateHandler namedSecretGenerateHandler;
   private final JsonContextFactory jsonContextFactory;
   private final AuditLogService auditLogService;
-  private final MessageSourceAccessor messageSourceAccessor;
   private final ObjectMapper objectMapper;
   private final GenerateService generateService;
   private final SetService setService;
@@ -89,7 +85,6 @@ public class SecretsController {
   public SecretsController(SecretDataService secretDataService,
                            NamedSecretGenerateHandler namedSecretGenerateHandler,
                            JsonContextFactory jsonContextFactory,
-                           MessageSource messageSource,
                            AuditLogService auditLogService,
                            ObjectMapper objectMapper,
                            GenerateService generateService,
@@ -100,7 +95,6 @@ public class SecretsController {
     this.namedSecretGenerateHandler = namedSecretGenerateHandler;
     this.jsonContextFactory = jsonContextFactory;
     this.auditLogService = auditLogService;
-    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
     this.objectMapper = objectMapper;
     this.generateService = generateService;
     this.setService = setService;
@@ -157,12 +151,10 @@ public class SecretsController {
       auditRecorder.populateFromRequest(request);
       auditRecorder.setAuthentication(authentication);
 
-      if (secretDataService.findMostRecent(secretName) == null) {
-        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"),
-            HttpStatus.NOT_FOUND);
+      if (!secretDataService.delete(secretName)) {
+        throw new EntryNotFoundException("error.credential_not_found");
       }
 
-      secretDataService.delete(secretName);
       return new ResponseEntity(HttpStatus.NO_CONTENT);
     });
   }
@@ -355,8 +347,7 @@ public class SecretsController {
       }
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
-        return new ResponseEntity<>(createErrorResponse("error.credential_not_found"),
-            HttpStatus.NOT_FOUND);
+        throw new EntryNotFoundException("error.credential_not_found");
       } else {
         ResponseEntity success;
         auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
@@ -367,9 +358,6 @@ public class SecretsController {
           } else {
             success = new ResponseEntity<>(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
           }
-        } catch (KeyNotFoundException e) {
-          return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"),
-              HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (NoSuchAlgorithmException e) {
           throw new RuntimeException(e);
         }
@@ -434,9 +422,7 @@ public class SecretsController {
     AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
     auditRecordBuilder.setOperationCode(operationCode);
     if (regenerate && existingNamedSecret == null) {
-      return new ResponseEntity<>(
-          createErrorResponse("error.credential_not_found"),
-          HttpStatus.NOT_FOUND);
+      throw new EntryNotFoundException("error.credential_not_found");
     }
 
     String secretPath = secretName;
@@ -471,25 +457,11 @@ public class SecretsController {
       return new ResponseEntity<>(secretView, HttpStatus.OK);
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
-    } catch (KeyNotFoundException e) {
-      return new ResponseEntity<>(createErrorResponse("error.missing_encryption_key"),
-          HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   private String getSecretName(DocumentContext parsed) {
     return parsed.read("$.name", String.class);
-  }
-
-  private ResponseError createErrorResponse(String key) {
-    return createParameterizedErrorResponse(new ParameterizedValidationException(key));
-  }
-
-  private ResponseError createParameterizedErrorResponse(
-      ParameterizedValidationException exception) {
-    String errorMessage = messageSourceAccessor
-        .getMessage(exception.getMessage(), exception.getParameters());
-    return new ResponseError(errorMessage);
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request,

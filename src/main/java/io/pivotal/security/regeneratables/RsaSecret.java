@@ -4,14 +4,13 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.request.RsaGenerateRequest;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.ErrorResponseService;
 import io.pivotal.security.service.GenerateService;
 import org.springframework.http.ResponseEntity;
 
 public class RsaSecret implements Regeneratable {
   private GenerateService generateService;
 
-  public RsaSecret(ErrorResponseService responseService, GenerateService generateService) {
+  public RsaSecret(GenerateService generateService) {
     this.generateService = generateService;
   }
 

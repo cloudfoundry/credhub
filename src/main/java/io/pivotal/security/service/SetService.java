@@ -3,10 +3,8 @@ package io.pivotal.security.service;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseSecretSetRequest;
-import io.pivotal.security.view.ResponseError;
 import io.pivotal.security.view.SecretView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,16 +18,13 @@ import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE
 
 @Service
 public class SetService {
-  private final ErrorResponseService errorResponseService;
   private final Encryptor encryptor;
   private final SecretDataService secretDataService;
 
   @Autowired
-  public SetService(ErrorResponseService errorResponseService,
-                    SecretDataService secretDataService,
+  public SetService(SecretDataService secretDataService,
                     Encryptor encryptor
   ) {
-    this.errorResponseService = errorResponseService;
     this.secretDataService = secretDataService;
     this.encryptor = encryptor;
   }
@@ -55,13 +50,8 @@ public class SetService {
 
       SecretView secretView = SecretView.fromEntity(storedEntity);
       return new ResponseEntity<>(secretView, HttpStatus.OK);
-    } catch (ParameterizedValidationException ve) {
-      return new ResponseEntity<>(errorResponseService.createParameterizedErrorResponse(ve), HttpStatus.BAD_REQUEST);
     } catch (NoSuchAlgorithmException e) {
       throw new RuntimeException(e);
-    } catch (KeyNotFoundException e) {
-      ResponseError errorResponse = errorResponseService.createErrorResponse("error.missing_encryption_key");
-      return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

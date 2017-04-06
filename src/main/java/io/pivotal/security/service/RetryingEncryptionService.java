@@ -52,7 +52,7 @@ public class RetryingEncryptionService {
       try {
         Key keyForUuid = keyMapper.getKeyForUuid(keyId);
         if (keyForUuid == null) {
-          throw new KeyNotFoundException();
+          throw new KeyNotFoundException("error.missing_encryption_key");
         }
         return operation.apply(keyForUuid);
       } catch (IllegalBlockSizeException | ProviderException e) {

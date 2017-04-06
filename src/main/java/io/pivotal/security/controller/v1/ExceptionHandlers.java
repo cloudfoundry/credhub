@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
+import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,6 +103,20 @@ public class ExceptionHandlers {
       }
     }
     return constructError("error.bad_request");
+  }
+
+  @ExceptionHandler(AuditSaveFailureException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ResponseError handleAuditSaveFailureException(AuditSaveFailureException e) {
+    return constructError(e.getMessage());
+  }
+
+  @ExceptionHandler(KeyNotFoundException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public ResponseError handleKeyNotFoundException(KeyNotFoundException e) {
+    return constructError(e.getMessage());
   }
 
   private ResponseError badRequestResponse() {

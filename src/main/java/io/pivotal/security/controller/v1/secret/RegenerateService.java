@@ -9,36 +9,33 @@ import io.pivotal.security.regeneratables.RsaSecret;
 import io.pivotal.security.regeneratables.SshSecret;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.ErrorResponseService;
 import io.pivotal.security.service.GenerateService;
-import java.util.HashMap;
-import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 class RegenerateService {
 
-  private ErrorResponseService errorResponseService;
   private SecretDataService secretDataService;
   private GenerateService generateService;
   private Map<String, Regeneratable> regeneratableTypes;
 
   RegenerateService(
-      ErrorResponseService errorResponseService,
       SecretDataService secretDataService,
       GenerateService generateService
   ) {
-    this.errorResponseService = errorResponseService;
     this.secretDataService = secretDataService;
     this.generateService = generateService;
   }
 
   private void constructGeneratorMap() {
     this.regeneratableTypes = new HashMap<>();
-    this.regeneratableTypes.put("password", new PasswordSecret(errorResponseService, generateService));
-    this.regeneratableTypes.put("ssh", new SshSecret(errorResponseService, generateService));
-    this.regeneratableTypes.put("rsa", new RsaSecret(errorResponseService, generateService));
+    this.regeneratableTypes.put("password", new PasswordSecret(generateService));
+    this.regeneratableTypes.put("ssh", new SshSecret(generateService));
+    this.regeneratableTypes.put("rsa", new RsaSecret(generateService));
   }
 
   public ResponseEntity performRegenerate(AuditRecordBuilder auditRecordBuilder,

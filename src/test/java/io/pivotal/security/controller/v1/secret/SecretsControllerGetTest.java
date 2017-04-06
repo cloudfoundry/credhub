@@ -245,7 +245,7 @@ public class SecretsControllerGetTest {
         valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
         valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
 
-        doThrow(new KeyNotFoundException())
+        doThrow(new KeyNotFoundException("error.missing_encryption_key"))
             .when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
         doReturn(Arrays.asList(valueSecret)).when(secretDataService).findAllByName(secretName.toUpperCase());
       });
