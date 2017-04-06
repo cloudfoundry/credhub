@@ -52,9 +52,9 @@ public class AuditLogService {
   }
 
   @SuppressWarnings("ReturnInsideFinallyBlock")
-  public ResponseEntity<?> performWithAuditing(
-      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> respondToRequestFunction
-  ) throws Exception {
+  public <E extends Exception> ResponseEntity<?> performWithAuditing(
+      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, E> respondToRequestFunction
+  ) throws E {
     AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder();
 
     ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -92,7 +92,7 @@ public class AuditLogService {
   private OperationAuditRecord writeAuditRecord(
       AuditRecordBuilder auditRecordBuilder,
       ResponseEntity<?> responseEntity
-  ) throws Exception {
+  ) {
     OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder,
         responseEntity.getStatusCodeValue());
     operationAuditRecordDataService.save(auditRecord);
@@ -100,7 +100,7 @@ public class AuditLogService {
   }
 
   private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder,
-                                                       int statusCode) throws Exception {
+                                                       int statusCode) {
     return auditRecordBuilder
         .setRequestStatus(statusCode)
         .build(currentTimeProvider.getInstant(), tokenServices);
