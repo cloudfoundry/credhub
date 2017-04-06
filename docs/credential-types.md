@@ -25,7 +25,7 @@ CredHub supports the following credential types:
       "key": 123,
       "key_list": [ "val1", "val2", "val3" ],
       "is_true": true
-    }
+    },
     "version_created_at": "2016-10-13T20:59:28Z"
   }
   ```
