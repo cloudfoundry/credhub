@@ -26,6 +26,8 @@ In addition to validating the signature, the CA and client certificates must be 
 
 For each authentication mechanism that is accepted by CredHub, we must establish a primary identity based on the information asserted in the authentication token. The first phase of implementation will establish the application GUID as the primary identity for mutual TLS authentication. For this reason, all mutual TLS client certificates must contain an application GUID in the certificate organization unit in the format 'app:[v4-guid]'. Although not required, client certificates should also include an instance-specific identifier in the common name. Future phases will expand the allowed identifiers presented by a client certificate. 
 
+More information on authentication identities can be [found here.](authentication-identities.md)
+
 ### Configuration
 
 Trusted mutual TLS CAs for CredHub are configured in the deployment manifest. All certificates signed by a CA included in the `trusted_cas` list will be trusted by CredHub for authentication. 
