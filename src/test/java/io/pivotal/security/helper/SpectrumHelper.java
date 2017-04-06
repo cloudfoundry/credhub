@@ -1,15 +1,20 @@
 package io.pivotal.security.helper;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
+import org.apache.tomcat.jdbc.pool.DataSource;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.TestContextManager;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -20,15 +25,11 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.apache.tomcat.jdbc.pool.DataSource;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.TestContextManager;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 public class SpectrumHelper {
 
@@ -42,7 +43,9 @@ public class SpectrumHelper {
         block.run();
         fail("Expected " + throwableClass.getSimpleName() + " to be thrown, but it wasn't");
       } catch (Throwable t) {
-        if (!throwableClass.equals(t.getClass())) {
+        if (!throwableClass.isAssignableFrom(t.getClass())) {
+          t.printStackTrace();
+
           fail("Expected " + throwableClass.getSimpleName() + " to be thrown, but got " + t
               .getClass().getSimpleName());
         }
@@ -57,7 +60,9 @@ public class SpectrumHelper {
         block.run();
         fail("Expected " + throwableClass.getSimpleName() + " to be thrown, but it wasn't");
       } catch (Throwable t) {
-        if (!(throwableClass.equals(t.getClass()) && Objects.equals(message, t.getMessage()))) {
+        if (!(throwableClass.isAssignableFrom(t.getClass()) && Objects.equals(message, t.getMessage()))) {
+          t.printStackTrace();
+
           fail("Expected " + throwableClass.getSimpleName() + " with message " + message
               + " to be thrown, but got " + t.getClass().getSimpleName() + " with message " + t
               .getMessage());
