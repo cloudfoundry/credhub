@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
+
 @ControllerAdvice
 public class ExceptionHandlers {
   private final MessageSourceAccessor messageSourceAccessor;
@@ -117,6 +120,14 @@ public class ExceptionHandlers {
   @ResponseBody
   public ResponseError handleKeyNotFoundException(KeyNotFoundException e) {
     return constructError(e.getMessage());
+  }
+
+  @ExceptionHandler(InvalidObjectException.class)
+  @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ResponseError handleInvalidTypeAccess(InvalidObjectException exception)
+      throws IOException {
+    return new ResponseError(messageSourceAccessor.getMessage(exception.getMessage()));
   }
 
   private ResponseError badRequestResponse() {
