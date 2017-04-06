@@ -37,7 +37,7 @@ public class SshGenerateRequest extends BaseSecretGenerateRequest {
     sshSetRequest.setType(getType());
     sshSetRequest.setName(getName());
     sshSetRequest.setOverwrite(isOverwrite());
-    sshSetRequest.setAccessControlEntries(NULL_ACCESS_CONTROL_ENTRIES);
+    sshSetRequest.setAccessControlEntries(getAccessControlEntries());
 
     return sshSetRequest;
   }

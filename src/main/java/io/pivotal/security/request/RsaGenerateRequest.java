@@ -36,7 +36,7 @@ public class RsaGenerateRequest extends BaseSecretGenerateRequest {
     rsaSetRequest.setType(getType());
     rsaSetRequest.setName(getName());
     rsaSetRequest.setOverwrite(isOverwrite());
-    rsaSetRequest.setAccessControlEntries(NULL_ACCESS_CONTROL_ENTRIES);
+    rsaSetRequest.setAccessControlEntries(getAccessControlEntries());
 
     return rsaSetRequest;
   }

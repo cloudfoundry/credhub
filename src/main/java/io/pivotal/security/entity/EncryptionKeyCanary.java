@@ -19,7 +19,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "EncryptionKeyCanary")
-public class EncryptionKeyCanary implements EncryptedValueContainer {
+public class EncryptionKeyCanary implements EncryptedValueContainer<EncryptionKeyCanary> {
 
   // Use VARBINARY to make all 3 DB types happy.
   // H2 doesn't distinguish between "binary" and "varbinary" - see
@@ -54,8 +54,9 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
   }
 
   @Override
-  public void setEncryptedValue(byte[] encryptedValue) {
+  public EncryptionKeyCanary setEncryptedValue(byte[] encryptedValue) {
     this.encryptedValue = encryptedValue;
+    return this;
   }
 
   @Override
@@ -64,8 +65,9 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
   }
 
   @Override
-  public void setNonce(byte[] nonce) {
+  public EncryptionKeyCanary setNonce(byte[] nonce) {
     this.nonce = nonce;
+    return this;
   }
 
   @Override
@@ -74,8 +76,9 @@ public class EncryptionKeyCanary implements EncryptedValueContainer {
   }
 
   @Override
-  public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+  public EncryptionKeyCanary setEncryptionKeyUuid(UUID encryptionKeyUuid) {
     setUuid(encryptionKeyUuid);
+    return this;
   }
 
   public List<Byte> getSalt() {

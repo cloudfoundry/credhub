@@ -34,8 +34,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-public abstract class NamedSecretData<Z extends NamedSecretData> implements
-    EncryptedValueContainer {
+public abstract class NamedSecretData<Z extends NamedSecretData> implements EncryptedValueContainer<Z> {
 
   // Use VARBINARY to make all 3 DB types happy.
   // H2 doesn't distinguish between "binary" and "varbinary" - see
@@ -125,16 +124,18 @@ public abstract class NamedSecretData<Z extends NamedSecretData> implements
     return encryptedValue;
   }
 
-  public void setEncryptedValue(byte[] encryptedValue) {
+  public Z setEncryptedValue(byte[] encryptedValue) {
     this.encryptedValue = encryptedValue;
+    return (Z) this;
   }
 
   public byte[] getNonce() {
     return nonce;
   }
 
-  public void setNonce(byte[] nonce) {
+  public Z setNonce(byte[] nonce) {
     this.nonce = nonce;
+    return (Z) this;
   }
 
   public abstract SecretKind getKind();
@@ -145,8 +146,9 @@ public abstract class NamedSecretData<Z extends NamedSecretData> implements
     return encryptionKeyUuid;
   }
 
-  public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+  public Z setEncryptionKeyUuid(UUID encryptionKeyUuid) {
     this.encryptionKeyUuid = encryptionKeyUuid;
+    return (Z) this;
   }
 
   public Instant getVersionCreatedAt() {

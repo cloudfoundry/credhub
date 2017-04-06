@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedValueContainer {
+public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedValueContainer<Z> {
 
   protected NamedSecretData delegate;
   protected Encryptor encryptor;
@@ -45,24 +45,27 @@ public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return delegate.getEncryptedValue();
   }
 
-  public void setEncryptedValue(byte[] encryptedValue) {
+  public Z setEncryptedValue(byte[] encryptedValue) {
     delegate.setEncryptedValue(encryptedValue);
+    return (Z) this;
   }
 
   public byte[] getNonce() {
     return delegate.getNonce();
   }
 
-  public void setNonce(byte[] nonce) {
+  public Z setNonce(byte[] nonce) {
     delegate.setNonce(nonce);
+    return (Z) this;
   }
 
   public UUID getEncryptionKeyUuid() {
     return delegate.getEncryptionKeyUuid();
   }
 
-  public void setEncryptionKeyUuid(UUID encryptionKeyUuid) {
+  public Z setEncryptionKeyUuid(UUID encryptionKeyUuid) {
     delegate.setEncryptionKeyUuid(encryptionKeyUuid);
+    return (Z) this;
   }
 
   public Instant getVersionCreatedAt() {
