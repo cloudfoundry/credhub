@@ -8,22 +8,18 @@ import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.fake.FakeRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
 import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
+import org.assertj.core.util.Lists;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import java.security.Principal;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -31,8 +27,6 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.EXPIRED_KEY_JWT;
 import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -46,55 +40,42 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest
 @SuppressWarnings("EmptyCatchBlock")
 public class AuditLogServiceTest {
 
-  AuditLogService subject;
+  private AuditLogService subject;
+  private OperationAuditRecordDataService operationAuditRecordDataService;
+  private FakeRepository fakeRepository;
+  private FakeTransactionManager transactionManager;
+  private CurrentTimeProvider currentTimeProvider;
+  private SecurityEventsLogService securityEventsLogService;
 
-  @MockBean
-  OperationAuditRecordDataService operationAuditRecordDataService;
-
-  FakeRepository secretRepository;
-
-  FakeTransactionManager transactionManager;
-
-  @MockBean
-  CurrentTimeProvider currentTimeProvider;
-
-  @Autowired
-  TokenStore tokenStore;
-
-  @Autowired
-  ResourceServerTokenServices tokenServices;
-
-  @MockBean
-  SecurityEventsLogService securityEventsLogService;
-
-  private final Instant now = Instant.ofEpochSecond(1490903353);
+  private final Instant now = Instant.ofEpochSecond(1490903353L);
+  private final Instant then = Instant.ofEpochSecond(1550903353L);
 
   private ResponseEntity<?> responseEntity;
-  private OAuth2Authentication authentication;
+  private PreAuthenticatedAuthenticationToken authentication;
 
   {
-    wireAndUnwire(this);
 
     beforeEach(() -> {
-      authentication = tokenStore.readAuthentication(EXPIRED_KEY_JWT);
-      OAuth2AuthenticationDetails mockDetails = mock(OAuth2AuthenticationDetails.class);
-      when(mockDetails.getTokenValue()).thenReturn(EXPIRED_KEY_JWT);
-      authentication.setDetails(mockDetails);
-
+      operationAuditRecordDataService = mock(OperationAuditRecordDataService.class);
+      currentTimeProvider = mock(CurrentTimeProvider.class);
+      securityEventsLogService = mock(SecurityEventsLogService.class);
       transactionManager = new FakeTransactionManager();
-      secretRepository = new FakeRepository(transactionManager);
+      authentication = mockMtlsAuthentication();
+      fakeRepository = new FakeRepository(transactionManager);
+
+      when(operationAuditRecordDataService.save(isA(OperationAuditRecord.class))).thenAnswer(answer -> {
+        return answer.getArgumentAt(0, OperationAuditRecord.class);
+      });
 
       when(currentTimeProvider.getInstant()).thenReturn(now);
       when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
 
       subject = new AuditLogService(
           currentTimeProvider,
-          tokenServices,
+          null,
           operationAuditRecordDataService,
           transactionManager,
           securityEventsLogService
@@ -111,7 +92,7 @@ public class AuditLogServiceTest {
           });
 
           it("performs the action", () -> {
-            assertThat(secretRepository.count(), equalTo(1L));
+            assertThat(fakeRepository.count(), equalTo(1L));
           });
 
           it("passes the request untouched", () -> {
@@ -137,7 +118,7 @@ public class AuditLogServiceTest {
                 return auditedSaveAndReturnNewValue(auditRecordBuilder);
               });
             } finally {
-              assertThat(secretRepository.count(), equalTo(0L));
+              assertThat(fakeRepository.count(), equalTo(0L));
               verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
             }
           });
@@ -160,7 +141,7 @@ public class AuditLogServiceTest {
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
                 entity.setEncryptedValue("value".getBytes());
-                secretRepository.save(entity);
+                fakeRepository.save(entity);
                 throw re;
               });
             } catch (Exception e) {
@@ -174,7 +155,7 @@ public class AuditLogServiceTest {
 
           it("logs failed audit entry", () -> {
             checkAuditRecord(false, HttpStatus.INTERNAL_SERVER_ERROR);
-            assertThat(secretRepository.count(), equalTo(0L));
+            assertThat(fakeRepository.count(), equalTo(0L));
           });
 
           it("should write to the CEF log file", () -> {
@@ -196,12 +177,12 @@ public class AuditLogServiceTest {
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
                 entity.setEncryptedValue("value".getBytes());
-                secretRepository.save(entity);
+                fakeRepository.save(entity);
                 throw new RuntimeException("controller method failed");
               });
             } finally {
               assertThat(transactionManager.hasOpenTransaction(), is(false));
-              assertThat(secretRepository.count(), equalTo(0L));
+              assertThat(fakeRepository.count(), equalTo(0L));
 
               verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
             }
@@ -219,7 +200,7 @@ public class AuditLogServiceTest {
 
           it("logs audit entry for failure", () -> {
             checkAuditRecord(false, HttpStatus.BAD_GATEWAY);
-            assertThat(secretRepository.count(), equalTo(0L));
+            assertThat(fakeRepository.count(), equalTo(0L));
           });
 
           it("returns the non-2xx status code", () -> {
@@ -242,7 +223,7 @@ public class AuditLogServiceTest {
               });
             } finally {
               assertThat(transactionManager.hasOpenTransaction(), is(false));
-              assertThat(secretRepository.count(), equalTo(0L));
+              assertThat(fakeRepository.count(), equalTo(0L));
 
               verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
             }
@@ -258,7 +239,7 @@ public class AuditLogServiceTest {
               });
             } finally {
               assertThat(transactionManager.hasOpenTransaction(), is(false));
-              assertThat(secretRepository.count(), equalTo(0L));
+              assertThat(fakeRepository.count(), equalTo(0L));
 
               verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
             }
@@ -266,6 +247,22 @@ public class AuditLogServiceTest {
         });
       });
     });
+  }
+
+  private PreAuthenticatedAuthenticationToken mockMtlsAuthentication() {
+    Principal principal = mock(Principal.class);
+    when(principal.getName()).thenReturn("distinguished name");
+
+    X509Certificate certificate = mock(X509Certificate.class);
+    when(certificate.getNotBefore()).thenReturn(Date.from(now));
+    when(certificate.getNotAfter()).thenReturn(Date.from(then));
+    when(certificate.getSubjectDN()).thenReturn(principal);
+
+    PreAuthenticatedAuthenticationToken authentication = mock(PreAuthenticatedAuthenticationToken.class);
+    when(authentication.getCredentials()).thenReturn(certificate);
+    when(authentication.getAuthorities()).thenReturn(Lists.emptyList());
+
+    return authentication;
   }
 
   private ResponseEntity<?> auditedSaveAndReturnNewValue(
@@ -276,7 +273,7 @@ public class AuditLogServiceTest {
     auditRecordBuilder.setAuthentication(authentication);
     NamedValueSecretData entity = new NamedValueSecretData("keyName");
     entity.setEncryptedValue("value".getBytes());
-    final NamedValueSecretData secret = secretRepository.save(entity);
+    final NamedValueSecretData secret = fakeRepository.save(entity);
     return new ResponseEntity<>(secret, HttpStatus.OK);
   }
 
@@ -289,7 +286,7 @@ public class AuditLogServiceTest {
 
     NamedValueSecretData entity = new NamedValueSecretData("keyName");
     entity.setEncryptedValue("value".getBytes());
-    secretRepository.save(entity);
+    fakeRepository.save(entity);
     return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
   }
 
@@ -302,16 +299,11 @@ public class AuditLogServiceTest {
     assertThat(actual.getNow(), equalTo(now));
     assertThat(actual.getCredentialName(), equalTo("keyName"));
     assertThat(actual.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
-    assertThat(actual.getUserId(), equalTo("df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"));
-    assertThat(actual.getUserName(), equalTo("credhub_cli"));
-    assertThat(actual.getUaaUrl(), equalTo("https://10.244.0.2:8443/oauth/token"));
-    assertThat(actual.getAuthValidFrom(), equalTo(1090903353L));
-    assertThat(actual.getAuthValidUntil(), equalTo(1290903354L));
+    assertThat(actual.getAuthValidFrom(), equalTo(1490903353L));
+    assertThat(actual.getAuthValidUntil(), equalTo(1550903353L));
     assertThat(actual.getPath(), equalTo("requestURI"));
     assertThat(actual.isSuccess(), equalTo(successFlag));
-    assertThat(actual.getClientId(), equalTo("credhub_cli"));
-    assertThat(actual.getScope(), equalTo("credhub.write,credhub.read"));
-    assertThat(actual.getGrantType(), equalTo("password"));
+    assertThat(actual.getClientId(), equalTo("distinguished name"));
     assertThat(actual.getMethod(), equalTo("GET"));
     assertThat(actual.getStatusCode(), equalTo(status.value()));
   }

@@ -59,9 +59,9 @@ public class AuditLogService {
       ResponseEntity<?> responseEntity,
       TransactionStatus transaction
   ) {
-    boolean responseSucceeded = responseEntity.getStatusCode().is2xxSuccessful();
-
     try {
+      boolean responseSucceeded = responseEntity.getStatusCode().is2xxSuccessful();
+
       if (!responseSucceeded) {
         transactionManager.rollback(transaction);
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
