@@ -3,7 +3,7 @@ package io.pivotal.security.view;
 import io.pivotal.security.util.CheckedFunction;
 import java.util.Objects;
 
-public enum SecretKind implements SecretKindFromString {
+public enum SecretKind {
   VALUE {
     @Override
     public <T, E extends Throwable> CheckedFunction<T, E> lift(CheckedMapping<T, E> mapping) {

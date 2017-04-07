@@ -5,10 +5,8 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static io.pivotal.security.helper.SpectrumHelper.injectMocks;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -20,8 +18,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.CertificateSecretParameters;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.request.CertificateGenerationParameters;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -77,10 +75,14 @@ public class SignedCertificateGeneratorTest {
   private X500Name subjectDistinguishedName;
   private KeyPair certKeyPair;
   private PrivateKey issuerPrivateKey;
-  private CertificateSecretParameters inputParameters;
+  private CertificateGenerationParameters inputParameters;
+  private CertificateParameters generationParameters;
   private String isCa;
   private X509ExtensionUtils x509ExtensionUtils = mock(X509ExtensionUtils.class);
-  private SubjectKeyIdentifier fakeSubjectKeyIdentifier = new SubjectKeyIdentifier("what's up doc".getBytes());
+  private SubjectKeyIdentifier fakeSubjectKeyIdentifier = new SubjectKeyIdentifier(
+      "what's up doc".getBytes());
+  private X500Name fakeDn;
+
   {
     beforeEach(injectMocks(this));
 
@@ -89,6 +91,7 @@ public class SignedCertificateGeneratorTest {
           getBouncyCastleProvider(), x509ExtensionUtils);
 
       nowCalendar.setTime(Date.from(now));
+      fakeDn = new X500Name("CN=my test cert,O=credhub");
       when(timeProvider.getNow()).thenReturn(nowCalendar);
       when(serialNumberGenerator.generate()).thenReturn(BigInteger.valueOf(12));
       when(x509ExtensionUtils.createSubjectKeyIdentifier(any()))
@@ -150,15 +153,16 @@ public class SignedCertificateGeneratorTest {
 
       describe("with key usages", () -> {
         beforeEach(() -> {
-          inputParameters = new CertificateSecretParameters();
+          inputParameters = new CertificateGenerationParameters();
           inputParameters.setOrganization("my-org");
           inputParameters.setState("NY");
           inputParameters.setCountry("USA");
+          generationParameters = new CertificateParameters(inputParameters);
         });
 
         it("are supported", () -> {
-          inputParameters.addKeyUsage("data_encipherment", "crl_sign");
-
+          inputParameters.setKeyUsage(new String[]{"data_encipherment", "crl_sign"});
+          generationParameters = new CertificateParameters(inputParameters);
           makeCert.run();
 
           // Booleans 3 and 6 should be on, everything else off. See getKeyUsage in X509Certificate.
@@ -177,14 +181,16 @@ public class SignedCertificateGeneratorTest {
 
       describe("with extended key usages", () -> {
         beforeEach(() -> {
-          inputParameters = new CertificateSecretParameters();
+          inputParameters = new CertificateGenerationParameters();
           inputParameters.setOrganization("my-org");
           inputParameters.setState("NY");
           inputParameters.setCountry("USA");
+          generationParameters = new CertificateParameters(inputParameters);
         });
 
         it("are supported", () -> {
-          inputParameters.addExtendedKeyUsage("server_auth", "client_auth");
+          inputParameters.setExtendedKeyUsage(new String[]{"server_auth", "client_auth"});
+          generationParameters = new CertificateParameters(inputParameters);
 
           makeCert.run();
 
@@ -208,60 +214,7 @@ public class SignedCertificateGeneratorTest {
         });
       });
 
-      describe("with alternate names", () -> {
-        beforeEach(() -> {
-          inputParameters = new CertificateSecretParameters();
-          inputParameters.setOrganization("my-org");
-          inputParameters.setState("NY");
-          inputParameters.setCountry("USA");
-        });
 
-        it("are supported", () -> {
-          inputParameters
-              .addAlternativeNames("1.1.1.1", "example.com", "foo.pivotal.io", "*.pivotal.io");
-
-          makeCert.run();
-
-          assertThat(generatedCert.getSubjectAlternativeNames(), containsInAnyOrder(
-              contains(7, "1.1.1.1"),
-              contains(2, "example.com"),
-              contains(2, "foo.pivotal.io"),
-              contains(2, "*.pivotal.io")
-          ));
-        });
-
-        itThrows("with invalid special DNS characters throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              inputParameters.addAlternativeNames("foo!@#$%^&*()_-+=.com");
-              makeCert.run();
-            });
-
-        itThrows("with space character throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              inputParameters.addAlternativeNames("foo pivotal.io");
-              makeCert.run();
-            });
-
-        itThrows("with invalid IP address throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              inputParameters.addAlternativeNames("1.2.3.999");
-              makeCert.run();
-            });
-
-        // email addresses are allowed in certificate spec,
-        // but we do not allow them per PM requirements
-        itThrows("with email address throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              inputParameters.addAlternativeNames("x@y.com");
-              makeCert.run();
-            });
-
-        itThrows("with URL throws a validation exception", ParameterizedValidationException.class,
-            () -> {
-              inputParameters.addAlternativeNames("https://foo.com");
-              makeCert.run();
-            });
-      });
     };
 
     describe("a generated issuer-signed childCertificate", () -> {
@@ -273,21 +226,23 @@ public class SignedCertificateGeneratorTest {
         issuerPrivateKey = issuerKeyPair.getPrivate();
 
         certKeyPair = generator.generateKeyPair();
-        inputParameters = new CertificateSecretParameters()
-            .setCommonName("my test cert")
-            .setCountry("US")
-            .setState("CA")
-            .setOrganization("credhub")
-            .setDurationDays(10);
+        inputParameters = new CertificateGenerationParameters();
+        inputParameters.setCommonName("my test cert");
+        inputParameters.setCountry("US");
+        inputParameters.setState("CA");
+        inputParameters.setOrganization("credhub");
+        inputParameters.setDuration(10);
         isCa = "[]";
-        subjectDistinguishedName = inputParameters.getDn();
+        subjectDistinguishedName = new X500Name("CN=my test cert,C=US,ST=CA,O=credhub");
+        ;
         issuerDistinguishedName = new X500Name(SEPARATE_ISSUER_PRINCIPAL_STRING);
+        generationParameters = new CertificateParameters(inputParameters);
       });
 
       final ThrowingRunnable makeCert = () -> {
         generatedCert = subject
             .getSignedByIssuer(issuerDistinguishedName, issuerPrivateKey, certKeyPair,
-                inputParameters);
+                generationParameters);
       };
 
       describe("must behave like", validCertificateSuite.build(makeCert));
@@ -324,19 +279,20 @@ public class SignedCertificateGeneratorTest {
         certKeyPair = generator.generateKeyPair();
 
         issuerKeyPair = certKeyPair; // self-signed
-        inputParameters = new CertificateSecretParameters()
-            .setCommonName("my test cert")
-            .setOrganization("credhub")
-            .setDurationDays(10);
+        inputParameters = new CertificateGenerationParameters();
+        inputParameters.setCommonName("my test cert");
+        inputParameters.setOrganization("credhub");
+        inputParameters.setDuration(10);
         isCa = "[]";
 
         // subject and issuer have same name-- we're self-signed.
-        subjectDistinguishedName = inputParameters.getDn();
+        subjectDistinguishedName = new X500Name("CN=my test cert,O=credhub");
         issuerDistinguishedName = subjectDistinguishedName;
+        generationParameters = new CertificateParameters(inputParameters);
       });
 
       final ThrowingRunnable makeCert = () -> {
-        generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
+        generatedCert = subject.getSelfSigned(certKeyPair, generationParameters);
       };
 
       describe("must behave like", validCertificateSuite.build(makeCert));
@@ -350,20 +306,21 @@ public class SignedCertificateGeneratorTest {
         issuerKeyPair = generator.generateKeyPair();
 
         certKeyPair = issuerKeyPair; // self-signed
-        inputParameters = new CertificateSecretParameters()
-            .setCommonName("my test ca")
-            .setCountry("US")
-            .setState("CA")
-            .setOrganization("credhub")
-            .setDurationDays(10)
-            .setIsCa(true);
+        inputParameters = new CertificateGenerationParameters();
+        inputParameters.setCommonName("my test ca");
+        inputParameters.setCountry("US");
+        inputParameters.setState("CA");
+        inputParameters.setOrganization("credhub");
+        inputParameters.setDuration(10);
+        inputParameters.setIsCa(true);
         isCa = "[TRUE]";
-        subjectDistinguishedName = inputParameters.getDn();
+        subjectDistinguishedName = new X500Name("CN=my test ca,C=US,ST=CA,O=credhub");
         issuerDistinguishedName = subjectDistinguishedName;
+        generationParameters = new CertificateParameters(inputParameters);
       });
 
       ThrowingRunnable makeCert = () -> {
-        generatedCert = subject.getSelfSigned(certKeyPair, inputParameters);
+        generatedCert = subject.getSelfSigned(certKeyPair, generationParameters);
       };
 
       describe("must behave like", validCertificateSuite.build(makeCert));
@@ -380,7 +337,7 @@ public class SignedCertificateGeneratorTest {
   }
 
   private ASN1Primitive bytesToDerConversion(byte[] data) throws IOException {
-      return data == null ? null : new ASN1InputStream(new ByteArrayInputStream(data)).readObject();
+    return data == null ? null : new ASN1InputStream(new ByteArrayInputStream(data)).readObject();
   }
 
   interface ThrowingRunnable {

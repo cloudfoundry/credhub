@@ -32,20 +32,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.generator.BcCertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.request.CertificateGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.request.RsaGenerateRequest;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerateRequest;
 import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
@@ -101,6 +106,9 @@ public class SecretsControllerGenerateTest {
   @MockBean
   RsaGenerator rsaGenerator;
 
+  @MockBean
+  BcCertificateGenerator certificateGenerator;
+
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
@@ -123,6 +131,7 @@ public class SecretsControllerGenerateTest {
   private final String fakePassword = "generated-secret";
   private final String publicKey = "public_key";
   private final String privateKey = "private_key";
+  private final String cert = "cert";
 
   private AuditRecordBuilder auditRecordBuilder;
 
@@ -145,6 +154,9 @@ public class SecretsControllerGenerateTest {
 
       when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
           .thenReturn(new RsaKey(publicKey, privateKey));
+
+      when(certificateGenerator.generateSecret(any(CertificateParameters.class)))
+          .thenReturn(new Certificate("ca_cert", cert, privateKey));
 
       auditRecordBuilder = new AuditRecordBuilder();
       resetAuditLogMock(auditLogService, auditRecordBuilder);
@@ -400,6 +412,50 @@ public class SecretsControllerGenerateTest {
                       .value("The provided key length is not supported. "
                           + "Valid values include '2048', '3072' and '4096'.")
               );
+        });
+      });
+
+      describe("generate a Certificate", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content(
+                  // language=JSON
+                  "{\"type\":\"certificate\",\"name\":\"" + secretName
+                      + "\",\"parameters\":{\"common_name\" : \"certificate_common_name\", \"self_sign\": true}}\n"
+              );
+
+          response = mockMvc.perform(post);
+        });
+
+        it("should return the expected response", () -> {
+          response.andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.type").value("certificate"))
+              .andExpect(jsonPath("$.value.certificate").value(cert))
+              .andExpect(jsonPath("$.value.private_key").value(privateKey))
+              .andExpect(jsonPath("$.id").value(uuid.toString()))
+              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
+        });
+
+        it("asks the data service to persist the secret", () -> {
+          verify(generateService, times(1))
+              .performGenerate(isA(AuditRecordBuilder.class), isA(CertificateGenerateRequest.class));
+          ArgumentCaptor<NamedCertificateSecret> argumentCaptor = ArgumentCaptor
+              .forClass(NamedCertificateSecret.class);
+          verify(secretDataService, times(1)).save(argumentCaptor.capture());
+
+          NamedCertificateSecret newCertificate = argumentCaptor.getValue();
+
+          assertThat(newCertificate.getCertificate(), equalTo(cert));
+          assertThat(newCertificate.getPrivateKey(), equalTo(privateKey));
+        });
+
+        it("persists an audit entry", () -> {
+          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
         });
       });
 

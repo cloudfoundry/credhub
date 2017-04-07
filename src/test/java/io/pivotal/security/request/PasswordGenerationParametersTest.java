@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.request;
 
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -7,7 +7,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.PasswordGenerationParameters;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)

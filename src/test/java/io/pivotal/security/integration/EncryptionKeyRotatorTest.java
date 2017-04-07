@@ -3,6 +3,7 @@ package io.pivotal.security.integration;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.xit;
 import static io.pivotal.security.helper.JsonHelper.parse;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;

@@ -69,9 +69,6 @@ public class SecretsControllerRegenerateTest {
   @Autowired
   WebApplicationContext webApplicationContext;
 
-  @Autowired
-  SecretsController subject;
-
   @SpyBean
   AuditLogService auditLogService;
 

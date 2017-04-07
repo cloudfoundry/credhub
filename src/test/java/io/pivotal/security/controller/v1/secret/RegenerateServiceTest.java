@@ -5,10 +5,8 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.IsNot.not;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -17,7 +15,7 @@ import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
@@ -49,7 +47,7 @@ public class RegenerateServiceTest {
   private NamedPasswordSecret namedPasswordSecret;
   private NamedSshSecret namedSshSecret;
   private NamedRsaSecret namedRsaSecret;
-  private NamedCertificateSecret secretOfUnsupportedType;
+  private NamedJsonSecret secretOfUnsupportedType;
   private PasswordGenerationParameters expectedParameters;
   private ResponseEntity responseEntity;
   private ResponseError expectedResponseEntity;
@@ -63,13 +61,12 @@ public class RegenerateServiceTest {
       namedSshSecret = mock(NamedSshSecret.class);
       namedRsaSecret = mock(NamedRsaSecret.class);
 
-
       when(secretDataService.findMostRecent(eq("unsupported")))
           .thenReturn(secretOfUnsupportedType);
       when(generateService
           .performGenerate(isA(AuditRecordBuilder.class), isA(BaseSecretGenerateRequest.class)))
           .thenReturn(new ResponseEntity(HttpStatus.OK));
-      secretOfUnsupportedType = new NamedCertificateSecret();
+      secretOfUnsupportedType = new NamedJsonSecret();
       subject = new RegenerateService(errorResponseService, secretDataService, generateService);
     });
 
@@ -97,8 +94,8 @@ public class RegenerateServiceTest {
         });
         describe("when regenerating password", () -> {
 
-          it("should return non null response", () -> {
-            assertThat(responseEntity, not(nullValue()));
+          it("should return a 200 status", () -> {
+            assertThat(responseEntity.getStatusCode().value(), equalTo(200));
           });
 
           it("should generate a new password", () -> {
@@ -170,8 +167,8 @@ public class RegenerateServiceTest {
                 .performRegenerate(mock(AuditRecordBuilder.class), sshRegenerateRequest);
           });
 
-          it("should return non null response", () -> {
-            assertThat(responseEntity, not(nullValue()));
+          it("should return a 200 status", () -> {
+            assertThat(responseEntity.getStatusCode().value(), equalTo(200));
           });
 
           it("should generate a new ssh key pair", () -> {
@@ -202,8 +199,8 @@ public class RegenerateServiceTest {
                 .performRegenerate(mock(AuditRecordBuilder.class), rsaRegenerateRequest);
           });
 
-          it("should return non null response", () -> {
-            assertThat(responseEntity, not(nullValue()));
+          it("should return a 200 status", () -> {
+            assertThat(responseEntity.getStatusCode().value(), equalTo(200));
           });
 
           it("should generate a new rsa key pair", () -> {
@@ -222,15 +219,26 @@ public class RegenerateServiceTest {
         });
       });
 
-      describe("when regenerating something of a type we don't recognise yet", () -> {
-        it("should return non null response", () -> {
+      describe("when regenerating a secret that does not exist", () -> {
+        it("should returns a response entity with an error message and status code", () -> {
+          SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
+              .setName("missing_entry");
+
+          ResponseEntity response = subject
+              .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
+
+          assertThat(response.getStatusCodeValue(), equalTo(400));
+        });
+      });
+
+      describe("when attempting regenerate of non-regeneratable type", () -> {
+        it("should returns a response entity with an error message and status code", () -> {
           SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
               .setName("unsupported");
 
-          ResponseEntity responseEntity =
-              subject.performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
-
-          assertThat(responseEntity, nullValue());
+          ResponseEntity response = subject
+              .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
+          assertThat(response.getStatusCodeValue(), equalTo(400));
         });
       });
     });

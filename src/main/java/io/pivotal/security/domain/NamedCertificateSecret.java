@@ -39,6 +39,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     } else {
       secret = new NamedCertificateSecret();
       secret.copyNameReferenceFrom(existing);
+      secret.setCaName(existing.getCaName());
     }
 
     List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
@@ -49,6 +50,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     secret.setPrivateKey(fields.getPrivateKey());
     secret.setCertificate(fields.getCertificate());
     secret.setCa(fields.getCa());
+    secret.setCaName(fields.getCaName());
     return secret;
   }
 

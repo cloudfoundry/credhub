@@ -1,8 +1,7 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityService;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import java.io.ByteArrayInputStream;
@@ -26,12 +25,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class BcCertificateGenerator implements
-    SecretGenerator<CertificateSecretParameters, Certificate> {
+    SecretGenerator<CertificateParameters, Certificate> {
 
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;
   private final CertificateAuthorityService certificateAuthorityService;
   private final BouncyCastleProvider provider;
+
 
   @Autowired
   public BcCertificateGenerator(
@@ -46,31 +46,29 @@ public class BcCertificateGenerator implements
   }
 
   @Override
-  public Certificate generateSecret(CertificateSecretParameters params) {
-    try {
-      KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
+  public Certificate generateSecret(CertificateParameters params) {
+    try{
+    KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
 
-      if (params.isSelfSigned()) {
-        X509Certificate cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
-        String certPem = CertificateFormatter.pemOf(cert);
-        String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new Certificate(null, certPem, privatePem);
-      } else {
-        Certificate ca = certificateAuthorityService.findMostRecent(params.getCaName());
+    if (params.isSelfSigned()) {
+      X509Certificate cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
+      String certPem = CertificateFormatter.pemOf(cert);
+      String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
+      return new Certificate(null, certPem, privatePem);
+    } else {
+      Certificate ca = certificateAuthorityService.findMostRecent(params.getCaName());
 
-        String caCertificate = ca.getPublicKeyCertificate();
-        X500Name issuerDn = getSubjectNameOfCa(caCertificate);
-        PrivateKey issuerKey = getPrivateKey(ca.getPrivateKey());
+      String caCertificate = ca.getPublicKeyCertificate();
+      X500Name issuerDn = getSubjectNameOfCa(caCertificate);
+      PrivateKey issuerKey = getPrivateKey(ca.getPrivateKey());
 
-        X509Certificate cert = signedCertificateGenerator
-            .getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
+      X509Certificate cert = signedCertificateGenerator
+          .getSignedByIssuer(issuerDn, issuerKey, keyPair, params);
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
         return new Certificate(caCertificate, certPem, privatePem);
       }
-    } catch (ParameterizedValidationException e) {
-      throw e;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
