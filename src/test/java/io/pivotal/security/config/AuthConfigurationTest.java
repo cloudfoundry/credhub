@@ -146,6 +146,21 @@ public class AuthConfigurationTest {
       });
 
       describe("with mutual tls", () -> {
+        it("allows all client certificates with a valid organizational_unit and client_auth extension",
+            () -> {
+              final MockHttpServletRequestBuilder post = post(dataApiPath)
+                  .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+                  .accept(MediaType.APPLICATION_JSON)
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+
+              mockMvc.perform(post)
+                  .andExpect(status().isOk())
+                  .andExpect(jsonPath("$.type").value("password"))
+                  .andExpect(jsonPath("$.version_created_at").exists())
+                  .andExpect(jsonPath("$.value").exists());
+            });
+
         it("logs the organization_unit from the DN", () -> {
           final MockHttpServletRequestBuilder post = post(dataApiPath)
               .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
@@ -213,38 +228,21 @@ public class AuthConfigurationTest {
               .andExpect(jsonPath("$.error").value(expectedError));
         });
 
-        describe("new addition to mtls requirements", () -> {
-          it("allows all client certificates with a valid organizational_unit and client_auth extension",
-              () -> {
-                final MockHttpServletRequestBuilder post = post(dataApiPath)
-                    .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
-                    .accept(MediaType.APPLICATION_JSON)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+        it("denies client certificates without the client_auth extension", () -> {
+          final MockHttpServletRequestBuilder post = post(dataApiPath)
+              .with(x509(cert(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
+              .accept(MediaType.APPLICATION_JSON)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
 
-                mockMvc.perform(post)
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.type").value("password"))
-                    .andExpect(jsonPath("$.version_created_at").exists())
-                    .andExpect(jsonPath("$.value").exists());
-              });
+          final String expectedError = "The provided authentication mechanism does not provide a "
+              + "valid identity. Please contact your system administrator.";
 
-          it("denies client certificates without the client_auth extension", () -> {
-            final MockHttpServletRequestBuilder post = post(dataApiPath)
-                .with(x509(cert(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
-
-            final String expectedError = "The provided authentication mechanism does not provide a "
-                + "valid identity. Please contact your system administrator.";
-
-            mockMvc.perform(post)
-                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error")
-                    .value( "The provided certificate is not authorized to be used for client authentication."));
-          });
+          mockMvc.perform(post)
+              .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+              .andExpect(status().isUnauthorized())
+              .andExpect(jsonPath("$.error")
+                  .value( "The provided certificate is not authorized to be used for client authentication."));
         });
       });
     });
