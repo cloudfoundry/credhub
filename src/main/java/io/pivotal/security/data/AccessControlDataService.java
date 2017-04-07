@@ -56,7 +56,7 @@ public class AccessControlDataService {
   public boolean hasReadAclPermission(String actor, String credentialName) {
     final SecretName secretName = findSecretName(credentialName);
     final AccessEntryData accessEntry = accessEntryRepository.findFirstByCredentialNameUuidAndActor(secretName.getUuid(), actor);
-    return accessEntry != null && accessEntry.getReadAclPermission();
+    return accessEntry != null && accessEntry.hasReadAclPermission();
   }
 
   private void upsertAccessEntryOperations(SecretName secretName,

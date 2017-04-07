@@ -1,13 +1,16 @@
 package io.pivotal.security.entity;
 
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
+import org.hibernate.annotations.GenericGenerator;
+
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,7 +18,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "AccessEntry")
@@ -112,47 +114,74 @@ public class AccessEntryData {
     this.actor = actor;
   }
 
-  public Boolean getReadPermission() {
+  public Boolean hasReadPermission() {
     return readPermission;
   }
 
-  public void setReadPermission(Boolean readPermission) {
-    this.readPermission = readPermission;
-  }
-
-  public Boolean getWritePermission() {
+  public Boolean hasWritePermission() {
     return writePermission;
   }
 
-  public void setWritePermission(Boolean writePermission) {
-    this.writePermission = writePermission;
-  }
-
-  public Boolean getDeletePermission() {
+  public Boolean hasDeletePermission() {
     return deletePermission;
   }
 
-  public void setDeletePermission(Boolean deletePermission) {
-    this.deletePermission = deletePermission;
-  }
-
-  public Boolean getReadAclPermission() {
-    return readAclPermission;
-  }
-
-  public void setReadAclPermission(Boolean readAclPermission) {
-    this.readAclPermission = readAclPermission;
-  }
-
-  public Boolean getWriteAclPermission() {
+  public Boolean hasWriteAclPermission() {
     return writeAclPermission;
   }
 
-  public void setWriteAclPermission(Boolean writeAclPermission) {
+  public Boolean hasReadAclPermission() {
+    return readAclPermission;
+  }
+
+  public void enableOperations(Iterable<AccessControlOperation> operations) {
+    for (AccessControlOperation operation : operations) {
+      enableOperation(operation);
+    }
+  }
+
+  public List<AccessControlOperation> generateAccessControlOperations() {
+    List<AccessControlOperation> operations = new ArrayList<>();
+
+    if (hasReadPermission()) {
+      operations.add(AccessControlOperation.READ);
+    }
+    if (hasWritePermission()) {
+      operations.add(AccessControlOperation.WRITE);
+    }
+    if (hasDeletePermission()) {
+      operations.add(AccessControlOperation.DELETE);
+    }
+    if (hasReadAclPermission()) {
+      operations.add(AccessControlOperation.READ_ACL);
+    }
+    if (hasWriteAclPermission()) {
+      operations.add(AccessControlOperation.WRITE_ACL);
+    }
+    return operations;
+  }
+
+  private void setReadPermission(Boolean readPermission) {
+    this.readPermission = readPermission;
+  }
+
+  private void setWritePermission(Boolean writePermission) {
+    this.writePermission = writePermission;
+  }
+
+  private void setDeletePermission(Boolean deletePermission) {
+    this.deletePermission = deletePermission;
+  }
+
+  private void setReadAclPermission(Boolean readAclPermission) {
+    this.readAclPermission = readAclPermission;
+  }
+
+  private void setWriteAclPermission(Boolean writeAclPermission) {
     this.writeAclPermission = writeAclPermission;
   }
 
-  public void enableOperation(AccessControlOperation operation) {
+  private void enableOperation(AccessControlOperation operation) {
     switch (operation) {
       case READ:
         setReadPermission(true);
@@ -172,31 +201,5 @@ public class AccessEntryData {
       default:
         throw new RuntimeException();
     }
-  }
-
-  public void enableOperations(Iterable<AccessControlOperation> operations) {
-    for (AccessControlOperation operation : operations) {
-      enableOperation(operation);
-    }
-  }
-
-  public List<AccessControlOperation> generateAccessControlOperations() {
-    List<AccessControlOperation> operations = new ArrayList<>();
-    if (getReadPermission()) {
-      operations.add(AccessControlOperation.READ);
-    }
-    if (getWritePermission()) {
-      operations.add(AccessControlOperation.WRITE);
-    }
-    if (getDeletePermission()){
-      operations.add(AccessControlOperation.DELETE);
-    }
-    if (getReadAclPermission()){
-      operations.add(AccessControlOperation.READ_ACL);
-    }
-    if (getWriteAclPermission()){
-      operations.add(AccessControlOperation.WRITE_ACL);
-    }
-    return operations;
   }
 }
