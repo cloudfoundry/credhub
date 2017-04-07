@@ -1,22 +1,10 @@
 package io.pivotal.security.auth;
 
-import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
-
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.exceptions.AccessTokenExpiredException;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
-import java.io.IOException;
-import java.security.SignatureException;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
@@ -31,14 +19,25 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.security.SignatureException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
+
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
 
   private final CurrentTimeProvider currentTimeProvider;
   private final AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
-  private final MessageSource messageSource;
   private final JsonParser objectMapper;
-  private MessageSourceAccessor messageSourceAccessor;
+  private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
   AuditOAuth2AuthenticationExceptionHandler(
@@ -48,13 +47,8 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   ) {
     this.currentTimeProvider = currentTimeProvider;
     this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
-    this.messageSource = messageSource;
     this.objectMapper = JsonParserFactory.create();
-  }
-
-  @PostConstruct
-  public void init() {
-    messageSourceAccessor = new MessageSourceAccessor(messageSource);
+    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
 
   @Override
@@ -88,7 +82,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
   }
 
-  public Throwable extractCause(AuthenticationException e) {
+  Throwable extractCause(AuthenticationException e) {
     Throwable cause = e.getCause();
     Throwable nextCause = cause == null ? null : cause.getCause();
     while (nextCause != null && nextCause != cause) {

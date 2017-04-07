@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.io.IOException;
 import java.io.InvalidObjectException;
 
 @ControllerAdvice
@@ -74,22 +73,21 @@ public class ExceptionHandlers {
   @ResponseBody
   public ResponseError handleParameterizedValidationException(
       ParameterizedValidationException exception
-  ) throws Exception {
+  ) {
     return constructError(exception.getMessage(), exception.getParameters());
   }
 
   @ExceptionHandler(UnrecognizedPropertyException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception)
-      throws Exception {
+  public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
     return constructError("error.invalid_json_key", exception.getPropertyName());
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public ResponseError handleInputNotReadableException(Exception exception) throws Exception {
+  public ResponseError handleInputNotReadableException(Exception exception) {
     final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
       return constructError("error.invalid_json_key", ((UnrecognizedPropertyException) cause).getPropertyName());
@@ -125,9 +123,8 @@ public class ExceptionHandlers {
   @ExceptionHandler(InvalidObjectException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public ResponseError handleInvalidTypeAccess(InvalidObjectException exception)
-      throws IOException {
-    return new ResponseError(messageSourceAccessor.getMessage(exception.getMessage()));
+  public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
+    return constructError(exception.getMessage());
   }
 
   private ResponseError badRequestResponse() {
