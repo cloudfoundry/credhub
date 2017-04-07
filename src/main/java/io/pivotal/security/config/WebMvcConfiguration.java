@@ -1,6 +1,7 @@
 package io.pivotal.security.config;
 
 import io.pivotal.security.controller.v1.CurrentUserAccessControlEntryResolver;
+import io.pivotal.security.controller.v1.UserContextArgumentResolver;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -32,5 +33,6 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
   @Override
   public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
     argumentResolvers.add(new CurrentUserAccessControlEntryResolver(tokenServices));
+    argumentResolvers.add(new UserContextArgumentResolver(tokenServices));
   }
 }

@@ -1,5 +1,21 @@
 package io.pivotal.security.integration;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -9,6 +25,7 @@ import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -26,22 +43,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -367,49 +368,65 @@ public class AccessControlEndpointTest {
                 .andExpect(status().isOk());
           });
 
-          it("returns the full list of access control entries for the credential", () -> {
-            MvcResult result = mockMvc.perform(
-                get("/api/v1/acls?credential_name=/cred1")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            )
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andReturn();
-            String content = result.getResponse().getContentAsString();
-            AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-            assertThat(acl.getCredentialName(), equalTo("/cred1"));
-            assertThat(acl.getAccessControlList(), containsInAnyOrder(
-                samePropertyValuesAs(
-                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-                samePropertyValuesAs(
-                    new AccessControlEntry("dan", asList(READ)))
-            ));
+          describe("when the user has permission to access the credential's ACL", () -> {
+            it("returns the full list of access control entries for the credential", () -> {
+              MvcResult result = mockMvc.perform(
+                  get("/api/v1/acls?credential_name=/cred1")
+                      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              )
+                  .andExpect(status().isOk())
+                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                  .andExpect(status().isOk())
+                  .andDo(print())
+                  .andReturn();
+              String content = result.getResponse().getContentAsString();
+              AccessControlListResponse acl = JsonHelper
+                  .deserialize(content, AccessControlListResponse.class);
+              assertThat(acl.getCredentialName(), equalTo("/cred1"));
+              assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                  samePropertyValuesAs(
+                      new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                          asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                  samePropertyValuesAs(
+                      new AccessControlEntry("dan", asList(READ)))
+              ));
+            });
+
+
+            it("returns the full list of access control entries for the credential when leading '/' is missing", () -> {
+              MvcResult result = mockMvc.perform(
+                      get("/api/v1/acls?credential_name=cred1")
+                          .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+                  )
+                  .andExpect(status().isOk())
+                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                  .andExpect(status().isOk())
+                  .andDo(print())
+                  .andReturn();
+              String content = result.getResponse().getContentAsString();
+              AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+              assertThat(acl.getCredentialName(), equalTo("/cred1"));
+              assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                  samePropertyValuesAs(
+                      new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                  samePropertyValuesAs(
+                      new AccessControlEntry("dan", asList(READ)))
+              ));
+            });
           });
 
-          it("returns the full list of access control entries for the credential"
-                  + " when leading '/' is missing",
-              () -> {
-                MvcResult result = mockMvc.perform(
-                    get("/api/v1/acls?credential_name=cred1")
-                        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                )
-                    .andExpect(status().isOk())
-                    .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                    .andExpect(status().isOk())
-                    .andDo(print())
-                    .andReturn();
-                String content = result.getResponse().getContentAsString();
-                AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-                assertThat(acl.getCredentialName(), equalTo("/cred1"));
-                assertThat(acl.getAccessControlList(), containsInAnyOrder(
-                    samePropertyValuesAs(
-                        new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-                    samePropertyValuesAs(
-                        new AccessControlEntry("dan", asList(READ)))
-                ));
-              });
+          it("rejects users who lack permission to access the credential's ACL", () -> {
+            // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
+            final MockHttpServletRequestBuilder post = get("/api/v1/acls?credential_name=/cred1")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+                .accept(APPLICATION_JSON);
+
+            String expectedError = "The request could not be completed because the ACL does not exist or you do not have sufficient authorization.";
+            this.mockMvc.perform(post)
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error", equalTo(
+                    expectedError)));
+          });
         });
 
         describe("and the credential doesn't exit", () -> {

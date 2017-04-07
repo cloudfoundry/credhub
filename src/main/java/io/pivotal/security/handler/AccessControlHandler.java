@@ -1,25 +1,35 @@
 package io.pivotal.security.handler;
 
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.AccessControlListResponse;
-import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AccessControlHandler {
+  private final PermissionService permissionService;
   private final AccessControlDataService accessControlDataService;
 
   @Autowired
-  AccessControlHandler(AccessControlDataService accessControlDataService) {
+  AccessControlHandler(
+      PermissionService permissionService,
+      AccessControlDataService accessControlDataService
+  ) {
+    this.permissionService = permissionService;
     this.accessControlDataService = accessControlDataService;
   }
 
-  public AccessControlListResponse getAccessControlListResponse(String credentialName) {
+  public AccessControlListResponse getAccessControlListResponse(UserContext userContext, String credentialName) {
     credentialName = addLeadingSlashIfMissing(credentialName);
+
+    permissionService.verifyAclReadPermission(userContext, credentialName);
 
     List<AccessControlEntry> accessControlList = accessControlDataService.getAccessControlList(credentialName);
     AccessControlListResponse response = new AccessControlListResponse();

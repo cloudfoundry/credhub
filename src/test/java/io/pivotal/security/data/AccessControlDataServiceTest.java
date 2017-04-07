@@ -1,10 +1,23 @@
 package io.pivotal.security.data;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,18 +30,7 @@ import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import java.util.List;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -112,7 +114,7 @@ public class AccessControlDataServiceTest {
       });
     });
 
-    describe("deleteAccessControlEntry", () -> {
+    describe("#deleteAccessControlEntry", () -> {
       beforeEach(this::seedDatabase);
 
       describe("when given a credential and actor that exists in the ACL", () -> {
@@ -151,6 +153,37 @@ public class AccessControlDataServiceTest {
       });
     });
 
+    describe("#hasAclReadPermission", () -> {
+      beforeEach(() -> {
+        secretDataService.save(new NamedValueSecret("/test/credential"));
+      });
+
+      describe("when the user has acl_read permission for the credential", () -> {
+        it("should return true", () -> {
+          final List<AccessControlOperation> operations = asList(AccessControlOperation.READ_ACL, AccessControlOperation.DELETE);
+          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
+          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
+
+          assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(true));
+        });
+      });
+
+      describe("when the user has permissions for the credential but not acl_read", () -> {
+        it("should return false", () -> {
+          final List<AccessControlOperation> operations = asList(AccessControlOperation.WRITE_ACL, AccessControlOperation.DELETE);
+          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
+          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
+
+          assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(false));
+        });
+      });
+
+      describe("when the user has no permissions for the credential", () -> {
+        it("should return false", () -> {
+          assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(false));
+        });
+      });
+    });
   }
 
   private void seedDatabase() {

@@ -6,11 +6,12 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class AccessControlDataService {
@@ -50,6 +51,12 @@ public class AccessControlDataService {
   public void deleteAccessControlEntries(String credentialName, String actor) {
     final SecretName secretName = findSecretName(credentialName);
     accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
+  }
+
+  public boolean hasReadAclPermission(String actor, String credentialName) {
+    final SecretName secretName = findSecretName(credentialName);
+    final AccessEntryData accessEntry = accessEntryRepository.findFirstByCredentialNameUuidAndActor(secretName.getUuid(), actor);
+    return accessEntry != null && accessEntry.getReadAclPermission();
   }
 
   private void upsertAccessEntryOperations(SecretName secretName,

@@ -10,6 +10,7 @@ import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -38,6 +39,13 @@ public class ExceptionHandlers {
   @ResponseBody
   public ResponseError handleNotFoundException(EntryNotFoundException e) {
     return constructError(e.getMessage());
+  }
+
+  @ExceptionHandler(PermissionException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  @ResponseBody
+  public ResponseError handlePermissionException(PermissionException error) {
+    return constructError(error.getMessage());
   }
 
   @ExceptionHandler(JsonMappingException.class)
