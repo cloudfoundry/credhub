@@ -163,11 +163,10 @@ public class SecretsControllerTypeSpecificGenerateTest {
       resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
-    describe("password", this.<NamedPasswordSecret>testNewSecretBehavior(
-        new Object[]{"$.type", "password", "$.value", fakePassword},
+    describe("password", this.<NamedPasswordSecret>testSecretBehavior(
+        new Object[] { "$.value", fakePassword },
         "password",
         "{\"exclude_number\": true}",
-        "false",
         (passwordSecret) -> {
           assertThat(passwordSecret.getGenerationParameters().isExcludeNumber(), equalTo(true));
           assertThat(passwordSecret.getPassword(), equalTo(fakePassword));
@@ -180,15 +179,13 @@ public class SecretsControllerTypeSpecificGenerateTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
-    describe("ssh", this.<NamedSshSecret>testNewSecretBehavior(
-        new Object[]{
-            "$.type", "ssh",
+    describe("ssh", this.<NamedSshSecret>testSecretBehavior(
+        new Object[] {
             "$.value.public_key", "public_key",
             "$.value.private_key", "private_key",
             "$.value.public_key_fingerprint", null},
         "ssh",
         "null",
-        "false",
         (sshSecret) -> {
           assertThat(sshSecret.getPublicKey(), equalTo(publicKey));
           assertThat(sshSecret.getPrivateKey(), equalTo(privateKey));
@@ -202,14 +199,12 @@ public class SecretsControllerTypeSpecificGenerateTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("rsa", this.<NamedRsaSecret>testNewSecretBehavior(
-        new Object[]{
-            "$.type", "rsa",
+    describe("rsa", this.<NamedRsaSecret>testSecretBehavior(
+        new Object[] {
             "$.value.public_key", "public_key",
             "$.value.private_key", "private_key"},
         "rsa",
         "null",
-        "false",
         (rsaSecret) -> {
           assertThat(rsaSecret.getPublicKey(), equalTo(publicKey));
           assertThat(rsaSecret.getPrivateKey(), equalTo(privateKey));
@@ -224,11 +219,10 @@ public class SecretsControllerTypeSpecificGenerateTest {
     );
   }
 
-  private <T extends NamedSecret> Block testNewSecretBehavior(
+  private <T extends NamedSecret> Block testSecretBehavior(
       Object[] typeSpecificResponseFields,
       String secretType,
       String generationParameters,
-      String overwrite,
       Consumer<T> namedSecretAssertions,
       Supplier<T> existingSecretProvider) {
     return () -> {
@@ -242,7 +236,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
                   "\"name\":\"" + secretName + "\"," +
                   "\"type\":\"" + secretType + "\"," +
                   "\"parameters\":" + generationParameters + "," +
-                  "\"overwrite\":" + overwrite +
+                  "\"overwrite\":" + false +
                   "}");
         });
 
@@ -256,6 +250,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
             verify(secretDataService, times(1)).save(argumentCaptor.capture());
             response.andExpect(multiJsonPath(typeSpecificResponseFields))
                 .andExpect(multiJsonPath(
+                    "$.type", secretType,
                     "$.id", argumentCaptor.getValue().getUuid().toString(),
                     "$.version_created_at", frozenTime.toString()))
                 .andExpect(status().isOk())
@@ -339,6 +334,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(multiJsonPath(typeSpecificResponseFields))
                 .andExpect(multiJsonPath(
+                    "$.type", secretType,
                     "$.id", argumentCaptor.getValue().getUuid().toString(),
                     "$.version_created_at", frozenTime.toString()));
           });
