@@ -42,6 +42,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -91,6 +92,9 @@ public class SecretsControllerAuditLogTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .apply(springSecurity())
           .build();
+      when(operationAuditRecordDataService.save(isA(OperationAuditRecord.class))).thenAnswer( answer -> {
+        return answer.getArgumentAt(0, OperationAuditRecord.class);
+      });
     });
 
     describe("when getting a credential", () -> {

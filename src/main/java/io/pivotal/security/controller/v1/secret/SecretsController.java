@@ -337,7 +337,7 @@ public class SecretsController {
       Function<String, List<NamedSecret>> finder,
       HttpServletRequest request,
       Authentication authentication,
-      boolean returnFirstEntry) throws MissingServletRequestParameterException {
+      boolean returnFirstEntry) throws Exception {
     return auditLogService.performWithAuditing(auditRecordBuilder -> {
       auditRecordBuilder.populateFromRequest(request);
       auditRecordBuilder.setAuthentication(authentication);

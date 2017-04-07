@@ -38,13 +38,13 @@ public class AuditLogService {
     this.securityEventsLogService = securityEventsLogService;
   }
 
-  public <E extends Exception> ResponseEntity<?> performWithAuditing(
-      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, E> respondToRequestFunction
-  ) throws E {
+  public ResponseEntity<?> performWithAuditing(
+      ExceptionThrowingFunction<AuditRecordBuilder, ResponseEntity<?>, Exception> respondToRequestFunction
+  ) throws Exception {
     AuditRecordBuilder auditRecordBuilder = new AuditRecordBuilder();
     ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
+    TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     try {
       responseEntity = respondToRequestFunction.apply(auditRecordBuilder);
     } finally {
@@ -84,17 +84,9 @@ public class AuditLogService {
       AuditRecordBuilder auditRecordBuilder,
       ResponseEntity<?> responseEntity
   ) {
-    OperationAuditRecord auditRecord = getOperationAuditRecord(auditRecordBuilder,
-        responseEntity.getStatusCodeValue());
-    operationAuditRecordDataService.save(auditRecord);
-    return auditRecord;
-  }
-
-  private OperationAuditRecord getOperationAuditRecord(AuditRecordBuilder auditRecordBuilder,
-                                                       int statusCode) {
-    return auditRecordBuilder
-        .setRequestStatus(statusCode)
+    OperationAuditRecord auditRecord = auditRecordBuilder
+        .setRequestStatus(responseEntity.getStatusCodeValue())
         .build(currentTimeProvider.getInstant(), tokenServices);
+    return operationAuditRecordDataService.save(auditRecord);
   }
-
 }
