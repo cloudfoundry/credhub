@@ -242,7 +242,8 @@ public class AuthConfigurationTest {
             mockMvc.perform(post)
                 .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("invalid_token"));
+                .andExpect(jsonPath("$.error")
+                    .value( "The provided certificate is not authorized to be used for client authentication."));
           });
         });
       });

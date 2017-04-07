@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class X509AuthenticationProvider extends PreAuthenticatedAuthenticationProvider {
 
-  private static final String CLIENT_AUTH_EXTENDED_KEY_USAGE = KeyPurposeId.id_kp_clientAuth.getId();
+  public static final String CLIENT_AUTH_EXTENDED_KEY_USAGE = KeyPurposeId.id_kp_clientAuth.getId();
   private static final String ROLE_MTLS_USER = "ROLE_MTLS_USER";
 
   // Spring's access assertion language's hasRole() takes {@link ROLE_MTLS_USER} without "ROLE_" prefix
@@ -48,15 +48,15 @@ public class X509AuthenticationProvider extends PreAuthenticatedAuthenticationPr
         List<String> extKeyUsage = certificate.getExtendedKeyUsage();
         if (extKeyUsage == null || !extKeyUsage.contains(CLIENT_AUTH_EXTENDED_KEY_USAGE)) {
           BadCredentialsException throwable =
-              new BadCredentialsException("Certificate does not contain: " + CLIENT_AUTH_EXTENDED_KEY_USAGE);
+              new BadCredentialsException("");
 
-          throw new InternalAuthenticationServiceException("",throwable);
+          throw new InternalAuthenticationServiceException("Certificate does not contain: " + CLIENT_AUTH_EXTENDED_KEY_USAGE, throwable);
         }
       } catch (CertificateParsingException e) {
         BadCredentialsException throwable =
-            new BadCredentialsException("Certificate Extended Key Usage unreadable");
+            new BadCredentialsException("");
 
-        throw new InternalAuthenticationServiceException("",throwable);
+        throw new InternalAuthenticationServiceException("Certificate Extended Key Usage unreadable",throwable);
       }
     }
 
