@@ -7,6 +7,7 @@ import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,12 +19,17 @@ public class AccessControlDataService {
 
   private AccessEntryRepository accessEntryRepository;
   private SecretDataService secretDataService;
+  private final JdbcTemplate jdbcTemplate;
 
   @Autowired
-  public AccessControlDataService(AccessEntryRepository accessEntryRepository,
-      SecretDataService secretDataService) {
+  public AccessControlDataService(
+      AccessEntryRepository accessEntryRepository,
+      SecretDataService secretDataService,
+      JdbcTemplate jdbcTemplate
+  ) {
     this.accessEntryRepository = accessEntryRepository;
     this.secretDataService = secretDataService;
+    this.jdbcTemplate = jdbcTemplate;
   }
 
   public List<AccessControlEntry> getAccessControlList(String credentialName) {
@@ -54,9 +60,15 @@ public class AccessControlDataService {
   }
 
   public boolean hasReadAclPermission(String actor, String credentialName) {
-    final SecretName secretName = findSecretName(credentialName);
-    final AccessEntryData accessEntry = accessEntryRepository.findFirstByCredentialNameUuidAndActor(secretName.getUuid(), actor);
-    return accessEntry != null && accessEntry.hasReadAclPermission();
+    final Integer count = jdbcTemplate.queryForObject(
+        "select count(1) from access_entry " +
+            "where secret_name_uuid = (" +
+              "select uuid from secret_name where lower(name) = lower(?)" +
+            ") and actor = ? and read_acl_permission = true",
+        new Object[]{credentialName, actor},
+        Integer.class
+    );
+    return count > 0;
   }
 
   private void upsertAccessEntryOperations(SecretName secretName,
@@ -100,6 +112,6 @@ public class AccessControlDataService {
     Optional<AccessEntryData> temp = accessEntries.stream()
         .filter(accessEntryData -> accessEntryData.getActor().equals(actor))
         .findFirst();
-    return temp.isPresent() ? temp.get() : null;
+    return temp.orElse(null);
   }
 }

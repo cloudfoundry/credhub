@@ -29,12 +29,12 @@ public class AccessControlHandler {
   public AccessControlListResponse getAccessControlListResponse(UserContext userContext, String credentialName) {
     credentialName = addLeadingSlashIfMissing(credentialName);
 
-    permissionService.verifyAclReadPermission(userContext, credentialName);
-
     List<AccessControlEntry> accessControlList = accessControlDataService.getAccessControlList(credentialName);
     AccessControlListResponse response = new AccessControlListResponse();
     response.setCredentialName(credentialName);
     response.setAccessControlList(accessControlList);
+
+    permissionService.verifyAclReadPermission(userContext, credentialName);
 
     return response;
   }

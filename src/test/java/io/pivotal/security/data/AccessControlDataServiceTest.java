@@ -159,12 +159,18 @@ public class AccessControlDataServiceTest {
       });
 
       describe("when the user has acl_read permission for the credential", () -> {
-        it("should return true", () -> {
+        beforeEach(() -> {
           final List<AccessControlOperation> operations = asList(AccessControlOperation.READ_ACL, AccessControlOperation.DELETE);
           final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
           subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
+        });
 
+        it("should return true", () -> {
           assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(true));
+        });
+
+        it("should return true independent of credential name case", () -> {
+          assertThat(subject.hasReadAclPermission("test-actor", "/TEST/credential"), equalTo(true));
         });
       });
 
