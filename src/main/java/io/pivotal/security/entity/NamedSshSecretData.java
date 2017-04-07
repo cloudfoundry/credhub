@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.SecretKind;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -44,9 +43,6 @@ public class NamedSshSecretData extends NamedSecretData<NamedSshSecretData> {
     copy.setPublicKey(getPublicKey());
   }
 
-  public SecretKind getKind() {
-    return SecretKind.SSH;
-  }
 
   @Override
   public String getSecretType() {

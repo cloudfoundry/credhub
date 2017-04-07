@@ -1,7 +1,6 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.NamedRsaSecretHelper;
-import io.pivotal.security.view.SecretKind;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -43,9 +42,6 @@ public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
     copy.setPublicKey(getPublicKey());
   }
 
-  public SecretKind getKind() {
-    return SecretKind.RSA;
-  }
 
   @Override
   public String getSecretType() {
