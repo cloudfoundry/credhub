@@ -8,9 +8,11 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -129,8 +131,8 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public OperationAuditRecord build(Instant now, ResourceServerTokenServices tokenServices) {
-    return this.build(now, null, tokenServices);
+  public Collection<OperationAuditRecord> build(Instant now, ResourceServerTokenServices tokenServices) {
+    return newArrayList(this.build(now, null, tokenServices));
   }
 
   public OperationAuditRecord build(Instant now, String token,

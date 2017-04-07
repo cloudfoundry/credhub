@@ -14,6 +14,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import java.util.Collection;
+
 @Service
 public class AuditLogService {
 
@@ -68,9 +70,11 @@ public class AuditLogService {
       }
       auditRecordBuilder.setIsSuccess(responseSucceeded);
 
-      OperationAuditRecord auditRecord = saveAuditRecord(auditRecordBuilder, responseEntity);
+      Collection<OperationAuditRecord> auditRecords = saveAuditRecord(auditRecordBuilder, responseEntity);
+
       transactionManager.commit(transaction);
-      securityEventsLogService.log(auditRecord);
+
+      auditRecords.forEach(securityEventsLogService::log);
     } catch (Exception e) {
       throw new AuditSaveFailureException("error.audit_save_failure");
     } finally {
@@ -80,13 +84,16 @@ public class AuditLogService {
     }
   }
 
-  private OperationAuditRecord saveAuditRecord(
+  private Collection<OperationAuditRecord> saveAuditRecord(
       AuditRecordBuilder auditRecordBuilder,
       ResponseEntity<?> responseEntity
   ) {
-    OperationAuditRecord auditRecord = auditRecordBuilder
+    Collection<OperationAuditRecord> auditRecords = auditRecordBuilder
         .setRequestStatus(responseEntity.getStatusCodeValue())
         .build(currentTimeProvider.getInstant(), tokenServices);
-    return operationAuditRecordDataService.save(auditRecord);
+
+    auditRecords.forEach(operationAuditRecordDataService::save);
+
+    return auditRecords;
   }
 }
