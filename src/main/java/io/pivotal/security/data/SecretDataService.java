@@ -148,7 +148,7 @@ public class SecretDataService {
   }
 
   public boolean delete(String name) {
-    long numDeleted = secretNameRepository.deleteByName(addLeadingSlashIfMissing(name));
+    long numDeleted = secretNameRepository.deleteByNameIgnoreCase(addLeadingSlashIfMissing(name));
     return numDeleted > 0;
   }
 
