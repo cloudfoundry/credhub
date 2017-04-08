@@ -37,7 +37,6 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
 import java.util.function.Supplier;
-import javax.servlet.Filter;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,9 +54,6 @@ public class SetPermissionAndSecretTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
-
-  @Autowired
-  Filter springSecurityFilterChain;
 
   private MockMvc mockMvc;
 
@@ -235,8 +231,8 @@ public class SetPermissionAndSecretTest {
               + "  \"name\":\"/test-password\",\n"
               + "  \"overwrite\":true, \n"
               + "  \"access_control_entries\": [{\n"
-              + "    \"actor\": \"mtls:app:app1-guid\",\n"
-              + "    \"operations\": [\"read\"]\n"
+              + "    \"actor\": \"uaa-client:credhub_test\",\n"
+              + "    \"operations\": [\"read\", \"write\"]\n"
               + "  }]"
               + additionalJsonPayload
               + "}";
@@ -251,50 +247,97 @@ public class SetPermissionAndSecretTest {
               .andExpect(jsonPath("$.type", equalTo("password")));
         });
 
-        it("should append new ACEs", () -> {
-          // language=JSON
-          String requestBodyWithNewAces = "{\n"
-              + "  \"type\":\"password\",\n"
-              + "  \"name\":\"/test-password\",\n"
-              + "  \"overwrite\":true, \n"
-              + "  \"access_control_entries\": [{\n"
-              + "    \"actor\": \"mtls:app:app1-guid\",\n"
-              + "    \"operations\": [\"write\"]},\n"
-              + "    {\"actor\": \"mtls:app:app2-guid\",\n"
-              + "    \"operations\": [\"read\", \"write\"]\n"
-              + "  }]\n"
-              + additionalJsonPayload
-              + "}";
+        describe("and overwrite set to true", () -> {
+          it("should append new ACEs and not add full permissions for the current user", () -> {
+            // language=JSON
+            String requestBodyWithNewAces = "{\n"
+                + "  \"type\":\"password\",\n"
+                + "  \"name\":\"/test-password\",\n"
+                + "  \"overwrite\":true, \n"
+                + "  \"access_control_entries\": [{\n"
+                + "    \"actor\": \"mtls:app:app1-guid\",\n"
+                + "    \"operations\": [\"write\"]},\n"
+                + "    {\"actor\": \"uaa-client:credhub_test\",\n"
+                + "    \"operations\": [\"read\", \"write\", \"delete\"]\n"
+                + "  }]\n"
+                + additionalJsonPayload
+                + "}";
 
-          mockMvc.perform(requestBuilderProvider.get()
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content(requestBodyWithNewAces))
+            mockMvc.perform(requestBuilderProvider.get()
+                .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content(requestBodyWithNewAces))
 
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.type", equalTo("password")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type", equalTo("password")));
 
-          MvcResult result = mockMvc
-              .perform(get("/api/v1/acls?credential_name=" + "/test-password")
-                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-              .andDo(print())
-              .andExpect(status().isOk())
-              .andReturn();
-          String content = result.getResponse().getContentAsString();
-          AccessControlListResponse acl = JsonHelper
-              .deserialize(content, AccessControlListResponse.class);
-          assertThat(acl.getCredentialName(), equalTo("/test-password"));
-          assertThat(acl.getAccessControlList(), containsInAnyOrder(
-              samePropertyValuesAs(
-                  new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-                      asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-              samePropertyValuesAs(
-                  new AccessControlEntry("mtls:app:app1-guid",
-                      asList(READ, WRITE))),
-              samePropertyValuesAs(
-                  new AccessControlEntry("mtls:app:app2-guid",
-                      asList(READ, WRITE)))));
+            MvcResult result = mockMvc
+                .perform(get("/api/v1/acls?credential_name=" + "/test-password")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+            String content = result.getResponse().getContentAsString();
+            AccessControlListResponse acl = JsonHelper
+                .deserialize(content, AccessControlListResponse.class);
+            assertThat(acl.getCredentialName(), equalTo("/test-password"));
+            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                        asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("mtls:app:app1-guid",
+                        asList(WRITE))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-client:credhub_test",
+                        asList(READ, WRITE, DELETE)))));
+          });
+        });
+
+        describe("and overwrite set to false", () -> {
+          it("should not append new ACEs and not add full permissions for the current user", () -> {
+            // language=JSON
+            String requestBodyWithNewAces = "{\n"
+                + "  \"type\":\"password\",\n"
+                + "  \"name\":\"/test-password\",\n"
+                + "  \"overwrite\":false, \n"
+                + "  \"access_control_entries\": [{\n"
+                + "    \"actor\": \"mtls:app:app1-guid\",\n"
+                + "    \"operations\": [\"write\"]},\n"
+                + "    {\"actor\": \"uaa-client:credhub_test\",\n"
+                + "    \"operations\": [\"read\", \"write\", \"delete\"]\n"
+                + "  }]\n"
+                + additionalJsonPayload
+                + "}";
+
+            mockMvc.perform(requestBuilderProvider.get()
+                .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content(requestBodyWithNewAces))
+
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.type", equalTo("password")));
+
+            MvcResult result = mockMvc
+                .perform(get("/api/v1/acls?credential_name=" + "/test-password")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+            String content = result.getResponse().getContentAsString();
+            AccessControlListResponse acl = JsonHelper
+                .deserialize(content, AccessControlListResponse.class);
+            assertThat(acl.getCredentialName(), equalTo("/test-password"));
+            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                        asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-client:credhub_test",
+                        asList(READ, WRITE)))));
+          });
         });
       });
 

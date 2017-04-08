@@ -259,8 +259,10 @@ public class SecretsControllerTypeSpecificGenerateTest {
 
           it("asks the data service to persist the secret", () -> {
             verify(generateService, times(1))
-                .performGenerate(isA(AuditRecordBuilder.class),
-                    isA(BaseSecretGenerateRequest.class));
+                .performGenerate(
+                    isA(AuditRecordBuilder.class),
+                    isA(BaseSecretGenerateRequest.class),
+                    isA(AccessControlEntry.class));
             ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
             verify(secretDataService, times(1)).save(argumentCaptor.capture());
 

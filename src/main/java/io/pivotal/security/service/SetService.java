@@ -1,20 +1,20 @@
 package io.pivotal.security.service;
 
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
+
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.view.SecretView;
+import java.security.NoSuchAlgorithmException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import java.security.NoSuchAlgorithmException;
-
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
 public class SetService {
@@ -29,10 +29,15 @@ public class SetService {
     this.encryptor = encryptor;
   }
 
-  public ResponseEntity performSet(AuditRecordBuilder auditRecordBuilder, BaseSecretSetRequest requestBody) {
+  public ResponseEntity performSet(
+      AuditRecordBuilder auditRecordBuilder,
+      BaseSecretSetRequest requestBody,
+      AccessControlEntry currentUserAccessControlEntry) {
     final String secretName = requestBody.getName();
 
     NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
+
+    if (existingNamedSecret == null) { requestBody.addCurrentUser(currentUserAccessControlEntry); }
 
     boolean shouldWriteNewEntity = existingNamedSecret == null || requestBody.isOverwrite();
 

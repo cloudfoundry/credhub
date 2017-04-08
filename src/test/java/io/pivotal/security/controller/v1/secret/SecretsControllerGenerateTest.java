@@ -41,6 +41,7 @@ import io.pivotal.security.generator.BcCertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.CertificateGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
@@ -282,7 +283,8 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(PasswordGenerateRequest.class));
+              .performGenerate(isA(AuditRecordBuilder.class), isA(PasswordGenerateRequest.class), isA(
+                  AccessControlEntry.class));
           ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedPasswordSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
@@ -325,7 +327,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(SshGenerateRequest.class));
+              .performGenerate(isA(AuditRecordBuilder.class), isA(SshGenerateRequest.class), isA(AccessControlEntry.class));
           ArgumentCaptor<NamedSshSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedSshSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
@@ -388,7 +390,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(RsaGenerateRequest.class));
+              .performGenerate(isA(AuditRecordBuilder.class), isA(RsaGenerateRequest.class), isA(AccessControlEntry.class));
           ArgumentCaptor<NamedRsaSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedRsaSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
@@ -452,7 +454,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(CertificateGenerateRequest.class));
+              .performGenerate(isA(AuditRecordBuilder.class), isA(CertificateGenerateRequest.class), isA(AccessControlEntry.class));
           ArgumentCaptor<NamedCertificateSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedCertificateSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());

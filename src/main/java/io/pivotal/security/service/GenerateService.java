@@ -1,5 +1,6 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,8 @@ public class GenerateService {
     this.setService = setService;
   }
 
-  public ResponseEntity performGenerate(AuditRecordBuilder auditRecordBuilder, BaseSecretGenerateRequest requestBody) {
+  public ResponseEntity performGenerate(AuditRecordBuilder auditRecordBuilder, BaseSecretGenerateRequest requestBody, AccessControlEntry currentUserAccessControlEntry) {
     BaseSecretSetRequest setRequest = requestBody.generateSetRequest(generatorService);
-    return setService.performSet(auditRecordBuilder, setRequest);
+    return setService.performSet(auditRecordBuilder, setRequest, currentUserAccessControlEntry);
   }
 }

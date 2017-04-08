@@ -22,6 +22,7 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
@@ -60,7 +61,10 @@ public class RegenerateServiceTest {
       when(secretDataService.findMostRecent(eq("unsupported")))
           .thenReturn(secretOfUnsupportedType);
       when(generateService
-          .performGenerate(isA(AuditRecordBuilder.class), isA(BaseSecretGenerateRequest.class)))
+          .performGenerate(
+              isA(AuditRecordBuilder.class),
+              isA(BaseSecretGenerateRequest.class),
+              isA(AccessControlEntry.class)))
           .thenReturn(new ResponseEntity(HttpStatus.OK));
       secretOfUnsupportedType = new NamedJsonSecret();
       subject = new RegenerateService(secretDataService, generateService);
@@ -83,10 +87,10 @@ public class RegenerateServiceTest {
               .thenReturn(expectedParameters);
 
           responseEntity = subject
-              .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
+              .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
         });
-        describe("when regenerating password", () -> {
 
+        describe("when regenerating password", () -> {
           it("should return a 200 status", () -> {
             assertThat(responseEntity.getStatusCode().value(), equalTo(200));
           });
@@ -96,7 +100,10 @@ public class RegenerateServiceTest {
                 ArgumentCaptor.forClass(BaseSecretGenerateRequest.class);
 
             verify(generateService)
-                .performGenerate(isA(AuditRecordBuilder.class), generateRequestCaptor.capture());
+                .performGenerate(
+                    isA(AuditRecordBuilder.class),
+                    generateRequestCaptor.capture(),
+                    isA(AccessControlEntry.class));
 
             PasswordGenerateRequest generateRequest = (PasswordGenerateRequest) generateRequestCaptor
                 .getValue();
@@ -124,7 +131,7 @@ public class RegenerateServiceTest {
                     .setName("password");
 
                 responseEntity = subject
-                    .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
+                    .performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
               });
         });
       });
@@ -140,7 +147,7 @@ public class RegenerateServiceTest {
             when(namedSshSecret.getSecretType()).thenReturn("ssh");
 
             responseEntity = subject
-                .performRegenerate(mock(AuditRecordBuilder.class), sshRegenerateRequest);
+                .performRegenerate(mock(AuditRecordBuilder.class), sshRegenerateRequest, mock(AccessControlEntry.class));
           });
 
           it("should return a 200 status", () -> {
@@ -152,7 +159,10 @@ public class RegenerateServiceTest {
                 ArgumentCaptor.forClass(BaseSecretGenerateRequest.class);
 
             verify(generateService)
-                .performGenerate(isA(AuditRecordBuilder.class), generateRequestCaptor.capture());
+                .performGenerate(
+                    isA(AuditRecordBuilder.class),
+                    generateRequestCaptor.capture(),
+                    isA(AccessControlEntry.class));
 
             SshGenerateRequest generateRequest = (SshGenerateRequest) generateRequestCaptor
                 .getValue();
@@ -172,7 +182,7 @@ public class RegenerateServiceTest {
             when(namedRsaSecret.getSecretType()).thenReturn("rsa");
 
             responseEntity = subject
-                .performRegenerate(mock(AuditRecordBuilder.class), rsaRegenerateRequest);
+                .performRegenerate(mock(AuditRecordBuilder.class), rsaRegenerateRequest, mock(AccessControlEntry.class));
           });
 
           it("should return a 200 status", () -> {
@@ -184,7 +194,10 @@ public class RegenerateServiceTest {
                 ArgumentCaptor.forClass(BaseSecretGenerateRequest.class);
 
             verify(generateService)
-                .performGenerate(isA(AuditRecordBuilder.class), generateRequestCaptor.capture());
+                .performGenerate(
+                    isA(AuditRecordBuilder.class),
+                    generateRequestCaptor.capture(),
+                    isA(AccessControlEntry.class));
 
             RsaGenerateRequest generateRequest = (RsaGenerateRequest) generateRequestCaptor
                 .getValue();
@@ -200,7 +213,7 @@ public class RegenerateServiceTest {
           SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
               .setName("missing_entry");
 
-          subject.performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
+          subject.performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
         });
       });
 
@@ -209,7 +222,7 @@ public class RegenerateServiceTest {
           SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
               .setName("unsupported");
 
-          subject.performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest);
+          subject.performRegenerate(mock(AuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
         });
       });
     });

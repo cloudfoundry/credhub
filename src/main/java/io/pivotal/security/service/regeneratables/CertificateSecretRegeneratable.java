@@ -6,6 +6,7 @@ import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.CertificateGenerateRequest;
 import io.pivotal.security.util.CertificateReader;

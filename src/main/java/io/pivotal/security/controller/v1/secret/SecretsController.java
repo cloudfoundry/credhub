@@ -50,7 +50,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequestMapping(
     path = SecretsController.API_V1_DATA,
@@ -107,14 +106,13 @@ public class SecretsController {
       AccessControlEntry currentUserAccessControlEntry) throws Exception {
     requestBody.validate();
 
-    requestBody.addCurrentUser(currentUserAccessControlEntry);
     try {
-      return auditedHandlePutRequest(requestBody, request, userContext);
+      return auditedHandlePutRequest(requestBody, request, userContext, currentUserAccessControlEntry);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing secret, possibly caused by race condition, retrying...");
-      return auditedHandlePutRequest(requestBody, request, userContext);
+      return auditedHandlePutRequest(requestBody, request, userContext, currentUserAccessControlEntry);
     }
   }
 
@@ -232,9 +230,9 @@ public class SecretsController {
       // would be nice if Jackson could pick a subclass based on an arbitrary function, since
       // we want to consider both type and .regenerate. We could do custom deserialization but
       // then we'd have to do the entire job by hand.
-      return handleRegenerateRequest(auditRecordBuilder, requestString);
+      return handleRegenerateRequest(auditRecordBuilder, requestString, currentUserAccessControlEntry);
     } else {
-      return handleGenerateRequest(auditRecordBuilder, requestString,currentUserAccessControlEntry);
+      return handleGenerateRequest(auditRecordBuilder, requestString, currentUserAccessControlEntry);
     }
   }
 
@@ -245,41 +243,43 @@ public class SecretsController {
   ) throws IOException {
     BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
-    requestBody.addCurrentUser(currentUserAccessControlEntry);
 
     auditRecordBuilder.setCredentialName(requestBody.getName());
-    return generateService.performGenerate(auditRecordBuilder, requestBody);
+    return generateService.performGenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private ResponseEntity handleRegenerateRequest(
       AuditRecordBuilder auditRecordBuilder,
-      String requestString
+      String requestString,
+      AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
     SecretRegenerateRequest requestBody = objectMapper.readValue(requestString, SecretRegenerateRequest.class);
 
-    return regenerateService.performRegenerate(auditRecordBuilder, requestBody);
+    return regenerateService.performRegenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private ResponseEntity auditedHandlePutRequest(
       @RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
-      UserContext userContext
+      UserContext userContext,
+      AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
     return auditLogService.performWithAuditing(auditRecordBuilder ->
-        handlePutRequest(requestBody, request, userContext, auditRecordBuilder));
+        handlePutRequest(requestBody, request, userContext, auditRecordBuilder, currentUserAccessControlEntry));
   }
 
   private ResponseEntity<?> handlePutRequest(
       @RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       UserContext userContext,
-      AuditRecordBuilder auditRecordBuilder
+      AuditRecordBuilder auditRecordBuilder,
+      AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
     auditRecordBuilder.setCredentialName(requestBody.getName());
     auditRecordBuilder.populateFromRequest(request);
     auditRecordBuilder.setUserContext(userContext);
 
-    return setService.performSet(auditRecordBuilder, requestBody);
+    return setService.performSet(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
