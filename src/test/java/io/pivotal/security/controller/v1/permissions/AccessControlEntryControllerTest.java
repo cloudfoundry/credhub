@@ -1,11 +1,23 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import static com.google.common.collect.Lists.newArrayList;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.handler.AccessControlHandler;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.serialize;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
@@ -21,24 +33,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.view.AccessControlListResponse;
-import java.util.ArrayList;
-import java.util.List;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(Spectrum.class)
 public class AccessControlEntryControllerTest {
@@ -61,32 +55,46 @@ public class AccessControlEntryControllerTest {
           .build();
     });
 
-    describe("/aces", () -> {
+    describe("/api/v1/aces", () -> {
       describe("#POST", () -> {
-        it("should return a response containing the new ACE", () -> {
-          final ArrayList<AccessControlOperation> operations = newArrayList(
-              AccessControlOperation.READ, AccessControlOperation.WRITE);
-          List<AccessControlEntry> accessControlEntries = newArrayList(
-              new AccessControlEntry("test-actor", operations));
-          AccessEntriesRequest accessEntriesRequest = new AccessEntriesRequest(
-              "test-credential-name",
-              accessControlEntries
-          );
-          AccessControlListResponse expectedResponse =
-              new AccessControlListResponse("test-actor",
-                  accessControlEntries);
+        it("returns a response containing the new ACE", () -> {
+          // language=JSON
+          String accessControlEntriesJson = "{\n" +
+              "  \"credential_name\": \"test-credential-name\",\n" +
+              "  \"access_control_entries\": [\n" +
+              "    {\n" +
+              "      \"actor\": \"test-actor\",\n" +
+              "      \"operations\": [\n" +
+              "        \"read\",\n" +
+              "        \"write\"\n" +
+              "      ]\n" +
+              "    }\n" +
+              "  ]\n" +
+              "}";
+          // language=JSON
+          String expectedResponse = "{\n" +
+              "  \"credential_name\": \"test-actor\",\n" +
+              "  \"access_control_list\": [\n" +
+              "    {\n" +
+              "      \"actor\": \"test-actor\",\n" +
+              "      \"operations\": [\n" +
+              "        \"read\",\n" +
+              "        \"write\"\n" +
+              "      ]\n" +
+              "    }\n" +
+              "  ]\n" +
+              "}";
 
           when(accessControlHandler.setAccessControlEntries(any(AccessEntriesRequest.class)))
-              .thenReturn(expectedResponse);
+              .thenReturn(JsonHelper.deserialize(expectedResponse, AccessControlListResponse.class));
 
           MockHttpServletRequestBuilder request = post("/api/v1/aces")
               .contentType(MediaType.APPLICATION_JSON)
-              .content(serialize(accessEntriesRequest));
+              .content(accessControlEntriesJson);
 
-          final String jsonContent = serializeToString(expectedResponse);
           mockMvc.perform(request)
               .andExpect(status().isOk())
-              .andExpect(content().json(jsonContent));
+              .andExpect(content().json(expectedResponse));
 
           ArgumentCaptor<AccessEntriesRequest> captor = ArgumentCaptor
               .forClass(AccessEntriesRequest.class);
@@ -99,10 +107,33 @@ public class AccessControlEntryControllerTest {
                   hasProperty("allowedOperations",
                       hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
         });
+
+        it("validates request JSON on POST", () -> {
+          // language=JSON
+          String accessControlEntriesJson = "{\n" +
+              // no credential_name
+              "  \"access_control_entries\": [\n" +
+              "    {\n" +
+              "      \"actor\": \"test-actor\",\n" +
+              "      \"operations\": [\n" +
+              "        \"read\",\n" +
+              "        \"write\"\n" +
+              "      ]\n" +
+              "    }\n" +
+              "  ]\n" +
+              "}";
+
+          MockHttpServletRequestBuilder request = post("/api/v1/aces")
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(accessControlEntriesJson);
+
+          mockMvc.perform(request)
+              .andExpect(status().isBadRequest());
+        });
       });
 
       describe("#DELETE", () -> {
-        it("should return 204 status ", () -> {
+        it("removes ACE, returns 204", () -> {
           mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
               .andExpect(status().isNoContent())
               .andExpect(content().string(""));
