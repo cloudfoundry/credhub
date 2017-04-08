@@ -5,16 +5,18 @@ import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
@@ -46,10 +48,10 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       super.handle(request, response, authException);
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
-      OperationAuditRecord operationAuditRecord = new AuditRecordBuilder(null, request,
-          tokenStore.readAuthentication(token))
+      UserContext usercontext = UserContext.fromAuthentication(tokenStore.readAuthentication(token), token, tokenServices);
+      OperationAuditRecord operationAuditRecord = new AuditRecordBuilder(null, request, usercontext)
           .setRequestStatus(response.getStatus())
-          .build(currentTimeProvider.getInstant(), token, tokenServices);
+          .build(currentTimeProvider.getInstant(), token);
 
       operationAuditRecordDataService.save(operationAuditRecord);
       securityEventsLogService.log(operationAuditRecord);

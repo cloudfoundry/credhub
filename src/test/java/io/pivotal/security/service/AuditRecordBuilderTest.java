@@ -1,6 +1,7 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.OperationAuditRecord;
 import org.junit.runner.RunWith;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -11,16 +12,6 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-
-import java.security.Principal;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -35,6 +26,16 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.security.Principal;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @RunWith(Spectrum.class)
 public class AuditRecordBuilderTest {
@@ -261,13 +262,14 @@ public class AuditRecordBuilderTest {
     request.addHeader("X-Forwarded-For", "my-header2");
     request.setQueryString("name=foo&first=first_value&second=second_value");
 
-    final AuditRecordBuilder subject = new AuditRecordBuilder("foo", request, authentication);
-    when(authentication.getDetails()).thenReturn(mock(OAuth2AuthenticationDetails.class));
 
     ResourceServerTokenServices tokenService = mock(ResourceServerTokenServices.class);
-
     when(tokenService.readAccessToken(any())).thenReturn(token);
+    when(authentication.getDetails()).thenReturn(mock(OAuth2AuthenticationDetails.class));
 
-    return subject.build(timestamp, tokenService);
+    UserContext userContext = UserContext.fromAuthentication(authentication, null, tokenService);
+
+    final AuditRecordBuilder subject = new AuditRecordBuilder("foo", request, userContext);
+    return subject.build(timestamp);
   }
 }

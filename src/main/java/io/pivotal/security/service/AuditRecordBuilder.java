@@ -3,20 +3,19 @@ package io.pivotal.security.service;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
-
-import javax.servlet.http.HttpServletRequest;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class AuditRecordBuilder {
   private String hostName;
@@ -29,15 +28,15 @@ public class AuditRecordBuilder {
   private String credentialName;
   private AuditingOperationCode operationCode;
   private int requestStatus;
-  private Authentication authentication;
+  private UserContext userContext;
   private boolean isSuccess;
 
   public AuditRecordBuilder(String credentialName,
                             HttpServletRequest request,
-                            Authentication authentication) {
+                            UserContext userContext) {
     setCredentialName(credentialName);
     populateFromRequest(request);
-    setAuthentication(authentication);
+    setUserContext(userContext);
   }
 
   public AuditRecordBuilder() {
@@ -121,8 +120,8 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public AuditRecordBuilder setAuthentication(Authentication authentication) {
-    this.authentication = authentication;
+  public AuditRecordBuilder setUserContext(UserContext userContext) {
+    this.userContext = userContext;
     return this;
   }
 
@@ -131,24 +130,21 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public Collection<OperationAuditRecord> build(Instant now, ResourceServerTokenServices tokenServices) {
-    return newArrayList(this.build(now, null, tokenServices));
+  public Collection<OperationAuditRecord> build(Instant now) {
+    return newArrayList(this.build(now, null));
   }
 
-  public OperationAuditRecord build(Instant now, String token,
-      ResourceServerTokenServices tokenServices) {
-    UserContext user = UserContext.fromAuthentication(authentication, token, tokenServices);
-
+  public OperationAuditRecord build(Instant now, String token) {
     return new OperationAuditRecord(
-        user.getAuthMethod(),
+        userContext.getAuthMethod(),
         now,
         getCredentialName(),
         getOperationCode().toString(),
-        user.getUserId(),
-        user.getUserName(),
-        user.getIssuer(),
-        user.getValidFrom(),
-        user.getValidUntil(),
+        userContext.getUserId(),
+        userContext.getUserName(),
+        userContext.getIssuer(),
+        userContext.getValidFrom(),
+        userContext.getValidUntil(),
         getHostName(),
         method,
         path,
@@ -156,9 +152,9 @@ public class AuditRecordBuilder {
         requestStatus,
         getRequesterIp(),
         getXForwardedFor(),
-        user.getClientId(),
-        user.getScope(),
-        user.getGrantType(),
+        userContext.getClientId(),
+        userContext.getScope(),
+        userContext.getGrantType(),
         isSuccess
     );
   }

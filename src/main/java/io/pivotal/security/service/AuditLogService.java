@@ -8,7 +8,6 @@ import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -20,7 +19,6 @@ import java.util.Collection;
 public class AuditLogService {
 
   private final CurrentTimeProvider currentTimeProvider;
-  private final ResourceServerTokenServices tokenServices;
   private final OperationAuditRecordDataService operationAuditRecordDataService;
   private final PlatformTransactionManager transactionManager;
   private final SecurityEventsLogService securityEventsLogService;
@@ -28,13 +26,11 @@ public class AuditLogService {
   @Autowired
   AuditLogService(
       CurrentTimeProvider currentTimeProvider,
-      ResourceServerTokenServices tokenServices,
       OperationAuditRecordDataService operationAuditRecordDataService,
       PlatformTransactionManager transactionManager,
       SecurityEventsLogService securityEventsLogService
   ) {
     this.currentTimeProvider = currentTimeProvider;
-    this.tokenServices = tokenServices;
     this.operationAuditRecordDataService = operationAuditRecordDataService;
     this.transactionManager = transactionManager;
     this.securityEventsLogService = securityEventsLogService;
@@ -90,7 +86,7 @@ public class AuditLogService {
   ) {
     Collection<OperationAuditRecord> auditRecords = auditRecordBuilder
         .setRequestStatus(responseEntity.getStatusCodeValue())
-        .build(currentTimeProvider.getInstant(), tokenServices);
+        .build(currentTimeProvider.getInstant());
 
     auditRecords.forEach(operationAuditRecordDataService::save);
 

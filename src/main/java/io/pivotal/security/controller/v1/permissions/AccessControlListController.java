@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,12 +36,11 @@ public class AccessControlListController {
   public ResponseEntity<?> getAccessControlList(
     @RequestParam("credential_name") String credentialName,
     HttpServletRequest request,
-    Authentication authentication,
     UserContext userContext
   ) throws Exception {
     return auditLogService.performWithAuditing(auditParams -> {
       auditParams.populateFromRequest(request);
-      auditParams.setAuthentication(authentication);
+      auditParams.setUserContext(userContext);
       auditParams.setCredentialName(credentialName);
       auditParams.setOperationCode(ACL_ACCESS);
 

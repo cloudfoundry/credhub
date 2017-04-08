@@ -1,6 +1,7 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.OperationAuditRecord;
@@ -15,12 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-
-import java.security.Principal;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -39,6 +34,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.security.Principal;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
+
 @RunWith(Spectrum.class)
 @SuppressWarnings("EmptyCatchBlock")
 public class AuditLogServiceTest {
@@ -54,7 +55,7 @@ public class AuditLogServiceTest {
   private final Instant then = Instant.ofEpochSecond(1550903353L);
 
   private ResponseEntity<?> responseEntity;
-  private PreAuthenticatedAuthenticationToken authentication;
+  private UserContext userContext;
 
   {
 
@@ -63,7 +64,7 @@ public class AuditLogServiceTest {
       currentTimeProvider = mock(CurrentTimeProvider.class);
       securityEventsLogService = mock(SecurityEventsLogService.class);
       transactionManager = new FakeTransactionManager();
-      authentication = mockMtlsAuthentication();
+      userContext = mockUserContext();
       fakeRepository = new FakeRepository(transactionManager);
 
       when(operationAuditRecordDataService.save(isA(OperationAuditRecord.class))).thenAnswer(answer -> {
@@ -75,7 +76,6 @@ public class AuditLogServiceTest {
 
       subject = new AuditLogService(
           currentTimeProvider,
-          null,
           operationAuditRecordDataService,
           transactionManager,
           securityEventsLogService
@@ -137,7 +137,7 @@ public class AuditLogServiceTest {
                 auditRecordBuilder.setCredentialName("keyName");
                 auditRecordBuilder.populateFromRequest(
                     new MockHttpServletRequest("GET", "requestURI"));
-                auditRecordBuilder.setAuthentication(authentication);
+                auditRecordBuilder.setUserContext(userContext);
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
                 entity.setEncryptedValue("value".getBytes());
@@ -173,7 +173,7 @@ public class AuditLogServiceTest {
                 auditRecordBuilder.setCredentialName("keyName");
                 auditRecordBuilder.populateFromRequest(
                     new MockHttpServletRequest("GET", "requestURI"));
-                auditRecordBuilder.setAuthentication(authentication);
+                auditRecordBuilder.setUserContext(userContext);
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
                 entity.setEncryptedValue("value".getBytes());
@@ -249,7 +249,7 @@ public class AuditLogServiceTest {
     });
   }
 
-  private PreAuthenticatedAuthenticationToken mockMtlsAuthentication() {
+  private UserContext mockUserContext() {
     Principal principal = mock(Principal.class);
     when(principal.getName()).thenReturn("distinguished name");
 
@@ -262,7 +262,7 @@ public class AuditLogServiceTest {
     when(authentication.getCredentials()).thenReturn(certificate);
     when(authentication.getAuthorities()).thenReturn(Lists.emptyList());
 
-    return authentication;
+    return UserContext.fromAuthentication(authentication, null, null);
   }
 
   private ResponseEntity<?> auditedSaveAndReturnNewValue(
@@ -270,7 +270,7 @@ public class AuditLogServiceTest {
     auditRecordBuilder.setCredentialName("keyName");
     auditRecordBuilder.populateFromRequest(
         new MockHttpServletRequest("GET", "requestURI"));
-    auditRecordBuilder.setAuthentication(authentication);
+    auditRecordBuilder.setUserContext(userContext);
     NamedValueSecretData entity = new NamedValueSecretData("keyName");
     entity.setEncryptedValue("value".getBytes());
     final NamedValueSecretData secret = fakeRepository.save(entity);
@@ -282,7 +282,7 @@ public class AuditLogServiceTest {
     auditRecordBuilder.setCredentialName("keyName");
     auditRecordBuilder.populateFromRequest(
         new MockHttpServletRequest("GET", "requestURI"));
-    auditRecordBuilder.setAuthentication(authentication);
+    auditRecordBuilder.setUserContext(userContext);
 
     NamedValueSecretData entity = new NamedValueSecretData("keyName");
     entity.setEncryptedValue("value".getBytes());
