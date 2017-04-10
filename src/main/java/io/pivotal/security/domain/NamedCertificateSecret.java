@@ -5,7 +5,6 @@ import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.view.SecretKind;
 import java.util.List;
 
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
@@ -39,6 +38,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     } else {
       secret = new NamedCertificateSecret();
       secret.copyNameReferenceFrom(existing);
+      secret.setCaName(existing.getCaName());
     }
 
     List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
@@ -49,6 +49,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     secret.setPrivateKey(fields.getPrivateKey());
     secret.setCertificate(fields.getCertificate());
     secret.setCa(fields.getCa());
+    secret.setCaName(fields.getCaName());
     return secret;
   }
 
@@ -97,10 +98,6 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return this;
   }
 
-  @Override
-  public SecretKind getKind() {
-    return delegate.getKind();
-  }
 
   @Override
   public String getSecretType() {

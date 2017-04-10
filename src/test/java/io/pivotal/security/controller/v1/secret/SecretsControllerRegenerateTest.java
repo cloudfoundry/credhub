@@ -1,43 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.generator.PassayStringSecretGenerator;
-import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.secret.Password;
-import io.pivotal.security.secret.RsaKey;
-import io.pivotal.security.secret.SshKey;
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -62,6 +24,43 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.RsaKey;
+import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.util.ExceptionThrowingFunction;
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -69,9 +68,6 @@ public class SecretsControllerRegenerateTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
-
-  @Autowired
-  SecretsController subject;
 
   @SpyBean
   AuditLogService auditLogService;

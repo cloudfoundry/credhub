@@ -1,4 +1,4 @@
-package io.pivotal.security.regeneratables;
+package io.pivotal.security.service.regeneratables;
 
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.service.AuditRecordBuilder;

@@ -1,6 +1,6 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.controller.v1.CertificateSecretParameters;
+import io.pivotal.security.domain.CertificateParameters;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
@@ -43,16 +43,16 @@ public class SignedCertificateGenerator {
     this.x509ExtensionUtils = x509ExtensionUtils;
   }
 
-  X509Certificate getSelfSigned(KeyPair keyPair, CertificateSecretParameters params)
+  X509Certificate getSelfSigned(KeyPair keyPair, CertificateParameters params)
       throws Exception {
-    return getSignedByIssuer(params.getDn(), keyPair.getPrivate(), keyPair, params);
+    return getSignedByIssuer(params.getX500Name(), keyPair.getPrivate(), keyPair, params);
   }
 
   X509Certificate getSignedByIssuer(
       X500Name issuerDn,
       PrivateKey issuerKey,
       KeyPair keyPair,
-      CertificateSecretParameters params) throws Exception {
+      CertificateParameters params) throws Exception {
     Instant now = timeProvider.getNow().toInstant();
     SubjectPublicKeyInfo publicKeyInfo = SubjectPublicKeyInfo
         .getInstance(keyPair.getPublic().getEncoded());
@@ -61,8 +61,8 @@ public class SignedCertificateGenerator {
         issuerDn,
         serialNumberGenerator.generate(),
         Date.from(now),
-        Date.from(now.plus(Duration.ofDays(params.getDurationDays()))),
-        params.getDn(),
+        Date.from(now.plus(Duration.ofDays(params.getDuration()))),
+        params.getX500Name(),
         publicKeyInfo
     );
 

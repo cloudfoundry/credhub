@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.SecretKind;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -15,11 +14,6 @@ public class NamedJsonSecretData extends NamedSecretData<NamedJsonSecretData> {
 
   public NamedJsonSecretData(String name) {
     super(name);
-  }
-
-  @Override
-  public SecretKind getKind() {
-    return null;
   }
 
   @Override

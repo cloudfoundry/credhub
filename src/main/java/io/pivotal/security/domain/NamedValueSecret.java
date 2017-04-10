@@ -3,7 +3,6 @@ package io.pivotal.security.domain;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.view.SecretKind;
 import java.util.List;
 
 public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
@@ -66,10 +65,6 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
     return delegate.getSecretType();
   }
 
-  @Override
-  public SecretKind getKind() {
-    return delegate.getKind();
-  }
 
   public void rotate() {
     String decryptedValue = this.getValue();

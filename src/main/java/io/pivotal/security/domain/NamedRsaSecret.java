@@ -5,7 +5,6 @@ import io.pivotal.security.entity.NamedRsaSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.view.SecretKind;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,10 +88,6 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
     this.setPrivateKey(decryptedValue);
   }
 
-  @Override
-  public SecretKind getKind() {
-    return delegate.getKind();
-  }
 
   @Override
   public String getSecretType() {

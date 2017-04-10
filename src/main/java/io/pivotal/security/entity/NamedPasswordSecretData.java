@@ -2,7 +2,6 @@ package io.pivotal.security.entity;
 
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 
-import io.pivotal.security.view.SecretKind;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -62,8 +61,4 @@ public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecret
     copy.setParametersNonce(parametersNonce);
   }
 
-  @Override
-  public SecretKind getKind() {
-    return SecretKind.PASSWORD;
-  }
 }

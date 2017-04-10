@@ -139,6 +139,25 @@ public class CertificateReaderTest {
         assertThat(certificateReader.isCa(), equalTo(true));
       });
     });
+
+    describe("when we need to get parameters as String arrays", () -> {
+      it("returns the values as expected", () -> {
+        final String distinguishedName =
+            "O=test-org,ST=Jupiter,C=MilkyWay,CN=test-common-name,OU=test-org-unit,L=Europa";
+        final GeneralNames generalNames = new GeneralNames(
+            new GeneralName(GeneralName.dNSName, "SolarSystem"));
+
+        CertificateReader certificateReader = new CertificateReader(BIG_TEST_CERT);
+
+        assertThat(certificateReader.getAlternativeNames(), equalTo(generalNames));
+        assertThat(asList(certificateReader.getExtendedKeyUsage().getUsages()),
+            containsInAnyOrder(KeyPurposeId.id_kp_serverAuth, KeyPurposeId.id_kp_clientAuth));
+        assertThat(certificateReader.getKeyUsage().hasUsages(KeyUsage.digitalSignature),
+            equalTo(true));
+        assertThat(certificateReader.getSubjectName().toString(), equalTo(distinguishedName));
+
+      });
+    });
   }
 }
 

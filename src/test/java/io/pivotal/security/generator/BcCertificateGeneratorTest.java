@@ -16,8 +16,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.controller.v1.CertificateSecretParameters;
 import io.pivotal.security.data.CertificateAuthorityService;
+import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.request.CertificateGenerationParameters;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -56,6 +57,7 @@ public class BcCertificateGeneratorTest {
   private FakeKeyPairGenerator fakeKeyPairGenerator;
 
   private X500Name rootCaDn;
+  private X500Name signeeDn;
   private KeyPair rootCaKeyPair;
   private Certificate rootCa;
   private X509Certificate rootCaX509Certificate;
@@ -65,7 +67,8 @@ public class BcCertificateGeneratorTest {
   private Certificate intermediateCa;
   private X509Certificate intermediateX509Certificate;
 
-  private CertificateSecretParameters inputParameters;
+  private CertificateParameters inputParameters;
+  private CertificateGenerationParameters generationParameters;
   private X509Certificate childX509Certificate;
 
   {
@@ -80,6 +83,7 @@ public class BcCertificateGeneratorTest {
       fakeKeyPairGenerator = new FakeKeyPairGenerator();
 
       rootCaDn = new X500Name("O=foo,ST=bar,C=root");
+      signeeDn = new X500Name("O=foo,ST=bar,C=mars");
       rootCaKeyPair = fakeKeyPairGenerator.generate();
       X509CertificateHolder caX509CertHolder = makeCert(rootCaKeyPair, rootCaKeyPair.getPrivate(),
           rootCaDn, rootCaDn, true);
@@ -91,12 +95,14 @@ public class BcCertificateGeneratorTest {
           CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())
       );
 
-      inputParameters = new CertificateSecretParameters()
-          .setOrganization("foo")
-          .setState("bar")
-          .setCaName("my-ca-name")
-          .setCountry("mars")
-          .setDurationDays(365);
+      generationParameters = new CertificateGenerationParameters();
+      generationParameters.setOrganization("foo");
+      generationParameters.setState("bar");
+      generationParameters.setCaName("my-ca-name");
+      generationParameters.setCountry("mars");
+      generationParameters.setDuration(365);
+
+      inputParameters = new CertificateParameters(generationParameters);
     });
 
     describe("when CA exists", () -> {
@@ -141,9 +147,17 @@ public class BcCertificateGeneratorTest {
         });
 
         it("generates a valid childCertificate when a key length is given", () -> {
-          inputParameters.setKeyLength(4096);
+          generationParameters.setKeyLength(4096);
+          CertificateParameters params = new CertificateParameters(generationParameters);
 
-          Certificate certificateSecret = subject.generateSecret(inputParameters);
+          when(
+              signedCertificateGenerator
+                  .getSignedByIssuer(rootCaDn, rootCaKeyPair.getPrivate(),
+                      childCertificateKeyPair.get(), params)
+          ).thenReturn(childX509Certificate);
+
+          Certificate certificateSecret = subject.generateSecret(
+              params);
 
           assertThat(certificateSecret, notNullValue());
           verify(keyGenerator, times(1)).generateKeyPair(4096);
@@ -209,8 +223,9 @@ public class BcCertificateGeneratorTest {
       );
 
       beforeEach(() -> {
-        inputParameters.setCaName(null);
-        inputParameters.setSelfSigned(true);
+        generationParameters.setCaName(null);
+        generationParameters.setSelfSigned(true);
+        inputParameters = new CertificateParameters(generationParameters);
         when(keyGenerator.generateKeyPair(anyInt())).thenReturn(rootCaKeyPair);
         when(signedCertificateGenerator.getSelfSigned(rootCaKeyPair, inputParameters))
             .thenReturn(certificate.get());
@@ -235,7 +250,7 @@ public class BcCertificateGeneratorTest {
   private X509CertificateHolder generateChildCertificateSignedByCa(KeyPair certKeyPair,
       PrivateKey caPrivateKey,
       X500Name caDn) throws Exception {
-    return makeCert(certKeyPair, caPrivateKey, caDn, inputParameters.getDn(), false);
+    return makeCert(certKeyPair, caPrivateKey, caDn, signeeDn, false);
   }
 
   private X509CertificateHolder makeCert(KeyPair certKeyPair,

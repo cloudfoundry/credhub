@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.SecretKind;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -62,10 +61,6 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
     return this;
   }
 
-  @Override
-  public SecretKind getKind() {
-    return SecretKind.CERTIFICATE;
-  }
 
   @Override
   public String getSecretType() {

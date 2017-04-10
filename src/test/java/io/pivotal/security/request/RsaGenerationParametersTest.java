@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1;
+package io.pivotal.security.request;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -9,11 +9,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.RsaGenerationParameters;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
-public class RsaSecretParametersTest {
+public class RsaGenerationParametersTest {
 
   private RsaGenerationParameters subject;
 
