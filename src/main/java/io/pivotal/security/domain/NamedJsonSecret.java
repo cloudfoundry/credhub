@@ -7,7 +7,6 @@ import io.pivotal.security.entity.NamedJsonSecretData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.view.SecretKind;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -51,10 +50,6 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
     return secret;
   }
 
-  @Override
-  public SecretKind getKind() {
-    return SecretKind.JSON;
-  }
 
   @Override
   public String getSecretType() {

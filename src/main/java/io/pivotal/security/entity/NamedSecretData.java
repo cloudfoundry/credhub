@@ -5,7 +5,6 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
-import io.pivotal.security.view.SecretKind;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -137,8 +136,6 @@ public abstract class NamedSecretData<Z extends NamedSecretData> implements Encr
     this.nonce = nonce;
     return (Z) this;
   }
-
-  public abstract SecretKind getKind();
 
   public abstract String getSecretType();
 

@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.view.SecretKind;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
@@ -26,8 +25,4 @@ public class NamedValueSecretData extends NamedSecretData<NamedValueSecretData> 
   public void copyIntoImpl(NamedValueSecretData copy) {
   }
 
-  @Override
-  public SecretKind getKind() {
-    return SecretKind.VALUE;
-  }
 }

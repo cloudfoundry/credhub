@@ -6,8 +6,6 @@ import io.pivotal.security.entity.EncryptedValueContainer;
 import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.view.SecretKind;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -21,8 +19,6 @@ public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedVal
   public NamedSecret(NamedSecretData delegate) {
     this.delegate = delegate;
   }
-
-  public abstract SecretKind getKind();
 
   public abstract String getSecretType();
 

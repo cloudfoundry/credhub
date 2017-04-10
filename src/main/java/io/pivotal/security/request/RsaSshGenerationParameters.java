@@ -1,13 +1,10 @@
 package io.pivotal.security.request;
 
-import io.pivotal.security.controller.v1.RequestParameters;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.List;
 
-public class RsaSshGenerationParameters implements RequestParameters {
+public class RsaSshGenerationParameters{
 
   private int keyLength = 2048;
   private List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);

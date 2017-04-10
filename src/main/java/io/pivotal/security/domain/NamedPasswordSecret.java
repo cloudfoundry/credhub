@@ -6,12 +6,10 @@ import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.view.SecretKind;
-import org.springframework.util.Assert;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.util.Assert;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
@@ -142,10 +140,6 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     return delegate.getSecretType();
   }
 
-  @Override
-  public SecretKind getKind() {
-    return delegate.getKind();
-  }
 
   public void rotate() {
     String decryptedPassword = this.getPassword();

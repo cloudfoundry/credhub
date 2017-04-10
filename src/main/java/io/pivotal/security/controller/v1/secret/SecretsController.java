@@ -1,34 +1,36 @@
 package io.pivotal.security.controller.v1.secret;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
-import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.controller.v1.SecretKindMappingFactory;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
-import io.pivotal.security.request.DefaultSecretGenerateRequest;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.AuditLogService;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.service.SetService;
-import io.pivotal.security.util.CheckedFunction;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
-import io.pivotal.security.view.SecretKind;
-import io.pivotal.security.view.SecretKindFromString;
 import io.pivotal.security.view.SecretView;
-import org.apache.commons.lang.BooleanUtils;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -48,20 +50,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @RestController
 @RequestMapping(
@@ -73,8 +62,6 @@ public class SecretsController {
 
   private static final Logger LOGGER = LogManager.getLogger(SecretsController.class);
   private final SecretDataService secretDataService;
-  private final NamedSecretGenerateHandler namedSecretGenerateHandler;
-  private final JsonContextFactory jsonContextFactory;
   private final AuditLogService auditLogService;
   private final ObjectMapper objectMapper;
   private final GenerateService generateService;
@@ -83,8 +70,6 @@ public class SecretsController {
 
   @Autowired
   public SecretsController(SecretDataService secretDataService,
-                           NamedSecretGenerateHandler namedSecretGenerateHandler,
-                           JsonContextFactory jsonContextFactory,
                            AuditLogService auditLogService,
                            ObjectMapper objectMapper,
                            GenerateService generateService,
@@ -92,8 +77,6 @@ public class SecretsController {
                            RegenerateService regenerateService
   ) {
     this.secretDataService = secretDataService;
-    this.namedSecretGenerateHandler = namedSecretGenerateHandler;
-    this.jsonContextFactory = jsonContextFactory;
     this.auditLogService = auditLogService;
     this.objectMapper = objectMapper;
     this.generateService = generateService;
@@ -151,7 +134,8 @@ public class SecretsController {
       auditRecorder.populateFromRequest(request);
       auditRecorder.setAuthentication(authentication);
 
-      if (!secretDataService.delete(secretName)) {
+      boolean deleteSucceeded = secretDataService.delete(secretName);
+      if (!deleteSucceeded) {
         throw new EntryNotFoundException("error.credential_not_found");
       }
 
@@ -249,15 +233,14 @@ public class SecretsController {
       // would be nice if Jackson could pick a subclass based on an arbitrary function, since
       // we want to consider both type and .regenerate. We could do custom deserialization but
       // then we'd have to do the entire job by hand.
-      return handleRegenerateRequest(auditRecordBuilder, inputStream, requestString);
+      return handleRegenerateRequest(auditRecordBuilder, requestString);
     } else {
-      return handleGenerateRequest(auditRecordBuilder, inputStream, requestString,currentUserAccessControlEntry);
+      return handleGenerateRequest(auditRecordBuilder, requestString,currentUserAccessControlEntry);
     }
   }
 
   private ResponseEntity handleGenerateRequest(
       AuditRecordBuilder auditRecordBuilder,
-      InputStream requestInputStream,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
@@ -266,33 +249,16 @@ public class SecretsController {
     requestBody.addCurrentUser(currentUserAccessControlEntry);
 
     auditRecordBuilder.setCredentialName(requestBody.getName());
-    final boolean isCurrentlyTrappedInTheMonad = requestBody instanceof DefaultSecretGenerateRequest;
-    if (isCurrentlyTrappedInTheMonad) {
-      requestInputStream.reset();
-      DocumentContext parsedRequestBody = jsonContextFactory.getParseContext().parse(requestInputStream);
-      return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
-    } else {
-      return generateService.performGenerate(auditRecordBuilder, requestBody);
-    }
+    return generateService.performGenerate(auditRecordBuilder, requestBody);
   }
 
   private ResponseEntity handleRegenerateRequest(
       AuditRecordBuilder auditRecordBuilder,
-      InputStream requestInputStream,
       String requestString
   ) throws IOException {
     SecretRegenerateRequest requestBody = objectMapper.readValue(requestString, SecretRegenerateRequest.class);
 
-    ResponseEntity responseEntity = regenerateService.performRegenerate(auditRecordBuilder, requestBody);
-
-    boolean isCurrentlyTrappedInTheMonad = responseEntity == null;
-    if (isCurrentlyTrappedInTheMonad) {
-      requestInputStream.reset();
-      DocumentContext parsedRequestBody = jsonContextFactory.getParseContext().parse(requestInputStream);
-      return storeSecret(auditRecordBuilder, namedSecretGenerateHandler, parsedRequestBody);
-    } else {
-      return responseEntity;
-    }
+    return regenerateService.performRegenerate(auditRecordBuilder, requestBody);
   }
 
   private ResponseEntity auditedHandlePutRequest(
@@ -300,9 +266,8 @@ public class SecretsController {
       HttpServletRequest request,
       Authentication authentication
   ) throws Exception {
-    return auditLogService.performWithAuditing(auditRecordBuilder -> {
-      return handlePutRequest(requestBody, request, authentication, auditRecordBuilder);
-    });
+    return auditLogService.performWithAuditing(auditRecordBuilder ->
+        handlePutRequest(requestBody, request, authentication, auditRecordBuilder));
   }
 
   private ResponseEntity<?> handlePutRequest(
@@ -401,67 +366,6 @@ public class SecretsController {
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
     });
-  }
-
-  private ResponseEntity<?> storeSecret(
-      AuditRecordBuilder auditRecordBuilder,
-      SecretKindMappingFactory handler,
-      DocumentContext parsedRequestBody
-  ) {
-    final String secretName = getSecretName(parsedRequestBody);
-    if (StringUtils.isEmpty(secretName)) {
-      throw new ParameterizedValidationException("error.missing_name");
-    }
-    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
-
-    boolean willBeCreated = existingNamedSecret == null;
-    boolean overwrite = BooleanUtils.isTrue(parsedRequestBody.read("$.overwrite", Boolean.class));
-    boolean regenerate = BooleanUtils.isTrue(parsedRequestBody.read("$.regenerate", Boolean.class));
-
-    boolean willWrite = willBeCreated || overwrite || regenerate;
-    AuditingOperationCode operationCode = willWrite ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    auditRecordBuilder.setOperationCode(operationCode);
-    if (regenerate && existingNamedSecret == null) {
-      throw new EntryNotFoundException("error.credential_not_found");
-    }
-
-    String secretPath = secretName;
-    try {
-      String requestedSecretType = parsedRequestBody.read("$.type");
-      final SecretKind secretKind = (existingNamedSecret != null
-          ? existingNamedSecret.getKind()
-          : SecretKindFromString.fromString(requestedSecretType));
-      if (existingNamedSecret != null && requestedSecretType != null && !existingNamedSecret
-          .getSecretType().equals(requestedSecretType)) {
-        throw new ParameterizedValidationException("error.type_mismatch");
-      }
-      secretPath = existingNamedSecret == null ? secretPath : existingNamedSecret.getName();
-
-      NamedSecret storedNamedSecret;
-      if (willWrite) {
-        SecretKind.CheckedMapping<NamedSecret, NoSuchAlgorithmException> make =
-            handler.make(secretPath, parsedRequestBody);
-        CheckedFunction<NamedSecret, NoSuchAlgorithmException> lift = secretKind.lift(make);
-        storedNamedSecret = lift.apply(existingNamedSecret);
-        storedNamedSecret = secretDataService.save(storedNamedSecret);
-      } else {
-        // To catch invalid parameters, validate request even though we throw away the result.
-        // We need to apply it to null or Hibernate may decide to save the record.
-        // As above, the unit tests won't catch (all) issues :( ,
-        // but there is an integration test to cover it.
-        storedNamedSecret = existingNamedSecret;
-        secretKind.lift(handler.make(secretPath, parsedRequestBody)).apply(null);
-      }
-
-      SecretView secretView = SecretView.fromEntity(storedNamedSecret);
-      return new ResponseEntity<>(secretView, HttpStatus.OK);
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private String getSecretName(DocumentContext parsed) {
-    return parsed.read("$.name", String.class);
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request,

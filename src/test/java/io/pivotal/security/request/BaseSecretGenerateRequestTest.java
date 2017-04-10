@@ -18,7 +18,7 @@ public class BaseSecretGenerateRequestTest {
         it("should not have any constraint violations", () -> {
           String json = "{"
               + "\"name\":\"some-name\","
-              + "\"type\":\"certificate\","
+              + "\"type\":\"password\","
               + "\"overwrite\":true"
               + "}";
 

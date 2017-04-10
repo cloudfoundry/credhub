@@ -22,6 +22,11 @@ public class CertificateSetRequest extends BaseSecretSetRequest {
     return certificateFields;
   }
 
+  public void setCertificateFields(
+      CertificateSetRequestFields certificateFields) {
+    this.certificateFields = certificateFields;
+  }
+
   @JsonIgnore
   @Override
   public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
