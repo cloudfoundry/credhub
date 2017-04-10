@@ -6,22 +6,14 @@ import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.CertificateGenerateRequest;
-import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.util.CertificateReader;
-import org.springframework.http.ResponseEntity;
 
-public class CertificateSecret implements Regeneratable {
-
-  private GenerateService generateService;
-
-  public CertificateSecret(GenerateService generateService) {
-    this.generateService = generateService;
-  }
+public class CertificateSecretRegeneratable implements Regeneratable {
 
   @Override
-  public ResponseEntity regenerate(NamedSecret secret, AuditRecordBuilder auditRecordBuilder) {
+  public BaseSecretGenerateRequest createGenerateRequest(NamedSecret secret) {
     NamedCertificateSecret certificateSecret = (NamedCertificateSecret) secret;
     CertificateReader reader = new CertificateReader(certificateSecret.getCertificate());
 
@@ -37,6 +29,6 @@ public class CertificateSecret implements Regeneratable {
     generateRequest.setName(certificateSecret.getName());
     generateRequest.setType(certificateSecret.getSecretType());
     generateRequest.setCertificateParameters(certificateParameters);
-    return generateService.performGenerate(auditRecordBuilder, generateRequest);
+    return generateRequest;
   }
 }

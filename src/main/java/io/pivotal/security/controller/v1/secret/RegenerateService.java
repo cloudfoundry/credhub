@@ -6,14 +6,15 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
-import io.pivotal.security.service.regeneratables.CertificateSecret;
+import io.pivotal.security.service.regeneratables.CertificateSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.NotRegeneratable;
-import io.pivotal.security.service.regeneratables.PasswordSecret;
+import io.pivotal.security.service.regeneratables.PasswordSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.Regeneratable;
-import io.pivotal.security.service.regeneratables.RsaSecret;
-import io.pivotal.security.service.regeneratables.SshSecret;
+import io.pivotal.security.service.regeneratables.RsaSecretRegeneratable;
+import io.pivotal.security.service.regeneratables.SshSecretRegeneratable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,7 @@ class RegenerateService {
 
   private SecretDataService secretDataService;
   private GenerateService generateService;
-  private Map<String, Regeneratable> regeneratableTypes;
+  private Map<String, Supplier<Regeneratable>> regeneratableTypes;
 
   RegenerateService(
       SecretDataService secretDataService,
@@ -30,27 +31,26 @@ class RegenerateService {
   ) {
     this.secretDataService = secretDataService;
     this.generateService = generateService;
-  }
 
-  private void constructGeneratorMap() {
     this.regeneratableTypes = new HashMap<>();
-    this.regeneratableTypes.put("password", new PasswordSecret(generateService));
-    this.regeneratableTypes.put("ssh", new SshSecret(generateService));
-    this.regeneratableTypes.put("rsa", new RsaSecret(generateService));
-    this.regeneratableTypes.put("certificate", new CertificateSecret(generateService));
+    this.regeneratableTypes.put("password", PasswordSecretRegeneratable::new);
+    this.regeneratableTypes.put("ssh", SshSecretRegeneratable::new);
+    this.regeneratableTypes.put("rsa", RsaSecretRegeneratable::new);
+    this.regeneratableTypes.put("certificate", CertificateSecretRegeneratable::new);
   }
 
   public ResponseEntity performRegenerate(AuditRecordBuilder auditRecordBuilder,
       SecretRegenerateRequest requestBody) {
-    constructGeneratorMap();
-
     NamedSecret secret = secretDataService.findMostRecent(requestBody.getName());
     if (secret == null) {
       throw new EntryNotFoundException("error.credential_not_found");
     }
 
-    return regeneratableTypes.getOrDefault(secret.getSecretType(),
-        new NotRegeneratable())
-        .regenerate(secret, auditRecordBuilder);
+    Regeneratable regeneratable = regeneratableTypes
+        .getOrDefault(secret.getSecretType(), NotRegeneratable::new)
+        .get();
+
+    return generateService
+        .performGenerate(auditRecordBuilder, regeneratable.createGenerateRequest(secret));
   }
 }

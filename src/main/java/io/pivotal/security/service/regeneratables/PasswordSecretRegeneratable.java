@@ -3,22 +3,14 @@ package io.pivotal.security.service.regeneratables;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.GenerateService;
-import org.springframework.http.ResponseEntity;
 
-public class PasswordSecret implements Regeneratable {
-
-  private GenerateService generateService;
-
-  public PasswordSecret(GenerateService generateService) {
-    this.generateService = generateService;
-  }
+public class PasswordSecretRegeneratable implements Regeneratable {
 
   @Override
-  public ResponseEntity regenerate(NamedSecret secret, AuditRecordBuilder auditRecordBuilder) {
+  public BaseSecretGenerateRequest createGenerateRequest(NamedSecret secret) {
     NamedPasswordSecret passwordSecret = (NamedPasswordSecret) secret;
     PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
@@ -32,7 +24,6 @@ public class PasswordSecret implements Regeneratable {
           "error.cannot_regenerate_non_generated_password");
     }
     generateRequest.setGenerationParameters(generationParameters);
-
-    return generateService.performGenerate(auditRecordBuilder, generateRequest);
+    return generateRequest;
   }
 }

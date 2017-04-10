@@ -1,11 +1,9 @@
 package io.pivotal.security.service.regeneratables;
 
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.service.AuditRecordBuilder;
-import org.springframework.http.ResponseEntity;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
 
 public interface Regeneratable {
 
-  ResponseEntity regenerate(NamedSecret secret, AuditRecordBuilder auditRecordBuilder);
-
+  BaseSecretGenerateRequest createGenerateRequest(NamedSecret secret);
 }
