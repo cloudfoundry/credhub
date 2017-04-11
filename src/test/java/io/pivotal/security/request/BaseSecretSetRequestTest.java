@@ -15,6 +15,7 @@ import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
 
@@ -57,6 +58,25 @@ public class BaseSecretSetRequestTest {
             "}";
 
         JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
+      });
+    });
+
+    describe("when the type is user", () -> {
+      it("deserializes to UserSetRequest", () -> {
+        // language=JSON
+        String json = "{\n" +
+            "  \"name\": \"/dan-user\",\n" +
+            "  \"type\": \"user\",\n" +
+            "  \"value\":\n" +
+            "  {\n" +
+            "    \"username\": \"dan\",\n" +
+            "    \"password\": \"example-password\"\n" +
+            "  }\n" +
+            "}";
+
+        BaseSecretSetRequest userSetRequest = JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
+
+        assertThat(userSetRequest, instanceOf(UserSetRequest.class));
       });
     });
 
