@@ -1,5 +1,6 @@
 package io.pivotal.security.service;
 
+import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;

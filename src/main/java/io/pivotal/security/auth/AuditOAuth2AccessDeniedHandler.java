@@ -2,7 +2,7 @@ package io.pivotal.security.auth;
 
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1.secret;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
@@ -15,8 +15,8 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.SecretRegenerateRequest;
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.service.SetService;
 import io.pivotal.security.view.DataResponse;

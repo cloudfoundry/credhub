@@ -1,8 +1,9 @@
-package io.pivotal.security.service;
+package io.pivotal.security.audit;
 
 import io.pivotal.security.data.OperationAuditRecordDataService;
 import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
+import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.springframework.beans.factory.annotation.Autowired;

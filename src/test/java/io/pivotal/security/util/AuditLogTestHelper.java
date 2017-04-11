@@ -1,7 +1,7 @@
 package io.pivotal.security.util;
 
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.audit.AuditRecordBuilder;
 import org.mockito.Mockito;
 
 import static org.mockito.Matchers.isA;

@@ -5,7 +5,7 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.SecretRegenerateRequest;
-import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.service.regeneratables.CertificateSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.NotRegeneratable;

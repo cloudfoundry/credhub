@@ -29,7 +29,7 @@ import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.request.RsaGenerateRequest;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.request.SshGenerateRequest;
-import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;

@@ -1,4 +1,4 @@
-package io.pivotal.security.service;
+package io.pivotal.security.audit;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.auth.UserContext;
@@ -15,12 +15,12 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.audit.AuditingOperationCode.UNKNOWN_OPERATION;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_MUTUAL_TLS;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;

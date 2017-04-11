@@ -1,14 +1,13 @@
-package io.pivotal.security.service;
+package io.pivotal.security.audit;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.entity.AuditingOperationCode;
 import io.pivotal.security.entity.OperationAuditRecord;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.entity.AuditingOperationCode.UNKNOWN_OPERATION;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.audit.AuditingOperationCode.UNKNOWN_OPERATION;
 
 import java.time.Instant;
 import java.util.Collection;

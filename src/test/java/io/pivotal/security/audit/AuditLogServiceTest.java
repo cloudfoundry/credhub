@@ -1,4 +1,4 @@
-package io.pivotal.security.service;
+package io.pivotal.security.audit;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.auth.UserContext;
@@ -8,6 +8,7 @@ import io.pivotal.security.entity.OperationAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.fake.FakeRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
+import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.assertj.core.util.Lists;
 import org.junit.runner.RunWith;
@@ -20,7 +21,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.entity.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
 import static org.hamcrest.CoreMatchers.equalTo;
