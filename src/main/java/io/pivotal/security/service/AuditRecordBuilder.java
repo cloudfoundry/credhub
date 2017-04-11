@@ -131,11 +131,7 @@ public class AuditRecordBuilder {
   }
 
   public Collection<OperationAuditRecord> build(Instant now) {
-    return newArrayList(this.build(now, null));
-  }
-
-  public OperationAuditRecord build(Instant now, String token) {
-    return new OperationAuditRecord(
+    return newArrayList(new OperationAuditRecord(
         userContext.getAuthMethod(),
         now,
         getCredentialName(),
@@ -156,7 +152,6 @@ public class AuditRecordBuilder {
         userContext.getScope(),
         userContext.getGrantType(),
         isSuccess
-    );
+    ));
   }
-
 }
