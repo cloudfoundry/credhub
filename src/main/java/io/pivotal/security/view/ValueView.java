@@ -2,7 +2,10 @@ package io.pivotal.security.view;
 
 import io.pivotal.security.domain.NamedValueSecret;
 
-class ValueView extends SecretView {
+@SuppressWarnings("unused")
+public class ValueView extends SecretView {
+
+  public ValueView() {}
 
   ValueView(NamedValueSecret namedValueSecret) {
     super(
