@@ -1,13 +1,24 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
 
-public class UserSetRequest extends BaseSecretSetRequest {
-  private Object value;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
-  public void setValue(Object value) {
-    this.value = value;
+public class UserSetRequest extends BaseSecretSetRequest {
+  @NotNull(message = "error.missing_value")
+  @Valid
+  @JsonProperty("value")
+  private UserSetRequestFields userSetRequestFields;
+
+  public void setUserSetRequestFields(UserSetRequestFields userSetRequestFields) {
+    this.userSetRequestFields = userSetRequestFields;
+  }
+
+  public UserSetRequestFields getUserSetRequestFields() {
+    return userSetRequestFields;
   }
 
   @Override
