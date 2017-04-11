@@ -2,8 +2,8 @@ package io.pivotal.security.auth;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.OperationAuditRecordDataService;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -56,7 +56,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   @Autowired
   AuditOAuth2AccessDeniedHandler subject;
   @MockBean
-  OperationAuditRecordDataService operationAuditRecordDataService;
+  RequestAuditRecordDataService requestAuditRecordDataService;
   @Autowired
   ResourceServerTokenServices tokenServices;
   @MockBean
@@ -97,11 +97,11 @@ public class AuditOAuth2AccessDeniedHandlerTest {
       });
 
       it("should log the failure in the operation_audit_record table", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(OperationAuditRecord.class);
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+        ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(RequestAuditRecord.class);
+        verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        OperationAuditRecord auditRecord = recordCaptor.getValue();
+        RequestAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.isSuccess(), equalTo(false));
         assertThat(auditRecord.getNow(), equalTo(now));
@@ -130,7 +130,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
       });
 
       it("should log the failure in the CEF syslog file", () -> {
-        verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
+        verify(securityEventsLogService).log(isA(RequestAuditRecord.class));
       });
     });
   }

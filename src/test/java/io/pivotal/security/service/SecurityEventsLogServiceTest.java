@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.VersionProvider;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
 import java.time.Instant;
 import org.apache.logging.log4j.Logger;
@@ -51,11 +51,11 @@ public class SecurityEventsLogServiceTest {
 
     describe("log", () -> {
       it("should log an operation audit record to the sys logwhen using oauth", () -> {
-        OperationAuditRecord operationAuditRecord = makeOperationAuditRecord(
+        RequestAuditRecord requestAuditRecord = makeOperationAuditRecord(
             "foo=bar",
             AUTH_METHOD_UAA);
 
-        subject.log(operationAuditRecord);
+        subject.log(requestAuditRecord);
 
         verify(securityEventsLogger).info(
             "CEF:0|cloud_foundry|credhub|"
@@ -78,10 +78,10 @@ public class SecurityEventsLogServiceTest {
       });
 
       it("should log an operation audit record to the sys log when using mTLS", () -> {
-        OperationAuditRecord operationAuditRecord = makeOperationAuditRecord("foo=bar",
+        RequestAuditRecord requestAuditRecord = makeOperationAuditRecord("foo=bar",
             AUTH_METHOD_MUTUAL_TLS);
 
-        subject.log(operationAuditRecord);
+        subject.log(requestAuditRecord);
 
         verify(securityEventsLogger).info(
             "CEF:0|cloud_foundry|credhub|"
@@ -106,11 +106,11 @@ public class SecurityEventsLogServiceTest {
 
       describe("when the query param string is null", () -> {
         it("should specify only the path in the request", () -> {
-          OperationAuditRecord operationAuditRecord = makeOperationAuditRecord(
+          RequestAuditRecord requestAuditRecord = makeOperationAuditRecord(
               null,
               AUTH_METHOD_UAA
           );
-          subject.log(operationAuditRecord);
+          subject.log(requestAuditRecord);
 
           assertThat(version, notNullValue());
           assertThat(version.length(), greaterThan(0));
@@ -121,8 +121,8 @@ public class SecurityEventsLogServiceTest {
 
       describe("when the query param string is an empty string", () -> {
         it("should specify only the path in the request", () -> {
-          OperationAuditRecord operationAuditRecord = makeOperationAuditRecord("", AUTH_METHOD_UAA);
-          subject.log(operationAuditRecord);
+          RequestAuditRecord requestAuditRecord = makeOperationAuditRecord("", AUTH_METHOD_UAA);
+          subject.log(requestAuditRecord);
 
           assertThat(version, notNullValue());
           assertThat(version.length(), greaterThan(0));
@@ -133,8 +133,8 @@ public class SecurityEventsLogServiceTest {
     });
   }
 
-  private OperationAuditRecord makeOperationAuditRecord(String queryParameters, String authMethod) {
-    return new OperationAuditRecord(
+  private RequestAuditRecord makeOperationAuditRecord(String queryParameters, String authMethod) {
+    return new RequestAuditRecord(
         authMethod,
         now,
         "some-path",

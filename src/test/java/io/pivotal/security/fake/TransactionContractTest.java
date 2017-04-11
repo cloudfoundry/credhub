@@ -2,7 +2,7 @@ package io.pivotal.security.fake;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 import org.junit.runner.RunWith;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
@@ -24,7 +24,7 @@ public class TransactionContractTest {
 
   FakeRepository fakeRepository;
 
-  FakeOperationAuditRecordRepository auditRecordRepository;
+  FakeRequestAuditRecordRepository auditRecordRepository;
 
   FakeTransactionManager transactionManager;
 
@@ -34,7 +34,7 @@ public class TransactionContractTest {
     beforeEach(() -> {
       transactionManager = new FakeTransactionManager();
       fakeRepository = new FakeRepository(transactionManager);
-      auditRecordRepository = new FakeOperationAuditRecordRepository(transactionManager);
+      auditRecordRepository = new FakeRequestAuditRecordRepository(transactionManager);
     });
 
     describe("a transaction", () -> {
@@ -48,7 +48,7 @@ public class TransactionContractTest {
         });
 
         itThrows("save audit record", TransactionException.class, () -> {
-          auditRecordRepository.save(new OperationAuditRecord());
+          auditRecordRepository.save(new RequestAuditRecord());
         });
 
         it("has an open transaction", () -> {
@@ -75,7 +75,7 @@ public class TransactionContractTest {
           namedValueSecret.setEncryptedValue("otherValue".getBytes());
           fakeRepository.save(namedValueSecret);
 
-          final OperationAuditRecord auditRecord = new OperationAuditRecord("", Instant.now(),
+          final RequestAuditRecord auditRecord = new RequestAuditRecord("", Instant.now(),
               null, "operation", null, null,
               null, 0L, 0L, null, null,
               null, null, 0, null, null,

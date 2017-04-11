@@ -1,7 +1,7 @@
 package io.pivotal.security.fake;
 
-import io.pivotal.security.entity.OperationAuditRecord;
-import io.pivotal.security.repository.OperationAuditRecordRepository;
+import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,22 +10,22 @@ import org.springframework.data.domain.Sort;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FakeOperationAuditRecordRepository implements OperationAuditRecordRepository {
+public class FakeRequestAuditRecordRepository implements RequestAuditRecordRepository {
 
   private final FakeTransactionManager transactionManager;
-  private List<OperationAuditRecord> auditRecords;
+  private List<RequestAuditRecord> auditRecords;
 
   private boolean shouldThrow = false;
 
-  public FakeOperationAuditRecordRepository(FakeTransactionManager transactionManager) {
+  public FakeRequestAuditRecordRepository(FakeTransactionManager transactionManager) {
     this.transactionManager = transactionManager;
     this.auditRecords = new ArrayList<>();
   }
 
   @Override
-  public <S extends OperationAuditRecord> S save(S entity) {
+  public <S extends RequestAuditRecord> S save(S entity) {
     transactionManager.currentTransaction.enqueue(() -> {
-      OperationAuditRecord copy = new OperationAuditRecord(
+      RequestAuditRecord copy = new RequestAuditRecord(
           entity.getAuthMethod(),
           entity.getNow(),
           entity.getCredentialName(),
@@ -56,17 +56,17 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
-  public <S extends OperationAuditRecord> List<S> save(Iterable<S> entities) {
+  public <S extends RequestAuditRecord> List<S> save(Iterable<S> entities) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OperationAuditRecord findOne(Long along) {
+  public RequestAuditRecord findOne(Long along) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends OperationAuditRecord> S findOne(Example<S> example) {
+  public <S extends RequestAuditRecord> S findOne(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
@@ -76,42 +76,42 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
-  public <S extends OperationAuditRecord> boolean exists(Example<S> example) {
+  public <S extends RequestAuditRecord> boolean exists(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<OperationAuditRecord> findAll() {
+  public List<RequestAuditRecord> findAll() {
     return auditRecords;
   }
 
   @Override
-  public List<OperationAuditRecord> findAll(Sort sort) {
+  public List<RequestAuditRecord> findAll(Sort sort) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Page<OperationAuditRecord> findAll(Pageable pageable) {
+  public Page<RequestAuditRecord> findAll(Pageable pageable) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public List<OperationAuditRecord> findAll(Iterable<Long> longs) {
+  public List<RequestAuditRecord> findAll(Iterable<Long> longs) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example, Sort sort) {
+  public <S extends RequestAuditRecord> List<S> findAll(Example<S> example, Sort sort) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends OperationAuditRecord> List<S> findAll(Example<S> example) {
+  public <S extends RequestAuditRecord> List<S> findAll(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends OperationAuditRecord> Page<S> findAll(Example<S> example, Pageable pageable) {
+  public <S extends RequestAuditRecord> Page<S> findAll(Example<S> example, Pageable pageable) {
     throw new UnsupportedOperationException();
   }
 
@@ -121,7 +121,7 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
-  public <S extends OperationAuditRecord> long count(Example<S> example) {
+  public <S extends RequestAuditRecord> long count(Example<S> example) {
     throw new UnsupportedOperationException();
   }
 
@@ -131,12 +131,12 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
-  public void delete(OperationAuditRecord entity) {
+  public void delete(RequestAuditRecord entity) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void delete(Iterable<? extends OperationAuditRecord> entities) {
+  public void delete(Iterable<? extends RequestAuditRecord> entities) {
     throw new UnsupportedOperationException();
   }
 
@@ -151,7 +151,7 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
-  public void deleteInBatch(Iterable<OperationAuditRecord> entities) {
+  public void deleteInBatch(Iterable<RequestAuditRecord> entities) {
     throw new UnsupportedOperationException();
   }
 
@@ -161,12 +161,12 @@ public class FakeOperationAuditRecordRepository implements OperationAuditRecordR
   }
 
   @Override
-  public OperationAuditRecord getOne(Long along) {
+  public RequestAuditRecord getOne(Long along) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public <S extends OperationAuditRecord> S saveAndFlush(S entity) {
+  public <S extends RequestAuditRecord> S saveAndFlush(S entity) {
     throw new UnsupportedOperationException();
   }
 

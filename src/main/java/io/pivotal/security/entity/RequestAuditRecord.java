@@ -1,7 +1,10 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.Instant;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -9,13 +12,12 @@ import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @SuppressWarnings("unused")
 @Entity
 @Table(name = "OperationAuditRecord")
 @EntityListeners(AuditingEntityListener.class)
-public class OperationAuditRecord {
+public class RequestAuditRecord {
 
   @Id
   @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
@@ -46,11 +48,11 @@ public class OperationAuditRecord {
   private int statusCode;
   private String authMethod;
 
-  public OperationAuditRecord() {
+  public RequestAuditRecord() {
   }
 
   @SuppressWarnings("checkstyle:parametername")
-  public OperationAuditRecord(
+  public RequestAuditRecord(
       String authMethod,
       Instant now,
       String credentialName,

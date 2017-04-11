@@ -1,7 +1,7 @@
 package io.pivotal.security.audit;
 
-import io.pivotal.security.data.OperationAuditRecordDataService;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -20,19 +20,19 @@ import java.util.Collection;
 public class AuditLogService {
 
   private final CurrentTimeProvider currentTimeProvider;
-  private final OperationAuditRecordDataService operationAuditRecordDataService;
+  private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final PlatformTransactionManager transactionManager;
   private final SecurityEventsLogService securityEventsLogService;
 
   @Autowired
   AuditLogService(
       CurrentTimeProvider currentTimeProvider,
-      OperationAuditRecordDataService operationAuditRecordDataService,
+      RequestAuditRecordDataService requestAuditRecordDataService,
       PlatformTransactionManager transactionManager,
       SecurityEventsLogService securityEventsLogService
   ) {
     this.currentTimeProvider = currentTimeProvider;
-    this.operationAuditRecordDataService = operationAuditRecordDataService;
+    this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.transactionManager = transactionManager;
     this.securityEventsLogService = securityEventsLogService;
   }
@@ -67,7 +67,7 @@ public class AuditLogService {
       }
       auditRecordBuilder.setIsSuccess(responseSucceeded);
 
-      Collection<OperationAuditRecord> auditRecords = saveAuditRecord(auditRecordBuilder, responseEntity);
+      Collection<RequestAuditRecord> auditRecords = saveAuditRecord(auditRecordBuilder, responseEntity);
 
       transactionManager.commit(transaction);
 
@@ -81,15 +81,15 @@ public class AuditLogService {
     }
   }
 
-  private Collection<OperationAuditRecord> saveAuditRecord(
+  private Collection<RequestAuditRecord> saveAuditRecord(
       AuditRecordBuilder auditRecordBuilder,
       ResponseEntity<?> responseEntity
   ) {
-    Collection<OperationAuditRecord> auditRecords = auditRecordBuilder
+    Collection<RequestAuditRecord> auditRecords = auditRecordBuilder
         .setRequestStatus(responseEntity.getStatusCodeValue())
         .build(currentTimeProvider.getInstant());
 
-    auditRecords.forEach(operationAuditRecordDataService::save);
+    auditRecords.forEach(requestAuditRecordDataService::save);
 
     return auditRecords;
   }

@@ -2,7 +2,7 @@ package io.pivotal.security.audit;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 import org.junit.runner.RunWith;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.Authentication;
@@ -43,7 +43,7 @@ public class AuditRecordBuilderTest {
   {
     describe("with OAuth2 authentication", () -> {
       it("extracts relevant properties from the request", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getHostName(), equalTo("host-name"));
           assertThat(builtRecord.getCredentialName(), equalTo("foo"));
@@ -60,43 +60,43 @@ public class AuditRecordBuilderTest {
       });
 
       it("sets operation code to be credential_access for a get request", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
         });
       });
 
       it("sets operation code to be credential_update for a post request", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("POST", "/api/v1/data");
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("POST", "/api/v1/data");
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
         });
       });
 
       it("sets operation code to be credential_update for a put request", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("PUT", "/api/v1/data");
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("PUT", "/api/v1/data");
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
         });
       });
 
       it("sets operation code to be credential_delete for a delete request", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("DELETE", "/api/v1/data");
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("DELETE", "/api/v1/data");
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
         });
       });
 
       it("sets operations code to be UNKNOWN_OPERATION in other cases", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("UNRECOGNIZED_HTTP_METHOD",
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("UNRECOGNIZED_HTTP_METHOD",
             "/api/v1/data");
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getOperation(), equalTo(UNKNOWN_OPERATION.toString()));
         });
       });
 
-      it("uses the OAuth2Token details to build the OperationAuditRecord", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
+      it("uses the OAuth2Token details to build the RequestAuditRecord", () -> {
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
 
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getUserId(), equalTo("TEST_USER_ID"));
@@ -106,8 +106,8 @@ public class AuditRecordBuilderTest {
         });
       });
 
-      it("uses the OAuth2Request details to build the OperationAuditRecord", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
+      it("uses the OAuth2Request details to build the RequestAuditRecord", () -> {
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
 
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getGrantType(), equalTo("TEST_GRANT_TYPE"));
@@ -115,7 +115,7 @@ public class AuditRecordBuilderTest {
       });
 
       it("records auth_valid_from and auth_valid_to", () -> {
-        Collection<OperationAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
+        Collection<RequestAuditRecord> builtRecords = buildFromOAuth2("GET", "/api/v1/data");
         builtRecords.forEach(builtRecord -> {
           assertThat(builtRecord.getAuthValidFrom(), equalTo(1413495264L));
           assertThat(builtRecord.getAuthValidUntil(), equalTo(1413538464L));
@@ -124,7 +124,7 @@ public class AuditRecordBuilderTest {
 
       describe("with mTLS authentication", () -> {
         it("extracts relevant properties from the request", () -> {
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getHostName(), equalTo("host-name"));
             assertThat(builtRecord.getCredentialName(), equalTo("foo"));
@@ -141,35 +141,35 @@ public class AuditRecordBuilderTest {
         });
 
         it("sets operation code to be credential_access for a get request", () -> {
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
           });
         });
 
         it("sets operation code to be credential_update for a post request", () -> {
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("POST", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("POST", "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
           });
         });
 
         it("sets operation code to be credential_update for a put request", () -> {
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("PUT", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("PUT", "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
           });
         });
 
         it("sets operation code to be credential_delete for a delete request", () -> {
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("DELETE", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("DELETE", "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
           });
         });
 
         it("sets operations code to be UNKNOWN_OPERATION in other cases", () -> {
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("UNRECOGNIZED_HTTP_METHOD",
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("UNRECOGNIZED_HTTP_METHOD",
               "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getOperation(), equalTo(UNKNOWN_OPERATION.toString()));
@@ -177,7 +177,7 @@ public class AuditRecordBuilderTest {
         });
 
         it("specifies that the user was authenticated through MTLS", () -> {
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
 
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getUserId(), equalTo(null));
@@ -192,7 +192,7 @@ public class AuditRecordBuilderTest {
 
         it("records auth_valid_from and auth_valid_to", () -> {
           // client cert not valid before / after
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getAuthValidFrom(), equalTo(1413495264L));
             assertThat(builtRecord.getAuthValidUntil(), equalTo(1413538464L));
@@ -201,7 +201,7 @@ public class AuditRecordBuilderTest {
 
         it("records client_id", () -> {
           // cert common name
-          Collection<OperationAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
+          Collection<RequestAuditRecord> builtRecords = buildFromMtls("GET", "/api/v1/data");
           builtRecords.forEach(builtRecord -> {
             assertThat(builtRecord.getClientId(), equalTo("some name"));
           });
@@ -210,7 +210,7 @@ public class AuditRecordBuilderTest {
     });
   }
 
-  private Collection<OperationAuditRecord> buildFromMtls(String method, String url) {
+  private Collection<RequestAuditRecord> buildFromMtls(String method, String url) {
     X509Certificate certificate = mock(X509Certificate.class);
     Principal principal = mock(Principal.class);
     PreAuthenticatedAuthenticationToken token = mock(PreAuthenticatedAuthenticationToken.class);
@@ -225,7 +225,7 @@ public class AuditRecordBuilderTest {
     return build(method, url, token, null);
   }
 
-  private Collection<OperationAuditRecord> buildFromOAuth2(String method, String url) {
+  private Collection<RequestAuditRecord> buildFromOAuth2(String method, String url) {
     Map<String, Object> additionalInformation = new HashMap<>();
     additionalInformation.put("user_id", "TEST_USER_ID");
     additionalInformation.put("user_name", "TEST_USER_NAME");
@@ -251,8 +251,8 @@ public class AuditRecordBuilderTest {
     return build(method, url, authentication, token);
   }
 
-  private Collection<OperationAuditRecord> build(String method, String url, Authentication authentication,
-                                                 OAuth2AccessToken token) {
+  private Collection<RequestAuditRecord> build(String method, String url, Authentication authentication,
+                                               OAuth2AccessToken token) {
     final Instant timestamp = Instant.ofEpochSecond(12345L);
 
     MockHttpServletRequest request = new MockHttpServletRequest(method, url);

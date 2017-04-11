@@ -2,9 +2,9 @@ package io.pivotal.security.audit;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.fake.FakeRepository;
 import io.pivotal.security.fake.FakeTransactionManager;
@@ -46,7 +46,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AuditLogServiceTest {
 
   private AuditLogService subject;
-  private OperationAuditRecordDataService operationAuditRecordDataService;
+  private RequestAuditRecordDataService requestAuditRecordDataService;
   private FakeRepository fakeRepository;
   private FakeTransactionManager transactionManager;
   private CurrentTimeProvider currentTimeProvider;
@@ -61,15 +61,15 @@ public class AuditLogServiceTest {
   {
 
     beforeEach(() -> {
-      operationAuditRecordDataService = mock(OperationAuditRecordDataService.class);
+      requestAuditRecordDataService = mock(RequestAuditRecordDataService.class);
       currentTimeProvider = mock(CurrentTimeProvider.class);
       securityEventsLogService = mock(SecurityEventsLogService.class);
       transactionManager = new FakeTransactionManager();
       userContext = mockUserContext();
       fakeRepository = new FakeRepository(transactionManager);
 
-      when(operationAuditRecordDataService.save(isA(OperationAuditRecord.class))).thenAnswer(answer -> {
-        return answer.getArgumentAt(0, OperationAuditRecord.class);
+      when(requestAuditRecordDataService.save(isA(RequestAuditRecord.class))).thenAnswer(answer -> {
+        return answer.getArgumentAt(0, RequestAuditRecord.class);
       });
 
       when(currentTimeProvider.getInstant()).thenReturn(now);
@@ -77,7 +77,7 @@ public class AuditLogServiceTest {
 
       subject = new AuditLogService(
           currentTimeProvider,
-          operationAuditRecordDataService,
+          requestAuditRecordDataService,
           transactionManager,
           securityEventsLogService
       );
@@ -105,14 +105,14 @@ public class AuditLogServiceTest {
           });
 
           it("logs in CEF format to file", () -> {
-            verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
+            verify(securityEventsLogService).log(isA(RequestAuditRecord.class));
           });
         });
 
         describe("when the database audit fails", () -> {
           itThrowsWithMessage("does not perform the action or write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(operationAuditRecordDataService)
-                .save(any(OperationAuditRecord.class));
+            doThrow(new RuntimeException()).when(requestAuditRecordDataService)
+                .save(any(RequestAuditRecord.class));
 
             try {
               responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
@@ -120,7 +120,7 @@ public class AuditLogServiceTest {
               });
             } finally {
               assertThat(fakeRepository.count(), equalTo(0L));
-              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+              verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
             }
           });
         });
@@ -160,14 +160,14 @@ public class AuditLogServiceTest {
           });
 
           it("should write to the CEF log file", () -> {
-            verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
+            verify(securityEventsLogService).log(isA(RequestAuditRecord.class));
           });
         });
 
         describe("when the database audit fails", () -> {
           itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(operationAuditRecordDataService)
-                .save(any(OperationAuditRecord.class));
+            doThrow(new RuntimeException()).when(requestAuditRecordDataService)
+                .save(any(RequestAuditRecord.class));
 
             try {
               responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
@@ -185,7 +185,7 @@ public class AuditLogServiceTest {
               assertThat(transactionManager.hasOpenTransaction(), is(false));
               assertThat(fakeRepository.count(), equalTo(0L));
 
-              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+              verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
             }
           });
         });
@@ -209,14 +209,14 @@ public class AuditLogServiceTest {
           });
 
           it("should write to the CEF log file", () -> {
-            verify(securityEventsLogService).log(isA(OperationAuditRecord.class));
+            verify(securityEventsLogService).log(isA(RequestAuditRecord.class));
           });
         });
 
         describe("when the database audit fails", () -> {
           itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(operationAuditRecordDataService)
-                .save(any(OperationAuditRecord.class));
+            doThrow(new RuntimeException()).when(requestAuditRecordDataService)
+                .save(any(RequestAuditRecord.class));
 
             try {
               responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
@@ -226,7 +226,7 @@ public class AuditLogServiceTest {
               assertThat(transactionManager.hasOpenTransaction(), is(false));
               assertThat(fakeRepository.count(), equalTo(0L));
 
-              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+              verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
             }
           });
         });
@@ -242,7 +242,7 @@ public class AuditLogServiceTest {
               assertThat(transactionManager.hasOpenTransaction(), is(false));
               assertThat(fakeRepository.count(), equalTo(0L));
 
-              verify(securityEventsLogService, times(0)).log(isA(OperationAuditRecord.class));
+              verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
             }
           });
         });
@@ -292,11 +292,11 @@ public class AuditLogServiceTest {
   }
 
   private void checkAuditRecord(boolean successFlag, HttpStatus status) {
-    ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-        .forClass(OperationAuditRecord.class);
-    verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+    ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+        .forClass(RequestAuditRecord.class);
+    verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-    OperationAuditRecord actual = recordCaptor.getValue();
+    RequestAuditRecord actual = recordCaptor.getValue();
     assertThat(actual.getNow(), equalTo(now));
     assertThat(actual.getCredentialName(), equalTo("keyName"));
     assertThat(actual.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));

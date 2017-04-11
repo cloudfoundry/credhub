@@ -1,7 +1,7 @@
 package io.pivotal.security.audit;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -129,8 +129,8 @@ public class AuditRecordBuilder {
     return this;
   }
 
-  public Collection<OperationAuditRecord> build(Instant now) {
-    return newArrayList(new OperationAuditRecord(
+  public Collection<RequestAuditRecord> build(Instant now) {
+    return newArrayList(new RequestAuditRecord(
         userContext.getAuthMethod(),
         now,
         getCredentialName(),

@@ -1,7 +1,7 @@
 package io.pivotal.security.auth;
 
-import io.pivotal.security.data.OperationAuditRecordDataService;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -24,7 +24,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   private final ResourceServerTokenServices tokenServices;
   private final JwtTokenStore tokenStore;
   private final CurrentTimeProvider currentTimeProvider;
-  private final OperationAuditRecordDataService operationAuditRecordDataService;
+  private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;
 
   @Autowired
@@ -32,13 +32,13 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       ResourceServerTokenServices tokenServices,
       JwtTokenStore tokenStore,
       CurrentTimeProvider currentTimeProvider,
-      OperationAuditRecordDataService operationAuditRecordDataService,
+      RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService
   ) {
     this.tokenServices = tokenServices;
     this.tokenStore = tokenStore;
     this.currentTimeProvider = currentTimeProvider;
-    this.operationAuditRecordDataService = operationAuditRecordDataService;
+    this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.securityEventsLogService = securityEventsLogService;
   }
 
@@ -50,12 +50,12 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
       UserContext usercontext = UserContext.fromAuthentication(tokenStore.readAuthentication(token), token, tokenServices);
-      Collection<OperationAuditRecord> operationAuditRecords = new AuditRecordBuilder(null, request, usercontext)
+      Collection<RequestAuditRecord> requestAuditRecords = new AuditRecordBuilder(null, request, usercontext)
           .setRequestStatus(response.getStatus())
           .build(currentTimeProvider.getInstant());
 
-      operationAuditRecords.forEach((record) -> {
-        operationAuditRecordDataService.save(record);
+      requestAuditRecords.forEach((record) -> {
+        requestAuditRecordDataService.save(record);
         securityEventsLogService.log(record);
       });
     }

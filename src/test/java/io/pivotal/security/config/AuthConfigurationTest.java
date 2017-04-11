@@ -2,11 +2,11 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -66,7 +66,7 @@ public class AuthConfigurationTest {
 
 
   @MockBean
-  OperationAuditRecordDataService operationAuditRecordDataService;
+  RequestAuditRecordDataService requestAuditRecordDataService;
 
   private MockMvc mockMvc;
 
@@ -81,8 +81,8 @@ public class AuthConfigurationTest {
           .webAppContextSetup(applicationContext)
           .apply(springSecurity())
           .build();
-      when(operationAuditRecordDataService.save(isA(OperationAuditRecord.class))).thenAnswer( answer -> {
-        return answer.getArgumentAt(0, OperationAuditRecord.class);
+      when(requestAuditRecordDataService.save(isA(RequestAuditRecord.class))).thenAnswer(answer -> {
+        return answer.getArgumentAt(0, RequestAuditRecord.class);
       });
     });
 
@@ -176,13 +176,13 @@ public class AuthConfigurationTest {
           mockMvc.perform(post)
               .andExpect(status().isOk());
 
-          ArgumentCaptor<OperationAuditRecord> argumentCaptor = ArgumentCaptor.forClass(
-              OperationAuditRecord.class
+          ArgumentCaptor<RequestAuditRecord> argumentCaptor = ArgumentCaptor.forClass(
+              RequestAuditRecord.class
           );
-          verify(operationAuditRecordDataService, times(1)).save(argumentCaptor.capture());
+          verify(requestAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
-          OperationAuditRecord operationAuditRecord = argumentCaptor.getValue();
-          assertThat(operationAuditRecord.getClientId(), equalTo(
+          RequestAuditRecord requestAuditRecord = argumentCaptor.getValue();
+          assertThat(requestAuditRecord.getClientId(), equalTo(
               "C=US,ST=NY,O=Test Org,OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,CN=example.com,E=test@example.com")
           );
         });

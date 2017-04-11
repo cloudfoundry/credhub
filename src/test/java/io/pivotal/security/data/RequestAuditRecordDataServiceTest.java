@@ -10,7 +10,7 @@ import static org.junit.Assert.assertNotNull;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -24,13 +24,13 @@ import org.springframework.test.context.ActiveProfiles;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class OperationAuditRecordDataServiceTest {
+public class RequestAuditRecordDataServiceTest {
 
   private final Instant frozenTime = Instant.ofEpochSecond(1400000000L);
   private final long authValidFrom = frozenTime.getEpochSecond();
   private final long authValidUntil = authValidFrom + 10000;
   @Autowired
-  OperationAuditRecordDataService subject;
+  RequestAuditRecordDataService subject;
   @Autowired
   JdbcTemplate jdbcTemplate;
 
@@ -39,14 +39,14 @@ public class OperationAuditRecordDataServiceTest {
 
     describe("#save", () -> {
       it("should create the entity in the database", () -> {
-        OperationAuditRecord record = createOperationAuditRecord();
+        RequestAuditRecord record = createOperationAuditRecord();
         record = subject.save(record);
 
         assertNotNull(record);
 
-        List<OperationAuditRecord> records = jdbcTemplate
+        List<RequestAuditRecord> records = jdbcTemplate
             .query("select * from operation_audit_record", (rs, rowCount) -> {
-              OperationAuditRecord r = new OperationAuditRecord(
+              RequestAuditRecord r = new RequestAuditRecord(
                   rs.getString("auth_method"),
                   new Timestamp(rs.getLong("now")).toInstant(),
                   rs.getString("credential_name"),
@@ -74,8 +74,8 @@ public class OperationAuditRecordDataServiceTest {
 
         assertThat(records.size(), equalTo(1));
 
-        OperationAuditRecord actual = records.get(0);
-        OperationAuditRecord expected = record;
+        RequestAuditRecord actual = records.get(0);
+        RequestAuditRecord expected = record;
 
         assertThat(actual.getId(), equalTo(expected.getId()));
         assertThat(actual.getAuthMethod(), equalTo(expected.getAuthMethod()));
@@ -105,10 +105,10 @@ public class OperationAuditRecordDataServiceTest {
     });
   }
 
-  OperationAuditRecord createOperationAuditRecord() {
+  RequestAuditRecord createOperationAuditRecord() {
     int statusCode = 200;
 
-    return new OperationAuditRecord(
+    return new RequestAuditRecord(
         AUTH_METHOD_UAA,
         frozenTime,
         "fake-credential-name",

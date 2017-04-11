@@ -3,13 +3,13 @@ package io.pivotal.security.config;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.controller.v1.secret.SecretsController;
-import io.pivotal.security.data.OperationAuditRecordDataService;
+import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.entity.OperationAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.audit.AuditLogService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -69,7 +69,7 @@ public class SecretsControllerAuditLogTest {
   AuditLogService auditLogService;
 
   @MockBean
-  OperationAuditRecordDataService operationAuditRecordDataService;
+  RequestAuditRecordDataService requestAuditRecordDataService;
 
   @Autowired
   Filter springSecurityFilterChain;
@@ -92,8 +92,8 @@ public class SecretsControllerAuditLogTest {
       mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
           .apply(springSecurity())
           .build();
-      when(operationAuditRecordDataService.save(isA(OperationAuditRecord.class))).thenAnswer( answer -> {
-        return answer.getArgumentAt(0, OperationAuditRecord.class);
+      when(requestAuditRecordDataService.save(isA(RequestAuditRecord.class))).thenAnswer(answer -> {
+        return answer.getArgumentAt(0, RequestAuditRecord.class);
       });
     });
 
@@ -109,11 +109,11 @@ public class SecretsControllerAuditLogTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
 
-          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-              .forClass(OperationAuditRecord.class);
-          verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+          ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+              .forClass(RequestAuditRecord.class);
+          verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-          OperationAuditRecord auditRecord = recordCaptor.getValue();
+          RequestAuditRecord auditRecord = recordCaptor.getValue();
 
           assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
           assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
@@ -131,11 +131,11 @@ public class SecretsControllerAuditLogTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
 
-          ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-              .forClass(OperationAuditRecord.class);
-          verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+          ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+              .forClass(RequestAuditRecord.class);
+          verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-          OperationAuditRecord auditRecord = recordCaptor.getValue();
+          RequestAuditRecord auditRecord = recordCaptor.getValue();
 
           assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
           assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
@@ -168,12 +168,12 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential update operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(OperationAuditRecord.class);
+        ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(RequestAuditRecord.class);
 
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+        verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        OperationAuditRecord auditRecord = recordCaptor.getValue();
+        RequestAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getCredentialName(), equalTo("foo"));
@@ -208,12 +208,12 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_update operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(OperationAuditRecord.class);
+        ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(RequestAuditRecord.class);
 
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+        verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        OperationAuditRecord auditRecord = recordCaptor.getValue();
+        RequestAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getCredentialName(), equalTo("foo"));
@@ -240,12 +240,12 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_delete operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(OperationAuditRecord.class);
+        ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(RequestAuditRecord.class);
 
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+        verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        OperationAuditRecord auditRecord = recordCaptor.getValue();
+        RequestAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
@@ -260,12 +260,12 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_access operation", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(OperationAuditRecord.class);
+        ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(RequestAuditRecord.class);
 
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+        verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        OperationAuditRecord auditRecord = recordCaptor.getValue();
+        RequestAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
@@ -299,12 +299,12 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs all X-Forwarded-For values", () -> {
-        ArgumentCaptor<OperationAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(OperationAuditRecord.class);
+        ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
+            .forClass(RequestAuditRecord.class);
 
-        verify(operationAuditRecordDataService, times(1)).save(recordCaptor.capture());
+        verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        OperationAuditRecord auditRecord = recordCaptor.getValue();
+        RequestAuditRecord auditRecord = recordCaptor.getValue();
 
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2,3.3.3.3"));
       });
