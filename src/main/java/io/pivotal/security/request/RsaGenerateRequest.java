@@ -3,11 +3,9 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.service.GeneratorService;
-import java.util.List;
 
 public class RsaGenerateRequest extends BaseSecretGenerateRequest {
 
-  public static final List<AccessControlEntry> NULL_ACCESS_CONTROL_ENTRIES = null;
   @JsonProperty("parameters")
   private RsaGenerationParameters generationParameters;
 

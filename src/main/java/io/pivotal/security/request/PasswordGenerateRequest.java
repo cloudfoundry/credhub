@@ -28,12 +28,13 @@ public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
 
   public BaseSecretSetRequest generateSetRequest(GeneratorService generatorService) {
     PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
-    passwordSetRequest.setPassword(generatorService.generatePassword(getGenerationParameters()));
     passwordSetRequest.setGenerationParameters(getGenerationParameters());
     passwordSetRequest.setType(getType());
     passwordSetRequest.setName(getName());
     passwordSetRequest.setOverwrite(isOverwrite());
     passwordSetRequest.setAccessControlEntries(getAccessControlEntries());
+
+    passwordSetRequest.setPassword(generatorService.generatePassword(getGenerationParameters()));
 
     return passwordSetRequest;
   }

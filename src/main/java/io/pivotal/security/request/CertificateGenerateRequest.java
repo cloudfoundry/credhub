@@ -51,6 +51,7 @@ public class CertificateGenerateRequest extends BaseSecretGenerateRequest {
         caName);
 
     certificateSetRequest.setCertificateFields(certificateSetRequestFields);
+    certificateSetRequest.setAccessControlEntries(getAccessControlEntries());
 
     return certificateSetRequest;
   }

@@ -42,12 +42,15 @@ import com.greghaskins.spectrum.Spectrum;
 import com.greghaskins.spectrum.Spectrum.Block;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.BcCertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
@@ -58,6 +61,7 @@ import io.pivotal.security.request.DefaultSecretGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
@@ -105,7 +109,10 @@ public class SecretsControllerTypeSpecificGenerateTest {
   CurrentTimeProvider mockCurrentTimeProvider;
 
   @MockBean
-  PassayStringSecretGenerator secretGenerator;
+  PassayStringSecretGenerator passwordGenerator;
+
+  @MockBean
+  BcCertificateGenerator certificateGenerator;
 
   @MockBean
   SshGenerator sshGenerator;
@@ -133,6 +140,8 @@ public class SecretsControllerTypeSpecificGenerateTest {
 
   private final String fakePassword = "generated-secret";
   private final String publicKey = "public_key";
+  private final String certificate = "certificate";
+  private final String ca = "ca";
   private final String privateKey = "private_key";
   private final String secretName = "/my-namespace/subTree/secret-name";
   private ResultActions response;
@@ -149,8 +158,12 @@ public class SecretsControllerTypeSpecificGenerateTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class)))
+
+      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
           .thenReturn(new Password(fakePassword));
+
+      when(certificateGenerator.generateSecret(any(CertificateParameters.class)))
+          .thenReturn(new Certificate(ca, certificate, privateKey));
 
       when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
           .thenReturn(new SshKey(publicKey, privateKey, null));
@@ -177,6 +190,28 @@ public class SecretsControllerTypeSpecificGenerateTest {
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
+
+    describe("certificate", testSecretBehavior(
+        new Object[] {
+            "$.value.certificate", "certificate",
+            "$.value.private_key", "private_key",
+            "$.value.ca", "ca"},
+        "certificate",
+        "{\"common_name\":\"my-common-name\",\"self_sign\":true}",
+        (certificateSecret) -> {
+          assertThat(certificateSecret.getCa(), equalTo(ca));
+          assertThat(certificateSecret.getCertificate(), equalTo(certificate));
+          assertThat(certificateSecret.getPrivateKey(), equalTo(privateKey));
+        },
+        () -> new NamedCertificateSecret(secretName)
+            .setEncryptor(encryptor)
+            .setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid())
+            .setCa(ca)
+            .setCertificate(certificate)
+            .setPrivateKey(privateKey)
+            .setUuid(uuid)
+            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
+    );
 
     describe("ssh", testSecretBehavior(
         new Object[] {
@@ -321,6 +356,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
                 .content("{" +
                     "  \"type\":\"" + secretType + "\"," +
                     "  \"name\":\"" + secretName + "\"," +
+                    "  \"parameters\":" + generationParameters + "," +
                     "  \"overwrite\":true" +
                     "}");
 
@@ -357,7 +393,11 @@ public class SecretsControllerTypeSpecificGenerateTest {
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content("{\"type\":\"" + secretType + "\",\"name\":\"" + secretName + "\"}");
+                .content("{"
+                    + "\"type\":\"" + secretType + "\","
+                    + "\"name\":\"" + secretName + "\","
+                    + "\"parameters\":" + generationParameters
+                    + "}");
 
             response = mockMvc.perform(post);
           });

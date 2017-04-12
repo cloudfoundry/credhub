@@ -5,7 +5,6 @@ import io.pivotal.security.generator.BcCertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.request.CertificateGenerationParameters;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
@@ -24,8 +23,10 @@ public class GeneratorService {
   private BcCertificateGenerator certificateGenerator;
 
   @Autowired
-  public GeneratorService(PassayStringSecretGenerator passwordGenerator,
-      SshGenerator sshGenerator, RsaGenerator rsaGenerator,
+  public GeneratorService(
+      PassayStringSecretGenerator passwordGenerator,
+      SshGenerator sshGenerator,
+      RsaGenerator rsaGenerator,
       BcCertificateGenerator certificateGenerator) {
     this.passwordGenerator = passwordGenerator;
     this.sshGenerator = sshGenerator;

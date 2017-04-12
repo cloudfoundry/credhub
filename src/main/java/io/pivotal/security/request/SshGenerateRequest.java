@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.GeneratorService;
 
-import java.util.List;
-
 public class SshGenerateRequest extends BaseSecretGenerateRequest {
 
-  public static final List<AccessControlEntry> NULL_ACCESS_CONTROL_ENTRIES = null;
   @JsonProperty("parameters")
   private SshGenerationParameters generationParameters;
 
