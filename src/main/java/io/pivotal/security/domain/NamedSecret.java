@@ -95,6 +95,10 @@ public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedVal
     return delegate.getSecretName();
   }
 
+  public boolean isVersionOfSameSecret(NamedSecret otherSecret) {
+    return delegate.getSecretName().equals(otherSecret.delegate.getSecretName());
+  }
+
   void copyNameReferenceFrom(NamedSecret namedSecret) {
     this.delegate.setSecretName(namedSecret.delegate.getSecretName());
   }

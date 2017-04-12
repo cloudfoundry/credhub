@@ -30,9 +30,13 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
     this(new NamedJsonSecretData(name));
   }
 
-  public static NamedJsonSecret createNewVersion(NamedJsonSecret existing, String name,
-      Map<String, Object> value, Encryptor encryptor,
-      List<AccessControlEntry> accessControlEntries) {
+  public static NamedJsonSecret createNewVersion(
+      NamedJsonSecret existing,
+      String name,
+      Map<String, Object> value,
+      Encryptor encryptor,
+      List<AccessControlEntry> accessControlEntries
+  ) {
     NamedJsonSecret secret;
 
     if (existing == null) {

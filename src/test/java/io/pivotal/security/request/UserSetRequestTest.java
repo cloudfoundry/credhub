@@ -1,6 +1,9 @@
 package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedUserSecret;
 import io.pivotal.security.helper.JsonHelper;
 import org.junit.runner.RunWith;
 
@@ -17,6 +20,8 @@ import static io.pivotal.security.helper.JsonHelper.validate;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @RunWith(Spectrum.class)
 public class UserSetRequestTest {
@@ -67,6 +72,17 @@ public class UserSetRequestTest {
         UserSetRequestFields fields = userSetRequest.getUserSetRequestFields();
         assertThat(fields.getUsername(), equalTo("dan"));
         assertThat(fields.getPassword(), equalTo("example-password"));
+      });
+    });
+
+    describe("#createNewVersion", () -> {
+      it("should create a new version retaining an existing name", () -> {
+        NamedUserSecret existingUserSecret = new NamedUserSecret("some-name");
+        UserSetRequest userSetRequest = JsonHelper.deserialize(validSetRequestJson, UserSetRequest.class);
+
+        NamedSecret newVersion = userSetRequest.createNewVersion(existingUserSecret, mock(Encryptor.class));
+
+        assertTrue(newVersion.isVersionOfSameSecret(existingUserSecret));
       });
     });
   }
