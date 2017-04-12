@@ -2,11 +2,11 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.AuditLogService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.junit.runner.RunWith;
@@ -24,8 +24,9 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
@@ -47,13 +48,13 @@ public class SecretsControllerErrorHandlingSetTest {
   WebApplicationContext webApplicationContext;
 
   @Autowired
-  SecretsController subject;
-
-  @Autowired
   private Encryptor encryptor;
 
   @SpyBean
   AuditLogService auditLogService;
+
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
 
   @SpyBean
   SecretDataService secretDataService;
@@ -64,8 +65,6 @@ public class SecretsControllerErrorHandlingSetTest {
 
   final String secretValue = "secret-value";
 
-  private AuditRecordBuilder auditRecordBuilder;
-
   {
     wireAndUnwire(this);
 
@@ -74,9 +73,6 @@ public class SecretsControllerErrorHandlingSetTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-
-      auditRecordBuilder = new AuditRecordBuilder();
-      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("setting a secret", () -> {
@@ -404,7 +400,6 @@ public class SecretsControllerErrorHandlingSetTest {
     describe("updating a secret", () -> {
       beforeEach(() -> {
         putSecretInDatabase(secretName, "original value");
-        resetAuditLogMock(auditLogService, auditRecordBuilder);
       });
 
       it("should return 400 when trying to update a secret with a mismatching type", () -> {
@@ -423,6 +418,10 @@ public class SecretsControllerErrorHandlingSetTest {
         mockMvc.perform(put)
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error").value(errorMessage));
+      });
+
+      it("should audit the request", () -> {
+        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, "/my-namespace/secretForSetTest/secret-name");
       });
     });
   }

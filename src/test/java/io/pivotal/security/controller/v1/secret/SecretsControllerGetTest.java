@@ -6,11 +6,9 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.exceptions.KeyNotFoundException;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,16 +31,13 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -61,14 +56,11 @@ public class SecretsControllerGetTest {
   @Autowired
   WebApplicationContext webApplicationContext;
 
-  @Autowired
-  SecretsController subject;
-
   @SpyBean
   Encryptor encryptor;
 
-  @SpyBean
-  AuditLogService auditLogService;
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
 
   @SpyBean
   SecretDataService secretDataService;
@@ -87,8 +79,6 @@ public class SecretsControllerGetTest {
 
   private UUID uuid;
 
-  private AuditRecordBuilder auditRecordBuilder;
-
   {
     wireAndUnwire(this);
 
@@ -100,9 +90,6 @@ public class SecretsControllerGetTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-
-      auditRecordBuilder = new AuditRecordBuilder();
-      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("getting a secret", () -> {
@@ -228,8 +215,7 @@ public class SecretsControllerGetTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_ACCESS));
+          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName, "/api/v1/data/" + uuid.toString());
         });
       });
     });
@@ -292,8 +278,7 @@ public class SecretsControllerGetTest {
       });
 
       it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_ACCESS));
+        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
       });
 
       it("returns NOT_FOUND when the secret does not exist", () -> {

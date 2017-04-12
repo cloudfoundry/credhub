@@ -1,61 +1,17 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.request.AccessControlOperation.DELETE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.JsonSetRequest;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.AccessControlListResponse;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Consumer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -72,6 +28,48 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
+import static io.pivotal.security.helper.JsonHelper.serializeToString;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.request.AccessControlOperation.DELETE;
+import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
+import static io.pivotal.security.request.AccessControlOperation.WRITE;
+import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test",
     "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
@@ -83,9 +81,7 @@ public class SecretsControllerACLSetTest {
   @Autowired
   WebApplicationContext webApplicationContext;
   @Autowired
-  SecretsController subject;
-  @SpyBean
-  AuditLogService auditLogService;
+  RequestAuditRecordRepository requestAuditRecordRepository;
   @SpyBean
   SecretDataService secretDataService;
   @MockBean
@@ -96,22 +92,17 @@ public class SecretsControllerACLSetTest {
   private ResultActions response;
   private UUID uuid;
 
-  private AuditRecordBuilder auditRecordBuilder;
-
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
       fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
+
       mockMvc = MockMvcBuilders
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-
-      auditRecordBuilder = new AuditRecordBuilder();
-      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("setting a secret", () -> {
@@ -175,8 +166,7 @@ public class SecretsControllerACLSetTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
         });
 
         it("allows secret with '.' in the name", () -> {
@@ -469,7 +459,7 @@ public class SecretsControllerACLSetTest {
     describe("updating a secret", () -> {
       beforeEach(() -> {
         putSecretInDatabase(secretName, "original value");
-        resetAuditLogMock(auditLogService, auditRecordBuilder);
+        fakeTimeSetter.accept(frozenTime.toEpochMilli() + 10);
       });
 
       it("should return 400 when trying to update a secret with a mismatching type", () -> {
@@ -542,8 +532,8 @@ public class SecretsControllerACLSetTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+          // https://www.pivotaltracker.com/story/show/143602445
+          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName.toUpperCase());
         });
       });
 
@@ -568,8 +558,7 @@ public class SecretsControllerACLSetTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_ACCESS));
+          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
         });
       });
     });
@@ -590,5 +579,7 @@ public class SecretsControllerACLSetTest {
 
     uuid = secretDataService.findMostRecent(name).getUuid();
     reset(secretDataService);
+
+    fakeTimeSetter.accept(frozenTime.toEpochMilli() + 10);
   }
 }

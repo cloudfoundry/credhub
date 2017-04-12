@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import com.greghaskins.spectrum.Spectrum.Block;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditLogService;
 import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.CertificateParameters;
@@ -20,6 +19,7 @@ import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.DefaultSecretGenerateRequest;
@@ -34,7 +34,6 @@ import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -50,11 +49,17 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
@@ -62,7 +67,6 @@ import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.MultiJsonPathMatcher.multiJsonPath;
 import static java.util.Arrays.asList;
@@ -86,11 +90,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -121,8 +120,8 @@ public class SecretsControllerTypeSpecificGenerateTest {
   @MockBean
   RsaGenerator rsaGenerator;
 
-  @SpyBean
-  AuditLogService auditLogService;
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
 
   @SpyBean
   ObjectMapper objectMapper;
@@ -136,7 +135,6 @@ public class SecretsControllerTypeSpecificGenerateTest {
   private MockMvc mockMvc;
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
   private Consumer<Long> fakeTimeSetter;
-  private AuditRecordBuilder auditRecordBuilder;
   private UUID uuid;
 
   private final String fakePassword = "generated-secret";
@@ -171,9 +169,6 @@ public class SecretsControllerTypeSpecificGenerateTest {
 
       when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
           .thenReturn(new RsaKey(publicKey, privateKey));
-
-      auditRecordBuilder = new AuditRecordBuilder();
-      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("password", testSecretBehavior(
@@ -307,8 +302,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-            assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
           });
 
           it("should create an ACL with the current user having read and write permissions", () -> {
@@ -345,7 +339,6 @@ public class SecretsControllerTypeSpecificGenerateTest {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
           doReturn(existingSecretProvider.get()).when(secretDataService).findMostRecent(secretName);
-          resetAuditLogMock(auditLogService, auditRecordBuilder);
         });
 
         describe("with the overwrite flag set to true", () -> {
@@ -383,8 +376,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-            assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
           });
         });
 
@@ -417,8 +409,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-            assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_ACCESS));
+            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
           });
         });
       });

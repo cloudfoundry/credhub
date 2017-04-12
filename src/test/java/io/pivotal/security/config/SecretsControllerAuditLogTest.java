@@ -2,7 +2,6 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.controller.v1.secret.SecretsController;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
@@ -10,7 +9,6 @@ import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.entity.RequestAuditRecord;
-import io.pivotal.security.audit.AuditLogService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -25,17 +23,13 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
-import java.util.Arrays;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -54,6 +48,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Arrays;
+import java.util.UUID;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(
     profiles = {"unit-test", "UseRealAuditLogService"},
@@ -65,23 +62,14 @@ public class SecretsControllerAuditLogTest {
   @Autowired
   WebApplicationContext applicationContext;
 
-  @Autowired
-  AuditLogService auditLogService;
-
   @MockBean
   RequestAuditRecordDataService requestAuditRecordDataService;
-
-  @Autowired
-  Filter springSecurityFilterChain;
 
   @MockBean
   SecretDataService secretDataService;
 
   @SpyBean
   Encryptor encryptor;
-
-  @Autowired
-  SecretsController secretsController;
 
   private MockMvc mockMvc;
 

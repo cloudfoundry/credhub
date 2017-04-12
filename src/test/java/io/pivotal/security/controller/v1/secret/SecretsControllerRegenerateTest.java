@@ -1,29 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
@@ -34,21 +10,16 @@ import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +32,33 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -68,9 +66,6 @@ public class SecretsControllerRegenerateTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
-
-  @SpyBean
-  AuditLogService auditLogService;
 
   @SpyBean
   SecretDataService secretDataService;
@@ -93,6 +88,9 @@ public class SecretsControllerRegenerateTest {
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
 
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -102,8 +100,6 @@ public class SecretsControllerRegenerateTest {
   private ResultActions response;
 
   private UUID uuid;
-
-  private AuditRecordBuilder auditRecordBuilder;
 
   {
     wireAndUnwire(this);
@@ -141,9 +137,6 @@ public class SecretsControllerRegenerateTest {
           return newSecret;
         }).when(secretDataService).save(any(NamedPasswordSecret.class));
 
-        auditRecordBuilder = new AuditRecordBuilder();
-        resetAuditLogMock(auditLogService, auditRecordBuilder);
-
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
         response = mockMvc.perform(post("/api/v1/data")
@@ -172,8 +165,8 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        // https://www.pivotaltracker.com/story/show/139762105
+        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
       });
     });
 
@@ -195,9 +188,6 @@ public class SecretsControllerRegenerateTest {
           newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
           return newSecret;
         }).when(secretDataService).save(any(NamedRsaSecret.class));
-
-        auditRecordBuilder = new AuditRecordBuilder();
-        resetAuditLogMock(auditLogService, auditRecordBuilder);
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
@@ -227,8 +217,8 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        // https://www.pivotaltracker.com/story/show/139762105
+        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
       });
     });
 
@@ -250,9 +240,6 @@ public class SecretsControllerRegenerateTest {
           newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
           return newSecret;
         }).when(secretDataService).save(any(NamedSshSecret.class));
-
-        auditRecordBuilder = new AuditRecordBuilder();
-        resetAuditLogMock(auditLogService, auditRecordBuilder);
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
 
@@ -282,8 +269,8 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        // https://www.pivotaltracker.com/story/show/139762105
+        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
       });
     });
 
@@ -310,8 +297,8 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        // https://www.pivotaltracker.com/story/show/139762105
+        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
       });
     });
 
@@ -339,8 +326,8 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-        assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_UPDATE));
+        // https://www.pivotaltracker.com/story/show/139762105
+        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
       });
     });
 

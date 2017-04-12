@@ -6,8 +6,6 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.JsonSetRequest;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.SecretView;
 import org.junit.runner.RunWith;
@@ -22,15 +20,11 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -39,6 +33,9 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -46,12 +43,6 @@ public class SecretsControllerJsonSetTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
-
-  @Autowired
-  SecretsController subject;
-
-  @SpyBean
-  AuditLogService auditLogService;
 
   @SpyBean
   SecretDataService secretDataService;
@@ -62,8 +53,6 @@ public class SecretsControllerJsonSetTest {
 
   private ResultActions response;
 
-  private AuditRecordBuilder auditRecordBuilder;
-
   {
     wireAndUnwire(this);
 
@@ -72,9 +61,6 @@ public class SecretsControllerJsonSetTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-
-      auditRecordBuilder = new AuditRecordBuilder();
-      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("and the type is json", () -> {

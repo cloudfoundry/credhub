@@ -1,40 +1,13 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.SecretView;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.function.Consumer;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -47,6 +20,28 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.function.Consumer;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static com.jayway.jsonassert.impl.matcher.IsCollectionWithSize.hasSize;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -55,17 +50,14 @@ public class SecretsControllerFindTest {
   @Autowired
   WebApplicationContext webApplicationContext;
 
-  @Autowired
-  SecretsController subject;
-
-  @SpyBean
-  AuditLogService auditLogService;
-
   @SpyBean
   SecretDataService secretDataService;
 
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
+
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
 
   private MockMvc mockMvc;
 
@@ -76,8 +68,6 @@ public class SecretsControllerFindTest {
   private final String secretName = "/my-namespace/subTree/secret-name";
 
   private ResultActions response;
-
-  private AuditRecordBuilder auditRecordBuilder;
 
   {
     wireAndUnwire(this);
@@ -90,9 +80,6 @@ public class SecretsControllerFindTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-
-      auditRecordBuilder = new AuditRecordBuilder();
-      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("finding secret", () -> {
@@ -121,8 +108,7 @@ public class SecretsControllerFindTest {
           });
 
           it("persists an audit entry", () -> {
-            verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-            assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_FIND));
+            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_FIND, null);
           });
         });
       });
@@ -201,8 +187,7 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_FIND));
+          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_FIND, null);
         });
       });
 

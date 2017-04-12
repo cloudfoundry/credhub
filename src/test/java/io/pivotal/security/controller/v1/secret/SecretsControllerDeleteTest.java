@@ -5,10 +5,8 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,12 +22,9 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuditLogTestHelper.resetAuditLogMock;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -48,22 +43,17 @@ public class SecretsControllerDeleteTest {
   @Autowired
   WebApplicationContext webApplicationContext;
 
-  @Autowired
-  SecretsController subject;
-
-  @SpyBean
-  AuditLogService auditLogService;
-
   @SpyBean
   SecretDataService secretDataService;
+
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
 
   private MockMvc mockMvc;
 
   private final String secretName = "/my-namespace/subTree/secret-name";
 
   private ResultActions response;
-
-  private AuditRecordBuilder auditRecordBuilder;
 
   {
     wireAndUnwire(this);
@@ -73,9 +63,6 @@ public class SecretsControllerDeleteTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-
-      auditRecordBuilder = new AuditRecordBuilder();
-      resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
     describe("#delete", () -> {
@@ -144,9 +131,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_DELETE));
-          assertThat(auditRecordBuilder.getCredentialName(), equalTo(secretName.toUpperCase()));
+          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_DELETE, secretName.toUpperCase());
         });
       });
 
@@ -173,9 +158,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          verify(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
-          assertThat(auditRecordBuilder.getOperationCode(), equalTo(CREDENTIAL_DELETE));
-          assertThat(auditRecordBuilder.getCredentialName(), equalTo(secretName));
+          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_DELETE, secretName);
         });
       });
 
