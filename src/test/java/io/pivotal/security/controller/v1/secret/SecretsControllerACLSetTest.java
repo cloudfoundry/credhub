@@ -76,7 +76,7 @@ import org.springframework.web.context.WebApplicationContext;
 @ActiveProfiles(profiles = {"unit-test",
     "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class SecretsControllerSetTest {
+public class SecretsControllerACLSetTest {
 
   final String secretValue = "secret-value";
   private final String secretName = "/my-namespace/secretForSetTest/secret-name";
