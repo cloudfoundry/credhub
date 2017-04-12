@@ -362,7 +362,7 @@ public class SetPermissionAndSecretTest {
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.error").value(
                   "The provided operation is not supported."
-                      + " Valid values include read and write."));
+                      + " Valid values include read, write, delete, read_acl, and write_acl."));
         });
       });
     };

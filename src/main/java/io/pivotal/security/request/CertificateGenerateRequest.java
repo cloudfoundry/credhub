@@ -5,11 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.service.GeneratorService;
-import java.util.List;
 
 public class CertificateGenerateRequest extends BaseSecretGenerateRequest {
 
-  public static final List<AccessControlEntry> NULL_ACCESS_CONTROL_ENTRIES = null;
   @JsonProperty("parameters")
   private CertificateGenerationParameters generationParameters;
 
