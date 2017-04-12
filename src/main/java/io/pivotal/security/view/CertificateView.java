@@ -3,7 +3,10 @@ package io.pivotal.security.view;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.secret.Certificate;
 
-class CertificateView extends SecretView {
+@SuppressWarnings("unused")
+public class CertificateView extends SecretView {
+
+  CertificateView() { /* Jackson */ }
 
   CertificateView(NamedCertificateSecret namedCertificateSecret) {
     super(

@@ -2,9 +2,12 @@ package io.pivotal.security.view;
 
 import io.pivotal.security.domain.NamedPasswordSecret;
 
-class PasswordView extends SecretView {
+@SuppressWarnings("unused")
+public class PasswordView extends SecretView {
 
-  PasswordView(NamedPasswordSecret namedPasswordSecret) {
+  public PasswordView() {}
+
+  public PasswordView(NamedPasswordSecret namedPasswordSecret) {
     super(
         namedPasswordSecret.getVersionCreatedAt(),
         namedPasswordSecret.getUuid(),

@@ -2,7 +2,10 @@ package io.pivotal.security.view;
 
 import io.pivotal.security.domain.NamedJsonSecret;
 
-class JsonView extends SecretView {
+@SuppressWarnings("unused")
+public class JsonView extends SecretView {
+
+  JsonView() {  /* Jackson */ }
 
   JsonView(NamedJsonSecret namedJsonSecret) {
     super(
