@@ -11,8 +11,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -24,9 +22,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import javax.servlet.Filter;
+
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = {"unit-test",
-    "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = {CredentialManagerApp.class})
 public class UpdatingASecretTest {
 

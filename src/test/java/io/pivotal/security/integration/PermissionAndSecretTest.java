@@ -48,7 +48,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = {CredentialManagerApp.class})
 public class PermissionAndSecretTest {
 

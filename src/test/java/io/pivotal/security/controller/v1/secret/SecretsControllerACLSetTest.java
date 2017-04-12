@@ -71,8 +71,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = {"unit-test",
-    "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerACLSetTest {
 

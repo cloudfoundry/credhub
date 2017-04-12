@@ -38,10 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ActiveProfiles(
-  profiles = {"unit-test", "UseRealAuditLogService"},
-  resolver = DatabaseProfileResolver.class
-)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class AccessControlAuditingTest {
 
