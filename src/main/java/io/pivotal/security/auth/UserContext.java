@@ -90,7 +90,7 @@ public class UserContext {
   }
 
   public String getAclUser() {
-    if (this.getAuthMethod() == AUTH_METHOD_UAA) {
+    if (AUTH_METHOD_UAA.equals(this.getAuthMethod())) {
       if (UAA_PASSWORD_GRANT_TYPE.equals(this.getGrantType())) {
         return UAA_USER_ACTOR_PREFIX + ":" + this.getUserId();
       } else if (UAA_CLIENT_CREDENTIALS_GRANT_TYPE.equals(this.getGrantType())) {
@@ -98,7 +98,7 @@ public class UserContext {
       }
     }
 
-    if (this.getAuthMethod() == AUTH_METHOD_MUTUAL_TLS) {
+    if (AUTH_METHOD_MUTUAL_TLS.equals(this.getAuthMethod())) {
       return MTLS_ACTOR_PREFIX + ":" + parseAppIdentifier(this.getClientId());
     }
 
