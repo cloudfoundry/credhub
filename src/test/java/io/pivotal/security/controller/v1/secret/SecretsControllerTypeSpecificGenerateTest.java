@@ -1,56 +1,5 @@
 package io.pivotal.security.controller.v1.secret;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.Block;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.PassayStringSecretGenerator;
-import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.BaseSecretGenerateRequest;
-import io.pivotal.security.request.DefaultSecretGenerateRequest;
-import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.secret.Password;
-import io.pivotal.security.secret.RsaKey;
-import io.pivotal.security.secret.SshKey;
-import io.pivotal.security.service.AuditLogService;
-import io.pivotal.security.service.AuditRecordBuilder;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.GenerateService;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -87,6 +36,56 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import com.greghaskins.spectrum.Spectrum.Block;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.BaseSecretGenerateRequest;
+import io.pivotal.security.request.DefaultSecretGenerateRequest;
+import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.RsaKey;
+import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.service.AuditLogService;
+import io.pivotal.security.service.AuditRecordBuilder;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.util.ExceptionThrowingFunction;
+import io.pivotal.security.view.AccessControlListResponse;
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -163,7 +162,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
       resetAuditLogMock(auditLogService, auditRecordBuilder);
     });
 
-    describe("password", this.<NamedPasswordSecret>testSecretBehavior(
+    describe("password", testSecretBehavior(
         new Object[] { "$.value", fakePassword },
         "password",
         "{\"exclude_number\": true}",
@@ -179,7 +178,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
-    describe("ssh", this.<NamedSshSecret>testSecretBehavior(
+    describe("ssh", testSecretBehavior(
         new Object[] {
             "$.value.public_key", "public_key",
             "$.value.private_key", "private_key",
@@ -199,7 +198,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("rsa", this.<NamedRsaSecret>testSecretBehavior(
+    describe("rsa", testSecretBehavior(
         new Object[] {
             "$.value.public_key", "public_key",
             "$.value.private_key", "private_key"},
