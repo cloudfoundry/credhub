@@ -50,7 +50,6 @@ public class AuthFailureAuditRecordDataServiceTest {
               r.setFailureDescription(rs.getString("failure_description"));
               r.setHostName(rs.getString("host_name"));
               r.setNow(Instant.ofEpochMilli(rs.getLong("now")));
-              r.setOperation(rs.getString("operation"));
               r.setPath(rs.getString("path"));
               r.setRequesterIp(rs.getString("requester_ip"));
               r.setAuthValidUntil(rs.getLong("auth_valid_until"));
@@ -78,7 +77,6 @@ public class AuthFailureAuditRecordDataServiceTest {
         assertThat(expected.getHostName(), equalTo(actual.getHostName()));
         assertThat(expected.getNow(), equalTo(actual.getNow()));
         assertThat(expected.getNow(), equalTo(frozenTime));
-        assertThat(expected.getOperation(), equalTo(actual.getOperation()));
         assertThat(expected.getPath(), equalTo(actual.getPath()));
         assertThat(expected.getRequesterIp(), equalTo(actual.getRequesterIp()));
         assertThat(expected.getAuthValidUntil(), equalTo(actual.getAuthValidUntil()));
@@ -105,7 +103,6 @@ public class AuthFailureAuditRecordDataServiceTest {
     record.setFailureDescription("it failed");
     record.setHostName("host.example.com");
     record.setNow(frozenTime);
-    record.setOperation("test-operation");
     record.setPath("/api/some-path");
     record.setRequesterIp("127.0.0.1");
     record.setAuthValidUntil(authValidUntil);

@@ -20,10 +20,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
-import java.time.Instant;
-import java.util.Map;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -43,6 +39,11 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.time.Instant;
+import java.util.Map;
+
+import javax.servlet.Filter;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -101,7 +102,6 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(),
@@ -153,7 +153,6 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(), equalTo(
@@ -198,7 +197,6 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(), equalTo("Access token expired"));
@@ -242,7 +240,6 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
         assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
         assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
         assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
         assertThat(auditRecord.getFailureDescription(),

@@ -1,7 +1,10 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.Instant;
+
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -10,7 +13,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @SuppressWarnings("unused")
 @Entity
@@ -28,7 +30,6 @@ public class AuthFailureAuditRecord {
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
   private Instant now;
 
-  private String operation;
   private String path;
 
   private long authValidFrom;
@@ -78,15 +79,6 @@ public class AuthFailureAuditRecord {
 
   public AuthFailureAuditRecord setNow(Instant now) {
     this.now = now;
-    return this;
-  }
-
-  public String getOperation() {
-    return operation;
-  }
-
-  public AuthFailureAuditRecord setOperation(String operation) {
-    this.operation = operation;
     return this;
   }
 
