@@ -1,15 +1,15 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.config.LunaProviderProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
+
 import java.security.KeyStore;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.crypto.KeyGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
@@ -21,7 +21,6 @@ class LunaConnection implements RemoteEncryptionConnectable, KeyGeneratingConnec
   private KeyStore keyStore;
   private SecureRandom secureRandom;
   private KeyGenerator aesKeyGenerator;
-  private ReentrantReadWriteLock readWriteLock;
 
   @Autowired
   public LunaConnection(LunaProviderProperties lunaProviderProperties) throws Exception {
@@ -34,8 +33,6 @@ class LunaConnection implements RemoteEncryptionConnectable, KeyGeneratingConnec
     secureRandom = SecureRandom.getInstance("LunaRNG");
     aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
     aesKeyGenerator.init(128);
-
-    readWriteLock = new ReentrantReadWriteLock();
   }
 
   @Override
