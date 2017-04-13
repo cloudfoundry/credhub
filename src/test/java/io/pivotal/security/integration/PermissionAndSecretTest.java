@@ -50,7 +50,7 @@ import org.springframework.web.context.WebApplicationContext;
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test", "UseRealAuditLogService"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = {CredentialManagerApp.class})
-public class SetPermissionAndSecretTest {
+public class PermissionAndSecretTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
