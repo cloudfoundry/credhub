@@ -1,144 +1,113 @@
 package io.pivotal.security.data;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
+@DataJpaTest
 public class EncryptionKeyCanaryDataServiceTest {
-
-  @Autowired
-  EncryptionKeyCanaryDataService subject;
-
-  @Autowired
-  JdbcTemplate jdbcTemplate;
 
   @Autowired
   EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
-  {
-    wireAndUnwire(this);
+  EncryptionKeyCanaryDataService subject;
 
-    beforeEach(() -> {
-      encryptionKeyCanaryRepository.deleteAll();
-    });
+  @Before
+  public void beforeEach() {
+    subject = new EncryptionKeyCanaryDataService(encryptionKeyCanaryRepository);
+  }
 
-    describe("#save", () -> {
-      it("should save the encryption key in the database", () -> {
-        EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
-        encryptionKeyCanary.setNonce("test-nonce".getBytes());
-        encryptionKeyCanary.setEncryptedValue("test-value".getBytes());
-        subject.save(encryptionKeyCanary);
+  @Test
+  public void save_savesTheEncryptionCanary() {
+    EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
+    encryptionKeyCanary.setNonce("test-nonce".getBytes());
+    encryptionKeyCanary.setEncryptedValue("test-value".getBytes());
+    subject.save(encryptionKeyCanary);
 
-        List<EncryptionKeyCanary> canaries = jdbcTemplate
-            .query("select * from encryption_key_canary", (rowSet, rowNum) -> {
-              UUID uuid = null;
-              try {
-                uuid = (UUID) rowSet.getObject("uuid");
-              } catch (Exception e) {
-                ByteBuffer byteBuffer = ByteBuffer.wrap(rowSet.getBytes("uuid"));
-                uuid = new UUID(byteBuffer.getLong(), byteBuffer.getLong());
-              }
+    List<EncryptionKeyCanary> canaries = subject.findAll();
 
-              EncryptionKeyCanary key = new EncryptionKeyCanary();
-              key.setUuid(uuid);
-              key.setNonce(rowSet.getBytes("nonce"));
-              key.setEncryptedValue(rowSet.getBytes("encrypted_value"));
+    assertThat(canaries, hasSize(1));
 
-              return key;
-            });
+    EncryptionKeyCanary actual = canaries.get(0);
 
-        assertThat(canaries.size(), equalTo(1));
+    assertNotNull(actual.getUuid());
+    assertThat(actual.getUuid(), equalTo(encryptionKeyCanary.getUuid()));
+    assertThat(actual.getNonce(), equalTo("test-nonce".getBytes()));
+    assertThat(actual.getEncryptedValue(), equalTo("test-value".getBytes()));
+  }
 
-        EncryptionKeyCanary actual = canaries.get(0);
+  @Test
+  public void findAll_whenThereAreNoCanaries_returnsEmptyList() {
+    assertThat(subject.findAll(), hasSize(0));
+  }
 
-        assertNotNull(actual.getUuid());
-        assertThat(actual.getUuid(), equalTo(encryptionKeyCanary.getUuid()));
-        assertThat(actual.getNonce(), equalTo("test-nonce".getBytes()));
-        assertThat(actual.getEncryptedValue(), equalTo("test-value".getBytes()));
-      });
-    });
+  @Test
+  public void findAll_whenThereAreCanaries_returnsCanariesAsAList() {
 
-    describe("#findAll", () -> {
-      describe("when there are no canaries", () -> {
-        it("should return an empty list", () -> {
-          assertThat(subject.findAll().size(), equalTo(0));
-        });
-      });
+    EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
+    EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
 
-      describe("when there are canaries", () -> {
-        it("should return them as a list", () -> {
-          EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
-          EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
+    subject.save(firstCanary);
+    subject.save(secondCanary);
 
-          subject.save(firstCanary);
-          subject.save(secondCanary);
+    List<EncryptionKeyCanary> canaries = subject.findAll();
+    List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
+        .collect(Collectors.toList());
 
-          List<EncryptionKeyCanary> canaries = subject.findAll();
-          List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
-              .collect(Collectors.toList());
+    assertThat(canaries, hasSize(2));
+    assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
+  }
 
-          assertThat(canaries.size(), equalTo(2));
-          assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
-        });
-      });
-    });
+  @Test
+  public void delete_whenThereAreCanaries_deletesTheRequestedCanaries() {
+    EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
+    EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
 
-    describe("#delete", () -> {
-      describe("when there are no canaries", () -> {
-        it("should not throw an exception", () -> {
-          subject.delete(new EncryptionKeyCanary());
-        });
-      });
+    subject.save(firstCanary);
+    subject.save(secondCanary);
 
-      describe("when there are canaries", () -> {
-        it("should delete the requested encryption key", () -> {
-          EncryptionKeyCanary firstCanary = new EncryptionKeyCanary();
-          EncryptionKeyCanary secondCanary = new EncryptionKeyCanary();
+    List<EncryptionKeyCanary> canaries = subject.findAll();
 
-          subject.save(firstCanary);
-          subject.save(secondCanary);
+    List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
+        .collect(Collectors.toList());
 
-          List<EncryptionKeyCanary> canaries = subject.findAll();
-          List<UUID> uuids = canaries.stream().map(canary -> canary.getUuid())
-              .collect(Collectors.toList());
+    assertThat(canaries, hasSize(2));
+    assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
 
-          assertThat(canaries.size(), equalTo(2));
-          assertThat(uuids, containsInAnyOrder(firstCanary.getUuid(), secondCanary.getUuid()));
+    subject.delete(secondCanary);
 
-          subject.delete(firstCanary);
+    canaries = subject.findAll();
+    uuids = canaries.stream().map(canary -> canary.getUuid())
+        .collect(Collectors.toList());
 
-          canaries = subject.findAll();
-          uuids = canaries.stream().map(canary -> canary.getUuid())
-            .collect(Collectors.toList());
+    assertThat(canaries, hasSize(1));
+    assertThat(uuids, containsInAnyOrder(firstCanary.getUuid()));
+  }
 
-          assertThat(canaries.size(), equalTo(1));
-          assertThat(uuids, containsInAnyOrder(secondCanary.getUuid()));
-        });
-      });
-    });
+  @Test
+  public void delete_whenThereAreNoCanaries_doesNothing() {
+    assertThat(subject.findAll(), hasSize(0));
+
+    subject.delete(new EncryptionKeyCanary());
+
+    assertThat(subject.findAll(), hasSize(0));
   }
 }
