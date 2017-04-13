@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BcCertificateGenerator implements
+public class CertificateGenerator implements
     SecretGenerator<CertificateParameters, Certificate> {
 
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
@@ -34,7 +34,7 @@ public class BcCertificateGenerator implements
 
 
   @Autowired
-  public BcCertificateGenerator(
+  public CertificateGenerator(
       LibcryptoRsaKeyPairGenerator keyGenerator,
       SignedCertificateGenerator signedCertificateGenerator,
       CertificateAuthorityService certificateAuthorityService,

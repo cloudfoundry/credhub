@@ -50,7 +50,7 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.BcCertificateGenerator;
+import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
@@ -112,7 +112,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
   PassayStringSecretGenerator passwordGenerator;
 
   @MockBean
-  BcCertificateGenerator certificateGenerator;
+  CertificateGenerator certificateGenerator;
 
   @MockBean
   SshGenerator sshGenerator;

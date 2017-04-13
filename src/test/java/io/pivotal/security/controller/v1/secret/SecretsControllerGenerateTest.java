@@ -37,7 +37,7 @@ import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.generator.BcCertificateGenerator;
+import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
@@ -105,7 +105,7 @@ public class SecretsControllerGenerateTest {
   RsaGenerator rsaGenerator;
 
   @MockBean
-  BcCertificateGenerator certificateGenerator;
+  CertificateGenerator certificateGenerator;
 
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;

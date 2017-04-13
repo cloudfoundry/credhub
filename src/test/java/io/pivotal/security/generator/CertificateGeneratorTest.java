@@ -46,9 +46,9 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
-public class BcCertificateGeneratorTest {
+public class CertificateGeneratorTest {
 
-  private BcCertificateGenerator subject;
+  private CertificateGenerator subject;
 
   private LibcryptoRsaKeyPairGenerator keyGenerator;
   private SignedCertificateGenerator signedCertificateGenerator;
@@ -77,7 +77,7 @@ public class BcCertificateGeneratorTest {
       signedCertificateGenerator = mock(SignedCertificateGenerator.class);
       certificateAuthorityService = mock(CertificateAuthorityService.class);
 
-      subject = new BcCertificateGenerator(keyGenerator, signedCertificateGenerator,
+      subject = new CertificateGenerator(keyGenerator, signedCertificateGenerator,
           certificateAuthorityService, getBouncyCastleProvider());
 
       fakeKeyPairGenerator = new FakeKeyPairGenerator();
