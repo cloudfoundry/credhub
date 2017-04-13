@@ -1,25 +1,32 @@
 package io.pivotal.security.data;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.List;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static java.util.UUID.nameUUIDFromBytes;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -33,9 +40,15 @@ public class RequestAuditRecordDataServiceTest {
   RequestAuditRecordDataService subject;
   @Autowired
   JdbcTemplate jdbcTemplate;
+  @MockBean
+  CurrentTimeProvider currentTimeProvider;
 
   {
     wireAndUnwire(this);
+
+    beforeEach(() -> {
+      mockOutCurrentTimeProvider(currentTimeProvider).accept(frozenTime.toEpochMilli());
+    });
 
     describe("#save", () -> {
       it("should create the entity in the database", () -> {
@@ -44,45 +57,35 @@ public class RequestAuditRecordDataServiceTest {
 
         assertNotNull(record);
 
-        List<RequestAuditRecord> records = jdbcTemplate
-            .query("select * from operation_audit_record", (rs, rowCount) -> {
-              RequestAuditRecord r = new RequestAuditRecord(
-                  rs.getString("auth_method"),
-                  new Timestamp(rs.getLong("now")).toInstant(),
-                  rs.getString("credential_name"),
-                  rs.getString("operation"),
-                  rs.getString("user_id"),
-                  rs.getString("user_name"),
-                  rs.getString("uaa_url"),
-                  rs.getLong("auth_valid_from"),
-                  rs.getLong("auth_valid_until"),
-                  rs.getString("host_name"),
-                  rs.getString("method"),
-                  rs.getString("path"),
-                  rs.getString("query_parameters"),
-                  rs.getInt("status_code"),
-                  rs.getString("requester_ip"),
-                  rs.getString("x_forwarded_for"),
-                  rs.getString("client_id"),
-                  rs.getString("scope"),
-                  rs.getString("grant_type"),
-                  rs.getBoolean("success")
-              );
-              r.setId(rs.getLong("id"));
-              return r;
-            });
+        RequestAuditRecord actual = jdbcTemplate.queryForObject("select * from request_audit_record", (rs, rowNum) -> {
+          return new RequestAuditRecord(
+              rs.getString("auth_method"),
+              rs.getString("user_id"),
+              rs.getString("user_name"),
+              rs.getString("uaa_url"),
+              rs.getLong("auth_valid_from"),
+              rs.getLong("auth_valid_until"),
+              rs.getString("host_name"),
+              rs.getString("method"),
+              rs.getString("path"),
+              rs.getString("query_parameters"),
+              rs.getInt("status_code"),
+              rs.getString("requester_ip"),
+              rs.getString("x_forwarded_for"),
+              rs.getString("client_id"),
+              rs.getString("scope"),
+              rs.getString("grant_type")
+          );
+        });
+        UUID actualUuid = nameUUIDFromBytes(jdbcTemplate.queryForObject("select uuid from request_audit_record", byte[].class));
+        Instant actualNow = Instant.ofEpochMilli(jdbcTemplate.queryForObject("select now from request_audit_record", Long.class));
 
-        assertThat(records.size(), equalTo(1));
-
-        RequestAuditRecord actual = records.get(0);
         RequestAuditRecord expected = record;
 
-        assertThat(actual.getId(), equalTo(expected.getId()));
+        assertThat(actualUuid, isA(UUID.class));
+        assertThat(actualNow, equalTo(expected.getNow()));
+
         assertThat(actual.getAuthMethod(), equalTo(expected.getAuthMethod()));
-        assertThat(actual.getNow(), equalTo(expected.getNow()));
-        assertThat(actual.getNow(), equalTo(frozenTime));
-        assertThat(actual.getOperation(), equalTo(expected.getOperation()));
-        assertThat(actual.getCredentialName(), equalTo(expected.getCredentialName()));
         assertThat(actual.getUserId(), equalTo(expected.getUserId()));
         assertThat(actual.getUserName(), equalTo(expected.getUserName()));
         assertThat(actual.getUaaUrl(), equalTo(expected.getUaaUrl()));
@@ -100,7 +103,6 @@ public class RequestAuditRecordDataServiceTest {
         assertThat(actual.getClientId(), equalTo(expected.getClientId()));
         assertThat(actual.getScope(), equalTo(expected.getScope()));
         assertThat(actual.getGrantType(), equalTo(expected.getGrantType()));
-        assertThat(actual.isSuccess(), equalTo(expected.isSuccess()));
       });
     });
   }
@@ -110,9 +112,6 @@ public class RequestAuditRecordDataServiceTest {
 
     return new RequestAuditRecord(
         AUTH_METHOD_UAA,
-        frozenTime,
-        "fake-credential-name",
-        "test-operation",
         "test-user-id",
         "test-user-name",
         "https://uaa.example.com",
@@ -127,8 +126,7 @@ public class RequestAuditRecordDataServiceTest {
         "test-forwarded-for",
         "test-client-id",
         "test.scope",
-        "test-grant-type",
-        true
+        "test-grant-type"
     );
   }
 }

@@ -1,5 +1,13 @@
 package io.pivotal.security.service;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.VersionProvider;
+import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.util.CurrentTimeProvider;
+import org.apache.logging.log4j.Logger;
+import org.junit.runner.RunWith;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -14,14 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.VersionProvider;
-import io.pivotal.security.entity.RequestAuditRecord;
-import io.pivotal.security.util.CurrentTimeProvider;
 import java.time.Instant;
-import org.apache.logging.log4j.Logger;
-import org.junit.runner.RunWith;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 @RunWith(Spectrum.class)
 public class SecurityEventsLogServiceTest {
@@ -134,28 +135,18 @@ public class SecurityEventsLogServiceTest {
   }
 
   private RequestAuditRecord makeOperationAuditRecord(String queryParameters, String authMethod) {
-    return new RequestAuditRecord(
-        authMethod,
-        now,
-        "some-path",
-        "some_operation",
-        "user-id",
-        "user-name",
-        "uaa.example.com",
-        5000,
-        6000,
-        "host.example.com",
-        "GET",
-        "/api/some-path",
-        queryParameters,
-        200,
-        "127.0.0.1",
-        "1.2.3.4,5.6.7.8",
-        "some-client-id",
-        "credhub.read",
-        "password",
-        true
-    );
-
+    RequestAuditRecord requestAuditRecord = mock(RequestAuditRecord.class);
+    when(requestAuditRecord.getAuthMethod()).thenReturn(authMethod);
+    when(requestAuditRecord.getUserId()).thenReturn("user-id");
+    when(requestAuditRecord.getNow()).thenReturn(now);
+    when(requestAuditRecord.getMethod()).thenReturn("GET");
+    when(requestAuditRecord.getPath()).thenReturn("/api/some-path");
+    when(requestAuditRecord.getRequesterIp()).thenReturn("127.0.0.1");
+    when(requestAuditRecord.getHostName()).thenReturn("host.example.com");
+    when(requestAuditRecord.getClientId()).thenReturn("some-client-id");
+    when(requestAuditRecord.getUserName()).thenReturn("user-name");
+    when(requestAuditRecord.getQueryParameters()).thenReturn(queryParameters);
+    when(requestAuditRecord.getStatusCode()).thenReturn(200);
+    return requestAuditRecord;
   }
 }

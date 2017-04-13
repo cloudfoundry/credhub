@@ -1,6 +1,6 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
@@ -20,7 +20,7 @@ public class GenerateService {
     this.setService = setService;
   }
 
-  public ResponseEntity performGenerate(AuditRecordBuilder auditRecordBuilder, BaseSecretGenerateRequest requestBody, AccessControlEntry currentUserAccessControlEntry) {
+  public ResponseEntity performGenerate(EventAuditRecordBuilder auditRecordBuilder, BaseSecretGenerateRequest requestBody, AccessControlEntry currentUserAccessControlEntry) {
     BaseSecretSetRequest setRequest = requestBody.generateSetRequest(generatorService);
     return setService.performSet(auditRecordBuilder, setRequest, currentUserAccessControlEntry);
   }

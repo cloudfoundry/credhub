@@ -6,6 +6,7 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.JsonSetRequest;
@@ -81,6 +82,8 @@ public class SecretsControllerACLSetTest {
   WebApplicationContext webApplicationContext;
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
   @SpyBean
   SecretDataService secretDataService;
   @MockBean
@@ -165,7 +168,7 @@ public class SecretsControllerACLSetTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
         });
 
         it("allows secret with '.' in the name", () -> {
@@ -531,8 +534,7 @@ public class SecretsControllerACLSetTest {
         });
 
         it("persists an audit entry", () -> {
-          // https://www.pivotaltracker.com/story/show/143602445
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName.toUpperCase());
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
         });
       });
 
@@ -557,7 +559,7 @@ public class SecretsControllerACLSetTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
         });
       });
     });

@@ -10,6 +10,7 @@ import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
@@ -55,6 +56,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -90,6 +92,9 @@ public class SecretsControllerRegenerateTest {
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
 
@@ -165,8 +170,7 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-password");
       });
     });
 
@@ -217,8 +221,7 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-rsa");
       });
     });
 
@@ -269,8 +272,7 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-ssh");
       });
     });
 
@@ -298,7 +300,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null);
       });
     });
 
@@ -327,7 +329,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, null);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null);
       });
     });
 
@@ -358,6 +360,7 @@ public class SecretsControllerRegenerateTest {
                 "}";
 
             response
+                .andDo(print())
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(cannotRegenerateJson));
           });

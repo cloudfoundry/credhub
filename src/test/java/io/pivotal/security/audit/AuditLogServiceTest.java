@@ -1,56 +1,82 @@
 package io.pivotal.security.audit;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
-import io.pivotal.security.fake.FakeRepository;
-import io.pivotal.security.fake.FakeTransactionManager;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
-import org.assertj.core.util.Lists;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.TransactionStatus;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.servlet.http.HttpServletRequest;
+
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static java.util.Collections.enumeration;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.security.Principal;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicReference;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @RunWith(Spectrum.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
 @SuppressWarnings("EmptyCatchBlock")
 public class AuditLogServiceTest {
-
+  @Autowired
   private AuditLogService subject;
-  private RequestAuditRecordDataService requestAuditRecordDataService;
-  private FakeRepository fakeRepository;
-  private FakeTransactionManager transactionManager;
-  private CurrentTimeProvider currentTimeProvider;
+
+  @MockBean
   private SecurityEventsLogService securityEventsLogService;
+
+  @Autowired
+  private RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  private EventAuditRecordRepository eventAuditRecordRepository;
+
+  @Autowired
+  private SecretDataService secretDataService;
+
+  @SpyBean
+  private TransactionManagerDelegate transactionManager;
+
+  @MockBean
+  private CurrentTimeProvider currentTimeProvider;
 
   private final Instant now = Instant.ofEpochSecond(1490903353L);
   private final Instant then = Instant.ofEpochSecond(1550903353L);
@@ -58,50 +84,38 @@ public class AuditLogServiceTest {
   private ResponseEntity<?> responseEntity;
   private UserContext userContext;
 
+  private HttpServletRequest request;
+
   {
+    wireAndUnwire(this);
 
     beforeEach(() -> {
-      requestAuditRecordDataService = mock(RequestAuditRecordDataService.class);
-      currentTimeProvider = mock(CurrentTimeProvider.class);
-      securityEventsLogService = mock(SecurityEventsLogService.class);
-      transactionManager = new FakeTransactionManager();
-      userContext = mockUserContext();
-      fakeRepository = new FakeRepository(transactionManager);
-
-      when(requestAuditRecordDataService.save(isA(RequestAuditRecord.class))).thenAnswer(answer -> {
-        return answer.getArgumentAt(0, RequestAuditRecord.class);
-      });
-
-      when(currentTimeProvider.getInstant()).thenReturn(now);
-      when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
-
-      subject = new AuditLogService(
-          currentTimeProvider,
-          requestAuditRecordDataService,
-          transactionManager,
-          securityEventsLogService
-      );
+      mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
+      userContext = mockUserContext(true);
+      request = mockRequest();
     });
 
     describe("logging behavior", () -> {
       describe("when the action succeeds", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-              return auditedSaveAndReturnNewValue(auditRecordBuilder);
-            });
+            responseEntity = subject.performWithAuditing(
+                request,
+                userContext,
+                this::auditedSaveAndReturnNewValue
+            );
           });
 
           it("performs the action", () -> {
-            assertThat(fakeRepository.count(), equalTo(1L));
+            assertThat(secretDataService.count(), equalTo(1L));
           });
 
           it("passes the request untouched", () -> {
             assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.OK));
           });
 
-          it("logs audit entry", () -> {
-            checkAuditRecord(true, HttpStatus.OK);
+          it("logs the audit entries", () -> {
+            checkAuditRecords(true, HttpStatus.OK);
           });
 
           it("logs in CEF format to file", () -> {
@@ -111,15 +125,14 @@ public class AuditLogServiceTest {
 
         describe("when the database audit fails", () -> {
           itThrowsWithMessage("does not perform the action or write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(requestAuditRecordDataService)
-                .save(any(RequestAuditRecord.class));
+            userContext = mockUserContext(false);
 
             try {
-              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+              responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
                 return auditedSaveAndReturnNewValue(auditRecordBuilder);
               });
             } finally {
-              assertThat(fakeRepository.count(), equalTo(0L));
+              assertThat(secretDataService.count(), equalTo(0L));
               verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
             }
           });
@@ -134,15 +147,13 @@ public class AuditLogServiceTest {
           beforeEach(() -> {
             exception.set(null);
             try {
-              subject.performWithAuditing(auditRecordBuilder -> {
+              subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
                 auditRecordBuilder.setCredentialName("keyName");
-                auditRecordBuilder.populateFromRequest(
-                    new MockHttpServletRequest("GET", "requestURI"));
-                auditRecordBuilder.setUserContext(userContext);
+                auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
                 entity.setEncryptedValue("value".getBytes());
-                fakeRepository.save(entity);
+                secretDataService.save(entity);
                 throw re;
               });
             } catch (Exception e) {
@@ -155,8 +166,8 @@ public class AuditLogServiceTest {
           });
 
           it("logs failed audit entry", () -> {
-            checkAuditRecord(false, HttpStatus.INTERNAL_SERVER_ERROR);
-            assertThat(fakeRepository.count(), equalTo(0L));
+            checkAuditRecords(false, HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(secretDataService.count(), equalTo(0L));
           });
 
           it("should write to the CEF log file", () -> {
@@ -166,26 +177,24 @@ public class AuditLogServiceTest {
 
         describe("when the database audit fails", () -> {
           itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(requestAuditRecordDataService)
-                .save(any(RequestAuditRecord.class));
+            userContext = mockUserContext(false);
 
             try {
-              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+              responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
                 auditRecordBuilder.setCredentialName("keyName");
-                auditRecordBuilder.populateFromRequest(
-                    new MockHttpServletRequest("GET", "requestURI"));
-                auditRecordBuilder.setUserContext(userContext);
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
                 entity.setEncryptedValue("value".getBytes());
-                fakeRepository.save(entity);
+                secretDataService.save(entity);
+
                 throw new RuntimeException("controller method failed");
               });
             } finally {
-              assertThat(transactionManager.hasOpenTransaction(), is(false));
-              assertThat(fakeRepository.count(), equalTo(0L));
-
+              System.out.print("hello");
               verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
+              verify(transactionManager, times(1)).rollback(isA(TransactionStatus.class));
+              assertThat(secretDataService.count(), equalTo(0L));
+
             }
           });
         });
@@ -194,14 +203,15 @@ public class AuditLogServiceTest {
       describe("when the action fails with a non 200 status", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+            responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
+              auditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
               return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
             });
           });
 
           it("logs audit entry for failure", () -> {
-            checkAuditRecord(false, HttpStatus.BAD_GATEWAY);
-            assertThat(fakeRepository.count(), equalTo(0L));
+            checkAuditRecords(false, HttpStatus.BAD_GATEWAY);
+            assertThat(secretDataService.count(), equalTo(0L));
           });
 
           it("returns the non-2xx status code", () -> {
@@ -213,36 +223,22 @@ public class AuditLogServiceTest {
           });
         });
 
-        describe("when the database audit fails", () -> {
-          itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(requestAuditRecordDataService)
-                .save(any(RequestAuditRecord.class));
-
-            try {
-              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
-                return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
-              });
-            } finally {
-              assertThat(transactionManager.hasOpenTransaction(), is(false));
-              assertThat(fakeRepository.count(), equalTo(0L));
-
-              verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
-            }
-          });
-        });
-
         describe("when audit transaction fails to commit", () -> {
           itThrowsWithMessage("rolls back commit and doesn't write to the CEF log", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
             try {
-              transactionManager.failOnCommit();
-              responseEntity = subject.performWithAuditing(auditRecordBuilder -> {
+              userContext = mockUserContext(false);
+              responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
                 return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
               });
             } finally {
-              assertThat(transactionManager.hasOpenTransaction(), is(false));
-              assertThat(fakeRepository.count(), equalTo(0L));
+              assertThat(secretDataService.count(), equalTo(0L));
 
+              final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
+              verify(transactionManager).rollback(captor.capture());
               verify(securityEventsLogService, times(0)).log(isA(RequestAuditRecord.class));
+
+              TransactionStatus transactionStatus = captor.getValue();
+              assertThat(transactionStatus.isCompleted(), equalTo(true));
             }
           });
         });
@@ -250,62 +246,71 @@ public class AuditLogServiceTest {
     });
   }
 
-  private UserContext mockUserContext() {
-    Principal principal = mock(Principal.class);
-    when(principal.getName()).thenReturn("distinguished name");
-
-    X509Certificate certificate = mock(X509Certificate.class);
-    when(certificate.getNotBefore()).thenReturn(Date.from(now));
-    when(certificate.getNotAfter()).thenReturn(Date.from(then));
-    when(certificate.getSubjectDN()).thenReturn(principal);
-
-    PreAuthenticatedAuthenticationToken authentication = mock(PreAuthenticatedAuthenticationToken.class);
-    when(authentication.getCredentials()).thenReturn(certificate);
-    when(authentication.getAuthorities()).thenReturn(Lists.emptyList());
-
-    return UserContext.fromAuthentication(authentication, null, null);
+  private HttpServletRequest mockRequest() {
+    HttpServletRequest request = mock(HttpServletRequest.class);
+    when(request.getHeaders("X-Forwarded-For")).thenReturn(enumeration(newArrayList("1.1.1.1", "2.2.2.2")));
+    when(request.getRequestURI()).thenReturn("requestURI");
+    when(request.getMethod()).thenReturn("GET");
+    return request;
   }
 
-  private ResponseEntity<?> auditedSaveAndReturnNewValue(
-      AuditRecordBuilder auditRecordBuilder) {
+  private UserContext mockUserContext(boolean valid) {
+    UserContext context = mock(UserContext.class);
+    when(context.getValidFrom()).thenReturn(now.getEpochSecond());
+    when(context.getValidUntil()).thenReturn(then.getEpochSecond());
+    when(context.getClientId()).thenReturn("test-client-id");
+    when(context.getAclUser()).thenReturn("test-actor");
+
+    if (valid) {
+      when(context.getAuthMethod()).thenReturn(AUTH_METHOD_UAA);
+    }
+    return context;
+  }
+
+  private ResponseEntity<?> auditedSaveAndReturnNewValue(EventAuditRecordBuilder auditRecordBuilder) {
     auditRecordBuilder.setCredentialName("keyName");
-    auditRecordBuilder.populateFromRequest(
-        new MockHttpServletRequest("GET", "requestURI"));
-    auditRecordBuilder.setUserContext(userContext);
+    auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
     NamedValueSecretData entity = new NamedValueSecretData("keyName");
     entity.setEncryptedValue("value".getBytes());
-    final NamedValueSecretData secret = fakeRepository.save(entity);
+    final NamedValueSecret secret = secretDataService.save(entity);
     return new ResponseEntity<>(secret, HttpStatus.OK);
   }
 
-  private ResponseEntity<?> auditedSaveNewValueWithBadGateway(
-      AuditRecordBuilder auditRecordBuilder) {
+  private ResponseEntity<?> auditedSaveNewValueWithBadGateway(EventAuditRecordBuilder auditRecordBuilder) {
     auditRecordBuilder.setCredentialName("keyName");
-    auditRecordBuilder.populateFromRequest(
-        new MockHttpServletRequest("GET", "requestURI"));
-    auditRecordBuilder.setUserContext(userContext);
+    auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
 
     NamedValueSecretData entity = new NamedValueSecretData("keyName");
     entity.setEncryptedValue("value".getBytes());
-    fakeRepository.save(entity);
+    secretDataService.save(entity);
     return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
   }
 
-  private void checkAuditRecord(boolean successFlag, HttpStatus status) {
-    ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
-        .forClass(RequestAuditRecord.class);
-    verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
+  private void checkAuditRecords(boolean successFlag, HttpStatus status) {
+    final List<RequestAuditRecord> requestAuditRecords = requestAuditRecordRepository.findAll(new Sort(DESC, "now"));
 
-    RequestAuditRecord actual = recordCaptor.getValue();
-    assertThat(actual.getNow(), equalTo(now));
-    assertThat(actual.getCredentialName(), equalTo("keyName"));
-    assertThat(actual.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
-    assertThat(actual.getAuthValidFrom(), equalTo(1490903353L));
-    assertThat(actual.getAuthValidUntil(), equalTo(1550903353L));
-    assertThat(actual.getPath(), equalTo("requestURI"));
-    assertThat(actual.isSuccess(), equalTo(successFlag));
-    assertThat(actual.getClientId(), equalTo("distinguished name"));
-    assertThat(actual.getMethod(), equalTo("GET"));
-    assertThat(actual.getStatusCode(), equalTo(status.value()));
+    assertThat(requestAuditRecords, hasSize(1));
+
+    RequestAuditRecord actualRequestAuditRecord = requestAuditRecords.get(0);
+    assertThat(actualRequestAuditRecord.getNow(), equalTo(this.now));
+    assertThat(actualRequestAuditRecord.getAuthValidFrom(), equalTo(1490903353L));
+    assertThat(actualRequestAuditRecord.getAuthValidUntil(), equalTo(1550903353L));
+    assertThat(actualRequestAuditRecord.getPath(), equalTo("requestURI"));
+    assertThat(actualRequestAuditRecord.getClientId(), equalTo("test-client-id"));
+    assertThat(actualRequestAuditRecord.getMethod(), equalTo("GET"));
+    assertThat(actualRequestAuditRecord.getStatusCode(), equalTo(status.value()));
+
+    final List<EventAuditRecord> eventAuditRecords = eventAuditRecordRepository.findAll(new Sort(DESC, "now"));
+
+    assertThat(eventAuditRecords, hasSize(1));
+
+    EventAuditRecord eventAuditRecord = eventAuditRecords.get(0);
+    assertThat(eventAuditRecord.getCredentialName(), equalTo("keyName"));
+    assertThat(eventAuditRecord.getActor(), equalTo("test-actor"));
+    assertThat(eventAuditRecord.isSuccess(), equalTo(successFlag));
+    assertThat(eventAuditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
+    assertThat(eventAuditRecord.getRequestUuid(), equalTo(actualRequestAuditRecord.getUuid()));
+    assertThat(eventAuditRecord.getRequestUuid(), notNullValue());
+    assertThat(eventAuditRecord.getNow(), equalTo(this.now));
   }
 }

@@ -60,14 +60,12 @@ public class OAuth2Configuration {
   public AuditOAuth2AccessDeniedHandler getAuditOAuth2AccessDeniedHandler(
       ResourceServerTokenServices tokenServices,
       JwtTokenStore tokenStore,
-      CurrentTimeProvider timeProvider,
       RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService
   ) {
     return new AuditOAuth2AccessDeniedHandler(
         tokenServices,
         tokenStore,
-        timeProvider,
         requestAuditRecordDataService,
         securityEventsLogService
     );

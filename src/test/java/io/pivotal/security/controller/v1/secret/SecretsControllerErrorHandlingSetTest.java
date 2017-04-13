@@ -3,9 +3,11 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.util.ExceptionThrowingFunction;
@@ -20,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -55,6 +59,9 @@ public class SecretsControllerErrorHandlingSetTest {
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
   SecretDataService secretDataService;
@@ -328,7 +335,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns errors from the auditing service auditing fails", () -> {
             doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-                .when(auditLogService).performWithAuditing(isA(ExceptionThrowingFunction.class));
+                .when(auditLogService).performWithAuditing(isA(HttpServletRequest.class), isA(UserContext.class), isA(ExceptionThrowingFunction.class));
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -421,7 +428,7 @@ public class SecretsControllerErrorHandlingSetTest {
       });
 
       it("should audit the request", () -> {
-        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, "/my-namespace/secretForSetTest/secret-name");
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-namespace/secretForSetTest/secret-name");
       });
     });
   }

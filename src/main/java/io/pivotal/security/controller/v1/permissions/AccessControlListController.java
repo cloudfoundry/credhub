@@ -38,11 +38,9 @@ public class AccessControlListController {
     HttpServletRequest request,
     UserContext userContext
   ) throws Exception {
-    return auditLogService.performWithAuditing(auditParams -> {
-      auditParams.populateFromRequest(request);
-      auditParams.setUserContext(userContext);
-      auditParams.setCredentialName(credentialName);
-      auditParams.setOperationCode(ACL_ACCESS);
+    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+      eventAuditRecordBuilder.setCredentialName(credentialName);
+      eventAuditRecordBuilder.setAuditingOperationCode(ACL_ACCESS);
 
       final AccessControlListResponse response = accessControlHandler.getAccessControlListResponse(userContext, credentialName);
       return new ResponseEntity<>(response, HttpStatus.OK);

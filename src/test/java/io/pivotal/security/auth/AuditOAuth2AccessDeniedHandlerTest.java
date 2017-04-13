@@ -2,16 +2,16 @@ package io.pivotal.security.auth;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.Filter;
 import java.time.Instant;
 import java.util.Map;
 
@@ -29,15 +28,14 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
-import static io.pivotal.security.util.CurrentTimeProvider.makeCalendar;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -52,11 +50,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   @Autowired
   WebApplicationContext applicationContext;
   @Autowired
-  Filter springSecurityFilterChain;
-  @Autowired
-  AuditOAuth2AccessDeniedHandler subject;
-  @MockBean
-  RequestAuditRecordDataService requestAuditRecordDataService;
+  RequestAuditRecordRepository requestAuditRecordRepository;
   @Autowired
   ResourceServerTokenServices tokenServices;
   @MockBean
@@ -72,8 +66,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
     wireAndUnwire(this);
 
     beforeEach(() -> {
-      when(currentTimeProvider.getInstant()).thenReturn(now);
-      when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
+      mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
 
       mockMvc = MockMvcBuilders
           .webAppContextSetup(applicationContext)
@@ -96,18 +89,12 @@ public class AuditOAuth2AccessDeniedHandlerTest {
         mockMvc.perform(get);
       });
 
-      it("should log the failure in the operation_audit_record table", () -> {
-        ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(RequestAuditRecord.class);
-        verify(requestAuditRecordDataService, times(1)).save(recordCaptor.capture());
+      it("should log the failure in the request_audit_record table", () -> {
+        RequestAuditRecord auditRecord = requestAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
 
-        RequestAuditRecord auditRecord = recordCaptor.getValue();
-
-        assertThat(auditRecord.isSuccess(), equalTo(false));
         assertThat(auditRecord.getNow(), equalTo(now));
         assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
         assertThat(auditRecord.getQueryParameters(), equalTo("name=foo&query=value"));
-        assertThat(auditRecord.getOperation(), equalTo("credential_access"));
         assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
         assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 

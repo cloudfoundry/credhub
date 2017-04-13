@@ -1,9 +1,6 @@
 package io.pivotal.security.service;
 
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
@@ -11,11 +8,15 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.view.SecretView;
-import java.security.NoSuchAlgorithmException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.security.NoSuchAlgorithmException;
+
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
 public class SetService {
@@ -31,7 +32,7 @@ public class SetService {
   }
 
   public ResponseEntity performSet(
-      AuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordBuilder eventAuditRecordBuilder,
       BaseSecretSetRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
     final String secretName = requestBody.getName();
@@ -42,7 +43,7 @@ public class SetService {
 
     boolean shouldWriteNewEntity = existingNamedSecret == null || requestBody.isOverwrite();
 
-    auditRecordBuilder.setOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
+    eventAuditRecordBuilder.setAuditingOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
     try {
       final String type = requestBody.getType();
@@ -53,6 +54,7 @@ public class SetService {
         NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
         storedEntity = secretDataService.save(newEntity);
       }
+      eventAuditRecordBuilder.setCredentialName(storedEntity.getName());
 
       SecretView secretView = SecretView.fromEntity(storedEntity);
       return new ResponseEntity<>(secretView, HttpStatus.OK);

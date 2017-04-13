@@ -5,6 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -48,6 +49,9 @@ public class SecretsControllerDeleteTest {
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
 
@@ -131,7 +135,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_DELETE, secretName.toUpperCase());
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, secretName.toUpperCase());
         });
       });
 
@@ -158,7 +162,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_DELETE, secretName);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, secretName);
         });
       });
 

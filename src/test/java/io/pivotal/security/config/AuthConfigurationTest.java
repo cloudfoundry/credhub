@@ -13,6 +13,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,7 +36,6 @@ import static io.pivotal.security.util.X509TestUtil.cert;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,12 +57,10 @@ public class AuthConfigurationTest {
   @Autowired
   WebApplicationContext applicationContext;
 
-
   @MockBean
   SecretDataService secretDataService;
 
-
-  @MockBean
+  @SpyBean
   RequestAuditRecordDataService requestAuditRecordDataService;
 
   private MockMvc mockMvc;
@@ -78,9 +76,6 @@ public class AuthConfigurationTest {
           .webAppContextSetup(applicationContext)
           .apply(springSecurity())
           .build();
-      when(requestAuditRecordDataService.save(isA(RequestAuditRecord.class))).thenAnswer(answer -> {
-        return answer.getArgumentAt(0, RequestAuditRecord.class);
-      });
     });
 
     it("/info can be accessed without authentication",

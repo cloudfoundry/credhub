@@ -1,6 +1,5 @@
 package io.pivotal.security.auth;
 
-import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.exceptions.AccessTokenExpiredException;
@@ -19,18 +18,15 @@ import org.springframework.security.oauth2.provider.authentication.OAuth2Authent
 import org.springframework.security.oauth2.provider.error.OAuth2AuthenticationEntryPoint;
 import org.springframework.stereotype.Service;
 
-import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
-
 import java.io.IOException;
 import java.security.SignatureException;
-import java.time.Instant;
-import java.util.List;
 import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import static io.pivotal.security.audit.RequestAuditLogFactory.createAuthFailureAuditRecord;
+import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
 
 @Service
 public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2AuthenticationEntryPoint {
@@ -78,8 +74,8 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     try {
       doHandle(request, response, exception);
     } finally {
-      logAuthFailureToDb(token, tokenInformation, exception,
-          new AuditRecordBuilder(null, request, null), request.getMethod(), response.getStatus());
+      final String message = removeTokenFromMessage(exception.getMessage(), token);
+      logAuthFailureToDb(request, tokenInformation, response.getStatus(), message);
     }
   }
 
@@ -114,51 +110,18 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
   }
 
-  private void logAuthFailureToDb(String token, Map<String, Object> tokenInformation,
-      Exception authException, AuditRecordBuilder auditRecorder, String requestMethod,
-      int statusCode) {
-    final Instant now = currentTimeProvider.getInstant();
-
-    String userId = null;
-    String userName = null;
-    String iss = null;
-    long issued = -1;
-    long expires = -1;
-    String clientId = null;
-    String scope = null;
-    String grantType = null;
-
-    if (tokenInformation != null) {
-      userId = (String) tokenInformation.get("user_id");
-      userName = (String) tokenInformation.get("user_name");
-      iss = (String) tokenInformation.get("iss");
-      issued = ((Number) tokenInformation.get("iat")).longValue();
-      expires = ((Number) tokenInformation.get("exp")).longValue();
-      clientId = (String) tokenInformation.get("client_id");
-      List<String> scopeArray = (List<String>) tokenInformation.get("scope");
-      scope = scopeArray == null ? null : String.join(",", scopeArray);
-      grantType = (String) tokenInformation.get("grant_type");
-    }
-
-    AuthFailureAuditRecord authFailureAuditRecord = new AuthFailureAuditRecord()
-        .setNow(now)
-        .setAuthMethod(AUTH_METHOD_UAA)
-        .setFailureDescription(removeTokenFromMessage(authException.getMessage(), token))
-        .setUserId(userId)
-        .setUserName(userName)
-        .setUaaUrl(iss)
-        .setAuthValidFrom(issued)
-        .setAuthValidUntil(expires)
-        .setHostName(auditRecorder.getHostName())
-        .setPath(auditRecorder.getPath())
-        .setQueryParameters(auditRecorder.getQueryParameters())
-        .setRequesterIp(auditRecorder.getRequesterIp())
-        .setXForwardedFor(auditRecorder.getXForwardedFor())
-        .setClientId(clientId)
-        .setScope(scope)
-        .setGrantType(grantType)
-        .setMethod(requestMethod)
-        .setStatusCode(statusCode);
+  private void logAuthFailureToDb(
+      HttpServletRequest request,
+      Map<String, Object> tokenInformation,
+      int statusCode,
+      String message
+  ) {
+    AuthFailureAuditRecord authFailureAuditRecord = createAuthFailureAuditRecord(
+        request,
+        tokenInformation,
+        statusCode,
+        message
+    );
     authFailureAuditRecordDataService.save(authFailureAuditRecord);
   }
 

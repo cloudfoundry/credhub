@@ -6,6 +6,7 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.exceptions.KeyNotFoundException;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -61,6 +62,9 @@ public class SecretsControllerGetTest {
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
   SecretDataService secretDataService;
@@ -215,7 +219,7 @@ public class SecretsControllerGetTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName, "/api/v1/data/" + uuid.toString());
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, "/api/v1/data/" + uuid.toString());
         });
       });
     });
@@ -278,7 +282,7 @@ public class SecretsControllerGetTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
       });
 
       it("returns NOT_FOUND when the secret does not exist", () -> {

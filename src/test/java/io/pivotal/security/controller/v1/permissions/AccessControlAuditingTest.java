@@ -2,8 +2,8 @@ package io.pivotal.security.controller.v1.permissions;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.data.RequestAuditRecordDataService;
-import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.data.EventAuditRecordDataService;
+import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.service.PermissionService;
@@ -48,7 +48,7 @@ public class AccessControlAuditingTest {
   private WebApplicationContext applicationContext;
 
   @MockBean
-  private RequestAuditRecordDataService requestAuditRecordDataService;
+  private EventAuditRecordDataService eventAuditRecordDataService;
 
   @MockBean
   private AccessControlDataService accessControlDataService;
@@ -67,7 +67,7 @@ public class AccessControlAuditingTest {
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
         Arrays.asList(AccessControlOperation.READ_ACL));
     when(accessControlDataService.getAccessControlList(eq(CRED1))).thenReturn(Arrays.asList(ace));
-    reset(requestAuditRecordDataService);
+    reset(eventAuditRecordDataService);
   }
 
   @Test
@@ -80,11 +80,11 @@ public class AccessControlAuditingTest {
     this.mockMvc.perform(get)
       .andExpect(status().isOk());
 
-    ArgumentCaptor<RequestAuditRecord> recordCaptor = ArgumentCaptor
-      .forClass(RequestAuditRecord.class);
-    verify(requestAuditRecordDataService).save(recordCaptor.capture());
+    ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
+      .forClass(EventAuditRecord.class);
+    verify(eventAuditRecordDataService).save(recordCaptor.capture());
 
-    RequestAuditRecord auditRecord = recordCaptor.getValue();
+    EventAuditRecord auditRecord = recordCaptor.getValue();
 
     assertThat(auditRecord.getCredentialName(), equalTo(CRED1));
     assertThat(auditRecord.getOperation(), equalTo(ACL_ACCESS.toString()));

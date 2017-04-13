@@ -1,11 +1,11 @@
 package io.pivotal.security.controller.v1.secret;
 
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.SecretRegenerateRequest;
-import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.service.regeneratables.CertificateSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.NotRegeneratable;
@@ -13,11 +13,14 @@ import io.pivotal.security.service.regeneratables.PasswordSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.Regeneratable;
 import io.pivotal.security.service.regeneratables.RsaSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.SshSecretRegeneratable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
 class RegenerateService {
@@ -41,10 +44,11 @@ class RegenerateService {
   }
 
   public ResponseEntity performRegenerate(
-      AuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordBuilder auditRecordBuilder,
       SecretRegenerateRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
     NamedSecret secret = secretDataService.findMostRecent(requestBody.getName());
+    auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_UPDATE);
     if (secret == null) {
       throw new EntryNotFoundException("error.credential_not_found");
     }

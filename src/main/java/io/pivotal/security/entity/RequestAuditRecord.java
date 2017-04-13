@@ -1,10 +1,12 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -13,28 +15,30 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+
 @SuppressWarnings("unused")
 @Entity
-@Table(name = "OperationAuditRecord")
+@Table(name = "RequestAuditRecord")
 @EntityListeners(AuditingEntityListener.class)
 public class RequestAuditRecord {
 
   @Id
-  @GeneratedValue(strategy = javax.persistence.GenerationType.AUTO)
-  private long id;
+  @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
+  private UUID uuid;
 
   private String hostName;
   @Convert(converter = InstantMillisecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
+  @CreatedDate
   private Instant now;
 
-  private String credentialName;
-  private String operation;
   private String path;
   private String queryParameters;
   private long authValidFrom;
   private long authValidUntil;
-  private boolean success = true;
   private String uaaUrl;
   private String userId;
   private String userName;
@@ -54,9 +58,6 @@ public class RequestAuditRecord {
   @SuppressWarnings("checkstyle:parametername")
   public RequestAuditRecord(
       String authMethod,
-      Instant now,
-      String credentialName,
-      String operation,
       String userId,
       String userName,
       String uaaUrl,
@@ -71,13 +72,9 @@ public class RequestAuditRecord {
       String xForwardedFor,
       String clientId,
       String scope,
-      String grantType,
-      boolean success
+      String grantType
   ) {
     this.authMethod = authMethod;
-    this.now = now;
-    this.credentialName = credentialName;
-    this.operation = operation;
     this.userId = userId;
     this.userName = userName;
     this.uaaUrl = uaaUrl;
@@ -93,19 +90,14 @@ public class RequestAuditRecord {
     this.clientId = clientId;
     this.scope = scope;
     this.grantType = grantType;
-    this.success = success;
+  }
+
+  public UUID getUuid() {
+    return uuid;
   }
 
   public String getAuthMethod() {
     return authMethod;
-  }
-
-  public long getId() {
-    return id;
-  }
-
-  public void setId(long id) {
-    this.id = id;
   }
 
   public String getHostName() {
@@ -114,10 +106,6 @@ public class RequestAuditRecord {
 
   public Instant getNow() {
     return now;
-  }
-
-  public String getOperation() {
-    return operation;
   }
 
   public String getMethod() {
@@ -138,10 +126,6 @@ public class RequestAuditRecord {
 
   public long getAuthValidUntil() {
     return authValidUntil;
-  }
-
-  public boolean isSuccess() {
-    return success;
   }
 
   public String getUaaUrl() {
@@ -179,9 +163,4 @@ public class RequestAuditRecord {
   public int getStatusCode() {
     return statusCode;
   }
-
-  public String getCredentialName() {
-    return credentialName;
-  }
-
 }

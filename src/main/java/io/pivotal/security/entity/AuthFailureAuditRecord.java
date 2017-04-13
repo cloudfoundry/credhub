@@ -1,6 +1,7 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -28,6 +29,7 @@ public class AuthFailureAuditRecord {
 
   @Convert(converter = InstantMillisecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
+  @CreatedDate
   private Instant now;
 
   private String path;

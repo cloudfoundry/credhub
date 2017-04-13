@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -33,6 +34,7 @@ import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -58,6 +60,9 @@ public class SecretsControllerFindTest {
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
 
@@ -108,7 +113,7 @@ public class SecretsControllerFindTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_FIND, null);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null);
           });
         });
       });
@@ -187,7 +192,7 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_FIND, null);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null);
         });
       });
 

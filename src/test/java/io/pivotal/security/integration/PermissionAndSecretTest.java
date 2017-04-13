@@ -1,5 +1,22 @@
 package io.pivotal.security.integration;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.greghaskins.spectrum.Spectrum.Block;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -29,23 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.Block;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
 import java.util.function.Supplier;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)

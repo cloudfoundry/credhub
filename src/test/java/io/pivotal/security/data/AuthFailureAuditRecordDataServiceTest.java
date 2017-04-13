@@ -1,8 +1,10 @@
 package io.pivotal.security.data;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -11,12 +13,14 @@ import static org.junit.Assert.assertNotNull;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import java.time.Instant;
 import java.util.List;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -32,9 +36,15 @@ public class AuthFailureAuditRecordDataServiceTest {
   AuthFailureAuditRecordDataService subject;
   @Autowired
   JdbcTemplate jdbcTemplate;
+  @MockBean
+  CurrentTimeProvider currentTimeProvider;
 
   {
     wireAndUnwire(this);
+
+    beforeEach(() -> {
+      mockOutCurrentTimeProvider(currentTimeProvider).accept(frozenTime.toEpochMilli());
+    });
 
     describe("#save", () -> {
       it("should create the entity in the database", () -> {

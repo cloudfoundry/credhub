@@ -7,7 +7,7 @@ import io.pivotal.security.controller.v1.UserContextArgumentResolver;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
@@ -78,10 +78,10 @@ public class AccessControlListControllerTest {
           when(accessControlHandler.getAccessControlListResponse(any(UserContext.class), eq("test_credential_name")))
               .thenReturn(accessControlListResponse);
 
-          when(auditLogService.performWithAuditing(any())).thenAnswer(answer -> {
-            ExceptionThrowingFunction<AuditRecordBuilder, RequestEntity, Exception> block
-              = answer.getArgumentAt(0, ExceptionThrowingFunction.class);
-            return block.apply(new AuditRecordBuilder());
+          when(auditLogService.performWithAuditing(any(), any(), any())).thenAnswer(answer -> {
+            ExceptionThrowingFunction<EventAuditRecordBuilder, RequestEntity, Exception> block
+              = answer.getArgumentAt(2, ExceptionThrowingFunction.class);
+            return block.apply(mock(EventAuditRecordBuilder.class));
           });
 
           mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))

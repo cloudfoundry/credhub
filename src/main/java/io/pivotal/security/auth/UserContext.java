@@ -1,10 +1,5 @@
 package io.pivotal.security.auth;
 
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -16,6 +11,12 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 public class UserContext {
 

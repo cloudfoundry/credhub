@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import com.greghaskins.spectrum.Spectrum.Block;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Encryptor;
@@ -19,6 +19,7 @@ import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
@@ -122,6 +123,9 @@ public class SecretsControllerTypeSpecificGenerateTest {
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
   ObjectMapper objectMapper;
@@ -290,7 +294,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           it("asks the data service to persist the secret", () -> {
             verify(generateService, times(1))
                 .performGenerate(
-                    isA(AuditRecordBuilder.class),
+                    isA(EventAuditRecordBuilder.class),
                     isA(BaseSecretGenerateRequest.class),
                     isA(AccessControlEntry.class));
             ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
@@ -302,7 +306,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
           });
 
           it("should create an ACL with the current user having read and write permissions", () -> {
@@ -376,7 +380,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
           });
         });
 
@@ -409,7 +413,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
           });
         });
       });

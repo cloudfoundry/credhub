@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Encryptor;
@@ -15,6 +15,7 @@ import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.CertificateGenerateRequest;
@@ -116,6 +117,9 @@ public class SecretsControllerGenerateTest {
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
 
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -131,7 +135,7 @@ public class SecretsControllerGenerateTest {
   private final String privateKey = "private_key";
   private final String cert = "cert";
 
-  private AuditRecordBuilder auditRecordBuilder;
+  private EventAuditRecordBuilder auditRecordBuilder;
 
   {
     wireAndUnwire(this);
@@ -280,7 +284,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(PasswordGenerateRequest.class), isA(
+              .performGenerate(isA(EventAuditRecordBuilder.class), isA(PasswordGenerateRequest.class), isA(
                   AccessControlEntry.class));
           ArgumentCaptor<NamedPasswordSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedPasswordSecret.class);
@@ -293,7 +297,7 @@ public class SecretsControllerGenerateTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
         });
       });
 
@@ -323,7 +327,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(SshGenerateRequest.class), isA(AccessControlEntry.class));
+              .performGenerate(isA(EventAuditRecordBuilder.class), isA(SshGenerateRequest.class), isA(AccessControlEntry.class));
           ArgumentCaptor<NamedSshSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedSshSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
@@ -335,7 +339,7 @@ public class SecretsControllerGenerateTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
         });
 
         it("should not generate SSH secret of invalid length", () -> {
@@ -385,7 +389,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(RsaGenerateRequest.class), isA(AccessControlEntry.class));
+              .performGenerate(isA(EventAuditRecordBuilder.class), isA(RsaGenerateRequest.class), isA(AccessControlEntry.class));
           ArgumentCaptor<NamedRsaSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedRsaSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
@@ -397,7 +401,7 @@ public class SecretsControllerGenerateTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
         });
 
         it("should not generate RSA secret of invalid length", () -> {
@@ -448,7 +452,7 @@ public class SecretsControllerGenerateTest {
 
         it("asks the data service to persist the secret", () -> {
           verify(generateService, times(1))
-              .performGenerate(isA(AuditRecordBuilder.class), isA(CertificateGenerateRequest.class), isA(AccessControlEntry.class));
+              .performGenerate(isA(EventAuditRecordBuilder.class), isA(CertificateGenerateRequest.class), isA(AccessControlEntry.class));
           ArgumentCaptor<NamedCertificateSecret> argumentCaptor = ArgumentCaptor
               .forClass(NamedCertificateSecret.class);
           verify(secretDataService, times(1)).save(argumentCaptor.capture());
@@ -460,7 +464,7 @@ public class SecretsControllerGenerateTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
         });
       });
 
@@ -507,7 +511,7 @@ public class SecretsControllerGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
           });
         });
 
@@ -537,7 +541,7 @@ public class SecretsControllerGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
           });
         });
 

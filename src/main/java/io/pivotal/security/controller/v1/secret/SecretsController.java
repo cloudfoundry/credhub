@@ -1,12 +1,12 @@
 package io.pivotal.security.controller.v1.secret;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
@@ -15,23 +15,12 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.SecretRegenerateRequest;
-import io.pivotal.security.audit.AuditLogService;
-import io.pivotal.security.audit.AuditRecordBuilder;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.service.SetService;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
 import io.pivotal.security.view.SecretView;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +38,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import javax.servlet.http.HttpServletRequest;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 
 @RestController
 @RequestMapping(
@@ -126,10 +128,9 @@ public class SecretsController {
       throw new MissingServletRequestParameterException("name", "String");
     }
 
-    return auditLogService.performWithAuditing(auditRecorder -> {
-      auditRecorder.setCredentialName(secretName);
-      auditRecorder.populateFromRequest(request);
-      auditRecorder.setUserContext(userContext);
+    return auditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder) -> {
+      eventAuditRecordBuilder.setCredentialName(secretName);
+      eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
 
       boolean deleteSucceeded = secretDataService.delete(secretName);
       if (!deleteSucceeded) {
@@ -202,54 +203,47 @@ public class SecretsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
-    return auditLogService.performWithAuditing((auditRecordBuilder -> {
+    return auditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder -> {
       return deserializeAndHandlePostRequest(
           inputStream,
-          request,
-          userContext,
-          auditRecordBuilder,
+          eventAuditRecordBuilder,
           currentUserAccessControlEntry);
     }));
   }
 
   private ResponseEntity<?> deserializeAndHandlePostRequest(
       InputStream inputStream,
-      HttpServletRequest request,
-      UserContext userContext,
-      AuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordBuilder eventAuditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
     String requestString = IOUtils.toString(new InputStreamReader(inputStream));
     boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
 
-    auditRecordBuilder.populateFromRequest(request);
-    auditRecordBuilder.setUserContext(userContext);
     if (isRegenerateRequest) {
       // If it's a regenerate request deserialization is simple; the generation case requires
       // polymorphic deserialization See BaseSecretGenerateRequest to see how that's done. It
       // would be nice if Jackson could pick a subclass based on an arbitrary function, since
       // we want to consider both type and .regenerate. We could do custom deserialization but
       // then we'd have to do the entire job by hand.
-      return handleRegenerateRequest(auditRecordBuilder, requestString, currentUserAccessControlEntry);
+      return handleRegenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
     } else {
-      return handleGenerateRequest(auditRecordBuilder, requestString, currentUserAccessControlEntry);
+      return handleGenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
     }
   }
 
   private ResponseEntity handleGenerateRequest(
-      AuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordBuilder auditRecordBuilder,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
     BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
 
-    auditRecordBuilder.setCredentialName(requestBody.getName());
     return generateService.performGenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private ResponseEntity handleRegenerateRequest(
-      AuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordBuilder auditRecordBuilder,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
@@ -264,22 +258,16 @@ public class SecretsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
-    return auditLogService.performWithAuditing(auditRecordBuilder ->
-        handlePutRequest(requestBody, request, userContext, auditRecordBuilder, currentUserAccessControlEntry));
+    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder ->
+        handlePutRequest(requestBody, eventAuditRecordBuilder, currentUserAccessControlEntry));
   }
 
   private ResponseEntity<?> handlePutRequest(
       @RequestBody BaseSecretSetRequest requestBody,
-      HttpServletRequest request,
-      UserContext userContext,
-      AuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordBuilder eventAuditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
-    auditRecordBuilder.setCredentialName(requestBody.getName());
-    auditRecordBuilder.populateFromRequest(request);
-    auditRecordBuilder.setUserContext(userContext);
-
-    return setService.performSet(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
+    return setService.performSet(eventAuditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
@@ -302,9 +290,8 @@ public class SecretsController {
       HttpServletRequest request,
       UserContext userContext,
       boolean returnFirstEntry) throws Exception {
-    return auditLogService.performWithAuditing(auditRecordBuilder -> {
-      auditRecordBuilder.populateFromRequest(request);
-      auditRecordBuilder.setUserContext(userContext);
+    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+      eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
       if (StringUtils.isEmpty(identifier)) {
         throw new MissingServletRequestParameterException("name", "String");
@@ -314,8 +301,9 @@ public class SecretsController {
         throw new EntryNotFoundException("error.credential_not_found");
       } else {
         ResponseEntity success;
-        auditRecordBuilder.setCredentialName(namedSecrets.get(0).getName());
         try {
+          String name = namedSecrets.get(0).getName();
+          eventAuditRecordBuilder.setCredentialName(name);
           if (returnFirstEntry) {
             success = new ResponseEntity<>(SecretView.fromEntity(namedSecrets.get(0)),
                 HttpStatus.OK);
@@ -345,10 +333,8 @@ public class SecretsController {
       Function<String, List<SecretView>> finder,
       HttpServletRequest request,
       UserContext userContext) throws Exception {
-    return auditLogService.performWithAuditing(auditParams -> {
-      auditParams.populateFromRequest(request);
-      auditParams.setUserContext(userContext);
-      auditParams.setOperationCode(CREDENTIAL_FIND);
+    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+      eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<SecretView> secretViews = finder.apply(nameSubstring);
       return new ResponseEntity<>(FindCredentialResults.fromSecrets(secretViews), HttpStatus.OK);
     });
@@ -358,10 +344,8 @@ public class SecretsController {
       HttpServletRequest request,
       UserContext userContext
   ) throws Exception {
-    return auditLogService.performWithAuditing(auditParams -> {
-      auditParams.populateFromRequest(request);
-      auditParams.setUserContext(userContext);
-      auditParams.setOperationCode(CREDENTIAL_FIND);
+    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+      eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
     });
