@@ -13,11 +13,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @Configuration
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
-  private ResourceServerTokenServices tokenServices;
+  private final CurrentUserAccessControlEntryResolver currentUserAccessControlEntryResolver;
+  private final UserContextArgumentResolver userContextArgumentResolver;
 
   @Autowired
-  public WebMvcConfiguration(ResourceServerTokenServices tokenServices) {
-    this.tokenServices = tokenServices;
+  public WebMvcConfiguration(
+      CurrentUserAccessControlEntryResolver currentUserAccessControlEntryResolver,
+      UserContextArgumentResolver userContextArgumentResolver
+  ) {
+    this.currentUserAccessControlEntryResolver = currentUserAccessControlEntryResolver;
+    this.userContextArgumentResolver = userContextArgumentResolver;
   }
 
   @Override
@@ -32,7 +37,7 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
 
   @Override
   public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-    argumentResolvers.add(new CurrentUserAccessControlEntryResolver(tokenServices));
-    argumentResolvers.add(new UserContextArgumentResolver(tokenServices));
+    argumentResolvers.add(currentUserAccessControlEntryResolver);
+    argumentResolvers.add(userContextArgumentResolver);
   }
 }
