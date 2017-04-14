@@ -205,16 +205,15 @@ public class SecretsControllerGenerateTest {
         beforeEach(() -> {
           final NamedPasswordSecret expectedSecret = new NamedPasswordSecret(secretName);
           expectedSecret.setEncryptor(encryptor);
-          expectedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
           expectedSecret.setPasswordAndGenerationParameters(fakePassword, null);
 
           Mockito.reset(secretDataService);
 
           doReturn(null)
-              .doReturn(expectedSecret
-                  .setUuid(uuid)
-                  .setVersionCreatedAt(frozenTime.minusSeconds(1))
-              ).when(secretDataService).findMostRecent(anyString());
+          .doReturn(expectedSecret
+              .setUuid(uuid)
+              .setVersionCreatedAt(frozenTime.minusSeconds(1))
+          ).when(secretDataService).findMostRecent(anyString());
 
           doThrow(new DataIntegrityViolationException("we already have one of those"))
               .when(secretDataService).save(any(NamedSecret.class));

@@ -7,6 +7,7 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
@@ -125,7 +126,6 @@ public class SecretsControllerRegenerateTest {
             .thenReturn(new Password("generated-secret"));
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
         originalSecret.setEncryptor(encryptor);
-        originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
         generationParameters.setExcludeNumber(true);
         originalSecret
@@ -180,7 +180,6 @@ public class SecretsControllerRegenerateTest {
             .thenReturn(new RsaKey("public_key", "private_key"));
         NamedRsaSecret originalSecret = new NamedRsaSecret("my-rsa");
         originalSecret.setEncryptor(encryptor);
-        originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-rsa");
@@ -231,7 +230,6 @@ public class SecretsControllerRegenerateTest {
             .thenReturn(new SshKey("public_key", "private_key", null));
         NamedSshSecret originalSecret = new NamedSshSecret("my-ssh");
         originalSecret.setEncryptor(encryptor);
-        originalSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
         originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
         doReturn(originalSecret).when(secretDataService).findMostRecent("my-ssh");
@@ -336,12 +334,14 @@ public class SecretsControllerRegenerateTest {
     describe("when attempting to regenerate a password with parameters that can't be decrypted",
         () -> {
           beforeEach(() -> {
-            NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
+            NamedPasswordSecretData namedPasswordSecretData = new NamedPasswordSecretData(
+                "my-password");
+            NamedPasswordSecret originalSecret = new NamedPasswordSecret(namedPasswordSecretData);
             originalSecret.setEncryptor(encryptor);
             originalSecret
                 .setPasswordAndGenerationParameters("abcde", new PasswordGenerationParameters());
-            originalSecret.setEncryptionKeyUuid(UUID.randomUUID());
 
+            namedPasswordSecretData.setEncryptionKeyUuid(UUID.randomUUID());
             doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");
 
             response = mockMvc.perform(post("/api/v1/data")
@@ -353,16 +353,15 @@ public class SecretsControllerRegenerateTest {
 
           it("returns an error", () -> {
             // language=JSON
-            String cannotRegenerateJson = "{\n" +
-                "  \"error\": \"The credential could not be accessed with the provided encryption "
-                +
+            String cannotRegenerate = "{\n" +
+                "  \"error\": \"The credential could not be accessed with the provided encryption " +
                 "keys. You must update your deployment configuration to continue.\"\n" +
                 "}";
 
             response
                 .andDo(print())
                 .andExpect(status().isInternalServerError())
-                .andExpect(content().json(cannotRegenerateJson));
+                .andExpect(content().json(cannotRegenerate));
           });
         });
   }

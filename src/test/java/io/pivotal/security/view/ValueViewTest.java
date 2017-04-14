@@ -1,5 +1,13 @@
 package io.pivotal.security.view;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedValueSecret;
+import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
@@ -8,13 +16,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedValueSecret;
-import java.time.Instant;
-import java.util.UUID;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class ValueViewTest {
@@ -34,9 +35,6 @@ public class ValueViewTest {
       entity = new NamedValueSecret("/foo")
           .setEncryptor(encryptor)
           .setUuid(uuid);
-      entity.setEncryptedValue("fake-encrypted-value".getBytes());
-      entity.setNonce("fake-nonce".getBytes());
-
     });
 
     it("can create view from entity", () -> {

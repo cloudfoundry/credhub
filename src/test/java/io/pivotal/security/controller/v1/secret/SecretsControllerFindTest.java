@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -91,9 +90,6 @@ public class SecretsControllerFindTest {
         describe("when search term does not include a leading slash", () -> {
           beforeEach(() -> {
             String substring = secretName.substring(4).toUpperCase();
-            NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
-            namedValueSecret.setEncryptedValue("some value".getBytes());
-            namedValueSecret.setVersionCreatedAt(frozenTime);
             doReturn(
                 Arrays.asList(new SecretView(frozenTime, secretName))
             ).when(secretDataService).findContainingName(substring);
@@ -120,9 +116,6 @@ public class SecretsControllerFindTest {
       describe("finding credentials by path", () -> {
         beforeEach(() -> {
           String substring = secretName.substring(0, secretName.lastIndexOf("/"));
-          NamedValueSecret namedValueSecret = new NamedValueSecret(secretName);
-          namedValueSecret.setEncryptedValue("some value".getBytes());
-          namedValueSecret.setVersionCreatedAt(frozenTime);
           doReturn(
               Arrays.asList(new SecretView(frozenTime, secretName))
           ).when(secretDataService).findStartingWithPath(substring);
@@ -158,9 +151,6 @@ public class SecretsControllerFindTest {
 
         it("should return all children which are prefixed with the path case-independently", () -> {
           final String path = "/my-namespace";
-          NamedValueSecret namedValueSecret = new NamedValueSecret("my-namespace");
-          namedValueSecret.setEncryptedValue("some value".getBytes());
-          namedValueSecret.setVersionCreatedAt(frozenTime);
           doReturn(
               Arrays.asList(new SecretView(frozenTime, secretName))
           ).when(secretDataService).findStartingWithPath(path.toUpperCase());

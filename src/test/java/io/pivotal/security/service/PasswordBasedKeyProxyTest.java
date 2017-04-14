@@ -1,5 +1,15 @@
 package io.pivotal.security.service;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.util.encoders.Hex;
+import org.junit.runner.RunWith;
+
+import java.security.Key;
+import java.util.Collections;
+import java.util.List;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -16,15 +26,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.EncryptionKeyCanary;
-import java.security.Key;
-import java.util.Collections;
-import java.util.List;
-import org.apache.commons.lang3.ArrayUtils;
-import org.bouncycastle.util.encoders.Hex;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class PasswordBasedKeyProxyTest {
@@ -79,7 +80,7 @@ public class PasswordBasedKeyProxyTest {
           final Encryption encryptedCanary = encryptionService
               .encrypt(null, derivedKey, CANARY_VALUE);
           canary = new EncryptionKeyCanary();
-          canary.setEncryptedValue(encryptedCanary.encryptedValue);
+          canary.setEncryptedCanaryValue(encryptedCanary.encryptedValue);
           canary.setNonce(encryptedCanary.nonce);
           final Byte[] saltArray = new Byte[salt.size()];
           canary.setSalt(toPrimitive(salt.toArray(saltArray)));
@@ -97,7 +98,7 @@ public class PasswordBasedKeyProxyTest {
           canary = new EncryptionKeyCanary();
           canary.setSalt(new byte[SALT_SIZE]);
           canary.setNonce(new byte[NONCE_SIZE]);
-          canary.setEncryptedValue(new byte[32]);
+          canary.setEncryptedCanaryValue(new byte[32]);
           final boolean match = subject.matchesCanary(canary);
           assertFalse(match);
           assertThat(subject.getKey(), not(equalTo(derivedKey)));

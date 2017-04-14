@@ -1,5 +1,17 @@
 package io.pivotal.security.domain;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.NamedJsonSecretData;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.service.Encryption;
+import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -12,16 +24,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.service.Encryption;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import org.junit.runner.RunWith;
-
 @RunWith(Spectrum.class)
 public class NamedJsonSecretTest {
 
@@ -30,6 +32,8 @@ public class NamedJsonSecretTest {
   private NamedJsonSecret subject;
   private Map<String, Object> value;
   private UUID canaryUuid;
+
+  private NamedJsonSecretData namedJsonSecretData;
 
   {
     beforeEach(() -> {
@@ -51,7 +55,8 @@ public class NamedJsonSecretTest {
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
           .thenReturn(serializedValue);
 
-      subject = new NamedJsonSecret("Foo");
+      namedJsonSecretData = new NamedJsonSecretData("Foo");
+      subject = new NamedJsonSecret(namedJsonSecretData);
     });
 
     it("returns type value", () -> {
@@ -60,13 +65,13 @@ public class NamedJsonSecretTest {
 
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
-        subject = new NamedJsonSecret("foo").setEncryptor(encryptor);
+        subject = new NamedJsonSecret(namedJsonSecretData).setEncryptor(encryptor);
       });
 
       it("sets the nonce and the encrypted value", () -> {
         subject.setValue(value);
-        assertThat(subject.getEncryptedValue(), notNullValue());
-        assertThat(subject.getNonce(), notNullValue());
+        assertThat(namedJsonSecretData.getEncryptedValue(), notNullValue());
+        assertThat(namedJsonSecretData.getNonce(), notNullValue());
       });
 
       it("can decrypt values", () -> {
@@ -91,7 +96,7 @@ public class NamedJsonSecretTest {
 
         subject = new NamedJsonSecret("/existingName");
         subject.setEncryptor(encryptor);
-        subject.setEncryptedValue("old encrypted value".getBytes());
+        namedJsonSecretData.setEncryptedValue("old encrypted value".getBytes());
       });
 
       it("copies values from existing, except value", () -> {

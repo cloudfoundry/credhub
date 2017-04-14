@@ -1,5 +1,22 @@
 package io.pivotal.security.service;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.EncryptionKeyMetadata;
+import io.pivotal.security.config.EncryptionKeysConfiguration;
+import io.pivotal.security.data.EncryptionKeyCanaryDataService;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+
+import java.security.Key;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -18,22 +35,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.config.EncryptionKeysConfiguration;
-import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import io.pivotal.security.entity.EncryptionKeyCanary;
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 
 @RunWith(Spectrum.class)
 public class EncryptionKeyCanaryMapperTest {
@@ -180,7 +181,7 @@ public class EncryptionKeyCanaryMapperTest {
 
         beforeEach(() -> {
           nonMatchingCanary.setUuid(UUID.randomUUID());
-          nonMatchingCanary.setEncryptedValue("fake-non-matching-encrypted-value".getBytes());
+          nonMatchingCanary.setEncryptedCanaryValue("fake-non-matching-encrypted-value".getBytes());
           nonMatchingCanary.setNonce("fake-non-matching-nonce".getBytes());
 
           when(encryptionKeyCanaryDataService.findAll())
@@ -190,7 +191,7 @@ public class EncryptionKeyCanaryMapperTest {
         describe("when decrypting with the wrong key raises AEADBadTagException -- internal",
             () -> {
               beforeEach(() -> {
-                when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(),
+                when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedCanaryValue(),
                     nonMatchingCanary.getNonce()))
                     .thenThrow(new AEADBadTagException());
                 when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
@@ -210,7 +211,7 @@ public class EncryptionKeyCanaryMapperTest {
                 + "IllegalBlockSizeException error -- HSM",
             () -> {
               beforeEach(() -> {
-                when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(),
+                when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedCanaryValue(),
                     nonMatchingCanary.getNonce()))
                     .thenThrow(new IllegalBlockSizeException(
                         "Could not process input data: function 'C_Decrypt' returns 0x40"));
@@ -286,7 +287,7 @@ public class EncryptionKeyCanaryMapperTest {
 
         describe("when decrypting with the wrong key returns an incorrect canary value", () -> {
           beforeEach(() -> {
-            when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedValue(),
+            when(encryptionService.decrypt(activeKey, nonMatchingCanary.getEncryptedCanaryValue(),
                 nonMatchingCanary.getNonce()))
                 .thenReturn("different-canary-value");
             when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
@@ -306,7 +307,7 @@ public class EncryptionKeyCanaryMapperTest {
         beforeEach(() -> {
           when(encryptionKeyCanaryDataService.findAll()).thenReturn(asList(activeKeyCanary));
           when(encryptionService
-              .decrypt(activeKey, activeKeyCanary.getEncryptedValue(), activeKeyCanary.getNonce()))
+              .decrypt(activeKey, activeKeyCanary.getEncryptedCanaryValue(), activeKeyCanary.getNonce()))
               .thenReturn(CANARY_VALUE);
 
           subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
@@ -408,7 +409,7 @@ public class EncryptionKeyCanaryMapperTest {
     verify(encryptionKeyCanaryDataService).save(argumentCaptor.capture());
 
     EncryptionKeyCanary encryptionKeyCanary = argumentCaptor.getValue();
-    assertThat(encryptionKeyCanary.getEncryptedValue(), equalTo("fake-encrypted-value".getBytes()));
+    assertThat(encryptionKeyCanary.getEncryptedCanaryValue(), equalTo("fake-encrypted-value".getBytes()));
     assertThat(encryptionKeyCanary.getNonce(), equalTo("fake-nonce".getBytes()));
     verify(encryptionService, times(1)).encrypt(null, activeKey, CANARY_VALUE);
   }
@@ -418,7 +419,7 @@ public class EncryptionKeyCanaryMapperTest {
       throws Exception {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     encryptionKeyCanary.setUuid(canaryUuid);
-    encryptionKeyCanary.setEncryptedValue(encryptedValue.getBytes());
+    encryptionKeyCanary.setEncryptedCanaryValue(encryptedValue.getBytes());
     encryptionKeyCanary.setNonce(nonce.getBytes());
     when(encryptionService.decrypt(encryptionKey, encryptedValue.getBytes(), nonce.getBytes()))
         .thenReturn(CANARY_VALUE);

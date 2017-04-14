@@ -1,5 +1,19 @@
 package io.pivotal.security.domain;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.request.CertificateSetRequestFields;
+import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -10,19 +24,8 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.request.CertificateSetRequestFields;
-import io.pivotal.security.service.Encryption;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.UUID;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -37,6 +40,11 @@ public class NamedCertificateSecretTest {
 
   private byte[] nonce;
   private UUID canaryUuid;
+  private NamedCertificateSecretData namedCertificateSecretData;
+
+  private byte[] encryptedPrivateKey;
+
+  private byte[] privateKeyNonce;
 
   {
     beforeEach(() -> {
@@ -48,7 +56,8 @@ public class NamedCertificateSecretTest {
           .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-priv");
 
-      subject = new NamedCertificateSecret("/Foo")
+      namedCertificateSecretData = new NamedCertificateSecretData("/Foo");
+      subject = new NamedCertificateSecret(namedCertificateSecretData)
           .setEncryptor(encryptor)
           .setCa("my-ca")
           .setCertificate("my-cert")
@@ -61,8 +70,8 @@ public class NamedCertificateSecretTest {
 
     it("sets the nonce and the encrypted private key", () -> {
       subject.setPrivateKey("my-priv");
-      assertThat(subject.getEncryptedValue(), notNullValue());
-      assertThat(subject.getNonce(), notNullValue());
+      assertThat(namedCertificateSecretData.getEncryptedValue(), notNullValue());
+      assertThat(namedCertificateSecretData.getNonce(), notNullValue());
     });
 
     it("can decrypt the private key", () -> {
@@ -85,20 +94,34 @@ public class NamedCertificateSecretTest {
     });
 
     describe("#copyInto", () -> {
+      beforeEach(() -> {
+        canaryUuid = UUID.randomUUID();
+        encryptedPrivateKey = "encrypted-fake-private-key".getBytes();
+        privateKeyNonce = "some nonce".getBytes();
+        when(encryptor.encrypt(eq("private_key"))).thenReturn(new Encryption(
+            canaryUuid,
+            encryptedPrivateKey,
+            privateKeyNonce
+        ));
+        when(encryptor.decrypt(canaryUuid, encryptedPrivateKey, privateKeyNonce)).thenReturn(
+            "private_key"
+        );
+
+      });
+
       it("should copy the correct values", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
-        UUID encryptionKeyUuid = UUID.randomUUID();
 
-        subject = new NamedCertificateSecret("/name");
+        namedCertificateSecretData = new NamedCertificateSecretData("/name");
+        subject = new NamedCertificateSecret(namedCertificateSecretData);
+        subject.setEncryptor(encryptor);
+        subject.setPrivateKey("private_key");
         subject.setCa("fake-ca");
         subject.setCertificate("fake-certificate");
-        subject.setEncryptedValue("fake-private-key".getBytes());
-        subject.setNonce("fake-nonce".getBytes());
         subject.setCaName("ca-name");
         subject.setUuid(uuid);
         subject.setVersionCreatedAt(frozenTime);
-        subject.setEncryptionKeyUuid(encryptionKeyUuid);
 
         NamedCertificateSecret copy = new NamedCertificateSecret();
         subject.copyInto(copy);
@@ -106,12 +129,13 @@ public class NamedCertificateSecretTest {
         assertThat(copy.getName(), equalTo("/name"));
         assertThat(copy.getCaName(), equalTo("/ca-name"));
         assertThat(copy.getCa(), equalTo("fake-ca"));
-        assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
-        assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
-        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
-
+        assertThat(copy.getPrivateKey(), equalTo("private_key"));
         assertThat(copy.getUuid(), not(equalTo(uuid)));
+
         assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
+
+        verify(encryptor).encrypt("private_key");
+        verify(encryptor).decrypt(canaryUuid, encryptedPrivateKey, privateKeyNonce);
       });
     });
 
@@ -126,7 +150,6 @@ public class NamedCertificateSecretTest {
 
         subject = new NamedCertificateSecret("/existingName");
         subject.setEncryptor(encryptor);
-        subject.setEncryptedValue("old encrypted private key".getBytes());
       });
 
       it("copies name from existing", () -> {

@@ -1,5 +1,15 @@
 package io.pivotal.security.domain;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.request.KeySetRequestFields;
+import io.pivotal.security.service.Encryption;
+import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -11,14 +21,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.request.KeySetRequestFields;
-import io.pivotal.security.service.Encryption;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.UUID;
-import org.junit.runner.RunWith;
-
 @RunWith(Spectrum.class)
 public class NamedRsaSecretTest {
 
@@ -26,6 +28,8 @@ public class NamedRsaSecretTest {
 
   private Encryptor encryptor;
 
+  private byte[] encryptedPrivateKey;
+  private byte[] privateKeyNonce;
   private UUID canaryUuid;
 
   {
@@ -40,27 +44,41 @@ public class NamedRsaSecretTest {
     });
 
     describe("#copyInto", () -> {
+      beforeEach(() -> {
+        canaryUuid = UUID.randomUUID();
+        encryptedPrivateKey = "encrypted-fake-private-key".getBytes();
+        privateKeyNonce = "some nonce".getBytes();
+        when(encryptor.encrypt(eq("fake-private-key"))).thenReturn(new Encryption(
+            canaryUuid,
+            encryptedPrivateKey,
+            privateKeyNonce
+        ));
+        when(encryptor.decrypt(any(), any(), any())).thenReturn(
+            "fake-private-key"
+        );
+      });
+
       it("should copy the correct properties into the other object", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
         UUID encryptionKeyUuid = UUID.randomUUID();
+        NamedRsaSecretData delegate = new NamedRsaSecretData("/foo");
 
-        subject = new NamedRsaSecret("/foo");
-        subject.setPublicKey("fake-public-key");
-        subject.setEncryptedValue("fake-private-key".getBytes());
-        subject.setNonce("fake-nonce".getBytes());
-        subject.setUuid(uuid);
-        subject.setVersionCreatedAt(frozenTime);
-        subject.setEncryptionKeyUuid(encryptionKeyUuid);
+        delegate.setPublicKey("fake-public-key");
+        delegate.setEncryptedValue(encryptedPrivateKey);
+        delegate.setNonce(privateKeyNonce);
+        delegate.setUuid(canaryUuid);
+        delegate.setVersionCreatedAt(frozenTime);
+        delegate.setEncryptionKeyUuid(encryptionKeyUuid);
+        subject = new NamedRsaSecret(delegate);
+        subject.setEncryptor(encryptor);
 
         NamedRsaSecret copy = new NamedRsaSecret();
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("/foo"));
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
-        assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
-        assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
-        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
+        assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
 
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
@@ -76,9 +94,10 @@ public class NamedRsaSecretTest {
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
             .thenReturn("new private key");
 
-        subject = new NamedRsaSecret("/existingName");
+        NamedRsaSecretData delegate = new NamedRsaSecretData("/existingName");
+        delegate.setEncryptedValue("old encrypted private key".getBytes());
+        subject = new NamedRsaSecret(delegate);
         subject.setEncryptor(encryptor);
-        subject.setEncryptedValue("old encrypted private key".getBytes());
       });
 
       it("copies name from existing", () -> {

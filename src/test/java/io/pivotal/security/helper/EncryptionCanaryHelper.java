@@ -8,7 +8,7 @@ public class EncryptionCanaryHelper {
   public static EncryptionKeyCanary addCanary(
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService) {
     EncryptionKeyCanary testCanary = new EncryptionKeyCanary();
-    testCanary.setEncryptedValue("expectedCanaryValue".getBytes());
+    testCanary.setEncryptedCanaryValue("expectedCanaryValue".getBytes());
     testCanary.setNonce("nonce".getBytes());
 
     encryptionKeyCanaryDataService.save(testCanary);

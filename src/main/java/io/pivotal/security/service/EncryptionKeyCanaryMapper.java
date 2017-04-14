@@ -143,7 +143,7 @@ public class EncryptionKeyCanaryMapper {
     try {
       Encryption encryptionData = encryptionService
           .encrypt(null, encryptionKey.getKey(), CANARY_VALUE);
-      canary.setEncryptedValue(encryptionData.encryptedValue);
+      canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
       final List<Byte> salt = encryptionKey.getSalt();
       final Byte[] saltArray = new Byte[salt.size()];

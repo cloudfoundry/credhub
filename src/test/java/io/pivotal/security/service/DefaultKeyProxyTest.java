@@ -1,5 +1,17 @@
 package io.pivotal.security.service;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.EncryptionKeyMetadata;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.exceptions.IncorrectKeyException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.runner.RunWith;
+
+import java.security.Key;
+import javax.crypto.AEADBadTagException;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -10,17 +22,6 @@ import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_C
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.EncryptionKeyMetadata;
-import io.pivotal.security.entity.EncryptionKeyCanary;
-import io.pivotal.security.exceptions.IncorrectKeyException;
-import java.security.Key;
-import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class DefaultKeyProxyTest {
@@ -40,13 +41,13 @@ public class DefaultKeyProxyTest {
       encryptionKey = encryptionService.createKeyProxy(keyMetadata).getKey();
       canary = new EncryptionKeyCanary();
       Encryption encryptionData = encryptionService.encrypt(null, encryptionKey, CANARY_VALUE);
-      canary.setEncryptedValue(encryptionData.encryptedValue);
+      canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
       canary.setNonce(encryptionData.nonce);
 
       deprecatedCanary = new EncryptionKeyCanary();
       Encryption deprecatedEncryptionData = encryptionService
           .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
-      deprecatedCanary.setEncryptedValue(deprecatedEncryptionData.encryptedValue);
+      deprecatedCanary.setEncryptedCanaryValue(deprecatedEncryptionData.encryptedValue);
       deprecatedCanary.setNonce(deprecatedEncryptionData.nonce);
     });
 

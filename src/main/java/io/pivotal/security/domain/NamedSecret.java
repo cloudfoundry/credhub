@@ -2,7 +2,6 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.entity.EncryptedValueContainer;
 import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.request.AccessControlEntry;
@@ -11,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedValueContainer<Z> {
+public abstract class NamedSecret<Z extends NamedSecret> {
 
   protected NamedSecretData delegate;
   protected Encryptor encryptor;
@@ -35,33 +34,6 @@ public abstract class NamedSecret<Z extends NamedSecret> implements EncryptedVal
 
   public String getName() {
     return delegate.getSecretName().getName();
-  }
-
-  public byte[] getEncryptedValue() {
-    return delegate.getEncryptedValue();
-  }
-
-  public Z setEncryptedValue(byte[] encryptedValue) {
-    delegate.setEncryptedValue(encryptedValue);
-    return (Z) this;
-  }
-
-  public byte[] getNonce() {
-    return delegate.getNonce();
-  }
-
-  public Z setNonce(byte[] nonce) {
-    delegate.setNonce(nonce);
-    return (Z) this;
-  }
-
-  public UUID getEncryptionKeyUuid() {
-    return delegate.getEncryptionKeyUuid();
-  }
-
-  public Z setEncryptionKeyUuid(UUID encryptionKeyUuid) {
-    delegate.setEncryptionKeyUuid(encryptionKeyUuid);
-    return (Z) this;
   }
 
   public Instant getVersionCreatedAt() {

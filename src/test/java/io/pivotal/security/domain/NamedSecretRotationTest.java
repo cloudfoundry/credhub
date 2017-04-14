@@ -1,5 +1,22 @@
 package io.pivotal.security.domain;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.service.Encryption;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.service.RetryingEncryptionService;
+import org.junit.runner.RunWith;
+
+import java.security.Key;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -7,16 +24,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.service.Encryption;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.RetryingEncryptionService;
-import java.security.Key;
-import java.util.UUID;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class NamedSecretRotationTest {
@@ -65,88 +72,90 @@ public class NamedSecretRotationTest {
       describe("when the secret contains an encrypted value", () -> {
         describe("when the secret is a Certificate", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedCertificateSecret secret = new NamedCertificateSecret("some-name");
-            assertRotation(secret);
+            NamedCertificateSecretData namedCertificateSecretData =
+                new NamedCertificateSecretData("some-name");
+            NamedCertificateSecret secret = new NamedCertificateSecret(namedCertificateSecretData);
+            assertRotation(secret, namedCertificateSecretData);
           });
         });
 
         describe("when the secret is a SSH key", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedSshSecret secret = new NamedSshSecret("ssh key");
-            assertRotation(secret);
+            NamedSshSecretData namedSshSecretData = new NamedSshSecretData("ssh-key");
+            NamedSshSecret secret = new NamedSshSecret(namedSshSecretData);
+            assertRotation(secret, namedSshSecretData);
           });
         });
 
         describe("when the secret is a RSA key", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedRsaSecret secret = new NamedRsaSecret("ssh key");
-            assertRotation(secret);
+            NamedRsaSecretData namedRsaSecretData = new NamedRsaSecretData("rsa key");
+            NamedRsaSecret secret = new NamedRsaSecret(namedRsaSecretData);
+            assertRotation(secret, namedRsaSecretData);
           });
         });
 
         describe("when the secret is a value secret", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedValueSecret secret = new NamedValueSecret("ssh key");
-            assertRotation(secret);
-          });
-        });
-
-        describe("when the secret is a value secret", () -> {
-          it("should re-encrypt with the active encryption key", () -> {
-            NamedValueSecret secret = new NamedValueSecret("ssh key");
-            assertRotation(secret);
+            NamedValueSecretData namedValueSecretData = new NamedValueSecretData("value key");
+            NamedValueSecret secret = new NamedValueSecret(namedValueSecretData);
+            assertRotation(secret, namedValueSecretData);
           });
         });
 
         describe("when the secret is a NamedPasswordSecretData", () -> {
           it("should re-encrypt the password and the parameters with the active encryption key",
               () -> {
-                NamedPasswordSecret password = new NamedPasswordSecret("some-name");
-                password.setEncryptor(encryptor);
-                password.setEncryptionKeyUuid(oldEncryptionKeyUuid);
-                password.setEncryptedValue("old-encrypted-value".getBytes());
-                password.setNonce("old-nonce".getBytes());
+            NamedPasswordSecretData namedPasswordSecretData =
+                new NamedPasswordSecretData("some-name");
+            namedPasswordSecretData.setEncryptionKeyUuid(oldEncryptionKeyUuid);
+            namedPasswordSecretData.setEncryptedValue("old-encrypted-value".getBytes());
+            namedPasswordSecretData.setNonce("old-nonce".getBytes());
+            NamedPasswordSecret password = new NamedPasswordSecret(namedPasswordSecretData);
+            password.setEncryptor(encryptor);
 
-                password.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
-                password.setParametersNonce("old-parameters-nonce".getBytes());
+            namedPasswordSecretData.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
+            namedPasswordSecretData.setParametersNonce("old-parameters-nonce".getBytes());
 
-                stringifiedParameters = new ObjectMapper()
-                    .writeValueAsString(new PasswordGenerationParameters());
+            stringifiedParameters = new ObjectMapper()
+                .writeValueAsString(new PasswordGenerationParameters());
 
-                when(encryptionService
-                    .decrypt(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(),
-                        "old-parameters-nonce".getBytes()))
-                    .thenReturn(stringifiedParameters);
-                when(encryptionService.encrypt(activeEncryptionKeyUuid, stringifiedParameters))
-                    .thenReturn(new Encryption(activeEncryptionKeyUuid,
-                        "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
+            when(encryptionService
+                .decrypt(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(),
+                    "old-parameters-nonce".getBytes()))
+                .thenReturn(stringifiedParameters);
+            when(encryptionService.encrypt(activeEncryptionKeyUuid, stringifiedParameters))
+                .thenReturn(new Encryption(activeEncryptionKeyUuid,
+                    "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
 
-                password.rotate();
-                assertThat(password.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
-                assertThat(password.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
-                assertThat(password.getNonce(), equalTo("new-nonce".getBytes()));
+            password.rotate();
+            assertThat(namedPasswordSecretData.getEncryptionKeyUuid(),
+                equalTo(activeEncryptionKeyUuid));
+            assertThat(namedPasswordSecretData.getEncryptedValue(),
+                equalTo("new-encrypted-value".getBytes()));
+            assertThat(namedPasswordSecretData.getNonce(), equalTo("new-nonce".getBytes()));
 
-                assertThat(password.getEncryptedGenerationParameters(),
-                    equalTo("new-encrypted-parameters".getBytes()));
-                assertThat(password.getParametersNonce(),
-                    equalTo("new-nonce-parameters".getBytes()));
-              });
+            assertThat(namedPasswordSecretData.getEncryptedGenerationParameters(),
+                equalTo("new-encrypted-parameters".getBytes()));
+            assertThat(namedPasswordSecretData.getParametersNonce(),
+                equalTo("new-nonce-parameters".getBytes()));
+          });
         });
       });
     });
   }
 
 
-  private void assertRotation(NamedSecret secret) {
+  private void assertRotation(NamedSecret secret, NamedSecretData delegate) {
     secret.setEncryptor(encryptor);
-    secret.setEncryptionKeyUuid(oldEncryptionKeyUuid);
-    secret.setEncryptedValue("old-encrypted-value".getBytes());
-    secret.setNonce("old-nonce".getBytes());
+    delegate.setEncryptionKeyUuid(oldEncryptionKeyUuid);
+    delegate.setEncryptedValue("old-encrypted-value".getBytes());
+    delegate.setNonce("old-nonce".getBytes());
 
     secret.rotate();
 
-    assertThat(secret.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
-    assertThat(secret.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
-    assertThat(secret.getNonce(), equalTo("new-nonce".getBytes()));
+    assertThat(delegate.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
+    assertThat(delegate.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));
+    assertThat(delegate.getNonce(), equalTo("new-nonce".getBytes()));
   }
 }

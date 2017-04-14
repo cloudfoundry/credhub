@@ -97,25 +97,6 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     return this;
   }
 
-  public byte[] getEncryptedGenerationParameters() {
-    return delegate.getEncryptedGenerationParameters();
-  }
-
-  public NamedPasswordSecret setEncryptedGenerationParameters(
-      byte[] encryptedGenerationParameters) {
-    delegate.setEncryptedGenerationParameters(encryptedGenerationParameters);
-    return this;
-  }
-
-  public byte[] getParametersNonce() {
-    return delegate.getParametersNonce();
-  }
-
-  public NamedPasswordSecret setParametersNonce(byte[] parametersNonce) {
-    delegate.setParametersNonce(parametersNonce);
-    return this;
-  }
-
   public PasswordGenerationParameters getGenerationParameters() {
     String password = getPassword();
     Assert.notNull(password,

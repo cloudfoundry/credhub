@@ -1,5 +1,15 @@
 package io.pivotal.security.domain;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.request.KeySetRequestFields;
+import io.pivotal.security.service.Encryption;
+import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -9,15 +19,8 @@ import static org.hamcrest.Matchers.not;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.request.KeySetRequestFields;
-import io.pivotal.security.service.Encryption;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.UUID;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class NamedSshSecretTest {
@@ -39,30 +42,42 @@ public class NamedSshSecretTest {
     });
 
     describe("#copyInto", () -> {
+
+      beforeEach(() -> {
+        byte[] encryptedValue = "fake-encrypted-value".getBytes();
+        byte[] nonce = "fake-nonce".getBytes();
+        UUID encryptionKeyUuid = UUID.randomUUID();
+        when(encryptor.encrypt("test-private-key"))
+            .thenReturn(new Encryption(encryptionKeyUuid, encryptedValue, nonce));
+        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn("test-private-key");
+      });
+
       it("should copy the correct properties into the other object", () -> {
         Instant frozenTime = Instant.ofEpochSecond(1400000000L);
         UUID uuid = UUID.randomUUID();
         encryptionKeyUuid = UUID.randomUUID();
 
-        subject = new NamedSshSecret("/foo");
+        NamedSshSecretData namedSshSecretData = new NamedSshSecretData("/foo");
+        subject = new NamedSshSecret(namedSshSecretData);
+        subject.setEncryptor(encryptor);
         subject.setPublicKey("fake-public-key");
-        subject.setEncryptedValue("fake-private-key".getBytes());
-        subject.setNonce("fake-nonce".getBytes());
         subject.setUuid(uuid);
         subject.setVersionCreatedAt(frozenTime);
-        subject.setEncryptionKeyUuid(encryptionKeyUuid);
+        subject.setPrivateKey("test-private-key");
+
 
         NamedSshSecret copy = new NamedSshSecret();
         subject.copyInto(copy);
 
         assertThat(copy.getName(), equalTo("/foo"));
         assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
-        assertThat(copy.getEncryptedValue(), equalTo("fake-private-key".getBytes()));
-        assertThat(copy.getNonce(), equalTo("fake-nonce".getBytes()));
-        assertThat(copy.getEncryptionKeyUuid(), equalTo(encryptionKeyUuid));
-
+        assertThat(copy.getPrivateKey(), equalTo("test-private-key"));
         assertThat(copy.getUuid(), not(equalTo(uuid)));
         assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
+
+        verify(encryptor).encrypt(any());
+        verify(encryptor).decrypt(any(), any(), any());
       });
     });
 
@@ -75,9 +90,10 @@ public class NamedSshSecretTest {
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
             .thenReturn("new private key");
 
-        subject = new NamedSshSecret("/existingName");
+        NamedSshSecretData namedSshSecretData = new NamedSshSecretData("/existingName");
+        namedSshSecretData.setEncryptedValue("old encrypted private key".getBytes());
+        subject = new NamedSshSecret(namedSshSecretData);
         subject.setEncryptor(encryptor);
-        subject.setEncryptedValue("old encrypted private key".getBytes());
       });
 
       it("copies name from existing", () -> {

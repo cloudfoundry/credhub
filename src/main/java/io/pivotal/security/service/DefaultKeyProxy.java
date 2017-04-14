@@ -1,11 +1,8 @@
 package io.pivotal.security.service;
 
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
-import static java.util.Collections.unmodifiableList;
-
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.exceptions.IncorrectKeyException;
+
 import java.security.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,6 +10,10 @@ import java.util.List;
 import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
+import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
+import static java.util.Collections.unmodifiableList;
 
 class DefaultKeyProxy implements KeyProxy {
 
@@ -43,7 +44,7 @@ class DefaultKeyProxy implements KeyProxy {
     String plaintext;
 
     try {
-      plaintext = encryptionService.decrypt(key, canary.getEncryptedValue(), canary.getNonce());
+      plaintext = encryptionService.decrypt(key, canary.getEncryptedCanaryValue(), canary.getNonce());
       return Arrays.equals(CANARY_VALUE.getBytes(), plaintext.getBytes())
           || Arrays.equals(DEPRECATED_CANARY_VALUE.getBytes(), plaintext.getBytes());
     } catch (AEADBadTagException e) {

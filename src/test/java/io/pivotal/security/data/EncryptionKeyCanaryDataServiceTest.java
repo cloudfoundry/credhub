@@ -12,6 +12,7 @@ import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,16 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = {"unit-test", "unit-test-h2"})
@@ -41,7 +52,7 @@ public class EncryptionKeyCanaryDataServiceTest {
   public void save_savesTheEncryptionCanary() {
     EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
     encryptionKeyCanary.setNonce("test-nonce".getBytes());
-    encryptionKeyCanary.setEncryptedValue("test-value".getBytes());
+    encryptionKeyCanary.setEncryptedCanaryValue("test-value".getBytes());
     subject.save(encryptionKeyCanary);
 
     List<EncryptionKeyCanary> canaries = subject.findAll();
@@ -53,7 +64,7 @@ public class EncryptionKeyCanaryDataServiceTest {
     assertNotNull(actual.getUuid());
     assertThat(actual.getUuid(), equalTo(encryptionKeyCanary.getUuid()));
     assertThat(actual.getNonce(), equalTo("test-nonce".getBytes()));
-    assertThat(actual.getEncryptedValue(), equalTo("test-value".getBytes()));
+    assertThat(actual.getEncryptedCanaryValue(), equalTo("test-value".getBytes()));
   }
 
   @Test

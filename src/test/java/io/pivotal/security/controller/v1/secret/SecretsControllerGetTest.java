@@ -105,14 +105,10 @@ public class SecretsControllerGetTest {
             .setEncryptor(encryptor)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime);
-        valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
-        valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
         NamedValueSecret valueSecret2 = new NamedValueSecret(secretName)
             .setEncryptor(encryptor)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime);
-        valueSecret2.setEncryptedValue("fake-encrypted-value2".getBytes());
-        valueSecret2.setNonce("fake-nonce2".getBytes());
 
         doReturn(secretValue).when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
 
@@ -232,8 +228,6 @@ public class SecretsControllerGetTest {
                 .setEncryptor(encryptor)
                 .setUuid(uuid)
                 .setVersionCreatedAt(frozenTime);
-        valueSecret.setEncryptedValue("fake-encrypted-value1".getBytes());
-        valueSecret.setEncryptedValue("fake-encrypted-value2".getBytes());
 
         doThrow(new KeyNotFoundException("error.missing_encryption_key"))
             .when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));

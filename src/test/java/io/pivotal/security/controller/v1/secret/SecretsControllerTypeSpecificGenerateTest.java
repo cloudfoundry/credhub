@@ -185,7 +185,6 @@ public class SecretsControllerTypeSpecificGenerateTest {
         },
         () -> new NamedPasswordSecret(secretName)
             .setEncryptor(encryptor)
-            .setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid())
             .setPasswordAndGenerationParameters(fakePassword, new PasswordGenerationParameters().setExcludeNumber(true))
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
@@ -205,7 +204,6 @@ public class SecretsControllerTypeSpecificGenerateTest {
         },
         () -> new NamedCertificateSecret(secretName)
             .setEncryptor(encryptor)
-            .setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid())
             .setCa(ca)
             .setCertificate(certificate)
             .setPrivateKey(privateKey)
@@ -226,7 +224,6 @@ public class SecretsControllerTypeSpecificGenerateTest {
         },
         () -> new NamedSshSecret(secretName)
             .setEncryptor(encryptor)
-            .setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid())
             .setPrivateKey(privateKey)
             .setPublicKey(publicKey)
             .setUuid(uuid)
@@ -245,7 +242,6 @@ public class SecretsControllerTypeSpecificGenerateTest {
         },
         () -> new NamedRsaSecret(secretName)
             .setEncryptor(encryptor)
-            .setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid())
             .setPrivateKey(privateKey)
             .setPublicKey(publicKey)
             .setUuid(uuid)
