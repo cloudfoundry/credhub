@@ -17,10 +17,9 @@ import io.pivotal.security.request.RsaGenerateRequest;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.request.SshGenerateRequest;
 import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.view.SecretView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -48,7 +47,6 @@ public class RegenerateServiceTest {
   private NamedRsaSecret namedRsaSecret;
   private NamedJsonSecret secretOfUnsupportedType;
   private PasswordGenerationParameters expectedParameters;
-  private ResponseEntity responseEntity;
 
   {
     beforeEach(() -> {
@@ -65,7 +63,7 @@ public class RegenerateServiceTest {
               isA(EventAuditRecordBuilder.class),
               isA(BaseSecretGenerateRequest.class),
               isA(AccessControlEntry.class)))
-          .thenReturn(new ResponseEntity(HttpStatus.OK));
+          .thenReturn(mock(SecretView.class));
       secretOfUnsupportedType = new NamedJsonSecret();
       subject = new RegenerateService(secretDataService, generateService);
     });
@@ -86,15 +84,11 @@ public class RegenerateServiceTest {
           when(namedPasswordSecret.getGenerationParameters())
               .thenReturn(expectedParameters);
 
-          responseEntity = subject
+          subject
               .performRegenerate(mock(EventAuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
         });
 
         describe("when regenerating password", () -> {
-          it("should return a 200 status", () -> {
-            assertThat(responseEntity.getStatusCode().value(), equalTo(200));
-          });
-
           it("should generate a new password", () -> {
             ArgumentCaptor<BaseSecretGenerateRequest> generateRequestCaptor =
                 ArgumentCaptor.forClass(BaseSecretGenerateRequest.class);
@@ -130,7 +124,7 @@ public class RegenerateServiceTest {
                 SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
                     .setName("password");
 
-                responseEntity = subject
+                subject
                     .performRegenerate(mock(EventAuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
               });
         });
@@ -146,12 +140,8 @@ public class RegenerateServiceTest {
             when(namedSshSecret.getName()).thenReturn("ssh");
             when(namedSshSecret.getSecretType()).thenReturn("ssh");
 
-            responseEntity = subject
+            subject
                 .performRegenerate(mock(EventAuditRecordBuilder.class), sshRegenerateRequest, mock(AccessControlEntry.class));
-          });
-
-          it("should return a 200 status", () -> {
-            assertThat(responseEntity.getStatusCode().value(), equalTo(200));
           });
 
           it("should generate a new ssh key pair", () -> {
@@ -181,12 +171,8 @@ public class RegenerateServiceTest {
             when(namedRsaSecret.getName()).thenReturn("rsa");
             when(namedRsaSecret.getSecretType()).thenReturn("rsa");
 
-            responseEntity = subject
+            subject
                 .performRegenerate(mock(EventAuditRecordBuilder.class), rsaRegenerateRequest, mock(AccessControlEntry.class));
-          });
-
-          it("should return a 200 status", () -> {
-            assertThat(responseEntity.getStatusCode().value(), equalTo(200));
           });
 
           it("should generate a new rsa key pair", () -> {

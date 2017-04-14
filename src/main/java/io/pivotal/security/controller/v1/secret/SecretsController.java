@@ -30,13 +30,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
@@ -84,7 +84,8 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
-  public ResponseEntity generate(InputStream inputStream,
+  @ResponseStatus(HttpStatus.OK)
+  public SecretView generate(InputStream inputStream,
       HttpServletRequest request,
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry) throws IOException {
@@ -101,7 +102,8 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", method = RequestMethod.PUT)
-  public ResponseEntity set(@RequestBody BaseSecretSetRequest requestBody,
+  @ResponseStatus(HttpStatus.OK)
+  public SecretView set(@RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry) {
@@ -118,7 +120,8 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", method = RequestMethod.DELETE)
-  public ResponseEntity delete(
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void delete(
       @RequestParam(value = "name") String secretName,
       HttpServletRequest request,
       UserContext userContext
@@ -127,52 +130,54 @@ public class SecretsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    return eventAuditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder) -> {
+    eventAuditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder) -> {
       eventAuditRecordBuilder.setCredentialName(secretName);
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
 
       boolean deleteSucceeded = secretDataService.delete(secretName);
+
       if (!deleteSucceeded) {
         throw new EntryNotFoundException("error.credential_not_found");
       }
 
-      return new ResponseEntity(HttpStatus.NO_CONTENT);
+      return true;
     });
   }
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
-  public ResponseEntity getSecretById(
+  @ResponseStatus(HttpStatus.OK)
+  public SecretView getSecretById(
       @PathVariable String id,
       HttpServletRequest request,
       UserContext userContext) {
 
-    return retrieveSecretWithAuditing(
+    return SecretView.fromEntity(retrieveSecretWithAuditing(
         id,
         findAsList(secretDataService::findByUuid),
         request,
-        userContext,
-        true
-    );
+        userContext
+    ).get(0));
   }
 
   @RequestMapping(path = "", method = RequestMethod.GET)
-  public ResponseEntity getSecret(
+  @ResponseStatus(HttpStatus.OK)
+  public DataResponse getSecret(
       @RequestParam(value = "name", required = false) String secretName,
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
       HttpServletRequest request,
       UserContext userContext) {
 
-    return retrieveSecretWithAuditing(
+    return DataResponse.fromEntity(retrieveSecretWithAuditing(
         secretName,
         selectLookupFunction(current),
         request,
-        userContext,
-        false
-    );
+        userContext
+    ));
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
-  public ResponseEntity findByPath(
+  @ResponseStatus(HttpStatus.OK)
+  public FindCredentialResults findByPath(
       @RequestParam Map<String, String> params,
       HttpServletRequest request,
       UserContext userContext
@@ -181,13 +186,15 @@ public class SecretsController {
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
-  public ResponseEntity findPaths(HttpServletRequest request, UserContext userContext)
+  @ResponseStatus(HttpStatus.OK)
+  public FindPathResults findPaths(HttpServletRequest request, UserContext userContext)
       {
     return findPathsWithAuditing(request, userContext);
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
-  public ResponseEntity findByNameLike(
+  @ResponseStatus(HttpStatus.OK)
+  public FindCredentialResults findByNameLike(
       @RequestParam Map<String, String> params,
       HttpServletRequest request,
       UserContext userContext
@@ -196,7 +203,7 @@ public class SecretsController {
         userContext);
   }
 
-  private ResponseEntity auditedHandlePostRequest(
+  private SecretView auditedHandlePostRequest(
       InputStream inputStream,
       HttpServletRequest request,
       UserContext userContext,
@@ -210,7 +217,7 @@ public class SecretsController {
     }));
   }
 
-  private ResponseEntity<?> deserializeAndHandlePostRequest(
+  private SecretView deserializeAndHandlePostRequest(
       InputStream inputStream,
       EventAuditRecordBuilder eventAuditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
@@ -234,7 +241,7 @@ public class SecretsController {
     }
   }
 
-  private ResponseEntity handleGenerateRequest(
+  private SecretView handleGenerateRequest(
       EventAuditRecordBuilder auditRecordBuilder,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
@@ -245,7 +252,7 @@ public class SecretsController {
     return generateService.performGenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
-  private ResponseEntity handleRegenerateRequest(
+  private SecretView handleRegenerateRequest(
       EventAuditRecordBuilder auditRecordBuilder,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
@@ -255,7 +262,7 @@ public class SecretsController {
     return regenerateService.performRegenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
-  private ResponseEntity auditedHandlePutRequest(
+  private SecretView auditedHandlePutRequest(
       @RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       UserContext userContext,
@@ -265,7 +272,7 @@ public class SecretsController {
         handlePutRequest(requestBody, eventAuditRecordBuilder, currentUserAccessControlEntry));
   }
 
-  private ResponseEntity<?> handlePutRequest(
+  private SecretView handlePutRequest(
       @RequestBody BaseSecretSetRequest requestBody,
       EventAuditRecordBuilder eventAuditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
@@ -288,11 +295,10 @@ public class SecretsController {
     };
   }
 
-  private ResponseEntity retrieveSecretWithAuditing(String identifier,
-      Function<String, List<NamedSecret>> finder,
-      HttpServletRequest request,
-      UserContext userContext,
-      boolean returnFirstEntry) {
+  private List<NamedSecret> retrieveSecretWithAuditing(String identifier,
+                                                       Function<String, List<NamedSecret>> finder,
+                                                       HttpServletRequest request,
+                                                       UserContext userContext) {
     return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
@@ -305,12 +311,7 @@ public class SecretsController {
       } else {
         String name = namedSecrets.get(0).getName();
         eventAuditRecordBuilder.setCredentialName(name);
-        if (returnFirstEntry) {
-          return new ResponseEntity(SecretView.fromEntity(namedSecrets.get(0)),
-              HttpStatus.OK);
-        } else {
-          return new ResponseEntity(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
-        }
+        return namedSecrets;
       }
     });
   }
@@ -326,29 +327,29 @@ public class SecretsController {
     return isRegenerateRequest;
   }
 
-  private ResponseEntity findWithAuditing(String nameSubstring,
+  private FindCredentialResults findWithAuditing(String nameSubstring,
       Function<String, List<SecretView>> finder,
       HttpServletRequest request,
       UserContext userContext) {
     return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<SecretView> secretViews = finder.apply(nameSubstring);
-      return new ResponseEntity<>(FindCredentialResults.fromSecrets(secretViews), HttpStatus.OK);
+      return FindCredentialResults.fromSecrets(secretViews);
     });
   }
 
-  private ResponseEntity findPathsWithAuditing(
+  private FindPathResults findPathsWithAuditing(
       HttpServletRequest request,
       UserContext userContext
   ) {
     return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<String> paths = secretDataService.findAllPaths();
-      return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);
+      return FindPathResults.fromEntity(paths);
     });
   }
 
-  private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request,
+  private FindCredentialResults findStartingWithAuditing(String path, HttpServletRequest request,
       UserContext userContext) {
     return findWithAuditing(path, secretDataService::findStartingWithPath, request, userContext);
   }

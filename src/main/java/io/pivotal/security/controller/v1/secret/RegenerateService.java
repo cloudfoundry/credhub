@@ -13,7 +13,7 @@ import io.pivotal.security.service.regeneratables.PasswordSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.Regeneratable;
 import io.pivotal.security.service.regeneratables.RsaSecretRegeneratable;
 import io.pivotal.security.service.regeneratables.SshSecretRegeneratable;
-import org.springframework.http.ResponseEntity;
+import io.pivotal.security.view.SecretView;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -43,7 +43,7 @@ class RegenerateService {
     this.regeneratableTypes.put("certificate", CertificateSecretRegeneratable::new);
   }
 
-  public ResponseEntity performRegenerate(
+  public SecretView performRegenerate(
       EventAuditRecordBuilder auditRecordBuilder,
       SecretRegenerateRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {

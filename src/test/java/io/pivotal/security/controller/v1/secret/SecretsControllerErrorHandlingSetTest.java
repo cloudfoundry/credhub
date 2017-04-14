@@ -3,7 +3,6 @@ package io.pivotal.security.controller.v1.secret;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
@@ -14,16 +13,11 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.function.Function;
-import javax.servlet.http.HttpServletRequest;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -33,7 +27,6 @@ import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -331,24 +324,6 @@ public class SecretsControllerErrorHandlingSetTest {
                             "request path or body did not meet expectation. Please check the " +
                             "documentation for required formatting and retry your request.")
                 );
-          });
-
-          it("returns errors from the auditing service auditing fails", () -> {
-            doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-                .when(eventAuditLogService).performWithAuditing(isA(HttpServletRequest.class), isA(UserContext.class), isA(Function.class));
-
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .content("{" +
-                    "  \"type\":\"value\"," +
-                    "  \"name\":\"" + secretName + "\"," +
-                    "  \"value\":\"some value\"" +
-                    "}");
-
-            mockMvc.perform(put)
-                .andExpect(status().isInternalServerError());
           });
 
           describe("when malformed json is sent", () -> {

@@ -9,8 +9,6 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.view.SecretView;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
@@ -29,7 +27,7 @@ public class SetService {
     this.encryptor = encryptor;
   }
 
-  public ResponseEntity performSet(
+  public SecretView performSet(
       EventAuditRecordBuilder eventAuditRecordBuilder,
       BaseSecretSetRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
@@ -53,8 +51,7 @@ public class SetService {
     }
     eventAuditRecordBuilder.setCredentialName(storedEntity.getName());
 
-    SecretView secretView = SecretView.fromEntity(storedEntity);
-    return new ResponseEntity<>(secretView, HttpStatus.OK);
+    return SecretView.fromEntity(storedEntity);
   }
 
   private void validateSecretType(NamedSecret existingNamedSecret, String secretType) {
