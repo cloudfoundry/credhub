@@ -1,5 +1,19 @@
 package io.pivotal.security.domain;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.AccessEntryData;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.service.Encryption;
+import org.junit.runner.RunWith;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -15,20 +29,9 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.service.Encryption;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class NamedPasswordSecretTest {
@@ -72,19 +75,47 @@ public class NamedPasswordSecretTest {
 
       subject = new NamedPasswordSecret("/Foo");
       subject.setEncryptor(encryptor);
-
     });
 
     it("returns type password", () -> {
       assertThat(subject.getSecretType(), equalTo("password"));
     });
 
-    describe("with or without alternative names", () -> {
+    describe("#getGenerationParameters", () -> {
       beforeEach(() -> {
-        subject = new NamedPasswordSecret("/foo");
+        subject = new NamedPasswordSecret("/Foo");
         subject.setEncryptor(encryptor);
+        when(encryptor.encrypt(null))
+            .thenReturn(new Encryption(canaryUuid, null, null));
+        subject.setPasswordAndGenerationParameters("my-value", null);
+        subject.getPassword();
       });
 
+      it("should call decrypt twice: once for password and once for parameters", () -> {
+        subject.getGenerationParameters();
+
+        verify(encryptor, times(2)).decrypt(any(), any(), any());
+      });
+    });
+
+    describe("#getPassword", () -> {
+      beforeEach(() -> {
+        subject = new NamedPasswordSecret("/Foo");
+        subject.setEncryptor(encryptor);
+        when(encryptor.encrypt(null))
+            .thenReturn(new Encryption(canaryUuid, null, null));
+        subject.setPasswordAndGenerationParameters("my-value", null);
+        subject.getGenerationParameters();
+      });
+
+      it("should call decrypt twice: once for password and once for parameters", () -> {
+        subject.getPassword();
+
+        verify(encryptor, times(2)).decrypt(any(), any(), any());
+      });
+    });
+
+    describe("with or without alternative names", () -> {
       it("sets the nonce and the encrypted value", () -> {
         subject.setPasswordAndGenerationParameters("my-value", null);
         assertThat(subject.getEncryptedValue(), notNullValue());

@@ -6,15 +6,17 @@ import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
+import org.springframework.util.Assert;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.util.Assert;
 
 public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
   private NamedPasswordSecretData delegate;
   private ObjectMapper objectMapper;
+  private String password;
 
   public NamedPasswordSecret(NamedPasswordSecretData delegate) {
     super(delegate);
@@ -59,11 +61,14 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
   }
 
   public String getPassword() {
-    return encryptor.decrypt(
-        delegate.getEncryptionKeyUuid(),
-        delegate.getEncryptedValue(),
-        delegate.getNonce()
-    );
+    if (password == null) {
+      password = encryptor.decrypt(
+          delegate.getEncryptionKeyUuid(),
+          delegate.getEncryptedValue(),
+          delegate.getNonce()
+      );
+    }
+    return password;
   }
 
   public NamedPasswordSecret setPasswordAndGenerationParameters(String password,
@@ -121,6 +126,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
         delegate.getEncryptedGenerationParameters(),
         delegate.getParametersNonce()
     );
+
     if (parameterJson == null) {
       return null;
     }
