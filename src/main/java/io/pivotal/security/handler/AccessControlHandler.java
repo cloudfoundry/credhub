@@ -2,6 +2,8 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.service.PermissionService;
@@ -27,14 +29,20 @@ public class AccessControlHandler {
   }
 
   public AccessControlListResponse getAccessControlListResponse(UserContext userContext, String credentialName) {
-    credentialName = addLeadingSlashIfMissing(credentialName);
+    AccessControlListResponse response = null;
 
-    List<AccessControlEntry> accessControlList = accessControlDataService.getAccessControlList(credentialName);
-    AccessControlListResponse response = new AccessControlListResponse();
-    response.setCredentialName(credentialName);
-    response.setAccessControlList(accessControlList);
+    try {
+      credentialName = addLeadingSlashIfMissing(credentialName);
+      permissionService.verifyAclReadPermission(userContext, credentialName);
 
-    permissionService.verifyAclReadPermission(userContext, credentialName);
+      List<AccessControlEntry> accessControlList = accessControlDataService.getAccessControlList(credentialName);
+      response = new AccessControlListResponse();
+      response.setCredentialName(credentialName);
+      response.setAccessControlList(accessControlList);
+    } catch (PermissionException pe){
+      // lack of permissions should be indistinguishable from not found.
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
 
     return response;
   }

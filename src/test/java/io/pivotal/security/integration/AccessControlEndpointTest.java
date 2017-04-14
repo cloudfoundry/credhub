@@ -1,5 +1,21 @@
 package io.pivotal.security.integration;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -27,22 +43,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -417,13 +417,13 @@ public class AccessControlEndpointTest {
 
           it("rejects users who lack permission to access the credential's ACL", () -> {
             // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
-            final MockHttpServletRequestBuilder post = get("/api/v1/acls?credential_name=/cred1")
+            final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
                 .accept(APPLICATION_JSON);
 
-            String expectedError = "The request could not be completed because the ACL does not exist or you do not have sufficient authorization.";
-            this.mockMvc.perform(post)
-                .andExpect(status().isUnauthorized())
+            String expectedError = "The request could not be fulfilled because the resource could not be found.";
+            this.mockMvc.perform(get)
+                .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", equalTo(
                     expectedError)));
           });
