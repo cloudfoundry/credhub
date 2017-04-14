@@ -15,11 +15,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestContextManager;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -30,6 +25,11 @@ import java.util.Objects;
 import java.util.TimeZone;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static com.greghaskins.spectrum.Spectrum.afterEach;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 public class SpectrumHelper {
 
@@ -82,6 +82,7 @@ public class SpectrumHelper {
     });
 
     afterEach(() -> {
+      cleanUpDatabase(myTestContextManagerSupplier);
       cleanMockBeans(testInstance);
 
       myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class).purge();
