@@ -57,9 +57,9 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @SuppressWarnings("EmptyCatchBlock")
-public class AuditLogServiceTest {
+public class EventAuditLogServiceTest {
   @Autowired
-  private AuditLogService subject;
+  private EventAuditLogService subject;
 
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;

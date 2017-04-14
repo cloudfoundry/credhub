@@ -18,13 +18,13 @@ import javax.servlet.http.HttpServletRequest;
 import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 
 @Service
-public class AuditLogService {
+public class EventAuditLogService {
 
   private final EventAuditRecordDataService eventAuditRecordDataService;
   private final TransactionManagerDelegate transactionManager;
 
   @Autowired
-  AuditLogService(
+  EventAuditLogService(
       EventAuditRecordDataService eventAuditRecordDataService,
       TransactionManagerDelegate transactionManager
   ) {

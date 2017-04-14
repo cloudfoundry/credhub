@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.auth.UserContext;
@@ -62,7 +62,7 @@ public class SecretsController {
 
   private static final Logger LOGGER = LogManager.getLogger(SecretsController.class);
   private final SecretDataService secretDataService;
-  private final AuditLogService auditLogService;
+  private final EventAuditLogService eventAuditLogService;
   private final ObjectMapper objectMapper;
   private final GenerateService generateService;
   private final SetService setService;
@@ -70,14 +70,14 @@ public class SecretsController {
 
   @Autowired
   public SecretsController(SecretDataService secretDataService,
-                           AuditLogService auditLogService,
+                           EventAuditLogService eventAuditLogService,
                            ObjectMapper objectMapper,
                            GenerateService generateService,
                            SetService setService,
                            RegenerateService regenerateService
   ) {
     this.secretDataService = secretDataService;
-    this.auditLogService = auditLogService;
+    this.eventAuditLogService = eventAuditLogService;
     this.objectMapper = objectMapper;
     this.generateService = generateService;
     this.setService = setService;
@@ -128,7 +128,7 @@ public class SecretsController {
       throw new MissingServletRequestParameterException("name", "String");
     }
 
-    return auditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder) -> {
+    return eventAuditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder) -> {
       eventAuditRecordBuilder.setCredentialName(secretName);
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
 
@@ -203,7 +203,7 @@ public class SecretsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
-    return auditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder -> {
+    return eventAuditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder -> {
       return deserializeAndHandlePostRequest(
           inputStream,
           eventAuditRecordBuilder,
@@ -258,7 +258,7 @@ public class SecretsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) throws Exception {
-    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder ->
+    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder ->
         handlePutRequest(requestBody, eventAuditRecordBuilder, currentUserAccessControlEntry));
   }
 
@@ -290,7 +290,7 @@ public class SecretsController {
       HttpServletRequest request,
       UserContext userContext,
       boolean returnFirstEntry) throws Exception {
-    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
       if (StringUtils.isEmpty(identifier)) {
@@ -333,7 +333,7 @@ public class SecretsController {
       Function<String, List<SecretView>> finder,
       HttpServletRequest request,
       UserContext userContext) throws Exception {
-    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<SecretView> secretViews = finder.apply(nameSubstring);
       return new ResponseEntity<>(FindCredentialResults.fromSecrets(secretViews), HttpStatus.OK);
@@ -344,7 +344,7 @@ public class SecretsController {
       HttpServletRequest request,
       UserContext userContext
   ) throws Exception {
-    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<String> paths = secretDataService.findAllPaths();
       return new ResponseEntity<>(FindPathResults.fromEntity(paths), HttpStatus.OK);

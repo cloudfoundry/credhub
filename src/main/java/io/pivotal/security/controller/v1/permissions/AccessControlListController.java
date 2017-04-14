@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1.permissions;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,15 +21,15 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(path = "/api/v1/acls", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AccessControlListController {
   private final AccessControlHandler accessControlHandler;
-  private final AuditLogService auditLogService;
+  private final EventAuditLogService eventAuditLogService;
 
   @Autowired
   public AccessControlListController(
-    AccessControlHandler accessControlHandler,
-    AuditLogService auditLogService
+      AccessControlHandler accessControlHandler,
+      EventAuditLogService eventAuditLogService
   ) {
     this.accessControlHandler = accessControlHandler;
-    this.auditLogService = auditLogService;
+    this.eventAuditLogService = eventAuditLogService;
   }
 
   @GetMapping
@@ -38,7 +38,7 @@ public class AccessControlListController {
     HttpServletRequest request,
     UserContext userContext
   ) throws Exception {
-    return auditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setCredentialName(credentialName);
       eventAuditRecordBuilder.setAuditingOperationCode(ACL_ACCESS);
 

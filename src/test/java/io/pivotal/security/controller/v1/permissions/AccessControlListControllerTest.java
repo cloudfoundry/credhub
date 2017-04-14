@@ -6,7 +6,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.controller.v1.UserContextArgumentResolver;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.AccessControlListResponse;
@@ -38,15 +38,15 @@ public class AccessControlListControllerTest {
   private AccessControlListController subject;
   private AccessControlHandler accessControlHandler;
   private MockMvc mockMvc;
-  private AuditLogService auditLogService;
+  private EventAuditLogService eventAuditLogService;
   private UserContext userContext;
 
   {
     beforeEach(() -> {
       accessControlHandler = mock(AccessControlHandler.class);
-      auditLogService = mock(AuditLogService.class);
+      eventAuditLogService = mock(EventAuditLogService.class);
 
-      subject = new AccessControlListController(accessControlHandler, auditLogService);
+      subject = new AccessControlListController(accessControlHandler, eventAuditLogService);
 
       userContext = mock(UserContext.class);
 
@@ -78,7 +78,7 @@ public class AccessControlListControllerTest {
           when(accessControlHandler.getAccessControlListResponse(any(UserContext.class), eq("test_credential_name")))
               .thenReturn(accessControlListResponse);
 
-          when(auditLogService.performWithAuditing(any(), any(), any())).thenAnswer(answer -> {
+          when(eventAuditLogService.performWithAuditing(any(), any(), any())).thenAnswer(answer -> {
             ExceptionThrowingFunction<EventAuditRecordBuilder, RequestEntity, Exception> block
               = answer.getArgumentAt(2, ExceptionThrowingFunction.class);
             return block.apply(mock(EventAuditRecordBuilder.class));

@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditLogService;
+import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
@@ -55,7 +55,7 @@ public class SecretsControllerErrorHandlingSetTest {
   private Encryptor encryptor;
 
   @SpyBean
-  AuditLogService auditLogService;
+  EventAuditLogService eventAuditLogService;
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
@@ -335,7 +335,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns errors from the auditing service auditing fails", () -> {
             doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-                .when(auditLogService).performWithAuditing(isA(HttpServletRequest.class), isA(UserContext.class), isA(ExceptionThrowingFunction.class));
+                .when(eventAuditLogService).performWithAuditing(isA(HttpServletRequest.class), isA(UserContext.class), isA(ExceptionThrowingFunction.class));
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
