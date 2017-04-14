@@ -425,10 +425,14 @@ public class SecretsControllerErrorHandlingSetTest {
         mockMvc.perform(put)
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error").value(errorMessage));
-      });
 
-      it("should audit the request", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-namespace/secretForSetTest/secret-name");
+        verifyAuditing(
+            requestAuditRecordRepository,
+            eventAuditRecordRepository,
+            CREDENTIAL_UPDATE,
+            null,
+            400
+        );
       });
     });
   }

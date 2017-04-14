@@ -219,7 +219,7 @@ public class SecretsControllerGetTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, "/api/v1/data/" + uuid.toString());
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, "/api/v1/data/" + uuid.toString(), 200);
         });
       });
     });
@@ -282,7 +282,7 @@ public class SecretsControllerGetTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, 200);
       });
 
       it("returns NOT_FOUND when the secret does not exist", () -> {

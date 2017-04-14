@@ -34,7 +34,6 @@ import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -113,7 +112,7 @@ public class SecretsControllerFindTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null, 200);
           });
         });
       });
@@ -192,7 +191,7 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null, 200);
         });
       });
 

@@ -306,7 +306,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName, 200);
           });
 
           it("should create an ACL with the current user having read and write permissions", () -> {
@@ -380,7 +380,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName, 200);
           });
         });
 
@@ -413,7 +413,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, 200);
           });
         });
       });
