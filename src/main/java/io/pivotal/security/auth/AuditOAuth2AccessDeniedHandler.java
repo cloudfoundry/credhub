@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import javax.servlet.ServletException;
@@ -16,16 +17,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import static io.pivotal.security.audit.RequestAuditLogFactory.createRequestAuditRecord;
 
+@Component
 public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
-  private final JwtTokenStore tokenStore;
+  private final TokenStore tokenStore;
   private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;
   private final UserContextFactory userContextFactory;
 
   @Autowired
   public AuditOAuth2AccessDeniedHandler(
-      JwtTokenStore tokenStore,
+      TokenStore tokenStore,
       RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService,
       UserContextFactory userContextFactory
