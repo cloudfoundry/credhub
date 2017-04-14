@@ -28,7 +28,6 @@ import org.springframework.transaction.TransactionStatus;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.servlet.http.HttpServletRequest;
 
@@ -37,7 +36,6 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
@@ -253,7 +251,6 @@ public class AuditLogServiceTest {
     when(request.getHeaders("X-Forwarded-For")).thenReturn(enumeration(newArrayList("1.1.1.1", "2.2.2.2")));
     when(request.getRequestURI()).thenReturn("requestURI");
     when(request.getMethod()).thenReturn("GET");
-    when(request.getAttribute(REQUEST_UUID_ATTRIBUTE)).thenReturn(UUID.randomUUID());
     return request;
   }
 

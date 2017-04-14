@@ -39,8 +39,7 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
     ResourceServerProperties resourceServerProperties,
     AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler,
     AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler,
-    PreAuthenticationFailureFilter preAuthenticationFailureFilter
-  ) {
+    PreAuthenticationFailureFilter preAuthenticationFailureFilter) {
     this.resourceServerProperties = resourceServerProperties;
     this.auditOAuth2AuthenticationExceptionHandler = auditOAuth2AuthenticationExceptionHandler;
     this.auditOAuth2AccessDeniedHandler = auditOAuth2AccessDeniedHandler;

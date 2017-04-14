@@ -1,6 +1,5 @@
 package io.pivotal.security.config;
 
-import io.pivotal.security.audit.AuditInterceptor;
 import io.pivotal.security.controller.v1.CurrentUserAccessControlEntryResolver;
 import io.pivotal.security.controller.v1.UserContextArgumentResolver;
 import java.util.List;
@@ -9,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -17,17 +15,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
   private final CurrentUserAccessControlEntryResolver currentUserAccessControlEntryResolver;
   private final UserContextArgumentResolver userContextArgumentResolver;
-  private final AuditInterceptor auditInterceptor;
 
   @Autowired
   public WebMvcConfiguration(
       CurrentUserAccessControlEntryResolver currentUserAccessControlEntryResolver,
-      UserContextArgumentResolver userContextArgumentResolver,
-      AuditInterceptor auditInterceptor
+      UserContextArgumentResolver userContextArgumentResolver
   ) {
     this.currentUserAccessControlEntryResolver = currentUserAccessControlEntryResolver;
     this.userContextArgumentResolver = userContextArgumentResolver;
-    this.auditInterceptor = auditInterceptor;
   }
 
   @Override
@@ -44,11 +39,5 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
   public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
     argumentResolvers.add(currentUserAccessControlEntryResolver);
     argumentResolvers.add(userContextArgumentResolver);
-  }
-
-  @Override
-  public void addInterceptors(InterceptorRegistry registry) {
-    super.addInterceptors(registry);
-    registry.addInterceptor(auditInterceptor).excludePathPatterns("/info", "/health");
   }
 }

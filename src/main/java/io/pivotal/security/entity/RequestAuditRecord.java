@@ -1,6 +1,8 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
@@ -9,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -22,11 +25,14 @@ public class RequestAuditRecord {
 
   @Id
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
   private String hostName;
   @Convert(converter = InstantMillisecondsConverter.class)
   @Column(nullable = false, columnDefinition = "BIGINT NOT NULL")
+  @CreatedDate
   private Instant now;
 
   private String path;
@@ -51,8 +57,6 @@ public class RequestAuditRecord {
 
   @SuppressWarnings("checkstyle:parametername")
   public RequestAuditRecord(
-      UUID uuid,
-      Instant now,
       String authMethod,
       String userId,
       String userName,
@@ -70,8 +74,6 @@ public class RequestAuditRecord {
       String scope,
       String grantType
   ) {
-    this.uuid = uuid;
-    this.now = now;
     this.authMethod = authMethod;
     this.userId = userId;
     this.userName = userName;
@@ -160,9 +162,5 @@ public class RequestAuditRecord {
 
   public int getStatusCode() {
     return statusCode;
-  }
-
-  public void setStatusCode(int statusCode) {
-    this.statusCode = statusCode;
   }
 }
