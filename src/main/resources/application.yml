@@ -9,6 +9,9 @@ security:
       id: credhub
   basic:
     enabled: false
+  authorization:
+    acls:
+      enabled: true
 
 spring:
   jpa:
