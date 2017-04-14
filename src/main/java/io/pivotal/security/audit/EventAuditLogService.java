@@ -6,8 +6,6 @@ import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
@@ -32,39 +30,36 @@ public class EventAuditLogService {
     this.transactionManager = transactionManager;
   }
 
-  public ResponseEntity<?> performWithAuditing(
+  public <T> T performWithAuditing(
       HttpServletRequest request,
       UserContext userContext,
-      ExceptionThrowingFunction<EventAuditRecordBuilder, ResponseEntity<?>, Exception> respondToRequestFunction
+      ExceptionThrowingFunction<EventAuditRecordBuilder, T, Exception> respondToRequestFunction
   ) throws Exception {
-    ResponseEntity<?> responseEntity = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     final EventAuditRecordBuilder eventAuditRecordBuilder = new EventAuditRecordBuilder(userContext.getAclUser());
+    boolean success = false;
     try {
-      responseEntity = respondToRequestFunction.apply(eventAuditRecordBuilder);
+      T response = respondToRequestFunction.apply(eventAuditRecordBuilder);
+      success = true;
+      return response;
     } finally {
-      writeAuditRecord(request, eventAuditRecordBuilder, responseEntity, transaction);
+      writeAuditRecord(request, eventAuditRecordBuilder, success, transaction);
     }
-
-    return responseEntity;
   }
 
   private void writeAuditRecord(
       HttpServletRequest request,
       EventAuditRecordBuilder eventAuditRecordBuilder,
-      ResponseEntity<?> responseEntity,
+      boolean success,
       TransactionStatus transaction
   ) {
     try {
-      boolean responseSucceeded = responseEntity.getStatusCode().is2xxSuccessful();
-
-      if (!responseSucceeded) {
+      if (!success) {
         transactionManager.rollback(transaction);
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       }
 
-      EventAuditRecord eventAuditRecord = eventAuditRecordBuilder.build((UUID) request.getAttribute(REQUEST_UUID_ATTRIBUTE), responseSucceeded);
+      EventAuditRecord eventAuditRecord = eventAuditRecordBuilder.build((UUID) request.getAttribute(REQUEST_UUID_ATTRIBUTE), success);
       eventAuditRecordDataService.save(eventAuditRecord);
 
       transactionManager.commit(transaction);

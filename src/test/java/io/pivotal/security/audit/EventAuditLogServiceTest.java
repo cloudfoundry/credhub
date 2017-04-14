@@ -197,48 +197,6 @@ public class EventAuditLogServiceTest {
           });
         });
       });
-
-      describe("when the action fails with a non 200 status", () -> {
-        describe("when the audit succeeds", () -> {
-          beforeEach(() -> {
-            responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
-              auditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
-              return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
-            });
-          });
-
-          it("logs audit entry for failure", () -> {
-            checkAuditRecords(false);
-            assertThat(secretDataService.count(), equalTo(0L));
-          });
-
-          it("returns the non-2xx status code", () -> {
-            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.BAD_GATEWAY));
-          });
-        });
-
-        describe("when audit transaction fails to commit", () -> {
-          itThrowsWithMessage("rolls back commit", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(eventAuditRecordDataService)
-                .save(any(EventAuditRecord.class));
-
-            try {
-              userContext = mockUserContext(false);
-              responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
-                return auditedSaveNewValueWithBadGateway(auditRecordBuilder);
-              });
-            } finally {
-              final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
-              verify(transactionManager, times(2)).rollback(captor.capture());
-
-              List<TransactionStatus> transactionStatuses = captor.getAllValues();
-              assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
-
-              assertThat(secretDataService.count(), equalTo(0L));
-            }
-          });
-        });
-      });
     });
   }
 
@@ -272,16 +230,6 @@ public class EventAuditLogServiceTest {
     entity.setEncryptedValue("value".getBytes());
     final NamedValueSecret secret = secretDataService.save(entity);
     return new ResponseEntity<>(secret, HttpStatus.OK);
-  }
-
-  private ResponseEntity<?> auditedSaveNewValueWithBadGateway(EventAuditRecordBuilder auditRecordBuilder) {
-    auditRecordBuilder.setCredentialName("keyName");
-    auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
-
-    NamedValueSecretData entity = new NamedValueSecretData("keyName");
-    entity.setEncryptedValue("value".getBytes());
-    secretDataService.save(entity);
-    return new ResponseEntity<>(HttpStatus.BAD_GATEWAY);
   }
 
   private void checkAuditRecords(boolean successFlag) {
