@@ -2,13 +2,12 @@ package io.pivotal.security.controller.v1.permissions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.audit.EventAuditLogService;
+import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.controller.v1.UserContextArgumentResolver;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.EventAuditRecordBuilder;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.runner.RunWith;
 import org.springframework.core.MethodParameter;
@@ -19,6 +18,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.ModelAndViewContainer;
+
+import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -79,8 +80,7 @@ public class AccessControlListControllerTest {
               .thenReturn(accessControlListResponse);
 
           when(eventAuditLogService.performWithAuditing(any(), any(), any())).thenAnswer(answer -> {
-            ExceptionThrowingFunction<EventAuditRecordBuilder, RequestEntity, Exception> block
-              = answer.getArgumentAt(2, ExceptionThrowingFunction.class);
+            Function<EventAuditRecordBuilder, RequestEntity> block = answer.getArgumentAt(2, Function.class);
             return block.apply(mock(EventAuditRecordBuilder.class));
           });
 

@@ -10,7 +10,6 @@ import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +22,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -335,7 +335,7 @@ public class SecretsControllerErrorHandlingSetTest {
 
           it("returns errors from the auditing service auditing fails", () -> {
             doReturn(new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR))
-                .when(eventAuditLogService).performWithAuditing(isA(HttpServletRequest.class), isA(UserContext.class), isA(ExceptionThrowingFunction.class));
+                .when(eventAuditLogService).performWithAuditing(isA(HttpServletRequest.class), isA(UserContext.class), isA(Function.class));
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

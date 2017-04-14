@@ -4,13 +4,13 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
-import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.UUID;
+import java.util.function.Function;
 import javax.servlet.http.HttpServletRequest;
 
 import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
@@ -33,8 +33,8 @@ public class EventAuditLogService {
   public <T> T performWithAuditing(
       HttpServletRequest request,
       UserContext userContext,
-      ExceptionThrowingFunction<EventAuditRecordBuilder, T, Exception> respondToRequestFunction
-  ) throws Exception {
+      Function<EventAuditRecordBuilder, T> respondToRequestFunction
+  ) {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
     final EventAuditRecordBuilder eventAuditRecordBuilder = new EventAuditRecordBuilder(userContext.getAclUser());
     boolean success = false;

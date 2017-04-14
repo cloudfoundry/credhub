@@ -88,7 +88,7 @@ public class SecretsController {
   public ResponseEntity generate(InputStream inputStream,
       HttpServletRequest request,
       UserContext userContext,
-      AccessControlEntry currentUserAccessControlEntry) throws Exception {
+      AccessControlEntry currentUserAccessControlEntry) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
       return auditedHandlePostRequest(requestInputStream, request, userContext, currentUserAccessControlEntry);
@@ -105,7 +105,7 @@ public class SecretsController {
   public ResponseEntity set(@RequestBody BaseSecretSetRequest requestBody,
       HttpServletRequest request,
       UserContext userContext,
-      AccessControlEntry currentUserAccessControlEntry) throws Exception {
+      AccessControlEntry currentUserAccessControlEntry) {
     requestBody.validate();
 
     try {
@@ -123,7 +123,7 @@ public class SecretsController {
       @RequestParam(value = "name") String secretName,
       HttpServletRequest request,
       UserContext userContext
-  ) throws Exception {
+  ) {
     if (StringUtils.isEmpty(secretName)) {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
@@ -145,7 +145,7 @@ public class SecretsController {
   public ResponseEntity getSecretById(
       @PathVariable String id,
       HttpServletRequest request,
-      UserContext userContext) throws Exception {
+      UserContext userContext) {
 
     return retrieveSecretWithAuditing(
         id,
@@ -161,7 +161,7 @@ public class SecretsController {
       @RequestParam(value = "name", required = false) String secretName,
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
       HttpServletRequest request,
-      UserContext userContext) throws Exception {
+      UserContext userContext) {
 
     return retrieveSecretWithAuditing(
         secretName,
@@ -177,13 +177,13 @@ public class SecretsController {
       @RequestParam Map<String, String> params,
       HttpServletRequest request,
       UserContext userContext
-  ) throws Exception {
+  ) {
     return findStartingWithAuditing(params.get("path"), request, userContext);
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   public ResponseEntity findPaths(HttpServletRequest request, UserContext userContext)
-      throws Exception {
+      {
     return findPathsWithAuditing(request, userContext);
   }
 
@@ -192,7 +192,7 @@ public class SecretsController {
       @RequestParam Map<String, String> params,
       HttpServletRequest request,
       UserContext userContext
-  ) throws Exception {
+  ) {
     return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request,
         userContext);
   }
@@ -202,7 +202,7 @@ public class SecretsController {
       HttpServletRequest request,
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
-  ) throws Exception {
+  ) {
     return eventAuditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder -> {
       return deserializeAndHandlePostRequest(
           inputStream,
@@ -215,19 +215,23 @@ public class SecretsController {
       InputStream inputStream,
       EventAuditRecordBuilder eventAuditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
-  ) throws IOException {
-    String requestString = IOUtils.toString(new InputStreamReader(inputStream));
-    boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
-
-    if (isRegenerateRequest) {
-      // If it's a regenerate request deserialization is simple; the generation case requires
-      // polymorphic deserialization See BaseSecretGenerateRequest to see how that's done. It
-      // would be nice if Jackson could pick a subclass based on an arbitrary function, since
-      // we want to consider both type and .regenerate. We could do custom deserialization but
-      // then we'd have to do the entire job by hand.
-      return handleRegenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
-    } else {
-      return handleGenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
+  ) {
+    try {
+      String requestString = IOUtils.toString(new InputStreamReader(inputStream));
+      boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
+  
+      if (isRegenerateRequest) {
+        // If it's a regenerate request deserialization is simple; the generation case requires
+        // polymorphic deserialization See BaseSecretGenerateRequest to see how that's done. It
+        // would be nice if Jackson could pick a subclass based on an arbitrary function, since
+        // we want to consider both type and .regenerate. We could do custom deserialization but
+        // then we'd have to do the entire job by hand.
+        return handleRegenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
+      } else {
+        return handleGenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -257,7 +261,7 @@ public class SecretsController {
       HttpServletRequest request,
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
-  ) throws Exception {
+  ) {
     return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder ->
         handlePutRequest(requestBody, eventAuditRecordBuilder, currentUserAccessControlEntry));
   }
@@ -266,7 +270,7 @@ public class SecretsController {
       @RequestBody BaseSecretSetRequest requestBody,
       EventAuditRecordBuilder eventAuditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
-  ) throws Exception {
+  ) {
     return setService.performSet(eventAuditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
@@ -289,7 +293,7 @@ public class SecretsController {
       Function<String, List<NamedSecret>> finder,
       HttpServletRequest request,
       UserContext userContext,
-      boolean returnFirstEntry) throws Exception {
+      boolean returnFirstEntry) {
     return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
@@ -332,7 +336,7 @@ public class SecretsController {
   private ResponseEntity findWithAuditing(String nameSubstring,
       Function<String, List<SecretView>> finder,
       HttpServletRequest request,
-      UserContext userContext) throws Exception {
+      UserContext userContext) {
     return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<SecretView> secretViews = finder.apply(nameSubstring);
@@ -343,7 +347,7 @@ public class SecretsController {
   private ResponseEntity findPathsWithAuditing(
       HttpServletRequest request,
       UserContext userContext
-  ) throws Exception {
+  ) {
     return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<String> paths = secretDataService.findAllPaths();
@@ -352,7 +356,7 @@ public class SecretsController {
   }
 
   private ResponseEntity findStartingWithAuditing(String path, HttpServletRequest request,
-      UserContext userContext) throws Exception {
+      UserContext userContext) {
     return findWithAuditing(path, secretDataService::findStartingWithPath, request, userContext);
   }
 }
