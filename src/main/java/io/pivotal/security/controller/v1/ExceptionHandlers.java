@@ -65,8 +65,7 @@ public class ExceptionHandlers {
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
   public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
-    return new ResponseError(messageSourceAccessor
-        .getMessage("error.missing_query_parameter", new String[]{e.getParameterName()}));
+    return constructError("error.missing_query_parameter", e.getParameterName());
   }
 
   @ExceptionHandler(JsonParseException.class)
@@ -111,7 +110,7 @@ public class ExceptionHandlers {
         }
       }
     }
-    return constructError("error.bad_request");
+    return badRequestResponse();
   }
 
   @ExceptionHandler(AuditSaveFailureException.class)

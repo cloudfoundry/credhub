@@ -13,6 +13,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -22,10 +26,6 @@ import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -50,6 +50,8 @@ public class EventAuditRecordDataServiceTest {
       mockOutCurrentTimeProvider(currentTimeProvider).accept(frozenTime.toEpochMilli());
 
       requestAuditRecord = requestAuditRecordDataService.save(new RequestAuditRecord(
+          UUID.randomUUID(),
+          frozenTime,
           "uaa",
           "test-user-id",
           "test-user-name",
@@ -65,8 +67,7 @@ public class EventAuditRecordDataServiceTest {
           "",
           "test-client-id",
           "test-scope",
-          "password"
-      ));
+          "password"));
     });
 
     describe("#save", () -> {

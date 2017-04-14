@@ -45,6 +45,7 @@ import java.util.function.Consumer;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.fit;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -61,6 +62,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -225,12 +227,16 @@ public class SecretsControllerGenerateTest {
               .contentType(APPLICATION_JSON)
               .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
 
-          response = mockMvc.perform(post);
+          fakeTimeSetter.accept(frozenTime.toEpochMilli() + 20);
+
+          response = mockMvc.perform(post).andDo(print());
         });
 
-        it("retries and finds the value written by the other thread", () -> {
+        fit("retries and finds the value written by the other thread", () -> {
           verify(secretDataService).save(any(NamedSecret.class));
-          response.andExpect(status().isOk())
+          response
+              .andDo(print())
+              .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("password"))
               .andExpect(jsonPath("$.value").value(fakePassword))

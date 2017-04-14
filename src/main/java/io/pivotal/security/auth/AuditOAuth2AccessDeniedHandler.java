@@ -1,5 +1,6 @@
 package io.pivotal.security.auth;
 
+import io.pivotal.security.audit.RequestAuditLogFactory;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
@@ -15,8 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static io.pivotal.security.audit.RequestAuditLogFactory.createRequestAuditRecord;
-
 @Component
 public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
 
@@ -24,18 +23,21 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;
   private final UserContextFactory userContextFactory;
+  private final RequestAuditLogFactory requestAuditLogFactory;
 
   @Autowired
   public AuditOAuth2AccessDeniedHandler(
       TokenStore tokenStore,
       RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService,
-      UserContextFactory userContextFactory
+      UserContextFactory userContextFactory,
+      RequestAuditLogFactory requestAuditLogFactory
   ) {
     this.userContextFactory = userContextFactory;
     this.tokenStore = tokenStore;
     this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.securityEventsLogService = securityEventsLogService;
+    this.requestAuditLogFactory = requestAuditLogFactory;
   }
 
   @Override
@@ -46,7 +48,11 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     } finally {
       String token = (String) request.getAttribute(OAuth2AuthenticationDetails.ACCESS_TOKEN_VALUE);
       UserContext userContext = userContextFactory.createUserContext(tokenStore.readAuthentication(token), token);
-      RequestAuditRecord requestAuditRecord = createRequestAuditRecord(request, userContext, response.getStatus());
+      RequestAuditRecord requestAuditRecord = requestAuditLogFactory.createRequestAuditRecord(
+          request,
+          userContext,
+          response.getStatus()
+      );
 
       requestAuditRecordDataService.save(requestAuditRecord);
       securityEventsLogService.log(requestAuditRecord);

@@ -3,6 +3,8 @@ package io.pivotal.security.audit;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 
+import java.util.UUID;
+
 public class EventAuditRecordBuilder {
   private final String actor;
   private String credentialName;
@@ -27,6 +29,17 @@ public class EventAuditRecordBuilder {
         credentialName,
         actor,
         requestAuditRecord.getUuid(),
+        success
+    );
+  }
+
+  public EventAuditRecord build(UUID requestUuid, boolean success) {
+    final String operation = auditingOperationCode != null ? auditingOperationCode.toString() : null;
+    return new EventAuditRecord(
+        operation,
+        credentialName,
+        actor,
+        requestUuid,
         success
     );
   }

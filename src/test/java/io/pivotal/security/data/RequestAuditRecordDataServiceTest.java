@@ -3,6 +3,7 @@ package io.pivotal.security.data;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -12,6 +13,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -20,13 +25,8 @@ import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvid
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.util.UUID.nameUUIDFromBytes;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -42,6 +42,8 @@ public class RequestAuditRecordDataServiceTest {
   JdbcTemplate jdbcTemplate;
   @MockBean
   CurrentTimeProvider currentTimeProvider;
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
 
   {
     wireAndUnwire(this);
@@ -58,7 +60,12 @@ public class RequestAuditRecordDataServiceTest {
         assertNotNull(record);
 
         RequestAuditRecord actual = jdbcTemplate.queryForObject("select * from request_audit_record", (rs, rowNum) -> {
+          ByteBuffer uuidBytes = ByteBuffer.wrap(rs.getBytes("uuid"));
+          UUID uuid = new UUID(uuidBytes.getLong(), uuidBytes.getLong());
+
           return new RequestAuditRecord(
+              uuid,
+              Instant.ofEpochMilli(rs.getLong("now")),
               rs.getString("auth_method"),
               rs.getString("user_id"),
               rs.getString("user_name"),
@@ -74,35 +81,29 @@ public class RequestAuditRecordDataServiceTest {
               rs.getString("x_forwarded_for"),
               rs.getString("client_id"),
               rs.getString("scope"),
-              rs.getString("grant_type")
-          );
+              rs.getString("grant_type"));
         });
-        UUID actualUuid = nameUUIDFromBytes(jdbcTemplate.queryForObject("select uuid from request_audit_record", byte[].class));
-        Instant actualNow = Instant.ofEpochMilli(jdbcTemplate.queryForObject("select now from request_audit_record", Long.class));
 
-        RequestAuditRecord expected = record;
-
-        assertThat(actualUuid, isA(UUID.class));
-        assertThat(actualNow, equalTo(expected.getNow()));
-
-        assertThat(actual.getAuthMethod(), equalTo(expected.getAuthMethod()));
-        assertThat(actual.getUserId(), equalTo(expected.getUserId()));
-        assertThat(actual.getUserName(), equalTo(expected.getUserName()));
-        assertThat(actual.getUaaUrl(), equalTo(expected.getUaaUrl()));
-        assertThat(actual.getAuthValidFrom(), equalTo(expected.getAuthValidFrom()));
+        assertThat(actual.getUuid(), equalTo(record.getUuid()));
+        assertThat(actual.getNow(), equalTo(record.getNow()));
+        assertThat(actual.getAuthMethod(), equalTo(record.getAuthMethod()));
+        assertThat(actual.getUserId(), equalTo(record.getUserId()));
+        assertThat(actual.getUserName(), equalTo(record.getUserName()));
+        assertThat(actual.getUaaUrl(), equalTo(record.getUaaUrl()));
+        assertThat(actual.getAuthValidFrom(), equalTo(record.getAuthValidFrom()));
         assertThat(actual.getAuthValidFrom(), equalTo(authValidFrom));
-        assertThat(actual.getAuthValidUntil(), equalTo(expected.getAuthValidUntil()));
+        assertThat(actual.getAuthValidUntil(), equalTo(record.getAuthValidUntil()));
         assertThat(actual.getAuthValidUntil(), equalTo(authValidUntil));
-        assertThat(actual.getHostName(), equalTo(expected.getHostName()));
-        assertThat(actual.getMethod(), equalTo(expected.getMethod()));
-        assertThat(actual.getPath(), equalTo(expected.getPath()));
-        assertThat(actual.getQueryParameters(), equalTo(expected.getQueryParameters()));
-        assertThat(actual.getStatusCode(), equalTo(expected.getStatusCode()));
-        assertThat(actual.getRequesterIp(), equalTo(expected.getRequesterIp()));
-        assertThat(actual.getXForwardedFor(), equalTo(expected.getXForwardedFor()));
-        assertThat(actual.getClientId(), equalTo(expected.getClientId()));
-        assertThat(actual.getScope(), equalTo(expected.getScope()));
-        assertThat(actual.getGrantType(), equalTo(expected.getGrantType()));
+        assertThat(actual.getHostName(), equalTo(record.getHostName()));
+        assertThat(actual.getMethod(), equalTo(record.getMethod()));
+        assertThat(actual.getPath(), equalTo(record.getPath()));
+        assertThat(actual.getQueryParameters(), equalTo(record.getQueryParameters()));
+        assertThat(actual.getStatusCode(), equalTo(record.getStatusCode()));
+        assertThat(actual.getRequesterIp(), equalTo(record.getRequesterIp()));
+        assertThat(actual.getXForwardedFor(), equalTo(record.getXForwardedFor()));
+        assertThat(actual.getClientId(), equalTo(record.getClientId()));
+        assertThat(actual.getScope(), equalTo(record.getScope()));
+        assertThat(actual.getGrantType(), equalTo(record.getGrantType()));
       });
     });
   }
@@ -111,6 +112,8 @@ public class RequestAuditRecordDataServiceTest {
     int statusCode = 200;
 
     return new RequestAuditRecord(
+        UUID.randomUUID(),
+        Instant.now(),
         AUTH_METHOD_UAA,
         "test-user-id",
         "test-user-name",
@@ -126,7 +129,6 @@ public class RequestAuditRecordDataServiceTest {
         "test-forwarded-for",
         "test-client-id",
         "test.scope",
-        "test-grant-type"
-    );
+        "test-grant-type");
   }
 }
