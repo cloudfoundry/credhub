@@ -9,6 +9,7 @@ import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.KeyNotFoundException;
+import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.view.ResponseError;
@@ -59,6 +60,13 @@ public class ExceptionHandlers {
     }
 
     return badRequestResponse();
+  }
+
+  @ExceptionHandler(InvalidQueryParameterException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public ResponseError handleInvalidParameterException(InvalidQueryParameterException e) {
+    return constructError(e.getMessage(), e.getMissingQueryParameter());
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)

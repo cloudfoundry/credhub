@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
@@ -31,7 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.jpa.JpaSystemException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -125,7 +125,7 @@ public class SecretsController {
       UserContext userContext
   ) throws Exception {
     if (StringUtils.isEmpty(secretName)) {
-      throw new MissingServletRequestParameterException("name", "String");
+      throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
     return eventAuditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder) -> {
@@ -294,7 +294,7 @@ public class SecretsController {
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
       if (StringUtils.isEmpty(identifier)) {
-        throw new MissingServletRequestParameterException("name", "String");
+        throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
       }
       List<NamedSecret> namedSecrets = finder.apply(identifier);
       if (namedSecrets.isEmpty()) {
