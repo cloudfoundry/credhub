@@ -1,5 +1,6 @@
 package io.pivotal.security.auth;
 
+import io.pivotal.security.audit.RequestAuditLogFactory;
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.exceptions.AccessTokenExpiredException;
@@ -25,7 +26,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import static io.pivotal.security.audit.RequestAuditLogFactory.createAuthFailureAuditRecord;
 import static org.springframework.security.oauth2.provider.token.AccessTokenConverter.EXP;
 
 @Service
@@ -33,6 +33,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
   private final CurrentTimeProvider currentTimeProvider;
   private final AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
+  private final RequestAuditLogFactory requestAuditLogFactory;
   private final JsonParser objectMapper;
   private final MessageSourceAccessor messageSourceAccessor;
 
@@ -40,10 +41,12 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   AuditOAuth2AuthenticationExceptionHandler(
       CurrentTimeProvider currentTimeProvider,
       AuthFailureAuditRecordDataService authFailureAuditRecordDataService,
-      MessageSource messageSource
+      MessageSource messageSource,
+      RequestAuditLogFactory requestAuditLogFactory
   ) {
     this.currentTimeProvider = currentTimeProvider;
     this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
+    this.requestAuditLogFactory = requestAuditLogFactory;
     this.objectMapper = JsonParserFactory.create();
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
@@ -116,7 +119,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
       int statusCode,
       String message
   ) {
-    AuthFailureAuditRecord authFailureAuditRecord = createAuthFailureAuditRecord(
+    AuthFailureAuditRecord authFailureAuditRecord = requestAuditLogFactory.createAuthFailureAuditRecord(
         request,
         tokenInformation,
         statusCode,

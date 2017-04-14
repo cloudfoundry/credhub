@@ -3,19 +3,39 @@ package io.pivotal.security.audit;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
-
-import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+import io.pivotal.security.util.CurrentTimeProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
+import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
+import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
+
+@Component
 public class RequestAuditLogFactory {
-  public static RequestAuditRecord createRequestAuditRecord(HttpServletRequest request, UserContext userContext, int requestStatus) {
+  private final CurrentTimeProvider currentTimeProvider;
+
+  @Autowired
+  RequestAuditLogFactory(CurrentTimeProvider currentTimeProvider) {
+    this.currentTimeProvider = currentTimeProvider;
+  }
+
+  public RequestAuditRecord createRequestAuditRecord(HttpServletRequest request, UserContext userContext, int requestStatus) {
+    if (request.getAttribute(REQUEST_UUID_ATTRIBUTE) == null) {
+      request.setAttribute(REQUEST_UUID_ATTRIBUTE, UUID.randomUUID());
+    }
+
+    final UUID requestUuid = (UUID) request.getAttribute(REQUEST_UUID_ATTRIBUTE);
+
     return new RequestAuditRecord(
+        requestUuid,
+        currentTimeProvider.getInstant(),
         userContext.getAuthMethod(),
         userContext.getUserId(),
         userContext.getUserName(),
@@ -31,11 +51,10 @@ public class RequestAuditLogFactory {
         extractXForwardedFor(request.getHeaders("X-Forwarded-For")),
         userContext.getClientId(),
         userContext.getScope(),
-        userContext.getGrantType()
-    );
+        userContext.getGrantType());
   }
 
-  public static AuthFailureAuditRecord createAuthFailureAuditRecord(
+  public AuthFailureAuditRecord createAuthFailureAuditRecord(
       HttpServletRequest request,
       Map<String, Object> tokenInformation,
       int statusCode,

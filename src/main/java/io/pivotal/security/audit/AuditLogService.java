@@ -2,11 +2,8 @@ package io.pivotal.security.audit;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.EventAuditRecordDataService;
-import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
-import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.ExceptionThrowingFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,29 +12,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import static io.pivotal.security.audit.RequestAuditLogFactory.createRequestAuditRecord;
-
+import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
+
+import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 
 @Service
 public class AuditLogService {
 
-  private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final EventAuditRecordDataService eventAuditRecordDataService;
   private final TransactionManagerDelegate transactionManager;
-  private final SecurityEventsLogService securityEventsLogService;
 
   @Autowired
   AuditLogService(
-      RequestAuditRecordDataService requestAuditRecordDataService,
       EventAuditRecordDataService eventAuditRecordDataService,
-      TransactionManagerDelegate transactionManager,
-      SecurityEventsLogService securityEventsLogService
+      TransactionManagerDelegate transactionManager
   ) {
-    this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.eventAuditRecordDataService = eventAuditRecordDataService;
     this.transactionManager = transactionManager;
-    this.securityEventsLogService = securityEventsLogService;
   }
 
   public ResponseEntity<?> performWithAuditing(
@@ -52,7 +44,7 @@ public class AuditLogService {
     try {
       responseEntity = respondToRequestFunction.apply(eventAuditRecordBuilder);
     } finally {
-      writeAuditRecord(request, userContext, eventAuditRecordBuilder, responseEntity, transaction);
+      writeAuditRecord(request, eventAuditRecordBuilder, responseEntity, transaction);
     }
 
     return responseEntity;
@@ -60,7 +52,6 @@ public class AuditLogService {
 
   private void writeAuditRecord(
       HttpServletRequest request,
-      UserContext userContext,
       EventAuditRecordBuilder eventAuditRecordBuilder,
       ResponseEntity<?> responseEntity,
       TransactionStatus transaction
@@ -73,15 +64,10 @@ public class AuditLogService {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       }
 
-      RequestAuditRecord requestAuditRecord = createRequestAuditRecord(request, userContext, responseEntity.getStatusCodeValue());
-      requestAuditRecord = requestAuditRecordDataService.save(requestAuditRecord);
-
-      EventAuditRecord eventAuditRecord = eventAuditRecordBuilder.build(requestAuditRecord, responseSucceeded);
+      EventAuditRecord eventAuditRecord = eventAuditRecordBuilder.build((UUID) request.getAttribute(REQUEST_UUID_ATTRIBUTE), responseSucceeded);
       eventAuditRecordDataService.save(eventAuditRecord);
 
       transactionManager.commit(transaction);
-
-      securityEventsLogService.log(requestAuditRecord);
     } catch (Exception e) {
       throw new AuditSaveFailureException("error.audit_save_failure", e);
     } finally {
