@@ -13,8 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
-
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
@@ -45,22 +43,18 @@ public class SetService {
 
     eventAuditRecordBuilder.setAuditingOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
-    try {
-      final String type = requestBody.getType();
-      validateSecretType(existingNamedSecret, type);
+    final String type = requestBody.getType();
+    validateSecretType(existingNamedSecret, type);
 
-      NamedSecret storedEntity = existingNamedSecret;
-      if (shouldWriteNewEntity) {
-        NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
-        storedEntity = secretDataService.save(newEntity);
-      }
-      eventAuditRecordBuilder.setCredentialName(storedEntity.getName());
-
-      SecretView secretView = SecretView.fromEntity(storedEntity);
-      return new ResponseEntity<>(secretView, HttpStatus.OK);
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
+    NamedSecret storedEntity = existingNamedSecret;
+    if (shouldWriteNewEntity) {
+      NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
+      storedEntity = secretDataService.save(newEntity);
     }
+    eventAuditRecordBuilder.setCredentialName(storedEntity.getName());
+
+    SecretView secretView = SecretView.fromEntity(storedEntity);
+    return new ResponseEntity<>(secretView, HttpStatus.OK);
   }
 
   private void validateSecretType(NamedSecret existingNamedSecret, String secretType) {

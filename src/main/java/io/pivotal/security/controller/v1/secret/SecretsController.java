@@ -43,7 +43,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -304,20 +303,14 @@ public class SecretsController {
       if (namedSecrets.isEmpty()) {
         throw new EntryNotFoundException("error.credential_not_found");
       } else {
-        ResponseEntity success;
-        try {
-          String name = namedSecrets.get(0).getName();
-          eventAuditRecordBuilder.setCredentialName(name);
-          if (returnFirstEntry) {
-            success = new ResponseEntity<>(SecretView.fromEntity(namedSecrets.get(0)),
-                HttpStatus.OK);
-          } else {
-            success = new ResponseEntity<>(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
-          }
-        } catch (NoSuchAlgorithmException e) {
-          throw new RuntimeException(e);
+        String name = namedSecrets.get(0).getName();
+        eventAuditRecordBuilder.setCredentialName(name);
+        if (returnFirstEntry) {
+          return new ResponseEntity(SecretView.fromEntity(namedSecrets.get(0)),
+              HttpStatus.OK);
+        } else {
+          return new ResponseEntity(DataResponse.fromEntity(namedSecrets), HttpStatus.OK);
         }
-        return success;
       }
     });
   }

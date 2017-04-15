@@ -33,7 +33,7 @@ public class SecretView extends BaseView {
     this.value = value;
   }
 
-  public static SecretView fromEntity(NamedSecret namedSecret) throws NoSuchAlgorithmException {
+  public static SecretView fromEntity(NamedSecret namedSecret) {
     SecretView result;
     if (NamedValueSecret.class.isInstance(namedSecret)) {
       result = new ValueView((NamedValueSecret) namedSecret);
