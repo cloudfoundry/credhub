@@ -85,6 +85,102 @@ public class AccessControlEndpointTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error", equalTo("The query parameter credential_name is required for this request.")));
       });
+
+      describe("when the credential exists", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{"
+                  + "  \"credential_name\": \"/cred1\",\n"
+                  + "  \"access_control_entries\": [\n"
+                  + "     { \n"
+                  + "       \"actor\": \"dan\",\n"
+                  + "       \"operations\": [\"read\"]\n"
+                  + "     }]"
+                  + "}");
+
+          this.mockMvc.perform(post)
+              .andExpect(status().isOk());
+        });
+
+        describe("when the user has permission to access the credential's ACL", () -> {
+          it("returns the full list of access control entries for the credential", () -> {
+            MvcResult result = mockMvc.perform(
+                get("/api/v1/acls?credential_name=/cred1")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            )
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+            String content = result.getResponse().getContentAsString();
+            AccessControlListResponse acl = JsonHelper
+                .deserialize(content, AccessControlListResponse.class);
+            assertThat(acl.getCredentialName(), equalTo("/cred1"));
+            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                        asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("dan", asList(READ)))
+            ));
+          });
+
+
+          it("returns the full list of access control entries for the credential when leading '/' is missing", () -> {
+            MvcResult result = mockMvc.perform(
+                get("/api/v1/acls?credential_name=cred1")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            )
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+            String content = result.getResponse().getContentAsString();
+            AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+            assertThat(acl.getCredentialName(), equalTo("/cred1"));
+            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+                samePropertyValuesAs(
+                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("dan", asList(READ)))
+            ));
+          });
+        });
+
+        //Currently commenting this test out while a decision is made around how to write integration tests around ACL enforcement.
+//        it("rejects users who lack permission to access the credential's ACL", () -> {
+//          // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
+//          final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
+//              .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+//              .accept(APPLICATION_JSON);
+//
+//          String expectedError = "The request could not be fulfilled because the resource could not be found.";
+//          this.mockMvc.perform(get)
+//              .andExpect(status().isNotFound())
+//              .andExpect(jsonPath("$.error", equalTo(
+//                  expectedError)));
+//        });
+      });
+
+      describe("when the credential doesn't exist", () -> {
+        final String unicorn = "/unicorn";
+
+        it("returns the full list of access control entries for the credential", () -> {
+          mockMvc.perform(
+              get("/api/v1/acls?credential_name=" + unicorn)
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+          ).andExpect(status().isNotFound())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+              .andExpect(jsonPath("$.error", equalTo(
+                  "The request could not be fulfilled "
+                      + "because the resource could not be found.")));
+        });
+      });
     });
 
     describe("#DELETE /aces", () -> {
@@ -105,10 +201,67 @@ public class AccessControlEndpointTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.error", equalTo("The query parameter actor is required for this request.")));
       });
+
+      describe("when deleting an ACE for a specified credential & actor", () -> {
+        beforeEach(() -> {
+          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{"
+                  + "  \"credential_name\": \"/cred1\",\n"
+                  + "  \"access_control_entries\": [\n"
+                  + "     { \n"
+                  + "       \"actor\": \"dan\",\n"
+                  + "       \"operations\": [\"read\"]\n"
+                  + "     }]"
+                  + "}");
+
+          mockMvc.perform(post)
+              .andExpect(status().isOk());
+        });
+
+        describe("when the specified actor has an ACE with the specified credential", () -> {
+          it("should delete the ACE from the resource's ACL", () -> {
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=cred1")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.access_control_list").isNotEmpty());
+
+            mockMvc.perform(
+                delete("/api/v1/aces?credential_name=/cred1&actor=dan")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            )
+                .andExpect(status().isNoContent());
+
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=/cred1")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.access_control_list", hasSize(1)));
+          });
+        });
+
+        describe("when the ACE does not exist", () -> {
+          it("should return a 'not found' error response", () -> {
+            mockMvc.perform(
+                get("/api/v1/acls?credential_name=/not-valid")
+                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value(
+                    "The request could not be fulfilled because the resource could not be found."));
+
+          });
+        });
+      });
     });
 
-    describe("when posting access control entry for user and credential", () -> {
-      describe("and permissions don't exist", () -> {
+    describe("#POST /aces", () -> {
+      describe("when permissions don't exist", () -> {
         it("returns the full Access Control List for user", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/aces")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -149,7 +302,7 @@ public class AccessControlEndpointTest {
         });
       });
 
-      describe("and permissions does exist", () -> {
+      describe("when permissions does exist", () -> {
         it("returns the full updated Access Control List for user", () -> {
           final MockHttpServletRequestBuilder initPost = post("/api/v1/aces")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -205,6 +358,7 @@ public class AccessControlEndpointTest {
       });
 
       it("prepends missing '/' in credential name and returns the full Access Control List for user", () -> {
+
         final MockHttpServletRequestBuilder put = put("/api/v1/data")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON)
@@ -236,21 +390,21 @@ public class AccessControlEndpointTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON);
 
-            MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andReturn();
-            String content = result.getResponse().getContentAsString();
-            AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-            assertThat(acl.getCredentialName(), equalTo("/cred2"));
-            assertThat(acl.getAccessControlList(), hasSize(2));
-            assertThat(acl.getAccessControlList(), containsInAnyOrder(
-                samePropertyValuesAs(
-                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-                samePropertyValuesAs(
-                    new AccessControlEntry("dan", asList(READ)))
-            ));
+        MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andReturn();
+        String content = result.getResponse().getContentAsString();
+        AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+        assertThat(acl.getCredentialName(), equalTo("/cred2"));
+        assertThat(acl.getAccessControlList(), hasSize(2));
+        assertThat(acl.getAccessControlList(), containsInAnyOrder(
+            samePropertyValuesAs(
+                new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            samePropertyValuesAs(
+                new AccessControlEntry("dan", asList(READ)))
+        ));
 
         this.mockMvc.perform(get)
             .andExpect(status().isOk());
@@ -324,7 +478,7 @@ public class AccessControlEndpointTest {
                 "The request could not be fulfilled because the resource could not be found.")));
       });
 
-      describe("When posting access control entry for user and credential with invalid operation", () -> {
+      describe("when posting access control entry for user and credential with invalid operation", () -> {
         it("returns an error", () -> {
           final MockHttpServletRequestBuilder post = post("/api/v1/aces")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -344,164 +498,6 @@ public class AccessControlEndpointTest {
               .andExpect(jsonPath("$.error").value(
                   "The provided operation is not supported."
                       + " Valid values include read, write, delete, read_acl, and write_acl."));
-        });
-      });
-
-      describe("when getting access control list by credential name", () -> {
-        describe("and the credential exists", () -> {
-          beforeEach(() -> {
-
-
-            final MockHttpServletRequestBuilder post = post("/api/v1/aces")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .content("{"
-                    + "  \"credential_name\": \"/cred1\",\n"
-                    + "  \"access_control_entries\": [\n"
-                    + "     { \n"
-                    + "       \"actor\": \"dan\",\n"
-                    + "       \"operations\": [\"read\"]\n"
-                    + "     }]"
-                    + "}");
-
-            this.mockMvc.perform(post)
-                .andExpect(status().isOk());
-          });
-
-          describe("when the user has permission to access the credential's ACL", () -> {
-            it("returns the full list of access control entries for the credential", () -> {
-              MvcResult result = mockMvc.perform(
-                  get("/api/v1/acls?credential_name=/cred1")
-                      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              )
-                  .andExpect(status().isOk())
-                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                  .andExpect(status().isOk())
-                  .andDo(print())
-                  .andReturn();
-              String content = result.getResponse().getContentAsString();
-              AccessControlListResponse acl = JsonHelper
-                  .deserialize(content, AccessControlListResponse.class);
-              assertThat(acl.getCredentialName(), equalTo("/cred1"));
-              assertThat(acl.getAccessControlList(), containsInAnyOrder(
-                  samePropertyValuesAs(
-                      new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-                          asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-                  samePropertyValuesAs(
-                      new AccessControlEntry("dan", asList(READ)))
-              ));
-            });
-
-
-            it("returns the full list of access control entries for the credential when leading '/' is missing", () -> {
-              MvcResult result = mockMvc.perform(
-                      get("/api/v1/acls?credential_name=cred1")
-                          .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                  )
-                  .andExpect(status().isOk())
-                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                  .andExpect(status().isOk())
-                  .andDo(print())
-                  .andReturn();
-              String content = result.getResponse().getContentAsString();
-              AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-              assertThat(acl.getCredentialName(), equalTo("/cred1"));
-              assertThat(acl.getAccessControlList(), containsInAnyOrder(
-                  samePropertyValuesAs(
-                      new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-                  samePropertyValuesAs(
-                      new AccessControlEntry("dan", asList(READ)))
-              ));
-            });
-          });
-
-          //Currently commenting this test out while a decision is made around how to write integration tests around ACL enforcement.
-
-//          it("rejects users who lack permission to access the credential's ACL", () -> {
-//             Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
-//            final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
-//                .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
-//                .accept(APPLICATION_JSON);
-//
-//            String expectedError = "The request could not be fulfilled because the resource could not be found.";
-//            this.mockMvc.perform(get)
-//                .andExpect(status().isNotFound())
-//                .andExpect(jsonPath("$.error", equalTo(
-//                    expectedError)));
-//          });
-        });
-
-        describe("and the credential doesn't exit", () -> {
-          final String unicorn = "/unicorn";
-
-          it("returns the full list of access control entries for the credential", () -> {
-            mockMvc.perform(
-                get("/api/v1/acls?credential_name=" + unicorn)
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            ).andExpect(status().isNotFound())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(jsonPath("$.error", equalTo(
-                    "The request could not be fulfilled "
-                        + "because the resource could not be found.")));
-          });
-        });
-      });
-
-      describe("when deleting an ACE for a specified credential & actor", () -> {
-        beforeEach(() -> {
-          final MockHttpServletRequestBuilder post = post("/api/v1/aces")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{"
-                  + "  \"credential_name\": \"/cred1\",\n"
-                  + "  \"access_control_entries\": [\n"
-                  + "     { \n"
-                  + "       \"actor\": \"dan\",\n"
-                  + "       \"operations\": [\"read\"]\n"
-                  + "     }]"
-                  + "}");
-
-          mockMvc.perform(post)
-              .andExpect(status().isOk());
-        });
-
-        describe("when the specified actor has an ACE with the specified credential", () -> {
-          it("should delete the ACE from the resource's ACL", () -> {
-            mockMvc.perform(
-                get("/api/v1/acls?credential_name=cred1")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_control_list").isNotEmpty());
-
-            mockMvc.perform(
-                delete("/api/v1/aces?credential_name=/cred1&actor=dan")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            )
-                .andExpect(status().isNoContent());
-
-            mockMvc.perform(
-                get("/api/v1/acls?credential_name=/cred1")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.access_control_list", hasSize(1)));
-          });
-        });
-
-        describe("when the ACE does not exist", () -> {
-          it("should return a 'not found' error response", () -> {
-            mockMvc.perform(
-                get("/api/v1/acls?credential_name=/not-valid")
-                    .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            )
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value(
-                    "The request could not be fulfilled because the resource could not be found."));
-
-          });
         });
       });
     });
