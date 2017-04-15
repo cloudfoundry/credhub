@@ -38,7 +38,7 @@ public class AccessControlListController {
     RequestUuid requestUuid,
     UserContext userContext
   ) throws Exception {
-    return eventAuditLogService.performWithAuditing(requestUuid, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setCredentialName(credentialName);
       eventAuditRecordBuilder.setAuditingOperationCode(ACL_ACCESS);
 

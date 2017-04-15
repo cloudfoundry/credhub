@@ -26,7 +26,7 @@ public class EventAuditLogService {
     this.transactionManager = transactionManager;
   }
 
-  public <T> T performWithAuditing(
+  public <T> T auditEvent(
       RequestUuid requestUuid,
       UserContext userContext,
       Function<EventAuditRecordBuilder, T> respondToRequestFunction

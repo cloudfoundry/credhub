@@ -89,11 +89,11 @@ public class EventAuditLogServiceTest {
       requestUuid = new RequestUuid(UUID.randomUUID());
     });
 
-    describe("logging behavior", () -> {
+    describe("#auditEvent", () -> {
       describe("when the action succeeds", () -> {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
-            responseEntity = subject.performWithAuditing(
+            responseEntity = subject.auditEvent(
                 requestUuid,
                 userContext,
                 this::auditedSaveAndReturnNewValue
@@ -121,7 +121,7 @@ public class EventAuditLogServiceTest {
             userContext = mockUserContext(false);
 
             try {
-              responseEntity = subject.performWithAuditing(requestUuid, userContext, auditRecordBuilder -> {
+              responseEntity = subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
                 return auditedSaveAndReturnNewValue(auditRecordBuilder);
               });
             } finally {
@@ -139,7 +139,7 @@ public class EventAuditLogServiceTest {
           beforeEach(() -> {
             exception.set(null);
             try {
-              subject.performWithAuditing(requestUuid, userContext, auditRecordBuilder -> {
+              subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
                 auditRecordBuilder.setCredentialName("keyName");
                 auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
 
@@ -171,7 +171,7 @@ public class EventAuditLogServiceTest {
             userContext = mockUserContext(false);
 
             try {
-              responseEntity = subject.performWithAuditing(requestUuid, userContext, auditRecordBuilder -> {
+              responseEntity = subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
                 auditRecordBuilder.setCredentialName("keyName");
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");

@@ -139,7 +139,7 @@ public class SecretsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    eventAuditLogService.performWithAuditing(requestUuid, userContext, (eventAuditRecordBuilder) -> {
+    eventAuditLogService.auditEvent(requestUuid, userContext, (eventAuditRecordBuilder) -> {
       eventAuditRecordBuilder.setCredentialName(secretName);
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
 
@@ -197,7 +197,7 @@ public class SecretsController {
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindPathResults findPaths(RequestUuid requestUuid, UserContext userContext) {
-    return eventAuditLogService.performWithAuditing(requestUuid, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
       List<String> paths = secretDataService.findAllPaths();
       return FindPathResults.fromEntity(paths);
@@ -222,7 +222,7 @@ public class SecretsController {
       AccessControlEntry currentUserAccessControlEntry
   ) {
     return eventAuditLogService
-        .performWithAuditing(requestUuid, userContext, (eventAuditRecordBuilder -> {
+        .auditEvent(requestUuid, userContext, (eventAuditRecordBuilder -> {
           return deserializeAndHandlePostRequest(
               inputStream,
               eventAuditRecordBuilder,
@@ -287,7 +287,7 @@ public class SecretsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) {
-    return eventAuditLogService.performWithAuditing(requestUuid, userContext, eventAuditRecordBuilder ->
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder ->
         handlePutRequest(requestBody, eventAuditRecordBuilder, currentUserAccessControlEntry));
   }
 
@@ -319,7 +319,7 @@ public class SecretsController {
                                                        Function<String, List<NamedSecret>> finder,
                                                        RequestUuid requestUuid,
                                                        UserContext userContext) {
-    return eventAuditLogService.performWithAuditing(requestUuid, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
           if (StringUtils.isEmpty(identifier)) {
@@ -359,7 +359,7 @@ public class SecretsController {
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService
-        .performWithAuditing(requestUuid, userContext, eventAuditRecordBuilder -> {
+        .auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
           eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
           List<SecretView> secretViews = finder.apply(nameSubstring);
           return FindCredentialResults.fromSecrets(secretViews);

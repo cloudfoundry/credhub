@@ -61,7 +61,7 @@ public class AccessControlListControllerTest {
           when(accessControlHandler.getAccessControlListResponse(any(UserContext.class), eq("test_credential_name")))
               .thenReturn(accessControlListResponse);
 
-          when(eventAuditLogService.performWithAuditing(any(), any(), any())).thenAnswer(answer -> {
+          when(eventAuditLogService.auditEvent(any(), any(), any())).thenAnswer(answer -> {
             Function<EventAuditRecordBuilder, RequestEntity> block = answer.getArgumentAt(2, Function.class);
             return block.apply(mock(EventAuditRecordBuilder.class));
           });
