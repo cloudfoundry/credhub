@@ -20,8 +20,4 @@ public class NamedJsonSecretData extends NamedSecretData<NamedJsonSecretData> {
   public String getSecretType() {
     return SECRET_TYPE;
   }
-
-  @Override
-  public void copyIntoImpl(NamedJsonSecretData copy) {
-  }
 }

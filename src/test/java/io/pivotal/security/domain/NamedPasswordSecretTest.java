@@ -41,16 +41,14 @@ public class NamedPasswordSecretTest {
   private static final PasswordGenerationParameters NO_PASSWORD_PARAMS = null;
   private static final NamedPasswordSecret NO_EXISTING_NAMED_PASSWORD_SECRET = null;
   private static final List<AccessControlEntry> NULL_ENTRIES_LIST = null;
+  private static final String PASSWORD = "my-password";
 
-  private Encryptor encryptor;
   private NamedPasswordSecret subject;
-  private PasswordGenerationParameters generationParameters;
-  private UUID canaryUuid;
   private NamedPasswordSecretData namedPasswordSecretData;
-  private Instant frozenTime;
-  private final String PASSWORD = "my-password";
+  private Encryptor encryptor;
+  private UUID canaryUuid;
+  private PasswordGenerationParameters generationParameters;
 
-  private UUID passwordUuid;
   private byte[] encryptedValue;
   private byte[] nonce;
   private byte[] encryptedParametersValue;
@@ -155,39 +153,6 @@ public class NamedPasswordSecretTest {
             assertThat(namedPasswordSecretData.getEncryptedGenerationParameters(), nullValue());
             assertThat(namedPasswordSecretData.getParametersNonce(), nullValue());
           });
-    });
-
-    describe("#copyInto", () -> {
-      beforeEach(() -> {
-        frozenTime = Instant.ofEpochSecond(1400000000L);
-        passwordUuid = UUID.randomUUID();
-
-        subject.setPasswordAndGenerationParameters(PASSWORD, generationParameters);
-        subject.setUuid(passwordUuid);
-        subject.setVersionCreatedAt(frozenTime);
-      });
-
-      it("should copy the correct properties into the other object", () -> {
-        NamedPasswordSecretData copyEntity = new NamedPasswordSecretData();
-        NamedPasswordSecret copy = new NamedPasswordSecret(copyEntity);
-
-        subject.copyInto(copy);
-
-        assertThat(copy.getName(), equalTo("/Foo"));
-        assertThat(copy.getPassword(), equalTo(PASSWORD));
-        assertThat(copy.getGenerationParameters(),
-            samePropertyValuesAs(subject.getGenerationParameters()));
-
-        assertThat(copy.getUuid(), not(equalTo(passwordUuid)));
-        assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
-
-        assertThat(copyEntity.getEncryptionKeyUuid(), equalTo(canaryUuid));
-        assertThat(copyEntity.getEncryptedValue(), equalTo(encryptedValue));
-        assertThat(copyEntity.getNonce(), equalTo(nonce));
-        assertThat(copyEntity.getEncryptedGenerationParameters(),
-            equalTo(encryptedParametersValue));
-        assertThat(copyEntity.getParametersNonce(), equalTo(parametersNonce));
-      });
     });
 
     describe("#createNewVersion", () -> {

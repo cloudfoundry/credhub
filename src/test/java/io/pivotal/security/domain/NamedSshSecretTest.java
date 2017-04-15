@@ -26,9 +26,6 @@ import static org.mockito.Mockito.when;
 public class NamedSshSecretTest {
 
   private NamedSshSecret subject;
-
-  private UUID encryptionKeyUuid;
-
   private Encryptor encryptor;
 
   {
@@ -41,52 +38,12 @@ public class NamedSshSecretTest {
       assertThat(subject.getSecretType(), equalTo("ssh"));
     });
 
-    describe("#copyInto", () -> {
-
-      beforeEach(() -> {
-        byte[] encryptedValue = "fake-encrypted-value".getBytes();
-        byte[] nonce = "fake-nonce".getBytes();
-        UUID encryptionKeyUuid = UUID.randomUUID();
-        when(encryptor.encrypt("test-private-key"))
-            .thenReturn(new Encryption(encryptionKeyUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
-            .thenReturn("test-private-key");
-      });
-
-      it("should copy the correct properties into the other object", () -> {
-        Instant frozenTime = Instant.ofEpochSecond(1400000000L);
-        UUID uuid = UUID.randomUUID();
-        encryptionKeyUuid = UUID.randomUUID();
-
-        NamedSshSecretData namedSshSecretData = new NamedSshSecretData("/foo");
-        subject = new NamedSshSecret(namedSshSecretData);
-        subject.setEncryptor(encryptor);
-        subject.setPublicKey("fake-public-key");
-        subject.setUuid(uuid);
-        subject.setVersionCreatedAt(frozenTime);
-        subject.setPrivateKey("test-private-key");
-
-
-        NamedSshSecret copy = new NamedSshSecret();
-        subject.copyInto(copy);
-
-        assertThat(copy.getName(), equalTo("/foo"));
-        assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
-        assertThat(copy.getPrivateKey(), equalTo("test-private-key"));
-        assertThat(copy.getUuid(), not(equalTo(uuid)));
-        assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
-
-        verify(encryptor).encrypt(any());
-        verify(encryptor).decrypt(any(), any(), any());
-      });
-    });
-
-    describe(".createNewVersion", () -> {
+    describe("#createNewVersion", () -> {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
         when(encryptor.encrypt("new private key"))
-            .thenReturn(new Encryption(encryptionKeyUuid, encryptedValue, nonce));
+            .thenReturn(new Encryption(UUID.randomUUID(), encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
             .thenReturn("new private key");
 

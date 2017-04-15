@@ -39,12 +39,6 @@ public class NamedSshSecretData extends NamedSecretData<NamedSshSecretData> {
   }
 
   @Override
-  public void copyIntoImpl(NamedSshSecretData copy) {
-    copy.setPublicKey(getPublicKey());
-  }
-
-
-  @Override
   public String getSecretType() {
     return SECRET_TYPE;
   }

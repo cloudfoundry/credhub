@@ -20,9 +20,4 @@ public class NamedValueSecretData extends NamedSecretData<NamedValueSecretData> 
   public String getSecretType() {
     return SECRET_TYPE;
   }
-
-  @Override
-  public void copyIntoImpl(NamedValueSecretData copy) {
-  }
-
 }

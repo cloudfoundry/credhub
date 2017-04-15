@@ -13,9 +13,4 @@ public class NamedUserSecretData extends NamedSecretData<NamedUserSecretData> {
   public String getSecretType() {
     return null;
   }
-
-  @Override
-  void copyIntoImpl(NamedUserSecretData copy) {
-
-  }
 }

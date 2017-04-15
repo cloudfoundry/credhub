@@ -25,11 +25,7 @@ import static org.mockito.Mockito.when;
 public class NamedRsaSecretTest {
 
   private NamedRsaSecret subject;
-
   private Encryptor encryptor;
-
-  private byte[] encryptedPrivateKey;
-  private byte[] privateKeyNonce;
   private UUID canaryUuid;
 
   {
@@ -43,49 +39,7 @@ public class NamedRsaSecretTest {
       assertThat(subject.getSecretType(), equalTo("rsa"));
     });
 
-    describe("#copyInto", () -> {
-      beforeEach(() -> {
-        canaryUuid = UUID.randomUUID();
-        encryptedPrivateKey = "encrypted-fake-private-key".getBytes();
-        privateKeyNonce = "some nonce".getBytes();
-        when(encryptor.encrypt(eq("fake-private-key"))).thenReturn(new Encryption(
-            canaryUuid,
-            encryptedPrivateKey,
-            privateKeyNonce
-        ));
-        when(encryptor.decrypt(any(), any(), any())).thenReturn(
-            "fake-private-key"
-        );
-      });
-
-      it("should copy the correct properties into the other object", () -> {
-        Instant frozenTime = Instant.ofEpochSecond(1400000000L);
-        UUID uuid = UUID.randomUUID();
-        UUID encryptionKeyUuid = UUID.randomUUID();
-        NamedRsaSecretData delegate = new NamedRsaSecretData("/foo");
-
-        delegate.setPublicKey("fake-public-key");
-        delegate.setEncryptedValue(encryptedPrivateKey);
-        delegate.setNonce(privateKeyNonce);
-        delegate.setUuid(canaryUuid);
-        delegate.setVersionCreatedAt(frozenTime);
-        delegate.setEncryptionKeyUuid(encryptionKeyUuid);
-        subject = new NamedRsaSecret(delegate);
-        subject.setEncryptor(encryptor);
-
-        NamedRsaSecret copy = new NamedRsaSecret();
-        subject.copyInto(copy);
-
-        assertThat(copy.getName(), equalTo("/foo"));
-        assertThat(copy.getPublicKey(), equalTo("fake-public-key"));
-        assertThat(copy.getPrivateKey(), equalTo("fake-private-key"));
-
-        assertThat(copy.getUuid(), not(equalTo(uuid)));
-        assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
-      });
-    });
-
-    describe(".createNewVersion", () -> {
+    describe("#createNewVersion", () -> {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();

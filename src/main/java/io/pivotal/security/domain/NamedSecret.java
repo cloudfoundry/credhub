@@ -45,11 +45,6 @@ public abstract class NamedSecret<Z extends NamedSecret> {
     return (Z) this;
   }
 
-  public void copyInto(Z copy) {
-    copy.encryptor = this.encryptor;
-    delegate.copyInto(copy.delegate);
-  }
-
   public Z setEncryptor(Encryptor encryptor) {
     this.encryptor = encryptor;
     return (Z) this;

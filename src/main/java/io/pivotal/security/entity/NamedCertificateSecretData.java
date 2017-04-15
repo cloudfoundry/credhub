@@ -61,16 +61,8 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
     return this;
   }
 
-
   @Override
   public String getSecretType() {
     return SECRET_TYPE;
-  }
-
-  @Override
-  void copyIntoImpl(NamedCertificateSecretData copy) {
-    copy.setCaName(caName);
-    copy.setCa(ca);
-    copy.setCertificate(certificate);
   }
 }

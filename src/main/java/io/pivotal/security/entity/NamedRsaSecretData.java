@@ -38,12 +38,6 @@ public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
   }
 
   @Override
-  public void copyIntoImpl(NamedRsaSecretData copy) {
-    copy.setPublicKey(getPublicKey());
-  }
-
-
-  @Override
   public String getSecretType() {
     return SECRET_TYPE;
   }

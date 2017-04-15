@@ -127,7 +127,6 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     return delegate.getSecretType();
   }
 
-
   public void rotate() {
     String decryptedPassword = this.getPassword();
     PasswordGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();

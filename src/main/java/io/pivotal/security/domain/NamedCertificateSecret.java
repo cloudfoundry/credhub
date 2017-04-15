@@ -98,7 +98,6 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     return this;
   }
 
-
   @Override
   public String getSecretType() {
     return delegate.getSecretType();

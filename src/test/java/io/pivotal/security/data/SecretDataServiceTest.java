@@ -135,9 +135,8 @@ public class SecretDataServiceTest {
         namedPasswordSecretData.setEncryptedValue("secret-password".getBytes());
         NamedPasswordSecret secret = new NamedPasswordSecret(namedPasswordSecretData);
 
-        NamedPasswordSecret savedSecret = subject.save(secret);
-        savedSecret.copyInto(secret);
-        namedPasswordSecretData.setEncryptionKeyUuid(activeCanaryUuid);
+        subject.save(secret);
+
         namedPasswordSecretData.setEncryptedValue("irynas-ninja-skills".getBytes());
 
         subject.save(secret);
@@ -182,8 +181,7 @@ public class SecretDataServiceTest {
         it("should set the default encryption key UUID", () -> {
           NamedSshSecretData namedSshSecretData = new NamedSshSecretData("/my-secret");
           NamedSshSecret secret = new NamedSshSecret(namedSshSecretData).setPublicKey("fake-public-key");
-          NamedSshSecret savedSecret = subject.save(secret);
-          savedSecret.copyInto(secret);
+          subject.save(secret);
 
           assertThat(namedSshSecretData.getEncryptionKeyUuid(), equalTo(activeCanaryUuid));
         });

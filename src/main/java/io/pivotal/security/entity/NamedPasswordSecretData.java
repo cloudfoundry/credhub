@@ -54,11 +54,4 @@ public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecret
   public String getSecretType() {
     return SECRET_TYPE;
   }
-
-  @Override
-  public void copyIntoImpl(NamedPasswordSecretData copy) {
-    copy.setEncryptedGenerationParameters(encryptedGenerationParameters);
-    copy.setParametersNonce(parametersNonce);
-  }
-
 }

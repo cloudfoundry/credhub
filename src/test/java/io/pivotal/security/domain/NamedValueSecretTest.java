@@ -68,7 +68,7 @@ public class NamedValueSecretTest {
       });
     });
 
-    describe(".createNewVersion", () -> {
+    describe("#createNewVersion", () -> {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();

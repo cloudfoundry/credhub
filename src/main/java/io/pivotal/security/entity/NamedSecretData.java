@@ -157,14 +157,4 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
     this.versionCreatedAt = versionCreatedAt;
     return (Z) this;
   }
-
-  abstract void copyIntoImpl(Z copy);
-
-  public void copyInto(Z copy) {
-    copy.setSecretName(getSecretName());
-    copy.setEncryptedValue(encryptedValue);
-    copy.setNonce(nonce);
-    copy.setEncryptionKeyUuid(encryptionKeyUuid);
-    copyIntoImpl(copy);
-  }
 }

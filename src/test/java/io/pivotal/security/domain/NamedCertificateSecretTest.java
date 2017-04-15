@@ -28,30 +28,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class NamedCertificateSecretTest {
 
   private NamedCertificateSecret subject;
+  private NamedCertificateSecretData namedCertificateSecretData;
 
+  private UUID canaryUuid;
   private Encryptor encryptor;
 
   private byte[] encryptedValue;
-
   private byte[] nonce;
-  private UUID canaryUuid;
-  private NamedCertificateSecretData namedCertificateSecretData;
-
-  private byte[] encryptedPrivateKey;
-
-  private byte[] privateKeyNonce;
 
   {
     beforeEach(() -> {
       encryptor = mock(Encryptor.class);
+
       encryptedValue = "fake-encrypted-value".getBytes();
       nonce = "fake-nonce".getBytes();
       canaryUuid = UUID.randomUUID();
+
       when(encryptor.encrypt("my-priv"))
           .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-priv");
@@ -93,53 +88,7 @@ public class NamedCertificateSecretTest {
       assertThat(subject.getCaName(), equalTo(null));
     });
 
-    describe("#copyInto", () -> {
-      beforeEach(() -> {
-        canaryUuid = UUID.randomUUID();
-        encryptedPrivateKey = "encrypted-fake-private-key".getBytes();
-        privateKeyNonce = "some nonce".getBytes();
-        when(encryptor.encrypt(eq("private_key"))).thenReturn(new Encryption(
-            canaryUuid,
-            encryptedPrivateKey,
-            privateKeyNonce
-        ));
-        when(encryptor.decrypt(canaryUuid, encryptedPrivateKey, privateKeyNonce)).thenReturn(
-            "private_key"
-        );
-
-      });
-
-      it("should copy the correct values", () -> {
-        Instant frozenTime = Instant.ofEpochSecond(1400000000L);
-        UUID uuid = UUID.randomUUID();
-
-        namedCertificateSecretData = new NamedCertificateSecretData("/name");
-        subject = new NamedCertificateSecret(namedCertificateSecretData);
-        subject.setEncryptor(encryptor);
-        subject.setPrivateKey("private_key");
-        subject.setCa("fake-ca");
-        subject.setCertificate("fake-certificate");
-        subject.setCaName("ca-name");
-        subject.setUuid(uuid);
-        subject.setVersionCreatedAt(frozenTime);
-
-        NamedCertificateSecret copy = new NamedCertificateSecret();
-        subject.copyInto(copy);
-
-        assertThat(copy.getName(), equalTo("/name"));
-        assertThat(copy.getCaName(), equalTo("/ca-name"));
-        assertThat(copy.getCa(), equalTo("fake-ca"));
-        assertThat(copy.getPrivateKey(), equalTo("private_key"));
-        assertThat(copy.getUuid(), not(equalTo(uuid)));
-
-        assertThat(copy.getVersionCreatedAt(), not(equalTo(frozenTime)));
-
-        verify(encryptor).encrypt("private_key");
-        verify(encryptor).decrypt(canaryUuid, encryptedPrivateKey, privateKeyNonce);
-      });
-    });
-
-    describe(".createNewVersion", () -> {
+    describe("#createNewVersion", () -> {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
@@ -147,9 +96,6 @@ public class NamedCertificateSecretTest {
             .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
             .thenReturn("new private key");
-
-        subject = new NamedCertificateSecret("/existingName");
-        subject.setEncryptor(encryptor);
       });
 
       it("copies name from existing", () -> {
@@ -159,7 +105,7 @@ public class NamedCertificateSecretTest {
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
                 new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/existingName"));
+        assertThat(newSecret.getName(), equalTo("/Foo"));
         assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
         assertThat(newSecret.getCa(), equalTo("ca"));
         assertThat(newSecret.getCertificate(), equalTo("certificate"));
