@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -188,27 +187,31 @@ public class SecretsController {
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByPath(
-      @RequestParam Map<String, String> params,
+      @RequestParam("path") String path,
       HttpServletRequest request,
       UserContext userContext
   ) {
-    return findStartingWithAuditing(params.get("path"), request, userContext);
+    return findWithAuditing(path, secretDataService::findStartingWithPath, request, userContext);
   }
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindPathResults findPaths(HttpServletRequest request, UserContext userContext) {
-    return findPathsWithAuditing(request, userContext);
+    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+      eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
+      List<String> paths = secretDataService.findAllPaths();
+      return FindPathResults.fromEntity(paths);
+    });
   }
 
   @RequestMapping(path = "", params = "name-like", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindCredentialResults findByNameLike(
-      @RequestParam Map<String, String> params,
+      @RequestParam("name-like") String nameLike,
       HttpServletRequest request,
       UserContext userContext
   ) {
-    return findWithAuditing(params.get("name-like"), secretDataService::findContainingName, request,
+    return findWithAuditing(nameLike, secretDataService::findContainingName, request,
         userContext);
   }
 
@@ -363,22 +366,5 @@ public class SecretsController {
           List<SecretView> secretViews = finder.apply(nameSubstring);
           return FindCredentialResults.fromSecrets(secretViews);
         });
-  }
-
-  private FindPathResults findPathsWithAuditing(
-      HttpServletRequest request,
-      UserContext userContext
-  ) {
-    return eventAuditLogService
-        .performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
-          eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
-          List<String> paths = secretDataService.findAllPaths();
-          return FindPathResults.fromEntity(paths);
-        });
-  }
-
-  private FindCredentialResults findStartingWithAuditing(String path, HttpServletRequest request,
-      UserContext userContext) {
-    return findWithAuditing(path, secretDataService::findStartingWithPath, request, userContext);
   }
 }
