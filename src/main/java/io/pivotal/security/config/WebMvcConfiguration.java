@@ -2,6 +2,7 @@ package io.pivotal.security.config;
 
 import io.pivotal.security.audit.AuditInterceptor;
 import io.pivotal.security.controller.v1.CurrentUserAccessControlEntryResolver;
+import io.pivotal.security.controller.v1.RequestUuidArgumentResolver;
 import io.pivotal.security.controller.v1.UserContextArgumentResolver;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +18,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
   private final CurrentUserAccessControlEntryResolver currentUserAccessControlEntryResolver;
   private final UserContextArgumentResolver userContextArgumentResolver;
+  private final RequestUuidArgumentResolver requestUuidArgumentResolver;
   private final AuditInterceptor auditInterceptor;
 
   @Autowired
   public WebMvcConfiguration(
       CurrentUserAccessControlEntryResolver currentUserAccessControlEntryResolver,
       UserContextArgumentResolver userContextArgumentResolver,
+      RequestUuidArgumentResolver requestUuidArgumentResolver,
       AuditInterceptor auditInterceptor
   ) {
     this.currentUserAccessControlEntryResolver = currentUserAccessControlEntryResolver;
     this.userContextArgumentResolver = userContextArgumentResolver;
+    this.requestUuidArgumentResolver = requestUuidArgumentResolver;
     this.auditInterceptor = auditInterceptor;
   }
 
@@ -44,6 +48,7 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
   public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
     argumentResolvers.add(currentUserAccessControlEntryResolver);
     argumentResolvers.add(userContextArgumentResolver);
+    argumentResolvers.add(requestUuidArgumentResolver);
   }
 
   @Override

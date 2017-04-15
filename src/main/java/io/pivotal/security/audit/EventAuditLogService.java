@@ -9,11 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.UUID;
 import java.util.function.Function;
-import javax.servlet.http.HttpServletRequest;
-
-import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 
 @Service
 public class EventAuditLogService {
@@ -31,7 +27,7 @@ public class EventAuditLogService {
   }
 
   public <T> T performWithAuditing(
-      HttpServletRequest request,
+      RequestUuid requestUuid,
       UserContext userContext,
       Function<EventAuditRecordBuilder, T> respondToRequestFunction
   ) {
@@ -43,12 +39,12 @@ public class EventAuditLogService {
       success = true;
       return response;
     } finally {
-      writeAuditRecord(request, eventAuditRecordBuilder, success, transaction);
+      writeAuditRecord(requestUuid, eventAuditRecordBuilder, success, transaction);
     }
   }
 
   private void writeAuditRecord(
-      HttpServletRequest request,
+      RequestUuid requestUuid,
       EventAuditRecordBuilder eventAuditRecordBuilder,
       boolean success,
       TransactionStatus transaction
@@ -59,7 +55,7 @@ public class EventAuditLogService {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       }
 
-      EventAuditRecord eventAuditRecord = eventAuditRecordBuilder.build((UUID) request.getAttribute(REQUEST_UUID_ATTRIBUTE), success);
+      EventAuditRecord eventAuditRecord = eventAuditRecordBuilder.build(requestUuid.getUuid(), success);
       eventAuditRecordDataService.save(eventAuditRecord);
 
       transactionManager.commit(transaction);

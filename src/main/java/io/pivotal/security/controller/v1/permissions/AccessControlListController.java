@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1.permissions;
 
 import io.pivotal.security.audit.EventAuditLogService;
+import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.view.AccessControlListResponse;
@@ -12,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 
@@ -36,10 +35,10 @@ public class AccessControlListController {
   @ResponseStatus(HttpStatus.OK)
   public AccessControlListResponse getAccessControlList(
     @RequestParam("credential_name") String credentialName,
-    HttpServletRequest request,
+    RequestUuid requestUuid,
     UserContext userContext
   ) throws Exception {
-    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+    return eventAuditLogService.performWithAuditing(requestUuid, userContext, eventAuditRecordBuilder -> {
       eventAuditRecordBuilder.setCredentialName(credentialName);
       eventAuditRecordBuilder.setAuditingOperationCode(ACL_ACCESS);
 

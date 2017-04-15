@@ -28,19 +28,15 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.servlet.http.HttpServletRequest;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static java.util.Collections.enumeration;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -82,8 +78,7 @@ public class EventAuditLogServiceTest {
   private ResponseEntity<?> responseEntity;
   private UserContext userContext;
 
-  private HttpServletRequest request;
-  private UUID requestUuid;
+  private RequestUuid requestUuid;
 
   {
     wireAndUnwire(this);
@@ -91,7 +86,7 @@ public class EventAuditLogServiceTest {
     beforeEach(() -> {
       mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
       userContext = mockUserContext(true);
-      request = mockRequest();
+      requestUuid = new RequestUuid(UUID.randomUUID());
     });
 
     describe("logging behavior", () -> {
@@ -99,7 +94,7 @@ public class EventAuditLogServiceTest {
         describe("when the audit succeeds", () -> {
           beforeEach(() -> {
             responseEntity = subject.performWithAuditing(
-                request,
+                requestUuid,
                 userContext,
                 this::auditedSaveAndReturnNewValue
             );
@@ -126,7 +121,7 @@ public class EventAuditLogServiceTest {
             userContext = mockUserContext(false);
 
             try {
-              responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
+              responseEntity = subject.performWithAuditing(requestUuid, userContext, auditRecordBuilder -> {
                 return auditedSaveAndReturnNewValue(auditRecordBuilder);
               });
             } finally {
@@ -144,7 +139,7 @@ public class EventAuditLogServiceTest {
           beforeEach(() -> {
             exception.set(null);
             try {
-              subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
+              subject.performWithAuditing(requestUuid, userContext, auditRecordBuilder -> {
                 auditRecordBuilder.setCredentialName("keyName");
                 auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
 
@@ -176,7 +171,7 @@ public class EventAuditLogServiceTest {
             userContext = mockUserContext(false);
 
             try {
-              responseEntity = subject.performWithAuditing(request, userContext, auditRecordBuilder -> {
+              responseEntity = subject.performWithAuditing(requestUuid, userContext, auditRecordBuilder -> {
                 auditRecordBuilder.setCredentialName("keyName");
 
                 NamedValueSecretData entity = new NamedValueSecretData("keyName");
@@ -198,16 +193,6 @@ public class EventAuditLogServiceTest {
         });
       });
     });
-  }
-
-  private HttpServletRequest mockRequest() {
-    HttpServletRequest request = mock(HttpServletRequest.class);
-    when(request.getHeaders("X-Forwarded-For")).thenReturn(enumeration(newArrayList("1.1.1.1", "2.2.2.2")));
-    when(request.getRequestURI()).thenReturn("requestURI");
-    when(request.getMethod()).thenReturn("GET");
-    requestUuid = UUID.randomUUID();
-    when(request.getAttribute(REQUEST_UUID_ATTRIBUTE)).thenReturn(requestUuid);
-    return request;
   }
 
   private UserContext mockUserContext(boolean valid) {
@@ -242,7 +227,7 @@ public class EventAuditLogServiceTest {
     assertThat(eventAuditRecord.getActor(), equalTo("test-actor"));
     assertThat(eventAuditRecord.isSuccess(), equalTo(successFlag));
     assertThat(eventAuditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
-    assertThat(eventAuditRecord.getRequestUuid(), equalTo(requestUuid));
+    assertThat(eventAuditRecord.getRequestUuid(), equalTo(requestUuid.getUuid()));
     assertThat(eventAuditRecord.getRequestUuid(), notNullValue());
     assertThat(eventAuditRecord.getNow(), equalTo(this.now));
   }
