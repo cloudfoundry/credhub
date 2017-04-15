@@ -42,7 +42,10 @@ public class AccessControlListController {
       eventAuditRecordBuilder.setCredentialName(credentialName);
       eventAuditRecordBuilder.setAuditingOperationCode(ACL_ACCESS);
 
-      return accessControlHandler.getAccessControlListResponse(userContext, credentialName);
+      final AccessControlListResponse response = accessControlHandler.getAccessControlListResponse(userContext, credentialName);
+      eventAuditRecordBuilder.setCredentialName(response.getCredentialName());
+
+      return response;
     });
   }
 }

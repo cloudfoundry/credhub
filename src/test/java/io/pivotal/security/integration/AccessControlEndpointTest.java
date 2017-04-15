@@ -2,7 +2,10 @@ package io.pivotal.security.integration;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
@@ -19,6 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
+import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
@@ -50,6 +55,10 @@ public class AccessControlEndpointTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
+  @Autowired
+  RequestAuditRecordRepository requestAuditRecordRepository;
+  @Autowired
+  EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
 
@@ -127,8 +136,9 @@ public class AccessControlEndpointTest {
                 samePropertyValuesAs(
                     new AccessControlEntry("dan", asList(READ)))
             ));
-          });
 
+            verifyAudit(ACL_ACCESS, "/cred1", "/api/v1/acls", 200);
+          });
 
           it("returns the full list of access control entries for the credential when leading '/' is missing", () -> {
             MvcResult result = mockMvc.perform(
@@ -149,6 +159,8 @@ public class AccessControlEndpointTest {
                 samePropertyValuesAs(
                     new AccessControlEntry("dan", asList(READ)))
             ));
+
+            verifyAudit(ACL_ACCESS, "/cred1", "/api/v1/acls", 200);
           });
         });
 
@@ -179,6 +191,8 @@ public class AccessControlEndpointTest {
               .andExpect(jsonPath("$.error", equalTo(
                   "The request could not be fulfilled "
                       + "because the resource could not be found.")));
+
+          verifyAudit(ACL_ACCESS, "/unicorn", "/api/v1/acls", 404);
         });
       });
     });
@@ -501,5 +515,9 @@ public class AccessControlEndpointTest {
         });
       });
     });
+  }
+
+  private void verifyAudit(AuditingOperationCode operation, String credentialName, String path, int statusCode) {
+    verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, operation, credentialName, path, statusCode);
   }
 }
