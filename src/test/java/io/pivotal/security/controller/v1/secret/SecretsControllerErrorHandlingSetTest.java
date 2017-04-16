@@ -37,7 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(profiles = { "unit-test" }, resolver = DatabaseProfileResolver.class)
+@ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class SecretsControllerErrorHandlingSetTest {
 
@@ -329,52 +329,51 @@ public class SecretsControllerErrorHandlingSetTest {
           describe("when malformed json is sent", () -> {
             it("returns a nice error message", () -> {
               final String malformedJson = "{" +
-                      "  \"type\":\"value\"" +
-                      "  \"name\":\"" + secretName + "\"" +
-                      "  \"value\":\"[]\"" +
-                      "}";
+                  "  \"type\":\"value\"" +
+                  "  \"name\":\"" + secretName + "\"" +
+                  "  \"value\":\"[]\"" +
+                  "}";
               final MockHttpServletRequestBuilder post = put("/api/v1/data")
-                      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                      .accept(APPLICATION_JSON)
-                      .contentType(APPLICATION_JSON)
-                      .content(malformedJson);
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+                  .accept(APPLICATION_JSON)
+                  .contentType(APPLICATION_JSON)
+                  .content(malformedJson);
 
               this.mockMvc.perform(post).andExpect(status().isBadRequest())
-                      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                      .andExpect(
-                          jsonPath("$.error",
-                              equalTo("The request could not be fulfilled because the " +
-                                  "request path or body did not meet expectation. Please check " +
-                                  "the documentation for required formatting and retry your " +
-                                  "request."))
-                      );
+                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                  .andExpect(
+                      jsonPath("$.error",
+                          equalTo("The request could not be fulfilled because the " +
+                              "request path or body did not meet expectation. Please check " +
+                              "the documentation for required formatting and retry your " +
+                              "request."))
+                  );
             });
 
             it("returns a nice error message for different kinds of payloads", () -> {
               final String malformedJson = "{" +
-                      "  \"type\":\"value\"," +
-                      "  \"name\":\"" + secretName + "\"," +
-                      "  \"value\":\"[\"some\" \"key\"]\"" +
-                      "}";
+                  "  \"type\":\"value\"," +
+                  "  \"name\":\"" + secretName + "\"," +
+                  "  \"value\":\"[\"some\" \"key\"]\"" +
+                  "}";
               final MockHttpServletRequestBuilder post = put("/api/v1/data")
-                      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                      .accept(APPLICATION_JSON)
-                      .contentType(APPLICATION_JSON)
-                      .content(malformedJson);
+                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+                  .accept(APPLICATION_JSON)
+                  .contentType(APPLICATION_JSON)
+                  .content(malformedJson);
 
               this.mockMvc.perform(post).andExpect(status().isBadRequest())
-                      .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                      .andExpect(
-                          jsonPath(
-                              "$.error",
-                              equalTo("The request could not be fulfilled " +
-                                  "because the request path or body did not meet " +
-                                  "expectation. Please check the documentation for " +
-                                  "required formatting and retry your request."))
-                      );
+                  .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                  .andExpect(
+                      jsonPath(
+                          "$.error",
+                          equalTo("The request could not be fulfilled " +
+                              "because the request path or body did not meet " +
+                              "expectation. Please check the documentation for " +
+                              "required formatting and retry your request."))
+                  );
             });
           });
-
         });
       });
     });

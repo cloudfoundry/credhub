@@ -1,15 +1,15 @@
 package io.pivotal.security.request;
 
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.constraints.Pattern;
-import java.util.Set;
 
 public abstract class BaseSecretRequest {
 

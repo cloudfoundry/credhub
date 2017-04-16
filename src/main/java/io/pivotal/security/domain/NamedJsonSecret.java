@@ -7,6 +7,7 @@ import io.pivotal.security.entity.NamedJsonSecretData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
     }
   }
 
-  public void setValue(Map<String, Object> value) {
+  public NamedJsonSecret setValue(Map<String, Object> value) {
     if (value == null) {
       throw new ParameterizedValidationException("error.missing_value");
     }
@@ -91,6 +92,7 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
       delegate.setEncryptedValue(encryption.encryptedValue);
       delegate.setNonce(encryption.nonce);
       delegate.setEncryptionKeyUuid(encryption.canaryUuid);
+      return this;
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

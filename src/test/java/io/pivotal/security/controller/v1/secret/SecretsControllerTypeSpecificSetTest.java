@@ -1,41 +1,26 @@
 package io.pivotal.security.controller.v1.secret;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.Block;
+import com.greghaskins.spectrum.Spectrum.*;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.domain.*;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.CertificateGenerator;
-import io.pivotal.security.generator.PassayStringSecretGenerator;
-import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.BaseSecretGenerateRequest;
-import io.pivotal.security.request.DefaultSecretGenerateRequest;
-import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.secret.Password;
-import io.pivotal.security.secret.RsaKey;
-import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.service.SetService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
+import net.minidev.json.JSONObject;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,24 +35,21 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.InputStream;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.request.AccessControlOperation.DELETE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.util.TestConstants.*;
+import static io.pivotal.security.request.AccessControlOperation.*;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.MultiJsonPathMatcher.multiJsonPath;
 import static java.util.Arrays.asList;
@@ -76,18 +58,12 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -95,7 +71,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class SecretsControllerTypeSpecificGenerateTest {
+public class SecretsControllerTypeSpecificSetTest {
 
   @Autowired
   WebApplicationContext webApplicationContext;
@@ -104,22 +80,10 @@ public class SecretsControllerTypeSpecificGenerateTest {
   SecretDataService secretDataService;
 
   @SpyBean
-  GenerateService generateService;
+  SetService setService;
 
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
-
-  @MockBean
-  PassayStringSecretGenerator passwordGenerator;
-
-  @MockBean
-  CertificateGenerator certificateGenerator;
-
-  @MockBean
-  SshGenerator sshGenerator;
-
-  @MockBean
-  RsaGenerator rsaGenerator;
 
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
@@ -141,14 +105,35 @@ public class SecretsControllerTypeSpecificGenerateTest {
   private Consumer<Long> fakeTimeSetter;
   private UUID uuid;
 
-  private final String fakePassword = "generated-secret";
-  private final String publicKey = "public_key";
-  private final String certificate = "certificate";
-  private final String ca = "ca";
-  private final String privateKey = "private_key";
   private final String secretName = "/my-namespace/subTree/secret-name";
+  private final String password = "test-password";
+  private final String certificateValueJsonString = JSONObject.toJSONString(
+      ImmutableMap.<String, String>builder()
+          .put("ca", TEST_CA)
+          .put("certificate", TEST_CERTIFICATE)
+          .put("private_key", TEST_PRIVATE_KEY)
+          .build());
+  private final String sshValueJsonString = JSONObject.toJSONString(
+      ImmutableMap.<String, String>builder()
+          .put("public_key", SSH_PUBLIC_KEY_4096_WITH_COMMENT)
+          .put("private_key", PRIVATE_KEY_4096)
+          .build());
+  private final String rsaValueJsonString = JSONObject.toJSONString(
+      ImmutableMap.<String, String>builder()
+          .put("public_key", RSA_PUBLIC_KEY_4096)
+          .put("private_key", PRIVATE_KEY_4096)
+          .build());
+  private final ImmutableMap<String, Integer> nestedValue = ImmutableMap.<String, Integer>builder()
+      .put("num", 10)
+      .build();
+  private final ImmutableMap<String, Object> jsonValueMap = ImmutableMap.<String, Object>builder()
+      .put("key", "value")
+      .put("fancy", nestedValue)
+      .put("array", Arrays.asList("foo", "bar"))
+      .build();
+  private final String jsonValueJsonString = JSONObject.toJSONString(jsonValueMap);
   private ResultActions response;
-  private MockHttpServletRequestBuilder post;
+  private MockHttpServletRequestBuilder put;
 
   {
     wireAndUnwire(this);
@@ -161,89 +146,105 @@ public class SecretsControllerTypeSpecificGenerateTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-
-      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
-          .thenReturn(new Password(fakePassword));
-
-      when(certificateGenerator.generateSecret(any(CertificateParameters.class)))
-          .thenReturn(new Certificate(ca, certificate, privateKey));
-
-      when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
-          .thenReturn(new SshKey(publicKey, privateKey, null));
-
-      when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
-          .thenReturn(new RsaKey(publicKey, privateKey));
     });
 
+    describe("value", testSecretBehavior(
+        new Object[]{"$.value", password},
+        "value",
+        "\"" + password + "\"",
+        (valueSecret) -> {
+          assertThat(valueSecret.getValue(), equalTo(password));
+        },
+        () -> new NamedValueSecret(secretName)
+            .setEncryptor(encryptor)
+            .setValue(password)
+            .setUuid(uuid)
+            .setVersionCreatedAt(frozenTime.minusSeconds(1))
+    ));
+
     describe("password", testSecretBehavior(
-        new Object[]{"$.value", fakePassword},
+        new Object[]{"$.value", password},
         "password",
-        "{\"exclude_number\": true}",
+        "\"" + password + "\"",
         (passwordSecret) -> {
-          assertThat(passwordSecret.getGenerationParameters().isExcludeNumber(), equalTo(true));
-          assertThat(passwordSecret.getPassword(), equalTo(fakePassword));
+          assertThat(passwordSecret.getPassword(), equalTo(password));
         },
         () -> new NamedPasswordSecret(secretName)
             .setEncryptor(encryptor)
-            .setPasswordAndGenerationParameters(fakePassword, new PasswordGenerationParameters().setExcludeNumber(true))
+            .setPasswordAndGenerationParameters(password, null)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
     describe("certificate", testSecretBehavior(
         new Object[]{
-            "$.value.certificate", "certificate",
-            "$.value.private_key", "private_key",
-            "$.value.ca", "ca"},
+            "$.value.certificate", TEST_CERTIFICATE,
+            "$.value.private_key", TEST_PRIVATE_KEY,
+            "$.value.ca", TEST_CA},
         "certificate",
-        "{\"common_name\":\"my-common-name\",\"self_sign\":true}",
+        certificateValueJsonString,
         (certificateSecret) -> {
-          assertThat(certificateSecret.getCa(), equalTo(ca));
-          assertThat(certificateSecret.getCertificate(), equalTo(certificate));
-          assertThat(certificateSecret.getPrivateKey(), equalTo(privateKey));
+          assertThat(certificateSecret.getCa(), equalTo(TEST_CA));
+          assertThat(certificateSecret.getCertificate(), equalTo(TEST_CERTIFICATE));
+          assertThat(certificateSecret.getPrivateKey(), equalTo(TEST_PRIVATE_KEY));
         },
         () -> new NamedCertificateSecret(secretName)
             .setEncryptor(encryptor)
-            .setCa(ca)
-            .setCertificate(certificate)
-            .setPrivateKey(privateKey)
+            .setCa(TEST_CA)
+
+            .setCertificate(TEST_CERTIFICATE)
+            .setPrivateKey(TEST_PRIVATE_KEY)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
     describe("ssh", testSecretBehavior(
         new Object[]{
-            "$.value.public_key", "public_key",
-            "$.value.private_key", "private_key",
-            "$.value.public_key_fingerprint", null},
+            "$.value.public_key", SSH_PUBLIC_KEY_4096_WITH_COMMENT,
+            "$.value.private_key", PRIVATE_KEY_4096,
+            "$.value.public_key_fingerprint", "UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc"},
         "ssh",
-        "null",
+        sshValueJsonString,
         (sshSecret) -> {
-          assertThat(sshSecret.getPublicKey(), equalTo(publicKey));
-          assertThat(sshSecret.getPrivateKey(), equalTo(privateKey));
+          assertThat(sshSecret.getPublicKey(), equalTo(SSH_PUBLIC_KEY_4096_WITH_COMMENT));
+          assertThat(sshSecret.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
         },
         () -> new NamedSshSecret(secretName)
             .setEncryptor(encryptor)
-            .setPrivateKey(privateKey)
-            .setPublicKey(publicKey)
+            .setPrivateKey(PRIVATE_KEY_4096)
+            .setPublicKey(SSH_PUBLIC_KEY_4096_WITH_COMMENT)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
     describe("rsa", testSecretBehavior(
         new Object[]{
-            "$.value.public_key", "public_key",
-            "$.value.private_key", "private_key"},
+            "$.value.public_key", RSA_PUBLIC_KEY_4096,
+            "$.value.private_key", PRIVATE_KEY_4096},
         "rsa",
-        "null",
+        rsaValueJsonString,
         (rsaSecret) -> {
-          assertThat(rsaSecret.getPublicKey(), equalTo(publicKey));
-          assertThat(rsaSecret.getPrivateKey(), equalTo(privateKey));
+          assertThat(rsaSecret.getPublicKey(), equalTo(RSA_PUBLIC_KEY_4096));
+          assertThat(rsaSecret.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
         },
         () -> new NamedRsaSecret(secretName)
             .setEncryptor(encryptor)
-            .setPrivateKey(privateKey)
-            .setPublicKey(publicKey)
+            .setPrivateKey(PRIVATE_KEY_4096)
+            .setPublicKey(RSA_PUBLIC_KEY_4096)
+            .setUuid(uuid)
+            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
+    );
+
+    describe("json", testSecretBehavior(
+        new Object[]{"$.value", jsonValueMap},
+        "json",
+        jsonValueJsonString,
+        (jsonSecret) -> {
+          assertThat(jsonSecret.getValue(), equalTo(jsonValueMap));
+        },
+        () -> new NamedJsonSecret(secretName)
+            .setEncryptor(encryptor)
+            .setValue(jsonValueMap)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
@@ -252,27 +253,30 @@ public class SecretsControllerTypeSpecificGenerateTest {
   private <T extends NamedSecret> Block testSecretBehavior(
       Object[] typeSpecificResponseFields,
       String secretType,
-      String generationParameters,
+      String value,
       Consumer<T> namedSecretAssertions,
       Supplier<T> existingSecretProvider) {
     return () -> {
       describe("for a new secret", () -> {
         beforeEach(() -> {
-          post = post("/api/v1/data")
+          put = put("/api/v1/data")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
               .content("{" +
                   "\"name\":\"" + secretName + "\"," +
                   "\"type\":\"" + secretType + "\"," +
-                  "\"parameters\":" + generationParameters + "," +
-                  "\"overwrite\":" + false +
+                  "\"value\":" + value + "," +
+                  "\"overwrite\":" + false + "," +
+                  "\"access_control_entries\": [" +
+                  "{\"actor\": \"app1-guid\"," +
+                  "\"operations\": [\"read\"]}]" +
                   "}");
         });
 
         describe("with perform in beforeEach", () -> {
           beforeEach(() -> {
-            response = mockMvc.perform(post).andDo(print());
+            response = mockMvc.perform(put).andDo(print());
           });
 
           it("should return the expected response", () -> {
@@ -288,10 +292,10 @@ public class SecretsControllerTypeSpecificGenerateTest {
           });
 
           it("asks the data service to persist the secret", () -> {
-            verify(generateService, times(1))
-                .performGenerate(
+            verify(setService, times(1))
+                .performSet(
                     isA(EventAuditRecordBuilder.class),
-                    isA(BaseSecretGenerateRequest.class),
+                    isA(BaseSecretSetRequest.class),
                     isA(AccessControlEntry.class));
             ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);
             verify(secretDataService, times(1)).save(argumentCaptor.capture());
@@ -305,7 +309,8 @@ public class SecretsControllerTypeSpecificGenerateTest {
             verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName, 200);
           });
 
-          it("should create an ACL with the current user having full permissions", () -> {
+          it("should create ACEs for the current user having full permissions " +
+              "and the provided user", () -> {
             response.andExpect(status().isOk());
             MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + secretName)
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
@@ -320,15 +325,18 @@ public class SecretsControllerTypeSpecificGenerateTest {
             assertThat(acl.getAccessControlList(), containsInAnyOrder(
                 samePropertyValuesAs(
                     new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-                        asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
+                        asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+                samePropertyValuesAs(
+                    new AccessControlEntry("app1-guid",
+                        asList(READ)))));
           });
         });
 
         it("validates the request body", () -> {
-          DefaultSecretGenerateRequest request = mock(DefaultSecretGenerateRequest.class);
+          BaseSecretSetRequest request = mock(BaseSecretSetRequest.class);
           doThrow(new ParameterizedValidationException("error.request_validation_test")).when(request).validate();
-          doReturn(request).when(objectMapper).readValue(anyString(), any(Class.class));
-          response = mockMvc.perform(post)
+          doReturn(request).when(objectMapper).readValue(any(InputStream.class), any(JavaType.class));
+          response = mockMvc.perform(put)
               .andDo(print())
               .andExpect(status().isBadRequest())
               .andExpect(content().json("{\"error\":\"Request body was validated and ControllerAdvice worked.\"}"));
@@ -343,18 +351,18 @@ public class SecretsControllerTypeSpecificGenerateTest {
 
         describe("with the overwrite flag set to true", () -> {
           beforeEach(() -> {
-            final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
                     "  \"type\":\"" + secretType + "\"," +
                     "  \"name\":\"" + secretName + "\"," +
-                    "  \"parameters\":" + generationParameters + "," +
+                    "  \"value\":" + value + "," +
                     "  \"overwrite\":true" +
                     "}");
 
-            response = mockMvc.perform(post);
+            response = mockMvc.perform(put);
           });
 
           it("should return the correct response", () -> {
@@ -382,14 +390,14 @@ public class SecretsControllerTypeSpecificGenerateTest {
 
         describe("with the overwrite flag set to false", () -> {
           beforeEach(() -> {
-            final MockHttpServletRequestBuilder post = post("/api/v1/data")
+            final MockHttpServletRequestBuilder post = put("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
                     + "\"type\":\"" + secretType + "\","
                     + "\"name\":\"" + secretName + "\","
-                    + "\"parameters\":" + generationParameters
+                    + "\"value\":" + value
                     + "}");
 
             response = mockMvc.perform(post);

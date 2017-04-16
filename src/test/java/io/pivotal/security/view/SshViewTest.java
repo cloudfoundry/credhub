@@ -1,5 +1,17 @@
 package io.pivotal.security.view;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.TestConstants;
+import org.json.JSONObject;
+import org.junit.runner.RunWith;
+import org.springframework.test.util.JsonExpectationsHelper;
+
+import java.time.Instant;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
@@ -8,17 +20,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.helper.TestConstants;
-import io.pivotal.security.service.Encryption;
-import java.time.Instant;
-import java.util.UUID;
-import org.json.JSONObject;
-import org.junit.runner.RunWith;
-import org.springframework.test.util.JsonExpectationsHelper;
 
 @RunWith(Spectrum.class)
 public class SshViewTest {

@@ -1,26 +1,25 @@
 package io.pivotal.security.request;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.helper.JsonHelper;
+import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.deserialize;
-import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
-import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
+import static io.pivotal.security.helper.JsonHelper.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.helper.JsonHelper;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class BaseSecretRequestTest {
@@ -162,6 +161,22 @@ public class BaseSecretRequestTest {
               .deserializeAndValidate(json, BaseSecretSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
+        });
+      });
+
+      describe("when name contains a '.' character", () -> {
+        it("should be valid", () -> {
+          // language=JSON
+          String json = "{"
+              + "\"type\":\"value\","
+              + "\"name\":\"test.name/\","
+              + "\"value\":\"some-value\","
+              + "\"overwrite\":true"
+              + "}";
+          Set<ConstraintViolation<BaseSecretSetRequest>> violations = JsonHelper
+              .deserializeAndValidate(json, BaseSecretSetRequest.class);
+
+          assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
         });
       });
     });

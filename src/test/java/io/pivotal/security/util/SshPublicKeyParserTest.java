@@ -2,8 +2,8 @@ package io.pivotal.security.util;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096;
-import static io.pivotal.security.helper.TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT;
+import static io.pivotal.security.util.TestConstants.SSH_PUBLIC_KEY_4096;
+import static io.pivotal.security.util.TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -16,6 +16,13 @@ public class SshPublicKeyParserTest {
   {
     it("return null if public key is null", () -> {
       SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser(null);
+      assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
+      assertThat(sshPublicKeyParser.getComment(), equalTo(null));
+      assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));
+    });
+
+    it("return null if public key is invalid", () -> {
+      SshPublicKeyParser sshPublicKeyParser = new SshPublicKeyParser("foobar");
       assertThat(sshPublicKeyParser.getFingerprint(), equalTo(null));
       assertThat(sshPublicKeyParser.getComment(), equalTo(null));
       assertThat(sshPublicKeyParser.getKeyLength(), equalTo(0));

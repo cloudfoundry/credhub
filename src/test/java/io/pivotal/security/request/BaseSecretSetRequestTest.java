@@ -2,6 +2,7 @@ package io.pivotal.security.request;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.JsonHelper.deserializeChecked;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
@@ -13,6 +14,7 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.helper.JsonHelper;
 import java.util.Arrays;
@@ -57,6 +59,20 @@ public class BaseSecretSetRequestTest {
             "}";
 
         JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
+      });
+    });
+
+    describe("when value has an unknown field", () -> {
+      itThrows("should be invalid", UnrecognizedPropertyException.class, () -> {
+        String json = "{\n"
+            + "  \"name\": \"/example/certificate\",\n"
+            + "  \"type\": \"certificate\",\n"
+            + "  \"value\": {"
+            + "    \"foo\": \"\""
+            + "  }"
+            + "}";
+        deserializeChecked(json,
+            BaseSecretSetRequest.class);
       });
     });
 
