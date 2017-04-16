@@ -17,6 +17,7 @@ import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.service.SetService;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResults;

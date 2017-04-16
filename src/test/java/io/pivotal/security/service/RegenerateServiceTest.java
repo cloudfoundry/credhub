@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.secret;
+package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditRecordBuilder;
@@ -9,21 +9,12 @@ import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.BaseSecretGenerateRequest;
-import io.pivotal.security.request.PasswordGenerateRequest;
-import io.pivotal.security.request.PasswordGenerationParameters;
-import io.pivotal.security.request.RsaGenerateRequest;
-import io.pivotal.security.request.SecretRegenerateRequest;
-import io.pivotal.security.request.SshGenerateRequest;
-import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.request.*;
 import io.pivotal.security.view.SecretView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -31,9 +22,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(Spectrum.class)
 public class RegenerateServiceTest {

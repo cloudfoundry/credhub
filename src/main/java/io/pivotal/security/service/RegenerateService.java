@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.secret;
+package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
@@ -6,13 +6,7 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.SecretRegenerateRequest;
-import io.pivotal.security.service.GenerateService;
-import io.pivotal.security.service.regeneratables.CertificateSecretRegeneratable;
-import io.pivotal.security.service.regeneratables.NotRegeneratable;
-import io.pivotal.security.service.regeneratables.PasswordSecretRegeneratable;
-import io.pivotal.security.service.regeneratables.Regeneratable;
-import io.pivotal.security.service.regeneratables.RsaSecretRegeneratable;
-import io.pivotal.security.service.regeneratables.SshSecretRegeneratable;
+import io.pivotal.security.service.regeneratables.*;
 import io.pivotal.security.view.SecretView;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +17,7 @@ import java.util.function.Supplier;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
-class RegenerateService {
+public class RegenerateService {
 
   private SecretDataService secretDataService;
   private GenerateService generateService;
