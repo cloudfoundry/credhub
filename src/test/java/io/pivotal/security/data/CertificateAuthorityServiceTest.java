@@ -1,25 +1,25 @@
 package io.pivotal.security.data;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.BouncyCastleProviderConfiguration;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.secret.Certificate;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringRunner.class)
 public class CertificateAuthorityServiceTest {
 
   CertificateAuthorityService certificateAuthorityService;
@@ -27,64 +27,64 @@ public class CertificateAuthorityServiceTest {
   Certificate certificate;
   NamedCertificateSecret namedCertificateSecret;
 
-  {
-    beforeEach(() -> {
-      certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key");
-      namedCertificateSecret = mock(NamedCertificateSecret.class);
+  @Before
+  public void beforeEach() {
+    certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key");
+    namedCertificateSecret = mock(NamedCertificateSecret.class);
 
-      secretDataService = mock(SecretDataService.class);
-      certificateAuthorityService = new CertificateAuthorityService(secretDataService);
-    });
+    secretDataService = mock(SecretDataService.class);
+    certificateAuthorityService = new CertificateAuthorityService(secretDataService);
 
-    describe("when a CA does not exist", () -> {
-      beforeEach(() -> {
-        when(secretDataService.findMostRecent(any(String.class))).thenReturn(null);
-      });
+    new BouncyCastleProviderConfiguration().bouncyCastleProvider();
+  }
 
-      itThrowsWithMessage("error.ca_not_found", ParameterizedValidationException.class,
-          "error.ca_not_found", () -> {
-            certificateAuthorityService.findMostRecent("any ca name");
-          });
-    });
+  @Test
+  public void findMostRecent_whenACaDoesNotExist_throwsException() {
+    when(secretDataService.findMostRecent(any(String.class))).thenReturn(null);
 
-    describe("when a CA does exist", () -> {
-      beforeEach(() -> {
-        when(secretDataService.findMostRecent("my-ca-name")).thenReturn(namedCertificateSecret);
-        when(namedCertificateSecret.getPrivateKey()).thenReturn("my-key");
-        when(namedCertificateSecret.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
-      });
+    try {
+      certificateAuthorityService.findMostRecent("any ca name");
+    } catch (ParameterizedValidationException pe) {
+      assertThat(pe.getMessage(), equalTo("error.ca_not_found"));
+    }
+  }
 
-      it("returns it", () -> {
-        assertThat(certificateAuthorityService.findMostRecent("my-ca-name"),
-            samePropertyValuesAs(certificate));
-      });
-    });
+  @Test
+  public void findMostRecent_givenExistingCa_returnsTheCa() {
+    when(secretDataService.findMostRecent("my-ca-name")).thenReturn(namedCertificateSecret);
+    when(namedCertificateSecret.getPrivateKey()).thenReturn("my-key");
+    when(namedCertificateSecret.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
-    describe("when the secret found isn't a certificate", () -> {
-      beforeEach(() -> {
-        when(secretDataService.findMostRecent("actually-a-password"))
-            .thenReturn(new NamedPasswordSecret());
-      });
+    assertThat(certificateAuthorityService.findMostRecent("my-ca-name"),
+        samePropertyValuesAs(certificate));
+  }
 
-      itThrowsWithMessage("error.ca_not_found", ParameterizedValidationException.class,
-          "error.ca_not_found", () -> {
-            certificateAuthorityService.findMostRecent("actually-a-password");
-          });
-    });
+  @Test
+  public void findMostRecent_whenSecretIsNotACa_throwsException() {
+    when(secretDataService.findMostRecent("actually-a-password"))
+        .thenReturn(new NamedPasswordSecret());
 
-    describe("when the certificate found isn't a ca", () -> {
-      beforeEach(() -> {
-        NamedCertificateSecret notACertificateAuthority = mock(NamedCertificateSecret.class);
-        when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
-        when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
-        when(secretDataService.findMostRecent("just-a-certificate"))
-            .thenReturn(notACertificateAuthority);
-      });
+    try {
+      certificateAuthorityService.findMostRecent("actually-a-password");
+    } catch (ParameterizedValidationException pe) {
+      assertThat(pe.getMessage(), equalTo("error.ca_not_found"));
+    }
+  }
 
-      itThrowsWithMessage("error.cert_not_ca", ParameterizedValidationException.class,
-          "error.cert_not_ca", () -> {
-            certificateAuthorityService.findMostRecent("just-a-certificate");
-          });
-    });
+  @Test
+  public void findMostRecent_whenCertificateIsNotACa_throwsException() {
+    NamedCertificateSecret notACertificateAuthority = mock(NamedCertificateSecret.class);
+    when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
+    when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
+    when(secretDataService.findMostRecent("just-a-certificate"))
+        .thenReturn(notACertificateAuthority);
+
+
+
+    try {
+      certificateAuthorityService.findMostRecent("just-a-certificate");
+    } catch (ParameterizedValidationException pe) {
+      assertThat(pe.getMessage(), equalTo("error.cert_not_ca"));
+    }
   }
 }

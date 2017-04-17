@@ -55,13 +55,6 @@ public class CredentialManagerApp {
   }
 
   @Bean
-  public BouncyCastleProvider bouncyCastleProvider() {
-    BouncyCastleProvider bouncyCastleProvider = new BouncyCastleProvider();
-    Security.addProvider(bouncyCastleProvider);
-    return bouncyCastleProvider;
-  }
-
-  @Bean
   public X509ExtensionUtils x509ExtensionUtils() throws OperatorCreationException {
     return new X509ExtensionUtils(new BcDigestCalculatorProvider().get(
         AlgorithmIdentifier.getInstance(OIWObjectIdentifiers.idSHA1)));
