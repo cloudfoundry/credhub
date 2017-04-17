@@ -6,36 +6,26 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
+import io.pivotal.security.util.DatabaseProfileResolver;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertNotNull;
-
 @RunWith(SpringRunner.class)
-@ActiveProfiles(value = {"unit-test", "unit-test-h2"})
-@DataJpaTest //uses in-memory database configuration only since this is a unit test, not integration
-@ContextConfiguration(classes = CredentialManagerApp.class)
+@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 public class EncryptionKeyCanaryDataServiceTest {
 
   @Autowired
@@ -45,6 +35,7 @@ public class EncryptionKeyCanaryDataServiceTest {
 
   @Before
   public void beforeEach() {
+    encryptionKeyCanaryRepository.deleteAllInBatch();
     subject = new EncryptionKeyCanaryDataService(encryptionKeyCanaryRepository);
   }
 
