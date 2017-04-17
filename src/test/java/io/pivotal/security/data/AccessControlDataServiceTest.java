@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -29,8 +31,6 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import java.util.List;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -187,6 +187,44 @@ public class AccessControlDataServiceTest {
       describe("when the user has no permissions for the credential", () -> {
         it("should return false", () -> {
           assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(false));
+        });
+      });
+    });
+
+    describe("#hasReadPermission", () -> {
+      beforeEach(() -> {
+        secretDataService.save(new NamedValueSecret("/test/credential"));
+      });
+
+      describe("when the user has read permission for the credential", () -> {
+        beforeEach(() -> {
+          final List<AccessControlOperation> operations = asList(AccessControlOperation.READ, AccessControlOperation.DELETE);
+          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
+          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
+        });
+
+        it("should return true", () -> {
+          assertThat(subject.hasReadPermission("test-actor", "/test/credential"), equalTo(true));
+        });
+
+        it("should return true independent of credential name case", () -> {
+          assertThat(subject.hasReadPermission("test-actor", "/TEST/credential"), equalTo(true));
+        });
+      });
+
+      describe("when the user has permissions for the credential but not read", () -> {
+        it("should return false", () -> {
+          final List<AccessControlOperation> operations = asList(AccessControlOperation.WRITE_ACL, AccessControlOperation.READ_ACL);
+          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
+          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
+
+          assertThat(subject.hasReadPermission("test-actor", "/test/credential"), equalTo(false));
+        });
+      });
+
+      describe("when the user has no permissions for the credential", () -> {
+        it("should return false", () -> {
+          assertThat(subject.hasReadPermission("test-actor", "/test/credential"), equalTo(false));
         });
       });
     });

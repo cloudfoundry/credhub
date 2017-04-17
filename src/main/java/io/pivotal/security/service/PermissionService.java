@@ -30,6 +30,15 @@ public class PermissionService {
     }
   }
 
+  public void verifyReadPermission(UserContext user, String credentialName) {
+    if (enforcePermissions) {
+      String actor = getActorFromUserContext(user);
+      if (StringUtils.isEmpty(actor) || !accessControlDataService.hasReadPermission(actor, credentialName)) {
+        throw new PermissionException("error.acl.lacks_read");
+      }
+    }
+  }
+
   private String getActorFromUserContext(UserContext user) {
     return user.getAclUser();
   }

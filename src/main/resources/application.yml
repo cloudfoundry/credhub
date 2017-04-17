@@ -11,7 +11,7 @@ security:
     enabled: false
   authorization:
     acls:
-      enabled: true
+      enabled: false
 
 spring:
   jpa:

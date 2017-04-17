@@ -12,11 +12,13 @@ import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.BaseSecretSetRequest;
 import io.pivotal.security.request.SecretRegenerateRequest;
 import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.service.SetService;
 import io.pivotal.security.view.DataResponse;
@@ -40,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,7 +50,6 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import javax.servlet.http.HttpServletRequest;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
@@ -67,14 +69,16 @@ public class SecretsController {
   private final GenerateService generateService;
   private final SetService setService;
   private final RegenerateService regenerateService;
+  private final PermissionService permissionService;
 
   @Autowired
   public SecretsController(SecretDataService secretDataService,
-                           EventAuditLogService eventAuditLogService,
-                           ObjectMapper objectMapper,
-                           GenerateService generateService,
-                           SetService setService,
-                           RegenerateService regenerateService
+      EventAuditLogService eventAuditLogService,
+      ObjectMapper objectMapper,
+      GenerateService generateService,
+      SetService setService,
+      RegenerateService regenerateService,
+      PermissionService permissionService
   ) {
     this.secretDataService = secretDataService;
     this.eventAuditLogService = eventAuditLogService;
@@ -82,6 +86,7 @@ public class SecretsController {
     this.generateService = generateService;
     this.setService = setService;
     this.regenerateService = regenerateService;
+    this.permissionService = permissionService;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -92,13 +97,15 @@ public class SecretsController {
       AccessControlEntry currentUserAccessControlEntry) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
-      return auditedHandlePostRequest(requestInputStream, request, userContext, currentUserAccessControlEntry);
+      return auditedHandlePostRequest(requestInputStream, request, userContext,
+          currentUserAccessControlEntry);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       requestInputStream.reset();
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing secret, possibly caused by race condition, retrying...");
-      return auditedHandlePostRequest(requestInputStream, request, userContext, currentUserAccessControlEntry);
+      return auditedHandlePostRequest(requestInputStream, request, userContext,
+          currentUserAccessControlEntry);
     }
   }
 
@@ -111,12 +118,14 @@ public class SecretsController {
     requestBody.validate();
 
     try {
-      return auditedHandlePutRequest(requestBody, request, userContext, currentUserAccessControlEntry);
+      return auditedHandlePutRequest(requestBody, request, userContext,
+          currentUserAccessControlEntry);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing secret, possibly caused by race condition, retrying...");
-      return auditedHandlePutRequest(requestBody, request, userContext, currentUserAccessControlEntry);
+      return auditedHandlePutRequest(requestBody, request, userContext,
+          currentUserAccessControlEntry);
     }
   }
 
@@ -188,8 +197,7 @@ public class SecretsController {
 
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public FindPathResults findPaths(HttpServletRequest request, UserContext userContext)
-      {
+  public FindPathResults findPaths(HttpServletRequest request, UserContext userContext) {
     return findPathsWithAuditing(request, userContext);
   }
 
@@ -210,12 +218,13 @@ public class SecretsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) {
-    return eventAuditLogService.performWithAuditing(request, userContext, (eventAuditRecordBuilder -> {
-      return deserializeAndHandlePostRequest(
-          inputStream,
-          eventAuditRecordBuilder,
-          currentUserAccessControlEntry);
-    }));
+    return eventAuditLogService
+        .performWithAuditing(request, userContext, (eventAuditRecordBuilder -> {
+          return deserializeAndHandlePostRequest(
+              inputStream,
+              eventAuditRecordBuilder,
+              currentUserAccessControlEntry);
+        }));
   }
 
   private SecretView deserializeAndHandlePostRequest(
@@ -226,16 +235,18 @@ public class SecretsController {
     try {
       String requestString = IOUtils.toString(new InputStreamReader(inputStream));
       boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
-  
+
       if (isRegenerateRequest) {
         // If it's a regenerate request deserialization is simple; the generation case requires
         // polymorphic deserialization See BaseSecretGenerateRequest to see how that's done. It
         // would be nice if Jackson could pick a subclass based on an arbitrary function, since
         // we want to consider both type and .regenerate. We could do custom deserialization but
         // then we'd have to do the entire job by hand.
-        return handleRegenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
+        return handleRegenerateRequest(eventAuditRecordBuilder, requestString,
+            currentUserAccessControlEntry);
       } else {
-        return handleGenerateRequest(eventAuditRecordBuilder, requestString, currentUserAccessControlEntry);
+        return handleGenerateRequest(eventAuditRecordBuilder, requestString,
+            currentUserAccessControlEntry);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -247,10 +258,12 @@ public class SecretsController {
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
-    BaseSecretGenerateRequest requestBody = objectMapper.readValue(requestString, BaseSecretGenerateRequest.class);
+    BaseSecretGenerateRequest requestBody = objectMapper
+        .readValue(requestString, BaseSecretGenerateRequest.class);
     requestBody.validate();
 
-    return generateService.performGenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
+    return generateService
+        .performGenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private SecretView handleRegenerateRequest(
@@ -258,9 +271,11 @@ public class SecretsController {
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
-    SecretRegenerateRequest requestBody = objectMapper.readValue(requestString, SecretRegenerateRequest.class);
+    SecretRegenerateRequest requestBody = objectMapper
+        .readValue(requestString, SecretRegenerateRequest.class);
 
-    return regenerateService.performRegenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
+    return regenerateService
+        .performRegenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private SecretView auditedHandlePutRequest(
@@ -278,7 +293,8 @@ public class SecretsController {
       EventAuditRecordBuilder eventAuditRecordBuilder,
       AccessControlEntry currentUserAccessControlEntry
   ) {
-    return setService.performSet(eventAuditRecordBuilder, requestBody, currentUserAccessControlEntry);
+    return setService
+        .performSet(eventAuditRecordBuilder, requestBody, currentUserAccessControlEntry);
   }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
@@ -297,24 +313,33 @@ public class SecretsController {
   }
 
   private List<NamedSecret> retrieveSecretWithAuditing(String identifier,
-                                                       Function<String, List<NamedSecret>> finder,
-                                                       HttpServletRequest request,
-                                                       UserContext userContext) {
-    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
-      eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
+      Function<String, List<NamedSecret>> finder,
+      HttpServletRequest request,
+      UserContext userContext) {
+    return eventAuditLogService
+        .performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+          eventAuditRecordBuilder
+              .setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
-      if (StringUtils.isEmpty(identifier)) {
-        throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
-      }
-      List<NamedSecret> namedSecrets = finder.apply(identifier);
-      if (namedSecrets.isEmpty()) {
-        throw new EntryNotFoundException("error.credential_not_found");
-      } else {
-        String name = namedSecrets.get(0).getName();
-        eventAuditRecordBuilder.setCredentialName(name);
-        return namedSecrets;
-      }
-    });
+          if (StringUtils.isEmpty(identifier)) {
+            throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
+          }
+          try {
+            List<NamedSecret> namedSecrets = finder.apply(identifier);
+            if (namedSecrets.isEmpty()) {
+              throw new EntryNotFoundException("error.credential_not_found");
+            } else {
+              String name = namedSecrets.get(0).getName();
+              eventAuditRecordBuilder.setCredentialName(name);
+              //The permission check is done this late to allow the audit log to distinguish between
+              //404s caused by permission errors and actual 404s.
+              permissionService.verifyReadPermission(userContext, identifier);
+              return namedSecrets;
+            }
+          } catch (PermissionException e) {
+            throw new EntryNotFoundException("error.credential_not_found");
+          }
+        });
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {
@@ -332,22 +357,24 @@ public class SecretsController {
       Function<String, List<SecretView>> finder,
       HttpServletRequest request,
       UserContext userContext) {
-    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
-      eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
-      List<SecretView> secretViews = finder.apply(nameSubstring);
-      return FindCredentialResults.fromSecrets(secretViews);
-    });
+    return eventAuditLogService
+        .performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+          eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
+          List<SecretView> secretViews = finder.apply(nameSubstring);
+          return FindCredentialResults.fromSecrets(secretViews);
+        });
   }
 
   private FindPathResults findPathsWithAuditing(
       HttpServletRequest request,
       UserContext userContext
   ) {
-    return eventAuditLogService.performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
-      eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
-      List<String> paths = secretDataService.findAllPaths();
-      return FindPathResults.fromEntity(paths);
-    });
+    return eventAuditLogService
+        .performWithAuditing(request, userContext, eventAuditRecordBuilder -> {
+          eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
+          List<String> paths = secretDataService.findAllPaths();
+          return FindPathResults.fromEntity(paths);
+        });
   }
 
   private FindCredentialResults findStartingWithAuditing(String path, HttpServletRequest request,

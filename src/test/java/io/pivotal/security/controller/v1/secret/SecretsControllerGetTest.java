@@ -2,12 +2,15 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.exceptions.KeyNotFoundException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -16,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -60,6 +64,9 @@ public class SecretsControllerGetTest {
   @SpyBean
   Encryptor encryptor;
 
+  @SpyBean
+  PermissionService permissionService;
+
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
 
@@ -90,6 +97,11 @@ public class SecretsControllerGetTest {
       fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
+
+      ReflectionTestUtils
+          .setField(permissionService, PermissionService.class, "enforcePermissions", false,
+              boolean.class);
+
       mockMvc = MockMvcBuilders
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
@@ -110,7 +122,8 @@ public class SecretsControllerGetTest {
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime);
 
-        doReturn(secretValue).when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
+        doReturn(secretValue).when(encryptor)
+            .decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
 
         doReturn(
             valueSecret
@@ -131,12 +144,21 @@ public class SecretsControllerGetTest {
           makeGetByNameBlock(
               secretValue,
               "/api/v1/data?name=" + secretName.toUpperCase(),
-          "/api/v1/data?name=invalid_name", "$.data[0]"
+              "/api/v1/data?name=invalid_name", "$.data[0]"
+          ));
+
+      describe(
+          "when user does not have permissions to retrieve the secret",
+          makeGetByNameBlockWithNoPermissions(
+              secretValue,
+              "/api/v1/data?name=" + secretName.toUpperCase(),
+              "/api/v1/data?name=invalid_name", "$.data[0]"
           ));
 
       describe("getting a secret by name when name has multiple leading slashes", () -> {
         it("returns NOT_FOUND", () -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?name=//" + secretName.toUpperCase())
+          final MockHttpServletRequestBuilder get = get(
+              "/api/v1/data?name=//" + secretName.toUpperCase())
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
@@ -215,7 +237,8 @@ public class SecretsControllerGetTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, "/api/v1/data/" + uuid.toString(), 200);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository,
+              CREDENTIAL_ACCESS, secretName, "/api/v1/data/" + uuid.toString(), 200);
         });
       });
     });
@@ -231,7 +254,8 @@ public class SecretsControllerGetTest {
 
         doThrow(new KeyNotFoundException("error.missing_encryption_key"))
             .when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
-        doReturn(Arrays.asList(valueSecret)).when(secretDataService).findAllByName(secretName.toUpperCase());
+        doReturn(Arrays.asList(valueSecret)).when(secretDataService)
+            .findAllByName(secretName.toUpperCase());
       });
 
       it("returns KEY_NOT_PRESENT", () -> {
@@ -272,11 +296,67 @@ public class SecretsControllerGetTest {
             .andExpect(jsonPath(jsonPathPrefix + ".type").value("value"))
             .andExpect(jsonPath(jsonPathPrefix + ".value").value(secretValue))
             .andExpect(jsonPath(jsonPathPrefix + ".id").value(uuid.toString()))
-            .andExpect(jsonPath(jsonPathPrefix + ".version_created_at").value(frozenTime.toString()));
+            .andExpect(
+                jsonPath(jsonPathPrefix + ".version_created_at").value(frozenTime.toString()));
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, 200);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS,
+            secretName, 200);
+      });
+
+      it("returns NOT_FOUND when the secret does not exist", () -> {
+        final MockHttpServletRequestBuilder get = get(invalidUrl)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON);
+
+        mockMvc.perform(get)
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(
+                jsonPath("$.error")
+                    .value("Credential not found. Please validate your input and " +
+                        "retry your request.")
+            );
+      });
+    };
+  }
+
+  private Spectrum.Block makeGetByNameBlockWithNoPermissions(
+      String secretValue,
+      String validUrl,
+      String invalidUrl,
+      String jsonPathPrefix
+  ) {
+    return () -> {
+      beforeEach(() -> {
+        ReflectionTestUtils
+            .setField(permissionService, PermissionService.class, "enforcePermissions", true,
+                boolean.class);
+
+        doThrow(PermissionException.class).when(permissionService)
+            .verifyReadPermission(any(UserContext.class), any(String.class));
+        final MockHttpServletRequestBuilder get = get(validUrl)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON);
+
+        this.response = mockMvc.perform(get);
+      });
+
+      it("should return credential not found even if request is valid", () -> {
+        this.response
+            .andExpect(status().isNotFound())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(
+                jsonPath("$.error")
+                    .value("Credential not found. Please validate your input and " +
+                        "retry your request.")
+            );
+      });
+
+      it("persists an audit entry", () -> {
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS,
+            secretName, 404);
       });
 
       it("returns NOT_FOUND when the secret does not exist", () -> {
