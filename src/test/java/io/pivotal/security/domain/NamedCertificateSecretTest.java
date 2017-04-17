@@ -1,30 +1,21 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
@@ -98,10 +89,10 @@ public class NamedCertificateSecretTest {
             .thenReturn("new private key");
       });
 
-      it("copies name from existing", () -> {
+      it("copies name and ca's name from existing", () -> {
         CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
             "certificate", "ca");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret
+        NamedCertificateSecret newSecret = NamedCertificateSecret
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
                 new ArrayList<>());
 
@@ -115,7 +106,7 @@ public class NamedCertificateSecretTest {
       it("creates new if no existing", () -> {
         CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
             "certificate", "ca");
-        NamedCertificateSecret newSecret = (NamedCertificateSecret) NamedCertificateSecret
+        NamedCertificateSecret newSecret = NamedCertificateSecret
             .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
         assertThat(newSecret.getName(), equalTo("/newName"));

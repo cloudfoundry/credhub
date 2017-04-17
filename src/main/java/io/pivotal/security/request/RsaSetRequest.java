@@ -3,12 +3,11 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSecret;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class RsaSetRequest extends BaseSecretSetRequest {
+public class RsaSetRequest extends BaseSecretSetRequest<NamedRsaSecret> {
 
   @NotNull(message = "error.missing_value")
   @Valid
@@ -24,9 +23,13 @@ public class RsaSetRequest extends BaseSecretSetRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
+  public NamedRsaSecret createNewVersion(NamedRsaSecret existing, Encryptor encryptor) {
     return NamedRsaSecret
-        .createNewVersion((NamedRsaSecret) existing, getName(), this.getKeySetRequestFields(),
-            encryptor, this.getAccessControlEntries());
+        .createNewVersion(
+            existing,
+            getName(),
+            getKeySetRequestFields(),
+            encryptor,
+            getAccessControlEntries());
   }
 }

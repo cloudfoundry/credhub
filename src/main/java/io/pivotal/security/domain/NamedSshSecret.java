@@ -26,7 +26,7 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
     this(new NamedSshSecretData());
   }
 
-  public static NamedSecret createNewVersion(NamedSshSecret existing, String name,
+  public static NamedSshSecret createNewVersion(NamedSshSecret existing, String name,
                                              KeySetRequestFields fields, Encryptor encryptor,
                                              List<AccessControlEntry> accessControlEntries) {
     NamedSshSecret secret;

@@ -37,7 +37,7 @@ public class SpectrumHelper {
   private static final String SPY_BEAN_SIMPLE_NAME = SpyBean.class.getSimpleName();
 
   public static <T extends Throwable> void itThrows(final String behavior,
-      final Class<T> throwableClass, final Spectrum.Block block) {
+                                                    final Class<T> throwableClass, final Spectrum.Block block) {
     Spectrum.it(behavior, () -> {
       try {
         block.run();
@@ -54,7 +54,7 @@ public class SpectrumHelper {
   }
 
   public static <T extends Throwable> void itThrowsWithMessage(final String behavior,
-      final Class<T> throwableClass, final String message, final Spectrum.Block block) {
+                                                               final Class<T> throwableClass, final String message, final Spectrum.Block block) {
     Spectrum.it(behavior, () -> {
       try {
         block.run();

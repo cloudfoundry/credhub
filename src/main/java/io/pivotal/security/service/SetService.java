@@ -46,7 +46,7 @@ public class SetService {
 
     NamedSecret storedEntity = existingNamedSecret;
     if (shouldWriteNewEntity) {
-      NamedSecret newEntity = requestBody.createNewVersion(existingNamedSecret, encryptor);
+      NamedSecret newEntity = (NamedSecret) requestBody.createNewVersion(existingNamedSecret, encryptor);
       storedEntity = secretDataService.save(newEntity);
     }
     eventAuditRecordBuilder.setCredentialName(storedEntity.getName());

@@ -1,24 +1,22 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.helper.JsonHelper;
+import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserializeChecked;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.helper.JsonHelper;
-import java.util.Arrays;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class BaseSecretSetRequestTest {
@@ -73,25 +71,6 @@ public class BaseSecretSetRequestTest {
             + "}";
         deserializeChecked(json,
             BaseSecretSetRequest.class);
-      });
-    });
-
-    describe("when the type is user", () -> {
-      it("deserializes to UserSetRequest", () -> {
-        // language=JSON
-        String json = "{\n" +
-            "  \"name\": \"/dan-user\",\n" +
-            "  \"type\": \"user\",\n" +
-            "  \"value\":\n" +
-            "  {\n" +
-            "    \"username\": \"dan\",\n" +
-            "    \"password\": \"example-password\"\n" +
-            "  }\n" +
-            "}";
-
-        BaseSecretSetRequest userSetRequest = JsonHelper.deserializeChecked(json, BaseSecretSetRequest.class);
-
-        assertThat(userSetRequest, instanceOf(UserSetRequest.class));
       });
     });
 

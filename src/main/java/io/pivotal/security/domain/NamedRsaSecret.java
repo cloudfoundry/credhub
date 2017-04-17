@@ -25,7 +25,7 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
     this(new NamedRsaSecretData());
   }
 
-  public static NamedSecret createNewVersion(NamedRsaSecret existing, String name,
+  public static NamedRsaSecret createNewVersion(NamedRsaSecret existing, String name,
                                              KeySetRequestFields fields, Encryptor encryptor,
                                              List<AccessControlEntry> accessControlEntries) {
     NamedRsaSecret secret;

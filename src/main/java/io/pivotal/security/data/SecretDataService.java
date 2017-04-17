@@ -1,21 +1,7 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedJsonSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.entity.NamedCertificateSecretData;
-import io.pivotal.security.entity.NamedJsonSecretData;
-import io.pivotal.security.entity.NamedPasswordSecretData;
-import io.pivotal.security.entity.NamedRsaSecretData;
-import io.pivotal.security.entity.NamedSecretData;
-import io.pivotal.security.entity.NamedSshSecretData;
-import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.domain.*;
+import io.pivotal.security.entity.*;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -216,6 +202,8 @@ public class SecretDataService {
       returnValue = new NamedValueSecret((NamedValueSecretData) dao);
     } else if (dao instanceof NamedJsonSecretData) {
       returnValue = new NamedJsonSecret((NamedJsonSecretData) dao);
+    } else if (dao instanceof NamedUserSecretData) {
+      returnValue = new NamedUserSecret((NamedUserSecretData) dao);
     } else {
       throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
     }

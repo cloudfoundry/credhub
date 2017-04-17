@@ -1,14 +1,8 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedJsonSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSecret;
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.domain.NamedValueSecret;
-import java.security.NoSuchAlgorithmException;
+import io.pivotal.security.domain.*;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -47,6 +41,8 @@ public class SecretView extends BaseView {
       result = new RsaView((NamedRsaSecret) namedSecret);
     } else if (NamedJsonSecret.class.isInstance(namedSecret)) {
       result = new JsonView((NamedJsonSecret) namedSecret);
+    } else if (NamedUserSecret.class.isInstance(namedSecret)) {
+      result = new UserView((NamedUserSecret) namedSecret);
     } else {
       throw new IllegalArgumentException();
     }

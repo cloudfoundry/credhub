@@ -1,12 +1,8 @@
 package io.pivotal.security.entity;
 
-import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+import javax.persistence.*;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.SecondaryTable;
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 
 @Entity
 @DiscriminatorValue(NamedPasswordSecretData.SECRET_TYPE)

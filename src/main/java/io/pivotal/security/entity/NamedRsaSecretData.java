@@ -17,6 +17,7 @@ public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
 
   public static final String SECRET_TYPE = "rsa";
   static final String TABLE_NAME = "RsaSecret";
+
   @Column(table = NamedRsaSecretData.TABLE_NAME, length = 7000)
   private String publicKey;
 

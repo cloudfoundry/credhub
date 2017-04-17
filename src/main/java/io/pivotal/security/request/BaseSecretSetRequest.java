@@ -1,13 +1,12 @@
 package io.pivotal.security.request;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -24,10 +23,10 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
     @JsonSubTypes.Type(name = "rsa", value = RsaSetRequest.class),
     @JsonSubTypes.Type(name = "user", value = UserSetRequest.class)
 })
-public abstract class BaseSecretSetRequest extends BaseSecretRequest {
+public abstract class BaseSecretSetRequest<Z> extends BaseSecretRequest {
 
   @JsonIgnore
-  public abstract NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor);
+  public abstract Z createNewVersion(Z existing, Encryptor encryptor);
 
   @Override
   public void validate() {
@@ -39,6 +38,6 @@ public abstract class BaseSecretSetRequest extends BaseSecretRequest {
   }
 
   private boolean isValidTypeForSet(String type) {
-    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json").contains(type);
+    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
   }
 }

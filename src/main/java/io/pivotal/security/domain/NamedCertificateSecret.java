@@ -24,7 +24,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
     this(new NamedCertificateSecretData());
   }
 
-  public static NamedSecret createNewVersion(
+  public static NamedCertificateSecret createNewVersion(
       NamedCertificateSecret existing,
       String name,
       CertificateSetRequestFields fields,

@@ -107,6 +107,7 @@ public class SecretsControllerTypeSpecificSetTest {
 
   private final String secretName = "/my-namespace/subTree/secret-name";
   private final String password = "test-password";
+  private final String username = "test-username";
   private final String certificateValueJsonString = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
           .put("ca", TEST_CA)
@@ -132,6 +133,11 @@ public class SecretsControllerTypeSpecificSetTest {
       .put("array", Arrays.asList("foo", "bar"))
       .build();
   private final String jsonValueJsonString = JSONObject.toJSONString(jsonValueMap);
+  private final String userValueJsonString = JSONObject.toJSONString(
+      ImmutableMap.<String, String>builder()
+          .put("username", username)
+          .put("password", password)
+          .build());
   private ResultActions response;
   private MockHttpServletRequestBuilder put;
 
@@ -245,6 +251,25 @@ public class SecretsControllerTypeSpecificSetTest {
         () -> new NamedJsonSecret(secretName)
             .setEncryptor(encryptor)
             .setValue(jsonValueMap)
+            .setUuid(uuid)
+            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
+    );
+
+    describe("user", testSecretBehavior(
+        new Object[]{
+            "$.value.username", username,
+            "$.value.password", password
+        },
+        "user",
+        userValueJsonString,
+        (userSecret) -> {
+          assertThat(userSecret.getUsername(), equalTo(username));
+          assertThat(userSecret.getPassword(), equalTo(password));
+        },
+        () -> new NamedUserSecret(secretName)
+            .setEncryptor(encryptor)
+            .setUsername(username)
+            .setPassword(password)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );

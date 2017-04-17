@@ -4,10 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedSecret;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class PasswordSetRequest extends BaseSecretSetRequest {
+public class PasswordSetRequest extends BaseSecretSetRequest<NamedPasswordSecret> {
 
   @NotEmpty(message = "error.missing_value")
   @JsonProperty("value")
@@ -29,14 +28,14 @@ public class PasswordSetRequest extends BaseSecretSetRequest {
 
   @Override
   @JsonIgnore
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
+  public NamedPasswordSecret createNewVersion(NamedPasswordSecret existing, Encryptor encryptor) {
     return NamedPasswordSecret.createNewVersion(
-            (NamedPasswordSecret) existing,
-            getName(),
-            getPassword(),
-            generationParameters,
-            encryptor,
-            getAccessControlEntries()
+        existing,
+        getName(),
+        getPassword(),
+        generationParameters,
+        encryptor,
+        getAccessControlEntries()
     );
   }
 }

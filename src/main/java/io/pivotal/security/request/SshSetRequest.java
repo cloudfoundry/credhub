@@ -2,13 +2,12 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class SshSetRequest extends BaseSecretSetRequest {
+public class SshSetRequest extends BaseSecretSetRequest<NamedSshSecret> {
 
   @NotNull(message = "error.missing_value")
   @Valid
@@ -24,9 +23,9 @@ public class SshSetRequest extends BaseSecretSetRequest {
   }
 
   @Override
-  public NamedSecret createNewVersion(NamedSecret existing, Encryptor encryptor) {
+  public NamedSshSecret createNewVersion(NamedSshSecret existing, Encryptor encryptor) {
     return NamedSshSecret
-        .createNewVersion((NamedSshSecret) existing, getName(), this.getKeySetRequestFields(),
+        .createNewVersion(existing, getName(), this.getKeySetRequestFields(),
             encryptor, getAccessControlEntries());
   }
 }

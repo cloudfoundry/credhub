@@ -8,15 +8,17 @@ public class UserSetRequestFields {
     return username;
   }
 
-  public void setUsername(String username) {
+  public UserSetRequestFields setUsername(String username) {
     this.username = username;
+    return this;
   }
 
   public String getPassword() {
     return password;
   }
 
-  public void setPassword(String password) {
+  public UserSetRequestFields setPassword(String password) {
     this.password = password;
+    return this;
   }
 }

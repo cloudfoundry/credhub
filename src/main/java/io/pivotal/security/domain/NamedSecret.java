@@ -64,10 +64,6 @@ public abstract class NamedSecret<Z extends NamedSecret> {
     return delegate.getSecretName();
   }
 
-  public boolean isVersionOfSameSecret(NamedSecret otherSecret) {
-    return delegate.getSecretName().equals(otherSecret.delegate.getSecretName());
-  }
-
   protected void copyNameReferenceFrom(NamedSecret namedSecret) {
     this.delegate.setSecretName(namedSecret.delegate.getSecretName());
   }
