@@ -33,6 +33,7 @@ import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
@@ -264,11 +265,6 @@ public class AccessControlEndpointTest {
             + "     }]"
             + "}");
 
-    final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON);
-
     MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -284,43 +280,22 @@ public class AccessControlEndpointTest {
         samePropertyValuesAs(
             new AccessControlEntry("dan", asList(READ)))
     ));
-
-    this.mockMvc.perform(get)
-        .andExpect(status().isOk());
   }
 
   @Test
   public void POST_whenTheLeadingSlashIsMissing_prependsTheSlashCorrectly() throws Exception {
-    final MockHttpServletRequestBuilder put = put("/api/v1/data")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON)
-        .content("{"
-            + "  \"name\": \"/cred2\","
-            + "  \"type\": \"password\","
-            + "  \"value\": \"testpassword\""
-            + "}");
-
-    this.mockMvc.perform(put)
-        .andExpect(status().isOk());
-
     final MockHttpServletRequestBuilder post = post("/api/v1/aces")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"cred2\",\n"
+            + "  \"credential_name\": \"cred1\",\n"
             + "  \"access_control_entries\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
             + "       \"operations\": [\"read\"]\n"
             + "     }]"
             + "}");
-
-    final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred2")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON);
 
     MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -329,17 +304,14 @@ public class AccessControlEndpointTest {
         .andReturn();
     String content = result.getResponse().getContentAsString();
     AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-    assertThat(acl.getCredentialName(), equalTo("/cred2"));
+    assertThat(acl.getCredentialName(), equalTo("/cred1"));
     assertThat(acl.getAccessControlList(), hasSize(2));
     assertThat(acl.getAccessControlList(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("dan", asList(READ)))
+            new AccessControlEntry("dan", singletonList(READ)))
     ));
-
-    this.mockMvc.perform(get)
-        .andExpect(status().isOk());
   }
 
   @Test
