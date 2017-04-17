@@ -1,101 +1,103 @@
 package io.pivotal.security.data;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.entity.RequestAuditRecord;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(Spectrum.class)
+import io.pivotal.security.entity.EventAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 public class EventAuditRecordDataServiceTest {
   private final Instant frozenTime = Instant.ofEpochSecond(1400000000L);
 
   @Autowired
-  private EventAuditRecordDataService subject;
-  @Autowired
-  RequestAuditRecordDataService requestAuditRecordDataService;
+  RequestAuditRecordRepository requestAuditRecordRepository;
+
   @Autowired
   EventAuditRecordRepository eventAuditRecordRepository;
+
   @MockBean
   CurrentTimeProvider currentTimeProvider;
+
   private RequestAuditRecord requestAuditRecord;
 
-  {
-    wireAndUnwire(this);
+  private EventAuditRecordDataService subject;
 
-    beforeEach(() -> {
-      mockOutCurrentTimeProvider(currentTimeProvider).accept(frozenTime.toEpochMilli());
+  @Before
+  public void beforeEach() {
+    mockOutCurrentTimeProvider(currentTimeProvider).accept(frozenTime.toEpochMilli());
 
-      requestAuditRecord = requestAuditRecordDataService.save(new RequestAuditRecord(
-          UUID.randomUUID(),
-          frozenTime,
-          "uaa",
-          "test-user-id",
-          "test-user-name",
-          "http://uaa.example.com",
-          1000L,
-          2000L,
-          "http://host.example.com",
-          "GET",
-          "/api/foo",
-          "",
-          200,
-          "127.0.0.1",
-          "",
-          "test-client-id",
-          "test-scope",
-          "password"
-      ));
-    });
+    requestAuditRecord = requestAuditRecordRepository.save(new RequestAuditRecord(
+        UUID.randomUUID(),
+        frozenTime,
+        "uaa",
+        "test-user-id",
+        "test-user-name",
+        "http://uaa.example.com",
+        1000L,
+        2000L,
+        "http://host.example.com",
+        "GET",
+        "/api/foo",
+        "",
+        HttpStatus.OK.value(),
+        "127.0.0.1",
+        "",
+        "test-client-id",
+        "test-scope",
+        "password"
+    ));
 
-    describe("#save", () -> {
-      it("should create the record in the database", () -> {
-        EventAuditRecord eventAuditRecord = new EventAuditRecord(
-            "credential_access",
-            "/test/credential",
-            "test-actor",
-            requestAuditRecord.getUuid(),
-            true
-        );
-        subject.save(eventAuditRecord);
+    subject = new EventAuditRecordDataService(eventAuditRecordRepository);
+  }
 
-        List<EventAuditRecord> records = eventAuditRecordRepository.findAll();
+  @Test
+  public void save_givenARecord_savesTheRecord() {
+    EventAuditRecord eventAuditRecord = new EventAuditRecord(
+        "credential_access",
+        "/test/credential",
+        "test-actor",
+        requestAuditRecord.getUuid(),
+        true
+    );
+    subject.save(eventAuditRecord);
 
-        assertThat(records, hasSize(1));
+    List<EventAuditRecord> records = eventAuditRecordRepository.findAll();
 
-        EventAuditRecord actual = records.get(0);
+    assertThat(records, hasSize(1));
 
-        assertThat(actual.getOperation(), equalTo("credential_access"));
-        assertThat(actual.getCredentialName(), equalTo("/test/credential"));
-        assertThat(actual.getActor(), equalTo("test-actor"));
-        assertThat(actual.getRequestUuid(), equalTo(requestAuditRecord.getUuid()));
-        assertThat(actual.isSuccess(), equalTo(true));
-        assertThat(actual.getUuid(), isA(UUID.class));
-        assertThat(actual.getNow(), equalTo(frozenTime));
-      });
-    });
+    EventAuditRecord actual = records.get(0);
+
+    assertThat(actual.getOperation(), equalTo("credential_access"));
+    assertThat(actual.getCredentialName(), equalTo("/test/credential"));
+    assertThat(actual.getActor(), equalTo("test-actor"));
+    assertThat(actual.getRequestUuid(), equalTo(requestAuditRecord.getUuid()));
+    assertThat(actual.isSuccess(), equalTo(true));
+    assertThat(actual.getUuid(), isA(UUID.class));
+    assertThat(actual.getNow(), equalTo(frozenTime));
   }
 }
