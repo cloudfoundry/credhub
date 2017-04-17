@@ -2,7 +2,6 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedJsonSecretData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
@@ -46,9 +45,8 @@ public class NamedJsonSecret extends NamedSecret<NamedJsonSecret> {
       secret = new NamedJsonSecret();
       secret.copyNameReferenceFrom(existing);
     }
-    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
 
-    secret.setAccessControlList(accessEntryData);
+    secret.setAccessControlList(accessControlEntries);
     secret.setEncryptor(encryptor);
     secret.setValue(value);
 

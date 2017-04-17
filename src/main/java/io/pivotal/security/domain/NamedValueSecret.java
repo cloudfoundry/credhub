@@ -3,6 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
+
 import java.util.List;
 
 public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
@@ -23,7 +24,7 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
   }
 
   public static NamedValueSecret createNewVersion(NamedValueSecret existing, String name,
-      String value, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
+                                                  String value, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
     NamedValueSecret secret;
 
     if (existing == null) {
@@ -33,7 +34,7 @@ public class NamedValueSecret extends NamedSecret<NamedValueSecret> {
       secret.copyNameReferenceFrom(existing);
     }
 
-    secret.setAccessControlList(secret.getAccessEntryData(accessControlEntries));
+    secret.setAccessControlList(accessControlEntries);
     secret.setEncryptor(encryptor);
     secret.setValue(value);
     return secret;

@@ -2,7 +2,6 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
@@ -10,29 +9,21 @@ import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
+import static com.greghaskins.spectrum.Spectrum.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(Spectrum.class)
 public class NamedPasswordSecretTest {
@@ -168,9 +159,8 @@ public class NamedPasswordSecretTest {
 
         ArrayList<AccessControlOperation> operations = newArrayList(AccessControlOperation.READ,
             AccessControlOperation.WRITE);
-        List<AccessEntryData> accessControlEntries = newArrayList(
-            new AccessEntryData(subject.getSecretName(),
-                new AccessControlEntry("Bob", operations)));
+        List<AccessControlEntry> accessControlEntries = newArrayList(
+            new AccessControlEntry("Bob", operations));
         subject.setAccessControlList(accessControlEntries);
       });
 

@@ -1,7 +1,6 @@
 package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.PasswordGenerationParameters;
@@ -52,8 +51,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       accessControlEntries = new ArrayList<>();
     }
 
-    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
-    secret.setAccessControlList(accessEntryData);
+    secret.setAccessControlList(accessControlEntries);
 
     secret.setEncryptor(encryptor);
     secret.setPasswordAndGenerationParameters(password, generationParameters);
@@ -72,7 +70,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
   }
 
   public NamedPasswordSecret setPasswordAndGenerationParameters(String password,
-      PasswordGenerationParameters generationParameters) {
+                                                                PasswordGenerationParameters generationParameters) {
     if (password == null) {
       throw new IllegalArgumentException("password cannot be null");
     }

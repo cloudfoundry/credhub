@@ -1,11 +1,11 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedSshSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +27,8 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
   }
 
   public static NamedSecret createNewVersion(NamedSshSecret existing, String name,
-      KeySetRequestFields fields, Encryptor encryptor,
-      List<AccessControlEntry> accessControlEntries) {
+                                             KeySetRequestFields fields, Encryptor encryptor,
+                                             List<AccessControlEntry> accessControlEntries) {
     NamedSshSecret secret;
 
     if (existing == null) {
@@ -42,9 +42,7 @@ public class NamedSshSecret extends NamedSecret<NamedSshSecret> {
       accessControlEntries = new ArrayList<>();
     }
 
-    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
-
-    secret.setAccessControlList(accessEntryData);
+    secret.setAccessControlList(accessControlEntries);
 
     secret.setEncryptor(encryptor);
     secret.setPrivateKey(fields.getPrivateKey());

@@ -5,6 +5,7 @@ import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.request.AccessControlEntry;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -54,7 +55,8 @@ public abstract class NamedSecret<Z extends NamedSecret> {
     return (Z) secretDataService.save(delegate);
   }
 
-  public void setAccessControlList(List<AccessEntryData> accessEntryData) {
+  public void setAccessControlList(List<AccessControlEntry> accessControlEntries) {
+    List<AccessEntryData> accessEntryData = this.getAccessEntryData(accessControlEntries);
     delegate.getSecretName().setAccessControlList(accessEntryData);
   }
 
@@ -66,7 +68,7 @@ public abstract class NamedSecret<Z extends NamedSecret> {
     return delegate.getSecretName().equals(otherSecret.delegate.getSecretName());
   }
 
-  void copyNameReferenceFrom(NamedSecret namedSecret) {
+  protected void copyNameReferenceFrom(NamedSecret namedSecret) {
     this.delegate.setSecretName(namedSecret.delegate.getSecretName());
   }
 

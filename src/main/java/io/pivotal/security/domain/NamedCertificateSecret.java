@@ -1,10 +1,10 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
+
 import java.util.List;
 
 public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> {
@@ -41,9 +41,7 @@ public class NamedCertificateSecret extends NamedSecret<NamedCertificateSecret> 
       secret.setCaName(existing.getCaName());
     }
 
-    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
-
-    secret.setAccessControlList(accessEntryData);
+    secret.setAccessControlList(accessControlEntries);
 
     secret.setEncryptor(encryptor);
     secret.setPrivateKey(fields.getPrivateKey());

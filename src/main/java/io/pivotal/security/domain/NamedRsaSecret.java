@@ -1,10 +1,10 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.NamedRsaSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +26,8 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
   }
 
   public static NamedSecret createNewVersion(NamedRsaSecret existing, String name,
-      KeySetRequestFields fields, Encryptor encryptor,
-      List<AccessControlEntry> accessControlEntries) {
+                                             KeySetRequestFields fields, Encryptor encryptor,
+                                             List<AccessControlEntry> accessControlEntries) {
     NamedRsaSecret secret;
 
     if (existing == null) {
@@ -41,9 +41,7 @@ public class NamedRsaSecret extends NamedSecret<NamedRsaSecret> {
       accessControlEntries = new ArrayList<>();
     }
 
-    List<AccessEntryData> accessEntryData = secret.getAccessEntryData(accessControlEntries);
-
-    secret.setAccessControlList(accessEntryData);
+    secret.setAccessControlList(accessControlEntries);
 
     secret.setEncryptor(encryptor);
     secret.setPrivateKey(fields.getPrivateKey());
