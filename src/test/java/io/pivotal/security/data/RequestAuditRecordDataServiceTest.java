@@ -123,8 +123,6 @@ public class RequestAuditRecordDataServiceTest {
   }
 
   RequestAuditRecord createOperationAuditRecord() {
-    int statusCode = 200;
-
     return new RequestAuditRecord(
         UUID.randomUUID(),
         Instant.now(),
@@ -138,7 +136,7 @@ public class RequestAuditRecordDataServiceTest {
         "get",
         "/api/some-path",
         "query=param",
-        statusCode,
+        HttpStatus.OK.value(),
         "127.0.0.1",
         "test-forwarded-for",
         "test-client-id",
