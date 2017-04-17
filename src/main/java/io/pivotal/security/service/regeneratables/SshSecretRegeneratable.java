@@ -18,6 +18,7 @@ public class SshSecretRegeneratable implements Regeneratable {
     SshGenerationParameters generationParameters = new SshGenerationParameters();
     generationParameters.setSshComment(sshSecret.getComment());
     generateRequest.setGenerationParameters(generationParameters);
+    generateRequest.setOverwrite(true);
     return generateRequest;
   }
 }

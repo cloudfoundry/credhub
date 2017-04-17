@@ -1,15 +1,14 @@
 package io.pivotal.security.service.regeneratables;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.NamedCertificateSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.CertificateGenerateRequest;
 import io.pivotal.security.util.CertificateReader;
+
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class CertificateSecretRegeneratable implements Regeneratable {
 
@@ -30,6 +29,7 @@ public class CertificateSecretRegeneratable implements Regeneratable {
     generateRequest.setName(certificateSecret.getName());
     generateRequest.setType(certificateSecret.getSecretType());
     generateRequest.setCertificateParameters(certificateParameters);
+    generateRequest.setOverwrite(true);
     return generateRequest;
   }
 }

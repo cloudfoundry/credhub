@@ -18,6 +18,7 @@ public class PasswordSecretRegeneratable implements Regeneratable {
     generateRequest.setType(passwordSecret.getSecretType());
     PasswordGenerationParameters generationParameters;
     generationParameters = passwordSecret.getGenerationParameters();
+    generateRequest.setOverwrite(true);
 
     if (generationParameters == null) {
       throw new ParameterizedValidationException(

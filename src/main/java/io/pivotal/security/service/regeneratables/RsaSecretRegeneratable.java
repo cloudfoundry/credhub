@@ -16,6 +16,7 @@ public class RsaSecretRegeneratable implements Regeneratable {
     RsaGenerateRequest generateRequest = new RsaGenerateRequest();
     generateRequest.setName(rsaSecret.getName());
     generateRequest.setType(rsaSecret.getSecretType());
+    generateRequest.setOverwrite(true);
     return generateRequest;
   }
 }
