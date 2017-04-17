@@ -201,7 +201,6 @@ public class AccessControlEndpointTest {
 
   @Test
   public void DELETE_whenTheActorIsAllowedToDeleteACEs_shouldDeleteTheSpecifiedACE() throws Exception {
-    // TODO
     final MockHttpServletRequestBuilder post = post("/api/v1/aces")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)

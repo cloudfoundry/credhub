@@ -1,17 +1,17 @@
 package io.pivotal.security.audit;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedValueSecret;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,24 +19,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,7 +44,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringRunner.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @SuppressWarnings("EmptyCatchBlock")
@@ -75,124 +70,82 @@ public class EventAuditLogServiceTest {
   private final Instant now = Instant.ofEpochSecond(1490903353L);
   private final Instant then = Instant.ofEpochSecond(1550903353L);
 
-  private ResponseEntity<?> responseEntity;
   private UserContext userContext;
-
   private RequestUuid requestUuid;
 
-  {
-    wireAndUnwire(this);
+  @Before
+  public void beforeEach() {
+    mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
+    userContext = mockUserContext(true);
+    requestUuid = new RequestUuid(UUID.randomUUID());
+  }
 
-    beforeEach(() -> {
-      mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
-      userContext = mockUserContext(true);
-      requestUuid = new RequestUuid(UUID.randomUUID());
-    });
+  @Test
+  @Transactional
+  public void auditEvent_whenTheEventAndAuditBothSucceed_auditsTheEvent() {
+    subject.auditEvent(
+        requestUuid,
+        userContext,
+        auditRecordBuilder -> {
+          auditRecordBuilder.setCredentialName("keyName");
+          auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
+          NamedValueSecretData entity = new NamedValueSecretData("keyName");
+          entity.setEncryptedValue("value".getBytes());
+          return secretDataService.save(entity);
+        }
+    );
 
-    describe("#auditEvent", () -> {
-      describe("when the action succeeds", () -> {
-        describe("when the audit succeeds", () -> {
-          beforeEach(() -> {
-            responseEntity = subject.auditEvent(
-                requestUuid,
-                userContext,
-                this::auditedSaveAndReturnNewValue
-            );
-          });
+    assertThat(secretDataService.count(), equalTo(1L));
+    checkAuditRecords(true);
+  }
 
-          it("performs the action", () -> {
-            assertThat(secretDataService.count(), equalTo(1L));
-          });
+  @Test(expected = AuditSaveFailureException.class)
+  @Rollback
+  public void auditEvent_whenTheEventSucceedsAndTheAuditFails_rollsBackTheEventAndThrowsAnException() {
+    doThrow(new RuntimeException()).when(eventAuditRecordDataService)
+        .save(any(EventAuditRecord.class));
 
-          it("passes the request untouched", () -> {
-            assertThat(responseEntity.getStatusCode(), equalTo(HttpStatus.OK));
-          });
+    userContext = mockUserContext(false);
 
-          it("logs the audit entries", () -> {
-            checkAuditRecords(true);
-          });
-        });
+    try {
+      subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
+        auditRecordBuilder.setCredentialName("keyName");
 
-        describe("when the database audit fails", () -> {
-          itThrowsWithMessage("does not perform the action", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(eventAuditRecordDataService)
-                .save(any(EventAuditRecord.class));
+        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        entity.setEncryptedValue("value".getBytes());
+        secretDataService.save(entity);
 
-            userContext = mockUserContext(false);
-
-            try {
-              responseEntity = subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
-                return auditedSaveAndReturnNewValue(auditRecordBuilder);
-              });
-            } finally {
-              assertThat(secretDataService.count(), equalTo(0L));
-            }
-          });
-        });
+        throw new RuntimeException("controller method failed");
       });
+    } finally {
+      final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
+      verify(transactionManager, times(2)).rollback(captor.capture());
 
-      describe("when the action fails with an exception", () -> {
-        describe("when the audit succeeds", () -> {
-          AtomicReference<Exception> exception = new AtomicReference<>();
-          RuntimeException re = new RuntimeException("controller method failed");
+      List<TransactionStatus> transactionStatuses = captor.getAllValues();
+      assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
 
-          beforeEach(() -> {
-            exception.set(null);
-            try {
-              subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
-                auditRecordBuilder.setCredentialName("keyName");
-                auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
+      assertThat(secretDataService.count(), equalTo(0L));
+    }
+  }
 
-                NamedValueSecretData entity = new NamedValueSecretData("keyName");
-                entity.setEncryptedValue("value".getBytes());
-                secretDataService.save(entity);
-                throw re;
-              });
-            } catch (Exception e) {
-              exception.set(e);
-            }
-          });
+  @Test(expected = RuntimeException.class)
+  @Rollback
+  public void auditEvent_whenTheEventFails_shouldAuditTheFailure() {
+    try {
+      subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
+        auditRecordBuilder.setCredentialName("keyName");
+        auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
 
-          it("leaves the 500 response from the controller alone", () -> {
-            assertThat(exception.get(), equalTo(re));
-          });
+        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        entity.setEncryptedValue("value".getBytes());
+        secretDataService.save(entity);
 
-          it("logs failed audit entry", () -> {
-            checkAuditRecords(false);
-            assertThat(secretDataService.count(), equalTo(0L));
-          });
-        });
-
-        describe("when the database audit fails", () -> {
-          itThrowsWithMessage("rolls back commit", AuditSaveFailureException.class, "error.audit_save_failure", () -> {
-            doThrow(new RuntimeException()).when(eventAuditRecordDataService)
-                .save(any(EventAuditRecord.class));
-
-            userContext = mockUserContext(false);
-
-            try {
-              responseEntity = subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
-                auditRecordBuilder.setCredentialName("keyName");
-
-                NamedValueSecretData entity = new NamedValueSecretData("keyName");
-                entity.setEncryptedValue("value".getBytes());
-                secretDataService.save(entity);
-
-                throw new RuntimeException("controller method failed");
-              });
-            } finally {
-              final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
-              verify(transactionManager, times(2)).rollback(captor.capture());
-
-              List<TransactionStatus> transactionStatuses = captor.getAllValues();
-              assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
-
-              assertThat(secretDataService.count(), equalTo(0L));
-            }
-          });
-        });
+        throw new RuntimeException("controller method failed");
       });
-    });
+    } finally {
+      checkAuditRecords(false);
+      assertThat(secretDataService.count(), equalTo(0L));
+    }
   }
 
   private UserContext mockUserContext(boolean valid) {
@@ -206,15 +159,6 @@ public class EventAuditLogServiceTest {
       when(context.getAuthMethod()).thenReturn(AUTH_METHOD_UAA);
     }
     return context;
-  }
-
-  private ResponseEntity<?> auditedSaveAndReturnNewValue(EventAuditRecordBuilder auditRecordBuilder) {
-    auditRecordBuilder.setCredentialName("keyName");
-    auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
-    NamedValueSecretData entity = new NamedValueSecretData("keyName");
-    entity.setEncryptedValue("value".getBytes());
-    final NamedValueSecret secret = secretDataService.save(entity);
-    return new ResponseEntity<>(secret, HttpStatus.OK);
   }
 
   private void checkAuditRecords(boolean successFlag) {
