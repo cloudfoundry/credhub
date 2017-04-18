@@ -6,7 +6,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.EventAuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.SecretDataService;
@@ -139,9 +139,9 @@ public class SecretsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    eventAuditLogService.auditEvent(requestUuid, userContext, (eventAuditRecordBuilder) -> {
-      eventAuditRecordBuilder.setCredentialName(secretName);
-      eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
+    eventAuditLogService.auditEvent(requestUuid, userContext, (eventAuditRecordParameters) -> {
+      eventAuditRecordParameters.setCredentialName(secretName);
+      eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
 
       boolean deleteSucceeded = secretDataService.delete(secretName);
 
@@ -197,8 +197,8 @@ public class SecretsController {
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindPathResults findPaths(RequestUuid requestUuid, UserContext userContext) {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
-      eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+      eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_FIND);
       List<String> paths = secretDataService.findAllPaths();
       return FindPathResults.fromEntity(paths);
     });
@@ -222,17 +222,17 @@ public class SecretsController {
       AccessControlEntry currentUserAccessControlEntry
   ) {
     return eventAuditLogService
-        .auditEvent(requestUuid, userContext, (eventAuditRecordBuilder -> {
+        .auditEvent(requestUuid, userContext, (auditRecordParameters -> {
           return deserializeAndHandlePostRequest(
               inputStream,
-              eventAuditRecordBuilder,
+              auditRecordParameters,
               currentUserAccessControlEntry);
         }));
   }
 
   private SecretView deserializeAndHandlePostRequest(
       InputStream inputStream,
-      EventAuditRecordBuilder eventAuditRecordBuilder,
+      EventAuditRecordParameters eventAuditRecordParameters,
       AccessControlEntry currentUserAccessControlEntry
   ) {
     try {
@@ -245,10 +245,10 @@ public class SecretsController {
         // would be nice if Jackson could pick a subclass based on an arbitrary function, since
         // we want to consider both type and .regenerate. We could do custom deserialization but
         // then we'd have to do the entire job by hand.
-        return handleRegenerateRequest(eventAuditRecordBuilder, requestString,
+        return handleRegenerateRequest(eventAuditRecordParameters, requestString,
             currentUserAccessControlEntry);
       } else {
-        return handleGenerateRequest(eventAuditRecordBuilder, requestString,
+        return handleGenerateRequest(eventAuditRecordParameters, requestString,
             currentUserAccessControlEntry);
       }
     } catch (IOException e) {
@@ -257,7 +257,7 @@ public class SecretsController {
   }
 
   private SecretView handleGenerateRequest(
-      EventAuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordParameters eventAuditRecordParameters,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
@@ -266,11 +266,11 @@ public class SecretsController {
     requestBody.validate();
 
     return generateService
-        .performGenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
+        .performGenerate(eventAuditRecordParameters, requestBody, currentUserAccessControlEntry);
   }
 
   private SecretView handleRegenerateRequest(
-      EventAuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordParameters eventAuditRecordParameters,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
@@ -278,7 +278,7 @@ public class SecretsController {
         .readValue(requestString, SecretRegenerateRequest.class);
 
     return regenerateService
-        .performRegenerate(auditRecordBuilder, requestBody, currentUserAccessControlEntry);
+        .performRegenerate(eventAuditRecordParameters, requestBody, currentUserAccessControlEntry);
   }
 
   private SecretView auditedHandlePutRequest(
@@ -287,17 +287,17 @@ public class SecretsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder ->
-        handlePutRequest(requestBody, eventAuditRecordBuilder, currentUserAccessControlEntry));
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters ->
+        handlePutRequest(requestBody, eventAuditRecordParameters, currentUserAccessControlEntry));
   }
 
   private SecretView handlePutRequest(
       @RequestBody BaseSecretSetRequest requestBody,
-      EventAuditRecordBuilder eventAuditRecordBuilder,
+      EventAuditRecordParameters eventAuditRecordParameters,
       AccessControlEntry currentUserAccessControlEntry
   ) {
     return setService
-        .performSet(eventAuditRecordBuilder, requestBody, currentUserAccessControlEntry);
+        .performSet(eventAuditRecordParameters, requestBody, currentUserAccessControlEntry);
   }
 
   private Function<String, List<NamedSecret>> selectLookupFunction(boolean current) {
@@ -319,8 +319,8 @@ public class SecretsController {
                                                        Function<String, List<NamedSecret>> finder,
                                                        RequestUuid requestUuid,
                                                        UserContext userContext) {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
-      eventAuditRecordBuilder.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+      eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
           if (StringUtils.isEmpty(identifier)) {
             throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
@@ -331,7 +331,7 @@ public class SecretsController {
               throw new EntryNotFoundException("error.credential_not_found");
             } else {
               String name = namedSecrets.get(0).getName();
-              eventAuditRecordBuilder.setCredentialName(name);
+              eventAuditRecordParameters.setCredentialName(name);
               //The permission check is done this late to allow the audit log to distinguish between
               //404s caused by permission errors and actual 404s.
               permissionService.verifyReadPermission(userContext, identifier);
@@ -359,8 +359,8 @@ public class SecretsController {
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService
-        .auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
-          eventAuditRecordBuilder.setAuditingOperationCode(CREDENTIAL_FIND);
+        .auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+          eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_FIND);
           List<SecretView> secretViews = finder.apply(nameSubstring);
           return FindCredentialResults.fromSecrets(secretViews);
         });

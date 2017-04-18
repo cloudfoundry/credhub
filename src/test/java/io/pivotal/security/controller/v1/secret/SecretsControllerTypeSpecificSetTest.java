@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
 import com.greghaskins.spectrum.Spectrum.*;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.EventAuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.*;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -319,7 +319,7 @@ public class SecretsControllerTypeSpecificSetTest {
           it("asks the data service to persist the secret", () -> {
             verify(setService, times(1))
                 .performSet(
-                    isA(EventAuditRecordBuilder.class),
+                    isA(EventAuditRecordParameters.class),
                     isA(BaseSecretSetRequest.class),
                     isA(AccessControlEntry.class));
             ArgumentCaptor<NamedSecret> argumentCaptor = ArgumentCaptor.forClass(NamedSecret.class);

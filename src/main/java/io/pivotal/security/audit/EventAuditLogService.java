@@ -11,6 +11,8 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.function.Function;
 
+import static io.pivotal.security.audit.AuditLogFactory.createEventAuditRecord;
+
 @Service
 public class EventAuditLogService {
 
@@ -29,23 +31,24 @@ public class EventAuditLogService {
   public <T> T auditEvent(
       RequestUuid requestUuid,
       UserContext userContext,
-      Function<EventAuditRecordBuilder, T> respondToRequestFunction
+      Function<EventAuditRecordParameters, T> respondToRequestFunction
   ) {
     TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-    final EventAuditRecordBuilder eventAuditRecordBuilder = new EventAuditRecordBuilder(userContext.getAclUser());
+    final EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters();
     boolean success = false;
     try {
-      T response = respondToRequestFunction.apply(eventAuditRecordBuilder);
+      T response = respondToRequestFunction.apply(eventAuditRecordParameters);
       success = true;
       return response;
     } finally {
-      writeAuditRecord(requestUuid, eventAuditRecordBuilder, success, transaction);
+      writeAuditRecord(requestUuid, userContext, eventAuditRecordParameters, success, transaction);
     }
   }
 
   private void writeAuditRecord(
       RequestUuid requestUuid,
-      EventAuditRecordBuilder eventAuditRecordBuilder,
+      UserContext userContext,
+      EventAuditRecordParameters eventAuditRecordParameters,
       boolean success,
       TransactionStatus transaction
   ) {
@@ -55,7 +58,12 @@ public class EventAuditLogService {
         transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
       }
 
-      EventAuditRecord eventAuditRecord = eventAuditRecordBuilder.build(requestUuid.getUuid(), success);
+      final EventAuditRecord eventAuditRecord = createEventAuditRecord(
+          eventAuditRecordParameters,
+          userContext,
+          requestUuid.getUuid(),
+          success
+      );
       eventAuditRecordDataService.save(eventAuditRecord);
 
       transactionManager.commit(transaction);

@@ -2,7 +2,6 @@ package io.pivotal.security.controller.v1.secret;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.EventAuditRecordBuilder;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.domain.Encryptor;
@@ -117,8 +116,6 @@ public class SecretsControllerGenerateTest {
   private final String publicKey = "public_key";
   private final String privateKey = "private_key";
   private final String cert = "cert";
-
-  private EventAuditRecordBuilder auditRecordBuilder;
 
   {
     wireAndUnwire(this);

@@ -38,12 +38,12 @@ public class AccessControlListController {
     RequestUuid requestUuid,
     UserContext userContext
   ) throws Exception {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordBuilder -> {
-      eventAuditRecordBuilder.setCredentialName(credentialName);
-      eventAuditRecordBuilder.setAuditingOperationCode(ACL_ACCESS);
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+      eventAuditRecordParameters.setCredentialName(credentialName);
+      eventAuditRecordParameters.setAuditingOperationCode(ACL_ACCESS);
 
       final AccessControlListResponse response = accessControlHandler.getAccessControlListResponse(userContext, credentialName);
-      eventAuditRecordBuilder.setCredentialName(response.getCredentialName());
+      eventAuditRecordParameters.setCredentialName(response.getCredentialName());
 
       return response;
     });

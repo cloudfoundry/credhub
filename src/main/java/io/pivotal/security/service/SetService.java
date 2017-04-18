@@ -1,6 +1,6 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.audit.EventAuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.NamedSecret;
@@ -28,7 +28,7 @@ public class SetService {
   }
 
   public SecretView performSet(
-      EventAuditRecordBuilder eventAuditRecordBuilder,
+      EventAuditRecordParameters eventAuditRecordParameters,
       BaseSecretSetRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
     final String secretName = requestBody.getName();
@@ -39,7 +39,7 @@ public class SetService {
 
     boolean shouldWriteNewEntity = existingNamedSecret == null || requestBody.isOverwrite();
 
-    eventAuditRecordBuilder.setAuditingOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
+    eventAuditRecordParameters.setAuditingOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
     final String type = requestBody.getType();
     validateSecretType(existingNamedSecret, type);
@@ -49,7 +49,7 @@ public class SetService {
       NamedSecret newEntity = (NamedSecret) requestBody.createNewVersion(existingNamedSecret, encryptor);
       storedEntity = secretDataService.save(newEntity);
     }
-    eventAuditRecordBuilder.setCredentialName(storedEntity.getName());
+    eventAuditRecordParameters.setCredentialName(storedEntity.getName());
 
     return SecretView.fromEntity(storedEntity);
   }

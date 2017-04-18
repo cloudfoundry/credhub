@@ -1,6 +1,6 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.audit.EventAuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -38,11 +38,11 @@ public class RegenerateService {
   }
 
   public SecretView performRegenerate(
-      EventAuditRecordBuilder auditRecordBuilder,
+      EventAuditRecordParameters eventAuditRecordParameters,
       SecretRegenerateRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
     NamedSecret secret = secretDataService.findMostRecent(requestBody.getName());
-    auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_UPDATE);
+    eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_UPDATE);
     if (secret == null) {
       throw new EntryNotFoundException("error.credential_not_found");
     }
@@ -52,6 +52,6 @@ public class RegenerateService {
         .get();
 
     return generateService
-        .performGenerate(auditRecordBuilder, regeneratable.createGenerateRequest(secret), currentUserAccessControlEntry);
+        .performGenerate(eventAuditRecordParameters, regeneratable.createGenerateRequest(secret), currentUserAccessControlEntry);
   }
 }

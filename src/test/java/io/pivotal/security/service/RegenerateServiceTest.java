@@ -1,7 +1,7 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.audit.EventAuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.SecretDataService;
 import io.pivotal.security.domain.NamedJsonSecret;
 import io.pivotal.security.domain.NamedPasswordSecret;
@@ -49,7 +49,7 @@ public class RegenerateServiceTest {
           .thenReturn(secretOfUnsupportedType);
       when(generateService
           .performGenerate(
-              isA(EventAuditRecordBuilder.class),
+              isA(EventAuditRecordParameters.class),
               isA(BaseSecretGenerateRequest.class),
               isA(AccessControlEntry.class)))
           .thenReturn(mock(SecretView.class));
@@ -74,7 +74,7 @@ public class RegenerateServiceTest {
               .thenReturn(expectedParameters);
 
           subject
-              .performRegenerate(mock(EventAuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
+              .performRegenerate(mock(EventAuditRecordParameters.class), passwordGenerateRequest, mock(AccessControlEntry.class));
         });
 
         describe("when regenerating password", () -> {
@@ -84,7 +84,7 @@ public class RegenerateServiceTest {
 
             verify(generateService)
                 .performGenerate(
-                    isA(EventAuditRecordBuilder.class),
+                    isA(EventAuditRecordParameters.class),
                     generateRequestCaptor.capture(),
                     isA(AccessControlEntry.class));
 
@@ -114,7 +114,7 @@ public class RegenerateServiceTest {
                     .setName("password");
 
                 subject
-                    .performRegenerate(mock(EventAuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
+                    .performRegenerate(mock(EventAuditRecordParameters.class), passwordGenerateRequest, mock(AccessControlEntry.class));
               });
         });
       });
@@ -130,7 +130,7 @@ public class RegenerateServiceTest {
             when(namedSshSecret.getSecretType()).thenReturn("ssh");
 
             subject
-                .performRegenerate(mock(EventAuditRecordBuilder.class), sshRegenerateRequest, mock(AccessControlEntry.class));
+                .performRegenerate(mock(EventAuditRecordParameters.class), sshRegenerateRequest, mock(AccessControlEntry.class));
           });
 
           it("should generate a new ssh key pair", () -> {
@@ -139,7 +139,7 @@ public class RegenerateServiceTest {
 
             verify(generateService)
                 .performGenerate(
-                    isA(EventAuditRecordBuilder.class),
+                    isA(EventAuditRecordParameters.class),
                     generateRequestCaptor.capture(),
                     isA(AccessControlEntry.class));
 
@@ -161,7 +161,7 @@ public class RegenerateServiceTest {
             when(namedRsaSecret.getSecretType()).thenReturn("rsa");
 
             subject
-                .performRegenerate(mock(EventAuditRecordBuilder.class), rsaRegenerateRequest, mock(AccessControlEntry.class));
+                .performRegenerate(mock(EventAuditRecordParameters.class), rsaRegenerateRequest, mock(AccessControlEntry.class));
           });
 
           it("should generate a new rsa key pair", () -> {
@@ -170,7 +170,7 @@ public class RegenerateServiceTest {
 
             verify(generateService)
                 .performGenerate(
-                    isA(EventAuditRecordBuilder.class),
+                    isA(EventAuditRecordParameters.class),
                     generateRequestCaptor.capture(),
                     isA(AccessControlEntry.class));
 
@@ -188,7 +188,7 @@ public class RegenerateServiceTest {
           SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
               .setName("missing_entry");
 
-          subject.performRegenerate(mock(EventAuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
+          subject.performRegenerate(mock(EventAuditRecordParameters.class), passwordGenerateRequest, mock(AccessControlEntry.class));
         });
       });
 
@@ -197,7 +197,7 @@ public class RegenerateServiceTest {
           SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
               .setName("unsupported");
 
-          subject.performRegenerate(mock(EventAuditRecordBuilder.class), passwordGenerateRequest, mock(AccessControlEntry.class));
+          subject.performRegenerate(mock(EventAuditRecordParameters.class), passwordGenerateRequest, mock(AccessControlEntry.class));
         });
       });
     });

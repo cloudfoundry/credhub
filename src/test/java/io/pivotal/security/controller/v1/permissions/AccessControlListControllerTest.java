@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1.permissions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.EventAuditRecordBuilder;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
@@ -62,8 +62,8 @@ public class AccessControlListControllerTest {
               .thenReturn(accessControlListResponse);
 
           when(eventAuditLogService.auditEvent(any(), any(), any())).thenAnswer(answer -> {
-            Function<EventAuditRecordBuilder, RequestEntity> block = answer.getArgumentAt(2, Function.class);
-            return block.apply(mock(EventAuditRecordBuilder.class));
+            Function<EventAuditRecordParameters, RequestEntity> block = answer.getArgumentAt(2, Function.class);
+            return block.apply(mock(EventAuditRecordParameters.class));
           });
 
           mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))

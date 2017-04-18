@@ -86,9 +86,9 @@ public class EventAuditLogServiceTest {
     subject.auditEvent(
         requestUuid,
         userContext,
-        auditRecordBuilder -> {
-          auditRecordBuilder.setCredentialName("keyName");
-          auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
+        eventAuditRecordParameters -> {
+          eventAuditRecordParameters.setCredentialName("keyName");
+          eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_ACCESS);
           NamedValueSecretData entity = new NamedValueSecretData("keyName");
           entity.setEncryptedValue("value".getBytes());
           return secretDataService.save(entity);
@@ -108,8 +108,8 @@ public class EventAuditLogServiceTest {
     userContext = mockUserContext(false);
 
     try {
-      subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
-        auditRecordBuilder.setCredentialName("keyName");
+      subject.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+        eventAuditRecordParameters.setCredentialName("keyName");
 
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());
@@ -132,9 +132,9 @@ public class EventAuditLogServiceTest {
   @Rollback
   public void auditEvent_whenTheEventFails_shouldAuditTheFailure() {
     try {
-      subject.auditEvent(requestUuid, userContext, auditRecordBuilder -> {
-        auditRecordBuilder.setCredentialName("keyName");
-        auditRecordBuilder.setAuditingOperationCode(CREDENTIAL_ACCESS);
+      subject.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+        eventAuditRecordParameters.setCredentialName("keyName");
+        eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_ACCESS);
 
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());

@@ -2,6 +2,7 @@ package io.pivotal.security.audit;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
+import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
 import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
+import static io.pivotal.security.audit.AuditingOperationCode.UNKNOWN_OPERATION;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 
 @Component
@@ -99,6 +101,29 @@ public class AuditLogFactory {
         .setGrantType(grantType)
         .setMethod(request.getMethod())
         .setStatusCode(statusCode);
+  }
+
+  public static EventAuditRecord createEventAuditRecord(
+      EventAuditRecordParameters eventAuditRecordParameters,
+      UserContext userContext,
+      UUID requestUuid,
+      boolean success
+  ) {
+    if (eventAuditRecordParameters == null) {
+      eventAuditRecordParameters = new EventAuditRecordParameters();
+    }
+
+    if (eventAuditRecordParameters.getAuditingOperationCode() == null) {
+      eventAuditRecordParameters.setAuditingOperationCode(UNKNOWN_OPERATION);
+    }
+
+    return new EventAuditRecord(
+        eventAuditRecordParameters.getAuditingOperationCode().toString(),
+        eventAuditRecordParameters.getCredentialName(),
+        userContext.getAclUser(),
+        requestUuid,
+        success
+    );
   }
 
   private static String extractXForwardedFor(Enumeration<String> values) {
