@@ -18,11 +18,11 @@ import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 
 @Component
-public class RequestAuditLogFactory {
+public class AuditLogFactory {
   private final CurrentTimeProvider currentTimeProvider;
 
   @Autowired
-  RequestAuditLogFactory(CurrentTimeProvider currentTimeProvider) {
+  AuditLogFactory(CurrentTimeProvider currentTimeProvider) {
     this.currentTimeProvider = currentTimeProvider;
   }
 

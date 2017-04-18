@@ -1,6 +1,6 @@
 package io.pivotal.security.auth;
 
-import io.pivotal.security.audit.RequestAuditLogFactory;
+import io.pivotal.security.audit.AuditLogFactory;
 import io.pivotal.security.data.AuthFailureAuditRecordDataService;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.exceptions.AccessTokenExpiredException;
@@ -33,7 +33,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
 
   private final CurrentTimeProvider currentTimeProvider;
   private final AuthFailureAuditRecordDataService authFailureAuditRecordDataService;
-  private final RequestAuditLogFactory requestAuditLogFactory;
+  private final AuditLogFactory auditLogFactory;
   private final JsonParser objectMapper;
   private final MessageSourceAccessor messageSourceAccessor;
 
@@ -42,11 +42,11 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
       CurrentTimeProvider currentTimeProvider,
       AuthFailureAuditRecordDataService authFailureAuditRecordDataService,
       MessageSource messageSource,
-      RequestAuditLogFactory requestAuditLogFactory
+      AuditLogFactory auditLogFactory
   ) {
     this.currentTimeProvider = currentTimeProvider;
     this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
-    this.requestAuditLogFactory = requestAuditLogFactory;
+    this.auditLogFactory = auditLogFactory;
     this.objectMapper = JsonParserFactory.create();
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
@@ -119,7 +119,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
       int statusCode,
       String message
   ) {
-    AuthFailureAuditRecord authFailureAuditRecord = requestAuditLogFactory.createAuthFailureAuditRecord(
+    AuthFailureAuditRecord authFailureAuditRecord = auditLogFactory.createAuthFailureAuditRecord(
         request,
         tokenInformation,
         statusCode,

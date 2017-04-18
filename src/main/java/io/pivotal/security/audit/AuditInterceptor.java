@@ -19,19 +19,19 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
   public static String REQUEST_UUID_ATTRIBUTE = "REQUEST_UUID";
   private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;
-  private final RequestAuditLogFactory requestAuditLogFactory;
+  private final AuditLogFactory auditLogFactory;
   private final UserContextFactory userContextFactory;
 
   @Autowired
   AuditInterceptor(
       RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService,
-      RequestAuditLogFactory requestAuditLogFactory,
+      AuditLogFactory auditLogFactory,
       UserContextFactory userContextFactory
   ) {
     this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.securityEventsLogService = securityEventsLogService;
-    this.requestAuditLogFactory = requestAuditLogFactory;
+    this.auditLogFactory = auditLogFactory;
     this.userContextFactory = userContextFactory;
   }
 
@@ -53,7 +53,7 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
   ) throws Exception {
     UserContext userContext = userContextFactory.createUserContext((Authentication) request.getUserPrincipal());
 
-    RequestAuditRecord requestAuditRecord = requestAuditLogFactory.createRequestAuditRecord(request, userContext, response.getStatus());
+    RequestAuditRecord requestAuditRecord = auditLogFactory.createRequestAuditRecord(request, userContext, response.getStatus());
 
     try {
       requestAuditRecordDataService.save(requestAuditRecord);

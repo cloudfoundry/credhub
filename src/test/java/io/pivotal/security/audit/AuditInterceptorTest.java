@@ -29,20 +29,20 @@ public class AuditInterceptorTest {
   private AuditInterceptor subject;
   private RequestAuditRecordDataService requestAuditRecordDataService;
   private SecurityEventsLogService securityEventsLogService;
-  private RequestAuditLogFactory requestAuditLogFactory;
+  private AuditLogFactory auditLogFactory;
   private UserContextFactory userContextFactory;
 
   @Before
   public void setup() {
     requestAuditRecordDataService = mock(RequestAuditRecordDataService.class);
     securityEventsLogService = mock(SecurityEventsLogService.class);
-    requestAuditLogFactory = mock(RequestAuditLogFactory.class);
+    auditLogFactory = mock(AuditLogFactory.class);
     userContextFactory = mock(UserContextFactory.class);
 
     subject = new AuditInterceptor(
         requestAuditRecordDataService,
         securityEventsLogService,
-        requestAuditLogFactory,
+        auditLogFactory,
         userContextFactory
     );
   }
@@ -79,7 +79,7 @@ public class AuditInterceptorTest {
     when(userContextFactory.createUserContext(authentication)).thenReturn(userContext);
     when(response.getStatus()).thenReturn(401);
 
-    when(requestAuditLogFactory.createRequestAuditRecord(request, userContext, 401))
+    when(auditLogFactory.createRequestAuditRecord(request, userContext, 401))
         .thenReturn(requestAuditRecord);
 
     subject.afterCompletion(request, response, null, null);
@@ -94,7 +94,7 @@ public class AuditInterceptorTest {
 
     doThrow(new RuntimeException("test"))
         .when(requestAuditRecordDataService).save(any(RequestAuditRecord.class));
-    when(requestAuditLogFactory.createRequestAuditRecord(any(HttpServletRequest.class), any(UserContext.class), any(Integer.class)))
+    when(auditLogFactory.createRequestAuditRecord(any(HttpServletRequest.class), any(UserContext.class), any(Integer.class)))
         .thenReturn(requestAuditRecord);
 
     try {
