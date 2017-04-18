@@ -7,34 +7,27 @@ import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessControlDataService {
 
   private AccessEntryRepository accessEntryRepository;
-  private SecretDataService secretDataService;
   private SecretNameRepository secretNameRepository;
-  private final JdbcTemplate jdbcTemplate;
 
   @Autowired
   public AccessControlDataService(
       AccessEntryRepository accessEntryRepository,
-      SecretDataService secretDataService,
-      SecretNameRepository secretNameRepository,
-      JdbcTemplate jdbcTemplate
+      SecretNameRepository secretNameRepository
   ) {
     this.accessEntryRepository = accessEntryRepository;
-    this.secretDataService = secretDataService;
     this.secretNameRepository = secretNameRepository;
-    this.jdbcTemplate = jdbcTemplate;
   }
 
   public List<AccessControlEntry> getAccessControlList(String credentialName) {
@@ -101,7 +94,9 @@ public class AccessControlDataService {
   }
 
   private SecretName findSecretName(String credentialName) {
-    final SecretName secretName = secretDataService.findSecretName(credentialName);
+    final String name = StringUtils.prependIfMissing(credentialName, "/");
+    final SecretName secretName = secretNameRepository
+        .findOneByNameIgnoreCase(name);
 
     if (secretName == null) {
       throw new EntryNotFoundException("error.resource_not_found");

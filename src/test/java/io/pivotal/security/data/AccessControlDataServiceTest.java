@@ -1,238 +1,210 @@
 package io.pivotal.security.data;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.domain.NamedValueSecret;
-import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(Spectrum.class)
+import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.repository.AccessEntryRepository;
+import io.pivotal.security.repository.SecretNameRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import java.util.List;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+
+@RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 public class AccessControlDataServiceTest {
 
-  @Autowired
   private AccessControlDataService subject;
 
   @Autowired
-  private SecretDataService secretDataService;
+  AccessEntryRepository accessEntryRepository;
+
+  @Autowired
+  SecretNameRepository secretNameRepository;
 
   private List<AccessControlEntry> aces;
 
-  {
-    wireAndUnwire(this);
+  @Before
+  public void beforeEach() {
+    subject = new AccessControlDataService(
+        accessEntryRepository,
+        secretNameRepository
+    );
 
-    describe("#getAccessControlList", () -> {
-      beforeEach(this::seedDatabase);
+    seedDatabase();
+  }
 
-      describe("when given an existing credential name", () -> {
-        it("returns the access control list", () -> {
-          List<AccessControlEntry> accessControlEntries = subject.getAccessControlList("/lightsaber");
+  @Test
+  public void getAccessControlList_whenGivenExistingCredentialName_returnsAcl() {
+    List<AccessControlEntry> accessControlEntries = subject.getAccessControlList("/lightsaber");
 
-          assertThat(accessControlEntries, hasSize(2));
+    assertThat(accessControlEntries, hasSize(3));
 
-          assertThat(accessControlEntries, containsInAnyOrder(
-              allOf(hasProperty("actor", equalTo("Luke")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
-              allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
-          );
-        });
-      });
+    assertThat(accessControlEntries, containsInAnyOrder(
+        allOf(hasProperty("actor", equalTo("Luke")),
+            hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
+        allOf(hasProperty("actor", equalTo("Leia")),
+            hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))),
+        allOf(hasProperty("actor", equalTo("HanSolo")),
+            hasProperty("allowedOperations",
+                hasItems(AccessControlOperation.READ_ACL))))
+    );
+  }
 
-      describe("when given a credential name that doesn't exist", () -> {
-        itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
-          subject.getAccessControlList("/unicorn");
-        });
-      });
-    });
+  @Test
+  public void getAccessControlList_whenGivenNonExistentCredentialName_throwsException() {
+    try {
+      subject.getAccessControlList("/unicorn");
+    } catch (EntryNotFoundException enfe) {
+      assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
+    }
+  }
 
-    describe("#setAccessControlEntries", () -> {
-      describe("when given an existing ACE for a resource", () -> {
-        beforeEach(() -> {
-          seedDatabase();
+  @Test
+  public void setAccessControlEntries_whenGivenAnExistingAce_returnsTheAcl() {
+    aces = singletonList(
+        new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ))
+    );
 
-          aces = singletonList(
-              new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
-        });
+    List<AccessControlEntry> response = subject.setAccessControlEntries("/lightsaber", aces);
 
-        it("returns the acl for the given resource", () -> {
-          List<AccessControlEntry> response = subject.setAccessControlEntries("/lightsaber", aces);
+    assertThat(response, containsInAnyOrder(
+        allOf(hasProperty("actor", equalTo("Luke")),
+            hasProperty("allowedOperations",
+                hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE))),
+        allOf(hasProperty("actor", equalTo("Leia")),
+            hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))),
+        allOf(hasProperty("actor", equalTo("HanSolo")),
+            hasProperty("allowedOperations",
+                hasItems(AccessControlOperation.READ_ACL)))));
+  }
 
-          assertThat(response, containsInAnyOrder(
-              allOf(hasProperty("actor", equalTo("Luke")),
-                  hasProperty("allowedOperations",
-                      hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE))),
-              allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ)))));
-        });
-      });
+  @Test
+  public void setAccessControlEntries_whenGivenANewAce_returnsTheAcl() {
+    final NamedValueSecretData namedValueSecretData2 = new NamedValueSecretData("lightsaber2");
+    final SecretName secretName2 = namedValueSecretData2.getSecretName();
 
-      describe("when given a new ACE for a resource", () -> {
-        beforeEach(() -> {
-          secretDataService.save(new NamedValueSecret("lightsaber2"));
-          aces = singletonList(
-              new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
-        });
+    secretNameRepository.saveAndFlush(secretName2);
+    aces = singletonList(
+        new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
-        it("returns the acl for the given resource", () -> {
-          List<AccessControlEntry> response = subject.setAccessControlEntries("lightsaber2", aces);
+    List<AccessControlEntry> response = subject.setAccessControlEntries("lightsaber2", aces);
 
-          assertThat(response.size(), equalTo(1));
-          assertThat(response.get(0).getActor(), equalTo("Luke"));
-          assertThat(response.get(0).getAllowedOperations().size(),
-              equalTo(1));
-          assertThat(response.get(0).getAllowedOperations(),
-              hasItem(AccessControlOperation.READ));
-        });
-      });
-    });
+    final AccessControlEntry accessControlEntry = response.get(0);
 
-    describe("#deleteAccessControlEntry", () -> {
-      beforeEach(this::seedDatabase);
+    assertThat(response, hasSize(1));
+    assertThat(accessControlEntry.getActor(), equalTo("Luke"));
+    assertThat(accessControlEntry.getAllowedOperations(), hasSize(1));
+    assertThat(accessControlEntry.getAllowedOperations(), hasItem(AccessControlOperation.READ));
+  }
 
-      describe("when given a credential and actor that exists in the ACL", () -> {
-        it("removes the ACE from the ACL", () -> {
-          assertThat(subject.getAccessControlList("/lightsaber"),
-              containsInAnyOrder(
-                  allOf(hasProperty("actor", equalTo("Luke")),
-                      hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
-                  allOf(hasProperty("actor", equalTo("Leia")),
-                      hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
-          );
-          subject.deleteAccessControlEntries("/lightsaber", "Luke");
+  @Test
+  public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAcl() {
 
-          final List<AccessControlEntry> accessControlList = subject
-              .getAccessControlList("/lightsaber");
-          assertThat(accessControlList,
-              not(hasItem(hasProperty("actor", equalTo("Luke")))));
-          assertThat(accessControlList, contains(
-              allOf(hasProperty("actor", equalTo("Leia")),
-                  hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))))
-          );
-        });
-      });
+    subject.deleteAccessControlEntries("/lightsaber", "Luke");
 
-      describe("when the credential/actor combination does not exist in the ACL", () -> {
-        itThrows("when credential does not exist", EntryNotFoundException.class, () -> {
-          subject.deleteAccessControlEntries("/some-thing-that-is-not-here", "Luke");
-        });
+    final List<AccessControlEntry> accessControlList = subject
+        .getAccessControlList("/lightsaber");
 
-        describe("when the credential exists, but the ACE does not", () -> {
-          it("should not throw", () -> {
-            subject.deleteAccessControlEntries("/lightsaber", "HelloKity");
-            // passes
-          });
-        });
-      });
-    });
+    assertThat(accessControlList, hasSize(2));
 
-    describe("#hasAclReadPermission", () -> {
-      beforeEach(() -> {
-        secretDataService.save(new NamedValueSecret("/test/credential"));
-      });
+    assertThat(accessControlList,
+        not(contains(hasProperty("actor", equalTo("Luke")))));
+  }
 
-      describe("when the user has acl_read permission for the credential", () -> {
-        beforeEach(() -> {
-          final List<AccessControlOperation> operations = asList(AccessControlOperation.READ_ACL, AccessControlOperation.DELETE);
-          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
-          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
-        });
+  @Test
+  public void deleteAccessControlEntry_whenNonExistentResource_throwsException() {
+    try {
+      subject.deleteAccessControlEntries("/some-thing-that-is-not-here", "Luke");
+    } catch (EntryNotFoundException enfe) {
+      assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
+    }
+  }
 
-        it("should return true", () -> {
-          assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(true));
-        });
+  @Test
+  public void deleteAccessControlEntry_whenNonExistentAce_doesNothing() {
+    subject.deleteAccessControlEntries("/lightsaber", "HelloKitty");
+  }
 
-        it("should return true independent of credential name case", () -> {
-          assertThat(subject.hasReadAclPermission("test-actor", "/TEST/credential"), equalTo(true));
-        });
-      });
+  @Test
+  public void hasAclReadPermission_whenActorHasAclRead_returnsTrue() {
+    assertThat(subject.hasReadAclPermission("HanSolo", "/lightsaber"),
+        is(true));
+  }
 
-      describe("when the user has permissions for the credential but not acl_read", () -> {
-        it("should return false", () -> {
-          final List<AccessControlOperation> operations = asList(AccessControlOperation.WRITE_ACL, AccessControlOperation.DELETE);
-          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
-          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
+  @Test
+  public void hasAclReadPermission_whenActorHasAclRead_returnsTrueRegardlessOfCredentialNameCase() {
+    assertThat(subject.hasReadAclPermission("HanSolo", "/LIGHTSABER"),
+        is(true));
+  }
 
-          assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(false));
-        });
-      });
+  @Test
+  public void hasAclReadPermission_whenActorHasReadButNotReadAcl_returnsFalse() {
+    assertThat(subject.hasReadAclPermission("Luke", "/lightsaber"),
+        is(false));
+  }
 
-      describe("when the user has no permissions for the credential", () -> {
-        it("should return false", () -> {
-          assertThat(subject.hasReadAclPermission("test-actor", "/test/credential"), equalTo(false));
-        });
-      });
-    });
+  @Test
+  public void hasAclReadPermission_whenActorHasNoPermissions_returnsFalse() {
+    assertThat(subject.hasReadAclPermission("Chewie", "/lightsaber"),
+        is(false));
+  }
 
-    describe("#hasReadPermission", () -> {
-      beforeEach(() -> {
-        secretDataService.save(new NamedValueSecret("/test/credential"));
-      });
+  @Test
+  public void hasReadPermission_whenActorHasRead_returnsTrue() {
+    assertThat(subject.hasReadPermission("Leia", "/lightsaber"),
+        is(true));
+  }
 
-      describe("when the user has read permission for the credential", () -> {
-        beforeEach(() -> {
-          final List<AccessControlOperation> operations = asList(AccessControlOperation.READ, AccessControlOperation.DELETE);
-          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
-          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
-        });
+  @Test
+  public void hasReadPermission_whenActorHasRead_returnsTrueRegardlessOfCredentialNameCase() {
+    assertThat(subject.hasReadPermission("Leia", "/LIGHTSABER"),
+        is(true));
+  }
 
-        it("should return true", () -> {
-          assertThat(subject.hasReadPermission("test-actor", "/test/credential"), equalTo(true));
-        });
+  @Test
+  public void hasReadPermission_whenActorHasWriteButNotRead_returnsFalse() {
+    assertThat(subject.hasReadPermission("Luke", "/lightsaber"),
+        is(false));
+  }
 
-        it("should return true independent of credential name case", () -> {
-          assertThat(subject.hasReadPermission("test-actor", "/TEST/credential"), equalTo(true));
-        });
-      });
-
-      describe("when the user has permissions for the credential but not read", () -> {
-        it("should return false", () -> {
-          final List<AccessControlOperation> operations = asList(AccessControlOperation.WRITE_ACL, AccessControlOperation.READ_ACL);
-          final AccessControlEntry accessControlEntry = new AccessControlEntry("test-actor", operations);
-          subject.setAccessControlEntries("/test/credential", singletonList(accessControlEntry));
-
-          assertThat(subject.hasReadPermission("test-actor", "/test/credential"), equalTo(false));
-        });
-      });
-
-      describe("when the user has no permissions for the credential", () -> {
-        it("should return false", () -> {
-          assertThat(subject.hasReadPermission("test-actor", "/test/credential"), equalTo(false));
-        });
-      });
-    });
+  @Test
+  public void hasReadPermission_whenActorHasNoPermissions_returnsFalse() {
+    assertThat(subject.hasReadPermission("Chewie", "/lightsaber"),
+        is(false));
   }
 
   private void seedDatabase() {
+    final NamedValueSecretData namedValueSecretData = new NamedValueSecretData("lightsaber");
+    final SecretName secretName = namedValueSecretData.getSecretName();
 
-    secretDataService.save(new NamedValueSecret("lightsaber"));
+    secretNameRepository.saveAndFlush(secretName);
 
     subject.setAccessControlEntries(
         "lightsaber",
@@ -244,6 +216,12 @@ public class AccessControlDataServiceTest {
         "lightsaber",
         singletonList(new AccessControlEntry("Leia",
             singletonList(AccessControlOperation.READ)))
+    );
+
+    subject.setAccessControlEntries(
+        "lightsaber",
+        singletonList(new AccessControlEntry("HanSolo",
+            singletonList(AccessControlOperation.READ_ACL)))
     );
   }
 }
