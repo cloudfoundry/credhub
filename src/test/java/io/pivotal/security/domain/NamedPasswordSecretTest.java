@@ -5,7 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 public class NamedPasswordSecretTest {
 
   private static final List<AccessControlEntry> EMPTY_ENTRIES_LIST = new ArrayList<>();
-  private static final PasswordGenerationParameters NO_PASSWORD_PARAMS = null;
+  private static final StringGenerationParameters NO_PASSWORD_PARAMS = null;
   private static final NamedPasswordSecret NO_EXISTING_NAMED_PASSWORD_SECRET = null;
   private static final List<AccessControlEntry> NULL_ENTRIES_LIST = null;
   private static final String PASSWORD = "my-password";
@@ -38,7 +38,7 @@ public class NamedPasswordSecretTest {
   private NamedPasswordSecretData namedPasswordSecretData;
   private Encryptor encryptor;
   private UUID canaryUuid;
-  private PasswordGenerationParameters generationParameters;
+  private StringGenerationParameters generationParameters;
 
   private byte[] encryptedValue;
   private byte[] nonce;
@@ -55,7 +55,7 @@ public class NamedPasswordSecretTest {
       encryptedParametersValue = "fake-encrypted-parameters".getBytes();
       parametersNonce = "fake-parameters-nonce".getBytes();
 
-      generationParameters = new PasswordGenerationParameters()
+      generationParameters = new StringGenerationParameters()
           .setExcludeLower(true)
           .setLength(10);
       String generationParametersJson = new ObjectMapper().writeValueAsString(generationParameters);

@@ -20,7 +20,7 @@ public class UserGenerationParametersTest {
 
   @Test
   public void getUsernameGenerationParameters_returnsDefaultValues() {
-    PasswordGenerationParameters parameters = userGenerationParameters
+    StringGenerationParameters parameters = userGenerationParameters
         .getUsernameGenerationParameters();
     assertThat(parameters.getLength(), equalTo(20));
     assertThat(parameters.isExcludeLower(), equalTo(false));
@@ -32,7 +32,7 @@ public class UserGenerationParametersTest {
 
   @Test
   public void getPasswordGenerationParameters_returnsDefaultValues() {
-    PasswordGenerationParameters parameters = userGenerationParameters
+    StringGenerationParameters parameters = userGenerationParameters
         .getPasswordGenerationParameters();
     assertThat(parameters.getLength(), equalTo(30));
     assertThat(parameters.isExcludeLower(), equalTo(false));

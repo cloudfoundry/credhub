@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.UserGenerationParameters;
-import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.StringSecret;
 import io.pivotal.security.secret.User;
 import org.springframework.stereotype.Component;
 
@@ -15,10 +15,10 @@ public class UserGenerator {
   }
 
   public User generateSecret(UserGenerationParameters generationParameters) {
-    Password password = stringGenerator.generateSecret(generationParameters.getPasswordGenerationParameters());
+    StringSecret stringSecret = stringGenerator.generateSecret(generationParameters.getPasswordGenerationParameters());
 
-    Password user = stringGenerator.generateSecret(generationParameters.getUsernameGenerationParameters());
+    StringSecret user = stringGenerator.generateSecret(generationParameters.getUsernameGenerationParameters());
 
-    return new User(user.getPassword(), password.getPassword());
+    return new User(user.getStringSecret(), stringSecret.getStringSecret());
   }
 }

@@ -1,6 +1,6 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import java.util.ArrayList;
 import java.util.List;
 import org.passay.CharacterRule;
@@ -8,7 +8,7 @@ import org.passay.EnglishCharacterData;
 
 public class CharacterRuleProvider {
 
-  public static List<CharacterRule> getCharacterRules(PasswordGenerationParameters parameters) {
+  public static List<CharacterRule> getCharacterRules(StringGenerationParameters parameters) {
     List<CharacterRule> characterRules = new ArrayList<>();
 
     if (parameters.isOnlyHex()) {

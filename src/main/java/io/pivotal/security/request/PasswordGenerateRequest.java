@@ -6,16 +6,16 @@ import io.pivotal.security.service.GeneratorService;
 public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
 
   @JsonProperty("parameters")
-  private PasswordGenerationParameters generationParameters;
+  private StringGenerationParameters generationParameters;
 
-  public PasswordGenerationParameters getGenerationParameters() {
+  public StringGenerationParameters getGenerationParameters() {
     if (generationParameters == null) {
-      generationParameters = new PasswordGenerationParameters();
+      generationParameters = new StringGenerationParameters();
     }
     return generationParameters;
   }
 
-  public void setGenerationParameters(PasswordGenerationParameters generationParameters) {
+  public void setGenerationParameters(StringGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
   }
 

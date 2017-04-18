@@ -3,7 +3,7 @@ package io.pivotal.security.domain;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import org.springframework.util.Assert;
 
@@ -35,7 +35,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
       NamedPasswordSecret existing,
       String name,
       String password,
-      PasswordGenerationParameters generationParameters,
+      StringGenerationParameters generationParameters,
       Encryptor encryptor,
       List<AccessControlEntry> accessControlEntries) {
     NamedPasswordSecret secret;
@@ -70,7 +70,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
   }
 
   public NamedPasswordSecret setPasswordAndGenerationParameters(String password,
-                                                                PasswordGenerationParameters generationParameters) {
+                                                                StringGenerationParameters generationParameters) {
     if (password == null) {
       throw new IllegalArgumentException("password cannot be null");
     }
@@ -95,7 +95,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     return this;
   }
 
-  public PasswordGenerationParameters getGenerationParameters() {
+  public StringGenerationParameters getGenerationParameters() {
     String password = getPassword();
     Assert.notNull(password,
         "Password length generation parameter cannot be restored without an existing password");
@@ -111,8 +111,8 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
     }
 
     try {
-      PasswordGenerationParameters passwordGenerationParameters = objectMapper
-          .readValue(parameterJson, PasswordGenerationParameters.class);
+      StringGenerationParameters passwordGenerationParameters = objectMapper
+          .readValue(parameterJson, StringGenerationParameters.class);
       passwordGenerationParameters.setLength(password.length());
       return passwordGenerationParameters;
     } catch (IOException e) {
@@ -127,7 +127,7 @@ public class NamedPasswordSecret extends NamedSecret<NamedPasswordSecret> {
 
   public void rotate() {
     String decryptedPassword = this.getPassword();
-    PasswordGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();
+    StringGenerationParameters decryptedGenerationParameters = this.getGenerationParameters();
     this.setPasswordAndGenerationParameters(decryptedPassword, decryptedGenerationParameters);
   }
 }

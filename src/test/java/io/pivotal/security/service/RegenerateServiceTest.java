@@ -35,7 +35,7 @@ public class RegenerateServiceTest {
   private NamedSshSecret namedSshSecret;
   private NamedRsaSecret namedRsaSecret;
   private NamedJsonSecret secretOfUnsupportedType;
-  private PasswordGenerationParameters expectedParameters;
+  private StringGenerationParameters expectedParameters;
 
   {
     beforeEach(() -> {
@@ -64,7 +64,7 @@ public class RegenerateServiceTest {
               .thenReturn(namedPasswordSecret);
           SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
               .setName("password");
-          expectedParameters = new PasswordGenerationParameters()
+          expectedParameters = new StringGenerationParameters()
               .setExcludeLower(true)
               .setExcludeUpper(true)
               .setLength(20);

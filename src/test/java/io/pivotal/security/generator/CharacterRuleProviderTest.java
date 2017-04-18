@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import java.util.List;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -26,7 +26,7 @@ public class CharacterRuleProviderTest {
   {
     describe("#getCharacterRules", () -> {
       it("creates character rules from default parameters", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         List<CharacterRule> characterRules = CharacterRuleProvider
             .getCharacterRules(secretParameters);
 
@@ -39,7 +39,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without uppercase", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setExcludeUpper(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
@@ -57,7 +57,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without lowercase", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setExcludeLower(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
@@ -75,7 +75,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without special characters", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setIncludeSpecial(false);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
@@ -91,7 +91,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules with all included", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setIncludeSpecial(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
@@ -106,7 +106,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without number", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setExcludeNumber(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
@@ -123,7 +123,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules with hex only", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setOnlyHex(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
@@ -133,7 +133,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("ignores other rules when hex only", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setOnlyHex(true);
         secretParameters.setExcludeUpper(true);
 
@@ -149,7 +149,7 @@ public class CharacterRuleProviderTest {
       });
 
       it("returns empty list when all are excluded", () -> {
-        PasswordGenerationParameters secretParameters = new PasswordGenerationParameters();
+        StringGenerationParameters secretParameters = new StringGenerationParameters();
         secretParameters.setIncludeSpecial(false);
         secretParameters.setExcludeNumber(true);
         secretParameters.setExcludeUpper(true);

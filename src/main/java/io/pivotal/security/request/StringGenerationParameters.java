@@ -10,7 +10,7 @@ import io.pivotal.security.generator.PassayStringSecretGenerator;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
 @JsonInclude(NON_DEFAULT)
-public class PasswordGenerationParameters {
+public class StringGenerationParameters {
 
   // Value Parameters
   @JsonProperty(access = Access.WRITE_ONLY)
@@ -26,7 +26,7 @@ public class PasswordGenerationParameters {
     return length == null ? PassayStringSecretGenerator.DEFAULT_LENGTH : length;
   }
 
-  public PasswordGenerationParameters setLength(int length) {
+  public StringGenerationParameters setLength(int length) {
     this.length = length;
     return this;
   }
@@ -35,7 +35,7 @@ public class PasswordGenerationParameters {
     return includeSpecial;
   }
 
-  public PasswordGenerationParameters setIncludeSpecial(boolean includeSpecial) {
+  public StringGenerationParameters setIncludeSpecial(boolean includeSpecial) {
     this.includeSpecial = includeSpecial;
     return this;
   }
@@ -44,7 +44,7 @@ public class PasswordGenerationParameters {
     return excludeNumber;
   }
 
-  public PasswordGenerationParameters setExcludeNumber(boolean excludeNumber) {
+  public StringGenerationParameters setExcludeNumber(boolean excludeNumber) {
     this.excludeNumber = excludeNumber;
     return this;
   }
@@ -53,7 +53,7 @@ public class PasswordGenerationParameters {
     return excludeUpper;
   }
 
-  public PasswordGenerationParameters setExcludeUpper(boolean excludeUpper) {
+  public StringGenerationParameters setExcludeUpper(boolean excludeUpper) {
     this.excludeUpper = excludeUpper;
     return this;
   }
@@ -62,7 +62,7 @@ public class PasswordGenerationParameters {
     return excludeLower;
   }
 
-  public PasswordGenerationParameters setExcludeLower(boolean excludeLower) {
+  public StringGenerationParameters setExcludeLower(boolean excludeLower) {
     this.excludeLower = excludeLower;
     return this;
   }
@@ -71,7 +71,7 @@ public class PasswordGenerationParameters {
     return onlyHex;
   }
 
-  public PasswordGenerationParameters setOnlyHex(boolean onlyHex) {
+  public StringGenerationParameters setOnlyHex(boolean onlyHex) {
     this.onlyHex = onlyHex;
 
     return this;

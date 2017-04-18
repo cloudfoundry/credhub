@@ -6,7 +6,7 @@ import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.generator.UserGenerator;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.UserGenerationParameters;
@@ -40,8 +40,8 @@ public class GeneratorService {
     this.userGenerator = userGenerator;
   }
 
-  public String generatePassword(PasswordGenerationParameters passwordParameters) {
-    return passwordGenerator.generateSecret(passwordParameters).getPassword();
+  public String generatePassword(StringGenerationParameters passwordParameters) {
+    return passwordGenerator.generateSecret(passwordParameters).getStringSecret();
   }
 
   public SshKey generateSshKeys(SshGenerationParameters generationParameters) {

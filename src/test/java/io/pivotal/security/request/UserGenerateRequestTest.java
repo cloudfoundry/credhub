@@ -61,9 +61,9 @@ public class UserGenerateRequestTest {
 
     verify(generatorService).generateUser(captor.capture());
 
-    PasswordGenerationParameters passwordParameters = new PasswordGenerationParameters();
+    StringGenerationParameters passwordParameters = new StringGenerationParameters();
 
-    PasswordGenerationParameters usernameParameters = new PasswordGenerationParameters();
+    StringGenerationParameters usernameParameters = new StringGenerationParameters();
     usernameParameters.setExcludeNumber(true);
     usernameParameters.setLength(20);
 

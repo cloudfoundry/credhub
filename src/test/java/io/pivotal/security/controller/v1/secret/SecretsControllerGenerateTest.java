@@ -13,11 +13,11 @@ import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.StringSecret;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -128,8 +128,8 @@ public class SecretsControllerGenerateTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-      when(secretGenerator.generateSecret(any(PasswordGenerationParameters.class)))
-          .thenReturn(new Password(fakePassword));
+      when(secretGenerator.generateSecret(any(StringGenerationParameters.class)))
+          .thenReturn(new StringSecret(fakePassword));
 
       when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
           .thenReturn(new SshKey(publicKey, privateKey, null));

@@ -13,10 +13,10 @@ import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.StringSecret;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -122,11 +122,11 @@ public class SecretsControllerRegenerateTest {
 
     describe("regenerating a password", () -> {
       beforeEach(() -> {
-        when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
-            .thenReturn(new Password("generated-secret"));
+        when(passwordGenerator.generateSecret(any(StringGenerationParameters.class)))
+            .thenReturn(new StringSecret("generated-secret"));
         NamedPasswordSecret originalSecret = new NamedPasswordSecret("my-password");
         originalSecret.setEncryptor(encryptor);
-        PasswordGenerationParameters generationParameters = new PasswordGenerationParameters();
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
         generationParameters.setExcludeNumber(true);
         originalSecret
             .setPasswordAndGenerationParameters("original-password", generationParameters);
@@ -339,7 +339,7 @@ public class SecretsControllerRegenerateTest {
             NamedPasswordSecret originalSecret = new NamedPasswordSecret(namedPasswordSecretData);
             originalSecret.setEncryptor(encryptor);
             originalSecret
-                .setPasswordAndGenerationParameters("abcde", new PasswordGenerationParameters());
+                .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());
 
             namedPasswordSecretData.setEncryptionKeyUuid(UUID.randomUUID());
             doReturn(originalSecret).when(secretDataService).findMostRecent("my-password");

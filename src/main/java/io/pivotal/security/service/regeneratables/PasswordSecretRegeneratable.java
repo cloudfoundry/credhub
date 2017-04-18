@@ -5,7 +5,7 @@ import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 
 public class PasswordSecretRegeneratable implements Regeneratable {
 
@@ -16,7 +16,7 @@ public class PasswordSecretRegeneratable implements Regeneratable {
 
     generateRequest.setName(passwordSecret.getName());
     generateRequest.setType(passwordSecret.getSecretType());
-    PasswordGenerationParameters generationParameters;
+    StringGenerationParameters generationParameters;
     generationParameters = passwordSecret.getGenerationParameters();
     generateRequest.setOverwrite(true);
 

@@ -17,7 +17,7 @@ import io.pivotal.security.entity.NamedPasswordSecretData;
 import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.EncryptionKeyRotator;
@@ -169,7 +169,7 @@ public class EncryptionKeyRotatorTest {
         namedPasswordSecretData.setNonce(secretEncryption.nonce);
         namedPasswordSecretData.setNonce(secretEncryption.nonce);
 
-        PasswordGenerationParameters parameters = new PasswordGenerationParameters();
+        StringGenerationParameters parameters = new StringGenerationParameters();
         parameters.setExcludeNumber(true);
         final Encryption parameterEncryption = encryptionService
             .encrypt(oldCanary.getUuid(), oldKey,
@@ -234,7 +234,7 @@ public class EncryptionKeyRotatorTest {
             .findMostRecent(passwordName);
         assertThat(rotatedPassword.getPassword(), equalTo("test-password-plaintext"));
         assertThat(rotatedPassword.getGenerationParameters(), samePropertyValuesAs(
-            new PasswordGenerationParameters()
+            new StringGenerationParameters()
                 .setExcludeNumber(true)
                 .setLength(23))
         );

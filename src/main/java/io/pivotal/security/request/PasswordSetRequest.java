@@ -12,7 +12,7 @@ public class PasswordSetRequest extends BaseSecretSetRequest<NamedPasswordSecret
   @JsonProperty("value")
   private String password;
   @JsonIgnore
-  private PasswordGenerationParameters generationParameters;
+  private StringGenerationParameters generationParameters;
 
   public String getPassword() {
     return password;
@@ -22,7 +22,7 @@ public class PasswordSetRequest extends BaseSecretSetRequest<NamedPasswordSecret
     this.password = password;
   }
 
-  public void setGenerationParameters(PasswordGenerationParameters generationParameters) {
+  public void setGenerationParameters(StringGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
   }
 

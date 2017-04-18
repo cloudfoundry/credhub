@@ -8,7 +8,7 @@ import io.pivotal.security.entity.NamedRsaSecretData;
 import io.pivotal.security.entity.NamedSecretData;
 import io.pivotal.security.entity.NamedSshSecretData;
 import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
@@ -118,7 +118,7 @@ public class NamedSecretRotationTest {
             namedPasswordSecretData.setParametersNonce("old-parameters-nonce".getBytes());
 
             stringifiedParameters = new ObjectMapper()
-                .writeValueAsString(new PasswordGenerationParameters());
+                .writeValueAsString(new StringGenerationParameters());
 
             when(encryptionService
                 .decrypt(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(),

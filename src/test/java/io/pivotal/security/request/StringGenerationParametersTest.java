@@ -10,7 +10,7 @@ import io.pivotal.security.helper.JsonHelper;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
-public class PasswordGenerationParametersTest {
+public class StringGenerationParametersTest {
 
   private ObjectMapper objectMapper = JsonHelper.createObjectMapper();
 
@@ -39,7 +39,7 @@ public class PasswordGenerationParametersTest {
 
     it("serializes via the object mapper to a compact representation with alphabetical keys",
         () -> {
-          PasswordGenerationParameters parameters = makeParameters(false, false, false, false,
+          StringGenerationParameters parameters = makeParameters(false, false, false, false,
               false);
           assertThat(objectMapper.writeValueAsString(parameters), equalTo("{}"));
 
@@ -52,9 +52,9 @@ public class PasswordGenerationParametersTest {
         });
   }
 
-  private PasswordGenerationParameters makeParameters(boolean excludeLower, boolean excludeUpper,
+  private StringGenerationParameters makeParameters(boolean excludeLower, boolean excludeUpper,
       boolean includeSpecial, boolean excludeNumber, boolean onlyHex) {
-    return new PasswordGenerationParameters()
+    return new StringGenerationParameters()
         .setLength(30)
         .setExcludeLower(excludeLower)
         .setExcludeUpper(excludeUpper)

@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.UserGenerationParameters;
-import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.StringSecret;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,9 +28,9 @@ public class UserGeneratorTest {
     parameters = new UserGenerationParameters();
 
     when(passwordGenerator.generateSecret(same(parameters.getPasswordGenerationParameters())))
-        .thenReturn(new Password("fake-password"));
+        .thenReturn(new StringSecret("fake-password"));
     when(passwordGenerator.generateSecret(same(parameters.getUsernameGenerationParameters())))
-        .thenReturn(new Password("fake-user"));
+        .thenReturn(new StringSecret("fake-user"));
   }
 
   @Test

@@ -26,12 +26,12 @@ import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseSecretGenerateRequest;
 import io.pivotal.security.request.DefaultSecretGenerateRequest;
-import io.pivotal.security.request.PasswordGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.UserGenerationParameters;
 import io.pivotal.security.secret.Certificate;
-import io.pivotal.security.secret.Password;
+import io.pivotal.security.secret.StringSecret;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
 import io.pivotal.security.secret.User;
@@ -170,8 +170,8 @@ public class SecretsControllerTypeSpecificGenerateTest {
           .apply(springSecurity())
           .build();
 
-      when(passwordGenerator.generateSecret(any(PasswordGenerationParameters.class)))
-          .thenReturn(new Password(fakePassword));
+      when(passwordGenerator.generateSecret(any(StringGenerationParameters.class)))
+          .thenReturn(new StringSecret(fakePassword));
 
       when(certificateGenerator.generateSecret(any(CertificateParameters.class)))
           .thenReturn(new Certificate(ca, certificate, privateKey));
@@ -196,7 +196,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
         },
         () -> new NamedPasswordSecret(secretName)
             .setEncryptor(encryptor)
-            .setPasswordAndGenerationParameters(fakePassword, new PasswordGenerationParameters().setExcludeNumber(true))
+            .setPasswordAndGenerationParameters(fakePassword, new StringGenerationParameters().setExcludeNumber(true))
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));

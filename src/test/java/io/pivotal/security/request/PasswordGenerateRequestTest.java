@@ -26,19 +26,19 @@ public class PasswordGenerateRequestTest {
   private PasswordGenerateRequest subject;
   private AccessControlEntry accessControlEntry;
 
-  private PasswordGenerationParameters generationParameters;
+  private StringGenerationParameters generationParameters;
 
   {
     describe("#generateSetRequest", () -> {
       beforeEach(() -> {
         generatorService = mock(GeneratorService.class);
-        when(generatorService.generatePassword(any(PasswordGenerationParameters.class))).thenReturn("fake-password");
+        when(generatorService.generatePassword(any(StringGenerationParameters.class))).thenReturn("fake-password");
         accessControlEntry = new AccessControlEntry("test-actor",
             Arrays.asList(READ, WRITE));
         subject = new PasswordGenerateRequest();
         subject.setType("password");
         subject.setName("test-name");
-        generationParameters = new PasswordGenerationParameters().setExcludeNumber(true);
+        generationParameters = new StringGenerationParameters().setExcludeNumber(true);
         subject.setGenerationParameters(generationParameters);
         subject.setAccessControlEntries(Arrays.asList(accessControlEntry));
         subject.setOverwrite(true);
@@ -52,7 +52,7 @@ public class PasswordGenerateRequestTest {
         assertTrue(setRequest.isOverwrite());
         assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
         assertThat(((PasswordSetRequest) setRequest).getPassword(), equalTo("fake-password"));
-        ArgumentCaptor<PasswordGenerationParameters> captor = ArgumentCaptor.forClass(PasswordGenerationParameters.class);
+        ArgumentCaptor<StringGenerationParameters> captor = ArgumentCaptor.forClass(StringGenerationParameters.class);
         verify(generatorService).generatePassword(captor.capture());
 
         assertThat(captor.getValue(), samePropertyValuesAs(generationParameters));
