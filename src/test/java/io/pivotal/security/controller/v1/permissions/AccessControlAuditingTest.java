@@ -22,6 +22,9 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,8 +37,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -80,11 +81,11 @@ public class AccessControlAuditingTest {
     this.mockMvc.perform(get)
       .andExpect(status().isOk());
 
-    ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
-      .forClass(EventAuditRecord.class);
+    ArgumentCaptor<List> recordCaptor = ArgumentCaptor
+      .forClass(List.class);
     verify(eventAuditRecordDataService).save(recordCaptor.capture());
 
-    EventAuditRecord auditRecord = recordCaptor.getValue();
+    EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
     assertThat(auditRecord.getCredentialName(), equalTo(CRED1));
     assertThat(auditRecord.getOperation(), equalTo(ACL_ACCESS.toString()));

@@ -25,6 +25,10 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -48,9 +52,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import java.util.Arrays;
-import java.util.UUID;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -95,11 +96,11 @@ public class SecretsControllerAuditLogTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
 
-          ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
-              .forClass(EventAuditRecord.class);
+          ArgumentCaptor<List> recordCaptor = ArgumentCaptor
+              .forClass(List.class);
           verify(eventAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-          EventAuditRecord auditRecord = recordCaptor.getValue();
+          EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
           assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
           assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
@@ -117,11 +118,11 @@ public class SecretsControllerAuditLogTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .header("X-Forwarded-For", "1.1.1.1,2.2.2.2"));
 
-          ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
-              .forClass(EventAuditRecord.class);
+          ArgumentCaptor<List> recordCaptor = ArgumentCaptor
+              .forClass(List.class);
           verify(eventAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-          EventAuditRecord auditRecord = recordCaptor.getValue();
+          EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
           assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
           assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
@@ -154,12 +155,11 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential update operation", () -> {
-        ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(EventAuditRecord.class);
-
+        ArgumentCaptor<List> recordCaptor = ArgumentCaptor
+            .forClass(List.class);
         verify(eventAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        EventAuditRecord auditRecord = recordCaptor.getValue();
+        EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
         assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
@@ -191,12 +191,11 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_update operation", () -> {
-        ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(EventAuditRecord.class);
-
+        ArgumentCaptor<List> recordCaptor = ArgumentCaptor
+            .forClass(List.class);
         verify(eventAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        EventAuditRecord auditRecord = recordCaptor.getValue();
+        EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
         assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_UPDATE.toString()));
@@ -220,12 +219,11 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_delete operation", () -> {
-        ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(EventAuditRecord.class);
-
+        ArgumentCaptor<List> recordCaptor = ArgumentCaptor
+            .forClass(List.class);
         verify(eventAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        EventAuditRecord auditRecord = recordCaptor.getValue();
+        EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
         assertThat(auditRecord.getCredentialName(), equalTo("foo"));
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
@@ -238,12 +236,11 @@ public class SecretsControllerAuditLogTest {
       });
 
       it("logs an audit record for credential_access operation", () -> {
-        ArgumentCaptor<EventAuditRecord> recordCaptor = ArgumentCaptor
-            .forClass(EventAuditRecord.class);
-
+        ArgumentCaptor<List> recordCaptor = ArgumentCaptor
+            .forClass(List.class);
         verify(eventAuditRecordDataService, times(1)).save(recordCaptor.capture());
 
-        EventAuditRecord auditRecord = recordCaptor.getValue();
+        EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
         assertThat(auditRecord.getCredentialName(), equalTo(null));

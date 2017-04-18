@@ -1,20 +1,11 @@
 package io.pivotal.security.data;
 
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static org.hamcrest.CoreMatchers.isA;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.core.IsEqual.equalTo;
-
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,9 +14,22 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestData
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static org.hamcrest.CoreMatchers.isA;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.springframework.data.domain.Sort.Direction.ASC;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -76,28 +80,43 @@ public class EventAuditRecordDataServiceTest {
   }
 
   @Test
-  public void save_givenARecord_savesTheRecord() {
-    EventAuditRecord eventAuditRecord = new EventAuditRecord(
+  public void saveAll_givenAListOfRecords_savesTheRecords() {
+    EventAuditRecord eventAuditRecord1 = new EventAuditRecord(
         "credential_access",
-        "/test/credential",
-        "test-actor",
+        "/test/credential1",
+        "test-actor1",
         requestAuditRecord.getUuid(),
         true
     );
-    subject.save(eventAuditRecord);
+    EventAuditRecord eventAuditRecord2 = new EventAuditRecord(
+        "credential_update",
+        "/test/credential2",
+        "test-actor2",
+        requestAuditRecord.getUuid(),
+        false
+    );
+    subject.save(newArrayList(eventAuditRecord1, eventAuditRecord2));
 
-    List<EventAuditRecord> records = eventAuditRecordRepository.findAll();
+    List<EventAuditRecord> records = eventAuditRecordRepository.findAll(new Sort(ASC, "credentialName"));
 
-    assertThat(records, hasSize(1));
+    assertThat(records, hasSize(2));
 
-    EventAuditRecord actual = records.get(0);
+    EventAuditRecord actual1 = records.get(0);
+    assertThat(actual1.getOperation(), equalTo("credential_access"));
+    assertThat(actual1.getCredentialName(), equalTo("/test/credential1"));
+    assertThat(actual1.getActor(), equalTo("test-actor1"));
+    assertThat(actual1.getRequestUuid(), equalTo(requestAuditRecord.getUuid()));
+    assertThat(actual1.isSuccess(), equalTo(true));
+    assertThat(actual1.getUuid(), isA(UUID.class));
+    assertThat(actual1.getNow(), equalTo(frozenTime));
 
-    assertThat(actual.getOperation(), equalTo("credential_access"));
-    assertThat(actual.getCredentialName(), equalTo("/test/credential"));
-    assertThat(actual.getActor(), equalTo("test-actor"));
-    assertThat(actual.getRequestUuid(), equalTo(requestAuditRecord.getUuid()));
-    assertThat(actual.isSuccess(), equalTo(true));
-    assertThat(actual.getUuid(), isA(UUID.class));
-    assertThat(actual.getNow(), equalTo(frozenTime));
+    EventAuditRecord actual2 = records.get(1);
+    assertThat(actual2.getOperation(), equalTo("credential_update"));
+    assertThat(actual2.getCredentialName(), equalTo("/test/credential2"));
+    assertThat(actual2.getActor(), equalTo("test-actor2"));
+    assertThat(actual2.getRequestUuid(), equalTo(requestAuditRecord.getUuid()));
+    assertThat(actual2.isSuccess(), equalTo(false));
+    assertThat(actual2.getUuid(), isA(UUID.class));
+    assertThat(actual2.getNow(), equalTo(frozenTime));
   }
 }

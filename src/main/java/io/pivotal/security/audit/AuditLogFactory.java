@@ -16,7 +16,6 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
 import static io.pivotal.security.audit.AuditInterceptor.REQUEST_UUID_ATTRIBUTE;
-import static io.pivotal.security.audit.AuditingOperationCode.UNKNOWN_OPERATION;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 
 @Component
@@ -111,10 +110,6 @@ public class AuditLogFactory {
   ) {
     if (eventAuditRecordParameters == null) {
       eventAuditRecordParameters = new EventAuditRecordParameters();
-    }
-
-    if (eventAuditRecordParameters.getAuditingOperationCode() == null) {
-      eventAuditRecordParameters.setAuditingOperationCode(UNKNOWN_OPERATION);
     }
 
     return new EventAuditRecord(

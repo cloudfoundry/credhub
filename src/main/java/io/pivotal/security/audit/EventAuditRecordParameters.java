@@ -1,8 +1,19 @@
 package io.pivotal.security.audit;
 
+import static io.pivotal.security.audit.AuditingOperationCode.UNKNOWN_OPERATION;
+
 public class EventAuditRecordParameters {
   private AuditingOperationCode auditingOperationCode;
   private String credentialName;
+
+  public EventAuditRecordParameters() {
+    this(UNKNOWN_OPERATION, null);
+  }
+
+  public EventAuditRecordParameters(AuditingOperationCode auditingOperationCode, String credentialName) {
+    this.auditingOperationCode = auditingOperationCode;
+    this.credentialName = credentialName;
+  }
 
   public AuditingOperationCode getAuditingOperationCode() {
     return auditingOperationCode;

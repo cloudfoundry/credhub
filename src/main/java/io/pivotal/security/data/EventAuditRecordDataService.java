@@ -5,6 +5,8 @@ import io.pivotal.security.repository.EventAuditRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class EventAuditRecordDataService {
 
@@ -15,7 +17,7 @@ public class EventAuditRecordDataService {
     this.eventAuditRecordRepository = eventAuditRecordRepository;
   }
 
-  public EventAuditRecord save(EventAuditRecord record) {
-    return eventAuditRecordRepository.save(record);
+  public List<EventAuditRecord> save(List<EventAuditRecord> records) {
+    return eventAuditRecordRepository.save(records);
   }
 }

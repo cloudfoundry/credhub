@@ -24,6 +24,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
+
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -149,7 +151,7 @@ public class AuditTest {
   @Test
   public void when_event_audit_record_save_fails_it_rolls_back_event() throws Exception {
     doThrow(new RuntimeException("test"))
-        .when(eventAuditRecordDataService).save(any(EventAuditRecord.class));
+        .when(eventAuditRecordDataService).save(any(List.class));
 
     assertThat(eventAuditRecordRepository.count(), equalTo(0L));
 
@@ -171,7 +173,7 @@ public class AuditTest {
     String secretType = "password";
 
     doThrow(new RuntimeException("test exception"))
-        .when(eventAuditRecordDataService).save(any(EventAuditRecord.class));
+        .when(eventAuditRecordDataService).save(any(List.class));
 
     mockMvc.perform(post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
