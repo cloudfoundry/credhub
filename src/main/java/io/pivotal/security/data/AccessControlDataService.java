@@ -58,7 +58,13 @@ public class AccessControlDataService {
   }
 
   public boolean hasReadAclPermission(String actor, String credentialName) {
-    UUID uuid = secretNameRepository.findOneByNameIgnoreCase(credentialName).getUuid();
+    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+
+    if (secretName == null) {
+      return false;
+    }
+
+    UUID uuid = secretName.getUuid();
     AccessEntryData accessEntryData = accessEntryRepository
         .findByCredentialNameUuidAndActor(uuid, actor);
 
@@ -70,7 +76,13 @@ public class AccessControlDataService {
   }
 
   public boolean hasReadPermission(String actor, String credentialName) {
-    UUID uuid = secretNameRepository.findOneByNameIgnoreCase(credentialName).getUuid();
+    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+
+    if (secretName == null) {
+      return false;
+    }
+
+    UUID uuid = secretName.getUuid();
     AccessEntryData accessEntryData = accessEntryRepository
         .findByCredentialNameUuidAndActor(uuid, actor);
 

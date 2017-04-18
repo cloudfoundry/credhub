@@ -1,6 +1,5 @@
 package io.pivotal.security.data;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -177,6 +176,12 @@ public class AccessControlDataServiceTest {
   }
 
   @Test
+  public void hasAclReadPermission_whenCredentialDoesNotExist_returnsFalse() {
+    assertThat(subject.hasReadAclPermission("Luke", "/crossbow"),
+        is(false));
+  }
+
+  @Test
   public void hasReadPermission_whenActorHasRead_returnsTrue() {
     assertThat(subject.hasReadPermission("Leia", "/lightsaber"),
         is(true));
@@ -197,6 +202,12 @@ public class AccessControlDataServiceTest {
   @Test
   public void hasReadPermission_whenActorHasNoPermissions_returnsFalse() {
     assertThat(subject.hasReadPermission("Chewie", "/lightsaber"),
+        is(false));
+  }
+
+  @Test
+  public void hasReadPermission_whenCredentialDoesNotExist_returnsFalse() {
+    assertThat(subject.hasReadPermission("Luke", "/crossbow"),
         is(false));
   }
 
