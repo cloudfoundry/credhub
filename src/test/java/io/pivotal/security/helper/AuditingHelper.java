@@ -30,14 +30,4 @@ public class AuditingHelper {
     assertThat(eventAuditRecord.getCredentialName(), equalTo(credentialName));
     assertThat(eventAuditRecord.isSuccess(), equalTo(HttpStatus.valueOf(statusCode).is2xxSuccessful()));
   }
-
-  public static void verifyAuditing(
-      RequestAuditRecordRepository requestAuditRecordRepository,
-      EventAuditRecordRepository eventAuditRecordRepository,
-      AuditingOperationCode auditingOperationCode,
-      String credentialName,
-      int statusCode
-  ) {
-    verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, auditingOperationCode, credentialName, "/api/v1/data", statusCode);
-  }
 }

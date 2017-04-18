@@ -108,7 +108,7 @@ public class SecretsControllerFindTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null, 200);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null, "/api/v1/data", 200);
           });
         });
       });
@@ -181,7 +181,7 @@ public class SecretsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null, 200);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_FIND, null, "/api/v1/data", 200);
         });
       });
 

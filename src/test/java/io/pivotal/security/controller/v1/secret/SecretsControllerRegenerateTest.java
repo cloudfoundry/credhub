@@ -170,7 +170,7 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-password", 200);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-password", "/api/v1/data", 200);
       });
     });
 
@@ -220,7 +220,7 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-rsa", 200);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-rsa", "/api/v1/data", 200);
       });
     });
 
@@ -270,7 +270,7 @@ public class SecretsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-ssh", 200);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-ssh", "/api/v1/data", 200);
       });
     });
 
@@ -298,7 +298,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null, 404);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null, "/api/v1/data", 404);
       });
     });
 
@@ -327,7 +327,7 @@ public class SecretsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null, 400);
+        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null, "/api/v1/data", 400);
       });
     });
 

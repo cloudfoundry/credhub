@@ -331,7 +331,7 @@ public class SecretsControllerTypeSpecificSetTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName, 200);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName, "/api/v1/data", 200);
           });
 
           it("should create ACEs for the current user having full permissions " +
@@ -409,7 +409,7 @@ public class SecretsControllerTypeSpecificSetTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName, 200);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, secretName, "/api/v1/data", 200);
           });
         });
 
@@ -442,7 +442,7 @@ public class SecretsControllerTypeSpecificSetTest {
           });
 
           it("persists an audit entry", () -> {
-            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, 200);
+            verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, secretName, "/api/v1/data", 200);
           });
         });
       });

@@ -405,6 +405,7 @@ public class SecretsControllerErrorHandlingSetTest {
             eventAuditRecordRepository,
             CREDENTIAL_UPDATE,
             null,
+            "/api/v1/data",
             400
         );
       });

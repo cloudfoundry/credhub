@@ -135,7 +135,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, secretName.toUpperCase(), 204);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, secretName.toUpperCase(), "/api/v1/data", 204);
         });
       });
 
@@ -158,7 +158,7 @@ public class SecretsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, secretName, 204);
+          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, secretName, "/api/v1/data", 204);
         });
       });
 
