@@ -13,11 +13,13 @@ import io.pivotal.security.domain.NamedPasswordSecret;
 import io.pivotal.security.domain.NamedRsaSecret;
 import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.domain.NamedUserSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.PassayStringSecretGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.generator.UserGenerator;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -27,10 +29,12 @@ import io.pivotal.security.request.DefaultSecretGenerateRequest;
 import io.pivotal.security.request.PasswordGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.request.UserGenerationParameters;
 import io.pivotal.security.secret.Certificate;
 import io.pivotal.security.secret.Password;
 import io.pivotal.security.secret.RsaKey;
 import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.secret.User;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -121,6 +125,9 @@ public class SecretsControllerTypeSpecificGenerateTest {
   @MockBean
   RsaGenerator rsaGenerator;
 
+  @MockBean
+  UserGenerator userGenerator;
+
   @Autowired
   RequestAuditRecordRepository requestAuditRecordRepository;
 
@@ -142,6 +149,7 @@ public class SecretsControllerTypeSpecificGenerateTest {
   private UUID uuid;
 
   private final String fakePassword = "generated-secret";
+  private final String user = "generated-user";
   private final String publicKey = "public_key";
   private final String certificate = "certificate";
   private final String ca = "ca";
@@ -173,6 +181,9 @@ public class SecretsControllerTypeSpecificGenerateTest {
 
       when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
           .thenReturn(new RsaKey(publicKey, privateKey));
+
+      when(userGenerator.generateSecret(any(UserGenerationParameters.class)))
+          .thenReturn(new User(user, fakePassword));
     });
 
     describe("password", testSecretBehavior(
@@ -188,6 +199,23 @@ public class SecretsControllerTypeSpecificGenerateTest {
             .setPasswordAndGenerationParameters(fakePassword, new PasswordGenerationParameters().setExcludeNumber(true))
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
+    ));
+
+    describe("user", testSecretBehavior(
+      new Object[]{"$.value.username", user,
+          "$.value.password", fakePassword},
+      "user",
+      "null",
+      (userSecret) -> {
+        assertThat(userSecret.getUsername(), equalTo(user));
+        assertThat(userSecret.getPassword(), equalTo(fakePassword));
+      },
+      () -> new NamedUserSecret(secretName)
+        .setEncryptor(encryptor)
+        .setPassword(fakePassword)
+        .setUsername(user)
+        .setUuid(uuid)
+        .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
     describe("certificate", testSecretBehavior(

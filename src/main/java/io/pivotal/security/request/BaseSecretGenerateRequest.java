@@ -19,7 +19,8 @@ import io.pivotal.security.service.GeneratorService;
     @JsonSubTypes.Type(name = "password", value = PasswordGenerateRequest.class),
     @JsonSubTypes.Type(name = "ssh", value = SshGenerateRequest.class),
     @JsonSubTypes.Type(name = "rsa", value = RsaGenerateRequest.class),
-    @JsonSubTypes.Type(name = "certificate", value = CertificateGenerateRequest.class)
+    @JsonSubTypes.Type(name = "certificate", value = CertificateGenerateRequest.class),
+    @JsonSubTypes.Type(name = "user", value = UserGenerateRequest.class)
 })
 public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
   private boolean regenerate;
@@ -38,11 +39,11 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
   }
 
   private boolean isValidSecretType(String type) {
-    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json").contains(type);
+    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
   }
 
   private boolean isValidTypeForGeneration(String type) {
-    return newArrayList("password", "certificate", "rsa", "ssh").contains(type);
+    return newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type);
   }
 
   public void setRegenerate(boolean regenerate) {
