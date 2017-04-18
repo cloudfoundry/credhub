@@ -86,14 +86,16 @@ public class EventAuditRecordDataServiceTest {
         "/test/credential1",
         "test-actor1",
         requestAuditRecord.getUuid(),
-        true
+        true,
+        null, null
     );
     EventAuditRecord eventAuditRecord2 = new EventAuditRecord(
         "credential_update",
         "/test/credential2",
         "test-actor2",
         requestAuditRecord.getUuid(),
-        false
+        false,
+        "credential_access", "ace-actor"
     );
     subject.save(newArrayList(eventAuditRecord1, eventAuditRecord2));
 
@@ -109,6 +111,8 @@ public class EventAuditRecordDataServiceTest {
     assertThat(actual1.isSuccess(), equalTo(true));
     assertThat(actual1.getUuid(), isA(UUID.class));
     assertThat(actual1.getNow(), equalTo(frozenTime));
+    assertThat(actual1.getAceActor(), equalTo(null));
+    assertThat(actual1.getAceOperation(), equalTo(null));
 
     EventAuditRecord actual2 = records.get(1);
     assertThat(actual2.getOperation(), equalTo("credential_update"));
@@ -118,5 +122,7 @@ public class EventAuditRecordDataServiceTest {
     assertThat(actual2.isSuccess(), equalTo(false));
     assertThat(actual2.getUuid(), isA(UUID.class));
     assertThat(actual2.getNow(), equalTo(frozenTime));
+    assertThat(actual2.getAceActor(), equalTo("ace-actor"));
+    assertThat(actual2.getAceOperation(), equalTo("credential_access"));
   }
 }

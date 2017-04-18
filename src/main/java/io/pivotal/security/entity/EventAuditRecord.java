@@ -39,6 +39,8 @@ public class EventAuditRecord {
   private String operation;
   private boolean success = true;
   private String actor;
+  private String aceOperation;
+  private String aceActor;
 
   // for Hibernate
   @SuppressWarnings("unused")
@@ -49,13 +51,17 @@ public class EventAuditRecord {
       String credentialName,
       String actor,
       UUID requestUuid,
-      boolean success
+      boolean success,
+      String aceOperation,
+      String aceActor
   ) {
     this.operation = operation;
     this.credentialName = credentialName;
     this.actor = actor;
     this.requestUuid = requestUuid;
     this.success = success;
+    this.aceOperation = aceOperation;
+    this.aceActor = aceActor;
   }
 
   public UUID getUuid() {
@@ -84,5 +90,13 @@ public class EventAuditRecord {
 
   public String getActor() {
     return actor;
+  }
+
+  public String getAceOperation() {
+    return aceOperation;
+  }
+
+  public String getAceActor() {
+    return aceActor;
   }
 }

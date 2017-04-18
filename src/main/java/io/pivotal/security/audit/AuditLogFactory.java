@@ -117,7 +117,9 @@ public class AuditLogFactory {
         eventAuditRecordParameters.getCredentialName(),
         userContext.getAclUser(),
         requestUuid,
-        success
+        success,
+        eventAuditRecordParameters.getAceOperation() != null ? eventAuditRecordParameters.getAceOperation().getOperation() : null,
+        eventAuditRecordParameters.getAceActor()
     );
   }
 
