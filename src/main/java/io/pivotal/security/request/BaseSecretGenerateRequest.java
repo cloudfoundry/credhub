@@ -1,11 +1,11 @@
 package io.pivotal.security.request;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.GeneratorService;
+
+import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -29,21 +29,21 @@ public abstract class BaseSecretGenerateRequest extends BaseSecretRequest {
   public void validate() {
     super.validate();
 
-    if (!isValidSecretType(getType())) {
+    if (isInvalidSecretType(getType())) {
       throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
     }
 
-    if (!isValidTypeForGeneration(getType())) {
+    if (isInvalidTypeForGeneration(getType())) {
       throw new ParameterizedValidationException("error.cannot_generate_type");
     }
   }
 
-  private boolean isValidSecretType(String type) {
-    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
+  private boolean isInvalidSecretType(String type) {
+    return !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
   }
 
-  private boolean isValidTypeForGeneration(String type) {
-    return newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type);
+  private boolean isInvalidTypeForGeneration(String type) {
+    return !newArrayList("password", "certificate", "rsa", "ssh", "user").contains(type);
   }
 
   public void setRegenerate(boolean regenerate) {

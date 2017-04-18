@@ -32,12 +32,12 @@ public abstract class BaseSecretSetRequest<Z> extends BaseSecretRequest {
   public void validate() {
     super.validate();
 
-    if (!isValidTypeForSet(getType())) {
+    if (isInvalidTypeForSet(getType())) {
       throw new ParameterizedValidationException("error.invalid_type_with_set_prompt");
     }
   }
 
-  private boolean isValidTypeForSet(String type) {
-    return newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
+  private boolean isInvalidTypeForSet(String type) {
+    return !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
   }
 }
