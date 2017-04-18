@@ -2,6 +2,7 @@ package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -23,8 +24,11 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
+import static io.pivotal.security.helper.AuditingHelper.verifyRequestAuditing;
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
@@ -59,9 +63,9 @@ public class AccessControlEndpointTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
   @Autowired
-  RequestAuditRecordRepository requestAuditRecordRepository;
+  private RequestAuditRecordRepository requestAuditRecordRepository;
   @Autowired
-  EventAuditRecordRepository eventAuditRecordRepository;
+  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
 
@@ -256,15 +260,81 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"/cred1\",\n"
-            + "  \"access_control_entries\": [\n"
-            + "     { \n"
-            + "       \"actor\": \"dan\",\n"
-            + "       \"operations\": [\"read\"]\n"
-            + "     }]"
+            + "  \"credential_name\": \"/cred1\","
+            + "  \"access_control_entries\": ["
+            + "     {"
+            + "       \"actor\": \"dan\","
+            + "       \"operations\": [\"read\",\"write\"]"
+            + "     },"
+            + "     {"
+            + "       \"actor\": \"isobel\","
+            + "       \"operations\": [\"delete\"]"
+            + "     }" +
+            "]"
             + "}");
 
     MvcResult result = this.mockMvc.perform(post).andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andDo(print())
+        .andReturn();
+    String content = result.getResponse().getContentAsString();
+    AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+    assertThat(acl.getAccessControlList(), hasSize(3));
+    assertThat(acl.getCredentialName(), equalTo("/cred1"));
+    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+        samePropertyValuesAs(
+            new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+        samePropertyValuesAs(
+            new AccessControlEntry("dan", asList(READ, WRITE))),
+        samePropertyValuesAs(
+            new AccessControlEntry("isobel", asList(DELETE)))
+    ));
+
+    verifyAuditing(
+        requestAuditRecordRepository,
+        eventAuditRecordRepository,
+        "/api/v1/aces",
+        200,
+        newArrayList(
+            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", READ, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", WRITE, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", DELETE, "isobel")
+        )
+    );
+  }
+
+  @Test
+  public void POST_whenTheUserHasPermissionToWriteACEs_updatesTheACL() throws Exception {
+    final MockHttpServletRequestBuilder initialPost = post("/api/v1/aces")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"credential_name\": \"/cred1\","
+            + "  \"access_control_entries\": ["
+            + "     {"
+            + "       \"actor\": \"dan\","
+            + "       \"operations\": [\"read\",\"delete\"]"
+            + "     }]"
+            + "}");
+    mockMvc.perform(initialPost)
+        .andExpect(status().isOk());
+
+    final MockHttpServletRequestBuilder updatePost = post("/api/v1/aces")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"credential_name\": \"/cred1\","
+            + "  \"access_control_entries\": ["
+            + "     {"
+            + "       \"actor\": \"dan\","
+            + "       \"operations\": [\"write\",\"read\"]"
+            + "     }]"
+            + "}");
+
+    MvcResult result = this.mockMvc.perform(updatePost).andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andDo(print())
@@ -277,8 +347,22 @@ public class AccessControlEndpointTest {
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("dan", asList(READ)))
+            new AccessControlEntry("dan", asList(READ, WRITE, DELETE)))
     ));
+
+    // 1 from beforeEach for credential, 2 from initialPost, 2 from updatePost
+    assertThat(eventAuditRecordRepository.count(), equalTo(5L));
+
+    verifyAuditing(
+        requestAuditRecordRepository,
+        eventAuditRecordRepository,
+        "/api/v1/aces",
+        200,
+        newArrayList(
+            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", READ, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", WRITE, "dan")
+        )
+    );
   }
 
   @Test
@@ -311,10 +395,20 @@ public class AccessControlEndpointTest {
         samePropertyValuesAs(
             new AccessControlEntry("dan", singletonList(READ)))
     ));
+
+    verifyAuditing(
+        requestAuditRecordRepository,
+        eventAuditRecordRepository,
+        "/api/v1/aces",
+        200,
+        newArrayList(
+            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", READ, "dan")
+        )
+    );
   }
 
   @Test
-  public void POST_whenMalformedJsonIsSent_returnsNotFound() throws Exception {
+  public void POST_whenMalformedJsonIsSent_returnsBadRequest() throws Exception {
     final String malformedJson = "{"
         + "  \"credential_name\": \"foo\","
         + "  \"access_control_entries\": ["
@@ -335,6 +429,12 @@ public class AccessControlEndpointTest {
             "The request could not be fulfilled because the request path or body did"
                 + " not meet expectation. Please check the documentation for required "
                 + "formatting and retry your request.")));
+
+    verifyRequestAuditing(
+        requestAuditRecordRepository,
+        "/api/v1/aces",
+        400
+    );
   }
 
   @Test
@@ -356,6 +456,16 @@ public class AccessControlEndpointTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error", equalTo(
             "The request could not be fulfilled because the resource could not be found.")));
+
+    verifyAuditing(
+        requestAuditRecordRepository,
+        eventAuditRecordRepository,
+        "/api/v1/aces",
+        404,
+        newArrayList(
+            new EventAuditRecordParameters(ACL_UPDATE, "/this-is-a-fake-credential", READ, "dan")
+        )
+    );
   }
 
   @Test
@@ -378,6 +488,12 @@ public class AccessControlEndpointTest {
         .andExpect(jsonPath("$.error").value(
             "The provided operation is not supported."
                 + " Valid values include read, write, delete, read_acl, and write_acl."));
+
+    verifyRequestAuditing(
+        requestAuditRecordRepository,
+        "/api/v1/aces",
+        400
+    );
   }
 
   private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {

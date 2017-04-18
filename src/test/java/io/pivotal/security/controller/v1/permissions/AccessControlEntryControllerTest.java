@@ -2,6 +2,9 @@ package io.pivotal.security.controller.v1.permissions;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.audit.EventAuditLogService;
+import io.pivotal.security.audit.RequestUuid;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlOperation;
@@ -15,6 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.function.Function;
+
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -39,12 +45,18 @@ public class AccessControlEntryControllerTest {
 
   private AccessControlEntryController subject;
   private AccessControlHandler accessControlHandler;
+  private EventAuditLogService eventAuditLogService;
   private MockMvc mockMvc;
 
   {
     beforeEach(() -> {
       accessControlHandler = mock(AccessControlHandler.class);
-      subject = new AccessControlEntryController(accessControlHandler);
+      eventAuditLogService = mock(EventAuditLogService.class);
+
+      when(eventAuditLogService.auditEvents(any(RequestUuid.class), any(UserContext.class), any(Function.class)))
+          .thenAnswer(invocation -> invocation.getArgumentAt(2, Function.class).apply(newArrayList()));
+
+      subject = new AccessControlEntryController(accessControlHandler, eventAuditLogService);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
           new MappingJackson2HttpMessageConverter();

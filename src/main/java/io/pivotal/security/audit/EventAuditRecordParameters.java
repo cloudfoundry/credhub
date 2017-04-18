@@ -15,8 +15,19 @@ public class EventAuditRecordParameters {
   }
 
   public EventAuditRecordParameters(AuditingOperationCode auditingOperationCode, String credentialName) {
+    this(auditingOperationCode, credentialName, null, null);
+  }
+
+  public EventAuditRecordParameters(
+      AuditingOperationCode auditingOperationCode,
+      String credentialName,
+      AccessControlOperation accessControlOperation,
+      String aceActor
+  ) {
     this.auditingOperationCode = auditingOperationCode;
     this.credentialName = credentialName;
+    this.aceActor = aceActor;
+    this.aceOperation = accessControlOperation;
   }
 
   public AuditingOperationCode getAuditingOperationCode() {

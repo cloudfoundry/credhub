@@ -125,4 +125,22 @@ public class AuditLogFactoryTest {
 
     assertNotNull(eventAuditRecord);
   }
+
+  @Test
+  public void createEventAuditRecord_whenCredentialNameIsMissingLeadingSlash_prependsLeadingSlash() {
+    final UserContext userContext = mock(UserContext.class);
+    final UUID requestUuid = UUID.randomUUID();
+
+    final EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters();
+    eventAuditRecordParameters.setCredentialName("test-credential");
+
+    EventAuditRecord eventAuditRecord = createEventAuditRecord(
+        eventAuditRecordParameters,
+        userContext,
+        requestUuid,
+        true
+    );
+
+    assertThat(eventAuditRecord.getCredentialName(), equalTo("/test-credential"));
+  }
 }

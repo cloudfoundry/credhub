@@ -1,6 +1,7 @@
 package io.pivotal.security.entity;
 
 import io.pivotal.security.util.InstantMillisecondsConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -56,7 +57,7 @@ public class EventAuditRecord {
       String aceActor
   ) {
     this.operation = operation;
-    this.credentialName = credentialName;
+    this.credentialName = StringUtils.prependIfMissing(credentialName, "/");
     this.actor = actor;
     this.requestUuid = requestUuid;
     this.success = success;

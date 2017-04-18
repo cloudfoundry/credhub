@@ -225,7 +225,7 @@ public class SecretsControllerAuditLogTest {
 
         EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
-        assertThat(auditRecord.getCredentialName(), equalTo("foo"));
+        assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_DELETE.toString()));
       });
     });

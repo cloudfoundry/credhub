@@ -5,8 +5,9 @@ public enum AuditingOperationCode {
   CREDENTIAL_FIND("credential_find"),
   CREDENTIAL_DELETE("credential_delete"),
   CREDENTIAL_UPDATE("credential_update"),
-  UNKNOWN_OPERATION("unknown_operation"),
-  ACL_ACCESS("acl_access");
+  ACL_UPDATE("acl_update"),
+  ACL_ACCESS("acl_access"),
+  UNKNOWN_OPERATION("unknown_operation");
 
   private String operation;
 

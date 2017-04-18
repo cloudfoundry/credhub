@@ -190,11 +190,11 @@ public class EventAuditLogServiceTest {
   public void auditEvents_whenTheEventAndAuditsBothSucceed_auditsTheEvent() {
     EventAuditRecordParameters parameters1 = new EventAuditRecordParameters(
         CREDENTIAL_UPDATE,
-        "test-credential"
+        "/test-credential"
     );
     EventAuditRecordParameters parameters2 = new EventAuditRecordParameters(
         CREDENTIAL_ACCESS,
-        "foo"
+        "/foo"
     );
 
     subject.auditEvents(
@@ -218,11 +218,11 @@ public class EventAuditLogServiceTest {
   public void auditEvents_whenTheEventAndAnAuditBothFail_rollsBackAndThrowsAnException() {
     EventAuditRecordParameters parameters1 = new EventAuditRecordParameters(
         CREDENTIAL_UPDATE,
-        "test-credential"
+        "/test-credential"
     );
     EventAuditRecordParameters parameters2 = new EventAuditRecordParameters(
         CREDENTIAL_ACCESS,
-        "foo"
+        "/foo"
     );
 
     doThrow(new RuntimeException()).when(eventAuditRecordDataService)
@@ -295,11 +295,11 @@ public class EventAuditLogServiceTest {
   public void auditEvents_whenTheEventFails_shouldAuditTheFailure() {
     EventAuditRecordParameters parameters1 = new EventAuditRecordParameters(
         CREDENTIAL_UPDATE,
-        "test-credential"
+        "/test-credential"
     );
     EventAuditRecordParameters parameters2 = new EventAuditRecordParameters(
         CREDENTIAL_ACCESS,
-        "foo"
+        "/foo"
     );
 
     try {
@@ -333,7 +333,7 @@ public class EventAuditLogServiceTest {
   }
 
   private void checkAuditRecord(boolean successFlag) {
-    checkAuditRecords(singletonList(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "keyName")), successFlag);
+    checkAuditRecords(singletonList(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/keyName")), successFlag);
   }
 
   private void checkAuditRecords(List<EventAuditRecordParameters> eventAuditRecordParameters, boolean successFlag) {
