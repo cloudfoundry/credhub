@@ -56,20 +56,22 @@ public class AuthFailureAuditRecordDataServiceTest {
   CurrentTimeProvider currentTimeProvider;
 
   AuthFailureAuditRecordDataService subject;
+  private AuthFailureAuditRecord record;
 
   @Before
   public void beforeEach(){
     mockOutCurrentTimeProvider(currentTimeProvider).accept(frozenTime.toEpochMilli());
 
     subject = new AuthFailureAuditRecordDataService(authFailureAuditRecordRepository);
+
+    record = createAuthFailureAuditRecord();
+    record = subject.save(record);
+
+    entityManager.flush();
   }
 
   @Test
   public void save_whenGivenARecord_savesTheRecord() {
-    AuthFailureAuditRecord record = createAuthFailureAuditRecord();
-    record = subject.save(record);
-
-    entityManager.flush();
 
     assertNotNull(record);
 

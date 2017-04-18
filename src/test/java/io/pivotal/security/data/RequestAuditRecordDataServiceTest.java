@@ -50,24 +50,27 @@ public class RequestAuditRecordDataServiceTest {
   CurrentTimeProvider currentTimeProvider;
 
   RequestAuditRecordDataService subject;
+  private RequestAuditRecord record;
 
   @Before
   public void beforeEach() {
     mockOutCurrentTimeProvider(currentTimeProvider).accept(frozenTime.toEpochMilli());
 
     subject = new RequestAuditRecordDataService(requestAuditRecordRepository);
+
+    record = createOperationAuditRecord();
+    record = subject.save(record);
+
+    entityManager.flush();
   }
 
   @Test
   public void save_givenARecord_savesTheRecord() {
-    RequestAuditRecord record = createOperationAuditRecord();
-    record = subject.save(record);
-
-    entityManager.flush();
 
     assertNotNull(record);
 
-    RequestAuditRecord actual = jdbcTemplate.queryForObject("select * from request_audit_record", (rs, rowNum) -> {
+    RequestAuditRecord actual = jdbcTemplate
+        .queryForObject("select * from request_audit_record", (rs, rowNum) -> {
       return new RequestAuditRecord(
           getUuid(rs.getBytes("uuid")),
           Instant.ofEpochMilli(rs.getLong("now")),
