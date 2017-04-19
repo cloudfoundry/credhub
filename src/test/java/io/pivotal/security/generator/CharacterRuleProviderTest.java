@@ -1,17 +1,7 @@
 package io.pivotal.security.generator;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.request.StringGenerationParameters;
-import java.util.List;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -19,6 +9,16 @@ import org.junit.runner.RunWith;
 import org.passay.CharacterData;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
+
+import java.util.List;
+
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
 
 @RunWith(Spectrum.class)
 public class CharacterRuleProviderTest {
@@ -120,32 +120,6 @@ public class CharacterRuleProviderTest {
             usesCharacters(EnglishCharacterData.Digit),
             usesCharacters(CredHubCharacterData.Special)
         )));
-      });
-
-      it("can create character rules with hex only", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setOnlyHex(true);
-
-        List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
-        assertThat(characterRules, iterableWithSize(1));
-        assertThat(characterRules, contains(usesCharacters(CredHubCharacterData.Hex)));
-      });
-
-      it("ignores other rules when hex only", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setOnlyHex(true);
-        secretParameters.setExcludeUpper(true);
-
-        List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
-        assertThat(characterRules, iterableWithSize(1));
-
-        assertThat(characterRules, contains(usesCharacters(CredHubCharacterData.Hex)));
-
-        assertThat(characterRules, not(hasItem(usesCharacters(EnglishCharacterData.LowerCase))));
-        assertThat(characterRules, not(hasItem(usesCharacters(EnglishCharacterData.UpperCase))));
-        assertThat(characterRules, not(hasItem(usesCharacters(CredHubCharacterData.Special))));
       });
 
       it("returns empty list when all are excluded", () -> {

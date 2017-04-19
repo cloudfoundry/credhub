@@ -256,8 +256,7 @@ public class EncryptionKeyRotatorTest {
             .contentType(APPLICATION_JSON)
             .content("{"
                 + "  \"name\": \"/cred1\","
-                + "  \"type\": \"password\","
-                + "  \"parameters\": { \"only_hex\": true }"
+                + "  \"type\": \"password\""
                 + "}");
 
         String content = this.mockMvc.perform(post).andExpect(status().isOk()).andReturn()

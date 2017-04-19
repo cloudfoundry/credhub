@@ -27,7 +27,6 @@ public class UserGenerationParametersTest {
     assertThat(parameters.isExcludeNumber(), equalTo(true));
     assertThat(parameters.isExcludeUpper(), equalTo(false));
     assertThat(parameters.isIncludeSpecial(), equalTo(false));
-    assertThat(parameters.isOnlyHex(), equalTo(false));
   }
 
   @Test
@@ -39,6 +38,5 @@ public class UserGenerationParametersTest {
     assertThat(parameters.isExcludeNumber(), equalTo(false));
     assertThat(parameters.isExcludeUpper(), equalTo(false));
     assertThat(parameters.isIncludeSpecial(), equalTo(false));
-    assertThat(parameters.isOnlyHex(), equalTo(false));
   }
 }

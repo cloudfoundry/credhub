@@ -20,7 +20,6 @@ public class StringGenerationParameters {
   private boolean excludeNumber;
   private boolean excludeUpper;
   private boolean includeSpecial;
-  private boolean onlyHex;
 
   public int getLength() {
     return length == null ? PassayStringSecretGenerator.DEFAULT_LENGTH : length;
@@ -67,23 +66,12 @@ public class StringGenerationParameters {
     return this;
   }
 
-  public boolean isOnlyHex() {
-    return onlyHex;
-  }
-
-  public StringGenerationParameters setOnlyHex(boolean onlyHex) {
-    this.onlyHex = onlyHex;
-
-    return this;
-  }
-
   @JsonIgnore
   public boolean isValid() {
     return !(!includeSpecial
         && excludeNumber
         && excludeUpper
         && excludeLower
-        && !onlyHex
       );
   }
 
