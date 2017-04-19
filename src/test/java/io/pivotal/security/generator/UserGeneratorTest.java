@@ -7,7 +7,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
@@ -35,9 +37,18 @@ public class UserGeneratorTest {
 
   @Test
   public void generateSecret_generatesUsernameAndPassword_withCorrect_generationParameters() {
-    assertThat(subject.generateSecret(parameters).getPassword(),
-        equalTo("fake-password"));
-    assertThat(subject.generateSecret(parameters).getUsername(),
-        equalTo("fake-user"));
+    assertThat(subject.generateSecret(parameters).getPassword(), equalTo("fake-password"));
+    assertThat(subject.generateSecret(parameters).getUsername(), equalTo("fake-user"));
+  }
+
+  @Test
+  public void generateSecret_generatesOnlyPassword_withNull_usernameParameters() throws Exception{
+    parameters.setUsernameGenerationParameters(null);
+
+    when(passwordGenerator.generateSecret(same(parameters.getUsernameGenerationParameters())))
+      .thenThrow(NullPointerException.class);
+
+    assertThat(subject.generateSecret(parameters).getPassword(), equalTo("fake-password"));
+    assertThat(subject.generateSecret(parameters).getUsername(), is(nullValue()));
   }
 }

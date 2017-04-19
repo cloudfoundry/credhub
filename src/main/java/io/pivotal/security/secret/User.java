@@ -1,24 +1,20 @@
 package io.pivotal.security.secret;
 
 public class User {
-  private String user;
+  private String username;
   private String password;
 
-  public User(String user, String password) {
-    this.user = user;
+  public User(String username, String password) {
+    this.username = username;
     this.password = password;
   }
 
   public String getUsername() {
-    return user;
+    return username;
   }
 
-  public String getUser() {
-    return user;
-  }
-
-  public void setUser(String user) {
-    this.user = user;
+  public void setUsername(String username) {
+    this.username = username;
   }
 
   public String getPassword() {

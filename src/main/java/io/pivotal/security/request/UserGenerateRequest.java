@@ -9,6 +9,9 @@ public class UserGenerateRequest extends BaseSecretGenerateRequest {
   @JsonProperty("parameters")
   private UserGenerationParameters generationParameters;
 
+  @JsonProperty("value")
+  private UserValue value = null;
+
   @Override
   public void validate() {
     super.validate();
@@ -21,9 +24,21 @@ public class UserGenerateRequest extends BaseSecretGenerateRequest {
     userSetRequest.setOverwrite(isOverwrite());
     userSetRequest.setAccessControlEntries(getAccessControlEntries());
 
-    User user = generatorService.generateUser(new UserGenerationParameters());
+    UserGenerationParameters userGenerationParameters = new UserGenerationParameters();
+
+    if (getValue() != null) {
+      userGenerationParameters.setUsernameGenerationParameters(null);
+    }
+
+    User user = generatorService.generateUser(userGenerationParameters);
     UserSetRequestFields userSetRequestFields = new UserSetRequestFields();
-    userSetRequestFields.setUsername(user.getUsername());
+
+    if (user.getUsername() == null) {
+      userSetRequestFields.setUsername(value.getUsername());
+    } else {
+      userSetRequestFields.setUsername(user.getUsername());
+    }
+
     userSetRequestFields.setPassword(user.getPassword());
 
     userSetRequest.setUserSetRequestFields(userSetRequestFields);
@@ -36,7 +51,15 @@ public class UserGenerateRequest extends BaseSecretGenerateRequest {
   }
 
   public void setGenerationParameters(
-      UserGenerationParameters generationParameters) {
+    UserGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
+  }
+
+  public UserValue getValue() {
+    return value;
+  }
+
+  public void setValue(UserValue value) {
+    this.value = value;
   }
 }

@@ -54,39 +54,68 @@ public class GenerationTest {
         .build();
 
     cleanUpDatabase(webApplicationContext);
-
-    getPost("/cred1");
-    getPost("/cred2");
   }
 
 
   @Test
   public void userGeneration_shouldGenerateCorrectUsernameAndPassword() throws Exception {
+    getPost("/cred1");
+    getPost("/cred2");
+
     MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=/cred1")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.username", isUsername()))
-        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-        .andReturn();
+      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", isUsername()))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
 
 
     MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=/cred2")
-        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-        .accept(APPLICATION_JSON)
-        .contentType(APPLICATION_JSON))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.data[0].value.username", isUsername()))
-        .andExpect(jsonPath("$.data[0].value.password", isPassword()))
-        .andReturn();
+      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", isUsername()))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
 
     JSONObject jsonCred1 = getJsonObject(cred1);
     JSONObject jsonCred2 = getJsonObject(cred2);
 
     assertThat(jsonCred1.getString("username"), not(equalTo(jsonCred2.getString("username"))));
     assertThat(jsonCred1.getString("password"), not(equalTo(jsonCred2.getString("password"))));
+  }
+
+  @Test
+  public void userGeneration_shouldGenerateOnlyPasswordWhenGivenStaticUsername() throws Exception{
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{  \"name\": \"cred1\", \n" +
+        "  \"type\": \"user\", \n" +
+        "  \"value\": {\n" +
+        "    \"username\": \"luke\" \n" +
+        "  }\n" +
+        "}");
+
+    this.mockMvc.perform(post)
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    this.mockMvc.perform(get("/api/v1/data?name=/cred1")
+      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
   }
 
   private JSONObject getJsonObject(MvcResult cred1) throws UnsupportedEncodingException {

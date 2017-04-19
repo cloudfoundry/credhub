@@ -13,6 +13,10 @@ public class UserGenerationParameters {
     passwordGenerationParameters = new StringGenerationParameters();
   }
 
+  public void setUsernameGenerationParameters(StringGenerationParameters parameters) {
+    usernameGenerationParameters = parameters;
+  }
+
   public StringGenerationParameters getUsernameGenerationParameters() {
     return usernameGenerationParameters;
   }

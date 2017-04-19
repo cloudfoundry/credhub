@@ -15,10 +15,15 @@ public class UserGenerator {
   }
 
   public User generateSecret(UserGenerationParameters generationParameters) {
-    StringSecret stringSecret = stringGenerator.generateSecret(generationParameters.getPasswordGenerationParameters());
+    StringSecret generatedPassword = stringGenerator.generateSecret(generationParameters.getPasswordGenerationParameters());
 
-    StringSecret user = stringGenerator.generateSecret(generationParameters.getUsernameGenerationParameters());
+    StringSecret generatedUser = null;
+    if (generationParameters.getUsernameGenerationParameters() != null) {
+      generatedUser = stringGenerator.generateSecret(generationParameters.getUsernameGenerationParameters());
+    }
 
-    return new User(user.getStringSecret(), stringSecret.getStringSecret());
+    String username = generatedUser == null ? null : generatedUser.getStringSecret();
+
+    return new User(username, generatedPassword.getStringSecret());
   }
 }
