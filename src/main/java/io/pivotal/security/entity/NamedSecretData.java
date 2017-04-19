@@ -6,11 +6,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -24,6 +19,8 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.time.Instant;
+import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
@@ -62,6 +59,7 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
   @CreatedDate
   @LastModifiedDate
   @SuppressWarnings("unused")
+  //secrets are updated in place when encryption keys are rotated
   private Instant updatedAt;
 
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
@@ -85,22 +83,6 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
 
   public NamedSecretData() {
     this((String) null);
-  }
-
-  public static Stream<String> fullHierarchyForPath(String path) {
-    String[] components = path.split("/");
-    if (components.length > 1) {
-      StringBuilder currentPath = new StringBuilder();
-      List<String> pathSet = new ArrayList<>();
-      for (int i = 0; i < components.length - 1; i++) {
-        String element = components[i];
-        currentPath.append(element).append('/');
-        pathSet.add(currentPath.toString());
-      }
-      return pathSet.stream();
-    } else {
-      return Stream.of();
-    }
   }
 
   public UUID getUuid() {

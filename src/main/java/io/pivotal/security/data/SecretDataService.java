@@ -1,7 +1,23 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.domain.*;
-import io.pivotal.security.entity.*;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.NamedCertificateSecret;
+import io.pivotal.security.domain.NamedJsonSecret;
+import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.NamedRsaSecret;
+import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.domain.NamedUserSecret;
+import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.NamedJsonSecretData;
+import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.entity.NamedUserSecretData;
+import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.SecretName;
 import io.pivotal.security.repository.SecretNameRepository;
 import io.pivotal.security.repository.SecretRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -15,9 +31,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.repository.SecretRepository.BATCH_SIZE;
@@ -59,10 +77,6 @@ public class SecretDataService {
     this.encryptor = encryptor;
   }
 
-  private static String addLeadingSlashIfMissing(String name) {
-    return StringUtils.prependIfMissing(name, "/");
-  }
-
   public <Z extends NamedSecret> Z save(Z namedSecret) {
     return (Z) namedSecret.save(this);
   }
@@ -92,15 +106,31 @@ public class SecretDataService {
 
     return secretRepository.findAll().stream()
         .map(namedSecretData -> namedSecretData.getSecretName().getName())
-        .flatMap(NamedSecretData::fullHierarchyForPath)
+        .flatMap(SecretDataService::fullHierarchyForPath)
         .distinct()
         .sorted()
         .collect(Collectors.toList());
   }
 
+  private static Stream<String> fullHierarchyForPath(String path) {
+    String[] components = path.split("/");
+    if (components.length > 1) {
+      StringBuilder currentPath = new StringBuilder();
+      List<String> pathSet = new ArrayList<>();
+      for (int i = 0; i < components.length - 1; i++) {
+        String element = components[i];
+        currentPath.append(element).append('/');
+        pathSet.add(currentPath.toString());
+      }
+      return pathSet.stream();
+    } else {
+      return Stream.of();
+    }
+  }
+
   public NamedSecret findMostRecent(String name) {
     SecretName secretName = secretNameRepository
-        .findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+        .findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
 
     if (secretName == null) {
       return null;
@@ -111,7 +141,7 @@ public class SecretDataService {
   }
 
   protected SecretName findSecretName(String name) {
-    return secretNameRepository.findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+    return secretNameRepository.findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
   }
 
   public NamedSecret findByUuid(String uuid) {
@@ -127,20 +157,21 @@ public class SecretDataService {
   }
 
   public List<SecretView> findStartingWithPath(String path) {
-    path = addLeadingSlashIfMissing(path);
+    path = StringUtils.prependIfMissing(path, "/");
     path = StringUtils.appendIfMissing(path, "/");
 
     return findMatchingName(path + "%");
   }
 
   public boolean delete(String name) {
-    long numDeleted = secretNameRepository.deleteByNameIgnoreCase(addLeadingSlashIfMissing(name));
+    long numDeleted = secretNameRepository.deleteByNameIgnoreCase(
+        StringUtils.prependIfMissing(name, "/"));
     return numDeleted > 0;
   }
 
   public List<NamedSecret> findAllByName(String name) {
     SecretName secretName = secretNameRepository
-        .findOneByNameIgnoreCase(addLeadingSlashIfMissing(name));
+        .findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
 
     return secretName != null ? wrap(secretRepository.findAllBySecretNameUuid(secretName.getUuid()))
         : newArrayList();
