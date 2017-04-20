@@ -2,7 +2,7 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedJsonSecret;
+import io.pivotal.security.domain.JsonCredential;
 import org.junit.runner.RunWith;
 
 import java.time.Instant;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class JsonViewTest {
 
-  private NamedJsonSecret entity;
+  private JsonCredential entity;
   private UUID uuid;
   private Encryptor encryptor;
   private Map<String, Object> value;
@@ -40,7 +40,7 @@ public class JsonViewTest {
 
       encryptor = mock(Encryptor.class);
       uuid = UUID.randomUUID();
-      entity = new NamedJsonSecret("/foo")
+      entity = new JsonCredential("/foo")
           .setEncryptor(encryptor)
           .setUuid(uuid);
 

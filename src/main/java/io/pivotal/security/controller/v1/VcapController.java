@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import com.jayway.jsonpath.DocumentContext;
-import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.service.JsonInterpolationService;
 import org.apache.logging.log4j.core.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,16 +23,16 @@ import java.io.InputStreamReader;
 public class VcapController {
 
   static final String API_V1 = "/api/v1";
-  private final SecretDataService secretDataService;
+  private final CredentialDataService credentialDataService;
   private final JsonInterpolationService jsonInterpolationService;
 
   @Autowired
   VcapController(
       JsonInterpolationService jsonInterpolationService,
-      SecretDataService secretDataService
+      CredentialDataService credentialDataService
   ) {
     this.jsonInterpolationService = jsonInterpolationService;
-    this.secretDataService = secretDataService;
+    this.credentialDataService = credentialDataService;
   }
 
   @RequestMapping(method = RequestMethod.POST, path = "/vcap")
@@ -43,7 +43,7 @@ public class VcapController {
 
     DocumentContext responseJson;
     responseJson = jsonInterpolationService
-        .interpolateCredhubReferences(requestAsString, secretDataService);
+        .interpolateCredhubReferences(requestAsString, credentialDataService);
 
     return responseJson.jsonString();
   }

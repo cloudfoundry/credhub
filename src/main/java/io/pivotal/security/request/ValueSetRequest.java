@@ -1,10 +1,10 @@
 package io.pivotal.security.request;
 
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.domain.ValueCredential;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class ValueSetRequest extends BaseSecretSetRequest<NamedValueSecret> {
+public class ValueSetRequest extends BaseCredentialSetRequest<ValueCredential> {
 
   @NotEmpty(message = "error.missing_value")
   private String value;
@@ -18,8 +18,8 @@ public class ValueSetRequest extends BaseSecretSetRequest<NamedValueSecret> {
   }
 
   @Override
-  public NamedValueSecret createNewVersion(NamedValueSecret existing, Encryptor encryptor) {
-    return NamedValueSecret
+  public ValueCredential createNewVersion(ValueCredential existing, Encryptor encryptor) {
+    return ValueCredential
         .createNewVersion(existing, getName(), this.getValue(), encryptor,
             this.getAccessControlEntries());
   }

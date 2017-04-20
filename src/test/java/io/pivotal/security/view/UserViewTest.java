@@ -2,7 +2,7 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedUserSecret;
+import io.pivotal.security.domain.UserCredential;
 import org.junit.runner.RunWith;
 
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class UserViewTest {
       UUID uuid = UUID.randomUUID();
 
       UserView actual = (UserView) UserView.fromEntity(
-          new NamedUserSecret("/foo")
+          new UserCredential("/foo")
               .setUuid(uuid)
               .setEncryptor(encryptor)
               .setUsername("test-username"));

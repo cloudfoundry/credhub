@@ -2,10 +2,10 @@ package io.pivotal.security.config;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -20,6 +20,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -46,9 +49,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.time.Instant;
-import java.util.UUID;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -58,7 +58,7 @@ public class AuthConfigurationTest {
   WebApplicationContext applicationContext;
 
   @MockBean
-  SecretDataService secretDataService;
+  CredentialDataService credentialDataService;
 
   @SpyBean
   RequestAuditRecordDataService requestAuditRecordDataService;
@@ -66,7 +66,7 @@ public class AuthConfigurationTest {
   private MockMvc mockMvc;
 
   private final String dataApiPath = "/api/v1/data";
-  private final String secretName = "test";
+  private final String credentialName = "test";
 
   {
     wireAndUnwire(this);
@@ -85,9 +85,9 @@ public class AuthConfigurationTest {
 
     describe("/api/v1/data", () -> {
       beforeEach(() -> {
-        when(secretDataService.save(any(NamedSecret.class))).thenAnswer(invocation -> {
-          NamedPasswordSecret namedPasswordSecret = invocation
-              .getArgumentAt(0, NamedPasswordSecret.class);
+        when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
+          PasswordCredential namedPasswordSecret = invocation
+              .getArgumentAt(0, PasswordCredential.class);
           namedPasswordSecret.setUuid(UUID.randomUUID());
           namedPasswordSecret.setVersionCreatedAt(Instant.now());
           return namedPasswordSecret;
@@ -98,7 +98,7 @@ public class AuthConfigurationTest {
         mockMvc.perform(post(dataApiPath)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}")
+            .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}")
         ).andExpect(status().isUnauthorized());
       });
 
@@ -108,7 +108,7 @@ public class AuthConfigurationTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
           mockMvc.perform(post)
               .andExpect(status().isOk())
@@ -124,7 +124,7 @@ public class AuthConfigurationTest {
               .header("Authorization", "Bearer " + INVALID_SCOPE_KEY_JWT)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
           mockMvc.perform(post)
               .andExpect(status().isForbidden());
@@ -136,7 +136,7 @@ public class AuthConfigurationTest {
           final MockHttpServletRequestBuilder post = post(dataApiPath)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
           mockMvc.perform(post).andExpect(status().isUnauthorized());
         });
@@ -149,7 +149,7 @@ public class AuthConfigurationTest {
                   .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
                   .accept(MediaType.APPLICATION_JSON)
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+                  .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
               mockMvc.perform(post)
                   .andExpect(status().isOk())
@@ -163,7 +163,7 @@ public class AuthConfigurationTest {
               .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
           mockMvc.perform(post)
               .andExpect(status().isOk());
@@ -185,7 +185,7 @@ public class AuthConfigurationTest {
                   .with(x509(cert(TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT)))
                   .accept(MediaType.APPLICATION_JSON)
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+                  .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
               final String expectedError = "The provided authentication mechanism does not "
                   + "provide a valid identity. Please contact your system administrator.";
@@ -200,7 +200,7 @@ public class AuthConfigurationTest {
               .with(x509(cert(TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX)))
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
           final String expectedError = "The provided authentication mechanism does not provide a "
               + "valid identity. Please contact your system administrator.";
@@ -215,7 +215,7 @@ public class AuthConfigurationTest {
               .with(x509(cert(TEST_CERT_WITHOUT_ORGANIZATION_UNIT)))
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
           final String expectedError = "The provided authentication mechanism does not provide a "
               + "valid identity. Please contact your system administrator.";
@@ -230,7 +230,7 @@ public class AuthConfigurationTest {
               .with(x509(cert(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + secretName + "\"}");
+              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
           final String expectedError = "The provided authentication mechanism does not provide a "
               + "valid identity. Please contact your system administrator.";

@@ -1,13 +1,13 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedSecret;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.BaseSecretSetRequest;
-import io.pivotal.security.view.SecretView;
+import io.pivotal.security.request.BaseCredentialSetRequest;
+import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,45 +17,45 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 @Service
 public class SetService {
   private final Encryptor encryptor;
-  private final SecretDataService secretDataService;
+  private final CredentialDataService credentialDataService;
 
   @Autowired
-  public SetService(SecretDataService secretDataService,
+  public SetService(CredentialDataService credentialDataService,
                     Encryptor encryptor
   ) {
-    this.secretDataService = secretDataService;
+    this.credentialDataService = credentialDataService;
     this.encryptor = encryptor;
   }
 
-  public SecretView performSet(
+  public CredentialView performSet(
       EventAuditRecordParameters eventAuditRecordParameters,
-      BaseSecretSetRequest requestBody,
+      BaseCredentialSetRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
-    final String secretName = requestBody.getName();
+    final String credentialName = requestBody.getName();
 
-    NamedSecret existingNamedSecret = secretDataService.findMostRecent(secretName);
+    Credential existingCredential = credentialDataService.findMostRecent(credentialName);
 
-    if (existingNamedSecret == null) { requestBody.addCurrentUser(currentUserAccessControlEntry); }
+    if (existingCredential == null) { requestBody.addCurrentUser(currentUserAccessControlEntry); }
 
-    boolean shouldWriteNewEntity = existingNamedSecret == null || requestBody.isOverwrite();
+    boolean shouldWriteNewEntity = existingCredential == null || requestBody.isOverwrite();
 
     eventAuditRecordParameters.setAuditingOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
     final String type = requestBody.getType();
-    validateSecretType(existingNamedSecret, type);
+    validateSecretType(existingCredential, type);
 
-    NamedSecret storedEntity = existingNamedSecret;
+    Credential storedEntity = existingCredential;
     if (shouldWriteNewEntity) {
-      NamedSecret newEntity = (NamedSecret) requestBody.createNewVersion(existingNamedSecret, encryptor);
-      storedEntity = secretDataService.save(newEntity);
+      Credential newEntity = (Credential) requestBody.createNewVersion(existingCredential, encryptor);
+      storedEntity = credentialDataService.save(newEntity);
     }
     eventAuditRecordParameters.setCredentialName(storedEntity.getName());
 
-    return SecretView.fromEntity(storedEntity);
+    return CredentialView.fromEntity(storedEntity);
   }
 
-  private void validateSecretType(NamedSecret existingNamedSecret, String secretType) {
-    if (existingNamedSecret != null && !existingNamedSecret.getSecretType().equals(secretType)) {
+  private void validateSecretType(Credential existingCredential, String secretType) {
+    if (existingCredential != null && !existingCredential.getSecretType().equals(secretType)) {
       throw new ParameterizedValidationException("error.type_mismatch");
     }
   }

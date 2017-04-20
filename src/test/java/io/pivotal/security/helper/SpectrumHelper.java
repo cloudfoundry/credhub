@@ -93,7 +93,7 @@ public class SpectrumHelper {
     ApplicationContext applicationContext = myTestContextManagerSupplier.get()
         .getApplicationContext();
     JdbcTemplate jdbcTemplate = applicationContext.getBean(JdbcTemplate.class);
-    jdbcTemplate.execute("delete from secret_name");
+    jdbcTemplate.execute("delete from credential_name");
     jdbcTemplate.execute("truncate table auth_failure_audit_record");
     jdbcTemplate.execute("delete from event_audit_record");
     jdbcTemplate.execute("delete from request_audit_record");

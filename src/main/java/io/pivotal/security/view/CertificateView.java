@@ -1,14 +1,14 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.credential.Certificate;
 
 @SuppressWarnings("unused")
-public class CertificateView extends SecretView {
+public class CertificateView extends CredentialView {
 
   CertificateView() { /* Jackson */ }
 
-  CertificateView(NamedCertificateSecret namedCertificateSecret) {
+  CertificateView(CertificateCredential namedCertificateSecret) {
     super(
         namedCertificateSecret.getVersionCreatedAt(),
         namedCertificateSecret.getUuid(),

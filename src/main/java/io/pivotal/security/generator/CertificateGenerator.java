@@ -2,7 +2,7 @@ package io.pivotal.security.generator;
 
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CertificateGenerator implements
-    SecretGenerator<CertificateParameters, Certificate> {
+    CredentialGenerator<CertificateParameters, Certificate> {
 
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
   private final SignedCertificateGenerator signedCertificateGenerator;

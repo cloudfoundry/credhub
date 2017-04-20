@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.util.NamedRsaSecretHelper;
+import io.pivotal.security.util.RsaCredentialHelper;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
@@ -44,7 +44,7 @@ public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
   }
 
   public int getKeyLength() {
-    final NamedRsaSecretHelper namedRsaSecretHelper = new NamedRsaSecretHelper(this);
-    return namedRsaSecretHelper.getKeyLength();
+    final RsaCredentialHelper rsaCredentialHelper = new RsaCredentialHelper(this);
+    return rsaCredentialHelper.getKeyLength();
   }
 }

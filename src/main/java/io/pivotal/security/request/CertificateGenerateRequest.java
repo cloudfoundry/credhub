@@ -3,10 +3,10 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.service.GeneratorService;
 
-public class CertificateGenerateRequest extends BaseSecretGenerateRequest {
+public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
 
   @JsonProperty("parameters")
   private CertificateGenerationParameters generationParameters;
@@ -32,7 +32,7 @@ public class CertificateGenerateRequest extends BaseSecretGenerateRequest {
     getGenerationParameters().validate();
   }
 
-  public BaseSecretSetRequest generateSetRequest(GeneratorService generatorService) {
+  public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
     CertificateSetRequest certificateSetRequest = new CertificateSetRequest();
     String caName= null;
     if (certificateParameters == null) {

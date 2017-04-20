@@ -7,7 +7,7 @@ import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.repository.SecretRepository;
+import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -52,7 +52,7 @@ public class AuditTest {
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
   @Autowired
-  private SecretRepository secretRepository;
+  private CredentialRepository credentialRepository;
   @SpyBean
   private Logger logger;
   @SpyBean
@@ -93,7 +93,7 @@ public class AuditTest {
 
   @Test
   public void normally_logs_event_and_request() throws Exception {
-    String secretName = "/TEST/SECRET";
+    String credentialName = "/TEST/SECRET";
     String secretType = "password";
 
     mockMvc.perform(post("/api/v1/data")
@@ -101,7 +101,7 @@ public class AuditTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "\"name\":\"" + secretName + "\"," +
+            "\"name\":\"" + credentialName + "\"," +
             "\"type\":\"" + secretType + "\"" +
             "}"
         )
@@ -125,9 +125,9 @@ public class AuditTest {
 
   @Test
   public void when_event_fails_it_logs_correct_success_flag_and_status_code() throws Exception {
-    String secretName = "/TEST/SECRET";
+    String credentialName = "/TEST/SECRET";
 
-    mockMvc.perform(get("/api/v1/data?name=" + secretName)
+    mockMvc.perform(get("/api/v1/data?name=" + credentialName)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
@@ -161,7 +161,7 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isInternalServerError());
 
-    assertThat(secretRepository.count(), equalTo(0L));
+    assertThat(credentialRepository.count(), equalTo(0L));
     assertThat(eventAuditRecordRepository.count(), equalTo(0L));
 
     assertThat(requestAuditRecordRepository.count(), equalTo(1L));
@@ -169,7 +169,7 @@ public class AuditTest {
 
   @Test
   public void when_event_audit_record_save_fails_it_saves_request_audit_record() throws Exception {
-    String secretName = "/TEST/SECRET";
+    String credentialName = "/TEST/SECRET";
     String secretType = "password";
 
     doThrow(new RuntimeException("test exception"))
@@ -180,7 +180,7 @@ public class AuditTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "\"name\":\"" + secretName + "\"," +
+            "\"name\":\"" + credentialName + "\"," +
             "\"type\":\"" + secretType + "\"" +
             "}"
         )
@@ -201,9 +201,9 @@ public class AuditTest {
     doThrow(new RuntimeException("test"))
         .when(requestAuditRecordDataService).save(any(RequestAuditRecord.class));
 
-    String secretName = "/TEST/SECRET";
+    String credentialName = "/TEST/SECRET";
 
-    mockMvc.perform(get("/api/v1/data?name=" + secretName)
+    mockMvc.perform(get("/api/v1/data?name=" + credentialName)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)

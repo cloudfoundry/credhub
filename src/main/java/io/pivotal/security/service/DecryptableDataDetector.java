@@ -1,25 +1,25 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.data.CredentialDataService;
 import java.util.ArrayList;
 import java.util.UUID;
 
 public class DecryptableDataDetector {
 
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
-  private SecretDataService secretDataService;
+  private CredentialDataService credentialDataService;
 
   DecryptableDataDetector(EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
-      SecretDataService secretDataService) {
+                          CredentialDataService credentialDataService) {
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
-    this.secretDataService = secretDataService;
+    this.credentialDataService = credentialDataService;
   }
 
   public void check() {
     ArrayList<UUID> uuids = encryptionKeyCanaryMapper.getKnownCanaryUuids();
 
-    Long countTotalSecrets = secretDataService.count();
-    Long countSecretsEncryptedWithKeyWeHave = secretDataService.countEncryptedWithKeyUuidIn(uuids);
+    Long countTotalSecrets = credentialDataService.count();
+    Long countSecretsEncryptedWithKeyWeHave = credentialDataService.countEncryptedWithKeyUuidIn(uuids);
     if (countTotalSecrets > 0 && countSecretsEncryptedWithKeyWeHave == 0) {
       throw new RuntimeException(
           "The encryption keys provided cannot decrypt any of the " + countTotalSecrets

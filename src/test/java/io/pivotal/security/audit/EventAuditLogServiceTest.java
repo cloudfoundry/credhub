@@ -3,12 +3,12 @@ package io.pivotal.security.audit;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.EventAuditRecordDataService;
-import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.NamedValueSecretData;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.SecretNameRepository;
+import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.After;
@@ -59,7 +59,7 @@ public class EventAuditLogServiceTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   @Autowired
-  private SecretDataService secretDataService;
+  private CredentialDataService credentialDataService;
 
   @SpyBean
   private TransactionManagerDelegate transactionManager;
@@ -71,7 +71,7 @@ public class EventAuditLogServiceTest {
   private CurrentTimeProvider currentTimeProvider;
 
   @Autowired
-  private SecretNameRepository secretNameRepository;
+  private CredentialNameRepository credentialNameRepository;
 
   private final Instant now = Instant.ofEpochSecond(1490903353L);
   private final Instant then = Instant.ofEpochSecond(1550903353L);
@@ -89,7 +89,7 @@ public class EventAuditLogServiceTest {
   // `@Transactional` for the tests messes with our rollback testing.
   @After
   public void afterEach() {
-    secretNameRepository.deleteAllInBatch();
+    credentialNameRepository.deleteAllInBatch();
     eventAuditRecordRepository.deleteAllInBatch();
   }
 
@@ -103,11 +103,11 @@ public class EventAuditLogServiceTest {
           eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_ACCESS);
           NamedValueSecretData entity = new NamedValueSecretData("keyName");
           entity.setEncryptedValue("value".getBytes());
-          return secretDataService.save(entity);
+          return credentialDataService.save(entity);
         }
     );
 
-    assertThat(secretDataService.count(), equalTo(1L));
+    assertThat(credentialDataService.count(), equalTo(1L));
     checkAuditRecord(true);
   }
 
@@ -124,7 +124,7 @@ public class EventAuditLogServiceTest {
 
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        secretDataService.save(entity);
+        credentialDataService.save(entity);
 
         throw new RuntimeException("controller method failed");
       });
@@ -136,7 +136,7 @@ public class EventAuditLogServiceTest {
       assertThat(transactionStatuses.get(0).isCompleted(), equalTo(true));
       assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
 
-      assertThat(secretDataService.count(), equalTo(0L));
+      assertThat(credentialDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -154,7 +154,7 @@ public class EventAuditLogServiceTest {
 
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        return secretDataService.save(entity);
+        return credentialDataService.save(entity);
       });
     } finally {
       final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
@@ -163,7 +163,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(0).isCompleted(), equalTo(true));
 
-      assertThat(secretDataService.count(), equalTo(0L));
+      assertThat(credentialDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -177,7 +177,7 @@ public class EventAuditLogServiceTest {
 
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        secretDataService.save(entity);
+        credentialDataService.save(entity);
 
         throw new RuntimeException("controller method failed");
       });
@@ -206,11 +206,11 @@ public class EventAuditLogServiceTest {
 
           NamedValueSecretData entity = new NamedValueSecretData("keyName");
           entity.setEncryptedValue("value".getBytes());
-          return secretDataService.save(entity);
+          return credentialDataService.save(entity);
         }
     );
 
-    assertThat(secretDataService.count(), equalTo(1L));
+    assertThat(credentialDataService.count(), equalTo(1L));
     checkAuditRecords(newArrayList(parameters1, parameters2), true);
   }
 
@@ -237,7 +237,7 @@ public class EventAuditLogServiceTest {
 
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        return secretDataService.save(entity);
+        return credentialDataService.save(entity);
       });
     } finally {
       final ArgumentCaptor<TransactionStatus> captor = ArgumentCaptor.forClass(TransactionStatus.class);
@@ -246,7 +246,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(0).isCompleted(), equalTo(true));
 
-      assertThat(secretDataService.count(), equalTo(0L));
+      assertThat(credentialDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -275,7 +275,7 @@ public class EventAuditLogServiceTest {
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());
 
-        secretDataService.save(entity);
+        credentialDataService.save(entity);
 
         throw new RuntimeException("test");
       });
@@ -286,7 +286,7 @@ public class EventAuditLogServiceTest {
       List<TransactionStatus> transactionStatuses = captor.getAllValues();
       assertThat(transactionStatuses.get(1).isCompleted(), equalTo(true));
 
-      assertThat(secretDataService.count(), equalTo(0L));
+      assertThat(credentialDataService.count(), equalTo(0L));
       assertThat(eventAuditRecordRepository.count(), equalTo(0L));
     }
   }
@@ -309,13 +309,13 @@ public class EventAuditLogServiceTest {
 
         NamedValueSecretData entity = new NamedValueSecretData("keyName");
         entity.setEncryptedValue("value".getBytes());
-        secretDataService.save(entity);
+        credentialDataService.save(entity);
 
         throw new RuntimeException("controller method failed");
       });
     } finally {
       checkAuditRecords(newArrayList(parameters1, parameters2), false);
-      assertThat(secretDataService.count(), equalTo(0L));
+      assertThat(credentialDataService.count(), equalTo(0L));
     }
   }
 

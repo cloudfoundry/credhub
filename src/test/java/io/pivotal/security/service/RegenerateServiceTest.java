@@ -2,15 +2,15 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedJsonSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.RsaCredential;
+import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.*;
-import io.pivotal.security.view.SecretView;
+import io.pivotal.security.view.CredentialView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
@@ -27,42 +27,42 @@ import static org.mockito.Mockito.*;
 @RunWith(Spectrum.class)
 public class RegenerateServiceTest {
 
-  private SecretDataService secretDataService;
+  private CredentialDataService credentialDataService;
   private GenerateService generateService;
   private RegenerateService subject;
 
-  private NamedPasswordSecret namedPasswordSecret;
-  private NamedSshSecret namedSshSecret;
-  private NamedRsaSecret namedRsaSecret;
-  private NamedJsonSecret secretOfUnsupportedType;
+  private PasswordCredential namedPasswordSecret;
+  private SshCredential namedSshSecret;
+  private RsaCredential namedRsaSecret;
+  private JsonCredential secretOfUnsupportedType;
   private StringGenerationParameters expectedParameters;
 
   {
     beforeEach(() -> {
-      secretDataService = mock(SecretDataService.class);
+      credentialDataService = mock(CredentialDataService.class);
       generateService = mock(GenerateService.class);
-      namedPasswordSecret = mock(NamedPasswordSecret.class);
-      namedSshSecret = mock(NamedSshSecret.class);
-      namedRsaSecret = mock(NamedRsaSecret.class);
+      namedPasswordSecret = mock(PasswordCredential.class);
+      namedSshSecret = mock(SshCredential.class);
+      namedRsaSecret = mock(RsaCredential.class);
 
-      when(secretDataService.findMostRecent(eq("unsupported")))
+      when(credentialDataService.findMostRecent(eq("unsupported")))
           .thenReturn(secretOfUnsupportedType);
       when(generateService
           .performGenerate(
               isA(EventAuditRecordParameters.class),
-              isA(BaseSecretGenerateRequest.class),
+              isA(BaseCredentialGenerateRequest.class),
               isA(AccessControlEntry.class)))
-          .thenReturn(mock(SecretView.class));
-      secretOfUnsupportedType = new NamedJsonSecret();
-      subject = new RegenerateService(secretDataService, generateService);
+          .thenReturn(mock(CredentialView.class));
+      secretOfUnsupportedType = new JsonCredential();
+      subject = new RegenerateService(credentialDataService, generateService);
     });
 
     describe("#performRegenerate", () -> {
       describe("password", () -> {
         beforeEach(() -> {
-          when(secretDataService.findMostRecent(eq("password")))
+          when(credentialDataService.findMostRecent(eq("password")))
               .thenReturn(namedPasswordSecret);
-          SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
+          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
               .setName("password");
           expectedParameters = new StringGenerationParameters()
               .setExcludeLower(true)
@@ -79,8 +79,8 @@ public class RegenerateServiceTest {
 
         describe("when regenerating password", () -> {
           it("should generate a new password", () -> {
-            ArgumentCaptor<BaseSecretGenerateRequest> generateRequestCaptor =
-                ArgumentCaptor.forClass(BaseSecretGenerateRequest.class);
+            ArgumentCaptor<BaseCredentialGenerateRequest> generateRequestCaptor =
+                ArgumentCaptor.forClass(BaseCredentialGenerateRequest.class);
 
             verify(generateService)
                 .performGenerate(
@@ -110,7 +110,7 @@ public class RegenerateServiceTest {
               ParameterizedValidationException.class,
               "error.cannot_regenerate_non_generated_password",
               () -> {
-                SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
+                CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
                     .setName("password");
 
                 subject
@@ -122,9 +122,9 @@ public class RegenerateServiceTest {
       describe("ssh & rsa", () -> {
         describe("when regenerating ssh", () -> {
           beforeEach(() -> {
-            when(secretDataService.findMostRecent(eq("ssh")))
+            when(credentialDataService.findMostRecent(eq("ssh")))
                 .thenReturn(namedSshSecret);
-            SecretRegenerateRequest sshRegenerateRequest = new SecretRegenerateRequest()
+            CredentialRegenerateRequest sshRegenerateRequest = new CredentialRegenerateRequest()
                 .setName("ssh");
             when(namedSshSecret.getName()).thenReturn("ssh");
             when(namedSshSecret.getSecretType()).thenReturn("ssh");
@@ -134,8 +134,8 @@ public class RegenerateServiceTest {
           });
 
           it("should generate a new ssh key pair", () -> {
-            ArgumentCaptor<BaseSecretGenerateRequest> generateRequestCaptor =
-                ArgumentCaptor.forClass(BaseSecretGenerateRequest.class);
+            ArgumentCaptor<BaseCredentialGenerateRequest> generateRequestCaptor =
+                ArgumentCaptor.forClass(BaseCredentialGenerateRequest.class);
 
             verify(generateService)
                 .performGenerate(
@@ -153,9 +153,9 @@ public class RegenerateServiceTest {
 
         describe("when regenerating rsa", () -> {
           beforeEach(() -> {
-            when(secretDataService.findMostRecent(eq("rsa")))
+            when(credentialDataService.findMostRecent(eq("rsa")))
                 .thenReturn(namedRsaSecret);
-            SecretRegenerateRequest rsaRegenerateRequest = new SecretRegenerateRequest()
+            CredentialRegenerateRequest rsaRegenerateRequest = new CredentialRegenerateRequest()
                 .setName("rsa");
             when(namedRsaSecret.getName()).thenReturn("rsa");
             when(namedRsaSecret.getSecretType()).thenReturn("rsa");
@@ -165,8 +165,8 @@ public class RegenerateServiceTest {
           });
 
           it("should generate a new rsa key pair", () -> {
-            ArgumentCaptor<BaseSecretGenerateRequest> generateRequestCaptor =
-                ArgumentCaptor.forClass(BaseSecretGenerateRequest.class);
+            ArgumentCaptor<BaseCredentialGenerateRequest> generateRequestCaptor =
+                ArgumentCaptor.forClass(BaseCredentialGenerateRequest.class);
 
             verify(generateService)
                 .performGenerate(
@@ -183,9 +183,9 @@ public class RegenerateServiceTest {
         });
       });
 
-      describe("when regenerating a secret that does not exist", () -> {
+      describe("when regenerating a credential that does not exist", () -> {
         itThrows("an exception", EntryNotFoundException.class, () -> {
-          SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
+          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
               .setName("missing_entry");
 
           subject.performRegenerate(mock(EventAuditRecordParameters.class), passwordGenerateRequest, mock(AccessControlEntry.class));
@@ -194,7 +194,7 @@ public class RegenerateServiceTest {
 
       describe("when attempting regenerate of non-regeneratable type", () -> {
         itThrows("an exception", ParameterizedValidationException.class, () -> {
-          SecretRegenerateRequest passwordGenerateRequest = new SecretRegenerateRequest()
+          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
               .setName("unsupported");
 
           subject.performRegenerate(mock(EventAuditRecordParameters.class), passwordGenerateRequest, mock(AccessControlEntry.class));

@@ -15,5 +15,5 @@ public interface AccessEntryRepository extends JpaRepository<AccessEntryData, UU
   AccessEntryData findByCredentialNameUuidAndActor(UUID uuid, String actor);
 
   @Transactional
-  int deleteByCredentialNameUuidAndActor(UUID secretNameUuid, String actor);
+  int deleteByCredentialNameUuidAndActor(UUID credentialNameUuid, String actor);
 }

@@ -19,7 +19,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.request.CertificateGenerationParameters;
-import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.util.CertificateFormatter;
 import io.pivotal.security.util.CurrentTimeProvider;
 import java.math.BigInteger;

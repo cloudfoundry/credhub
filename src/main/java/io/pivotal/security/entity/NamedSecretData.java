@@ -6,6 +6,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Instant;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
@@ -19,8 +21,6 @@ import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
 
 import static io.pivotal.security.constants.EncryptionConstants.ENCRYPTED_BYTES;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
@@ -66,19 +66,19 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
   private UUID encryptionKeyUuid;
 
   @ManyToOne
-  @JoinColumn(name = "secret_name_uuid", nullable = false)
-  private SecretName secretName;
+  @JoinColumn(name = "credential_name_uuid", nullable = false)
+  private CredentialName credentialName;
 
-  public NamedSecretData(SecretName name) {
-    if (this.secretName != null) {
-      this.secretName.setName(name.getName());
+  public NamedSecretData(CredentialName name) {
+    if (this.credentialName != null) {
+      this.credentialName.setName(name.getName());
     } else {
-      setSecretName(name);
+      setCredentialName(name);
     }
   }
 
   public NamedSecretData(String name) {
-    this(new SecretName(name));
+    this(new CredentialName(name));
   }
 
   public NamedSecretData() {
@@ -94,12 +94,12 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
     return (Z) this;
   }
 
-  public SecretName getSecretName() {
-    return secretName;
+  public CredentialName getCredentialName() {
+    return credentialName;
   }
 
-  public void setSecretName(SecretName secretName) {
-    this.secretName = secretName;
+  public void setCredentialName(CredentialName credentialName) {
+    this.credentialName = credentialName;
   }
 
   public byte[] getEncryptedValue() {

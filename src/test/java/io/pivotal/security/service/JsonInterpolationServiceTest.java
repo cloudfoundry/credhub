@@ -15,9 +15,9 @@ import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedJsonSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import java.io.InvalidObjectException;
 import java.util.Map;
@@ -63,33 +63,33 @@ public class JsonInterpolationServiceTest {
               + "  }"
               + "}";
 
-          NamedJsonSecret jsonSecret1 = mock(NamedJsonSecret.class);
+          JsonCredential jsonSecret1 = mock(JsonCredential.class);
           doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonSecret1).getValue();
 
-          NamedJsonSecret jsonSecret2 = mock(NamedJsonSecret.class);
+          JsonCredential jsonSecret2 = mock(JsonCredential.class);
           doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonSecret2).getValue();
 
-          NamedJsonSecret jsonSecret3 = mock(NamedJsonSecret.class);
+          JsonCredential jsonSecret3 = mock(JsonCredential.class);
           Map<String, String> jsonSecrets = Maps.newHashMap("secret3-1", "secret3-1-value");
           jsonSecrets.put("secret3-2", "secret3-2-value");
           doReturn(jsonSecrets).when(jsonSecret3).getValue();
 
-          SecretDataService mockSecretDataService = mock(SecretDataService.class);
+          CredentialDataService mockCredentialDataService = mock(CredentialDataService.class);
 
           doReturn(
               jsonSecret1
-          ).when(mockSecretDataService).findMostRecent("/cred1");
+          ).when(mockCredentialDataService).findMostRecent("/cred1");
 
           doReturn(
               jsonSecret2
-          ).when(mockSecretDataService).findMostRecent("/cred2");
+          ).when(mockCredentialDataService).findMostRecent("/cred2");
 
           doReturn(
               jsonSecret3
-          ).when(mockSecretDataService).findMostRecent("/cred3");
+          ).when(mockCredentialDataService).findMostRecent("/cred3");
 
           DocumentContext response = subject
-              .interpolateCredhubReferences(inputJson, mockSecretDataService);
+              .interpolateCredhubReferences(inputJson, mockCredentialDataService);
 
           Map<String, Object> firstCredentialsBlock = response
               .read("$.VCAP_SERVICES.pp-config-server[0].credentials");
@@ -127,15 +127,15 @@ public class JsonInterpolationServiceTest {
                   + "  }"
                   + "}";
 
-              NamedPasswordSecret passwordSecret = mock(NamedPasswordSecret.class);
+              PasswordCredential passwordSecret = mock(PasswordCredential.class);
 
-              SecretDataService mockSecretDataService = mock(SecretDataService.class);
+              CredentialDataService mockCredentialDataService = mock(CredentialDataService.class);
 
               doReturn(
                   passwordSecret
-              ).when(mockSecretDataService).findMostRecent("/password_cred");
+              ).when(mockCredentialDataService).findMostRecent("/password_cred");
 
-              subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
+              subject.interpolateCredhubReferences(inputJson, mockCredentialDataService);
             });
 
         itThrows("an exception when credential is not accessible in datastore",
@@ -153,13 +153,13 @@ public class JsonInterpolationServiceTest {
                   + "  }"
                   + "}";
 
-              SecretDataService mockSecretDataService = mock(SecretDataService.class);
+              CredentialDataService mockCredentialDataService = mock(CredentialDataService.class);
 
               doReturn(
                   null
-              ).when(mockSecretDataService).findMostRecent("/missing_cred");
+              ).when(mockCredentialDataService).findMostRecent("/missing_cred");
 
-              subject.interpolateCredhubReferences(inputJson, mockSecretDataService);
+              subject.interpolateCredhubReferences(inputJson, mockCredentialDataService);
             });
       });
     });
@@ -176,7 +176,7 @@ public class JsonInterpolationServiceTest {
             + "  }"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -197,7 +197,7 @@ public class JsonInterpolationServiceTest {
             + "  }"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -211,7 +211,7 @@ public class JsonInterpolationServiceTest {
             + "  }"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -228,7 +228,7 @@ public class JsonInterpolationServiceTest {
             + "  }"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -237,7 +237,7 @@ public class JsonInterpolationServiceTest {
     describe("when no properly formatted credentials section exists", () -> {
       it("is ignored", () -> {
         DocumentContext response = subject
-            .interpolateCredhubReferences("{}", mock(SecretDataService.class));
+            .interpolateCredhubReferences("{}", mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse("{}")));
       });
@@ -251,7 +251,7 @@ public class JsonInterpolationServiceTest {
             + "  }"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -263,7 +263,7 @@ public class JsonInterpolationServiceTest {
             + "  \"VCAP_SERVICES\":[]"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -282,7 +282,7 @@ public class JsonInterpolationServiceTest {
             + "  }"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
       });
@@ -291,7 +291,7 @@ public class JsonInterpolationServiceTest {
     describe("when input is not even json", () -> {
       itThrows("should throw exception", InvalidJsonException.class, () -> {
         String inputJsonString = "</xml?>";
-        subject.interpolateCredhubReferences(inputJsonString, mock(SecretDataService.class));
+        subject.interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class));
       });
     });
   }

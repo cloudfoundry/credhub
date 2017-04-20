@@ -10,10 +10,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.pivotal.security.config.BouncyCastleProviderConfiguration;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.credential.Certificate;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,24 +23,24 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class CertificateAuthorityServiceTest {
 
   CertificateAuthorityService certificateAuthorityService;
-  SecretDataService secretDataService;
+  CredentialDataService credentialDataService;
   Certificate certificate;
-  NamedCertificateSecret namedCertificateSecret;
+  CertificateCredential namedCertificateSecret;
 
   @Before
   public void beforeEach() {
     certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key");
-    namedCertificateSecret = mock(NamedCertificateSecret.class);
+    namedCertificateSecret = mock(CertificateCredential.class);
 
-    secretDataService = mock(SecretDataService.class);
-    certificateAuthorityService = new CertificateAuthorityService(secretDataService);
+    credentialDataService = mock(CredentialDataService.class);
+    certificateAuthorityService = new CertificateAuthorityService(credentialDataService);
 
     new BouncyCastleProviderConfiguration().bouncyCastleProvider();
   }
 
   @Test
   public void findMostRecent_whenACaDoesNotExist_throwsException() {
-    when(secretDataService.findMostRecent(any(String.class))).thenReturn(null);
+    when(credentialDataService.findMostRecent(any(String.class))).thenReturn(null);
 
     try {
       certificateAuthorityService.findMostRecent("any ca name");
@@ -51,7 +51,7 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_givenExistingCa_returnsTheCa() {
-    when(secretDataService.findMostRecent("my-ca-name")).thenReturn(namedCertificateSecret);
+    when(credentialDataService.findMostRecent("my-ca-name")).thenReturn(namedCertificateSecret);
     when(namedCertificateSecret.getPrivateKey()).thenReturn("my-key");
     when(namedCertificateSecret.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
@@ -61,8 +61,8 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_whenSecretIsNotACa_throwsException() {
-    when(secretDataService.findMostRecent("actually-a-password"))
-        .thenReturn(new NamedPasswordSecret());
+    when(credentialDataService.findMostRecent("actually-a-password"))
+        .thenReturn(new PasswordCredential());
 
     try {
       certificateAuthorityService.findMostRecent("actually-a-password");
@@ -73,10 +73,10 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_whenCertificateIsNotACa_throwsException() {
-    NamedCertificateSecret notACertificateAuthority = mock(NamedCertificateSecret.class);
+    CertificateCredential notACertificateAuthority = mock(CertificateCredential.class);
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
     when(notACertificateAuthority.getCertificate()).thenReturn(SIMPLE_SELF_SIGNED_TEST_CERT);
-    when(secretDataService.findMostRecent("just-a-certificate"))
+    when(credentialDataService.findMostRecent("just-a-certificate"))
         .thenReturn(notACertificateAuthority);
 
 

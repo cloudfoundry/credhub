@@ -14,10 +14,10 @@ import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import io.pivotal.security.entity.NamedValueSecretData;
-import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.SecretNameRepository;
+import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -45,7 +45,7 @@ public class AccessControlDataServiceTest {
   AccessEntryRepository accessEntryRepository;
 
   @Autowired
-  SecretNameRepository secretNameRepository;
+  CredentialNameRepository credentialNameRepository;
 
   private List<AccessControlEntry> aces;
 
@@ -53,7 +53,7 @@ public class AccessControlDataServiceTest {
   public void beforeEach() {
     subject = new AccessControlDataService(
         accessEntryRepository,
-        secretNameRepository
+        credentialNameRepository
     );
 
     seedDatabase();
@@ -107,9 +107,9 @@ public class AccessControlDataServiceTest {
   @Test
   public void setAccessControlEntries_whenGivenANewAce_returnsTheAcl() {
     final NamedValueSecretData namedValueSecretData2 = new NamedValueSecretData("lightsaber2");
-    final SecretName secretName2 = namedValueSecretData2.getSecretName();
+    final CredentialName credentialName2 = namedValueSecretData2.getCredentialName();
 
-    secretNameRepository.saveAndFlush(secretName2);
+    credentialNameRepository.saveAndFlush(credentialName2);
     aces = singletonList(
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
@@ -213,9 +213,9 @@ public class AccessControlDataServiceTest {
 
   private void seedDatabase() {
     final NamedValueSecretData namedValueSecretData = new NamedValueSecretData("lightsaber");
-    final SecretName secretName = namedValueSecretData.getSecretName();
+    final CredentialName credentialName = namedValueSecretData.getCredentialName();
 
-    secretNameRepository.saveAndFlush(secretName);
+    credentialNameRepository.saveAndFlush(credentialName);
 
     subject.setAccessControlEntries(
         "lightsaber",

@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.UserGenerationParameters;
-import io.pivotal.security.secret.StringSecret;
+import io.pivotal.security.credential.StringCredential;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,21 +18,21 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringJUnit4ClassRunner.class)
 public class UserGeneratorTest {
 
-  private PassayStringSecretGenerator passwordGenerator;
+  private PassayStringCredentialGenerator passwordGenerator;
   private UserGenerator subject;
   private UserGenerationParameters parameters;
 
   @Before
   public void beforeEach() {
-    passwordGenerator = mock(PassayStringSecretGenerator.class);
+    passwordGenerator = mock(PassayStringCredentialGenerator.class);
     subject = new UserGenerator(passwordGenerator);
 
     parameters = new UserGenerationParameters();
 
     when(passwordGenerator.generateSecret(same(parameters.getPasswordGenerationParameters())))
-        .thenReturn(new StringSecret("fake-password"));
+        .thenReturn(new StringCredential("fake-password"));
     when(passwordGenerator.generateSecret(same(parameters.getUsernameGenerationParameters())))
-        .thenReturn(new StringSecret("fake-user"));
+        .thenReturn(new StringCredential("fake-user"));
   }
 
   @Test

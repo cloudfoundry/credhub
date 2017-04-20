@@ -1,9 +1,9 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.secret.Certificate;
+import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.util.CertificateReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,17 +11,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class CertificateAuthorityService {
 
-  private final SecretDataService secretDataService;
+  private final CredentialDataService credentialDataService;
 
   @Autowired
-  public CertificateAuthorityService(SecretDataService secretDataService) {
-    this.secretDataService = secretDataService;
+  public CertificateAuthorityService(CredentialDataService credentialDataService) {
+    this.credentialDataService = credentialDataService;
   }
 
   public Certificate findMostRecent(String caName) throws ParameterizedValidationException {
-    NamedSecret mostRecent = secretDataService.findMostRecent(caName);
-    if (NamedCertificateSecret.class.isInstance(mostRecent)) {
-      NamedCertificateSecret namedCertificateSecret = (NamedCertificateSecret) mostRecent;
+    Credential mostRecent = credentialDataService.findMostRecent(caName);
+    if (CertificateCredential.class.isInstance(mostRecent)) {
+      CertificateCredential namedCertificateSecret = (CertificateCredential) mostRecent;
 
       if (!new CertificateReader(namedCertificateSecret.getCertificate()).isCa()) {
         throw new ParameterizedValidationException("error.cert_not_ca");

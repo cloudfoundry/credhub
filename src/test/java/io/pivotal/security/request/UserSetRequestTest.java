@@ -35,7 +35,7 @@ public class UserSetRequestTest {
     });
 
     it("deserializes to UserSetRequest", () -> {
-      BaseSecretSetRequest userSetRequest = JsonHelper.deserializeChecked(validSetRequestJson, BaseSecretSetRequest.class);
+      BaseCredentialSetRequest userSetRequest = JsonHelper.deserializeChecked(validSetRequestJson, BaseCredentialSetRequest.class);
 
       Assert.assertThat(userSetRequest, instanceOf(UserSetRequest.class));
     });
@@ -49,7 +49,7 @@ public class UserSetRequestTest {
             "  \"overwrite\": true\n" +
             "}";
         UserSetRequest userSetRequest = (UserSetRequest) deserialize(json,
-            BaseSecretSetRequest.class);
+            BaseCredentialSetRequest.class);
         Set<ConstraintViolation<UserSetRequest>> violations = validate(userSetRequest);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
@@ -58,8 +58,8 @@ public class UserSetRequestTest {
 
     describe("when all fields are set", () -> {
       it("should be valid", () -> {
-        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(validSetRequestJson,
-            BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(validSetRequestJson,
+            BaseCredentialSetRequest.class);
 
         assertThat(violations.size(), equalTo(0));
       });

@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.credential.SshKey;
 import io.pivotal.security.util.CertificateFormatter;
 import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
@@ -36,7 +36,7 @@ public class SshGeneratorTest {
     });
 
     describe("generateSecret", () -> {
-      it("should return a generated secret", () -> {
+      it("should return a generated credential", () -> {
         final SshKey ssh = subject.generateSecret(new SshGenerationParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);

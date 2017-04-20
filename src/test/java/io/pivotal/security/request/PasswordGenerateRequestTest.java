@@ -45,7 +45,7 @@ public class PasswordGenerateRequestTest {
       });
 
       it("creates set request and copies all fields from the generate request", () -> {
-        BaseSecretSetRequest setRequest = subject.generateSetRequest(generatorService);
+        BaseCredentialSetRequest setRequest = subject.generateSetRequest(generatorService);
 
         assertThat(setRequest.getType(), equalTo("password"));
         assertThat(setRequest.getName(), equalTo("test-name"));

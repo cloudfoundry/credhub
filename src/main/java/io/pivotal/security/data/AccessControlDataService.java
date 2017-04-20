@@ -1,70 +1,71 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.entity.SecretName;
+import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.SecretNameRepository;
+import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 @Component
 public class AccessControlDataService {
 
   private AccessEntryRepository accessEntryRepository;
-  private SecretNameRepository secretNameRepository;
+  private CredentialNameRepository credentialNameRepository;
 
   @Autowired
   public AccessControlDataService(
       AccessEntryRepository accessEntryRepository,
-      SecretNameRepository secretNameRepository
+      CredentialNameRepository credentialNameRepository
   ) {
     this.accessEntryRepository = accessEntryRepository;
-    this.secretNameRepository = secretNameRepository;
+    this.credentialNameRepository = credentialNameRepository;
   }
 
-  public List<AccessControlEntry> getAccessControlList(String credentialName) {
-    SecretName secretName = findSecretName(credentialName);
-    return createViewsForAllAcesWithName(secretName);
+  public List<AccessControlEntry> getAccessControlList(String name) {
+    CredentialName credentialName = findCredentialName(name);
+    return createViewsForAllAcesWithName(credentialName);
   }
 
   public List<AccessControlEntry> setAccessControlEntries(
-      String credentialName,
+      String name,
       List<AccessControlEntry> entries
   ) {
-    SecretName secretName = findSecretName(credentialName);
+    CredentialName credentialName = findCredentialName(name);
 
     List<AccessEntryData> existingAccessEntries = accessEntryRepository
-        .findAllByCredentialNameUuid(secretName.getUuid());
+        .findAllByCredentialNameUuid(credentialName.getUuid());
 
     for (AccessControlEntry ace : entries) {
-      upsertAccessEntryOperations(secretName, existingAccessEntries, ace.getActor(),
+      upsertAccessEntryOperations(credentialName, existingAccessEntries, ace.getActor(),
           ace.getAllowedOperations());
     }
 
-    return createViewsForAllAcesWithName(secretName);
+    return createViewsForAllAcesWithName(credentialName);
   }
 
-  public void deleteAccessControlEntries(String credentialName, String actor) {
-    final SecretName secretName = findSecretName(credentialName);
-    accessEntryRepository.deleteByCredentialNameUuidAndActor(secretName.getUuid(), actor);
+  public void deleteAccessControlEntries(String name, String actor) {
+    final CredentialName credentialName = findCredentialName(name);
+    accessEntryRepository.deleteByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
   }
 
-  public boolean hasReadAclPermission(String actor, String credentialName) {
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+  public boolean hasReadAclPermission(String actor, String name) {
+    CredentialName credentialName = credentialNameRepository.findOneByNameIgnoreCase(name);
 
-    if (secretName == null) {
+    if (credentialName == null) {
       return false;
     }
 
-    UUID uuid = secretName.getUuid();
+    UUID uuid = credentialName.getUuid();
     AccessEntryData accessEntryData = accessEntryRepository
         .findByCredentialNameUuidAndActor(uuid, actor);
 
@@ -75,14 +76,14 @@ public class AccessControlDataService {
     }
   }
 
-  public boolean hasReadPermission(String actor, String credentialName) {
-    SecretName secretName = secretNameRepository.findOneByNameIgnoreCase(credentialName);
+  public boolean hasReadPermission(String actor, String name) {
+    CredentialName credentialName = credentialNameRepository.findOneByNameIgnoreCase(name);
 
-    if (secretName == null) {
+    if (credentialName == null) {
       return false;
     }
 
-    UUID uuid = secretName.getUuid();
+    UUID uuid = credentialName.getUuid();
     AccessEntryData accessEntryData = accessEntryRepository
         .findByCredentialNameUuidAndActor(uuid, actor);
 
@@ -93,27 +94,27 @@ public class AccessControlDataService {
     }
   }
 
-  private void upsertAccessEntryOperations(SecretName secretName,
+  private void upsertAccessEntryOperations(CredentialName credentialName,
       List<AccessEntryData> accessEntries, String actor, List<AccessControlOperation> operations) {
     AccessEntryData entry = findAccessEntryForActor(accessEntries, actor);
 
     if (entry == null) {
-      entry = new AccessEntryData(secretName, actor);
+      entry = new AccessEntryData(credentialName, actor);
     }
 
     entry.enableOperations(operations);
     accessEntryRepository.saveAndFlush(entry);
   }
 
-  private SecretName findSecretName(String credentialName) {
-    final String name = StringUtils.prependIfMissing(credentialName, "/");
-    final SecretName secretName = secretNameRepository
+  private CredentialName findCredentialName(String name) {
+    name = StringUtils.prependIfMissing(name, "/");
+    final CredentialName credentialName = credentialNameRepository
         .findOneByNameIgnoreCase(name);
 
-    if (secretName == null) {
+    if (credentialName == null) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
-    return secretName;
+    return credentialName;
   }
 
   private AccessControlEntry createViewFor(AccessEntryData data) {
@@ -124,8 +125,8 @@ public class AccessControlDataService {
     return entry;
   }
 
-  private List<AccessControlEntry> createViewsForAllAcesWithName(SecretName secretName) {
-    return accessEntryRepository.findAllByCredentialNameUuid(secretName.getUuid())
+  private List<AccessControlEntry> createViewsForAllAcesWithName(CredentialName credentialName) {
+    return accessEntryRepository.findAllByCredentialNameUuid(credentialName.getUuid())
         .stream()
         .map(this::createViewFor)
         .collect(Collectors.toList());

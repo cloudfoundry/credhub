@@ -27,7 +27,7 @@ public class ValueSetRequestTest {
           + "\"overwrite\":true,"
           + "\"value\":\"some-value\""
           + "}";
-      BaseSecretSetRequest request = deserialize(json, BaseSecretSetRequest.class);
+      BaseCredentialSetRequest request = deserialize(json, BaseCredentialSetRequest.class);
 
       assertThat(request, instanceOf(ValueSetRequest.class));
     });
@@ -40,7 +40,7 @@ public class ValueSetRequestTest {
             + "\"overwrite\":true"
             + "}";
         ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-            BaseSecretSetRequest.class);
+            BaseCredentialSetRequest.class);
         Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
@@ -56,7 +56,7 @@ public class ValueSetRequestTest {
             + "\"value\":\"\""
             + "}";
         ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-            BaseSecretSetRequest.class);
+            BaseCredentialSetRequest.class);
         Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
@@ -71,8 +71,8 @@ public class ValueSetRequestTest {
             + "\"overwrite\":true,"
             + "\"value\":\"some-value\""
             + "}";
-        Set<ConstraintViolation<BaseSecretSetRequest>> violations = deserializeAndValidate(json,
-            BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+            BaseCredentialSetRequest.class);
 
         assertThat(violations.size(), equalTo(0));
       });

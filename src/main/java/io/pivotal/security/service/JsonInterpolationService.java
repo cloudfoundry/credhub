@@ -3,15 +3,16 @@ package io.pivotal.security.service;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedJsonSecret;
-import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import net.minidev.json.JSONArray;
+import org.springframework.stereotype.Service;
+
 import java.io.InvalidObjectException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import net.minidev.json.JSONArray;
-import org.springframework.stereotype.Service;
 
 @Service
 public class JsonInterpolationService {
@@ -23,7 +24,7 @@ public class JsonInterpolationService {
   }
 
   public DocumentContext interpolateCredhubReferences(String requestBody,
-      SecretDataService secretDataService) throws Exception {
+                                                      CredentialDataService credentialDataService) throws Exception {
     DocumentContext requestJson = parseToJson(requestBody);
 
     Object request = requestJson.json();
@@ -55,16 +56,16 @@ public class JsonInterpolationService {
             if (!(credhubRef instanceof String)) {
               continue;
             }
-            String secretName = getSecretNameFromRef((String) credhubRef);
-            NamedSecret namedSecret = secretDataService.findMostRecent(secretName);
-            if (namedSecret == null) {
+            String credentialName = getCredentialNameFromRef((String) credhubRef);
+            Credential credential = credentialDataService.findMostRecent(credentialName);
+            if (credential == null) {
               throw new InvalidObjectException("error.invalid_access");
             }
-            if (namedSecret instanceof NamedJsonSecret) {
-              propertiesMap.put("credentials", ((NamedJsonSecret) namedSecret).getValue());
+            if (credential instanceof JsonCredential) {
+              propertiesMap.put("credentials", ((JsonCredential) credential).getValue());
             } else {
               throw new ParameterizedValidationException("error.invalid_interpolation_type",
-                  secretName);
+                  credentialName);
             }
           }
         }
@@ -73,7 +74,7 @@ public class JsonInterpolationService {
     return requestJson;
   }
 
-  private String getSecretNameFromRef(String credhubRef) {
+  private String getCredentialNameFromRef(String credhubRef) {
     return credhubRef.replaceFirst("^\\(\\(", "").replaceFirst("\\)\\)$", "");
   }
 

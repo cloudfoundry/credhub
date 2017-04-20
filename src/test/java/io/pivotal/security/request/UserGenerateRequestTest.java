@@ -1,6 +1,6 @@
 package io.pivotal.security.request;
 
-import io.pivotal.security.secret.User;
+import io.pivotal.security.credential.User;
 import io.pivotal.security.service.GeneratorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class UserGenerateRequestTest {
 
   @Test
   public void generateSetRequest_whenValueNull_createsAndCopiesSetRequestGeneratingUsernameAndPassword() {
-    BaseSecretSetRequest setRequest = subject.generateSetRequest(generatorService);
+    BaseCredentialSetRequest setRequest = subject.generateSetRequest(generatorService);
 
     assertThat(setRequest.getType(), equalTo("user"));
     assertThat(setRequest.getName(), equalTo("test-name"));
@@ -89,7 +89,7 @@ public class UserGenerateRequestTest {
     user.setUsername(null);
 
     when(generatorService.generateUser(same(parameters))).thenReturn(user);
-    BaseSecretSetRequest setRequest = subject.generateSetRequest(generatorService);
+    BaseCredentialSetRequest setRequest = subject.generateSetRequest(generatorService);
 
     assertThat(setRequest.getType(), equalTo("user"));
     assertThat(setRequest.getName(), equalTo("test-name"));

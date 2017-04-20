@@ -1,14 +1,14 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.domain.NamedSshSecret;
-import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.credential.SshKey;
 
 @SuppressWarnings("unused")
-public class SshView extends SecretView {
+public class SshView extends CredentialView {
 
   SshView() { /* Jackson */ }
 
-  SshView(NamedSshSecret namedSshSecret) {
+  SshView(SshCredential namedSshSecret) {
     super(
         namedSshSecret.getVersionCreatedAt(),
         namedSshSecret.getUuid(),

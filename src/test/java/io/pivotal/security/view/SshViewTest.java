@@ -2,7 +2,7 @@ package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.TestConstants;
 import org.json.JSONObject;
@@ -27,9 +27,9 @@ public class SshViewTest {
   private static final JsonExpectationsHelper JSON_EXPECTATIONS_HELPER =
       new JsonExpectationsHelper();
 
-  private NamedSshSecret entity;
+  private SshCredential entity;
 
-  private String secretName;
+  private String credentialName;
 
   private UUID uuid;
 
@@ -37,14 +37,14 @@ public class SshViewTest {
 
   {
     beforeEach(() -> {
-      secretName = "/foo";
+      credentialName = "/foo";
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
       when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(
           new Encryption(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes()));
       when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class)))
           .thenReturn(TestConstants.PRIVATE_KEY_4096);
-      entity = new NamedSshSecret(secretName)
+      entity = new SshCredential(credentialName)
           .setEncryptor(encryptor)
           .setPublicKey(TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT)
           .setPrivateKey(TestConstants.PRIVATE_KEY_4096);
@@ -52,7 +52,7 @@ public class SshViewTest {
     });
 
     it("creates a view from entity", () -> {
-      final SecretView subject = SshView.fromEntity(entity);
+      final CredentialView subject = SshView.fromEntity(entity);
 
       JSONObject obj = new JSONObject();
       obj.put("public_key", TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT);

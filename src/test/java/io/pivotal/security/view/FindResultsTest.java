@@ -31,13 +31,13 @@ public class FindResultsTest {
         String passwordName = "passwordSecret";
         String certificateName = "certificateSecret";
 
-        List<SecretView> secretViews = newArrayList(
-            new SecretView(versionCreatedAt3, certificateName),
-            new SecretView(versionCreatedAt2, valueName),
-            new SecretView(versionCreatedAt1, passwordName)
+        List<CredentialView> credentialViews = newArrayList(
+            new CredentialView(versionCreatedAt3, certificateName),
+            new CredentialView(versionCreatedAt2, valueName),
+            new CredentialView(versionCreatedAt1, passwordName)
         );
 
-        assertThat(new FindCredentialResults(secretViews).getCredentials(), equalTo(secretViews));
+        assertThat(new FindCredentialResults(credentialViews).getCredentials(), equalTo(credentialViews));
       });
     });
   }

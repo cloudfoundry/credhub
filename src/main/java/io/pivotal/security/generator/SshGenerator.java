@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.credential.SshKey;
 import io.pivotal.security.util.CertificateFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import java.security.KeyPair;
 import java.security.interfaces.RSAPublicKey;
 
 @Component
-public class SshGenerator implements SecretGenerator<SshGenerationParameters, SshKey> {
+public class SshGenerator implements CredentialGenerator<SshGenerationParameters, SshKey> {
 
   private LibcryptoRsaKeyPairGenerator keyGenerator;
 

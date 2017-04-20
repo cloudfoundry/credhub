@@ -26,7 +26,7 @@ public class PasswordSetRequestTest {
           + "\"value\":\"fake-password\","
           + "\"overwrite\":true"
           + "}";
-      BaseSecretSetRequest deserialize = deserialize(json, BaseSecretSetRequest.class);
+      BaseCredentialSetRequest deserialize = deserialize(json, BaseCredentialSetRequest.class);
 
       assertThat(deserialize, instanceOf(PasswordSetRequest.class));
     });
@@ -38,8 +38,8 @@ public class PasswordSetRequestTest {
           + "\"value\":\"fake-password\","
           + "\"overwrite\":true"
           + "}";
-      Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations =
-          deserializeAndValidate(json, BaseSecretSetRequest.class);
+      Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations =
+          deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
       assertThat(constraintViolations.size(), equalTo(0));
     });
@@ -51,8 +51,8 @@ public class PasswordSetRequestTest {
             + "\"type\":\"password\","
             + "\"overwrite\":true"
             + "}";
-        Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations =
-            deserializeAndValidate(json, BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations =
+            deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });
@@ -66,8 +66,8 @@ public class PasswordSetRequestTest {
             + "\"overwrite\":true,"
             + "\"value\":\"\""
             + "}";
-        Set<ConstraintViolation<BaseSecretSetRequest>> constraintViolations =
-            deserializeAndValidate(json, BaseSecretSetRequest.class);
+        Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations =
+            deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });

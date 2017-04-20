@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.secret.SshKey;
+import io.pivotal.security.credential.SshKey;
 import io.pivotal.security.service.GeneratorService;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
@@ -51,7 +51,7 @@ public class SshGenerateRequestTest {
       });
 
       it("creates set request and copies all fields from the generate request", () -> {
-        BaseSecretSetRequest setRequest = subject.generateSetRequest(generatorService);
+        BaseCredentialSetRequest setRequest = subject.generateSetRequest(generatorService);
 
         assertThat(setRequest.getType(), equalTo("ssh"));
         assertThat(setRequest.getName(), equalTo("test-name"));

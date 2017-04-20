@@ -1,13 +1,13 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.domain.ValueCredential;
 
 @SuppressWarnings("unused")
-public class ValueView extends SecretView {
+public class ValueView extends CredentialView {
 
   public ValueView() {}
 
-  ValueView(NamedValueSecret namedValueSecret) {
+  ValueView(ValueCredential namedValueSecret) {
     super(
         namedValueSecret.getVersionCreatedAt(),
         namedValueSecret.getUuid(),

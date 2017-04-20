@@ -6,17 +6,17 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
-import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedSecret;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.NamedCertificateSecretData;
 import io.pivotal.security.entity.NamedPasswordSecretData;
-import io.pivotal.security.entity.SecretName;
-import io.pivotal.security.repository.SecretNameRepository;
-import io.pivotal.security.repository.SecretRepository;
+import io.pivotal.security.repository.CredentialNameRepository;
+import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -74,16 +74,16 @@ public class EncryptionKeyRotatorTest {
   private WebApplicationContext webApplicationContext;
 
   @Autowired
-  private SecretRepository secretRepository;
+  private CredentialRepository credentialRepository;
 
   @SpyBean
-  private SecretDataService secretDataService;
+  private CredentialDataService credentialDataService;
 
   @SpyBean
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
-  private SecretNameRepository secretNameRepository;
+  private CredentialNameRepository credentialNameRepository;
 
   @Autowired
   private EncryptionKeyRotator encryptionKeyRotator;
@@ -100,10 +100,10 @@ public class EncryptionKeyRotatorTest {
   @SpyBean
   private EncryptionKeysConfiguration encryptionKeysConfiguration;
 
-  private NamedCertificateSecret secretWithCurrentKey;
-  private NamedSecret secretWithOldKey;
-  private NamedCertificateSecret secretWithUnknownKey;
-  private NamedPasswordSecret password;
+  private CertificateCredential secretWithCurrentKey;
+  private Credential secretWithOldKey;
+  private CertificateCredential secretWithUnknownKey;
+  private PasswordCredential password;
   private MockMvc mockMvc;
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
@@ -114,14 +114,14 @@ public class EncryptionKeyRotatorTest {
 
     describe("when data exists that is encrypted with an unknown key", () -> {
       beforeEach(() -> {
-        secretWithCurrentKey = new NamedCertificateSecret("/current-key");
+        secretWithCurrentKey = new CertificateCredential("/current-key");
         secretWithCurrentKey
             .setEncryptor(encryptor)
             .setCa("my-ca")
             .setCertificate("my-cert")
             .setPrivateKey("cert-private-key");
 
-        secretDataService.save(secretWithCurrentKey);
+        credentialDataService.save(secretWithCurrentKey);
 
         final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password",
             encryptionService);
@@ -144,8 +144,8 @@ public class EncryptionKeyRotatorTest {
         namedCertificateSecretData1.setEncryptedValue(encryption.encryptedValue);
         namedCertificateSecretData1.setNonce(encryption.nonce);
         namedCertificateSecretData1.setEncryptionKeyUuid(oldCanary.getUuid());
-        secretWithOldKey = new NamedCertificateSecret(namedCertificateSecretData1);
-        secretDataService.save(secretWithOldKey);
+        secretWithOldKey = new CertificateCredential(namedCertificateSecretData1);
+        credentialDataService.save(secretWithOldKey);
 
         unknownCanary = new EncryptionKeyCanary();
         unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes());
@@ -154,12 +154,12 @@ public class EncryptionKeyRotatorTest {
 
         NamedCertificateSecretData namedCertificateSecretData2 = new NamedCertificateSecretData(
             "/unknown-key");
-        secretWithUnknownKey = new NamedCertificateSecret(namedCertificateSecretData2);
+        secretWithUnknownKey = new CertificateCredential(namedCertificateSecretData2);
         secretWithUnknownKey
             .setEncryptor(encryptor)
             .setPrivateKey("cert-private-key");
         namedCertificateSecretData2.setEncryptionKeyUuid(unknownCanary.getUuid());
-        secretDataService.save(secretWithUnknownKey);
+        credentialDataService.save(secretWithUnknownKey);
 
         passwordName = "/test-password";
         final Encryption secretEncryption = encryptionService
@@ -178,23 +178,23 @@ public class EncryptionKeyRotatorTest {
         namedPasswordSecretData.setParametersNonce(parameterEncryption.nonce);
         namedPasswordSecretData.setEncryptionKeyUuid(oldCanary.getUuid());
 
-        password = new NamedPasswordSecret(namedPasswordSecretData);
+        password = new PasswordCredential(namedPasswordSecretData);
 
-        secretDataService.save(password);
+        credentialDataService.save(password);
       });
 
       it("should rotate data that it can decrypt (and it shouldn't loop forever!)", () -> {
-        Slice<NamedSecret> beforeRotation = secretDataService
+        Slice<Credential> beforeRotation = credentialDataService
             .findEncryptedWithAvailableInactiveKey();
         int numberToRotate = beforeRotation.getNumberOfElements();
 
         assertThat(
-            secretRepository.findOneByUuid(secretWithUnknownKey.getUuid())
+            credentialRepository.findOneByUuid(secretWithUnknownKey.getUuid())
                 .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
 
         encryptionKeyRotator.rotate();
 
-        Slice<NamedSecret> afterRotation = secretDataService
+        Slice<Credential> afterRotation = credentialDataService
             .findEncryptedWithAvailableInactiveKey();
         int numberToRotateWhenDone = afterRotation.getNumberOfElements();
 
@@ -206,7 +206,7 @@ public class EncryptionKeyRotatorTest {
 
         // Gets updated to use current key:
         assertThat(
-            secretRepository
+            credentialRepository
                 .findOneByUuid(secretWithOldKey.getUuid())
                 .getEncryptionKeyUuid(),
             equalTo(encryptionKeyCanaryMapper.getActiveUuid())
@@ -214,23 +214,23 @@ public class EncryptionKeyRotatorTest {
 
         assertThat(uuids, hasItem(secretWithOldKey.getUuid()));
 
-        assertThat(secretRepository.findOneByUuid(password.getUuid())
+        assertThat(credentialRepository.findOneByUuid(password.getUuid())
                 .getEncryptionKeyUuid(), equalTo(encryptionKeyCanaryMapper.getActiveUuid()));
         assertThat(uuids, hasItem(password.getUuid()));
 
         // Unchanged because we don't have the key:
         assertThat(
-            secretRepository.findOneByUuid(secretWithUnknownKey.getUuid())
+            credentialRepository.findOneByUuid(secretWithUnknownKey.getUuid())
                 .getEncryptionKeyUuid(), equalTo(unknownCanary.getUuid()));
         assertThat(uuids, not(hasItem(secretWithUnknownKey.getUuid())));
 
         // Unchanged because it's already up to date:
         assertThat(
-            secretRepository.findOneByUuid(secretWithCurrentKey.getUuid())
+            credentialRepository.findOneByUuid(secretWithCurrentKey.getUuid())
                 .getEncryptionKeyUuid(), equalTo(encryptionKeyCanaryMapper.getActiveUuid()));
         assertThat(uuids, not(hasItem(secretWithCurrentKey.getUuid())));
 
-        NamedPasswordSecret rotatedPassword = (NamedPasswordSecret) secretDataService
+        PasswordCredential rotatedPassword = (PasswordCredential) credentialDataService
             .findMostRecent(passwordName);
         assertThat(rotatedPassword.getPassword(), equalTo("test-password-plaintext"));
         assertThat(rotatedPassword.getGenerationParameters(), samePropertyValuesAs(
@@ -263,18 +263,18 @@ public class EncryptionKeyRotatorTest {
             .getResponse().getContentAsString();
         String originalPassword = parse(content).get("value").textValue();
 
-        SecretName secretName = secretNameRepository
+        CredentialName credentialName = credentialNameRepository
             .findOneByNameIgnoreCase("/cred1");
 
         final NamedPasswordSecretData firstEncryption =
-            (NamedPasswordSecretData) secretRepository.findAllBySecretNameUuid(secretName.getUuid()).get(0);
+            (NamedPasswordSecretData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
 
         setActiveKey(1);
 
         encryptionKeyRotator.rotate();
 
         final NamedPasswordSecretData secondEncryption =
-            (NamedPasswordSecretData) secretRepository.findAllBySecretNameUuid(secretName.getUuid()).get(0);
+            (NamedPasswordSecretData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
         assertThat(firstEncryption.getEncryptedValue(),
             not(equalTo(secondEncryption.getEncryptedValue())));
         assertThat(firstEncryption.getEncryptedGenerationParameters(),
@@ -304,18 +304,18 @@ public class EncryptionKeyRotatorTest {
             .getResponse().getContentAsString();
         String originalCert = parse(content).get("value").get("private_key").textValue();
 
-        SecretName secretName = secretNameRepository
+        CredentialName credentialName = credentialNameRepository
             .findOneByNameIgnoreCase("/cred1");
 
         final NamedCertificateSecretData firstEncryption =
-            (NamedCertificateSecretData) secretRepository.findAllBySecretNameUuid(secretName.getUuid()).get(0);
+            (NamedCertificateSecretData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
 
         setActiveKey(1);
 
         encryptionKeyRotator.rotate();
 
         final NamedCertificateSecretData secondEncryption =
-            (NamedCertificateSecretData) secretRepository.findAllBySecretNameUuid(secretName.getUuid()).get(0);
+            (NamedCertificateSecretData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
         assertThat(firstEncryption.getEncryptedValue(),
             not(equalTo(secondEncryption.getEncryptedValue())));
 

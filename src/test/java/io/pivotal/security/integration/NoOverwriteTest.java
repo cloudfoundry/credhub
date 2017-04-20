@@ -58,7 +58,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class NoOverwriteTest {
 
-  private static final String SECRET_NAME = "TEST-SECRET";
+  private static final String CREDENTIAL_NAME = "TEST-SECRET";
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
   @Autowired
   WebApplicationContext webApplicationContext;
@@ -84,7 +84,7 @@ public class NoOverwriteTest {
           .build();
     });
 
-    describe("when multiple threads attempt to create a secret with the same name with no-overwrite", () -> {
+    describe("when multiple threads attempt to create a credential with the same name with no-overwrite", () -> {
       beforeEach(() -> {
         runRequestsConcurrently(
             ",\"value\":\"thread1\"",
@@ -116,7 +116,7 @@ public class NoOverwriteTest {
                 "thread2", "uaa-client:credhub_test")
             .get(winningValue);
 
-        MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + SECRET_NAME)
+        MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
             .header("Authorization", "Bearer " + tokenForWinningActor))
             .andDo(print())
             .andExpect(status().isOk())
@@ -136,7 +136,7 @@ public class NoOverwriteTest {
       });
     });
 
-    describe("when multiple threads attempt to generate a secret with the same name with no-overwrite", () -> {
+    describe("when multiple threads attempt to generate a credential with the same name with no-overwrite", () -> {
       beforeEach(() -> {
         // We need to set the parameters so that we can determine which actor's request won,
         // even with authorization enforcement disabled.
@@ -160,13 +160,13 @@ public class NoOverwriteTest {
         assertThat(password1.getValue(), equalTo(password2.getValue()));
 
         MockHttpServletResponse response1 = mockMvc
-            .perform(get("/api/v1/acls?credential_name=" + SECRET_NAME)
+            .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
             .andDo(print())
             .andReturn().getResponse();
 
         MockHttpServletResponse response2 = mockMvc
-            .perform(get("/api/v1/acls?credential_name=" + SECRET_NAME)
+            .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
                 .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN))
             .andDo(print())
             .andReturn().getResponse();
@@ -213,7 +213,7 @@ public class NoOverwriteTest {
                 "{"
                     + "\"type\":\"password\","
                     + "\"overwrite\":false,"
-                    + "\"name\":\"" + SECRET_NAME + "\","
+                    + "\"name\":\"" + CREDENTIAL_NAME + "\","
                     + "\"access_control_entries\":[{"
                     + "\"actor\":\"uaa-client:a-different-actor\","
                     + "\"operations\": [\"read\"]"
@@ -241,7 +241,7 @@ public class NoOverwriteTest {
                 "{"
                     + "\"type\":\"password\","
                     + "\"overwrite\":false,"
-                    + "\"name\":\"" + SECRET_NAME + "\", "
+                    + "\"name\":\"" + CREDENTIAL_NAME + "\", "
                     + "\"access_control_entries\":[{"
                     + "\"actor\":\"uaa-client:a-different-actor\","
                     + "\"operations\": [\"read\"]"

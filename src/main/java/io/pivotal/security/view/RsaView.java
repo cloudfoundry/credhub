@@ -1,14 +1,14 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.domain.NamedRsaSecret;
-import io.pivotal.security.secret.RsaKey;
+import io.pivotal.security.domain.RsaCredential;
+import io.pivotal.security.credential.RsaKey;
 
 @SuppressWarnings("unused")
-public class RsaView extends SecretView {
+public class RsaView extends CredentialView {
 
   RsaView() {  /* Jackson */ }
 
-  RsaView(NamedRsaSecret namedRsaSecret) {
+  RsaView(RsaCredential namedRsaSecret) {
     super(
         namedRsaSecret.getVersionCreatedAt(),
         namedRsaSecret.getUuid(),

@@ -27,7 +27,7 @@ import java.util.Map;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.controller.v1.secret.SecretsController.API_V1_DATA;
+import static io.pivotal.security.controller.v1.credential.CredentialsController.API_V1_DATA;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;

@@ -9,32 +9,32 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.SecretDataService;
+import io.pivotal.security.data.CredentialDataService;
 import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class DecryptableDataDetectorTest {
 
-  private SecretDataService secretDataService;
+  private CredentialDataService credentialDataService;
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private DecryptableDataDetector decryptableDataDetector;
 
   {
     beforeEach(() -> {
-      secretDataService = mock(SecretDataService.class);
+      credentialDataService = mock(CredentialDataService.class);
       encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
     });
 
     describe("when no secrets could be decrypted", () -> {
       describe("when there are no secrets", () -> {
         beforeEach(() -> {
-          when(secretDataService.count()).thenReturn(0L);
-          when(secretDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
+          when(credentialDataService.count()).thenReturn(0L);
+          when(credentialDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
         });
 
         it("does not error", () -> {
           decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
-              secretDataService);
+              credentialDataService);
           decryptableDataDetector.check();
         });
       });
@@ -42,8 +42,8 @@ public class DecryptableDataDetectorTest {
       describe("when there are secrets", () -> {
         describe("when none can be decrypted", () -> {
           beforeEach(() -> {
-            when(secretDataService.count()).thenReturn(4L);
-            when(secretDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
+            when(credentialDataService.count()).thenReturn(4L);
+            when(credentialDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
           });
 
           itThrowsWithMessage("stuff", RuntimeException.class,
@@ -51,20 +51,20 @@ public class DecryptableDataDetectorTest {
                   + " Please make sure you've provided the necessary encryption keys.",
               () -> {
                 decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
-                    secretDataService);
+                    credentialDataService);
                 decryptableDataDetector.check();
               });
         });
 
         describe("when some can be decrypted", () -> {
           beforeEach(() -> {
-            when(secretDataService.count()).thenReturn(4L);
-            when(secretDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(1L);
+            when(credentialDataService.count()).thenReturn(4L);
+            when(credentialDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(1L);
           });
 
           it("does not error", () -> {
             decryptableDataDetector = new DecryptableDataDetector(encryptionKeyCanaryMapper,
-                secretDataService);
+                credentialDataService);
             decryptableDataDetector.check();
           });
         });

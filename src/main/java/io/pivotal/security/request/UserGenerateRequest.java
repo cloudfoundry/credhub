@@ -1,10 +1,10 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.secret.User;
+import io.pivotal.security.credential.User;
 import io.pivotal.security.service.GeneratorService;
 
-public class UserGenerateRequest extends BaseSecretGenerateRequest {
+public class UserGenerateRequest extends BaseCredentialGenerateRequest {
 
   @JsonProperty("parameters")
   private UserGenerationParameters generationParameters;
@@ -17,7 +17,7 @@ public class UserGenerateRequest extends BaseSecretGenerateRequest {
     super.validate();
   }
 
-  public BaseSecretSetRequest generateSetRequest(GeneratorService generatorService) {
+  public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
     UserSetRequest userSetRequest = new UserSetRequest();
     userSetRequest.setType(getType());
     userSetRequest.setName(getName());

@@ -17,9 +17,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedJsonSecret;
-import io.pivotal.security.domain.NamedValueSecret;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.assertj.core.util.Maps;
 import org.junit.runner.RunWith;
@@ -41,7 +41,7 @@ public class VcapControllerTest {
   @Autowired
   WebApplicationContext webApplicationContext;
   @SpyBean
-  SecretDataService mockSecretDataService;
+  CredentialDataService mockCredentialDataService;
   private MockMvc mockMvc;
 
   {
@@ -58,19 +58,19 @@ public class VcapControllerTest {
       describe("#POST", () -> {
         describe("when properly formatted credentials section is found", () -> {
           it("should replace the credhub-ref element with something else", () -> {
-            NamedJsonSecret jsonSecret1 = mock(NamedJsonSecret.class);
+            JsonCredential jsonSecret1 = mock(JsonCredential.class);
             doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonSecret1).getValue();
 
-            NamedJsonSecret jsonSecret2 = mock(NamedJsonSecret.class);
+            JsonCredential jsonSecret2 = mock(JsonCredential.class);
             doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonSecret2).getValue();
 
             doReturn(
                 jsonSecret1
-            ).when(mockSecretDataService).findMostRecent("/cred1");
+            ).when(mockCredentialDataService).findMostRecent("/cred1");
 
             doReturn(
                 jsonSecret2
-            ).when(mockSecretDataService).findMostRecent("/cred2");
+            ).when(mockCredentialDataService).findMostRecent("/cred2");
 
             mockMvc.perform(post("/api/v1/vcap")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -105,14 +105,14 @@ public class VcapControllerTest {
           });
         });
 
-        describe("when the requested credential is not a NamedJsonSecret", () -> {
+        describe("when the requested credential is not a JsonCredential", () -> {
           it("should return an error", () -> {
-            NamedValueSecret valueSecret = mock(NamedValueSecret.class);
+            ValueCredential valueSecret = mock(ValueCredential.class);
             doReturn("something").when(valueSecret).getValue();
 
             doReturn(
                 valueSecret
-            ).when(mockSecretDataService).findMostRecent("/cred1");
+            ).when(mockCredentialDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -142,7 +142,7 @@ public class VcapControllerTest {
           it("should return an error", () -> {
             doReturn(
                 null
-            ).when(mockSecretDataService).findMostRecent("/cred1");
+            ).when(mockCredentialDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

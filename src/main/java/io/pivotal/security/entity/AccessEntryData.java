@@ -4,13 +4,10 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import org.hibernate.annotations.GenericGenerator;
 
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "AccessEntry")
@@ -32,8 +31,8 @@ public class AccessEntryData {
   private UUID uuid;
 
   @ManyToOne
-  @JoinColumn(name = "secret_name_uuid", nullable = false)
-  private SecretName credentialName;
+  @JoinColumn(name = "credential_name_uuid", nullable = false)
+  private CredentialName credentialName;
 
   @Column(nullable = false)
   private String actor;
@@ -58,35 +57,35 @@ public class AccessEntryData {
     this(null, null, new ArrayList<>());
   }
 
-  public AccessEntryData(SecretName secretName, String actor,
-      List<AccessControlOperation> operations) {
-    this(secretName, actor);
+  public AccessEntryData(CredentialName credentialName, String actor,
+                         List<AccessControlOperation> operations) {
+    this(credentialName, actor);
     enableOperations(operations);
   }
 
-  public AccessEntryData(SecretName secretName, AccessControlEntry accessControlEntry) {
-    this(secretName, accessControlEntry.getActor());
+  public AccessEntryData(CredentialName credentialName, AccessControlEntry accessControlEntry) {
+    this(credentialName, accessControlEntry.getActor());
     enableOperations(accessControlEntry.getAllowedOperations());
   }
 
-  public AccessEntryData(SecretName credentialName, String actor) {
+  public AccessEntryData(CredentialName credentialName, String actor) {
     this.credentialName = credentialName;
     this.actor = actor;
   }
 
-  public static AccessEntryData fromSecretName(SecretName secretName,
-      AccessControlEntry accessControlEntry) {
-    if (secretName.getAccessControlList() == null) {
-      return new AccessEntryData(secretName, accessControlEntry);
+  public static AccessEntryData fromCredentialName(CredentialName credentialName,
+                                                   AccessControlEntry accessControlEntry) {
+    if (credentialName.getAccessControlList() == null) {
+      return new AccessEntryData(credentialName, accessControlEntry);
     }
-    Optional<AccessEntryData> accessEntryDataOptional = secretName.getAccessControlList().stream()
+    Optional<AccessEntryData> accessEntryDataOptional = credentialName.getAccessControlList().stream()
         .filter((entry) -> accessControlEntry.getActor().equals(entry.getActor())).findFirst();
     if (accessEntryDataOptional.isPresent()) {
       AccessEntryData entryData = accessEntryDataOptional.get();
       entryData.enableOperations(accessControlEntry.getAllowedOperations());
       return entryData;
     } else {
-      return new AccessEntryData(secretName, accessControlEntry);
+      return new AccessEntryData(credentialName, accessControlEntry);
     }
   }
 
@@ -98,11 +97,11 @@ public class AccessEntryData {
     this.uuid = uuid;
   }
 
-  public SecretName getCredentialName() {
+  public CredentialName getCredentialName() {
     return credentialName;
   }
 
-  public void setCredentialName(SecretName credentialName) {
+  public void setCredentialName(CredentialName credentialName) {
     this.credentialName = credentialName;
   }
 

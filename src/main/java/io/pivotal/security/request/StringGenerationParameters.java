@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.PassayStringSecretGenerator;
+import io.pivotal.security.generator.PassayStringCredentialGenerator;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
@@ -22,7 +22,7 @@ public class StringGenerationParameters {
   private boolean includeSpecial;
 
   public int getLength() {
-    return length == null ? PassayStringSecretGenerator.DEFAULT_LENGTH : length;
+    return length == null ? PassayStringCredentialGenerator.DEFAULT_LENGTH : length;
   }
 
   public StringGenerationParameters setLength(int length) {

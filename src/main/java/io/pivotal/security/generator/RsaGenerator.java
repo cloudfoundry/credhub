@@ -1,14 +1,14 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.secret.RsaKey;
+import io.pivotal.security.credential.RsaKey;
 import io.pivotal.security.util.CertificateFormatter;
 import java.security.KeyPair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RsaGenerator implements SecretGenerator<RsaGenerationParameters, RsaKey> {
+public class RsaGenerator implements CredentialGenerator<RsaGenerationParameters, RsaKey> {
 
   private final LibcryptoRsaKeyPairGenerator keyGenerator;
 

@@ -3,10 +3,10 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.NamedPasswordSecret;
+import io.pivotal.security.domain.PasswordCredential;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class PasswordSetRequest extends BaseSecretSetRequest<NamedPasswordSecret> {
+public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredential> {
 
   @NotEmpty(message = "error.missing_value")
   @JsonProperty("value")
@@ -28,8 +28,8 @@ public class PasswordSetRequest extends BaseSecretSetRequest<NamedPasswordSecret
 
   @Override
   @JsonIgnore
-  public NamedPasswordSecret createNewVersion(NamedPasswordSecret existing, Encryptor encryptor) {
-    return NamedPasswordSecret.createNewVersion(
+  public PasswordCredential createNewVersion(PasswordCredential existing, Encryptor encryptor) {
+    return PasswordCredential.createNewVersion(
         existing,
         getName(),
         getPassword(),

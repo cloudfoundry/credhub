@@ -3,7 +3,7 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.service.GeneratorService;
 
-public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
+public class PasswordGenerateRequest extends BaseCredentialGenerateRequest {
 
   @JsonProperty("parameters")
   private StringGenerationParameters generationParameters;
@@ -26,7 +26,7 @@ public class PasswordGenerateRequest extends BaseSecretGenerateRequest {
     getGenerationParameters().validate();
   }
 
-  public BaseSecretSetRequest generateSetRequest(GeneratorService generatorService) {
+  public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
     PasswordSetRequest passwordSetRequest = new PasswordSetRequest();
     passwordSetRequest.setGenerationParameters(getGenerationParameters());
     passwordSetRequest.setType(getType());

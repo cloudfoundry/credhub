@@ -8,37 +8,38 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.SecretDataService;
-import io.pivotal.security.domain.NamedCertificateSecret;
-import io.pivotal.security.domain.NamedPasswordSecret;
-import io.pivotal.security.domain.NamedSshSecret;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.SshCredential;
 import java.util.ArrayList;
+
 import org.junit.runner.RunWith;
 import org.springframework.data.domain.SliceImpl;
 
 @RunWith(Spectrum.class)
 public class EncryptionKeyRotatorTest {
 
-  private SecretDataService secretDataService;
+  private CredentialDataService credentialDataService;
 
-  private NamedCertificateSecret certificateSecret;
-  private NamedPasswordSecret passwordSecret;
-  private NamedSshSecret sshSecret;
+  private CertificateCredential certificateSecret;
+  private PasswordCredential passwordSecret;
+  private SshCredential sshSecret;
 
   {
     beforeEach(() -> {
-      secretDataService = mock(SecretDataService.class);
+      credentialDataService = mock(CredentialDataService.class);
 
-      certificateSecret = mock(NamedCertificateSecret.class);
-      passwordSecret = mock(NamedPasswordSecret.class);
-      sshSecret = mock(NamedSshSecret.class);
+      certificateSecret = mock(CertificateCredential.class);
+      passwordSecret = mock(PasswordCredential.class);
+      sshSecret = mock(SshCredential.class);
 
-      when(secretDataService.findEncryptedWithAvailableInactiveKey())
+      when(credentialDataService.findEncryptedWithAvailableInactiveKey())
           .thenReturn(new SliceImpl<>(asList(certificateSecret, passwordSecret)))
           .thenReturn(new SliceImpl<>(asList(sshSecret)))
           .thenReturn(new SliceImpl<>(new ArrayList<>()));
 
-      final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(secretDataService);
+      final EncryptionKeyRotator encryptionKeyRotator = new EncryptionKeyRotator(credentialDataService);
 
       encryptionKeyRotator.rotate();
     });
@@ -51,9 +52,9 @@ public class EncryptionKeyRotatorTest {
         });
 
     it("should save all the secrets, CAs that were rotated", () -> {
-      verify(secretDataService).save(certificateSecret);
-      verify(secretDataService).save(passwordSecret);
-      verify(secretDataService).save(sshSecret);
+      verify(credentialDataService).save(certificateSecret);
+      verify(credentialDataService).save(passwordSecret);
+      verify(credentialDataService).save(sshSecret);
     });
   }
 }

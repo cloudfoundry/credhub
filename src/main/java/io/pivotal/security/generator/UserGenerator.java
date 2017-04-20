@@ -1,23 +1,23 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.UserGenerationParameters;
-import io.pivotal.security.secret.StringSecret;
-import io.pivotal.security.secret.User;
+import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.credential.User;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserGenerator {
 
-  private PassayStringSecretGenerator stringGenerator;
+  private PassayStringCredentialGenerator stringGenerator;
 
-  public UserGenerator(PassayStringSecretGenerator stringGenerator) {
+  public UserGenerator(PassayStringCredentialGenerator stringGenerator) {
     this.stringGenerator = stringGenerator;
   }
 
   public User generateSecret(UserGenerationParameters generationParameters) {
-    StringSecret generatedPassword = stringGenerator.generateSecret(generationParameters.getPasswordGenerationParameters());
+    StringCredential generatedPassword = stringGenerator.generateSecret(generationParameters.getPasswordGenerationParameters());
 
-    StringSecret generatedUser = null;
+    StringCredential generatedUser = null;
     if (generationParameters.getUsernameGenerationParameters() != null) {
       generatedUser = stringGenerator.generateSecret(generationParameters.getUsernameGenerationParameters());
     }

@@ -5,19 +5,19 @@ import java.util.List;
 
 public class FindCredentialResults {
 
-  private List<SecretView> credentials;
+  private List<CredentialView> credentials;
 
   @SuppressWarnings("rawtypes")
-  FindCredentialResults(List<SecretView> credentials) {
+  FindCredentialResults(List<CredentialView> credentials) {
     this.credentials = credentials;
   }
 
-  public static FindCredentialResults fromSecrets(List<SecretView> secrets) {
+  public static FindCredentialResults fromSecrets(List<CredentialView> secrets) {
     return new FindCredentialResults(secrets);
   }
 
   @JsonProperty
-  public List<SecretView> getCredentials() {
+  public List<CredentialView> getCredentials() {
     return credentials;
   }
 
