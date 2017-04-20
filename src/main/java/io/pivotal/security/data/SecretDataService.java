@@ -140,16 +140,8 @@ public class SecretDataService {
     }
   }
 
-  protected SecretName findSecretName(String name) {
-    return secretNameRepository.findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
-  }
-
   public NamedSecret findByUuid(String uuid) {
     return wrap(secretRepository.findOneByUuid(UUID.fromString(uuid)));
-  }
-
-  public NamedSecret findByUuid(UUID uuid) {
-    return wrap(secretRepository.findOneByUuid(uuid));
   }
 
   public List<SecretView> findContainingName(String name) {
