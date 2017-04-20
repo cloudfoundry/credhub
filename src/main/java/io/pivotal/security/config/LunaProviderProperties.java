@@ -11,7 +11,7 @@ public class LunaProviderProperties {
   @Value("${hsm.partition}")
   String partitionName;
 
-  @Value("${hsm.partition-password}")
+  @Value("${hsm.partition_password}")
   String partitionPassword;
 
   public String getPartitionName() {

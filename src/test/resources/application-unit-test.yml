@@ -2,15 +2,15 @@ info:
   app:
     version: unit-test-version
 
-auth-server:
+auth_server:
   url: https://example.com:8443
 
 encryption:
   provider: internal
   keys:
-  - dev-key: D673ACD01DA091B08144FBC8C0B5F524
+  - dev_key: D673ACD01DA091B08144FBC8C0B5F524
     active: true
-  - encryption-password: correcthorsebatterystaple
+  - encryption_password: correcthorsebatterystaple
 
 security:
   basic:
@@ -19,7 +19,7 @@ security:
     resource:
       jwt:
         # /unit/tests/rsa/key in super-bosh
-        key-value: |
+        key_value: |
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApFY/C0eKBerw3pujIBwO
           0GV2tEAmYTqAOWWsidbMdLJLixx7h34KfoR2dMDhQCXlWY7S/cCINSeLI0KiV73p
@@ -35,7 +35,7 @@ server:
 spring:
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl_auto: validate
 
 logging:
   level:

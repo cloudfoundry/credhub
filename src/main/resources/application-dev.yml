@@ -1,4 +1,4 @@
-auth-server:
+auth_server:
   # Public dummy UAA for local development usage only!
   # Username/password: credhub/password
   url: https://34.206.233.195:8443
@@ -6,15 +6,15 @@ auth-server:
 encryption:
   provider: internal
   keys:
-  - dev-key: D673ACD01DA091B08144FBC8C0B5F524
+  - dev_key: D673ACD01DA091B08144FBC8C0B5F524
     active: true
-  - dev-key: A673ACF01DB091B08133FBC8C0B5F555
-  - encryption-password: correcthorsebatterystaple
+  - dev_key: A673ACF01DB091B08133FBC8C0B5F555
+  - encryption_password: correcthorsebatterystaple
 security:
   oauth2:
     resource:
       jwt:
-        key-value: |
+        key_value: |
           -----BEGIN PUBLIC KEY-----
           MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuKRq5WybJla1u2xcZE1G
           ne5/y5R/gi4uZZwAcwooCQjvaLK1nBQQJSG3qDr/isgYbeoR59AaWbNV5SGGMAgb
@@ -32,11 +32,11 @@ server:
   port: 9000
   ssl:
     enabled: true
-    key-store: src/test/resources/key_store.jks
-    key-password: changeit
-    key-alias: cert
+    key_store: src/test/resources/key_store.jks
+    key_password: changeit
+    key_alias: cert
     ciphers: ECDHE-ECDSA-AES128-GCM-SHA256,ECDHE-ECDSA-AES256-GCM-SHA384,ECDHE-RSA-AES128-GCM-SHA256,ECDHE-RSA-AES256-GCM-SHA384
-    client-auth: want
-    trust-store: src/test/resources/trust_store.jks
-    trust-store-password: changeit
-    trust-store-type: JKS
+    client_auth: want
+    trust_store: src/test/resources/trust_store.jks
+    trust_store_password: changeit
+    trust_store_type: JKS
