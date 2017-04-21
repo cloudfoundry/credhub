@@ -7,7 +7,7 @@ import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.CredentialView;
+import io.pivotal.security.view.FindCredentialResult;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +33,7 @@ import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -91,7 +92,7 @@ public class CredentialsControllerFindTest {
           beforeEach(() -> {
             String substring = credentialName.substring(4).toUpperCase();
             doReturn(
-                Arrays.asList(new CredentialView(frozenTime, credentialName))
+                singletonList(new FindCredentialResult(frozenTime, credentialName))
             ).when(credentialDataService).findContainingName(substring);
             final MockHttpServletRequestBuilder get = get("/api/v1/data?name-like=" + substring)
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -117,7 +118,7 @@ public class CredentialsControllerFindTest {
         beforeEach(() -> {
           String substring = credentialName.substring(0, credentialName.lastIndexOf("/"));
           doReturn(
-              Arrays.asList(new CredentialView(frozenTime, credentialName))
+              singletonList(new FindCredentialResult(frozenTime, credentialName))
           ).when(credentialDataService).findStartingWithPath(substring);
 
           final String path = substring;
@@ -152,7 +153,7 @@ public class CredentialsControllerFindTest {
         it("should return all children which are prefixed with the path case-independently", () -> {
           final String path = "/my-namespace";
           doReturn(
-              Arrays.asList(new CredentialView(frozenTime, credentialName))
+              singletonList(new FindCredentialResult(frozenTime, credentialName))
           ).when(credentialDataService).findStartingWithPath(path.toUpperCase());
 
           assertTrue(credentialName.startsWith(path));

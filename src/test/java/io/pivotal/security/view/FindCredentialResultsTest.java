@@ -1,11 +1,7 @@
 package io.pivotal.security.view;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,8 +13,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
 public class FindCredentialResultsTest {
 
   {
@@ -32,10 +26,10 @@ public class FindCredentialResultsTest {
         String passwordName = "passwordSecret";
         String certificateName = "certificateSecret";
 
-        List<CredentialView> credentialViews = newArrayList(
-            new CredentialView(versionCreatedAt3, certificateName),
-            new CredentialView(versionCreatedAt2, valueName),
-            new CredentialView(versionCreatedAt1, passwordName)
+        List<FindCredentialResult> credentialViews = newArrayList(
+            new FindCredentialResult(versionCreatedAt3, certificateName),
+            new FindCredentialResult(versionCreatedAt2, valueName),
+            new FindCredentialResult(versionCreatedAt1, passwordName)
         );
 
         assertThat(new FindCredentialResults(credentialViews).getCredentials(), equalTo(credentialViews));

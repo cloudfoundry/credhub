@@ -6,10 +6,10 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
@@ -18,7 +18,7 @@ import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.CredentialView;
+import io.pivotal.security.view.FindCredentialResult;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
@@ -322,10 +322,10 @@ public class CredentialDataServiceTest {
     savePassword(3000000000123L, "bar/duplicate");
     savePassword(4000000000123L, "bar/duplicate");
 
-    List<CredentialView> credentials = subject.findContainingName("DUP");
+    List<FindCredentialResult> credentials = subject.findContainingName("DUP");
     assertThat("should only return unique credential names", credentials.size(), equalTo(2));
 
-    CredentialView credential = credentials.get(0);
+    FindCredentialResult credential = credentials.get(0);
     assertThat(credential.getName(), equalTo("/bar/duplicate"));
     assertThat("should return the most recently created version",
         credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(4000000000123L)));
@@ -340,7 +340,7 @@ public class CredentialDataServiceTest {
   public void findStartingWithPath_whenProvidedAPath_returnsTheListOfOrderedCredentials() {
     setupTestFixtureForFindStartingWithPath();
 
-    List<CredentialView> credentials = subject.findStartingWithPath("Credential/");
+    List<FindCredentialResult> credentials = subject.findStartingWithPath("Credential/");
 
     assertThat(credentials.size(), equalTo(3));
     assertThat(credentials, IsIterableContainingInOrder.contains(
@@ -372,11 +372,11 @@ public class CredentialDataServiceTest {
     savePassword(3000000000123L, "/DupSecret/1");
     savePassword(1000000000123L, "/DupSecret/1");
 
-    List<CredentialView> credentials = subject.findStartingWithPath("/dupsecret/");
+    List<FindCredentialResult> credentials = subject.findStartingWithPath("/dupsecret/");
     assertThat("should not return duplicate credential names",
         credentials.size(), equalTo(1));
 
-    CredentialView credential = credentials.get(0);
+    FindCredentialResult credential = credentials.get(0);
     assertThat("should return the most recent credential",
         credential.getVersionCreatedAt(), equalTo(Instant.ofEpochMilli(3000000000123L)));
   }
@@ -385,7 +385,7 @@ public class CredentialDataServiceTest {
   public void findStartingWithPath_givenAPath_matchesFromTheStart() {
     setupTestFixtureForFindStartingWithPath();
 
-    List<CredentialView> credentials = subject.findStartingWithPath("Credential");
+    List<FindCredentialResult> credentials = subject.findStartingWithPath("Credential");
 
     assertThat(credentials.size(), equalTo(3));
     assertThat(credentials, not(contains(hasProperty("name", equalTo("/not/So/Credential")))));

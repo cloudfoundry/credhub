@@ -22,10 +22,11 @@ import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.service.SetService;
+import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
+import io.pivotal.security.view.FindCredentialResult;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
-import io.pivotal.security.view.CredentialView;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -355,14 +356,13 @@ public class CredentialsController {
   }
 
   private FindCredentialResults findWithAuditing(String nameSubstring,
-      Function<String, List<CredentialView>> finder,
+      Function<String, List<FindCredentialResult>> finder,
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService
         .auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
           eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_FIND);
-          List<CredentialView> credentialViews = finder.apply(nameSubstring);
-          return FindCredentialResults.fromCredentials(credentialViews);
+          return new FindCredentialResults(finder.apply(nameSubstring));
         });
   }
 }

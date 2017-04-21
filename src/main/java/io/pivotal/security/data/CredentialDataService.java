@@ -2,12 +2,12 @@ package io.pivotal.security.data;
 
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.view.CredentialView;
+import io.pivotal.security.view.FindCredentialResult;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -129,11 +129,11 @@ public class CredentialDataService {
     return credentialFactory.makeCredentialFromEntity(credentialRepository.findOneByUuid(UUID.fromString(uuid)));
   }
 
-  public List<CredentialView> findContainingName(String name) {
+  public List<FindCredentialResult> findContainingName(String name) {
     return findMatchingName("%" + name + "%");
   }
 
-  public List<CredentialView> findStartingWithPath(String path) {
+  public List<FindCredentialResult> findStartingWithPath(String path) {
     path = StringUtils.prependIfMissing(path, "/");
     path = StringUtils.appendIfMissing(path, "/");
 
@@ -176,16 +176,17 @@ public class CredentialDataService {
     return new SliceImpl(credentialFactory.makeCredentialsFromEntities(credentialDataSlice.getContent()));
   }
 
-  private List<CredentialView> findMatchingName(String nameLike) {
-    return jdbcTemplate.query(
+  private List<FindCredentialResult> findMatchingName(String nameLike) {
+    final List<FindCredentialResult> query = jdbcTemplate.query(
         findMatchingNameQuery,
         new Object[]{nameLike},
         (rowSet, rowNum) -> {
           final Instant versionCreatedAt = Instant
               .ofEpochMilli(rowSet.getLong("version_created_at"));
           final String name = rowSet.getString("name");
-          return new CredentialView(versionCreatedAt, name);
+          return new FindCredentialResult(versionCreatedAt, name);
         }
     );
+    return query;
   }
 }
