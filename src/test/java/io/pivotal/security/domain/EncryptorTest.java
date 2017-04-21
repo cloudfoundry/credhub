@@ -60,7 +60,7 @@ public class EncryptorTest {
 
         RetryingEncryptionService encryptionService = new RetryingEncryptionService(
             bcEncryptionService, keyMapper, new BcNullConnection());
-        subject = new Encryptor(keyMapper, encryptionService);
+        subject = new Encryptor(encryptionService);
       });
 
       describe("#encrypt", () -> {

@@ -34,27 +34,30 @@ public class RetryingEncryptionService {
     readWriteLock = new ReentrantReadWriteLock();
   }
 
-  public Encryption encrypt(UUID keyId, final String value) throws Exception {
+  public Encryption encrypt(final String value) throws Exception {
     logger.info("Attempting encrypt");
-    return retryOnErrorWithRemappedKey(keyId, key -> encryptionService.encrypt(keyId, key, value));
+    return retryOnErrorWithRemappedKey(() -> encryptionService.encrypt(keyMapper.getActiveUuid(), keyMapper.getActiveKey(), value));
   }
 
-  public String decrypt(UUID keyId, final byte[] encryptedValue, final byte[] nonce)
+  public String decrypt(Encryption encryption)
       throws Exception {
     logger.info("Attempting decrypt");
-    return retryOnErrorWithRemappedKey(keyId,
-        key -> encryptionService.decrypt(key, encryptedValue, nonce));
+    return retryOnErrorWithRemappedKey(() -> {
+      final Key key = keyMapper.getKeyForUuid(encryption.canaryUuid);
+
+      if (key == null) {
+        throw new KeyNotFoundException("error.missing_encryption_key");
+      }
+
+      return encryptionService.decrypt(key, encryption.encryptedValue, encryption.nonce);
+    });
   }
 
-  private <T> T retryOnErrorWithRemappedKey(UUID keyId, ThrowingFunction<Key, T> operation)
+  private <T> T retryOnErrorWithRemappedKey(ThrowingFunction<T> operation)
       throws Exception {
     return withPreventReconnectLock(() -> {
       try {
-        Key keyForUuid = keyMapper.getKeyForUuid(keyId);
-        if (keyForUuid == null) {
-          throw new KeyNotFoundException("error.missing_encryption_key");
-        }
-        return operation.apply(keyForUuid);
+        return operation.apply();
       } catch (IllegalBlockSizeException | ProviderException e) {
         logger.info("Operation failed: " + e.getMessage());
 
@@ -68,7 +71,7 @@ public class RetryingEncryptionService {
           }
         });
 
-        return operation.apply(keyMapper.getKeyForUuid(keyId));
+        return operation.apply();
       }
     });
   }
@@ -108,9 +111,9 @@ public class RetryingEncryptionService {
   }
 
   @FunctionalInterface
-  private interface ThrowingFunction<T, R> {
+  private interface ThrowingFunction<R> {
 
-    R apply(T t) throws Exception;
+    R apply() throws Exception;
   }
 
   @FunctionalInterface

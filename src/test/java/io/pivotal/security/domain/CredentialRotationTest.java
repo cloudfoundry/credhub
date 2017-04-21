@@ -46,7 +46,7 @@ public class CredentialRotationTest {
       beforeEach(() -> {
         encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
         encryptionService = mock(RetryingEncryptionService.class);
-        encryptor = new Encryptor(encryptionKeyCanaryMapper, encryptionService);
+        encryptor = new Encryptor(encryptionService);
 
         activeEncryptionKey = mock(Key.class);
         oldEncryptionKey = mock(Key.class);
@@ -61,10 +61,9 @@ public class CredentialRotationTest {
         when(encryptionKeyCanaryMapper.getKeyForUuid(oldEncryptionKeyUuid))
             .thenReturn(oldEncryptionKey);
 
-        when(encryptionService.decrypt(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(),
-            "old-nonce".getBytes()))
+        when(encryptionService.decrypt(new Encryption(oldEncryptionKeyUuid, "old-encrypted-value".getBytes(), "old-nonce".getBytes())))
             .thenReturn("plaintext");
-        when(encryptionService.encrypt(activeEncryptionKeyUuid, "plaintext"))
+        when(encryptionService.encrypt("plaintext"))
             .thenReturn(new Encryption(activeEncryptionKeyUuid, "new-encrypted-value".getBytes(),
                 "new-nonce".getBytes()));
       });
@@ -121,10 +120,9 @@ public class CredentialRotationTest {
                 .writeValueAsString(new StringGenerationParameters());
 
             when(encryptionService
-                .decrypt(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(),
-                    "old-parameters-nonce".getBytes()))
+                .decrypt(new Encryption(oldEncryptionKeyUuid, "old-encrypted-parameters".getBytes(), "old-parameters-nonce".getBytes())))
                 .thenReturn(stringifiedParameters);
-            when(encryptionService.encrypt(activeEncryptionKeyUuid, stringifiedParameters))
+            when(encryptionService.encrypt(stringifiedParameters))
                 .thenReturn(new Encryption(activeEncryptionKeyUuid,
                     "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
 
