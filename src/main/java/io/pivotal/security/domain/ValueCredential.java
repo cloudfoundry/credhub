@@ -41,11 +41,10 @@ public class ValueCredential extends Credential<ValueCredential> {
   }
 
   public String getValue() {
-    return encryptor.decrypt(
+    return encryptor.decrypt(new Encryption(
         delegate.getEncryptionKeyUuid(),
         delegate.getEncryptedValue(),
-        delegate.getNonce()
-    );
+        delegate.getNonce()));
   }
 
   public ValueCredential setValue(String value) {

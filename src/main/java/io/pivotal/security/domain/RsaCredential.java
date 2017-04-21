@@ -64,11 +64,10 @@ public class RsaCredential extends Credential<RsaCredential> {
   }
 
   public String getPrivateKey() {
-    return encryptor.decrypt(
+    return encryptor.decrypt(new Encryption(
         delegate.getEncryptionKeyUuid(),
         delegate.getEncryptedValue(),
-        delegate.getNonce()
-    );
+        delegate.getNonce()));
   }
 
   public RsaCredential setPrivateKey(String privateKey) {

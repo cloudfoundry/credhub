@@ -23,7 +23,7 @@ public class UserViewTest {
   {
     beforeEach(() -> {
       encryptor = mock(Encryptor.class);
-      when(encryptor.decrypt(any(), any(), any())).thenReturn("test-password");
+      when(encryptor.decrypt(any())).thenReturn("test-password");
     });
 
     it("can create view from entity", () -> {

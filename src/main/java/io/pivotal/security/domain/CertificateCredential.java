@@ -70,11 +70,10 @@ public class CertificateCredential extends Credential<CertificateCredential> {
   }
 
   public String getPrivateKey() {
-    return encryptor.decrypt(
+    return encryptor.decrypt(new Encryption(
         delegate.getEncryptionKeyUuid(),
         delegate.getEncryptedValue(),
-        delegate.getNonce()
-    );
+        delegate.getNonce()));
   }
 
   public CertificateCredential setPrivateKey(String privateKey) {

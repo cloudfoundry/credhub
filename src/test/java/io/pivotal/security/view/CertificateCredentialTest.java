@@ -37,8 +37,9 @@ public class CertificateCredentialTest {
       byte[] nonce = "fake-nonce".getBytes();
 
       encryptor = mock(Encryptor.class);
-      when(encryptor.encrypt("priv")).thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-      when(encryptor.decrypt(canaryUuid, encryptedValue, nonce)).thenReturn("priv");
+      final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
+      when(encryptor.encrypt("priv")).thenReturn(encryption);
+      when(encryptor.decrypt(encryption)).thenReturn("priv");
 
       serializingObjectMapper = new ObjectMapper();
       credentialName = "/foo";

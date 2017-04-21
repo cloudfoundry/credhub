@@ -19,8 +19,6 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,9 +48,10 @@ public class JsonCredentialTest {
       byte[] encryptedValue = "fake-encrypted-value".getBytes();
       byte[] nonce = "fake-nonce".getBytes();
       canaryUuid = UUID.randomUUID();
+      final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
       when(encryptor.encrypt(serializedValue))
-          .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+          .thenReturn(encryption);
+      when(encryptor.decrypt(encryption))
           .thenReturn(serializedValue);
 
       jsonCredentialData = new JsonCredentialData("Foo");
@@ -89,9 +88,10 @@ public class JsonCredentialTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
+        final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
         when(encryptor.encrypt("new value"))
-            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn(encryption);
+        when(encryptor.decrypt(encryption))
             .thenReturn("new value");
 
         subject = new JsonCredential("/existingName");
@@ -108,9 +108,10 @@ public class JsonCredentialTest {
         byte[] encryptedValue = "fake-new-value".getBytes();
         byte[] nonce = "fake-new-nonce".getBytes();
 
+        final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
         when(encryptor.encrypt(serializedValue))
-            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn(encryption);
+        when(encryptor.decrypt(encryption))
             .thenReturn(serializedValue);
 
         JsonCredential newCredential = JsonCredential

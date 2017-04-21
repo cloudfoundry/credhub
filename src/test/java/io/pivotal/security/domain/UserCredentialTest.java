@@ -69,8 +69,8 @@ public class UserCredentialTest {
 
     describe("#getPassword", () -> {
       beforeEach(() -> {
-        when(encryptor.decrypt(
-            eq(ENCRYPTION_KEY_UUID), eq(ENCRYPTED_PASSWORD), eq(NONCE)))
+        final Encryption encryption = new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE);
+        when(encryptor.decrypt(encryption))
             .thenReturn(USER_PASSWORD);
         userCredentialData = new UserCredentialData()
             .setEncryptedValue(ENCRYPTED_PASSWORD)
@@ -86,7 +86,7 @@ public class UserCredentialTest {
 
       it("should call decrypt once", () -> {
         subject.getPassword();
-        verify(encryptor, times(1)).decrypt(any(), any(), any());
+        verify(encryptor, times(1)).decrypt(any());
       });
     });
 
@@ -187,8 +187,7 @@ public class UserCredentialTest {
             .setNonce(oldNonce);
         subject = new UserCredential(userCredentialData)
             .setEncryptor(encryptor);
-        when(encryptor.decrypt(
-            eq(oldEncryptionKeyUuid), eq(oldEncryptedPassword), eq(oldNonce)))
+        when(encryptor.decrypt(new Encryption(oldEncryptionKeyUuid, oldEncryptedPassword, oldNonce)))
             .thenReturn(USER_PASSWORD);
         when(encryptor.encrypt(eq(USER_PASSWORD)))
             .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
@@ -196,7 +195,7 @@ public class UserCredentialTest {
 
       it("should re-encrypt the password with the new encryption key", () -> {
         subject.rotate();
-        verify(encryptor).decrypt(any(), any(), any());
+        verify(encryptor).decrypt(any());
         verify(encryptor).encrypt(USER_PASSWORD);
 
         assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));

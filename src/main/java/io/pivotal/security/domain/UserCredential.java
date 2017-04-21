@@ -67,10 +67,10 @@ public class UserCredential extends Credential<UserCredential> {
   }
 
   public String getPassword() {
-    return encryptor.decrypt(
+    return encryptor.decrypt(new Encryption(
         delegate.getEncryptionKeyUuid(),
         delegate.getEncryptedValue(),
-        delegate.getNonce());
+        delegate.getNonce()));
   }
 
   public UserCredential setUsername(String username) {

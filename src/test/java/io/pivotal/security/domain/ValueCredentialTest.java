@@ -15,8 +15,6 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,9 +32,10 @@ public class ValueCredentialTest {
       encryptor = mock(Encryptor.class);
       byte[] encryptedValue = "fake-encrypted-value".getBytes();
       byte[] nonce = "fake-nonce".getBytes();
+      final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
       when(encryptor.encrypt("my-value"))
-          .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+          .thenReturn(encryption);
+      when(encryptor.decrypt(encryption))
           .thenReturn("my-value");
 
       subject = new ValueCredential("Foo");
@@ -72,9 +71,10 @@ public class ValueCredentialTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
+        final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
         when(encryptor.encrypt("new value"))
-            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn(encryption);
+        when(encryptor.decrypt(encryption))
             .thenReturn("new value");
 
         subject = new ValueCredential("/existingName");

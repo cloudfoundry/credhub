@@ -79,7 +79,7 @@ public class ExceptionHandlers {
   @ExceptionHandler(JsonParseException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public ResponseError handleJsonMappingException() {
+  public ResponseError handleJsonMappingException(JsonParseException e) {
     return badRequestResponse();
   }
 

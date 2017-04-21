@@ -32,12 +32,12 @@ public class Encryptor {
     }
   }
 
-  public String decrypt(UUID keyUuid, byte[] encryptedValue, byte[] nonce) {
-    if (keyUuid == null || encryptedValue == null || nonce == null) {
+  public String decrypt(Encryption encryption) {
+    if (encryption.canaryUuid == null || encryption.encryptedValue == null || encryption.nonce == null) {
       return null;
     }
     try {
-      return encryptionService.decrypt(keyUuid, encryptedValue, nonce);
+      return encryptionService.decrypt(encryption.canaryUuid, encryption.encryptedValue, encryption.nonce);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

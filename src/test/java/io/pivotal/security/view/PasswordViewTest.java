@@ -32,7 +32,7 @@ public class PasswordViewTest {
           .setEncryptor(encryptor)
           .setUuid(uuid);
 
-      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class)))
+      when(encryptor.decrypt(any()))
           .thenReturn("fake-plaintext-value");
     });
 

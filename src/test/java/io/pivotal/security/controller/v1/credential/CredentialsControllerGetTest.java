@@ -123,7 +123,7 @@ public class CredentialsControllerGetTest {
             .setVersionCreatedAt(frozenTime);
 
         doReturn(credentialValue).when(encryptor)
-            .decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
+            .decrypt(any());
 
         doReturn(
             valueCredential1
@@ -253,7 +253,7 @@ public class CredentialsControllerGetTest {
                 .setVersionCreatedAt(frozenTime);
 
         doThrow(new KeyNotFoundException("error.missing_encryption_key"))
-            .when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
+            .when(encryptor).decrypt(any());
         doReturn(Arrays.asList(valueCredential)).when(credentialDataService)
             .findAllByName(credentialName.toUpperCase());
       });

@@ -60,11 +60,10 @@ public class PasswordCredential extends Credential<PasswordCredential> {
 
   public String getPassword() {
     if (password == null) {
-      password = encryptor.decrypt(
+      password = encryptor.decrypt(new Encryption(
           delegate.getEncryptionKeyUuid(),
           delegate.getEncryptedValue(),
-          delegate.getNonce()
-      );
+          delegate.getNonce()));
     }
     return password;
   }
@@ -100,10 +99,10 @@ public class PasswordCredential extends Credential<PasswordCredential> {
     Assert.notNull(password,
         "Password length generation parameter cannot be restored without an existing password");
 
-    String parameterJson = encryptor.decrypt(
+    String parameterJson = encryptor.decrypt(new Encryption(
         delegate.getEncryptionKeyUuid(),
         delegate.getEncryptedGenerationParameters(),
-        delegate.getParametersNonce()
+        delegate.getParametersNonce())
     );
 
     if (parameterJson == null) {

@@ -66,11 +66,10 @@ public class JsonCredential extends Credential<JsonCredential> {
   }
 
   public Map<String, Object> getValue() {
-    String serializedValue = encryptor.decrypt(
+    String serializedValue = encryptor.decrypt(new Encryption(
         delegate.getEncryptionKeyUuid(),
         delegate.getEncryptedValue(),
-        delegate.getNonce()
-    );
+        delegate.getNonce()));
     try {
       return objectMapper.readValue(serializedValue, Map.class);
     } catch (IOException e) {

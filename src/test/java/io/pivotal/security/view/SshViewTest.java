@@ -17,7 +17,6 @@ import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,9 +39,10 @@ public class SshViewTest {
       credentialName = "/foo";
       uuid = UUID.randomUUID();
       encryptor = mock(Encryptor.class);
+      final Encryption encryption = new Encryption(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes());
       when(encryptor.encrypt(TestConstants.PRIVATE_KEY_4096)).thenReturn(
-          new Encryption(UUID.randomUUID(), "encrypted".getBytes(), "nonce".getBytes()));
-      when(encryptor.decrypt(any(UUID.class), any(byte[].class), any(byte[].class)))
+          encryption);
+      when(encryptor.decrypt(encryption))
           .thenReturn(TestConstants.PRIVATE_KEY_4096);
       entity = new SshCredential(credentialName)
           .setEncryptor(encryptor)

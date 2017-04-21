@@ -9,12 +9,12 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,9 +38,10 @@ public class CertificateCredentialTest {
       nonce = "fake-nonce".getBytes();
       canaryUuid = UUID.randomUUID();
 
+      final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
       when(encryptor.encrypt("my-priv"))
-          .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-priv");
+          .thenReturn(encryption);
+      when(encryptor.decrypt(encryption)).thenReturn("my-priv");
 
       certificateCredentialData = new CertificateCredentialData("/Foo");
       subject = new CertificateCredential(certificateCredentialData)
@@ -83,9 +84,10 @@ public class CertificateCredentialTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
+        final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
         when(encryptor.encrypt("new private key"))
-            .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn(encryption);
+        when(encryptor.decrypt(encryption))
             .thenReturn("new private key");
       });
 

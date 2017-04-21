@@ -14,8 +14,6 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,9 +37,10 @@ public class SshCredentialTest {
       beforeEach(() -> {
         byte[] encryptedValue = "new-fake-encrypted".getBytes();
         byte[] nonce = "new-fake-nonce".getBytes();
+        final Encryption encryption = new Encryption(UUID.randomUUID(), encryptedValue, nonce);
         when(encryptor.encrypt("new private key"))
-            .thenReturn(new Encryption(UUID.randomUUID(), encryptedValue, nonce));
-        when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+            .thenReturn(encryption);
+        when(encryptor.decrypt(encryption))
             .thenReturn("new private key");
 
         SshCredentialData sshCredentialData = new SshCredentialData("/existingName");

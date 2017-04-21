@@ -62,14 +62,16 @@ public class PasswordCredentialTest {
 
       when(encryptor.encrypt(null))
           .thenReturn(new Encryption(canaryUuid, null, null));
+      final Encryption encryption = new Encryption(canaryUuid, encryptedValue, nonce);
       when(encryptor.encrypt(PASSWORD))
-          .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
+          .thenReturn(encryption);
+      final Encryption parametersEncryption = new Encryption(canaryUuid, encryptedParametersValue, parametersNonce);
       when(encryptor.encrypt(eq(generationParametersJson)))
-          .thenReturn(new Encryption(canaryUuid, encryptedParametersValue, parametersNonce));
+          .thenReturn(parametersEncryption);
 
-      when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
+      when(encryptor.decrypt(encryption))
           .thenReturn(PASSWORD);
-      when(encryptor.decrypt(any(UUID.class), eq(encryptedParametersValue), eq(parametersNonce)))
+      when(encryptor.decrypt(parametersEncryption))
           .thenReturn(generationParametersJson);
 
       passwordCredentialData = new PasswordCredentialData("/Foo");
@@ -90,7 +92,7 @@ public class PasswordCredentialTest {
       it("should call decrypt twice: once for password and once for parameters", () -> {
         subject.getGenerationParameters();
 
-        verify(encryptor, times(2)).decrypt(any(), any(), any());
+        verify(encryptor, times(2)).decrypt(any());
       });
     });
 
@@ -107,7 +109,7 @@ public class PasswordCredentialTest {
       it("should call decrypt twice: once for password and once for parameters", () -> {
         subject.getPassword();
 
-        verify(encryptor, times(2)).decrypt(any(), any(), any());
+        verify(encryptor, times(2)).decrypt(any());
       });
     });
 

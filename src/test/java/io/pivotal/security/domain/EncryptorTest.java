@@ -1,5 +1,17 @@
 package io.pivotal.security.domain;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.service.BcEncryptionService;
+import io.pivotal.security.service.BcNullConnection;
+import io.pivotal.security.service.Encryption;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.service.RetryingEncryptionService;
+import org.junit.runner.RunWith;
+
+import java.security.Key;
+import java.util.UUID;
+import javax.crypto.spec.SecretKeySpec;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -12,17 +24,6 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.service.BcEncryptionService;
-import io.pivotal.security.service.BcNullConnection;
-import io.pivotal.security.service.Encryption;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.RetryingEncryptionService;
-import java.security.Key;
-import java.util.UUID;
-import javax.crypto.spec.SecretKeySpec;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class EncryptorTest {
@@ -92,12 +93,12 @@ public class EncryptorTest {
         });
 
         it("decrypts things that have been encrypted", () -> {
-          assertThat(subject.decrypt(newUuid, encryptedValue, nonce),
+          assertThat(subject.decrypt(new Encryption(newUuid, encryptedValue, nonce)),
               equalTo("the expected clear text"));
         });
 
         itThrows("fails to encrypt when given the wrong key UUID", RuntimeException.class, () -> {
-          subject.decrypt(oldUuid, encryptedValue, nonce);
+          subject.decrypt(new Encryption(oldUuid, encryptedValue, nonce));
         });
 
       });

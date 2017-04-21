@@ -61,11 +61,10 @@ public class SshCredential extends Credential<SshCredential> {
   }
 
   public String getPrivateKey() {
-    return encryptor.decrypt(
+    return encryptor.decrypt(new Encryption(
         delegate.getEncryptionKeyUuid(),
         delegate.getEncryptedValue(),
-        delegate.getNonce()
-    );
+        delegate.getNonce()));
   }
 
   public SshCredential setPrivateKey(String privateKey) {
