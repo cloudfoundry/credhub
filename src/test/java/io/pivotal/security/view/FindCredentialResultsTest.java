@@ -19,7 +19,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-public class FindResultsTest {
+public class FindCredentialResultsTest {
 
   {
     describe("#fromCredentials", () -> {
