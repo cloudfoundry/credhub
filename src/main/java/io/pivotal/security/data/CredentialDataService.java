@@ -1,23 +1,9 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.JsonCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.domain.UserCredential;
-import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.entity.JsonCredentialData;
-import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.entity.CredentialData;
-import io.pivotal.security.entity.SshCredentialData;
-import io.pivotal.security.entity.UserCredentialData;
-import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -47,6 +33,7 @@ public class CredentialDataService {
   private final CredentialNameRepository credentialNameRepository;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private final CredentialFactory credentialFactory;
   private final String findMatchingNameQuery =
       " select name.name, credential.version_created_at from ("
           + "   select"
@@ -59,8 +46,6 @@ public class CredentialDataService {
           + " ) as name"
           + " on credential.credential_name_uuid = name.uuid"
           + " order by version_created_at desc";
-  private Encryptor encryptor;
-  private CredentialData dao;
 
   @Autowired
   protected CredentialDataService(
@@ -68,13 +53,13 @@ public class CredentialDataService {
       CredentialNameRepository credentialNameRepository,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
-      Encryptor encryptor
+      CredentialFactory credentialFactory
   ) {
     this.credentialRepository = credentialRepository;
     this.credentialNameRepository = credentialNameRepository;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
-    this.encryptor = encryptor;
+    this.credentialFactory = credentialFactory;
   }
 
   public <Z extends Credential> Z save(Z namedSecret) {
@@ -92,7 +77,7 @@ public class CredentialDataService {
       credentialData.setCredentialName(credentialNameRepository.saveAndFlush(credentialName));
     }
 
-    return (Z) wrap(credentialRepository.saveAndFlush(credentialData));
+    return (Z) credentialFactory.makeCredentialFromEntity(credentialRepository.saveAndFlush(credentialData));
   }
 
   public List<String> findAllPaths() {
@@ -135,13 +120,13 @@ public class CredentialDataService {
     if (credentialName == null) {
       return null;
     } else {
-      return wrap(credentialRepository
+      return credentialFactory.makeCredentialFromEntity(credentialRepository
           .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid()));
     }
   }
 
   public Credential findByUuid(String uuid) {
-    return wrap(credentialRepository.findOneByUuid(UUID.fromString(uuid)));
+    return credentialFactory.makeCredentialFromEntity(credentialRepository.findOneByUuid(UUID.fromString(uuid)));
   }
 
   public List<CredentialView> findContainingName(String name) {
@@ -165,7 +150,7 @@ public class CredentialDataService {
     CredentialName credentialName = credentialNameRepository
         .findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
 
-    return credentialName != null ? wrap(credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
+    return credentialName != null ? credentialFactory.makeCredentialsFromEntities(credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
         : newArrayList();
   }
 
@@ -188,7 +173,7 @@ public class CredentialDataService {
         encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
         new PageRequest(0, BATCH_SIZE)
     );
-    return new SliceImpl(wrap(credentialDataSlice.getContent()));
+    return new SliceImpl(credentialFactory.makeCredentialsFromEntities(credentialDataSlice.getContent()));
   }
 
   private List<CredentialView> findMatchingName(String nameLike) {
@@ -202,36 +187,5 @@ public class CredentialDataService {
           return new CredentialView(versionCreatedAt, name);
         }
     );
-  }
-
-  private List<Credential> wrap(List<CredentialData> daos) {
-    return daos.stream().map(this::wrap).collect(Collectors.toList());
-  }
-
-  private Credential wrap(CredentialData dao) {
-    if (dao == null) {
-      return null;
-    }
-    Credential returnValue;
-    if (dao instanceof CertificateCredentialData) {
-      returnValue = new CertificateCredential((CertificateCredentialData) dao);
-    } else if (dao instanceof PasswordCredentialData) {
-      returnValue = new PasswordCredential((PasswordCredentialData) dao);
-    } else if (dao instanceof RsaCredentialData) {
-      returnValue = new RsaCredential((RsaCredentialData) dao);
-    } else if (dao instanceof SshCredentialData) {
-      returnValue = new SshCredential((SshCredentialData) dao);
-    } else if (dao instanceof ValueCredentialData) {
-      returnValue = new ValueCredential((ValueCredentialData) dao);
-    } else if (dao instanceof JsonCredentialData) {
-      returnValue = new JsonCredential((JsonCredentialData) dao);
-    } else if (dao instanceof UserCredentialData) {
-      returnValue = new UserCredential((UserCredentialData) dao);
-    } else {
-      throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
-    }
-
-    returnValue.setEncryptor(encryptor);
-    return returnValue;
   }
 }
