@@ -1,26 +1,29 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.domain.*;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.RsaCredential;
+import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.ValueCredential;
 
 import java.time.Instant;
 import java.util.UUID;
 
-public class CredentialView {
+public class CredentialView<T extends io.pivotal.security.credential.Credential> {
 
   private Instant versionCreatedAt;
   private UUID uuid;
   private String name;
   private String type;
-  private Object value;
+  private T value;
 
   CredentialView() { /* Jackson */ }
 
-  public CredentialView(Instant versionCreatedAt, String name) {
-    this(versionCreatedAt, null, name, "", "");
-  }
-
-  CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, Object value) {
+  CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, T value) {
     this.versionCreatedAt = versionCreatedAt;
     this.uuid = uuid;
     this.name = name;

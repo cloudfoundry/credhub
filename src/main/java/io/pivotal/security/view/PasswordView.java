@@ -1,5 +1,6 @@
 package io.pivotal.security.view;
 
+import io.pivotal.security.credential.StringCredential;
 import io.pivotal.security.domain.PasswordCredential;
 
 @SuppressWarnings("unused")
@@ -13,7 +14,7 @@ public class PasswordView extends CredentialView {
         passwordCredential.getUuid(),
         passwordCredential.getName(),
         passwordCredential.getCredentialType(),
-        passwordCredential.getPassword()
+        new StringCredential(passwordCredential.getPassword())
     );
   }
 }

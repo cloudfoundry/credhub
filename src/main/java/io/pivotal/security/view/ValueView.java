@@ -1,5 +1,6 @@
 package io.pivotal.security.view;
 
+import io.pivotal.security.credential.StringCredential;
 import io.pivotal.security.domain.ValueCredential;
 
 @SuppressWarnings("unused")
@@ -13,7 +14,7 @@ public class ValueView extends CredentialView {
         valueCredential.getUuid(),
         valueCredential.getName(),
         valueCredential.getCredentialType(),
-        valueCredential.getValue()
+        new StringCredential(valueCredential.getValue())
     );
   }
 }

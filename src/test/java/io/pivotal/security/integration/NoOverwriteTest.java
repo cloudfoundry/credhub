@@ -2,6 +2,8 @@ package io.pivotal.security.integration;
 
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
@@ -9,7 +11,6 @@ import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
-import io.pivotal.security.view.PasswordView;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -96,16 +97,15 @@ public class NoOverwriteTest {
         MvcResult result1 = responses[0]
             .andDo(print())
             .andReturn();
-        PasswordView value1 = JsonHelper
-            .deserialize(result1.getResponse().getContentAsString(), PasswordView.class);
+        final DocumentContext context1 = JsonPath.parse(result1.getResponse().getContentAsString());
         MvcResult result2 = responses[1]
             .andDo(print())
             .andReturn();
-        PasswordView value2 = JsonHelper.deserialize(result2.getResponse().getContentAsString(), PasswordView.class);
+        final DocumentContext context2 = JsonPath.parse(result2.getResponse().getContentAsString());
 
-        assertThat(value1.getValue(), equalTo(value2.getValue()));
+        assertThat(context1.read("$.value"), equalTo(context2.read("$.value")));
 
-        String winningValue = (String) value1.getValue();
+        String winningValue = context1.read("$.value");
 
         String tokenForWinningActor = ImmutableMap
             .of("thread1", UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
@@ -123,8 +123,6 @@ public class NoOverwriteTest {
             .andReturn();
         String content = result.getResponse().getContentAsString();
         AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-
-        System.out.print("actual: " + content);
 
         assertThat(acl.getAccessControlList(), containsInAnyOrder(
             samePropertyValuesAs(
@@ -150,14 +148,14 @@ public class NoOverwriteTest {
         MvcResult result1 = responses[0]
             .andDo(print())
             .andReturn();
-        PasswordView password1 = JsonHelper
-            .deserialize(result1.getResponse().getContentAsString(), PasswordView.class);
+        final DocumentContext context1 = JsonPath.parse(result1.getResponse().getContentAsString());
+
         MvcResult result2 = responses[1]
             .andDo(print())
             .andReturn();
-        PasswordView password2 = JsonHelper.deserialize(result2.getResponse().getContentAsString(), PasswordView.class);
+        final DocumentContext context2 = JsonPath.parse(result2.getResponse().getContentAsString());
 
-        assertThat(password1.getValue(), equalTo(password2.getValue()));
+        assertThat(context1.read("$.value"), equalTo(context2.read("$.value")));
 
         MockHttpServletResponse response1 = mockMvc
             .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
@@ -171,7 +169,7 @@ public class NoOverwriteTest {
             .andDo(print())
             .andReturn().getResponse();
 
-        String winningPassword = (String) password1.getValue();
+        String winningPassword = context1.read("$.value");
         String winningActor;
         String winningResponse;
 

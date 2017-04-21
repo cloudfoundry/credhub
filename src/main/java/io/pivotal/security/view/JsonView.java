@@ -13,7 +13,7 @@ public class JsonView extends CredentialView {
         jsonCredential.getUuid(),
         jsonCredential.getName(),
         jsonCredential.getCredentialType(),
-        jsonCredential.getValue()
+        new io.pivotal.security.credential.JsonCredential(jsonCredential.getValue())
     );
   }
 }
