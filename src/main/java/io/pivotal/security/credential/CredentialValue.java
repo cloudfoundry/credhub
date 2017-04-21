@@ -1,5 +1,5 @@
 package io.pivotal.security.credential;
 
-public interface Credential {
+public interface CredentialValue {
 
 }

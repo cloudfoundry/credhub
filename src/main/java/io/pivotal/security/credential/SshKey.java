@@ -2,7 +2,7 @@ package io.pivotal.security.credential;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class SshKey implements Credential {
+public class SshKey implements CredentialValue {
 
   private final String publicKey;
   private final String privateKey;

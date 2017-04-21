@@ -1,6 +1,7 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.JsonCredential;
@@ -13,7 +14,7 @@ import io.pivotal.security.domain.ValueCredential;
 import java.time.Instant;
 import java.util.UUID;
 
-public class CredentialView<T extends io.pivotal.security.credential.Credential> {
+public class CredentialView<T extends CredentialValue> {
 
   private Instant versionCreatedAt;
   private UUID uuid;

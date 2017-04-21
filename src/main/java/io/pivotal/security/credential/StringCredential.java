@@ -2,7 +2,7 @@ package io.pivotal.security.credential;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public class StringCredential implements Credential {
+public class StringCredential implements CredentialValue {
 
   private final String string;
 

@@ -2,7 +2,7 @@ package io.pivotal.security.credential;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class Certificate implements Credential {
+public class Certificate implements CredentialValue {
 
   private final String caCertificate;
   private final String publicKeyCertificate;

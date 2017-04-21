@@ -1,8 +1,8 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.credential.Credential;
+import io.pivotal.security.credential.CredentialValue;
 
-public class User implements Credential {
+public class User implements CredentialValue {
   private final String username;
   private final String password;
 
