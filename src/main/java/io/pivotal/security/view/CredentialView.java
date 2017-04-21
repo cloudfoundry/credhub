@@ -6,8 +6,9 @@ import io.pivotal.security.domain.*;
 import java.time.Instant;
 import java.util.UUID;
 
-public class CredentialView extends BaseView {
+public class CredentialView {
 
+  private Instant versionCreatedAt;
   private UUID uuid;
   private String name;
   private String type;
@@ -20,7 +21,7 @@ public class CredentialView extends BaseView {
   }
 
   CredentialView(Instant versionCreatedAt, UUID uuid, String name, String type, Object value) {
-    super(versionCreatedAt);
+    this.versionCreatedAt = versionCreatedAt;
     this.uuid = uuid;
     this.name = name;
     this.type = type;
@@ -47,6 +48,11 @@ public class CredentialView extends BaseView {
       throw new IllegalArgumentException();
     }
     return result;
+  }
+
+  @JsonProperty("version_created_at")
+  public Instant getVersionCreatedAt() {
+    return versionCreatedAt;
   }
 
   @JsonProperty
