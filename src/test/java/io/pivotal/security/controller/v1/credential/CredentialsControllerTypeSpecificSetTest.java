@@ -154,12 +154,12 @@ public class CredentialsControllerTypeSpecificSetTest {
           .build();
     });
 
-    describe("value", testSecretBehavior(
+    describe("value", testCredentialBehaviour(
         new Object[]{"$.value", password},
         "value",
         "\"" + password + "\"",
-        (valueSecret) -> {
-          assertThat(valueSecret.getValue(), equalTo(password));
+        (valueCredential) -> {
+          assertThat(valueCredential.getValue(), equalTo(password));
         },
         () -> new ValueCredential(credentialName)
             .setEncryptor(encryptor)
@@ -168,12 +168,12 @@ public class CredentialsControllerTypeSpecificSetTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
-    describe("password", testSecretBehavior(
+    describe("password", testCredentialBehaviour(
         new Object[]{"$.value", password},
         "password",
         "\"" + password + "\"",
-        (passwordSecret) -> {
-          assertThat(passwordSecret.getPassword(), equalTo(password));
+        (passwordCredential) -> {
+          assertThat(passwordCredential.getPassword(), equalTo(password));
         },
         () -> new PasswordCredential(credentialName)
             .setEncryptor(encryptor)
@@ -182,17 +182,17 @@ public class CredentialsControllerTypeSpecificSetTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
-    describe("certificate", testSecretBehavior(
+    describe("certificate", testCredentialBehaviour(
         new Object[]{
             "$.value.certificate", TEST_CERTIFICATE,
             "$.value.private_key", TEST_PRIVATE_KEY,
             "$.value.ca", TEST_CA},
         "certificate",
         certificateValueJsonString,
-        (certificateSecret) -> {
-          assertThat(certificateSecret.getCa(), equalTo(TEST_CA));
-          assertThat(certificateSecret.getCertificate(), equalTo(TEST_CERTIFICATE));
-          assertThat(certificateSecret.getPrivateKey(), equalTo(TEST_PRIVATE_KEY));
+        (certificateCredential) -> {
+          assertThat(certificateCredential.getCa(), equalTo(TEST_CA));
+          assertThat(certificateCredential.getCertificate(), equalTo(TEST_CERTIFICATE));
+          assertThat(certificateCredential.getPrivateKey(), equalTo(TEST_PRIVATE_KEY));
         },
         () -> new CertificateCredential(credentialName)
             .setEncryptor(encryptor)
@@ -204,16 +204,16 @@ public class CredentialsControllerTypeSpecificSetTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("ssh", testSecretBehavior(
+    describe("ssh", testCredentialBehaviour(
         new Object[]{
             "$.value.public_key", SSH_PUBLIC_KEY_4096_WITH_COMMENT,
             "$.value.private_key", PRIVATE_KEY_4096,
             "$.value.public_key_fingerprint", "UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc"},
         "ssh",
         sshValueJsonString,
-        (sshSecret) -> {
-          assertThat(sshSecret.getPublicKey(), equalTo(SSH_PUBLIC_KEY_4096_WITH_COMMENT));
-          assertThat(sshSecret.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
+        (sshCredential) -> {
+          assertThat(sshCredential.getPublicKey(), equalTo(SSH_PUBLIC_KEY_4096_WITH_COMMENT));
+          assertThat(sshCredential.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
         },
         () -> new SshCredential(credentialName)
             .setEncryptor(encryptor)
@@ -223,15 +223,15 @@ public class CredentialsControllerTypeSpecificSetTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("rsa", testSecretBehavior(
+    describe("rsa", testCredentialBehaviour(
         new Object[]{
             "$.value.public_key", RSA_PUBLIC_KEY_4096,
             "$.value.private_key", PRIVATE_KEY_4096},
         "rsa",
         rsaValueJsonString,
-        (rsaSecret) -> {
-          assertThat(rsaSecret.getPublicKey(), equalTo(RSA_PUBLIC_KEY_4096));
-          assertThat(rsaSecret.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
+        (rsaCredential) -> {
+          assertThat(rsaCredential.getPublicKey(), equalTo(RSA_PUBLIC_KEY_4096));
+          assertThat(rsaCredential.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
         },
         () -> new RsaCredential(credentialName)
             .setEncryptor(encryptor)
@@ -241,12 +241,12 @@ public class CredentialsControllerTypeSpecificSetTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("json", testSecretBehavior(
+    describe("json", testCredentialBehaviour(
         new Object[]{"$.value", jsonValueMap},
         "json",
         jsonValueJsonString,
-        (jsonSecret) -> {
-          assertThat(jsonSecret.getValue(), equalTo(jsonValueMap));
+        (jsonCredential) -> {
+          assertThat(jsonCredential.getValue(), equalTo(jsonValueMap));
         },
         () -> new JsonCredential(credentialName)
             .setEncryptor(encryptor)
@@ -255,16 +255,16 @@ public class CredentialsControllerTypeSpecificSetTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("user", testSecretBehavior(
+    describe("user", testCredentialBehaviour(
         new Object[]{
             "$.value.username", username,
             "$.value.password", password
         },
         "user",
         userValueJsonString,
-        (userSecret) -> {
-          assertThat(userSecret.getUsername(), equalTo(username));
-          assertThat(userSecret.getPassword(), equalTo(password));
+        (userCredential) -> {
+          assertThat(userCredential.getUsername(), equalTo(username));
+          assertThat(userCredential.getPassword(), equalTo(password));
         },
         () -> new UserCredential(credentialName)
             .setEncryptor(encryptor)
@@ -275,12 +275,12 @@ public class CredentialsControllerTypeSpecificSetTest {
     );
   }
 
-  private <T extends Credential> Block testSecretBehavior(
+  private <T extends Credential> Block testCredentialBehaviour(
       Object[] typeSpecificResponseFields,
-      String secretType,
+      String credentialType,
       String value,
-      Consumer<T> namedSecretAssertions,
-      Supplier<T> existingSecretProvider) {
+      Consumer<T> credentialAssertions,
+      Supplier<T> existingCredentialProvider) {
     return () -> {
       describe("for a new credential", () -> {
         beforeEach(() -> {
@@ -290,7 +290,7 @@ public class CredentialsControllerTypeSpecificSetTest {
               .contentType(APPLICATION_JSON)
               .content("{" +
                   "\"name\":\"" + credentialName + "\"," +
-                  "\"type\":\"" + secretType + "\"," +
+                  "\"type\":\"" + credentialType + "\"," +
                   "\"value\":" + value + "," +
                   "\"overwrite\":" + false + "," +
                   "\"access_control_entries\": [" +
@@ -309,7 +309,7 @@ public class CredentialsControllerTypeSpecificSetTest {
             verify(credentialDataService, times(1)).save(argumentCaptor.capture());
             response.andExpect(multiJsonPath(typeSpecificResponseFields))
                 .andExpect(multiJsonPath(
-                    "$.type", secretType,
+                    "$.type", credentialType,
                     "$.id", argumentCaptor.getValue().getUuid().toString(),
                     "$.version_created_at", frozenTime.toString()))
                 .andExpect(status().isOk())
@@ -325,9 +325,9 @@ public class CredentialsControllerTypeSpecificSetTest {
             ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
             verify(credentialDataService, times(1)).save(argumentCaptor.capture());
 
-            T newSecret = (T) argumentCaptor.getValue();
+            T newCredential = (T) argumentCaptor.getValue();
 
-            namedSecretAssertions.accept(newSecret);
+            credentialAssertions.accept(newCredential);
           });
 
           it("persists an audit entry", () -> {
@@ -371,7 +371,7 @@ public class CredentialsControllerTypeSpecificSetTest {
       describe("with an existing credential", () -> {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
-          doReturn(existingSecretProvider.get()).when(credentialDataService).findMostRecent(credentialName);
+          doReturn(existingCredentialProvider.get()).when(credentialDataService).findMostRecent(credentialName);
         });
 
         describe("with the overwrite flag set to true", () -> {
@@ -381,7 +381,7 @@ public class CredentialsControllerTypeSpecificSetTest {
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
-                    "  \"type\":\"" + secretType + "\"," +
+                    "  \"type\":\"" + credentialType + "\"," +
                     "  \"name\":\"" + credentialName + "\"," +
                     "  \"value\":" + value + "," +
                     "  \"overwrite\":true" +
@@ -398,14 +398,14 @@ public class CredentialsControllerTypeSpecificSetTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(multiJsonPath(typeSpecificResponseFields))
                 .andExpect(multiJsonPath(
-                    "$.type", secretType,
+                    "$.type", credentialType,
                     "$.id", argumentCaptor.getValue().getUuid().toString(),
                     "$.version_created_at", frozenTime.toString()));
           });
 
           it("asks the data service to persist the credential", () -> {
-            T namedSecret = (T) credentialDataService.findMostRecent(credentialName);
-            namedSecretAssertions.accept(namedSecret);
+            T credential = (T) credentialDataService.findMostRecent(credentialName);
+            credentialAssertions.accept(credential);
           });
 
           it("persists an audit entry", () -> {
@@ -420,7 +420,7 @@ public class CredentialsControllerTypeSpecificSetTest {
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
-                    + "\"type\":\"" + secretType + "\","
+                    + "\"type\":\"" + credentialType + "\","
                     + "\"name\":\"" + credentialName + "\","
                     + "\"value\":" + value
                     + "}");

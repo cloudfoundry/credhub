@@ -8,7 +8,7 @@ public class StringCredential implements Credential {
     this.string = password;
   }
 
-  public String getStringSecret() {
+  public String getStringCredential() {
     return string;
   }
 }

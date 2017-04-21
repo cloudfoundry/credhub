@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
@@ -26,7 +26,7 @@ public class ValueCredentialTest {
   ValueCredential subject;
   private Encryptor encryptor;
   private UUID canaryUuid;
-  private NamedValueSecretData namedValueSecretData;
+  private ValueCredentialData valueCredentialData;
 
   {
     beforeEach(() -> {
@@ -43,19 +43,19 @@ public class ValueCredentialTest {
     });
 
     it("returns type value", () -> {
-      assertThat(subject.getSecretType(), equalTo("value"));
+      assertThat(subject.getCredentialType(), equalTo("value"));
     });
 
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
-        namedValueSecretData = new NamedValueSecretData("foo");
-        subject = new ValueCredential(namedValueSecretData).setEncryptor(encryptor);
+        valueCredentialData = new ValueCredentialData("foo");
+        subject = new ValueCredential(valueCredentialData).setEncryptor(encryptor);
       });
 
       it("encrypts the value", () -> {
         subject.setValue("my-value");
-        assertThat(namedValueSecretData.getEncryptedValue(), notNullValue());
-        assertThat(namedValueSecretData.getNonce(), notNullValue());
+        assertThat(valueCredentialData.getEncryptedValue(), notNullValue());
+        assertThat(valueCredentialData.getNonce(), notNullValue());
       });
 
       it("can decrypt values", () -> {
@@ -79,27 +79,27 @@ public class ValueCredentialTest {
 
         subject = new ValueCredential("/existingName");
         subject.setEncryptor(encryptor);
-        namedValueSecretData.setEncryptedValue("old encrypted value".getBytes());
+        valueCredentialData.setEncryptedValue("old encrypted value".getBytes());
       });
 
       it("copies values from existing, except value", () -> {
-        ValueCredential newSecret = ValueCredential
+        ValueCredential newCredential = ValueCredential
             .createNewVersion(subject, "anything I AM IGNORED", "new value", encryptor,
                 new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/existingName"));
-        assertThat(newSecret.getValue(), equalTo("new value"));
+        assertThat(newCredential.getName(), equalTo("/existingName"));
+        assertThat(newCredential.getValue(), equalTo("new value"));
       });
 
       it("creates new if no existing", () -> {
-        ValueCredential newSecret = ValueCredential.createNewVersion(
+        ValueCredential newCredential = ValueCredential.createNewVersion(
             null,
             "/newName",
             "new value",
             encryptor, new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getValue(), equalTo("new value"));
+        assertThat(newCredential.getName(), equalTo("/newName"));
+        assertThat(newCredential.getValue(), equalTo("new value"));
       });
     });
   }

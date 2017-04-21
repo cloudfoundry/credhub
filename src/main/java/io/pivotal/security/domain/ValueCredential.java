@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
 
@@ -8,36 +8,36 @@ import java.util.List;
 
 public class ValueCredential extends Credential<ValueCredential> {
 
-  private NamedValueSecretData delegate;
+  private ValueCredentialData delegate;
 
-  public ValueCredential(NamedValueSecretData delegate) {
+  public ValueCredential(ValueCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public ValueCredential(String name) {
-    this(new NamedValueSecretData(name));
+    this(new ValueCredentialData(name));
   }
 
   public ValueCredential() {
-    this(new NamedValueSecretData());
+    this(new ValueCredentialData());
   }
 
   public static ValueCredential createNewVersion(ValueCredential existing, String name,
                                                  String value, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
-    ValueCredential secret;
+    ValueCredential credential;
 
     if (existing == null) {
-      secret = new ValueCredential(name);
+      credential = new ValueCredential(name);
     } else {
-      secret = new ValueCredential();
-      secret.copyNameReferenceFrom(existing);
+      credential = new ValueCredential();
+      credential.copyNameReferenceFrom(existing);
     }
 
-    secret.setAccessControlList(accessControlEntries);
-    secret.setEncryptor(encryptor);
-    secret.setValue(value);
-    return secret;
+    credential.setAccessControlList(accessControlEntries);
+    credential.setEncryptor(encryptor);
+    credential.setValue(value);
+    return credential;
   }
 
   public String getValue() {
@@ -62,8 +62,8 @@ public class ValueCredential extends Credential<ValueCredential> {
   }
 
   @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
+  public String getCredentialType() {
+    return delegate.getCredentialType();
   }
 
 

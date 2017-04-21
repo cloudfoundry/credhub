@@ -1,5 +1,36 @@
 package io.pivotal.security.generator;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.data.CertificateAuthorityService;
+import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.request.CertificateGenerationParameters;
+import io.pivotal.security.util.CertificateFormatter;
+import io.pivotal.security.util.CurrentTimeProvider;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.junit.runner.RunWith;
+
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.function.Supplier;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -14,36 +45,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.CertificateAuthorityService;
-import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.request.CertificateGenerationParameters;
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.util.CertificateFormatter;
-import io.pivotal.security.util.CurrentTimeProvider;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.function.Supplier;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.cert.CertIOException;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class CertificateGeneratorTest {
@@ -132,7 +133,7 @@ public class CertificateGeneratorTest {
         });
 
         it("generates a valid childCertificate", () -> {
-          Certificate certificateSignedByRoot = subject.generateSecret(inputParameters);
+          Certificate certificateSignedByRoot = subject.generateCredential(inputParameters);
 
           assertThat(certificateSignedByRoot.getCaCertificate(),
               equalTo(rootCa.getPublicKeyCertificate()));
@@ -156,10 +157,10 @@ public class CertificateGeneratorTest {
                       childCertificateKeyPair.get(), params)
           ).thenReturn(childX509Certificate);
 
-          Certificate certificateSecret = subject.generateSecret(
+          Certificate certificate = subject.generateCredential(
               params);
 
-          assertThat(certificateSecret, notNullValue());
+          assertThat(certificate, notNullValue());
           verify(keyGenerator, times(1)).generateKeyPair(4096);
         });
       });
@@ -200,7 +201,7 @@ public class CertificateGeneratorTest {
         });
 
         it("generates a valid childCertificate", () -> {
-          Certificate certificateSignedByIntermediate = subject.generateSecret(inputParameters);
+          Certificate certificateSignedByIntermediate = subject.generateCredential(inputParameters);
 
           assertThat(certificateSignedByIntermediate.getCaCertificate(),
               equalTo(intermediateCa.getPublicKeyCertificate()));
@@ -232,12 +233,12 @@ public class CertificateGeneratorTest {
       });
 
       it("generates a valid self-signed certificate", () -> {
-        Certificate certificateSecret = subject.generateSecret(inputParameters);
-        assertThat(certificateSecret.getPrivateKey(),
+        Certificate certificateCredential = subject.generateCredential(inputParameters);
+        assertThat(certificateCredential.getPrivateKey(),
             equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
-        assertThat(certificateSecret.getPublicKeyCertificate(),
+        assertThat(certificateCredential.getPublicKeyCertificate(),
             equalTo(CertificateFormatter.pemOf(certificate.get())));
-        assertThat(certificateSecret.getCaCertificate(), nullValue());
+        assertThat(certificateCredential.getCaCertificate(), nullValue());
         verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
       });
     });

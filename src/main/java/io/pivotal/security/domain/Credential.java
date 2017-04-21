@@ -3,7 +3,7 @@ package io.pivotal.security.domain;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.entity.CredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 
 import java.time.Instant;
@@ -13,14 +13,14 @@ import java.util.stream.Collectors;
 
 public abstract class Credential<Z extends Credential> {
 
-  protected NamedSecretData delegate;
+  protected CredentialData delegate;
   protected Encryptor encryptor;
 
-  public Credential(NamedSecretData delegate) {
+  public Credential(CredentialData delegate) {
     this.delegate = delegate;
   }
 
-  public abstract String getSecretType();
+  public abstract String getCredentialType();
 
   public abstract void rotate();
 

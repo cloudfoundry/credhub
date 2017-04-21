@@ -2,7 +2,7 @@ package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.entity.NamedUserSecretData;
+import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.UserSetRequestFields;
 import io.pivotal.security.service.Encryption;
@@ -35,32 +35,32 @@ public class UserCredentialTest {
   private final UUID ENCRYPTION_KEY_UUID = UUID.randomUUID();
   private final byte[] ENCRYPTED_PASSWORD = "encrypted-user-password".getBytes();
   private final byte[] NONCE = "user-NONCE".getBytes();
-  private UserCredential NO_EXISTING_SECRET = null;
-  private NamedUserSecretData userSecretData;
+  private UserCredential NO_EXISTING_CREDENTIAL = null;
+  private UserCredentialData userCredentialData;
 
   {
     beforeEach(() -> {
       encryptor = mock(Encryptor.class);
     });
 
-    describe("#getSecretType", () -> {
+    describe("#getCredentialType", () -> {
       it("should return user type", () -> {
         subject = new UserCredential();
-        assertThat(subject.getSecretType(), equalTo("user"));
+        assertThat(subject.getCredentialType(), equalTo("user"));
       });
     });
 
     describe("#getUsername", () -> {
       it("gets username from the delegate", () -> {
         subject = new UserCredential(
-            new NamedUserSecretData(CREDENTIAL_NAME).setUsername("test-user"));
+            new UserCredentialData(CREDENTIAL_NAME).setUsername("test-user"));
         assertThat(subject.getUsername(), equalTo("test-user"));
       });
     });
 
     describe("#setUsername", () -> {
       it("sets username on the delegate", () -> {
-        NamedUserSecretData delegate = new NamedUserSecretData(CREDENTIAL_NAME);
+        UserCredentialData delegate = new UserCredentialData(CREDENTIAL_NAME);
         subject = new UserCredential(delegate);
         subject.setUsername("test-user");
         assertThat(delegate.getUsername(), equalTo("test-user"));
@@ -72,11 +72,11 @@ public class UserCredentialTest {
         when(encryptor.decrypt(
             eq(ENCRYPTION_KEY_UUID), eq(ENCRYPTED_PASSWORD), eq(NONCE)))
             .thenReturn(USER_PASSWORD);
-        userSecretData = new NamedUserSecretData()
+        userCredentialData = new UserCredentialData()
             .setEncryptedValue(ENCRYPTED_PASSWORD)
             .setNonce(NONCE)
             .setEncryptionKeyUuid(ENCRYPTION_KEY_UUID);
-        subject = new UserCredential(userSecretData)
+        subject = new UserCredential(userCredentialData)
             .setEncryptor(encryptor);
       });
 
@@ -94,8 +94,8 @@ public class UserCredentialTest {
       beforeEach(() -> {
         when(encryptor.encrypt(eq(USER_PASSWORD)))
             .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
-        userSecretData = new NamedUserSecretData(CREDENTIAL_NAME);
-        subject = new UserCredential(userSecretData)
+        userCredentialData = new UserCredentialData(CREDENTIAL_NAME);
+        subject = new UserCredential(userCredentialData)
             .setEncryptor(encryptor);
         subject.setPassword(USER_PASSWORD);
       });
@@ -107,9 +107,9 @@ public class UserCredentialTest {
       it("sets encryption key uuid, encrypted value and the nonce on the delegate", () -> {
         subject.setPassword(USER_PASSWORD);
 
-        assertThat(userSecretData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
-        assertThat(userSecretData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
-        assertThat(userSecretData.getNonce(), equalTo(NONCE));
+        assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
+        assertThat(userCredentialData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
+        assertThat(userCredentialData.getNonce(), equalTo(NONCE));
       });
     });
 
@@ -121,9 +121,9 @@ public class UserCredentialTest {
 
       describe("when there is an existing credential", () -> {
         it("should set name reference from existing credential if present", () -> {
-          NamedUserSecretData existingUserSecretData = new NamedUserSecretData(CREDENTIAL_NAME);
+          UserCredentialData existingUserCredentialData = new UserCredentialData(CREDENTIAL_NAME);
           subject = UserCredential.createNewVersion(
-              new UserCredential(existingUserSecretData),
+              new UserCredential(existingUserCredentialData),
               CREDENTIAL_NAME,
               new UserSetRequestFields()
                   .setPassword(USER_PASSWORD)
@@ -131,14 +131,14 @@ public class UserCredentialTest {
               encryptor,
               newArrayList());
 
-          assertThat(subject.getCredentialName(), equalTo(existingUserSecretData.getCredentialName()));
+          assertThat(subject.getCredentialName(), equalTo(existingUserCredentialData.getCredentialName()));
         });
       });
 
       describe("when there is no existing credential", () -> {
         beforeEach(() -> {
           subject = UserCredential.createNewVersion(
-              NO_EXISTING_SECRET,
+              NO_EXISTING_CREDENTIAL,
               CREDENTIAL_NAME,
               new UserSetRequestFields()
                   .setPassword(USER_PASSWORD)
@@ -181,11 +181,11 @@ public class UserCredentialTest {
         UUID oldEncryptionKeyUuid = UUID.randomUUID();
         byte[] oldEncryptedPassword = "old-encrypted-password".getBytes();
         byte[] oldNonce = "old-nonce".getBytes();
-        userSecretData = new NamedUserSecretData(CREDENTIAL_NAME)
+        userCredentialData = new UserCredentialData(CREDENTIAL_NAME)
             .setEncryptionKeyUuid(oldEncryptionKeyUuid)
             .setEncryptedValue(oldEncryptedPassword)
             .setNonce(oldNonce);
-        subject = new UserCredential(userSecretData)
+        subject = new UserCredential(userCredentialData)
             .setEncryptor(encryptor);
         when(encryptor.decrypt(
             eq(oldEncryptionKeyUuid), eq(oldEncryptedPassword), eq(oldNonce)))
@@ -199,9 +199,9 @@ public class UserCredentialTest {
         verify(encryptor).decrypt(any(), any(), any());
         verify(encryptor).encrypt(USER_PASSWORD);
 
-        assertThat(userSecretData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
-        assertThat(userSecretData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
-        assertThat(userSecretData.getNonce(), equalTo(NONCE));
+        assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
+        assertThat(userCredentialData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
+        assertThat(userCredentialData.getNonce(), equalTo(NONCE));
       });
     });
   }

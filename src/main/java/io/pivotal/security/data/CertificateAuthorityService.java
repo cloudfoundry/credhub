@@ -21,14 +21,14 @@ public class CertificateAuthorityService {
   public Certificate findMostRecent(String caName) throws ParameterizedValidationException {
     Credential mostRecent = credentialDataService.findMostRecent(caName);
     if (CertificateCredential.class.isInstance(mostRecent)) {
-      CertificateCredential namedCertificateSecret = (CertificateCredential) mostRecent;
+      CertificateCredential certificateCredential = (CertificateCredential) mostRecent;
 
-      if (!new CertificateReader(namedCertificateSecret.getCertificate()).isCa()) {
+      if (!new CertificateReader(certificateCredential.getCertificate()).isCa()) {
         throw new ParameterizedValidationException("error.cert_not_ca");
       }
 
-      return new Certificate(null, namedCertificateSecret.getCertificate(),
-          namedCertificateSecret.getPrivateKey());
+      return new Certificate(null, certificateCredential.getCertificate(),
+          certificateCredential.getPrivateKey());
     } else {
       throw new ParameterizedValidationException("error.ca_not_found");
     }

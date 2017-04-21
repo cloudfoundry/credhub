@@ -26,9 +26,9 @@ public class CharacterRuleProviderTest {
   {
     describe("#getCharacterRules", () -> {
       it("creates character rules from default parameters", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
         List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
+            .getCharacterRules(generationParameters);
 
         assertThat(characterRules, containsInAnyOrder(
             usesCharacters(EnglishCharacterData.Digit),
@@ -39,11 +39,11 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without uppercase", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setExcludeUpper(true);
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
+        generationParameters.setExcludeUpper(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
+            .getCharacterRules(generationParameters);
         assertThat(characterRules, iterableWithSize(2));
         assertThat(characterRules, containsInAnyOrder(
             usesCharacters(EnglishCharacterData.LowerCase),
@@ -57,11 +57,11 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without lowercase", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setExcludeLower(true);
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
+        generationParameters.setExcludeLower(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
+            .getCharacterRules(generationParameters);
         assertThat(characterRules, iterableWithSize(2));
         assertThat(characterRules, containsInAnyOrder(
             usesCharacters(EnglishCharacterData.UpperCase),
@@ -75,11 +75,11 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without special characters", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setIncludeSpecial(false);
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
+        generationParameters.setIncludeSpecial(false);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
+            .getCharacterRules(generationParameters);
         assertThat(characterRules, iterableWithSize(3));
         assertThat(characterRules, containsInAnyOrder(
             usesCharacters(EnglishCharacterData.UpperCase),
@@ -91,11 +91,11 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules with all included", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setIncludeSpecial(true);
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
+        generationParameters.setIncludeSpecial(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
+            .getCharacterRules(generationParameters);
         assertThat(characterRules, iterableWithSize(4));
         assertThat(characterRules, containsInAnyOrder(
             usesCharacters(EnglishCharacterData.UpperCase),
@@ -106,11 +106,11 @@ public class CharacterRuleProviderTest {
       });
 
       it("can create character rules without number", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setExcludeNumber(true);
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
+        generationParameters.setExcludeNumber(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
+            .getCharacterRules(generationParameters);
         assertThat(characterRules, iterableWithSize(2));
         assertThat(characterRules, containsInAnyOrder(
             usesCharacters(EnglishCharacterData.UpperCase),
@@ -123,14 +123,14 @@ public class CharacterRuleProviderTest {
       });
 
       it("returns empty list when all are excluded", () -> {
-        StringGenerationParameters secretParameters = new StringGenerationParameters();
-        secretParameters.setIncludeSpecial(false);
-        secretParameters.setExcludeNumber(true);
-        secretParameters.setExcludeUpper(true);
-        secretParameters.setExcludeLower(true);
+        StringGenerationParameters generationParameters = new StringGenerationParameters();
+        generationParameters.setIncludeSpecial(false);
+        generationParameters.setExcludeNumber(true);
+        generationParameters.setExcludeUpper(true);
+        generationParameters.setExcludeLower(true);
 
         List<CharacterRule> characterRules = CharacterRuleProvider
-            .getCharacterRules(secretParameters);
+            .getCharacterRules(generationParameters);
         assertThat(characterRules, iterableWithSize(0));
       });
     });

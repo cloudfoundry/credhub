@@ -38,45 +38,45 @@ public class PassayStringCredentialGeneratorTest {
     });
 
     it("can generate credential", () -> {
-      StringGenerationParameters secretParameters = new StringGenerationParameters();
+      StringGenerationParameters generationParameters = new StringGenerationParameters();
 
       when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), any(List.class)))
           .thenReturn("very-credential");
 
-      StringCredential secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getStringSecret(), equalTo("very-credential"));
+      StringCredential stringCredential = subject.generateCredential(generationParameters);
+      assertThat(stringCredential.getStringCredential(), equalTo("very-credential"));
     });
 
     it("can generate credential with specific length", () -> {
       when(passwordGenerator.generatePassword(eq(42), anyList())).thenReturn("very-credential");
 
-      StringGenerationParameters secretParameters = new StringGenerationParameters();
-      secretParameters.setLength(42);
+      StringGenerationParameters generationParameters = new StringGenerationParameters();
+      generationParameters.setLength(42);
 
-      StringCredential secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getStringSecret(), equalTo("very-credential"));
+      StringCredential stringCredential = subject.generateCredential(generationParameters);
+      assertThat(stringCredential.getStringCredential(), equalTo("very-credential"));
     });
 
     it("ignores too-small length values", () -> {
       when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
           .thenReturn("very-credential");
 
-      StringGenerationParameters secretParameters = new StringGenerationParameters();
-      secretParameters.setLength(3);
+      StringGenerationParameters generationParameters = new StringGenerationParameters();
+      generationParameters.setLength(3);
 
-      StringCredential secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getStringSecret(), equalTo("very-credential"));
+      StringCredential stringCredential = subject.generateCredential(generationParameters);
+      assertThat(stringCredential.getStringCredential(), equalTo("very-credential"));
     });
 
     it("ignores too-large length values", () -> {
       when(passwordGenerator.generatePassword(eq(subject.DEFAULT_LENGTH), anyList()))
           .thenReturn("very-credential");
 
-      StringGenerationParameters secretParameters = new StringGenerationParameters();
-      secretParameters.setLength(201);
+      StringGenerationParameters generationParameters = new StringGenerationParameters();
+      generationParameters.setLength(201);
 
-      StringCredential secretValue = subject.generateSecret(secretParameters);
-      assertThat(secretValue.getStringSecret(), equalTo("very-credential"));
+      StringCredential stringCredential = subject.generateCredential(generationParameters);
+      assertThat(stringCredential.getStringCredential(), equalTo("very-credential"));
     });
   }
 }

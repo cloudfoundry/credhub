@@ -1,6 +1,6 @@
 package io.pivotal.security.util;
 
-import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.entity.RsaCredentialData;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 
@@ -16,14 +16,14 @@ public class RsaCredentialHelper {
   private static final String RSA_END = "\n-----END PUBLIC KEY-----";
   private static final String NEW_LINE = "\n";
 
-  private final NamedRsaSecretData namedRsaSecretData;
+  private final RsaCredentialData rsaCredentialData;
 
-  public RsaCredentialHelper(NamedRsaSecretData namedRsaSecretData) {
-    this.namedRsaSecretData = namedRsaSecretData;
+  public RsaCredentialHelper(RsaCredentialData rsaCredentialData) {
+    this.rsaCredentialData = rsaCredentialData;
   }
 
   public int getKeyLength() {
-    String publicKey = namedRsaSecretData.getPublicKey();
+    String publicKey = rsaCredentialData.getPublicKey();
 
     if (StringUtils.isEmpty(publicKey)) {
       return 0;

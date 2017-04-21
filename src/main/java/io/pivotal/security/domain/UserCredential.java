@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.NamedUserSecretData;
+import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.UserSetRequestFields;
 import io.pivotal.security.service.Encryption;
@@ -8,7 +8,7 @@ import io.pivotal.security.service.Encryption;
 import java.util.List;
 
 public class UserCredential extends Credential<UserCredential> {
-  private final NamedUserSecretData delegate;
+  private final UserCredentialData delegate;
 
   public static UserCredential createNewVersion(
       UserCredential existing,
@@ -16,40 +16,40 @@ public class UserCredential extends Credential<UserCredential> {
       UserSetRequestFields fields,
       Encryptor encryptor,
       List<AccessControlEntry> accessControlEntries) {
-    UserCredential secret;
+    UserCredential credential;
     if (existing == null) {
-      secret = new UserCredential(name);
+      credential = new UserCredential(name);
     } else {
-      secret = new UserCredential();
-      secret.copyNameReferenceFrom(existing);
+      credential = new UserCredential();
+      credential.copyNameReferenceFrom(existing);
     }
 
-    secret.setEncryptor(encryptor);
+    credential.setEncryptor(encryptor);
 
-    secret.setUsername(fields.getUsername());
-    secret.setPassword(fields.getPassword());
+    credential.setUsername(fields.getUsername());
+    credential.setPassword(fields.getPassword());
 
-    secret.setAccessControlList(accessControlEntries);
+    credential.setAccessControlList(accessControlEntries);
 
-    return secret;
+    return credential;
   }
 
   public UserCredential() {
-    this(new NamedUserSecretData());
+    this(new UserCredentialData());
   }
 
-  public UserCredential(NamedUserSecretData delegate) {
+  public UserCredential(UserCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public UserCredential(String name) {
-    this(new NamedUserSecretData(name));
+    this(new UserCredentialData(name));
   }
 
   @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
+  public String getCredentialType() {
+    return delegate.getCredentialType();
   }
 
   @Override

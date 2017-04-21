@@ -42,7 +42,7 @@ public class SetService {
     eventAuditRecordParameters.setAuditingOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
 
     final String type = requestBody.getType();
-    validateSecretType(existingCredential, type);
+    validateCredentialType(existingCredential, type);
 
     Credential storedEntity = existingCredential;
     if (shouldWriteNewEntity) {
@@ -54,8 +54,8 @@ public class SetService {
     return CredentialView.fromEntity(storedEntity);
   }
 
-  private void validateSecretType(Credential existingCredential, String secretType) {
-    if (existingCredential != null && !existingCredential.getSecretType().equals(secretType)) {
+  private void validateCredentialType(Credential existingCredential, String secretType) {
+    if (existingCredential != null && !existingCredential.getCredentialType().equals(secretType)) {
       throw new ParameterizedValidationException("error.type_mismatch");
     }
   }

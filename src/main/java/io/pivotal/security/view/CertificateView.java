@@ -8,14 +8,14 @@ public class CertificateView extends CredentialView {
 
   CertificateView() { /* Jackson */ }
 
-  CertificateView(CertificateCredential namedCertificateSecret) {
+  CertificateView(CertificateCredential certificateCredential) {
     super(
-        namedCertificateSecret.getVersionCreatedAt(),
-        namedCertificateSecret.getUuid(),
-        namedCertificateSecret.getName(),
-        namedCertificateSecret.getSecretType(),
-        new Certificate(namedCertificateSecret.getCa(), namedCertificateSecret.getCertificate(),
-            namedCertificateSecret.getPrivateKey())
+        certificateCredential.getVersionCreatedAt(),
+        certificateCredential.getUuid(),
+        certificateCredential.getName(),
+        certificateCredential.getCredentialType(),
+        new Certificate(certificateCredential.getCa(), certificateCredential.getCertificate(),
+            certificateCredential.getPrivateKey())
     );
   }
 }

@@ -18,11 +18,11 @@ public class DecryptableDataDetector {
   public void check() {
     ArrayList<UUID> uuids = encryptionKeyCanaryMapper.getKnownCanaryUuids();
 
-    Long countTotalSecrets = credentialDataService.count();
-    Long countSecretsEncryptedWithKeyWeHave = credentialDataService.countEncryptedWithKeyUuidIn(uuids);
-    if (countTotalSecrets > 0 && countSecretsEncryptedWithKeyWeHave == 0) {
+    Long countTotalCredentials = credentialDataService.count();
+    Long countCredentialsEncryptedWithKeyWeHave = credentialDataService.countEncryptedWithKeyUuidIn(uuids);
+    if (countTotalCredentials > 0 && countCredentialsEncryptedWithKeyWeHave == 0) {
       throw new RuntimeException(
-          "The encryption keys provided cannot decrypt any of the " + countTotalSecrets
+          "The encryption keys provided cannot decrypt any of the " + countTotalCredentials
               + " value(s) in the database. "
               + "Please make sure you've provided the necessary encryption keys.");
     }

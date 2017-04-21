@@ -94,7 +94,7 @@ public class AuditTest {
   @Test
   public void normally_logs_event_and_request() throws Exception {
     String credentialName = "/TEST/SECRET";
-    String secretType = "password";
+    String credentialType = "password";
 
     mockMvc.perform(post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -102,7 +102,7 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
         .content("{" +
             "\"name\":\"" + credentialName + "\"," +
-            "\"type\":\"" + secretType + "\"" +
+            "\"type\":\"" + credentialType + "\"" +
             "}"
         )
     ).andExpect(status().isOk());
@@ -170,7 +170,7 @@ public class AuditTest {
   @Test
   public void when_event_audit_record_save_fails_it_saves_request_audit_record() throws Exception {
     String credentialName = "/TEST/SECRET";
-    String secretType = "password";
+    String credentialType = "password";
 
     doThrow(new RuntimeException("test exception"))
         .when(eventAuditRecordDataService).save(any(List.class));
@@ -181,7 +181,7 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
         .content("{" +
             "\"name\":\"" + credentialName + "\"," +
-            "\"type\":\"" + secretType + "\"" +
+            "\"type\":\"" + credentialType + "\"" +
             "}"
         )
     ).andExpect(status().isInternalServerError());

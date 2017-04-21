@@ -5,7 +5,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.CredentialNameRepository;
@@ -101,7 +101,7 @@ public class EventAuditLogServiceTest {
         eventAuditRecordParameters -> {
           eventAuditRecordParameters.setCredentialName("keyName");
           eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_ACCESS);
-          NamedValueSecretData entity = new NamedValueSecretData("keyName");
+          ValueCredentialData entity = new ValueCredentialData("keyName");
           entity.setEncryptedValue("value".getBytes());
           return credentialDataService.save(entity);
         }
@@ -122,7 +122,7 @@ public class EventAuditLogServiceTest {
       subject.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
         eventAuditRecordParameters.setCredentialName("keyName");
 
-        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
         credentialDataService.save(entity);
 
@@ -152,7 +152,7 @@ public class EventAuditLogServiceTest {
       subject.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
         eventAuditRecordParameters.setCredentialName("keyName");
 
-        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
         return credentialDataService.save(entity);
       });
@@ -175,7 +175,7 @@ public class EventAuditLogServiceTest {
         eventAuditRecordParameters.setCredentialName("keyName");
         eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_ACCESS);
 
-        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
         credentialDataService.save(entity);
 
@@ -204,7 +204,7 @@ public class EventAuditLogServiceTest {
           eventAuditRecordParametersList.add(parameters1);
           eventAuditRecordParametersList.add(parameters2);
 
-          NamedValueSecretData entity = new NamedValueSecretData("keyName");
+          ValueCredentialData entity = new ValueCredentialData("keyName");
           entity.setEncryptedValue("value".getBytes());
           return credentialDataService.save(entity);
         }
@@ -235,7 +235,7 @@ public class EventAuditLogServiceTest {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
 
-        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
         return credentialDataService.save(entity);
       });
@@ -272,7 +272,7 @@ public class EventAuditLogServiceTest {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
 
-        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
 
         credentialDataService.save(entity);
@@ -307,7 +307,7 @@ public class EventAuditLogServiceTest {
         eventAuditRecordParametersList.add(parameters1);
         eventAuditRecordParametersList.add(parameters2);
 
-        NamedValueSecretData entity = new NamedValueSecretData("keyName");
+        ValueCredentialData entity = new ValueCredentialData("keyName");
         entity.setEncryptedValue("value".getBytes());
         credentialDataService.save(entity);
 

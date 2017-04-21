@@ -24,15 +24,15 @@ public class PassayStringCredentialGenerator implements
   }
 
   @Override
-  public StringCredential generateSecret(StringGenerationParameters parameters) {
-    int passwordLength = normalizedSecretLength(parameters.getLength());
+  public StringCredential generateCredential(StringGenerationParameters parameters) {
+    int passwordLength = normalizedLength(parameters.getLength());
 
     List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(parameters);
 
     return new StringCredential(passwordGenerator.generatePassword(passwordLength, characterRules));
   }
 
-  private int normalizedSecretLength(int length) {
+  private int normalizedLength(int length) {
     int stringLength = DEFAULT_LENGTH;
 
     if (length >= MIN_LENGTH && length <= MAX_LENGTH) {

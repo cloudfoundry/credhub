@@ -1,5 +1,19 @@
 package io.pivotal.security.service;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.InvalidJsonException;
+import io.pivotal.security.config.JsonContextFactory;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.assertj.core.util.Maps;
+import org.junit.runner.RunWith;
+
+import java.io.InvalidObjectException;
+import java.util.Map;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -10,19 +24,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-
-import com.greghaskins.spectrum.Spectrum;
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.InvalidJsonException;
-import io.pivotal.security.config.JsonContextFactory;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.JsonCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import java.io.InvalidObjectException;
-import java.util.Map;
-import org.assertj.core.util.Maps;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class JsonInterpolationServiceTest {
@@ -63,29 +64,29 @@ public class JsonInterpolationServiceTest {
               + "  }"
               + "}";
 
-          JsonCredential jsonSecret1 = mock(JsonCredential.class);
-          doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonSecret1).getValue();
+          JsonCredential jsonCredential = mock(JsonCredential.class);
+          doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
 
-          JsonCredential jsonSecret2 = mock(JsonCredential.class);
-          doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonSecret2).getValue();
+          JsonCredential jsonCredential1 = mock(JsonCredential.class);
+          doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
 
-          JsonCredential jsonSecret3 = mock(JsonCredential.class);
-          Map<String, String> jsonSecrets = Maps.newHashMap("secret3-1", "secret3-1-value");
-          jsonSecrets.put("secret3-2", "secret3-2-value");
-          doReturn(jsonSecrets).when(jsonSecret3).getValue();
+          JsonCredential jsonCredential2 = mock(JsonCredential.class);
+          Map<String, String> jsonCredetials = Maps.newHashMap("secret3-1", "secret3-1-value");
+          jsonCredetials.put("secret3-2", "secret3-2-value");
+          doReturn(jsonCredetials).when(jsonCredential2).getValue();
 
           CredentialDataService mockCredentialDataService = mock(CredentialDataService.class);
 
           doReturn(
-              jsonSecret1
+              jsonCredential
           ).when(mockCredentialDataService).findMostRecent("/cred1");
 
           doReturn(
-              jsonSecret2
+              jsonCredential1
           ).when(mockCredentialDataService).findMostRecent("/cred2");
 
           doReturn(
-              jsonSecret3
+              jsonCredential2
           ).when(mockCredentialDataService).findMostRecent("/cred3");
 
           DocumentContext response = subject
@@ -112,7 +113,7 @@ public class JsonInterpolationServiceTest {
           assertThat(secondServiceCredentials.get("secret3-2"), equalTo("secret3-2-value"));
         });
 
-        itThrows("an exception when credential is not NamedJSONSecret",
+        itThrows("an exception when credential is not JsonCredential",
             ParameterizedValidationException.class, () -> {
               String inputJson = "{"
                   + "  \"VCAP_SERVICES\": {"
@@ -127,12 +128,12 @@ public class JsonInterpolationServiceTest {
                   + "  }"
                   + "}";
 
-              PasswordCredential passwordSecret = mock(PasswordCredential.class);
+              PasswordCredential passwordCredential = mock(PasswordCredential.class);
 
               CredentialDataService mockCredentialDataService = mock(CredentialDataService.class);
 
               doReturn(
-                  passwordSecret
+                  passwordCredential
               ).when(mockCredentialDataService).findMostRecent("/password_cred");
 
               subject.interpolateCredhubReferences(inputJson, mockCredentialDataService);

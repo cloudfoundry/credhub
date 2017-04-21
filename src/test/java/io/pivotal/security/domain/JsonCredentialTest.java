@@ -2,7 +2,7 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedJsonSecretData;
+import io.pivotal.security.entity.JsonCredentialData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
@@ -33,7 +33,7 @@ public class JsonCredentialTest {
   private Map<String, Object> value;
   private UUID canaryUuid;
 
-  private NamedJsonSecretData namedJsonSecretData;
+  private JsonCredentialData jsonCredentialData;
 
   {
     beforeEach(() -> {
@@ -55,23 +55,23 @@ public class JsonCredentialTest {
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
           .thenReturn(serializedValue);
 
-      namedJsonSecretData = new NamedJsonSecretData("Foo");
-      subject = new JsonCredential(namedJsonSecretData);
+      jsonCredentialData = new JsonCredentialData("Foo");
+      subject = new JsonCredential(jsonCredentialData);
     });
 
     it("returns type value", () -> {
-      assertThat(subject.getSecretType(), equalTo("json"));
+      assertThat(subject.getCredentialType(), equalTo("json"));
     });
 
     describe("with or without alternative names", () -> {
       beforeEach(() -> {
-        subject = new JsonCredential(namedJsonSecretData).setEncryptor(encryptor);
+        subject = new JsonCredential(jsonCredentialData).setEncryptor(encryptor);
       });
 
       it("sets the nonce and the encrypted value", () -> {
         subject.setValue(value);
-        assertThat(namedJsonSecretData.getEncryptedValue(), notNullValue());
-        assertThat(namedJsonSecretData.getNonce(), notNullValue());
+        assertThat(jsonCredentialData.getEncryptedValue(), notNullValue());
+        assertThat(jsonCredentialData.getNonce(), notNullValue());
       });
 
       it("can decrypt values", () -> {
@@ -96,7 +96,7 @@ public class JsonCredentialTest {
 
         subject = new JsonCredential("/existingName");
         subject.setEncryptor(encryptor);
-        namedJsonSecretData.setEncryptedValue("old encrypted value".getBytes());
+        jsonCredentialData.setEncryptedValue("old encrypted value".getBytes());
       });
 
       it("copies values from existing, except value", () -> {
@@ -113,24 +113,24 @@ public class JsonCredentialTest {
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
             .thenReturn(serializedValue);
 
-        JsonCredential newSecret = JsonCredential
+        JsonCredential newCredential = JsonCredential
             .createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor,
                 new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/existingName"));
-        assertThat(newSecret.getValue(), equalTo(newValue));
+        assertThat(newCredential.getName(), equalTo("/existingName"));
+        assertThat(newCredential.getValue(), equalTo(newValue));
       });
 
       it("creates new if no existing", () -> {
-        JsonCredential newSecret = JsonCredential.createNewVersion(
+        JsonCredential newCredential = JsonCredential.createNewVersion(
             null,
             "/newName",
             value,
             encryptor,
             new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getValue(), equalTo(value));
+        assertThat(newCredential.getName(), equalTo("/newName"));
+        assertThat(newCredential.getValue(), equalTo(value));
       });
     });
   }

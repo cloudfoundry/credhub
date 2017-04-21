@@ -1,5 +1,9 @@
 package io.pivotal.security.service;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.data.CredentialDataService;
+import org.junit.runner.RunWith;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -7,10 +11,6 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.data.CredentialDataService;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class DecryptableDataDetectorTest {
@@ -25,8 +25,8 @@ public class DecryptableDataDetectorTest {
       encryptionKeyCanaryMapper = mock(EncryptionKeyCanaryMapper.class);
     });
 
-    describe("when no secrets could be decrypted", () -> {
-      describe("when there are no secrets", () -> {
+    describe("when no credentials could be decrypted", () -> {
+      describe("when there are no credentials", () -> {
         beforeEach(() -> {
           when(credentialDataService.count()).thenReturn(0L);
           when(credentialDataService.countEncryptedWithKeyUuidIn(any())).thenReturn(0L);
@@ -39,7 +39,7 @@ public class DecryptableDataDetectorTest {
         });
       });
 
-      describe("when there are secrets", () -> {
+      describe("when there are credentials", () -> {
         describe("when none can be decrypted", () -> {
           beforeEach(() -> {
             when(credentialDataService.count()).thenReturn(4L);

@@ -7,7 +7,7 @@ import io.pivotal.security.request.BaseCredentialGenerateRequest;
 public class NotRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(Credential secret) {
+  public BaseCredentialGenerateRequest createGenerateRequest(Credential credential) {
     throw new ParameterizedValidationException("error.invalid_type_with_regenerate_prompt");
   }
 }

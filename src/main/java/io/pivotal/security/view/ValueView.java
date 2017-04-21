@@ -7,13 +7,13 @@ public class ValueView extends CredentialView {
 
   public ValueView() {}
 
-  ValueView(ValueCredential namedValueSecret) {
+  ValueView(ValueCredential valueCredential) {
     super(
-        namedValueSecret.getVersionCreatedAt(),
-        namedValueSecret.getUuid(),
-        namedValueSecret.getName(),
-        namedValueSecret.getSecretType(),
-        namedValueSecret.getValue()
+        valueCredential.getVersionCreatedAt(),
+        valueCredential.getUuid(),
+        valueCredential.getName(),
+        valueCredential.getCredentialType(),
+        valueCredential.getValue()
     );
   }
 }

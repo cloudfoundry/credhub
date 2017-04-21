@@ -8,24 +8,24 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
 @Entity
-@DiscriminatorValue(NamedRsaSecretData.SECRET_TYPE)
+@DiscriminatorValue(RsaCredentialData.CREDENTIAL_TYPE)
 @SecondaryTable(
-    name = NamedRsaSecretData.TABLE_NAME,
+    name = RsaCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
+public class RsaCredentialData extends CredentialData<RsaCredentialData> {
 
-  public static final String SECRET_TYPE = "rsa";
-  static final String TABLE_NAME = "RsaSecret";
+  public static final String CREDENTIAL_TYPE = "rsa";
+  static final String TABLE_NAME = "RsaCredential";
 
-  @Column(table = NamedRsaSecretData.TABLE_NAME, length = 7000)
+  @Column(table = RsaCredentialData.TABLE_NAME, length = 7000)
   private String publicKey;
 
-  public NamedRsaSecretData() {
+  public RsaCredentialData() {
     this(null);
   }
 
-  public NamedRsaSecretData(String name) {
+  public RsaCredentialData(String name) {
     super(name);
   }
 
@@ -33,14 +33,14 @@ public class NamedRsaSecretData extends NamedSecretData<NamedRsaSecretData> {
     return publicKey;
   }
 
-  public NamedRsaSecretData setPublicKey(String publicKey) {
+  public RsaCredentialData setPublicKey(String publicKey) {
     this.publicKey = publicKey;
     return this;
   }
 
   @Override
-  public String getSecretType() {
-    return SECRET_TYPE;
+  public String getCredentialType() {
+    return CREDENTIAL_TYPE;
   }
 
   public int getKeyLength() {

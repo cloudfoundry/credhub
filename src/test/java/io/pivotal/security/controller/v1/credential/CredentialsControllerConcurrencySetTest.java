@@ -56,7 +56,7 @@ public class CredentialsControllerConcurrencySetTest {
   private Encryptor encryptor;
 
   private final String credentialName = "/my-namespace/secretForSetTest/credential-name";
-  private final String secretValue = "credential-value";
+  private final String credentialValue = "credential-value";
   private MockMvc mockMvc;
   private ResultActions response;
   private UUID uuid;
@@ -72,7 +72,7 @@ public class CredentialsControllerConcurrencySetTest {
           .build();
     });
 
-    describe("setting secrets in parallel", () -> {
+    describe("setting credentials in parallel", () -> {
       beforeEach(() -> {
         responses = new ResultActions[2];
 
@@ -87,7 +87,7 @@ public class CredentialsControllerConcurrencySetTest {
                     + "  \"type\":\"value\","
                     + "  \"name\":\""
                     + credentialName + this.getName() + "\",  \"value\":\""
-                    + secretValue + this.getName() + "\"}");
+                    + credentialValue + this.getName() + "\"}");
 
             try {
               responses[0] = mockMvc.perform(putReq);
@@ -107,7 +107,7 @@ public class CredentialsControllerConcurrencySetTest {
                     + "  \"type\":\"value\","
                     + "  \"name\":\""
                     + credentialName + this.getName() + "\",  \"value\":\""
-                    + secretValue + this.getName() + "\"}");
+                    + credentialValue + this.getName() + "\"}");
 
             try {
               responses[1] = mockMvc.perform(put);
@@ -124,9 +124,9 @@ public class CredentialsControllerConcurrencySetTest {
       });
 
       it("test", () -> {
-        responses[0].andExpect(jsonPath("$.value").value(secretValue
+        responses[0].andExpect(jsonPath("$.value").value(credentialValue
             + "thread 1"));
-        responses[1].andExpect(jsonPath("$.value").value(secretValue
+        responses[1].andExpect(jsonPath("$.value").value(credentialValue
             + "thread 2"));
       });
     });
@@ -136,13 +136,13 @@ public class CredentialsControllerConcurrencySetTest {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
 
-          ValueCredential valueSecret = new ValueCredential(credentialName);
-          valueSecret.setEncryptor(encryptor);
-          valueSecret.setValue(secretValue);
-          valueSecret.setUuid(uuid);
+          ValueCredential valueCredential = new ValueCredential(credentialName);
+          valueCredential.setEncryptor(encryptor);
+          valueCredential.setValue(credentialValue);
+          valueCredential.setUuid(uuid);
 
           doReturn(null)
-              .doReturn(valueSecret)
+              .doReturn(valueCredential)
               .when(credentialDataService).findMostRecent(anyString());
 
           doThrow(new DataIntegrityViolationException("we already have one of those"))
@@ -155,7 +155,7 @@ public class CredentialsControllerConcurrencySetTest {
               .content("{"
                   + "\"type\":\"value\","
                   + "\"name\":\"" + credentialName + "\","
-                  + "\"value\":\"" + secretValue
+                  + "\"value\":\"" + credentialValue
                   + "\"}");
 
           response = mockMvc.perform(put);
@@ -166,7 +166,7 @@ public class CredentialsControllerConcurrencySetTest {
           response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("value"))
-              .andExpect(jsonPath("$.value").value(secretValue))
+              .andExpect(jsonPath("$.value").value(credentialValue))
               .andExpect(jsonPath("$.id").value(uuid.toString()));
         });
       });

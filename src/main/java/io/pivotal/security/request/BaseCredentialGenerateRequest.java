@@ -29,7 +29,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   public void validate() {
     super.validate();
 
-    if (isInvalidSecretType(getType())) {
+    if (isInvalidCredentialType(getType())) {
       throw new ParameterizedValidationException("error.invalid_type_with_generate_prompt");
     }
 
@@ -38,7 +38,7 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
     }
   }
 
-  private boolean isInvalidSecretType(String type) {
+  private boolean isInvalidCredentialType(String type) {
     return !newArrayList("password", "certificate", "rsa", "ssh", "value", "json", "user").contains(type);
   }
 

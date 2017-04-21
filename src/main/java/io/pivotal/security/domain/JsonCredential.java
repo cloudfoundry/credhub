@@ -2,7 +2,7 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.entity.NamedJsonSecretData;
+import io.pivotal.security.entity.JsonCredentialData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
@@ -14,20 +14,20 @@ import java.util.Map;
 public class JsonCredential extends Credential<JsonCredential> {
 
   private final ObjectMapper objectMapper;
-  private final NamedJsonSecretData delegate;
+  private final JsonCredentialData delegate;
 
   public JsonCredential() {
-    this(new NamedJsonSecretData());
+    this(new JsonCredentialData());
   }
 
-  public JsonCredential(NamedJsonSecretData delegate) {
+  public JsonCredential(JsonCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
     this.objectMapper = new ObjectMapper();
   }
 
   public JsonCredential(String name) {
-    this(new NamedJsonSecretData(name));
+    this(new JsonCredentialData(name));
   }
 
   public static JsonCredential createNewVersion(
@@ -37,26 +37,26 @@ public class JsonCredential extends Credential<JsonCredential> {
       Encryptor encryptor,
       List<AccessControlEntry> accessControlEntries
   ) {
-    JsonCredential secret;
+    JsonCredential credential;
 
     if (existing == null) {
-      secret = new JsonCredential(name);
+      credential = new JsonCredential(name);
     } else {
-      secret = new JsonCredential();
-      secret.copyNameReferenceFrom(existing);
+      credential = new JsonCredential();
+      credential.copyNameReferenceFrom(existing);
     }
 
-    secret.setAccessControlList(accessControlEntries);
-    secret.setEncryptor(encryptor);
-    secret.setValue(value);
+    credential.setAccessControlList(accessControlEntries);
+    credential.setEncryptor(encryptor);
+    credential.setValue(value);
 
-    return secret;
+    return credential;
   }
 
 
   @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
+  public String getCredentialType() {
+    return delegate.getCredentialType();
   }
 
   @Override

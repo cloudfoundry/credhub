@@ -1,5 +1,15 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.config.BouncyCastleProviderConfiguration;
+import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringRunner;
+
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,28 +19,18 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.pivotal.security.config.BouncyCastleProviderConfiguration;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.credential.Certificate;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
-
 @RunWith(SpringRunner.class)
 public class CertificateAuthorityServiceTest {
 
   CertificateAuthorityService certificateAuthorityService;
   CredentialDataService credentialDataService;
   Certificate certificate;
-  CertificateCredential namedCertificateSecret;
+  CertificateCredential certificateCredential;
 
   @Before
   public void beforeEach() {
     certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key");
-    namedCertificateSecret = mock(CertificateCredential.class);
+    certificateCredential = mock(CertificateCredential.class);
 
     credentialDataService = mock(CredentialDataService.class);
     certificateAuthorityService = new CertificateAuthorityService(credentialDataService);
@@ -51,16 +51,16 @@ public class CertificateAuthorityServiceTest {
 
   @Test
   public void findMostRecent_givenExistingCa_returnsTheCa() {
-    when(credentialDataService.findMostRecent("my-ca-name")).thenReturn(namedCertificateSecret);
-    when(namedCertificateSecret.getPrivateKey()).thenReturn("my-key");
-    when(namedCertificateSecret.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
+    when(credentialDataService.findMostRecent("my-ca-name")).thenReturn(certificateCredential);
+    when(certificateCredential.getPrivateKey()).thenReturn("my-key");
+    when(certificateCredential.getCertificate()).thenReturn(SELF_SIGNED_CA_CERT);
 
     assertThat(certificateAuthorityService.findMostRecent("my-ca-name"),
         samePropertyValuesAs(certificate));
   }
 
   @Test
-  public void findMostRecent_whenSecretIsNotACa_throwsException() {
+  public void findMostRecent_whenCredentialIsNotACa_throwsException() {
     when(credentialDataService.findMostRecent("actually-a-password"))
         .thenReturn(new PasswordCredential());
 

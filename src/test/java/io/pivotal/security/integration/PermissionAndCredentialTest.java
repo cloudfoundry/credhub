@@ -67,11 +67,11 @@ public class PermissionAndCredentialTest {
           .build();
     });
 
-    describe("#put", testPermissionAndSecretBehavior("  ,\"value\":\"ORIGINAL-VALUE\"", () -> put("/api/v1/data")));
-    describe("#post", testPermissionAndSecretBehavior("", () -> post("/api/v1/data")));
+    describe("#put", testPermissionAndCredentialBehavior("  ,\"value\":\"ORIGINAL-VALUE\"", () -> put("/api/v1/data")));
+    describe("#post", testPermissionAndCredentialBehavior("", () -> post("/api/v1/data")));
   }
 
-  private Block testPermissionAndSecretBehavior(
+  private Block testPermissionAndCredentialBehavior(
       String additionalJsonPayload,
       Supplier<MockHttpServletRequestBuilder> requestBuilderProvider) {
     return () -> {

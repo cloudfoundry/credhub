@@ -12,8 +12,8 @@ public class FindCredentialResults {
     this.credentials = credentials;
   }
 
-  public static FindCredentialResults fromSecrets(List<CredentialView> secrets) {
-    return new FindCredentialResults(secrets);
+  public static FindCredentialResults fromCredentials(List<CredentialView> credentials) {
+    return new FindCredentialResults(credentials);
   }
 
   @JsonProperty

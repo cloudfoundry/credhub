@@ -7,25 +7,25 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
 @Entity
-@DiscriminatorValue(NamedSshSecretData.SECRET_TYPE)
+@DiscriminatorValue(SshCredentialData.CREDENTIAL_TYPE)
 @SecondaryTable(
-    name = NamedSshSecretData.TABLE_NAME,
+    name = SshCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
 
-public class NamedSshSecretData extends NamedSecretData<NamedSshSecretData> {
+public class SshCredentialData extends CredentialData<SshCredentialData> {
 
-  public static final String SECRET_TYPE = "ssh";
-  static final String TABLE_NAME = "SshSecret";
+  public static final String CREDENTIAL_TYPE = "ssh";
+  static final String TABLE_NAME = "SshCredential";
 
-  @Column(table = NamedSshSecretData.TABLE_NAME, length = 7000)
+  @Column(table = SshCredentialData.TABLE_NAME, length = 7000)
   private String publicKey;
 
-  public NamedSshSecretData() {
+  public SshCredentialData() {
     this(null);
   }
 
-  public NamedSshSecretData(String name) {
+  public SshCredentialData(String name) {
     super(name);
   }
 
@@ -33,13 +33,13 @@ public class NamedSshSecretData extends NamedSecretData<NamedSshSecretData> {
     return publicKey;
   }
 
-  public NamedSshSecretData setPublicKey(String publicKey) {
+  public SshCredentialData setPublicKey(String publicKey) {
     this.publicKey = publicKey;
     return this;
   }
 
   @Override
-  public String getSecretType() {
-    return SECRET_TYPE;
+  public String getCredentialType() {
+    return CREDENTIAL_TYPE;
   }
 }

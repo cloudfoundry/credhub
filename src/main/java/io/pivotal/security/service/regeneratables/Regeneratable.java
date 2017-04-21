@@ -5,5 +5,5 @@ import io.pivotal.security.request.BaseCredentialGenerateRequest;
 
 public interface Regeneratable {
 
-  BaseCredentialGenerateRequest createGenerateRequest(Credential secret);
+  BaseCredentialGenerateRequest createGenerateRequest(Credential credential);
 }

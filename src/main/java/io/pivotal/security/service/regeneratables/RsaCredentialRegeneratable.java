@@ -11,11 +11,11 @@ public class RsaCredentialRegeneratable implements Regeneratable {
   }
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(Credential secret) {
-    RsaCredential rsaSecret = (RsaCredential) secret;
+  public BaseCredentialGenerateRequest createGenerateRequest(Credential credential) {
+    RsaCredential rsaCredential = (RsaCredential) credential;
     RsaGenerateRequest generateRequest = new RsaGenerateRequest();
-    generateRequest.setName(rsaSecret.getName());
-    generateRequest.setType(rsaSecret.getSecretType());
+    generateRequest.setName(rsaCredential.getName());
+    generateRequest.setType(rsaCredential.getCredentialType());
     generateRequest.setOverwrite(true);
     return generateRequest;
   }

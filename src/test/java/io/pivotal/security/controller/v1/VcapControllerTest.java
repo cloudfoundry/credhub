@@ -1,20 +1,5 @@
 package io.pivotal.security.controller.v1;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.parse;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialDataService;
@@ -32,6 +17,21 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.JsonHelper.parse;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -58,18 +58,18 @@ public class VcapControllerTest {
       describe("#POST", () -> {
         describe("when properly formatted credentials section is found", () -> {
           it("should replace the credhub-ref element with something else", () -> {
-            JsonCredential jsonSecret1 = mock(JsonCredential.class);
-            doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonSecret1).getValue();
+            JsonCredential jsonCredential = mock(JsonCredential.class);
+            doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
 
-            JsonCredential jsonSecret2 = mock(JsonCredential.class);
-            doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonSecret2).getValue();
+            JsonCredential jsonCredential1 = mock(JsonCredential.class);
+            doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
 
             doReturn(
-                jsonSecret1
+                jsonCredential
             ).when(mockCredentialDataService).findMostRecent("/cred1");
 
             doReturn(
-                jsonSecret2
+                jsonCredential1
             ).when(mockCredentialDataService).findMostRecent("/cred2");
 
             mockMvc.perform(post("/api/v1/vcap")
@@ -107,11 +107,11 @@ public class VcapControllerTest {
 
         describe("when the requested credential is not a JsonCredential", () -> {
           it("should return an error", () -> {
-            ValueCredential valueSecret = mock(ValueCredential.class);
-            doReturn("something").when(valueSecret).getValue();
+            ValueCredential valueCredential = mock(ValueCredential.class);
+            doReturn("something").when(valueCredential).getValue();
 
             doReturn(
-                valueSecret
+                valueCredential
             ).when(mockCredentialDataService).findMostRecent("/cred1");
 
             mockMvc.perform(post("/api/v1/vcap")

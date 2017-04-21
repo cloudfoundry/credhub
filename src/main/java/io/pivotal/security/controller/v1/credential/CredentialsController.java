@@ -155,12 +155,12 @@ public class CredentialsController {
 
   @RequestMapping(path = "/{id}", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public CredentialView getSecretById(
+  public CredentialView getCredentialById(
       @PathVariable String id,
       RequestUuid requestUuid,
       UserContext userContext) {
 
-    return CredentialView.fromEntity(retrieveSecretWithAuditing(
+    return CredentialView.fromEntity(retrieveCredentialWithAuditing(
         id,
         findAsList(credentialDataService::findByUuid),
         requestUuid,
@@ -170,13 +170,13 @@ public class CredentialsController {
 
   @RequestMapping(path = "", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
-  public DataResponse getSecret(
+  public DataResponse getCredential(
       @RequestParam(value = "name", required = false) String credentialName,
       @RequestParam(value = "current", required = false, defaultValue = "false") boolean current,
       RequestUuid requestUuid,
       UserContext userContext) {
 
-    return DataResponse.fromEntity(retrieveSecretWithAuditing(
+    return DataResponse.fromEntity(retrieveCredentialWithAuditing(
         credentialName,
         selectLookupFunction(current),
         requestUuid,
@@ -315,10 +315,10 @@ public class CredentialsController {
     };
   }
 
-  private List<Credential> retrieveSecretWithAuditing(String identifier,
-                                                      Function<String, List<Credential>> finder,
-                                                      RequestUuid requestUuid,
-                                                      UserContext userContext) {
+  private List<Credential> retrieveCredentialWithAuditing(String identifier,
+                                                          Function<String, List<Credential>> finder,
+                                                          RequestUuid requestUuid,
+                                                          UserContext userContext) {
     return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
       eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
 
@@ -362,7 +362,7 @@ public class CredentialsController {
         .auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
           eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_FIND);
           List<CredentialView> credentialViews = finder.apply(nameSubstring);
-          return FindCredentialResults.fromSecrets(credentialViews);
+          return FindCredentialResults.fromCredentials(credentialViews);
         });
   }
 }

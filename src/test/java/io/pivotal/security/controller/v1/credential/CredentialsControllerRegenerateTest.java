@@ -7,7 +7,7 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.RsaCredential;
 import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.generator.PassayStringCredentialGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
@@ -122,24 +122,24 @@ public class CredentialsControllerRegenerateTest {
 
     describe("regenerating a password", () -> {
       beforeEach(() -> {
-        when(passwordGenerator.generateSecret(any(StringGenerationParameters.class)))
+        when(passwordGenerator.generateCredential(any(StringGenerationParameters.class)))
             .thenReturn(new StringCredential("generated-credential"));
-        PasswordCredential originalSecret = new PasswordCredential("my-password");
-        originalSecret.setEncryptor(encryptor);
+        PasswordCredential originalCredential = new PasswordCredential("my-password");
+        originalCredential.setEncryptor(encryptor);
         StringGenerationParameters generationParameters = new StringGenerationParameters();
         generationParameters.setExcludeNumber(true);
-        originalSecret
+        originalCredential
             .setPasswordAndGenerationParameters("original-password", generationParameters);
-        originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
+        originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
-        doReturn(originalSecret).when(credentialDataService).findMostRecent("my-password");
+        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
 
         doAnswer(invocation -> {
-          PasswordCredential newSecret = invocation.getArgumentAt(0, PasswordCredential.class);
+          PasswordCredential newCredential = invocation.getArgumentAt(0, PasswordCredential.class);
           uuid = UUID.randomUUID();
-          newSecret.setUuid(uuid);
-          newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
-          return newSecret;
+          newCredential.setUuid(uuid);
+          newCredential.setVersionCreatedAt(frozenTime.plusSeconds(10));
+          return newCredential;
         }).when(credentialDataService).save(any(PasswordCredential.class));
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
@@ -176,20 +176,20 @@ public class CredentialsControllerRegenerateTest {
 
     describe("regenerating an rsa", () -> {
       beforeEach(() -> {
-        when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
+        when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
             .thenReturn(new RsaKey("public_key", "private_key"));
-        RsaCredential originalSecret = new RsaCredential("my-rsa");
-        originalSecret.setEncryptor(encryptor);
-        originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
+        RsaCredential originalCredential = new RsaCredential("my-rsa");
+        originalCredential.setEncryptor(encryptor);
+        originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
-        doReturn(originalSecret).when(credentialDataService).findMostRecent("my-rsa");
+        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-rsa");
 
         doAnswer(invocation -> {
-          RsaCredential newSecret = invocation.getArgumentAt(0, RsaCredential.class);
+          RsaCredential newCredential = invocation.getArgumentAt(0, RsaCredential.class);
           uuid = UUID.randomUUID();
-          newSecret.setUuid(uuid);
-          newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
-          return newSecret;
+          newCredential.setUuid(uuid);
+          newCredential.setVersionCreatedAt(frozenTime.plusSeconds(10));
+          return newCredential;
         }).when(credentialDataService).save(any(RsaCredential.class));
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
@@ -226,20 +226,20 @@ public class CredentialsControllerRegenerateTest {
 
     describe("regenerating an ssh", () -> {
       beforeEach(() -> {
-        when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
+        when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
             .thenReturn(new SshKey("public_key", "private_key", null));
-        SshCredential originalSecret = new SshCredential("my-ssh");
-        originalSecret.setEncryptor(encryptor);
-        originalSecret.setVersionCreatedAt(frozenTime.plusSeconds(1));
+        SshCredential originalCredential = new SshCredential("my-ssh");
+        originalCredential.setEncryptor(encryptor);
+        originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));
 
-        doReturn(originalSecret).when(credentialDataService).findMostRecent("my-ssh");
+        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-ssh");
 
         doAnswer(invocation -> {
-          SshCredential newSecret = invocation.getArgumentAt(0, SshCredential.class);
+          SshCredential newCredential = invocation.getArgumentAt(0, SshCredential.class);
           uuid = UUID.randomUUID();
-          newSecret.setUuid(uuid);
-          newSecret.setVersionCreatedAt(frozenTime.plusSeconds(10));
-          return newSecret;
+          newCredential.setUuid(uuid);
+          newCredential.setVersionCreatedAt(frozenTime.plusSeconds(10));
+          return newCredential;
         }).when(credentialDataService).save(any(SshCredential.class));
 
         fakeTimeSetter.accept(frozenTime.plusSeconds(10).toEpochMilli());
@@ -304,10 +304,10 @@ public class CredentialsControllerRegenerateTest {
 
     describe("when attempting to regenerate a non-generated password", () -> {
       beforeEach(() -> {
-        PasswordCredential originalSecret = new PasswordCredential("my-password");
-        originalSecret.setEncryptor(encryptor);
-        originalSecret.setPasswordAndGenerationParameters("abcde", null);
-        doReturn(originalSecret).when(credentialDataService).findMostRecent("my-password");
+        PasswordCredential originalCredential = new PasswordCredential("my-password");
+        originalCredential.setEncryptor(encryptor);
+        originalCredential.setPasswordAndGenerationParameters("abcde", null);
+        doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
 
         response = mockMvc.perform(post("/api/v1/data")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -334,15 +334,15 @@ public class CredentialsControllerRegenerateTest {
     describe("when attempting to regenerate a password with parameters that can't be decrypted",
         () -> {
           beforeEach(() -> {
-            NamedPasswordSecretData namedPasswordSecretData = new NamedPasswordSecretData(
+            PasswordCredentialData passwordCredentialData = new PasswordCredentialData(
                 "my-password");
-            PasswordCredential originalSecret = new PasswordCredential(namedPasswordSecretData);
-            originalSecret.setEncryptor(encryptor);
-            originalSecret
+            PasswordCredential originalCredential = new PasswordCredential(passwordCredentialData);
+            originalCredential.setEncryptor(encryptor);
+            originalCredential
                 .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());
 
-            namedPasswordSecretData.setEncryptionKeyUuid(UUID.randomUUID());
-            doReturn(originalSecret).when(credentialDataService).findMostRecent("my-password");
+            passwordCredentialData.setEncryptionKeyUuid(UUID.randomUUID());
+            doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
 
             response = mockMvc.perform(post("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

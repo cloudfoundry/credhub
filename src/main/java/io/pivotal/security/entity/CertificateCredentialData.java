@@ -1,36 +1,37 @@
 package io.pivotal.security.entity;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
-import org.apache.commons.lang3.StringUtils;
 
 @Entity
 @DiscriminatorValue("cert")
 @SecondaryTable(
-    name = NamedCertificateSecretData.TABLE_NAME,
+    name = CertificateCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class NamedCertificateSecretData extends NamedSecretData<NamedCertificateSecretData> {
+public class CertificateCredentialData extends CredentialData<CertificateCredentialData> {
 
-  public static final String SECRET_TYPE = "certificate";
-  static final String TABLE_NAME = "CertificateSecret";
+  public static final String CREDENTIAL_TYPE = "certificate";
+  static final String TABLE_NAME = "CertificateCredential";
 
-  @Column(table = NamedCertificateSecretData.TABLE_NAME, length = 7000)
+  @Column(table = CertificateCredentialData.TABLE_NAME, length = 7000)
   private String ca;
 
-  @Column(table = NamedCertificateSecretData.TABLE_NAME, length = 7000)
+  @Column(table = CertificateCredentialData.TABLE_NAME, length = 7000)
   private String certificate;
 
-  @Column(table = NamedCertificateSecretData.TABLE_NAME)
+  @Column(table = CertificateCredentialData.TABLE_NAME)
   private String caName;
 
-  public NamedCertificateSecretData() {
+  public CertificateCredentialData() {
   }
 
-  public NamedCertificateSecretData(String name) {
+  public CertificateCredentialData(String name) {
     super(name);
   }
 
@@ -38,7 +39,7 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
     return ca;
   }
 
-  public NamedCertificateSecretData setCa(String ca) {
+  public CertificateCredentialData setCa(String ca) {
     this.ca = ca;
     return this;
   }
@@ -47,7 +48,7 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
     return certificate;
   }
 
-  public NamedCertificateSecretData setCertificate(String certificate) {
+  public CertificateCredentialData setCertificate(String certificate) {
     this.certificate = certificate;
     return this;
   }
@@ -56,13 +57,13 @@ public class NamedCertificateSecretData extends NamedSecretData<NamedCertificate
     return caName;
   }
 
-  public NamedCertificateSecretData setCaName(String caName) {
+  public CertificateCredentialData setCaName(String caName) {
     this.caName = !StringUtils.isEmpty(caName) ? StringUtils.prependIfMissing(caName, "/") : caName;
     return this;
   }
 
   @Override
-  public String getSecretType() {
-    return SECRET_TYPE;
+  public String getCredentialType() {
+    return CREDENTIAL_TYPE;
   }
 }

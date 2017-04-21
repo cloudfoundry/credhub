@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
@@ -10,44 +10,44 @@ import java.util.List;
 
 public class RsaCredential extends Credential<RsaCredential> {
 
-  private NamedRsaSecretData delegate;
+  private RsaCredentialData delegate;
 
-  public RsaCredential(NamedRsaSecretData delegate) {
+  public RsaCredential(RsaCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public RsaCredential(String name) {
-    this(new NamedRsaSecretData(name));
+    this(new RsaCredentialData(name));
   }
 
   public RsaCredential() {
-    this(new NamedRsaSecretData());
+    this(new RsaCredentialData());
   }
 
   public static RsaCredential createNewVersion(RsaCredential existing, String name,
                                                KeySetRequestFields fields, Encryptor encryptor,
                                                List<AccessControlEntry> accessControlEntries) {
-    RsaCredential secret;
+    RsaCredential credential;
 
     if (existing == null) {
-      secret = new RsaCredential(name);
+      credential = new RsaCredential(name);
     } else {
-      secret = new RsaCredential();
-      secret.copyNameReferenceFrom(existing);
+      credential = new RsaCredential();
+      credential.copyNameReferenceFrom(existing);
     }
 
     if (accessControlEntries == null) {
       accessControlEntries = new ArrayList<>();
     }
 
-    secret.setAccessControlList(accessControlEntries);
+    credential.setAccessControlList(accessControlEntries);
 
-    secret.setEncryptor(encryptor);
-    secret.setPrivateKey(fields.getPrivateKey());
-    secret.setPublicKey(fields.getPublicKey());
+    credential.setEncryptor(encryptor);
+    credential.setPrivateKey(fields.getPrivateKey());
+    credential.setPublicKey(fields.getPublicKey());
 
-    return secret;
+    return credential;
   }
 
   public int getKeyLength() {
@@ -88,7 +88,7 @@ public class RsaCredential extends Credential<RsaCredential> {
 
 
   @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
+  public String getCredentialType() {
+    return delegate.getCredentialType();
   }
 }

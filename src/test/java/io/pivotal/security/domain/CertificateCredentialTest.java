@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 public class CertificateCredentialTest {
 
   private CertificateCredential subject;
-  private NamedCertificateSecretData namedCertificateSecretData;
+  private CertificateCredentialData certificateCredentialData;
 
   private UUID canaryUuid;
   private Encryptor encryptor;
@@ -42,8 +42,8 @@ public class CertificateCredentialTest {
           .thenReturn(new Encryption(canaryUuid, encryptedValue, nonce));
       when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce))).thenReturn("my-priv");
 
-      namedCertificateSecretData = new NamedCertificateSecretData("/Foo");
-      subject = new CertificateCredential(namedCertificateSecretData)
+      certificateCredentialData = new CertificateCredentialData("/Foo");
+      subject = new CertificateCredential(certificateCredentialData)
           .setEncryptor(encryptor)
           .setCa("my-ca")
           .setCertificate("my-cert")
@@ -51,13 +51,13 @@ public class CertificateCredentialTest {
     });
 
     it("returns type certificate", () -> {
-      assertThat(subject.getSecretType(), equalTo("certificate"));
+      assertThat(subject.getCredentialType(), equalTo("certificate"));
     });
 
     it("sets the nonce and the encrypted private key", () -> {
       subject.setPrivateKey("my-priv");
-      assertThat(namedCertificateSecretData.getEncryptedValue(), notNullValue());
-      assertThat(namedCertificateSecretData.getNonce(), notNullValue());
+      assertThat(certificateCredentialData.getEncryptedValue(), notNullValue());
+      assertThat(certificateCredentialData.getNonce(), notNullValue());
     });
 
     it("can decrypt the private key", () -> {
@@ -92,28 +92,28 @@ public class CertificateCredentialTest {
       it("copies name and ca's name from existing", () -> {
         CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
             "certificate", "ca");
-        CertificateCredential newSecret = CertificateCredential
+        CertificateCredential newCredential = CertificateCredential
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
                 new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/Foo"));
-        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
-        assertThat(newSecret.getCa(), equalTo("ca"));
-        assertThat(newSecret.getCertificate(), equalTo("certificate"));
-        assertThat(newSecret.getCaName(), equalTo(null));
+        assertThat(newCredential.getName(), equalTo("/Foo"));
+        assertThat(newCredential.getPrivateKey(), equalTo("new private key"));
+        assertThat(newCredential.getCa(), equalTo("ca"));
+        assertThat(newCredential.getCertificate(), equalTo("certificate"));
+        assertThat(newCredential.getCaName(), equalTo(null));
       });
 
       it("creates new if no existing", () -> {
         CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
             "certificate", "ca");
-        CertificateCredential newSecret = CertificateCredential
+        CertificateCredential newCredential = CertificateCredential
             .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
-        assertThat(newSecret.getCa(), equalTo("ca"));
-        assertThat(newSecret.getCertificate(), equalTo("certificate"));
-        assertThat(newSecret.getCaName(), equalTo(null));
+        assertThat(newCredential.getName(), equalTo("/newName"));
+        assertThat(newCredential.getPrivateKey(), equalTo("new private key"));
+        assertThat(newCredential.getCa(), equalTo("ca"));
+        assertThat(newCredential.getCertificate(), equalTo("certificate"));
+        assertThat(newCredential.getCaName(), equalTo(null));
       });
     });
   }

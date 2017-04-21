@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.NamedCertificateSecretData;
+import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
@@ -9,19 +9,19 @@ import java.util.List;
 
 public class CertificateCredential extends Credential<CertificateCredential> {
 
-  private NamedCertificateSecretData delegate;
+  private CertificateCredentialData delegate;
 
-  public CertificateCredential(NamedCertificateSecretData delegate) {
+  public CertificateCredential(CertificateCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public CertificateCredential(String name) {
-    this(new NamedCertificateSecretData(name));
+    this(new CertificateCredentialData(name));
   }
 
   public CertificateCredential() {
-    this(new NamedCertificateSecretData());
+    this(new CertificateCredentialData());
   }
 
   public static CertificateCredential createNewVersion(
@@ -31,24 +31,24 @@ public class CertificateCredential extends Credential<CertificateCredential> {
       Encryptor encryptor,
       List<AccessControlEntry> accessControlEntries
   ) {
-    CertificateCredential secret;
+    CertificateCredential credential;
 
     if (existing == null) {
-      secret = new CertificateCredential(name);
+      credential = new CertificateCredential(name);
     } else {
-      secret = new CertificateCredential();
-      secret.copyNameReferenceFrom(existing);
-      secret.setCaName(existing.getCaName());
+      credential = new CertificateCredential();
+      credential.copyNameReferenceFrom(existing);
+      credential.setCaName(existing.getCaName());
     }
 
-    secret.setAccessControlList(accessControlEntries);
+    credential.setAccessControlList(accessControlEntries);
 
-    secret.setEncryptor(encryptor);
-    secret.setPrivateKey(fields.getPrivateKey());
-    secret.setCertificate(fields.getCertificate());
-    secret.setCa(fields.getCa());
-    secret.setCaName(fields.getCaName());
-    return secret;
+    credential.setEncryptor(encryptor);
+    credential.setPrivateKey(fields.getPrivateKey());
+    credential.setCertificate(fields.getCertificate());
+    credential.setCa(fields.getCa());
+    credential.setCaName(fields.getCaName());
+    return credential;
   }
 
   public String getCa() {
@@ -97,8 +97,8 @@ public class CertificateCredential extends Credential<CertificateCredential> {
   }
 
   @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
+  public String getCredentialType() {
+    return delegate.getCredentialType();
   }
 
   public void rotate() {

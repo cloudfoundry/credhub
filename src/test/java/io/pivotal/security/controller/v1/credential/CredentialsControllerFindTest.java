@@ -166,7 +166,7 @@ public class CredentialsControllerFindTest {
               .andExpect(jsonPath("$.credentials", hasSize(1)));
         });
 
-        it("should not findSecretsUsingPath paths which start an existing path but matches incompletely", () -> {
+        it("should not findCredentialsUsingPath paths which start an existing path but matches incompletely", () -> {
           final String path = "/my-namespace/subTr";
 
           assertTrue(credentialName.startsWith(path));

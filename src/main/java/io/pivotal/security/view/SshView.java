@@ -8,14 +8,14 @@ public class SshView extends CredentialView {
 
   SshView() { /* Jackson */ }
 
-  SshView(SshCredential namedSshSecret) {
+  SshView(SshCredential sshCredential) {
     super(
-        namedSshSecret.getVersionCreatedAt(),
-        namedSshSecret.getUuid(),
-        namedSshSecret.getName(),
-        namedSshSecret.getSecretType(),
-        new SshKey(namedSshSecret.getPublicKey(), namedSshSecret.getPrivateKey(),
-            namedSshSecret.getFingerprint())
+        sshCredential.getVersionCreatedAt(),
+        sshCredential.getUuid(),
+        sshCredential.getName(),
+        sshCredential.getCredentialType(),
+        new SshKey(sshCredential.getPublicKey(), sshCredential.getPrivateKey(),
+            sshCredential.getFingerprint())
     );
   }
 }

@@ -76,7 +76,7 @@ public class CredentialsControllerGenerateTest {
   GenerateService generateService;
 
   @MockBean
-  PassayStringCredentialGenerator secretGenerator;
+  PassayStringCredentialGenerator credentialGenerator;
 
   @MockBean
   SshGenerator sshGenerator;
@@ -128,16 +128,16 @@ public class CredentialsControllerGenerateTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
-      when(secretGenerator.generateSecret(any(StringGenerationParameters.class)))
+      when(credentialGenerator.generateCredential(any(StringGenerationParameters.class)))
           .thenReturn(new StringCredential(fakePassword));
 
-      when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
+      when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
           .thenReturn(new SshKey(publicKey, privateKey, null));
 
-      when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
+      when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
           .thenReturn(new RsaKey(publicKey, privateKey));
 
-      when(certificateGenerator.generateSecret(any(CertificateParameters.class)))
+      when(certificateGenerator.generateCredential(any(CertificateParameters.class)))
           .thenReturn(new Certificate("ca_cert", cert, privateKey));
     });
 
@@ -200,14 +200,14 @@ public class CredentialsControllerGenerateTest {
 
       describe("when another thread wins a race to write a new value", () -> {
         beforeEach(() -> {
-          final PasswordCredential expectedSecret = new PasswordCredential(credentialName);
-          expectedSecret.setEncryptor(encryptor);
-          expectedSecret.setPasswordAndGenerationParameters(fakePassword, null);
+          final PasswordCredential expectCredential = new PasswordCredential(credentialName);
+          expectCredential.setEncryptor(encryptor);
+          expectCredential.setPasswordAndGenerationParameters(fakePassword, null);
 
           Mockito.reset(credentialDataService);
 
           doReturn(null)
-          .doReturn(expectedSecret
+          .doReturn(expectCredential
               .setUuid(uuid)
               .setVersionCreatedAt(frozenTime.minusSeconds(1))
           ).when(credentialDataService).findMostRecent(anyString());

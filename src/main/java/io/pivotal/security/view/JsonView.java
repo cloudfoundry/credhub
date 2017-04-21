@@ -7,13 +7,13 @@ public class JsonView extends CredentialView {
 
   JsonView() {  /* Jackson */ }
 
-  JsonView(JsonCredential namedJsonSecret) {
+  JsonView(JsonCredential jsonCredential) {
     super(
-        namedJsonSecret.getVersionCreatedAt(),
-        namedJsonSecret.getUuid(),
-        namedJsonSecret.getName(),
-        namedJsonSecret.getSecretType(),
-        namedJsonSecret.getValue()
+        jsonCredential.getVersionCreatedAt(),
+        jsonCredential.getUuid(),
+        jsonCredential.getName(),
+        jsonCredential.getCredentialType(),
+        jsonCredential.getValue()
     );
   }
 }

@@ -2,7 +2,7 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -30,12 +30,12 @@ public class PasswordCredentialTest {
 
   private static final List<AccessControlEntry> EMPTY_ENTRIES_LIST = new ArrayList<>();
   private static final StringGenerationParameters NO_PASSWORD_PARAMS = null;
-  private static final PasswordCredential NO_EXISTING_NAMED_PASSWORD_SECRET = null;
+  private static final PasswordCredential NO_EXISTING_NAMED_PASSWORD_CREDENTIAL = null;
   private static final List<AccessControlEntry> NULL_ENTRIES_LIST = null;
   private static final String PASSWORD = "my-password";
 
   private PasswordCredential subject;
-  private NamedPasswordSecretData namedPasswordSecretData;
+  private PasswordCredentialData passwordCredentialData;
   private Encryptor encryptor;
   private UUID canaryUuid;
   private StringGenerationParameters generationParameters;
@@ -72,13 +72,13 @@ public class PasswordCredentialTest {
       when(encryptor.decrypt(any(UUID.class), eq(encryptedParametersValue), eq(parametersNonce)))
           .thenReturn(generationParametersJson);
 
-      namedPasswordSecretData = new NamedPasswordSecretData("/Foo");
-      subject = new PasswordCredential(namedPasswordSecretData);
+      passwordCredentialData = new PasswordCredentialData("/Foo");
+      subject = new PasswordCredential(passwordCredentialData);
       subject.setEncryptor(encryptor);
     });
 
     it("returns type password", () -> {
-      assertThat(subject.getSecretType(), equalTo("password"));
+      assertThat(subject.getCredentialType(), equalTo("password"));
     });
 
     describe("#getGenerationParameters", () -> {
@@ -114,8 +114,8 @@ public class PasswordCredentialTest {
     describe("#setPasswordAndGenerationParameters", () -> {
       it("sets the nonce and the encrypted value", () -> {
         subject.setPasswordAndGenerationParameters(PASSWORD, null);
-        assertThat(namedPasswordSecretData.getEncryptedValue(), notNullValue());
-        assertThat(namedPasswordSecretData.getNonce(), notNullValue());
+        assertThat(passwordCredentialData.getEncryptedValue(), notNullValue());
+        assertThat(passwordCredentialData.getNonce(), notNullValue());
       });
 
       it("can decrypt values", () -> {
@@ -134,27 +134,27 @@ public class PasswordCredentialTest {
 
       it("sets the parametersNonce and the encryptedGenerationParameters", () -> {
         subject.setPasswordAndGenerationParameters(PASSWORD, generationParameters);
-        assertThat(namedPasswordSecretData.getEncryptedGenerationParameters(), notNullValue());
-        assertThat(namedPasswordSecretData.getParametersNonce(), notNullValue());
+        assertThat(passwordCredentialData.getEncryptedGenerationParameters(), notNullValue());
+        assertThat(passwordCredentialData.getParametersNonce(), notNullValue());
       });
 
       it("should set encrypted generation parameters and nonce to null if parameters are null",
           () -> {
             subject.setPasswordAndGenerationParameters(PASSWORD, null);
-            assertThat(namedPasswordSecretData.getEncryptedGenerationParameters(), nullValue());
-            assertThat(namedPasswordSecretData.getParametersNonce(), nullValue());
+            assertThat(passwordCredentialData.getEncryptedGenerationParameters(), nullValue());
+            assertThat(passwordCredentialData.getParametersNonce(), nullValue());
           });
     });
 
     describe("#createNewVersion", () -> {
       beforeEach(() -> {
-        namedPasswordSecretData = new NamedPasswordSecretData("/existingName");
-        namedPasswordSecretData.setEncryptedValue("old-encrypted-value".getBytes());
-        namedPasswordSecretData.setNonce("old-nonce".getBytes());
-        namedPasswordSecretData
+        passwordCredentialData = new PasswordCredentialData("/existingName");
+        passwordCredentialData.setEncryptedValue("old-encrypted-value".getBytes());
+        passwordCredentialData.setNonce("old-nonce".getBytes());
+        passwordCredentialData
             .setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
-        namedPasswordSecretData.setParametersNonce("old-parameters-nonce".getBytes());
-        subject = new PasswordCredential(namedPasswordSecretData);
+        passwordCredentialData.setParametersNonce("old-parameters-nonce".getBytes());
+        subject = new PasswordCredential(passwordCredentialData);
         subject.setEncryptor(encryptor);
 
         ArrayList<AccessControlOperation> operations = newArrayList(AccessControlOperation.READ,
@@ -165,32 +165,32 @@ public class PasswordCredentialTest {
       });
 
       it("copies values from existing, except password", () -> {
-        PasswordCredential newSecret = PasswordCredential
+        PasswordCredential newCredential = PasswordCredential
             .createNewVersion(subject, "anything I AM IGNORED", PASSWORD, NO_PASSWORD_PARAMS,
                 encryptor, EMPTY_ENTRIES_LIST);
 
-        assertThat(newSecret.getName(), equalTo("/existingName"));
-        assertThat(newSecret.getPassword(), equalTo(PASSWORD));
+        assertThat(newCredential.getName(), equalTo("/existingName"));
+        assertThat(newCredential.getPassword(), equalTo(PASSWORD));
       });
 
       it("creates new if no existing", () -> {
-        PasswordCredential newSecret = PasswordCredential.createNewVersion(
-            NO_EXISTING_NAMED_PASSWORD_SECRET,
+        PasswordCredential newCredential = PasswordCredential.createNewVersion(
+            NO_EXISTING_NAMED_PASSWORD_CREDENTIAL,
             "/newName",
             PASSWORD,
             NO_PASSWORD_PARAMS,
             encryptor,
             EMPTY_ENTRIES_LIST);
 
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getPassword(), equalTo(PASSWORD));
+        assertThat(newCredential.getName(), equalTo("/newName"));
+        assertThat(newCredential.getPassword(), equalTo(PASSWORD));
       });
 
       it("ignores ACEs if not provided", () -> {
-        PasswordCredential newSecret = PasswordCredential
+        PasswordCredential newCredential = PasswordCredential
             .createNewVersion(subject, "anything I AM IGNORED", PASSWORD, NO_PASSWORD_PARAMS,
                 encryptor, NULL_ENTRIES_LIST);
-        assertThat(newSecret.getCredentialName().getAccessControlList(), hasSize(0));
+        assertThat(newCredential.getCredentialName().getAccessControlList(), hasSize(0));
       });
     });
   }

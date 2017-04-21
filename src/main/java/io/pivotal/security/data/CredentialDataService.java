@@ -10,14 +10,14 @@ import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.entity.NamedCertificateSecretData;
-import io.pivotal.security.entity.NamedJsonSecretData;
-import io.pivotal.security.entity.NamedPasswordSecretData;
-import io.pivotal.security.entity.NamedRsaSecretData;
-import io.pivotal.security.entity.NamedSecretData;
-import io.pivotal.security.entity.NamedSshSecretData;
-import io.pivotal.security.entity.NamedUserSecretData;
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.CertificateCredentialData;
+import io.pivotal.security.entity.JsonCredentialData;
+import io.pivotal.security.entity.PasswordCredentialData;
+import io.pivotal.security.entity.RsaCredentialData;
+import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.SshCredentialData;
+import io.pivotal.security.entity.UserCredentialData;
+import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -48,19 +48,19 @@ public class CredentialDataService {
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final String findMatchingNameQuery =
-      " select name.name, secret.version_created_at from ("
+      " select name.name, credential.version_created_at from ("
           + "   select"
           + "     max(version_created_at) as version_created_at,"
           + "     credential_name_uuid"
-          + "   from named_secret group by credential_name_uuid"
-          + " ) as secret inner join ("
+          + "   from credential group by credential_name_uuid"
+          + " ) as credential inner join ("
           + "   select * from credential_name"
           + "     where lower(name) like lower(?)"
           + " ) as name"
-          + " on secret.credential_name_uuid = name.uuid"
+          + " on credential.credential_name_uuid = name.uuid"
           + " order by version_created_at desc";
   private Encryptor encryptor;
-  private NamedSecretData dao;
+  private CredentialData dao;
 
   @Autowired
   protected CredentialDataService(
@@ -81,18 +81,18 @@ public class CredentialDataService {
     return (Z) namedSecret.save(this);
   }
 
-  public <Z extends Credential> Z save(NamedSecretData namedSecret) {
-    if (namedSecret.getEncryptionKeyUuid() == null) {
-      namedSecret.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
+  public <Z extends Credential> Z save(CredentialData credentialData) {
+    if (credentialData.getEncryptionKeyUuid() == null) {
+      credentialData.setEncryptionKeyUuid(encryptionKeyCanaryMapper.getActiveUuid());
     }
 
-    CredentialName credentialName = namedSecret.getCredentialName();
+    CredentialName credentialName = credentialData.getCredentialName();
 
     if (credentialName.getUuid() == null) {
-      namedSecret.setCredentialName(credentialNameRepository.saveAndFlush(credentialName));
+      credentialData.setCredentialName(credentialNameRepository.saveAndFlush(credentialName));
     }
 
-    return (Z) wrap(credentialRepository.saveAndFlush(namedSecret));
+    return (Z) wrap(credentialRepository.saveAndFlush(credentialData));
   }
 
   public List<String> findAllPaths() {
@@ -105,7 +105,7 @@ public class CredentialDataService {
     }
 
     return credentialRepository.findAll().stream()
-        .map(namedSecretData -> namedSecretData.getCredentialName().getName())
+        .map(credential -> credential.getCredentialName().getName())
         .flatMap(CredentialDataService::fullHierarchyForPath)
         .distinct()
         .sorted()
@@ -184,11 +184,11 @@ public class CredentialDataService {
   }
 
   public Slice<Credential> findEncryptedWithAvailableInactiveKey() {
-    final Slice<NamedSecretData> namedSecretDataSlice = credentialRepository.findByEncryptionKeyUuidIn(
+    final Slice<CredentialData> credentialDataSlice = credentialRepository.findByEncryptionKeyUuidIn(
         encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys(),
         new PageRequest(0, BATCH_SIZE)
     );
-    return new SliceImpl(wrap(namedSecretDataSlice.getContent()));
+    return new SliceImpl(wrap(credentialDataSlice.getContent()));
   }
 
   private List<CredentialView> findMatchingName(String nameLike) {
@@ -204,29 +204,29 @@ public class CredentialDataService {
     );
   }
 
-  private List<Credential> wrap(List<NamedSecretData> daos) {
+  private List<Credential> wrap(List<CredentialData> daos) {
     return daos.stream().map(this::wrap).collect(Collectors.toList());
   }
 
-  private Credential wrap(NamedSecretData dao) {
+  private Credential wrap(CredentialData dao) {
     if (dao == null) {
       return null;
     }
     Credential returnValue;
-    if (dao instanceof NamedCertificateSecretData) {
-      returnValue = new CertificateCredential((NamedCertificateSecretData) dao);
-    } else if (dao instanceof NamedPasswordSecretData) {
-      returnValue = new PasswordCredential((NamedPasswordSecretData) dao);
-    } else if (dao instanceof NamedRsaSecretData) {
-      returnValue = new RsaCredential((NamedRsaSecretData) dao);
-    } else if (dao instanceof NamedSshSecretData) {
-      returnValue = new SshCredential((NamedSshSecretData) dao);
-    } else if (dao instanceof NamedValueSecretData) {
-      returnValue = new ValueCredential((NamedValueSecretData) dao);
-    } else if (dao instanceof NamedJsonSecretData) {
-      returnValue = new JsonCredential((NamedJsonSecretData) dao);
-    } else if (dao instanceof NamedUserSecretData) {
-      returnValue = new UserCredential((NamedUserSecretData) dao);
+    if (dao instanceof CertificateCredentialData) {
+      returnValue = new CertificateCredential((CertificateCredentialData) dao);
+    } else if (dao instanceof PasswordCredentialData) {
+      returnValue = new PasswordCredential((PasswordCredentialData) dao);
+    } else if (dao instanceof RsaCredentialData) {
+      returnValue = new RsaCredential((RsaCredentialData) dao);
+    } else if (dao instanceof SshCredentialData) {
+      returnValue = new SshCredential((SshCredentialData) dao);
+    } else if (dao instanceof ValueCredentialData) {
+      returnValue = new ValueCredential((ValueCredentialData) dao);
+    } else if (dao instanceof JsonCredentialData) {
+      returnValue = new JsonCredential((JsonCredentialData) dao);
+    } else if (dao instanceof UserCredentialData) {
+      returnValue = new UserCredential((UserCredentialData) dao);
     } else {
       throw new RuntimeException("Unrecognized type: " + dao.getClass().getName());
     }

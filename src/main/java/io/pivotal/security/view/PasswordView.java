@@ -7,13 +7,13 @@ public class PasswordView extends CredentialView {
 
   public PasswordView() {}
 
-  public PasswordView(PasswordCredential namedPasswordSecret) {
+  public PasswordView(PasswordCredential passwordCredential) {
     super(
-        namedPasswordSecret.getVersionCreatedAt(),
-        namedPasswordSecret.getUuid(),
-        namedPasswordSecret.getName(),
-        namedPasswordSecret.getSecretType(),
-        namedPasswordSecret.getPassword()
+        passwordCredential.getVersionCreatedAt(),
+        passwordCredential.getUuid(),
+        passwordCredential.getName(),
+        passwordCredential.getCredentialType(),
+        passwordCredential.getPassword()
     );
   }
 }

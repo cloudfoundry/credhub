@@ -27,11 +27,11 @@ import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
-@Table(name = "NamedSecret")
+@Table(name = "Credential")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @EntityListeners(AuditingEntityListener.class)
 @DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
-public abstract class NamedSecretData<Z extends NamedSecretData> {
+public abstract class CredentialData<Z extends CredentialData> {
 
   // Use VARBINARY to make all 3 DB types happy.
   // H2 doesn't distinguish between "binary" and "varbinary" - see
@@ -69,7 +69,7 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
   @JoinColumn(name = "credential_name_uuid", nullable = false)
   private CredentialName credentialName;
 
-  public NamedSecretData(CredentialName name) {
+  public CredentialData(CredentialName name) {
     if (this.credentialName != null) {
       this.credentialName.setName(name.getName());
     } else {
@@ -77,11 +77,11 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
     }
   }
 
-  public NamedSecretData(String name) {
+  public CredentialData(String name) {
     this(new CredentialName(name));
   }
 
-  public NamedSecretData() {
+  public CredentialData() {
     this((String) null);
   }
 
@@ -120,7 +120,7 @@ public abstract class NamedSecretData<Z extends NamedSecretData> {
     return (Z) this;
   }
 
-  public abstract String getSecretType();
+  public abstract String getCredentialType();
 
   public UUID getEncryptionKeyUuid() {
     return encryptionKeyUuid;

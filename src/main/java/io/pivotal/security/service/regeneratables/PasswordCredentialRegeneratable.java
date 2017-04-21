@@ -10,14 +10,14 @@ import io.pivotal.security.request.StringGenerationParameters;
 public class PasswordCredentialRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(Credential secret) {
-    PasswordCredential passwordSecret = (PasswordCredential) secret;
+  public BaseCredentialGenerateRequest createGenerateRequest(Credential credential) {
+    PasswordCredential passwordCredential = (PasswordCredential) credential;
     PasswordGenerateRequest generateRequest = new PasswordGenerateRequest();
 
-    generateRequest.setName(passwordSecret.getName());
-    generateRequest.setType(passwordSecret.getSecretType());
+    generateRequest.setName(passwordCredential.getName());
+    generateRequest.setType(passwordCredential.getCredentialType());
     StringGenerationParameters generationParameters;
-    generationParameters = passwordSecret.getGenerationParameters();
+    generationParameters = passwordCredential.getGenerationParameters();
     generateRequest.setOverwrite(true);
 
     if (generationParameters == null) {

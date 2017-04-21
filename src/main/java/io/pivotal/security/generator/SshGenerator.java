@@ -21,7 +21,7 @@ public class SshGenerator implements CredentialGenerator<SshGenerationParameters
   }
 
   @Override
-  public SshKey generateSecret(SshGenerationParameters parameters) {
+  public SshKey generateCredential(SshGenerationParameters parameters) {
     try {
       final KeyPair keyPair = keyGenerator.generateKeyPair(parameters.getKeyLength());
       String sshComment = parameters.getSshComment();

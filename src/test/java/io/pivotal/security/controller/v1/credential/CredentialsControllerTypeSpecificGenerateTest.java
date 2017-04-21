@@ -170,29 +170,29 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           .apply(springSecurity())
           .build();
 
-      when(passwordGenerator.generateSecret(any(StringGenerationParameters.class)))
+      when(passwordGenerator.generateCredential(any(StringGenerationParameters.class)))
           .thenReturn(new StringCredential(fakePassword));
 
-      when(certificateGenerator.generateSecret(any(CertificateParameters.class)))
+      when(certificateGenerator.generateCredential(any(CertificateParameters.class)))
           .thenReturn(new Certificate(ca, certificate, privateKey));
 
-      when(sshGenerator.generateSecret(any(SshGenerationParameters.class)))
+      when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
           .thenReturn(new SshKey(publicKey, privateKey, null));
 
-      when(rsaGenerator.generateSecret(any(RsaGenerationParameters.class)))
+      when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
           .thenReturn(new RsaKey(publicKey, privateKey));
 
-      when(userGenerator.generateSecret(any(UserGenerationParameters.class)))
+      when(userGenerator.generateCredential(any(UserGenerationParameters.class)))
           .thenReturn(new User(user, fakePassword));
     });
 
-    describe("password", testSecretBehavior(
+    describe("password", testCredentialBehaviour(
         new Object[]{"$.value", fakePassword},
         "password",
         "{\"exclude_number\": true}",
-        (passwordSecret) -> {
-          assertThat(passwordSecret.getGenerationParameters().isExcludeNumber(), equalTo(true));
-          assertThat(passwordSecret.getPassword(), equalTo(fakePassword));
+        (passwordCredential) -> {
+          assertThat(passwordCredential.getGenerationParameters().isExcludeNumber(), equalTo(true));
+          assertThat(passwordCredential.getPassword(), equalTo(fakePassword));
         },
         () -> new PasswordCredential(credentialName)
             .setEncryptor(encryptor)
@@ -201,14 +201,14 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
-    describe("user", testSecretBehavior(
+    describe("user", testCredentialBehaviour(
       new Object[]{"$.value.username", user,
           "$.value.password", fakePassword},
       "user",
       "null",
-      (userSecret) -> {
-        assertThat(userSecret.getUsername(), equalTo(user));
-        assertThat(userSecret.getPassword(), equalTo(fakePassword));
+      (userCredential) -> {
+        assertThat(userCredential.getUsername(), equalTo(user));
+        assertThat(userCredential.getPassword(), equalTo(fakePassword));
       },
       () -> new UserCredential(credentialName)
         .setEncryptor(encryptor)
@@ -218,17 +218,17 @@ public class CredentialsControllerTypeSpecificGenerateTest {
         .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));
 
-    describe("certificate", testSecretBehavior(
+    describe("certificate", testCredentialBehaviour(
         new Object[]{
             "$.value.certificate", "certificate",
             "$.value.private_key", "private_key",
             "$.value.ca", "ca"},
         "certificate",
         "{\"common_name\":\"my-common-name\",\"self_sign\":true}",
-        (certificateSecret) -> {
-          assertThat(certificateSecret.getCa(), equalTo(ca));
-          assertThat(certificateSecret.getCertificate(), equalTo(certificate));
-          assertThat(certificateSecret.getPrivateKey(), equalTo(privateKey));
+        (certificateCredential) -> {
+          assertThat(certificateCredential.getCa(), equalTo(ca));
+          assertThat(certificateCredential.getCertificate(), equalTo(certificate));
+          assertThat(certificateCredential.getPrivateKey(), equalTo(privateKey));
         },
         () -> new CertificateCredential(credentialName)
             .setEncryptor(encryptor)
@@ -239,16 +239,16 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("ssh", testSecretBehavior(
+    describe("ssh", testCredentialBehaviour(
         new Object[]{
             "$.value.public_key", "public_key",
             "$.value.private_key", "private_key",
             "$.value.public_key_fingerprint", null},
         "ssh",
         "null",
-        (sshSecret) -> {
-          assertThat(sshSecret.getPublicKey(), equalTo(publicKey));
-          assertThat(sshSecret.getPrivateKey(), equalTo(privateKey));
+        (sshCredential) -> {
+          assertThat(sshCredential.getPublicKey(), equalTo(publicKey));
+          assertThat(sshCredential.getPrivateKey(), equalTo(privateKey));
         },
         () -> new SshCredential(credentialName)
             .setEncryptor(encryptor)
@@ -258,15 +258,15 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
 
-    describe("rsa", testSecretBehavior(
+    describe("rsa", testCredentialBehaviour(
         new Object[]{
             "$.value.public_key", "public_key",
             "$.value.private_key", "private_key"},
         "rsa",
         "null",
-        (rsaSecret) -> {
-          assertThat(rsaSecret.getPublicKey(), equalTo(publicKey));
-          assertThat(rsaSecret.getPrivateKey(), equalTo(privateKey));
+        (rsaCredential) -> {
+          assertThat(rsaCredential.getPublicKey(), equalTo(publicKey));
+          assertThat(rsaCredential.getPrivateKey(), equalTo(privateKey));
         },
         () -> new RsaCredential(credentialName)
             .setEncryptor(encryptor)
@@ -277,12 +277,12 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     );
   }
 
-  private <T extends Credential> Block testSecretBehavior(
+  private <T extends Credential> Block testCredentialBehaviour(
       Object[] typeSpecificResponseFields,
-      String secretType,
+      String credentialType,
       String generationParameters,
-      Consumer<T> namedSecretAssertions,
-      Supplier<T> existingSecretProvider) {
+      Consumer<T> credentialAssertions,
+      Supplier<T> existingCredentialProvider) {
     return () -> {
       describe("for a new credential", () -> {
         beforeEach(() -> {
@@ -292,7 +292,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
               .contentType(APPLICATION_JSON)
               .content("{" +
                   "\"name\":\"" + credentialName + "\"," +
-                  "\"type\":\"" + secretType + "\"," +
+                  "\"type\":\"" + credentialType + "\"," +
                   "\"parameters\":" + generationParameters + "," +
                   "\"overwrite\":" + false +
                   "}");
@@ -308,7 +308,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             verify(credentialDataService, times(1)).save(argumentCaptor.capture());
             response.andExpect(multiJsonPath(typeSpecificResponseFields))
                 .andExpect(multiJsonPath(
-                    "$.type", secretType,
+                    "$.type", credentialType,
                     "$.id", argumentCaptor.getValue().getUuid().toString(),
                     "$.version_created_at", frozenTime.toString()))
                 .andExpect(status().isOk())
@@ -324,9 +324,9 @@ public class CredentialsControllerTypeSpecificGenerateTest {
             ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
             verify(credentialDataService, times(1)).save(argumentCaptor.capture());
 
-            T newSecret = (T) argumentCaptor.getValue();
+            T newCredential = (T) argumentCaptor.getValue();
 
-            namedSecretAssertions.accept(newSecret);
+            credentialAssertions.accept(newCredential);
           });
 
           it("persists an audit entry", () -> {
@@ -366,7 +366,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
       describe("with an existing credential", () -> {
         beforeEach(() -> {
           uuid = UUID.randomUUID();
-          doReturn(existingSecretProvider.get()).when(credentialDataService).findMostRecent(credentialName);
+          doReturn(existingCredentialProvider.get()).when(credentialDataService).findMostRecent(credentialName);
         });
 
         describe("with the overwrite flag set to true", () -> {
@@ -376,7 +376,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{" +
-                    "  \"type\":\"" + secretType + "\"," +
+                    "  \"type\":\"" + credentialType + "\"," +
                     "  \"name\":\"" + credentialName + "\"," +
                     "  \"parameters\":" + generationParameters + "," +
                     "  \"overwrite\":true" +
@@ -393,14 +393,14 @@ public class CredentialsControllerTypeSpecificGenerateTest {
                 .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
                 .andExpect(multiJsonPath(typeSpecificResponseFields))
                 .andExpect(multiJsonPath(
-                    "$.type", secretType,
+                    "$.type", credentialType,
                     "$.id", argumentCaptor.getValue().getUuid().toString(),
                     "$.version_created_at", frozenTime.toString()));
           });
 
           it("asks the data service to persist the credential", () -> {
-            T namedSecret = (T) credentialDataService.findMostRecent(credentialName);
-            namedSecretAssertions.accept(namedSecret);
+            T credential = (T) credentialDataService.findMostRecent(credentialName);
+            credentialAssertions.accept(credential);
           });
 
           it("persists an audit entry", () -> {
@@ -415,7 +415,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
                 .content("{"
-                    + "\"type\":\"" + secretType + "\","
+                    + "\"type\":\"" + credentialType + "\","
                     + "\"name\":\"" + credentialName + "\","
                     + "\"parameters\":" + generationParameters
                     + "}");

@@ -41,22 +41,22 @@ public class GeneratorService {
   }
 
   public String generatePassword(StringGenerationParameters passwordParameters) {
-    return passwordGenerator.generateSecret(passwordParameters).getStringSecret();
+    return passwordGenerator.generateCredential(passwordParameters).getStringCredential();
   }
 
   public SshKey generateSshKeys(SshGenerationParameters generationParameters) {
-    return sshGenerator.generateSecret(generationParameters);
+    return sshGenerator.generateCredential(generationParameters);
   }
 
   public RsaKey generateRsaKeys(RsaGenerationParameters generationParameters) {
-    return rsaGenerator.generateSecret(generationParameters);
+    return rsaGenerator.generateCredential(generationParameters);
   }
 
   public Certificate generateCertificate(CertificateParameters generationParameters) {
-    return certificateGenerator.generateSecret(generationParameters);
+    return certificateGenerator.generateCredential(generationParameters);
   }
 
   public User generateUser(UserGenerationParameters generationParameters) {
-    return userGenerator.generateSecret(generationParameters);
+    return userGenerator.generateCredential(generationParameters);
   }
 }

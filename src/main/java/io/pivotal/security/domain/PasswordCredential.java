@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.pivotal.security.entity.NamedPasswordSecretData;
+import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
@@ -13,22 +13,22 @@ import java.util.List;
 
 public class PasswordCredential extends Credential<PasswordCredential> {
 
-  private NamedPasswordSecretData delegate;
+  private PasswordCredentialData delegate;
   private ObjectMapper objectMapper;
   private String password;
 
-  public PasswordCredential(NamedPasswordSecretData delegate) {
+  public PasswordCredential(PasswordCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
     this.objectMapper = new ObjectMapper();
   }
 
   public PasswordCredential(String name) {
-    this(new NamedPasswordSecretData(name));
+    this(new PasswordCredentialData(name));
   }
 
   public PasswordCredential() {
-    this(new NamedPasswordSecretData());
+    this(new PasswordCredentialData());
   }
 
   public static PasswordCredential createNewVersion(
@@ -38,24 +38,24 @@ public class PasswordCredential extends Credential<PasswordCredential> {
       StringGenerationParameters generationParameters,
       Encryptor encryptor,
       List<AccessControlEntry> accessControlEntries) {
-    PasswordCredential secret;
+    PasswordCredential credential;
 
     if (existing == null) {
-      secret = new PasswordCredential(name);
+      credential = new PasswordCredential(name);
     } else {
-      secret = new PasswordCredential();
-      secret.copyNameReferenceFrom(existing);
+      credential = new PasswordCredential();
+      credential.copyNameReferenceFrom(existing);
     }
 
     if (accessControlEntries == null) {
       accessControlEntries = new ArrayList<>();
     }
 
-    secret.setAccessControlList(accessControlEntries);
+    credential.setAccessControlList(accessControlEntries);
 
-    secret.setEncryptor(encryptor);
-    secret.setPasswordAndGenerationParameters(password, generationParameters);
-    return secret;
+    credential.setEncryptor(encryptor);
+    credential.setPasswordAndGenerationParameters(password, generationParameters);
+    return credential;
   }
 
   public String getPassword() {
@@ -121,8 +121,8 @@ public class PasswordCredential extends Credential<PasswordCredential> {
   }
 
   @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
+  public String getCredentialType() {
+    return delegate.getCredentialType();
   }
 
   public void rotate() {

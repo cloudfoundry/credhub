@@ -139,7 +139,7 @@ public class CredentialsControllerDeleteTest {
         });
       });
 
-      describe("when there are multiple secrets with that name", () -> {
+      describe("when there are multiple credentials with that name", () -> {
         beforeEach(() -> {
           doReturn(true).when(credentialDataService).delete(credentialName);
           doReturn(new ValueCredential()).when(credentialDataService).findMostRecent(credentialName);

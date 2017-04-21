@@ -1,5 +1,13 @@
 package io.pivotal.security.generator;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.util.CertificateFormatter;
+import org.junit.runner.RunWith;
+
+import java.security.KeyPair;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -9,13 +17,6 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.util.CertificateFormatter;
-import java.security.KeyPair;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class RsaGeneratorTest {
@@ -37,9 +38,9 @@ public class RsaGeneratorTest {
       subject = new RsaGenerator(keyPairGenerator);
     });
 
-    describe("generateSecret", () -> {
+    describe("generateCredential", () -> {
       it("should return a generated credential", () -> {
-        final RsaKey rsa = subject.generateSecret(new RsaGenerationParameters());
+        final RsaKey rsa = subject.generateCredential(new RsaGenerationParameters());
 
         verify(keyPairGenerator).generateKeyPair(2048);
 
@@ -48,10 +49,10 @@ public class RsaGeneratorTest {
       });
 
       it("should use the provided key length", () -> {
-        RsaGenerationParameters rsaSecretParameters = new RsaGenerationParameters();
-        rsaSecretParameters.setKeyLength(4096);
+        RsaGenerationParameters rsaGenerationParameters = new RsaGenerationParameters();
+        rsaGenerationParameters.setKeyLength(4096);
 
-        subject.generateSecret(rsaSecretParameters);
+        subject.generateCredential(rsaGenerationParameters);
 
         verify(keyPairGenerator).generateKeyPair(4096);
       });

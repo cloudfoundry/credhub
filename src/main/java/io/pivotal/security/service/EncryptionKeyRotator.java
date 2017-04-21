@@ -26,19 +26,19 @@ public class EncryptionKeyRotator {
 
     final long startingNotRotatedRecordCount = credentialDataService.countAllNotEncryptedByActiveKey();
 
-    Slice<Credential> secretsEncryptedByOldKey = credentialDataService
+    Slice<Credential> credentialsEncryptedByOldKey = credentialDataService
         .findEncryptedWithAvailableInactiveKey();
-    while (secretsEncryptedByOldKey.hasContent()) {
-      for (Credential secret : secretsEncryptedByOldKey.getContent()) {
+    while (credentialsEncryptedByOldKey.hasContent()) {
+      for (Credential credential : credentialsEncryptedByOldKey.getContent()) {
         try {
-          secret.rotate();
-          credentialDataService.save(secret);
+          credential.rotate();
+          credentialDataService.save(credential);
           rotatedRecordCount++;
         } catch (KeyNotFoundException e) {
           logger.error("key not found for value, unable to rotate");
         }
       }
-      secretsEncryptedByOldKey = credentialDataService.findEncryptedWithAvailableInactiveKey();
+      credentialsEncryptedByOldKey = credentialDataService.findEncryptedWithAvailableInactiveKey();
     }
 
     final long finish = System.currentTimeMillis();

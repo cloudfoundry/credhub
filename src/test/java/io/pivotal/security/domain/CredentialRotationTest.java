@@ -2,12 +2,12 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedCertificateSecretData;
-import io.pivotal.security.entity.NamedPasswordSecretData;
-import io.pivotal.security.entity.NamedRsaSecretData;
-import io.pivotal.security.entity.NamedSecretData;
-import io.pivotal.security.entity.NamedSshSecretData;
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.CertificateCredentialData;
+import io.pivotal.security.entity.PasswordCredentialData;
+import io.pivotal.security.entity.RsaCredentialData;
+import io.pivotal.security.entity.CredentialData;
+import io.pivotal.security.entity.SshCredentialData;
+import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -72,50 +72,50 @@ public class CredentialRotationTest {
       describe("when the credential contains an encrypted value", () -> {
         describe("when the credential is a Certificate", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedCertificateSecretData namedCertificateSecretData =
-                new NamedCertificateSecretData("some-name");
-            CertificateCredential secret = new CertificateCredential(namedCertificateSecretData);
-            assertRotation(secret, namedCertificateSecretData);
+            CertificateCredentialData certificateCredentialData =
+                new CertificateCredentialData("some-name");
+            CertificateCredential credential = new CertificateCredential(certificateCredentialData);
+            assertRotation(credential, certificateCredentialData);
           });
         });
 
         describe("when the credential is a SSH key", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedSshSecretData namedSshSecretData = new NamedSshSecretData("ssh-key");
-            SshCredential secret = new SshCredential(namedSshSecretData);
-            assertRotation(secret, namedSshSecretData);
+            SshCredentialData sshCredentialData = new SshCredentialData("ssh-key");
+            SshCredential credential = new SshCredential(sshCredentialData);
+            assertRotation(credential, sshCredentialData);
           });
         });
 
         describe("when the credential is a RSA key", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedRsaSecretData namedRsaSecretData = new NamedRsaSecretData("rsa key");
-            RsaCredential secret = new RsaCredential(namedRsaSecretData);
-            assertRotation(secret, namedRsaSecretData);
+            RsaCredentialData rsaCredentialData = new RsaCredentialData("rsa key");
+            RsaCredential credential = new RsaCredential(rsaCredentialData);
+            assertRotation(credential, rsaCredentialData);
           });
         });
 
         describe("when the credential is a value credential", () -> {
           it("should re-encrypt with the active encryption key", () -> {
-            NamedValueSecretData namedValueSecretData = new NamedValueSecretData("value key");
-            ValueCredential secret = new ValueCredential(namedValueSecretData);
-            assertRotation(secret, namedValueSecretData);
+            ValueCredentialData valueCredentialData = new ValueCredentialData("value key");
+            ValueCredential credential = new ValueCredential(valueCredentialData);
+            assertRotation(credential, valueCredentialData);
           });
         });
 
-        describe("when the credential is a NamedPasswordSecretData", () -> {
+        describe("when the credential is a PasswordCredentialData", () -> {
           it("should re-encrypt the password and the parameters with the active encryption key",
               () -> {
-            NamedPasswordSecretData namedPasswordSecretData =
-                new NamedPasswordSecretData("some-name");
-            namedPasswordSecretData.setEncryptionKeyUuid(oldEncryptionKeyUuid);
-            namedPasswordSecretData.setEncryptedValue("old-encrypted-value".getBytes());
-            namedPasswordSecretData.setNonce("old-nonce".getBytes());
-            PasswordCredential password = new PasswordCredential(namedPasswordSecretData);
+            PasswordCredentialData passwordCredentialData =
+                new PasswordCredentialData("some-name");
+            passwordCredentialData.setEncryptionKeyUuid(oldEncryptionKeyUuid);
+            passwordCredentialData.setEncryptedValue("old-encrypted-value".getBytes());
+            passwordCredentialData.setNonce("old-nonce".getBytes());
+            PasswordCredential password = new PasswordCredential(passwordCredentialData);
             password.setEncryptor(encryptor);
 
-            namedPasswordSecretData.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
-            namedPasswordSecretData.setParametersNonce("old-parameters-nonce".getBytes());
+            passwordCredentialData.setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
+            passwordCredentialData.setParametersNonce("old-parameters-nonce".getBytes());
 
             stringifiedParameters = new ObjectMapper()
                 .writeValueAsString(new StringGenerationParameters());
@@ -129,15 +129,15 @@ public class CredentialRotationTest {
                     "new-encrypted-parameters".getBytes(), "new-nonce-parameters".getBytes()));
 
             password.rotate();
-            assertThat(namedPasswordSecretData.getEncryptionKeyUuid(),
+            assertThat(passwordCredentialData.getEncryptionKeyUuid(),
                 equalTo(activeEncryptionKeyUuid));
-            assertThat(namedPasswordSecretData.getEncryptedValue(),
+            assertThat(passwordCredentialData.getEncryptedValue(),
                 equalTo("new-encrypted-value".getBytes()));
-            assertThat(namedPasswordSecretData.getNonce(), equalTo("new-nonce".getBytes()));
+            assertThat(passwordCredentialData.getNonce(), equalTo("new-nonce".getBytes()));
 
-            assertThat(namedPasswordSecretData.getEncryptedGenerationParameters(),
+            assertThat(passwordCredentialData.getEncryptedGenerationParameters(),
                 equalTo("new-encrypted-parameters".getBytes()));
-            assertThat(namedPasswordSecretData.getParametersNonce(),
+            assertThat(passwordCredentialData.getParametersNonce(),
                 equalTo("new-nonce-parameters".getBytes()));
           });
         });
@@ -146,13 +146,13 @@ public class CredentialRotationTest {
   }
 
 
-  private void assertRotation(Credential secret, NamedSecretData delegate) {
-    secret.setEncryptor(encryptor);
+  private void assertRotation(Credential credential, CredentialData delegate) {
+    credential.setEncryptor(encryptor);
     delegate.setEncryptionKeyUuid(oldEncryptionKeyUuid);
     delegate.setEncryptedValue("old-encrypted-value".getBytes());
     delegate.setNonce("old-nonce".getBytes());
 
-    secret.rotate();
+    credential.rotate();
 
     assertThat(delegate.getEncryptionKeyUuid(), equalTo(activeEncryptionKeyUuid));
     assertThat(delegate.getEncryptedValue(), equalTo("new-encrypted-value".getBytes()));

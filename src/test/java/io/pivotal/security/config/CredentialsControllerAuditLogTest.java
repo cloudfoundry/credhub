@@ -133,10 +133,10 @@ public class CredentialsControllerAuditLogTest {
     describe("when a request to set credential is served", () -> {
       beforeEach(() -> {
         when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-          ValueCredential namedValueSecret = invocation.getArgumentAt(0, ValueCredential.class);
-          namedValueSecret.setEncryptor(encryptor);
-          namedValueSecret.setUuid(UUID.randomUUID());
-          return namedValueSecret;
+          ValueCredential valueCredential = invocation.getArgumentAt(0, ValueCredential.class);
+          valueCredential.setEncryptor(encryptor);
+          valueCredential.setUuid(UUID.randomUUID());
+          return valueCredential;
         });
 
         MockHttpServletRequestBuilder set = put(API_V1_DATA)
@@ -169,10 +169,10 @@ public class CredentialsControllerAuditLogTest {
     describe("when a request to generate a credential is served", () -> {
       beforeEach(() -> {
         when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-          PasswordCredential namedPasswordSecret = invocation
+          PasswordCredential passwordCredential = invocation
               .getArgumentAt(0, PasswordCredential.class);
-          namedPasswordSecret.setUuid(UUID.randomUUID());
-          return namedPasswordSecret;
+          passwordCredential.setUuid(UUID.randomUUID());
+          return passwordCredential;
         });
 
         MockHttpServletRequestBuilder post = post(API_V1_DATA)
@@ -250,9 +250,9 @@ public class CredentialsControllerAuditLogTest {
     describe("when a request has multiple X-Forwarded-For headers set", () -> {
       beforeEach(() -> {
         when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-          ValueCredential namedValueSecret = invocation.getArgumentAt(0, ValueCredential.class);
-          namedValueSecret.setUuid(UUID.randomUUID());
-          return namedValueSecret;
+          ValueCredential valueCredential = invocation.getArgumentAt(0, ValueCredential.class);
+          valueCredential.setUuid(UUID.randomUUID());
+          return valueCredential;
         });
 
         MockHttpServletRequestBuilder set = put(API_V1_DATA)

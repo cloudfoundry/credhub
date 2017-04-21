@@ -5,25 +5,25 @@ import javax.persistence.*;
 import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
 
 @Entity
-@DiscriminatorValue(NamedPasswordSecretData.SECRET_TYPE)
+@DiscriminatorValue(PasswordCredentialData.CREDENTIAL_TYPE)
 @SecondaryTable(
-    name = NamedPasswordSecretData.TABLE_NAME,
+    name = PasswordCredentialData.TABLE_NAME,
     pkJoinColumns = {@PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")}
 )
-public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecretData> {
+public class PasswordCredentialData extends CredentialData<PasswordCredentialData> {
 
-  public static final String SECRET_TYPE = "password";
+  public static final String CREDENTIAL_TYPE = "password";
   static final String TABLE_NAME = "PasswordSecret";
-  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = 255 + NONCE_SIZE)
+  @Column(table = PasswordCredentialData.TABLE_NAME, length = 255 + NONCE_SIZE)
   private byte[] encryptedGenerationParameters;
-  @Column(table = NamedPasswordSecretData.TABLE_NAME, length = NONCE_SIZE)
+  @Column(table = PasswordCredentialData.TABLE_NAME, length = NONCE_SIZE)
   private byte[] parametersNonce;
 
   @SuppressWarnings("unused")
-  public NamedPasswordSecretData() {
+  public PasswordCredentialData() {
   }
 
-  public NamedPasswordSecretData(String name) {
+  public PasswordCredentialData(String name) {
     super(name);
   }
 
@@ -31,7 +31,7 @@ public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecret
     return encryptedGenerationParameters;
   }
 
-  public NamedPasswordSecretData setEncryptedGenerationParameters(
+  public PasswordCredentialData setEncryptedGenerationParameters(
       byte[] encryptedGenerationParameters) {
     this.encryptedGenerationParameters = encryptedGenerationParameters;
     return this;
@@ -41,13 +41,13 @@ public class NamedPasswordSecretData extends NamedSecretData<NamedPasswordSecret
     return parametersNonce;
   }
 
-  public NamedPasswordSecretData setParametersNonce(byte[] parametersNonce) {
+  public PasswordCredentialData setParametersNonce(byte[] parametersNonce) {
     this.parametersNonce = parametersNonce;
     return this;
   }
 
   @Override
-  public String getSecretType() {
-    return SECRET_TYPE;
+  public String getCredentialType() {
+    return CREDENTIAL_TYPE;
   }
 }

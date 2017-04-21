@@ -1,7 +1,7 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.NamedRsaSecretData;
+import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
@@ -14,7 +14,6 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -35,7 +34,7 @@ public class RsaCredentialTest {
     });
 
     it("returns type rsa", () -> {
-      assertThat(subject.getSecretType(), equalTo("rsa"));
+      assertThat(subject.getCredentialType(), equalTo("rsa"));
     });
 
     describe("#createNewVersion", () -> {
@@ -47,7 +46,7 @@ public class RsaCredentialTest {
         when(encryptor.decrypt(any(UUID.class), eq(encryptedValue), eq(nonce)))
             .thenReturn("new private key");
 
-        NamedRsaSecretData delegate = new NamedRsaSecretData("/existingName");
+        RsaCredentialData delegate = new RsaCredentialData("/existingName");
         delegate.setEncryptedValue("old encrypted private key".getBytes());
         subject = new RsaCredential(delegate);
         subject.setEncryptor(encryptor);
@@ -55,23 +54,23 @@ public class RsaCredentialTest {
 
       it("copies name from existing", () -> {
         KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
-        RsaCredential newSecret = (RsaCredential) RsaCredential
+        RsaCredential newCredential = RsaCredential
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
                 new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/existingName"));
-        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
-        assertThat(newSecret.getPublicKey(), equalTo("public key"));
+        assertThat(newCredential.getName(), equalTo("/existingName"));
+        assertThat(newCredential.getPrivateKey(), equalTo("new private key"));
+        assertThat(newCredential.getPublicKey(), equalTo("public key"));
       });
 
       it("creates new if no existing", () -> {
         KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
-        RsaCredential newSecret = (RsaCredential) RsaCredential
+        RsaCredential newCredential = RsaCredential
             .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 
-        assertThat(newSecret.getName(), equalTo("/newName"));
-        assertThat(newSecret.getPrivateKey(), equalTo("new private key"));
-        assertThat(newSecret.getPublicKey(), equalTo("public key"));
+        assertThat(newCredential.getName(), equalTo("/newName"));
+        assertThat(newCredential.getPrivateKey(), equalTo("new private key"));
+        assertThat(newCredential.getPublicKey(), equalTo("public key"));
       });
     });
   }

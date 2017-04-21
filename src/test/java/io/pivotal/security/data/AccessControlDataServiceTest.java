@@ -13,7 +13,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
@@ -106,8 +106,8 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void setAccessControlEntries_whenGivenANewAce_returnsTheAcl() {
-    final NamedValueSecretData namedValueSecretData2 = new NamedValueSecretData("lightsaber2");
-    final CredentialName credentialName2 = namedValueSecretData2.getCredentialName();
+    final ValueCredentialData valueCredentialData2 = new ValueCredentialData("lightsaber2");
+    final CredentialName credentialName2 = valueCredentialData2.getCredentialName();
 
     credentialNameRepository.saveAndFlush(credentialName2);
     aces = singletonList(
@@ -212,8 +212,8 @@ public class AccessControlDataServiceTest {
   }
 
   private void seedDatabase() {
-    final NamedValueSecretData namedValueSecretData = new NamedValueSecretData("lightsaber");
-    final CredentialName credentialName = namedValueSecretData.getCredentialName();
+    final ValueCredentialData valueCredentialData = new ValueCredentialData("lightsaber");
+    final CredentialName credentialName = valueCredentialData.getCredentialName();
 
     credentialNameRepository.saveAndFlush(credentialName);
 

@@ -86,11 +86,11 @@ public class AuthConfigurationTest {
     describe("/api/v1/data", () -> {
       beforeEach(() -> {
         when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-          PasswordCredential namedPasswordSecret = invocation
+          PasswordCredential passwordCredential = invocation
               .getArgumentAt(0, PasswordCredential.class);
-          namedPasswordSecret.setUuid(UUID.randomUUID());
-          namedPasswordSecret.setVersionCreatedAt(Instant.now());
-          return namedPasswordSecret;
+          passwordCredential.setUuid(UUID.randomUUID());
+          passwordCredential.setVersionCreatedAt(Instant.now());
+          return passwordCredential;
         });
       });
 

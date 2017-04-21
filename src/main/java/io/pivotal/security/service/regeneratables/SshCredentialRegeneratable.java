@@ -9,14 +9,14 @@ import io.pivotal.security.request.SshGenerationParameters;
 public class SshCredentialRegeneratable implements Regeneratable {
 
   @Override
-  public BaseCredentialGenerateRequest createGenerateRequest(Credential secret) {
-    SshCredential sshSecret = (SshCredential) secret;
+  public BaseCredentialGenerateRequest createGenerateRequest(Credential credential) {
+    SshCredential sshCredential = (SshCredential) credential;
     SshGenerateRequest generateRequest = new SshGenerateRequest();
 
-    generateRequest.setName(sshSecret.getName());
-    generateRequest.setType(sshSecret.getSecretType());
+    generateRequest.setName(sshCredential.getName());
+    generateRequest.setType(sshCredential.getCredentialType());
     SshGenerationParameters generationParameters = new SshGenerationParameters();
-    generationParameters.setSshComment(sshSecret.getComment());
+    generationParameters.setSshComment(sshCredential.getComment());
     generateRequest.setGenerationParameters(generationParameters);
     generateRequest.setOverwrite(true);
     return generateRequest;

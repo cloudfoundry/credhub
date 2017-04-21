@@ -3,8 +3,8 @@ package io.pivotal.security.repository;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.entity.NamedCertificateSecretData;
-import io.pivotal.security.entity.NamedValueSecretData;
+import io.pivotal.security.entity.CertificateCredentialData;
+import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.runner.RunWith;
@@ -53,7 +53,7 @@ public class CredentialRepositoryTest {
       Arrays.fill(encryptedValue, (byte) 'A');
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      NamedCertificateSecretData entity = new NamedCertificateSecretData();
+      CertificateCredentialData entity = new CertificateCredentialData();
       CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
       final String longString = stringBuilder.toString();
       entity.setCredentialName(credentialName);
@@ -63,12 +63,12 @@ public class CredentialRepositoryTest {
       entity.setEncryptionKeyUuid(canaryUuid);
 
       subject.save(entity);
-      NamedCertificateSecretData certificateSecret = (NamedCertificateSecretData) subject
+      CertificateCredentialData credentialData = (CertificateCredentialData) subject
           .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid());
-      assertThat(certificateSecret.getCa().length(), equalTo(7000));
-      assertThat(certificateSecret.getCertificate().length(), equalTo(7000));
-      assertThat(certificateSecret.getEncryptedValue(), equalTo(encryptedValue));
-      assertThat(certificateSecret.getEncryptedValue().length, equalTo(7016));
+      assertThat(credentialData.getCa().length(), equalTo(7000));
+      assertThat(credentialData.getCertificate().length(), equalTo(7000));
+      assertThat(credentialData.getEncryptedValue(), equalTo(encryptedValue));
+      assertThat(credentialData.getEncryptedValue().length, equalTo(7016));
     });
 
     it("can store strings of length 7000, which means 7016 for GCM", () -> {
@@ -77,7 +77,7 @@ public class CredentialRepositoryTest {
 
       final StringBuilder stringBuilder = new StringBuilder(7000);
       Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      NamedValueSecretData entity = new NamedValueSecretData();
+      ValueCredentialData entity = new ValueCredentialData();
       CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
       entity.setCredentialName(credentialName);
       entity.setEncryptedValue(encryptedValue);

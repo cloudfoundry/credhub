@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.entity.NamedSshSecretData;
+import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
@@ -11,44 +11,44 @@ import java.util.List;
 
 public class SshCredential extends Credential<SshCredential> {
 
-  private NamedSshSecretData delegate;
+  private SshCredentialData delegate;
 
-  public SshCredential(NamedSshSecretData delegate) {
+  public SshCredential(SshCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
   }
 
   public SshCredential(String name) {
-    this(new NamedSshSecretData(name));
+    this(new SshCredentialData(name));
   }
 
   public SshCredential() {
-    this(new NamedSshSecretData());
+    this(new SshCredentialData());
   }
 
   public static SshCredential createNewVersion(SshCredential existing, String name,
                                                KeySetRequestFields fields, Encryptor encryptor,
                                                List<AccessControlEntry> accessControlEntries) {
-    SshCredential secret;
+    SshCredential credential;
 
     if (existing == null) {
-      secret = new SshCredential(name);
+      credential = new SshCredential(name);
     } else {
-      secret = new SshCredential();
-      secret.copyNameReferenceFrom(existing);
+      credential = new SshCredential();
+      credential.copyNameReferenceFrom(existing);
     }
 
     if (accessControlEntries == null) {
       accessControlEntries = new ArrayList<>();
     }
 
-    secret.setAccessControlList(accessControlEntries);
+    credential.setAccessControlList(accessControlEntries);
 
-    secret.setEncryptor(encryptor);
-    secret.setPrivateKey(fields.getPrivateKey());
-    secret.setPublicKey(fields.getPublicKey());
+    credential.setEncryptor(encryptor);
+    credential.setPrivateKey(fields.getPrivateKey());
+    credential.setPublicKey(fields.getPublicKey());
 
-    return secret;
+    return credential;
   }
 
   public String getPublicKey() {
@@ -85,8 +85,8 @@ public class SshCredential extends Credential<SshCredential> {
 
 
   @Override
-  public String getSecretType() {
-    return delegate.getSecretType();
+  public String getCredentialType() {
+    return delegate.getCredentialType();
   }
 
   public int getKeyLength() {

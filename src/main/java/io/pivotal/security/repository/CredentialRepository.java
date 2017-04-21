@@ -1,6 +1,6 @@
 package io.pivotal.security.repository;
 
-import io.pivotal.security.entity.NamedSecretData;
+import io.pivotal.security.entity.CredentialData;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,19 +8,19 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.UUID;
 
-public interface CredentialRepository extends JpaRepository<NamedSecretData, UUID> {
+public interface CredentialRepository extends JpaRepository<CredentialData, UUID> {
 
   int BATCH_SIZE = 50;
 
-  NamedSecretData findOneByUuid(UUID uuid);
+  CredentialData findOneByUuid(UUID uuid);
 
   Long countByEncryptionKeyUuidNot(UUID encryptionKeyUuid);
 
   Long countByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids);
 
-  Slice<NamedSecretData> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
+  Slice<CredentialData> findByEncryptionKeyUuidIn(List<UUID> encryptionKeyUuids, Pageable page);
 
-  List<NamedSecretData> findAllByCredentialNameUuid(UUID uuid);
+  List<CredentialData> findAllByCredentialNameUuid(UUID uuid);
 
-  NamedSecretData findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
+  CredentialData findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(UUID uuid);
 }

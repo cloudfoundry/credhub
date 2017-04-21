@@ -1,5 +1,14 @@
 package io.pivotal.security.generator;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.util.CertificateFormatter;
+import org.junit.runner.RunWith;
+
+import java.security.KeyPair;
+import java.security.interfaces.RSAPublicKey;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -9,14 +18,6 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.credential.SshKey;
-import io.pivotal.security.util.CertificateFormatter;
-import java.security.KeyPair;
-import java.security.interfaces.RSAPublicKey;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class SshGeneratorTest {
@@ -35,9 +36,9 @@ public class SshGeneratorTest {
       when(keyPairGeneratorMock.generateKeyPair(anyInt())).thenReturn(keyPair);
     });
 
-    describe("generateSecret", () -> {
+    describe("generateCredential", () -> {
       it("should return a generated credential", () -> {
-        final SshKey ssh = subject.generateSecret(new SshGenerationParameters());
+        final SshKey ssh = subject.generateCredential(new SshGenerationParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
@@ -47,19 +48,19 @@ public class SshGeneratorTest {
       });
 
       it("should use the provided key length", () -> {
-        SshGenerationParameters sshSecretParameters = new SshGenerationParameters();
-        sshSecretParameters.setKeyLength(4096);
+        SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
+        sshGenerationParameters.setKeyLength(4096);
 
-        subject.generateSecret(sshSecretParameters);
+        subject.generateCredential(sshGenerationParameters);
 
         verify(keyPairGeneratorMock).generateKeyPair(4096);
       });
 
       it("should use the provided ssh comment", () -> {
-        SshGenerationParameters sshSecretParameters = new SshGenerationParameters();
-        sshSecretParameters.setSshComment("this is an ssh comment");
+        SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
+        sshGenerationParameters.setSshComment("this is an ssh comment");
 
-        final SshKey ssh = subject.generateSecret(sshSecretParameters);
+        final SshKey ssh = subject.generateCredential(sshGenerationParameters);
 
         String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())
             + " this is an ssh comment";

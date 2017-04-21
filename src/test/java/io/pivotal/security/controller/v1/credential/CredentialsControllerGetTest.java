@@ -109,40 +109,40 @@ public class CredentialsControllerGetTest {
     });
 
     describe("getting a credential", () -> {
-      final String secretValue = "my value";
+      final String credentialValue = "my value";
 
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        ValueCredential valueSecret = new ValueCredential(credentialName)
+        ValueCredential valueCredential1 = new ValueCredential(credentialName)
             .setEncryptor(encryptor)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime);
-        ValueCredential valueSecret2 = new ValueCredential(credentialName)
+        ValueCredential valueCredential2 = new ValueCredential(credentialName)
             .setEncryptor(encryptor)
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime);
 
-        doReturn(secretValue).when(encryptor)
+        doReturn(credentialValue).when(encryptor)
             .decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
 
         doReturn(
-            valueSecret
+            valueCredential1
         ).when(credentialDataService).findMostRecent(credentialName);
         doReturn(
-            newArrayList(valueSecret, valueSecret2)
+            newArrayList(valueCredential1, valueCredential2)
         ).when(credentialDataService).findAllByName(credentialName.toUpperCase());
         doReturn(
-            valueSecret
+            valueCredential1
         ).when(credentialDataService).findMostRecent(credentialName.toUpperCase());
         doReturn(
-            valueSecret
+            valueCredential1
         ).when(credentialDataService).findByUuid(uuid.toString());
       });
 
       describe(
           "case insensitive get credential by name (with name query param, and no leading slash)",
           makeGetByNameBlock(
-              secretValue,
+              credentialValue,
               "/api/v1/data?name=" + credentialName.toUpperCase(),
               "/api/v1/data?name=invalid_name", "$.data[0]"
           ));
@@ -150,7 +150,7 @@ public class CredentialsControllerGetTest {
       describe(
           "when user does not have permissions to retrieve the credential",
           makeGetByNameBlockWithNoPermissions(
-              secretValue,
+              credentialValue,
               "/api/v1/data?name=" + credentialName.toUpperCase(),
               "/api/v1/data?name=invalid_name", "$.data[0]"
           ));
@@ -231,7 +231,7 @@ public class CredentialsControllerGetTest {
           this.response.andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.type").value("value"))
-              .andExpect(jsonPath("$.value").value(secretValue))
+              .andExpect(jsonPath("$.value").value(credentialValue))
               .andExpect(jsonPath("$.id").value(uuid.toString()))
               .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
         });
@@ -246,7 +246,7 @@ public class CredentialsControllerGetTest {
     describe("when key not present", () -> {
       beforeEach(() -> {
         uuid = UUID.randomUUID();
-        ValueCredential valueSecret =
+        ValueCredential valueCredential =
             new ValueCredential(credentialName)
                 .setEncryptor(encryptor)
                 .setUuid(uuid)
@@ -254,7 +254,7 @@ public class CredentialsControllerGetTest {
 
         doThrow(new KeyNotFoundException("error.missing_encryption_key"))
             .when(encryptor).decrypt(any(UUID.class), any(byte[].class), any(byte[].class));
-        doReturn(Arrays.asList(valueSecret)).when(credentialDataService)
+        doReturn(Arrays.asList(valueCredential)).when(credentialDataService)
             .findAllByName(credentialName.toUpperCase());
       });
 
@@ -276,7 +276,7 @@ public class CredentialsControllerGetTest {
   }
 
   private Spectrum.Block makeGetByNameBlock(
-      String secretValue,
+      String credentialValue,
       String validUrl,
       String invalidUrl,
       String jsonPathPrefix
@@ -294,7 +294,7 @@ public class CredentialsControllerGetTest {
         this.response.andExpect(status().isOk())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(jsonPath(jsonPathPrefix + ".type").value("value"))
-            .andExpect(jsonPath(jsonPathPrefix + ".value").value(secretValue))
+            .andExpect(jsonPath(jsonPathPrefix + ".value").value(credentialValue))
             .andExpect(jsonPath(jsonPathPrefix + ".id").value(uuid.toString()))
             .andExpect(
                 jsonPath(jsonPathPrefix + ".version_created_at").value(frozenTime.toString()));
@@ -322,7 +322,7 @@ public class CredentialsControllerGetTest {
   }
 
   private Spectrum.Block makeGetByNameBlockWithNoPermissions(
-      String secretValue,
+      String credentialValue,
       String validUrl,
       String invalidUrl,
       String jsonPathPrefix

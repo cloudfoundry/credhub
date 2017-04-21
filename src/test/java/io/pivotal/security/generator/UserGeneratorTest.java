@@ -29,26 +29,26 @@ public class UserGeneratorTest {
 
     parameters = new UserGenerationParameters();
 
-    when(passwordGenerator.generateSecret(same(parameters.getPasswordGenerationParameters())))
+    when(passwordGenerator.generateCredential(same(parameters.getPasswordGenerationParameters())))
         .thenReturn(new StringCredential("fake-password"));
-    when(passwordGenerator.generateSecret(same(parameters.getUsernameGenerationParameters())))
+    when(passwordGenerator.generateCredential(same(parameters.getUsernameGenerationParameters())))
         .thenReturn(new StringCredential("fake-user"));
   }
 
   @Test
-  public void generateSecret_generatesUsernameAndPassword_withCorrect_generationParameters() {
-    assertThat(subject.generateSecret(parameters).getPassword(), equalTo("fake-password"));
-    assertThat(subject.generateSecret(parameters).getUsername(), equalTo("fake-user"));
+  public void generateCredential_generatesUsernameAndPassword_withCorrect_generationParameters() {
+    assertThat(subject.generateCredential(parameters).getPassword(), equalTo("fake-password"));
+    assertThat(subject.generateCredential(parameters).getUsername(), equalTo("fake-user"));
   }
 
   @Test
-  public void generateSecret_generatesOnlyPassword_withNull_usernameParameters() throws Exception{
+  public void generateCredential_generatesOnlyPassword_withNull_usernameParameters() throws Exception{
     parameters.setUsernameGenerationParameters(null);
 
-    when(passwordGenerator.generateSecret(same(parameters.getUsernameGenerationParameters())))
+    when(passwordGenerator.generateCredential(same(parameters.getUsernameGenerationParameters())))
       .thenThrow(NullPointerException.class);
 
-    assertThat(subject.generateSecret(parameters).getPassword(), equalTo("fake-password"));
-    assertThat(subject.generateSecret(parameters).getUsername(), is(nullValue()));
+    assertThat(subject.generateCredential(parameters).getPassword(), equalTo("fake-password"));
+    assertThat(subject.generateCredential(parameters).getUsername(), is(nullValue()));
   }
 }

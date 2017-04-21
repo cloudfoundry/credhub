@@ -63,7 +63,7 @@ public class CredentialsControllerErrorHandlingSetTest {
 
   private final String credentialName = "/my-namespace/secretForSetTest/credential-name";
 
-  final String secretValue = "credential-value";
+  final String credentialValue = "credential-value";
 
   {
     wireAndUnwire(this);
@@ -79,11 +79,11 @@ public class CredentialsControllerErrorHandlingSetTest {
       describe("via parameter in request body", () -> {
         describe("error handling", () -> {
           it("returns 400 when the handler raises an exception", () -> {
-            ValueCredential namedValueSecret = new ValueCredential(credentialName);
-            namedValueSecret.setEncryptor(encryptor);
-            namedValueSecret.setValue(secretValue);
+            ValueCredential valueCredential = new ValueCredential(credentialName);
+            valueCredential.setEncryptor(encryptor);
+            valueCredential.setValue(credentialValue);
             doReturn(
-                namedValueSecret
+                valueCredential
             ).when(credentialDataService).findMostRecent(credentialName);
 
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -380,7 +380,7 @@ public class CredentialsControllerErrorHandlingSetTest {
 
     describe("updating a credential", () -> {
       beforeEach(() -> {
-        putSecretInDatabase(credentialName, "original value");
+        putCredentialInDatabase(credentialName, "original value");
       });
 
       it("should return 400 when trying to update a credential with a mismatching type", () -> {
@@ -412,7 +412,7 @@ public class CredentialsControllerErrorHandlingSetTest {
     });
   }
 
-  private void putSecretInDatabase(String name, String value) throws Exception {
+  private void putCredentialInDatabase(String name, String value) throws Exception {
     final MockHttpServletRequestBuilder put = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)

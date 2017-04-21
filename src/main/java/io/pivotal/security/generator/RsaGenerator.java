@@ -1,11 +1,12 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.util.CertificateFormatter;
-import java.security.KeyPair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.security.KeyPair;
 
 @Component
 public class RsaGenerator implements CredentialGenerator<RsaGenerationParameters, RsaKey> {
@@ -18,7 +19,7 @@ public class RsaGenerator implements CredentialGenerator<RsaGenerationParameters
   }
 
   @Override
-  public RsaKey generateSecret(RsaGenerationParameters parameters) {
+  public RsaKey generateCredential(RsaGenerationParameters parameters) {
     try {
       final KeyPair keyPair = keyGenerator.generateKeyPair(parameters.getKeyLength());
       return new RsaKey(CertificateFormatter.pemOf(keyPair.getPublic()),

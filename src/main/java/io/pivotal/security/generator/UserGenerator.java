@@ -14,16 +14,16 @@ public class UserGenerator {
     this.stringGenerator = stringGenerator;
   }
 
-  public User generateSecret(UserGenerationParameters generationParameters) {
-    StringCredential generatedPassword = stringGenerator.generateSecret(generationParameters.getPasswordGenerationParameters());
+  public User generateCredential(UserGenerationParameters generationParameters) {
+    StringCredential generatedPassword = stringGenerator.generateCredential(generationParameters.getPasswordGenerationParameters());
 
     StringCredential generatedUser = null;
     if (generationParameters.getUsernameGenerationParameters() != null) {
-      generatedUser = stringGenerator.generateSecret(generationParameters.getUsernameGenerationParameters());
+      generatedUser = stringGenerator.generateCredential(generationParameters.getUsernameGenerationParameters());
     }
 
-    String username = generatedUser == null ? null : generatedUser.getStringSecret();
+    String username = generatedUser == null ? null : generatedUser.getStringCredential();
 
-    return new User(username, generatedPassword.getStringSecret());
+    return new User(username, generatedPassword.getStringCredential());
   }
 }

@@ -46,10 +46,10 @@ public class BaseCredentialRequestTest {
             + "\"name\":\"some-name\","
             + "\"value\":\"some-value\""
             + "}";
-        BaseCredentialSetRequest secretSetRequest = deserialize(json, BaseCredentialSetRequest.class);
+        BaseCredentialSetRequest credentialSetRequest = deserialize(json, BaseCredentialSetRequest.class);
 
-        assertThat(secretSetRequest.getType(), equalTo("value"));
-        assertThat(secretSetRequest.getName(), equalTo("some-name"));
+        assertThat(credentialSetRequest.getType(), equalTo("value"));
+        assertThat(credentialSetRequest.getName(), equalTo("some-name"));
       });
 
       describe("#isOverwrite", () -> {
@@ -60,9 +60,9 @@ public class BaseCredentialRequestTest {
               + "\"name\":\"some-name\","
               + "\"value\":\"some-value\""
               + "}";
-          BaseCredentialSetRequest secretSetRequest = deserialize(json, BaseCredentialSetRequest.class);
+          BaseCredentialSetRequest credentialSetRequest = deserialize(json, BaseCredentialSetRequest.class);
 
-          assertThat(secretSetRequest.isOverwrite(), equalTo(false));
+          assertThat(credentialSetRequest.isOverwrite(), equalTo(false));
         });
 
         it("should take the provided value if set", () -> {
@@ -73,9 +73,9 @@ public class BaseCredentialRequestTest {
               + "\"value\":\"some-value\","
               + "\"overwrite\":true"
               + "}";
-          BaseCredentialSetRequest secretSetRequest = deserialize(json, BaseCredentialSetRequest.class);
+          BaseCredentialSetRequest credentialSetRequest = deserialize(json, BaseCredentialSetRequest.class);
 
-          assertThat(secretSetRequest.isOverwrite(), equalTo(true));
+          assertThat(credentialSetRequest.isOverwrite(), equalTo(true));
         });
       });
     });
