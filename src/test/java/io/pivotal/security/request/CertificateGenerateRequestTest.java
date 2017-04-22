@@ -1,5 +1,14 @@
 package io.pivotal.security.request;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.service.GeneratorService;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+
+import java.util.Arrays;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -14,14 +23,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.service.GeneratorService;
-import java.util.Arrays;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-
 @RunWith(Spectrum.class)
 public class CertificateGenerateRequestTest {
   private GeneratorService generatorService;
@@ -35,7 +36,7 @@ public class CertificateGenerateRequestTest {
       beforeEach(() -> {
         generatorService = mock(GeneratorService.class);
         when(generatorService.generateCertificate(any(CertificateParameters.class)))
-            .thenReturn(new Certificate("ca", "certificate", "private_key"));
+            .thenReturn(new Certificate("ca", "certificate", "private_key", null));
 
         accessControlEntry = new AccessControlEntry("test-actor",
             Arrays.asList(READ, WRITE));
@@ -58,9 +59,9 @@ public class CertificateGenerateRequestTest {
         assertThat(setRequest.getName(), equalTo("test-name"));
         assertTrue(setRequest.isOverwrite());
         assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
-        assertThat(((CertificateSetRequest) setRequest).getCertificateFields().getCa(), equalTo("ca"));
-        assertThat(((CertificateSetRequest) setRequest).getCertificateFields().getCertificate(), equalTo("certificate"));
-        assertThat(((CertificateSetRequest) setRequest).getCertificateFields().getPrivateKey(), equalTo("private_key"));
+        assertThat(((CertificateSetRequest) setRequest).getCertificateValue().getCa(), equalTo("ca"));
+        assertThat(((CertificateSetRequest) setRequest).getCertificateValue().getCertificate(), equalTo("certificate"));
+        assertThat(((CertificateSetRequest) setRequest).getCertificateValue().getPrivateKey(), equalTo("private_key"));
 
         ArgumentCaptor<CertificateParameters> captor = ArgumentCaptor.forClass(CertificateParameters.class);
         verify(generatorService).generateCertificate(captor.capture());

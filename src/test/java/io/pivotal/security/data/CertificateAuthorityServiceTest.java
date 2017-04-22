@@ -29,7 +29,7 @@ public class CertificateAuthorityServiceTest {
 
   @Before
   public void beforeEach() {
-    certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key");
+    certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key", null);
     certificateCredential = mock(CertificateCredential.class);
 
     credentialDataService = mock(CredentialDataService.class);

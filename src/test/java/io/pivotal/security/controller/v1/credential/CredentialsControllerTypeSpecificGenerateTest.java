@@ -5,6 +5,11 @@ import com.greghaskins.spectrum.Spectrum;
 import com.greghaskins.spectrum.Spectrum.Block;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.credential.User;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.CertificateParameters;
@@ -26,15 +31,10 @@ import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.DefaultCredentialGenerateRequest;
-import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserGenerationParameters;
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.credential.StringCredential;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.credential.SshKey;
-import io.pivotal.security.credential.User;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -174,7 +174,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           .thenReturn(new StringCredential(fakePassword));
 
       when(certificateGenerator.generateCredential(any(CertificateParameters.class)))
-          .thenReturn(new Certificate(ca, certificate, privateKey));
+          .thenReturn(new Certificate(ca, certificate, privateKey, null));
 
       when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
           .thenReturn(new SshKey(publicKey, privateKey, null));

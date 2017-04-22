@@ -34,23 +34,14 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
 
   public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
     CertificateSetRequest certificateSetRequest = new CertificateSetRequest();
-    String caName= null;
     if (certificateParameters == null) {
        certificateParameters = new CertificateParameters(getGenerationParameters());
-       caName = certificateParameters.getCaName();
     }
     Certificate certificate = generatorService.generateCertificate(certificateParameters);
     certificateSetRequest.setName(getName());
     certificateSetRequest.setType(getType());
     certificateSetRequest.setOverwrite(isOverwrite());
-
-    CertificateSetRequestFields certificateSetRequestFields = new CertificateSetRequestFields(
-        certificate.getPrivateKey(),
-        certificate.getPublicKeyCertificate(),
-        certificate.getCaCertificate(),
-        caName);
-
-    certificateSetRequest.setCertificateFields(certificateSetRequestFields);
+    certificateSetRequest.setCertificateValue(certificate);
     certificateSetRequest.setAccessControlEntries(getAccessControlEntries());
 
     return certificateSetRequest;
@@ -59,9 +50,5 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
   public void setCertificateParameters(
       CertificateParameters certificateParameters) {
     this.certificateParameters = certificateParameters;
-  }
-
-  public CertificateParameters getCertParameters() {
-    return certificateParameters;
   }
 }

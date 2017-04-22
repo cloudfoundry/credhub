@@ -1,31 +1,51 @@
 package io.pivotal.security.credential;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.pivotal.security.util.EmptyStringToNull;
+import io.pivotal.security.validator.RequireAnyOf;
 
+@RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate",
+    "privateKey"})
 public class Certificate implements CredentialValue {
 
-  private final String caCertificate;
-  private final String publicKeyCertificate;
-  private final String privateKey;
+  @JsonDeserialize(using = EmptyStringToNull.class)
+  private String ca;
+  @JsonDeserialize(using = EmptyStringToNull.class)
+  private String certificate;
+  @JsonDeserialize(using = EmptyStringToNull.class)
+  private String privateKey;
+  private String caName;
 
-  public Certificate(String caCertificate, String publicKeyCertificate, String privateKey) {
-    this.caCertificate = caCertificate;
-    this.publicKeyCertificate = publicKeyCertificate;
+  @SuppressWarnings("unused")
+  public Certificate() {}
+
+  public Certificate(
+      String ca,
+      String certificate,
+      String privateKey,
+      String caName
+  ) {
+    this.ca = ca;
+    this.certificate = certificate;
     this.privateKey = privateKey;
+    this.caName = caName;
   }
 
-  @JsonProperty("ca")
-  public String getCaCertificate() {
-    return caCertificate;
+  public String getCa() {
+    return ca;
   }
 
-  @JsonProperty("certificate")
-  public String getPublicKeyCertificate() {
-    return publicKeyCertificate;
+  public String getCertificate() {
+    return certificate;
   }
 
-  @JsonProperty("private_key")
   public String getPrivateKey() {
     return privateKey;
+  }
+
+  @JsonIgnore
+  public String getCaName() {
+    return caName;
   }
 }

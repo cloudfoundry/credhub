@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.request.CertificateSetRequestFields;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
@@ -92,10 +92,10 @@ public class CertificateCredentialTest {
       });
 
       it("copies name and ca's name from existing", () -> {
-        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
-            "certificate", "ca");
+        Certificate certificateValue = new Certificate(
+            "ca", "certificate", "new private key", null);
         CertificateCredential newCredential = CertificateCredential
-            .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
+            .createNewVersion(subject, "anything I AM IGNORED", certificateValue, encryptor,
                 new ArrayList<>());
 
         assertThat(newCredential.getName(), equalTo("/Foo"));
@@ -106,10 +106,10 @@ public class CertificateCredentialTest {
       });
 
       it("creates new if no existing", () -> {
-        CertificateSetRequestFields fields = new CertificateSetRequestFields("new private key",
-            "certificate", "ca");
+        Certificate certificateValue = new Certificate(
+            "ca", "certificate", "new private key", null);
         CertificateCredential newCredential = CertificateCredential
-            .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
+            .createNewVersion(null, "/newName", certificateValue, encryptor, new ArrayList<>());
 
         assertThat(newCredential.getName(), equalTo("/newName"));
         assertThat(newCredential.getPrivateKey(), equalTo("new private key"));

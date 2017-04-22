@@ -55,11 +55,11 @@ public class CertificateGenerator implements
       X509Certificate cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
       String certPem = CertificateFormatter.pemOf(cert);
       String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-      return new Certificate(null, certPem, privatePem);
+      return new Certificate(null, certPem, privatePem, null);
     } else {
       Certificate ca = certificateAuthorityService.findMostRecent(params.getCaName());
 
-      String caCertificate = ca.getPublicKeyCertificate();
+      String caCertificate = ca.getCertificate();
       X500Name issuerDn = getSubjectNameOfCa(caCertificate);
       PrivateKey issuerKey = getPrivateKey(ca.getPrivateKey());
 
@@ -68,7 +68,7 @@ public class CertificateGenerator implements
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new Certificate(caCertificate, certPem, privatePem);
+        return new Certificate(caCertificate, certPem, privatePem, params.getCaName());
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

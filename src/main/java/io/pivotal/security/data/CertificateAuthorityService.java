@@ -28,7 +28,7 @@ public class CertificateAuthorityService {
       }
 
       return new Certificate(null, certificateCredential.getCertificate(),
-          certificateCredential.getPrivateKey());
+          certificateCredential.getPrivateKey(), null);
     } else {
       throw new ParameterizedValidationException("error.ca_not_found");
     }

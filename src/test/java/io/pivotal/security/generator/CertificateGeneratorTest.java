@@ -93,8 +93,8 @@ public class CertificateGeneratorTest {
       rootCa = new Certificate(
           null,
           CertificateFormatter.pemOf(rootCaX509Certificate),
-          CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())
-      );
+          CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
+          null);
 
       generationParameters = new CertificateGenerationParameters();
       generationParameters.setOrganization("foo");
@@ -135,13 +135,13 @@ public class CertificateGeneratorTest {
         it("generates a valid childCertificate", () -> {
           Certificate certificateSignedByRoot = subject.generateCredential(inputParameters);
 
-          assertThat(certificateSignedByRoot.getCaCertificate(),
-              equalTo(rootCa.getPublicKeyCertificate()));
+          assertThat(certificateSignedByRoot.getCa(),
+              equalTo(rootCa.getCertificate()));
 
           assertThat(certificateSignedByRoot.getPrivateKey(),
               equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
 
-          assertThat(certificateSignedByRoot.getPublicKeyCertificate(),
+          assertThat(certificateSignedByRoot.getCertificate(),
               equalTo(CertificateFormatter.pemOf(childX509Certificate)));
 
           verify(keyGenerator, times(1)).generateKeyPair(2048);
@@ -177,8 +177,8 @@ public class CertificateGeneratorTest {
           intermediateCa = new Certificate(
               null,
               CertificateFormatter.pemOf(intermediateX509Certificate),
-              CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate())
-          );
+              CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
+              null);
           when(certificateAuthorityService.findMostRecent("my-ca-name")).thenReturn(intermediateCa);
 
           when(keyGenerator.generateKeyPair(anyInt())).thenReturn(childCertificateKeyPair.get());
@@ -203,13 +203,13 @@ public class CertificateGeneratorTest {
         it("generates a valid childCertificate", () -> {
           Certificate certificateSignedByIntermediate = subject.generateCredential(inputParameters);
 
-          assertThat(certificateSignedByIntermediate.getCaCertificate(),
-              equalTo(intermediateCa.getPublicKeyCertificate()));
+          assertThat(certificateSignedByIntermediate.getCa(),
+              equalTo(intermediateCa.getCertificate()));
 
           assertThat(certificateSignedByIntermediate.getPrivateKey(),
               equalTo(CertificateFormatter.pemOf(childCertificateKeyPair.get().getPrivate())));
 
-          assertThat(certificateSignedByIntermediate.getPublicKeyCertificate(),
+          assertThat(certificateSignedByIntermediate.getCertificate(),
               equalTo(CertificateFormatter.pemOf(childX509Certificate)));
 
           verify(keyGenerator, times(1)).generateKeyPair(2048);
@@ -236,9 +236,9 @@ public class CertificateGeneratorTest {
         Certificate certificateCredential = subject.generateCredential(inputParameters);
         assertThat(certificateCredential.getPrivateKey(),
             equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
-        assertThat(certificateCredential.getPublicKeyCertificate(),
+        assertThat(certificateCredential.getCertificate(),
             equalTo(CertificateFormatter.pemOf(certificate.get())));
-        assertThat(certificateCredential.getCaCertificate(), nullValue());
+        assertThat(certificateCredential.getCa(), nullValue());
         verify(signedCertificateGenerator, times(1)).getSelfSigned(rootCaKeyPair, inputParameters);
       });
     });

@@ -138,7 +138,7 @@ public class CredentialsControllerGenerateTest {
           .thenReturn(new RsaKey(publicKey, privateKey));
 
       when(certificateGenerator.generateCredential(any(CertificateParameters.class)))
-          .thenReturn(new Certificate("ca_cert", cert, privateKey));
+          .thenReturn(new Certificate("ca_cert", cert, privateKey, null));
     });
 
     describe("generating a credential", () -> {

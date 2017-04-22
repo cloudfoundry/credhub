@@ -1,19 +1,17 @@
 package io.pivotal.security.view;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
-import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
 import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -22,9 +20,6 @@ import static org.mockito.Mockito.when;
 @RunWith(Spectrum.class)
 public class CertificateCredentialTest {
 
-  private static final JsonExpectationsHelper JSON_EXPECTATIONS_HELPER =
-      new JsonExpectationsHelper();
-  private ObjectMapper serializingObjectMapper;
   private CertificateCredential entity;
   private String credentialName;
   private UUID uuid;
@@ -41,7 +36,6 @@ public class CertificateCredentialTest {
       when(encryptor.encrypt("priv")).thenReturn(encryption);
       when(encryptor.decrypt(encryption)).thenReturn("priv");
 
-      serializingObjectMapper = new ObjectMapper();
       credentialName = "/foo";
       uuid = UUID.randomUUID();
       entity = new CertificateCredential(credentialName)
@@ -54,17 +48,19 @@ public class CertificateCredentialTest {
 
     it("creates a view from entity", () -> {
       final CredentialView subject = CertificateView.fromEntity(entity);
-      JSON_EXPECTATIONS_HELPER.assertJsonEqual("{"
-          + "\"id\":\""
-          + uuid.toString() + "\",\"name\":\""
-          + credentialName + "\",\"type\":\"certificate\","
+      String json = JsonHelper.serializeToString(subject);
+
+      assertThat(json, equalTo("{"
+          + "\"type\":\"certificate\","
           + "\"version_created_at\":null,"
+          + "\"id\":\"" + uuid.toString() + "\","
+          + "\"name\":\"" + credentialName + "\","
           + "\"value\":{"
           + "\"ca\":\"ca\","
           + "\"certificate\":\"cert\","
           + "\"private_key\":\"priv\""
           + "}"
-          + "}", json(subject), true);
+          + "}"));
     });
 
     it("sets updated-at time on generated view", () -> {
@@ -82,7 +78,9 @@ public class CertificateCredentialTest {
     it("includes keys with null values", () -> {
       final CredentialView subject = CertificateView
           .fromEntity(new CertificateCredential(credentialName).setEncryptor(encryptor).setUuid(uuid));
-      assertThat(serializingObjectMapper.writeValueAsString(subject), equalTo("{"
+      final String json = JsonHelper.serializeToString(subject);
+
+      assertThat(json, equalTo("{"
           + "\"type\":\"certificate\","
           + "\"version_created_at\":null,"
           + "\"id\":\""

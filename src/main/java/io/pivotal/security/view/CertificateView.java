@@ -15,7 +15,7 @@ public class CertificateView extends CredentialView {
         certificateCredential.getName(),
         certificateCredential.getCredentialType(),
         new Certificate(certificateCredential.getCa(), certificateCredential.getCertificate(),
-            certificateCredential.getPrivateKey())
+            certificateCredential.getPrivateKey(), null)
     );
   }
 }
