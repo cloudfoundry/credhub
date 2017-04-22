@@ -1,5 +1,6 @@
 package io.pivotal.security.view;
 
+import io.pivotal.security.credential.User;
 import io.pivotal.security.domain.UserCredential;
 
 public class UserView extends CredentialView {

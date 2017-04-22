@@ -1,6 +1,6 @@
 package io.pivotal.security.request;
 
-public class UserValue {
+public class UsernameValue {
   private String username;
 
   public String getUsername() {

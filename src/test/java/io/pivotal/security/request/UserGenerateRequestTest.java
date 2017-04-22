@@ -55,10 +55,10 @@ public class UserGenerateRequestTest {
     assertTrue(setRequest.isOverwrite());
     assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
     assertThat(((UserSetRequest) setRequest)
-      .getUserSetRequestFields()
+      .getUserValue()
       .getPassword(), equalTo("fake-password"));
     assertThat(((UserSetRequest) setRequest)
-      .getUserSetRequestFields()
+      .getUserValue()
       .getUsername(), equalTo("fake-user"));
     ArgumentCaptor<UserGenerationParameters> captor =
       ArgumentCaptor.forClass(UserGenerationParameters.class);
@@ -79,9 +79,9 @@ public class UserGenerateRequestTest {
 
   @Test
   public void generateSetRequest_whenValueNonNull_createsAndCopiesSetRequestGeneratingOnlyPassword() {
-    UserValue userValue = new UserValue();
-    userValue.setUsername("specified-user");
-    subject.setValue(userValue);
+    UsernameValue usernameValue = new UsernameValue();
+    usernameValue.setUsername("specified-user");
+    subject.setValue(usernameValue);
 
     UserGenerationParameters parameters = new UserGenerationParameters();
     parameters.setUsernameGenerationParameters(null);
@@ -96,10 +96,10 @@ public class UserGenerateRequestTest {
     assertTrue(setRequest.isOverwrite());
     assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
     assertThat(((UserSetRequest) setRequest)
-      .getUserSetRequestFields()
+      .getUserValue()
       .getPassword(), equalTo("fake-password"));
     assertThat(((UserSetRequest) setRequest)
-      .getUserSetRequestFields()
+      .getUserValue()
       .getUsername(), equalTo("specified-user"));
     ArgumentCaptor<UserGenerationParameters> captor =
       ArgumentCaptor.forClass(UserGenerationParameters.class);

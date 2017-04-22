@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.credential.User;
 import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.UserSetRequestFields;
 import io.pivotal.security.service.Encryption;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public class UserCredential extends Credential<UserCredential> {
   public static UserCredential createNewVersion(
       UserCredential existing,
       String name,
-      UserSetRequestFields fields,
+      User userValue,
       Encryptor encryptor,
       List<AccessControlEntry> accessControlEntries) {
     UserCredential credential;
@@ -26,8 +26,8 @@ public class UserCredential extends Credential<UserCredential> {
 
     credential.setEncryptor(encryptor);
 
-    credential.setUsername(fields.getUsername());
-    credential.setPassword(fields.getPassword());
+    credential.setUsername(userValue.getUsername());
+    credential.setPassword(userValue.getPassword());
 
     credential.setAccessControlList(accessControlEntries);
 

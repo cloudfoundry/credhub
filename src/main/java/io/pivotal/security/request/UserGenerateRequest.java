@@ -10,7 +10,7 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
   private UserGenerationParameters generationParameters;
 
   @JsonProperty("value")
-  private UserValue value = null;
+  private UsernameValue value = null;
 
   @Override
   public void validate() {
@@ -31,17 +31,12 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
     }
 
     User user = generatorService.generateUser(userGenerationParameters);
-    UserSetRequestFields userSetRequestFields = new UserSetRequestFields();
 
     if (user.getUsername() == null) {
-      userSetRequestFields.setUsername(value.getUsername());
-    } else {
-      userSetRequestFields.setUsername(user.getUsername());
+      user.setUsername(value.getUsername());
     }
 
-    userSetRequestFields.setPassword(user.getPassword());
-
-    userSetRequest.setUserSetRequestFields(userSetRequestFields);
+    userSetRequest.setUserValue(user);
 
     return userSetRequest;
   }
@@ -55,11 +50,11 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
     this.generationParameters = generationParameters;
   }
 
-  public UserValue getValue() {
+  public UsernameValue getValue() {
     return value;
   }
 
-  public void setValue(UserValue value) {
+  public void setValue(UsernameValue value) {
     this.value = value;
   }
 }

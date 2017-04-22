@@ -1,10 +1,10 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.User;
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.UserSetRequestFields;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 import org.springframework.util.ReflectionUtils;
@@ -14,7 +14,9 @@ import java.util.Arrays;
 import java.util.UUID;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -23,7 +25,10 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class UserCredentialTest {
@@ -125,9 +130,7 @@ public class UserCredentialTest {
           subject = UserCredential.createNewVersion(
               new UserCredential(existingUserCredentialData),
               CREDENTIAL_NAME,
-              new UserSetRequestFields()
-                  .setPassword(USER_PASSWORD)
-                  .setUsername(USERNAME),
+              new User(USERNAME, USER_PASSWORD),
               encryptor,
               newArrayList());
 
@@ -140,9 +143,7 @@ public class UserCredentialTest {
           subject = UserCredential.createNewVersion(
               NO_EXISTING_CREDENTIAL,
               CREDENTIAL_NAME,
-              new UserSetRequestFields()
-                  .setPassword(USER_PASSWORD)
-                  .setUsername(USERNAME),
+              new User(USERNAME, USER_PASSWORD),
               encryptor,
               Arrays.asList(
                   new AccessControlEntry("test-user", Arrays.asList(READ, WRITE))
