@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.credential.RsaKey;
 import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class RsaCredential extends Credential<RsaCredential> {
   }
 
   public static RsaCredential createNewVersion(RsaCredential existing, String name,
-                                               KeySetRequestFields fields, Encryptor encryptor,
+                                               RsaKey rsaKey, Encryptor encryptor,
                                                List<AccessControlEntry> accessControlEntries) {
     RsaCredential credential;
 
@@ -44,8 +44,8 @@ public class RsaCredential extends Credential<RsaCredential> {
     credential.setAccessControlList(accessControlEntries);
 
     credential.setEncryptor(encryptor);
-    credential.setPrivateKey(fields.getPrivateKey());
-    credential.setPublicKey(fields.getPublicKey());
+    credential.setPrivateKey(rsaKey.getPrivateKey());
+    credential.setPublicKey(rsaKey.getPublicKey());
 
     return credential;
   }

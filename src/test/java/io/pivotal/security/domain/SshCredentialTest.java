@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.SshKey;
 import io.pivotal.security.entity.SshCredentialData;
-import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
@@ -50,7 +50,7 @@ public class SshCredentialTest {
       });
 
       it("copies name from existing", () -> {
-        KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
+        SshKey fields = new SshKey("public key", "new private key", null);
         SshCredential newCredential = SshCredential
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
                 new ArrayList<>());
@@ -61,9 +61,9 @@ public class SshCredentialTest {
       });
 
       it("creates new if no existing", () -> {
-        KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
+        SshKey sshKey = new SshKey("public key", "new private key", null);
         SshCredential newCredential = SshCredential
-            .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
+            .createNewVersion(null, "/newName", sshKey, encryptor, new ArrayList<>());
 
         assertThat(newCredential.getName(), equalTo("/newName"));
         assertThat(newCredential.getPrivateKey(), equalTo("new private key"));

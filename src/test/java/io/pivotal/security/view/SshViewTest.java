@@ -3,18 +3,17 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.TestConstants;
 import org.json.JSONObject;
 import org.junit.runner.RunWith;
-import org.springframework.test.util.JsonExpectationsHelper;
 
 import java.time.Instant;
 import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -22,9 +21,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class SshViewTest {
-
-  private static final JsonExpectationsHelper JSON_EXPECTATIONS_HELPER =
-      new JsonExpectationsHelper();
 
   private SshCredential entity;
 
@@ -59,14 +55,14 @@ public class SshViewTest {
       obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
       obj.put("public_key_fingerprint", "UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc");
       String expected = "{"
-          + "\"id\":\"" + uuid.toString()
-          + "\",\"type\":\"ssh\","
-          + "\"name\":\"/foo\","
+          + "\"type\":\"ssh\","
           + "\"version_created_at\":null,"
+          + "\"id\":\"" + uuid.toString() + "\","
+          + "\"name\":\"/foo\","
           + "\"value\":"
           + obj.toString() + "}";
-
-      JSON_EXPECTATIONS_HELPER.assertJsonEqual(expected, json(subject), true);
+      String json = JsonHelper.serializeToString(subject);
+      assertThat(json, equalTo(expected));
     });
 
     it("sets updated-at time on generated view", () -> {

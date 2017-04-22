@@ -57,8 +57,8 @@ public class SshGenerateRequestTest {
         assertThat(setRequest.getName(), equalTo("test-name"));
         assertTrue(setRequest.isOverwrite());
         assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
-        assertThat(((SshSetRequest) setRequest).getKeySetRequestFields().getPublicKey(), equalTo("pub"));
-        assertThat(((SshSetRequest) setRequest).getKeySetRequestFields().getPrivateKey(), equalTo("priv"));
+        assertThat(((SshSetRequest) setRequest).getSshKeyValue().getPublicKey(), equalTo("pub"));
+        assertThat(((SshSetRequest) setRequest).getSshKeyValue().getPrivateKey(), equalTo("priv"));
 
         ArgumentCaptor<SshGenerationParameters> captor = ArgumentCaptor.forClass(SshGenerationParameters.class);
         verify(generatorService).generateSshKeys(captor.capture());

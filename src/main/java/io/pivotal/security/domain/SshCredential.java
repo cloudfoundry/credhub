@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.credential.SshKey;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
 
@@ -27,7 +27,7 @@ public class SshCredential extends Credential<SshCredential> {
   }
 
   public static SshCredential createNewVersion(SshCredential existing, String name,
-                                               KeySetRequestFields fields, Encryptor encryptor,
+                                               SshKey sshKeyValue, Encryptor encryptor,
                                                List<AccessControlEntry> accessControlEntries) {
     SshCredential credential;
 
@@ -45,8 +45,8 @@ public class SshCredential extends Credential<SshCredential> {
     credential.setAccessControlList(accessControlEntries);
 
     credential.setEncryptor(encryptor);
-    credential.setPrivateKey(fields.getPrivateKey());
-    credential.setPublicKey(fields.getPublicKey());
+    credential.setPrivateKey(sshKeyValue.getPrivateKey());
+    credential.setPublicKey(sshKeyValue.getPublicKey());
 
     return credential;
   }

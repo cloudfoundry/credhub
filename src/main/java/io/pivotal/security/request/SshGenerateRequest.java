@@ -29,8 +29,8 @@ public class SshGenerateRequest extends BaseCredentialGenerateRequest {
 
   public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
     SshSetRequest sshSetRequest = new SshSetRequest();
-    SshKey sshKeys = generatorService.generateSshKeys(getGenerationParameters());
-    sshSetRequest.setKeySetRequestFields(new KeySetRequestFields(sshKeys.getPrivateKey(), sshKeys.getPublicKey()));
+    SshKey sshKey = generatorService.generateSshKeys(getGenerationParameters());
+    sshSetRequest.setSshKeyValue(sshKey);
     sshSetRequest.setType(getType());
     sshSetRequest.setName(getName());
     sshSetRequest.setOverwrite(isOverwrite());

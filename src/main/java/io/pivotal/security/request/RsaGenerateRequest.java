@@ -29,8 +29,8 @@ public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
 
   public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
     RsaSetRequest rsaSetRequest = new RsaSetRequest();
-    RsaKey rsaKeys = generatorService.generateRsaKeys(getGenerationParameters());
-    rsaSetRequest.setKeySetRequestFields(new KeySetRequestFields(rsaKeys.getPrivateKey(), rsaKeys.getPublicKey()));
+    RsaKey rsaKey = generatorService.generateRsaKeys(getGenerationParameters());
+    rsaSetRequest.setRsaKeyValue(rsaKey);
     rsaSetRequest.setType(getType());
     rsaSetRequest.setName(getName());
     rsaSetRequest.setOverwrite(isOverwrite());

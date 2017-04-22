@@ -1,12 +1,25 @@
 package io.pivotal.security.credential;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.pivotal.security.util.EmptyStringToNull;
+import io.pivotal.security.validator.RequireAnyOf;
 
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
+
+@RequireAnyOf(message = "error.missing_rsa_ssh_parameters", fields = {"publicKey", "privateKey"})
+@JsonAutoDetect
 public class SshKey implements CredentialValue {
 
-  private final String publicKey;
-  private final String privateKey;
-  private final String publicKeyFingerprint;
+  @JsonDeserialize(using = EmptyStringToNull.class)
+  private String publicKey;
+  @JsonDeserialize(using = EmptyStringToNull.class)
+  private String privateKey;
+  private String publicKeyFingerprint;
+
+  @SuppressWarnings("unused")
+  public SshKey() {}
 
   public SshKey(String publicKey, String privateKey, String publicKeyFingerprint) {
     this.publicKey = publicKey;
@@ -14,17 +27,16 @@ public class SshKey implements CredentialValue {
     this.publicKeyFingerprint = publicKeyFingerprint;
   }
 
-  @JsonProperty("public_key")
   public String getPublicKey() {
     return publicKey;
   }
 
-  @JsonProperty("private_key")
   public String getPrivateKey() {
     return privateKey;
   }
 
-  @JsonProperty("public_key_fingerprint")
+  @JsonProperty(access = READ_ONLY)
+  @SuppressWarnings("unused")
   public String getPublicKeyFingerprint() {
     return publicKeyFingerprint;
   }

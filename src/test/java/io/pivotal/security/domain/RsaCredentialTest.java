@@ -1,8 +1,8 @@
 package io.pivotal.security.domain;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.RsaKey;
 import io.pivotal.security.entity.RsaCredentialData;
-import io.pivotal.security.request.KeySetRequestFields;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
@@ -52,7 +52,7 @@ public class RsaCredentialTest {
       });
 
       it("copies name from existing", () -> {
-        KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
+        RsaKey fields = new RsaKey("public key", "new private key");
         RsaCredential newCredential = RsaCredential
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
                 new ArrayList<>());
@@ -63,7 +63,7 @@ public class RsaCredentialTest {
       });
 
       it("creates new if no existing", () -> {
-        KeySetRequestFields fields = new KeySetRequestFields("new private key", "public key");
+        RsaKey fields = new RsaKey("public key", "new private key");
         RsaCredential newCredential = RsaCredential
             .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
 

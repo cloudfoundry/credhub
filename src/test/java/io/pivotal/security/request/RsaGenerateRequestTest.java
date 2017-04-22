@@ -57,8 +57,8 @@ public class RsaGenerateRequestTest {
         assertThat(setRequest.getName(), equalTo("test-name"));
         assertTrue(setRequest.isOverwrite());
         assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
-        assertThat(((RsaSetRequest) setRequest).getKeySetRequestFields().getPublicKey(), equalTo("pub"));
-        assertThat(((RsaSetRequest) setRequest).getKeySetRequestFields().getPrivateKey(), equalTo("priv"));
+        assertThat(((RsaSetRequest) setRequest).getRsaKeyValue().getPublicKey(), equalTo("pub"));
+        assertThat(((RsaSetRequest) setRequest).getRsaKeyValue().getPrivateKey(), equalTo("priv"));
 
         ArgumentCaptor<RsaGenerationParameters> captor = ArgumentCaptor.forClass(RsaGenerationParameters.class);
         verify(generatorService).generateRsaKeys(captor.capture());
