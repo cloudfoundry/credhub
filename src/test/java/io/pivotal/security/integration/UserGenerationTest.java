@@ -1,5 +1,7 @@
 package io.pivotal.security.integration;
 
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +28,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.io.UnsupportedEncodingException;
 
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.apache.commons.lang.math.NumberUtils.isNumber;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsNot.not;
@@ -116,6 +120,74 @@ public class UserGenerationTest {
       .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
       .andExpect(jsonPath("$.data[0].value.password", isPassword()))
       .andReturn();
+  }
+
+  @Test
+  public void userGeneration_whenGivenPasswordParameters_shouldGeneratePasswordFromParameters() throws Exception {
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\": \"cred1\"," +
+            "\"type\": \"user\"," +
+            "\"parameters\": {" +
+            "\"length\": 40," +
+            "\"exclude_upper\": true," +
+            "\"exclude_lower\": true," +
+            "\"exclude_number\": false," +
+            "\"include_special\": false" +
+            "}" +
+            "}"
+        );
+
+    final MockHttpServletResponse response = this.mockMvc.perform(post).andExpect(status()
+        .isOk()).andReturn().getResponse();
+
+    final DocumentContext parsedResponse = JsonPath.parse(response.getContentAsString());
+
+    final String password = parsedResponse.read("$.value.password");
+    assertThat(password.length(), equalTo(40));
+    assertThat(isNumber(password), equalTo(true));
+
+    final String username = parsedResponse.read("$.value.username");
+    assertThat(username.length(), equalTo(20));
+    assertThat(username.chars().allMatch(Character::isLetter), equalTo(true));
+  }
+
+  @Test
+  public void userGeneration_whenGivenAUsernameAndPasswordParameters_usesUsernameAndGeneratesPassword() throws Exception {
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\": \"cred1\"," +
+            "\"type\": \"user\"," +
+            "\"value\": {" +
+              "\"username\": \"test-username\"" +
+              "}," +
+            "\"parameters\": {" +
+              "\"length\": 40," +
+              "\"exclude_upper\": true," +
+              "\"exclude_lower\": true," +
+              "\"exclude_number\": false," +
+              "\"include_special\": false" +
+            "}" +
+          "}"
+        );
+
+    final MockHttpServletResponse response = this.mockMvc.perform(post).andExpect(status()
+        .isOk()).andReturn().getResponse();
+
+    final DocumentContext parsedResponse = JsonPath.parse(response.getContentAsString());
+
+    final String password = parsedResponse.read("$.value.password");
+    assertThat(password.length(), equalTo(40));
+    assertThat(isNumber(password), equalTo(true));
+
+    final String username = parsedResponse.read("$.value.username");
+    assertThat(username, equalTo("test-username"));
   }
 
   private JSONObject getJsonObject(MvcResult cred1) throws UnsupportedEncodingException {

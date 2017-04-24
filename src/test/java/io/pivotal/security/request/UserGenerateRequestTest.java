@@ -93,4 +93,28 @@ public class UserGenerateRequestTest {
 
     assertThat(captor.getValue(), samePropertyValuesAs(passwordParameters));
   }
+
+  @Test
+  public void generateSetRequest_WithPasswordGenerationParams_generatesPasswordWithParameters() {
+    StringGenerationParameters passwordGenerationParams = new StringGenerationParameters()
+        .setExcludeNumber(true)
+        .setIncludeSpecial(true);
+
+    when(generatorService.generateUser(any(String.class), eq(passwordGenerationParams)))
+        .thenReturn(new User("fake-generated-username", "fake-generated-password"));
+
+    subject.setPasswordGenerationParameters(passwordGenerationParams);
+
+    final UserSetRequest setRequest = (UserSetRequest) subject.generateSetRequest(generatorService);
+    final String password = setRequest.getUserValue().getPassword();
+
+    assertThat(password, equalTo("fake-generated-password"));
+
+    ArgumentCaptor<StringGenerationParameters> passwordParametersCaptor = ArgumentCaptor.forClass(StringGenerationParameters.class);
+
+    verify(generatorService, times(1)).generateUser(any(String.class), passwordParametersCaptor.capture());
+
+    final StringGenerationParameters genParams = passwordParametersCaptor.getValue();
+    assertThat(genParams, samePropertyValuesAs(passwordGenerationParams));
+  }
 }
