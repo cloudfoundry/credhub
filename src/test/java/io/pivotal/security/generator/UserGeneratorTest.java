@@ -1,54 +1,54 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.request.UserGenerationParameters;
 import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.credential.User;
+import io.pivotal.security.request.StringGenerationParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class UserGeneratorTest {
 
-  private PassayStringCredentialGenerator passwordGenerator;
   private UserGenerator subject;
-  private UserGenerationParameters parameters;
+
+  private StringGenerationParameters passwordParameters;
 
   @Before
   public void beforeEach() {
-    passwordGenerator = mock(PassayStringCredentialGenerator.class);
-    subject = new UserGenerator(passwordGenerator);
+    UsernameGenerator usernameGenerator = mock(UsernameGenerator.class);
+    PasswordCredentialGenerator passwordGenerator = mock(PasswordCredentialGenerator.class);
 
-    parameters = new UserGenerationParameters();
+    passwordParameters = mock(StringGenerationParameters.class);
 
-    when(passwordGenerator.generateCredential(same(parameters.getPasswordGenerationParameters())))
-        .thenReturn(new StringCredential("fake-password"));
-    when(passwordGenerator.generateCredential(same(parameters.getUsernameGenerationParameters())))
-        .thenReturn(new StringCredential("fake-user"));
+    subject = new UserGenerator(usernameGenerator, passwordGenerator);
+
+    StringCredential generatedUsername = new StringCredential("fake-generated-username");
+    StringCredential generatedPassword = new StringCredential("fake-generated-password");
+
+    when(usernameGenerator.generateCredential()).thenReturn(generatedUsername);
+    when(passwordGenerator.generateCredential(passwordParameters)).thenReturn(generatedPassword);
   }
 
   @Test
-  public void generateCredential_generatesUsernameAndPassword_withCorrect_generationParameters() {
-    assertThat(subject.generateCredential(parameters).getPassword(), equalTo("fake-password"));
-    assertThat(subject.generateCredential(parameters).getUsername(), equalTo("fake-user"));
+  public void generateCredential_givenAUsernameAndPasswordParameters_generatesUserWithUsernameAndGeneratedPassword() {
+    final User user = subject.generateCredential("test-user", passwordParameters);
+
+    assertThat(user.getUsername(), equalTo("test-user"));
+    assertThat(user.getPassword(), equalTo("fake-generated-password"));
   }
 
   @Test
-  public void generateCredential_generatesOnlyPassword_withNull_usernameParameters() throws Exception{
-    parameters.setUsernameGenerationParameters(null);
+  public void generateCredential_givenNoUsernameAndPasswordParameters_generatesUserWithGeneratedUsernameAndPassword() {
+    final User user = subject.generateCredential(null, passwordParameters);
 
-    when(passwordGenerator.generateCredential(same(parameters.getUsernameGenerationParameters())))
-      .thenThrow(NullPointerException.class);
-
-    assertThat(subject.generateCredential(parameters).getPassword(), equalTo("fake-password"));
-    assertThat(subject.generateCredential(parameters).getUsername(), is(nullValue()));
+    assertThat(user.getUsername(), equalTo("fake-generated-username"));
+    assertThat(user.getPassword(), equalTo("fake-generated-password"));
   }
 }

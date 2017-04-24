@@ -34,7 +34,6 @@ import io.pivotal.security.request.DefaultCredentialGenerateRequest;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.request.UserGenerationParameters;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -149,7 +148,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   private UUID uuid;
 
   private final String fakePassword = "generated-credential";
-  private final String user = "generated-user";
+  private final String username = "generated-user";
   private final String publicKey = "public_key";
   private final String certificate = "certificate";
   private final String ca = "ca";
@@ -182,8 +181,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
       when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
           .thenReturn(new RsaKey(publicKey, privateKey));
 
-      when(userGenerator.generateCredential(any(UserGenerationParameters.class)))
-          .thenReturn(new User(user, fakePassword));
+      when(userGenerator.generateCredential(any(String.class), any(StringGenerationParameters.class)))
+          .thenReturn(new User(username, fakePassword));
     });
 
     describe("password", testCredentialBehaviour(
@@ -202,18 +201,18 @@ public class CredentialsControllerTypeSpecificGenerateTest {
     ));
 
     describe("user", testCredentialBehaviour(
-      new Object[]{"$.value.username", user,
+      new Object[]{"$.value.username", username,
           "$.value.password", fakePassword},
       "user",
       "null",
       (userCredential) -> {
-        assertThat(userCredential.getUsername(), equalTo(user));
+        assertThat(userCredential.getUsername(), equalTo(username));
         assertThat(userCredential.getPassword(), equalTo(fakePassword));
       },
       () -> new UserCredential(credentialName)
         .setEncryptor(encryptor)
         .setPassword(fakePassword)
-        .setUsername(user)
+        .setUsername(username)
         .setUuid(uuid)
         .setVersionCreatedAt(frozenTime.minusSeconds(1))
     ));

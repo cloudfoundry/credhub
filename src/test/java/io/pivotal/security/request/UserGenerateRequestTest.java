@@ -14,13 +14,12 @@ import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.WRITE;
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.same;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,13 +29,10 @@ public class UserGenerateRequestTest {
   private GeneratorService generatorService;
   private UserGenerateRequest subject;
   private AccessControlEntry accessControlEntry;
-  private User user;
 
   @Before
   public void beforeEach() {
     generatorService = mock(GeneratorService.class);
-    user = new User("fake-user", "fake-password");
-    when(generatorService.generateUser(any(UserGenerationParameters.class))).thenReturn(user);
     accessControlEntry = new AccessControlEntry("test-actor",
         Arrays.asList(READ, WRITE));
     subject = new UserGenerateRequest();
@@ -47,69 +43,54 @@ public class UserGenerateRequestTest {
   }
 
   @Test
-  public void generateSetRequest_whenValueNull_createsAndCopiesSetRequestGeneratingUsernameAndPassword() {
-    BaseCredentialSetRequest setRequest = subject.generateSetRequest(generatorService);
+  public void generateSetRequest_withoutAUsername_createsAndCopiesSetRequestGeneratingUsernameAndPassword() {
+    User expectedUser = new User("fake-user", "fake-password");
+    when(generatorService.generateUser(any(String.class), any(StringGenerationParameters.class)))
+        .thenReturn(expectedUser);
+
+    UserSetRequest setRequest = (UserSetRequest) subject.generateSetRequest(generatorService);
 
     assertThat(setRequest.getType(), equalTo("user"));
     assertThat(setRequest.getName(), equalTo("test-name"));
     assertTrue(setRequest.isOverwrite());
     assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
-    assertThat(((UserSetRequest) setRequest)
-      .getUserValue()
-      .getPassword(), equalTo("fake-password"));
-    assertThat(((UserSetRequest) setRequest)
-      .getUserValue()
-      .getUsername(), equalTo("fake-user"));
-    ArgumentCaptor<UserGenerationParameters> captor =
-      ArgumentCaptor.forClass(UserGenerationParameters.class);
+    assertThat(setRequest.getUserValue(), equalTo(expectedUser));
+    ArgumentCaptor<StringGenerationParameters> captor =
+      ArgumentCaptor.forClass(StringGenerationParameters.class);
 
-    verify(generatorService).generateUser(captor.capture());
+    verify(generatorService, times(1)).generateUser(eq(null), captor.capture());
 
+    StringGenerationParameters actualPasswordParameters = captor.getValue();
     StringGenerationParameters passwordParameters = new StringGenerationParameters();
 
-    StringGenerationParameters usernameParameters = new StringGenerationParameters();
-    usernameParameters.setExcludeNumber(true);
-    usernameParameters.setLength(20);
-
-    assertThat(captor.getValue().getPasswordGenerationParameters(),
-      samePropertyValuesAs(passwordParameters));
-    assertThat(captor.getValue().getUsernameGenerationParameters(),
-      samePropertyValuesAs(usernameParameters));
+    assertThat(actualPasswordParameters, samePropertyValuesAs(passwordParameters));
   }
 
   @Test
-  public void generateSetRequest_whenValueNonNull_createsAndCopiesSetRequestGeneratingOnlyPassword() {
+  public void generateSetRequest_withAStaticUsername_createsAndCopiesSetRequestGeneratingOnlyPassword() {
     UsernameValue usernameValue = new UsernameValue();
-    usernameValue.setUsername("specified-user");
+    usernameValue.setUsername("specified-username");
     subject.setValue(usernameValue);
 
-    UserGenerationParameters parameters = new UserGenerationParameters();
-    parameters.setUsernameGenerationParameters(null);
+    User expectedUser = new User("fake-user", "fake-password");
+    when(generatorService.generateUser(any(String.class), any(StringGenerationParameters.class)))
+        .thenReturn(expectedUser);
 
-    user.setUsername(null);
-
-    when(generatorService.generateUser(same(parameters))).thenReturn(user);
-    BaseCredentialSetRequest setRequest = subject.generateSetRequest(generatorService);
+    UserSetRequest setRequest = (UserSetRequest) subject.generateSetRequest(generatorService);
 
     assertThat(setRequest.getType(), equalTo("user"));
     assertThat(setRequest.getName(), equalTo("test-name"));
     assertTrue(setRequest.isOverwrite());
     assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
-    assertThat(((UserSetRequest) setRequest)
-      .getUserValue()
-      .getPassword(), equalTo("fake-password"));
-    assertThat(((UserSetRequest) setRequest)
-      .getUserValue()
-      .getUsername(), equalTo("specified-user"));
-    ArgumentCaptor<UserGenerationParameters> captor =
-      ArgumentCaptor.forClass(UserGenerationParameters.class);
 
-    verify(generatorService).generateUser(captor.capture());
+    assertThat(setRequest.getUserValue(), equalTo(expectedUser));
+
+    ArgumentCaptor<StringGenerationParameters> captor = ArgumentCaptor.forClass(StringGenerationParameters.class);
+
+    verify(generatorService).generateUser(eq("specified-username"), captor.capture());
 
     StringGenerationParameters passwordParameters = new StringGenerationParameters();
 
-    assertThat(captor.getValue().getPasswordGenerationParameters(),
-      samePropertyValuesAs(passwordParameters));
-    assertThat(captor.getValue().getUsernameGenerationParameters(), is(nullValue()));
+    assertThat(captor.getValue(), samePropertyValuesAs(passwordParameters));
   }
 }

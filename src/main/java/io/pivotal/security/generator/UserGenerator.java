@@ -1,29 +1,29 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.request.UserGenerationParameters;
-import io.pivotal.security.credential.StringCredential;
 import io.pivotal.security.credential.User;
+import io.pivotal.security.request.StringGenerationParameters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserGenerator {
 
-  private PassayStringCredentialGenerator stringGenerator;
+  private final UsernameGenerator usernameGenerator;
+  private final PasswordCredentialGenerator passwordGenerator;
 
-  public UserGenerator(PassayStringCredentialGenerator stringGenerator) {
-    this.stringGenerator = stringGenerator;
+  @Autowired
+  public UserGenerator(UsernameGenerator usernameGenerator, PasswordCredentialGenerator passwordGenerator) {
+    this.usernameGenerator = usernameGenerator;
+    this.passwordGenerator = passwordGenerator;
   }
 
-  public User generateCredential(UserGenerationParameters generationParameters) {
-    StringCredential generatedPassword = stringGenerator.generateCredential(generationParameters.getPasswordGenerationParameters());
-
-    StringCredential generatedUser = null;
-    if (generationParameters.getUsernameGenerationParameters() != null) {
-      generatedUser = stringGenerator.generateCredential(generationParameters.getUsernameGenerationParameters());
+  public User generateCredential(String username, StringGenerationParameters passwordParameters) {
+    if (username == null) {
+      username = usernameGenerator.generateCredential().getStringCredential();
     }
 
-    String username = generatedUser == null ? null : generatedUser.getStringCredential();
+    final String password = passwordGenerator.generateCredential(passwordParameters).getStringCredential();
 
-    return new User(username, generatedPassword.getStringCredential());
+    return new User(username, password);
   }
 }

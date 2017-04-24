@@ -5,12 +5,12 @@ import io.pivotal.security.credential.User;
 import io.pivotal.security.service.GeneratorService;
 
 public class UserGenerateRequest extends BaseCredentialGenerateRequest {
-
   @JsonProperty("parameters")
-  private UserGenerationParameters generationParameters;
+  @SuppressWarnings("unused")
+  private UserGenerationParameters parameters;
 
   @JsonProperty("value")
-  private UsernameValue value = null;
+  private UsernameValue value = new UsernameValue();
 
   @Override
   public void validate() {
@@ -24,30 +24,10 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
     userSetRequest.setOverwrite(isOverwrite());
     userSetRequest.setAccessControlEntries(getAccessControlEntries());
 
-    UserGenerationParameters userGenerationParameters = new UserGenerationParameters();
-
-    if (getValue() != null) {
-      userGenerationParameters.setUsernameGenerationParameters(null);
-    }
-
-    User user = generatorService.generateUser(userGenerationParameters);
-
-    if (user.getUsername() == null) {
-      user.setUsername(value.getUsername());
-    }
-
+    User user = generatorService.generateUser(value.getUsername(), new StringGenerationParameters());
     userSetRequest.setUserValue(user);
 
     return userSetRequest;
-  }
-
-  public UserGenerationParameters getGenerationParameters() {
-    return generationParameters;
-  }
-
-  public void setGenerationParameters(
-    UserGenerationParameters generationParameters) {
-    this.generationParameters = generationParameters;
   }
 
   public UsernameValue getValue() {
