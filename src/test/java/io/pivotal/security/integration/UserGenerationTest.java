@@ -3,7 +3,6 @@ package io.pivotal.security.integration;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -14,8 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -27,6 +24,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.UnsupportedEncodingException;
 
+import static io.pivotal.security.helper.DatabaseHelper.cleanUpDatabase;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -238,21 +236,6 @@ public class UserGenerationTest {
         .getJSONObject(0)
         .getJSONObject("value");
   }
-
-  private static void cleanUpDatabase(ApplicationContext applicationContext) {
-    JdbcTemplate jdbcTemplate = applicationContext.getBean(JdbcTemplate.class);
-    jdbcTemplate.execute("delete from credential_name");
-    jdbcTemplate.execute("truncate table auth_failure_audit_record");
-    jdbcTemplate.execute("delete from event_audit_record");
-    jdbcTemplate.execute("delete from request_audit_record");
-    jdbcTemplate.execute("delete from encryption_key_canary");
-    jdbcTemplate.execute("truncate table access_entry");
-
-    EncryptionKeyCanaryMapper encryptionKeyCanaryMapper = applicationContext
-        .getBean(EncryptionKeyCanaryMapper.class);
-    encryptionKeyCanaryMapper.mapUuidsToKeys();
-  }
-
 
   private void getPost(String name) throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")

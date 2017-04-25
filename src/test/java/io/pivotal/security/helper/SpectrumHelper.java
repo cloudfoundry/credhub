@@ -3,7 +3,6 @@ package io.pivotal.security.helper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Suppliers;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -12,7 +11,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationContext;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestContextManager;
 
 import java.io.IOException;
@@ -28,6 +26,7 @@ import java.util.function.Supplier;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static io.pivotal.security.helper.DatabaseHelper.cleanUpDatabase;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
@@ -78,31 +77,15 @@ public class SpectrumHelper {
       MyTestContextManager myTestContextManager = myTestContextManagerSupplier.get();
       myTestContextManager.prepareTestInstance(testInstance);
 
-      cleanUpDatabase(myTestContextManagerSupplier);
+      cleanUpDatabase(myTestContextManagerSupplier.get().getApplicationContext());
     });
 
     afterEach(() -> {
-      cleanUpDatabase(myTestContextManagerSupplier);
+      cleanUpDatabase(myTestContextManagerSupplier.get().getApplicationContext());
       cleanMockBeans(testInstance);
 
       myTestContextManagerSupplier.get().getApplicationContext().getBean(DataSource.class).purge();
     });
-  }
-
-  private static void cleanUpDatabase(Supplier<MyTestContextManager> myTestContextManagerSupplier) {
-    ApplicationContext applicationContext = myTestContextManagerSupplier.get()
-        .getApplicationContext();
-    JdbcTemplate jdbcTemplate = applicationContext.getBean(JdbcTemplate.class);
-    jdbcTemplate.execute("delete from credential_name");
-    jdbcTemplate.execute("truncate table auth_failure_audit_record");
-    jdbcTemplate.execute("delete from event_audit_record");
-    jdbcTemplate.execute("delete from request_audit_record");
-    jdbcTemplate.execute("delete from encryption_key_canary");
-    jdbcTemplate.execute("truncate table access_entry");
-
-    EncryptionKeyCanaryMapper encryptionKeyCanaryMapper = applicationContext
-        .getBean(EncryptionKeyCanaryMapper.class);
-    encryptionKeyCanaryMapper.mapUuidsToKeys();
   }
 
   static Supplier<MyTestContextManager> getTestContextManagerSupplier(Object testInstance) {
