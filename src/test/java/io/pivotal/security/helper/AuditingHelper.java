@@ -1,27 +1,27 @@
 package io.pivotal.security.helper;
 
-import io.pivotal.security.audit.AuditingOperationCode;
-import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.entity.RequestAuditRecord;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import org.apache.commons.lang3.StringUtils;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.data.domain.Sort.Direction.DESC;
+
+import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.entity.EventAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 
 public class AuditingHelper {
   public static void verifyAuditing(
@@ -40,6 +40,8 @@ public class AuditingHelper {
     assertThat(eventAuditRecord.getOperation(), equalTo(auditingOperationCode.toString()));
     assertThat(eventAuditRecord.getCredentialName(), equalTo(credentialName));
     assertThat(eventAuditRecord.isSuccess(), equalTo(HttpStatus.valueOf(statusCode).is2xxSuccessful()));
+
+    assertThat(requestAuditRecord.getUuid(), equalTo(eventAuditRecord.getRequestUuid()));
   }
 
   public static void verifyAuditing(
@@ -61,7 +63,7 @@ public class AuditingHelper {
     assertThat(eventAuditRecords.subList(0, eventAuditRecordParametersList.size()),
         containsInAnyOrder(
           eventAuditRecordParametersList.stream()
-              .map(parameters -> matchesExpectedEvent(parameters, expectedSuccess))
+              .map(parameters -> matchesExpectedEvent(parameters, expectedSuccess, requestAuditRecord.getUuid()))
               .collect(Collectors.toList())
     ));
   }
@@ -72,7 +74,7 @@ public class AuditingHelper {
     assertThat(requestAuditRecord.getStatusCode(), equalTo(statusCode));
   }
 
-  private static Matcher<EventAuditRecord> matchesExpectedEvent(EventAuditRecordParameters parameters, boolean expectedSuccess) {
+  private static Matcher<EventAuditRecord> matchesExpectedEvent(EventAuditRecordParameters parameters, boolean expectedSuccess, UUID requestUuid ) {
     return new BaseMatcher<EventAuditRecord>() {
       @Override
       public boolean matches(Object item) {
@@ -83,7 +85,8 @@ public class AuditingHelper {
             StringUtils.equals(actual.getCredentialName(), parameters.getCredentialName()) &&
             StringUtils.equals(actual.getAceOperation(), expectedAceOperation) &&
             StringUtils.equals(actual.getAceActor(), parameters.getAceActor()) &&
-            actual.isSuccess() == expectedSuccess;
+            actual.isSuccess() == expectedSuccess &&
+            actual.getRequestUuid() == requestUuid;
       }
 
       @Override

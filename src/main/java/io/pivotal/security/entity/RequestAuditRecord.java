@@ -1,20 +1,17 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.util.InstantMillisecondsConverter;
-import org.hibernate.annotations.GenericGenerator;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
+import io.pivotal.security.util.InstantMillisecondsConverter;
 import java.time.Instant;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @SuppressWarnings("unused")
 @Entity
@@ -24,8 +21,6 @@ public class RequestAuditRecord {
 
   @Id
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
-  @GeneratedValue(generator = "uuid2")
-  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID uuid;
 
   private String hostName;
