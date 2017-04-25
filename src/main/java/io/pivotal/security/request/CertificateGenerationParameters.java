@@ -1,17 +1,18 @@
 package io.pivotal.security.request;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.InetAddresses;
 import com.google.common.net.InternetDomainName;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.springframework.util.StringUtils;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.springframework.util.StringUtils;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @JsonInclude(NON_DEFAULT)
 public class CertificateGenerationParameters {
@@ -53,44 +54,52 @@ public class CertificateGenerationParameters {
   public CertificateGenerationParameters() {
   }
 
-  public void setCommonName(String commonName) {
+  public CertificateGenerationParameters setCommonName(String commonName) {
     this.commonName = commonName;
+    return this;
   }
 
-  public void setOrganization(String organization) {
+  public CertificateGenerationParameters setOrganization(String organization) {
     this.organization = organization;
+    return this;
   }
 
-  public void setOrganizationUnit(String organizationUnit) {
+  public CertificateGenerationParameters setOrganizationUnit(String organizationUnit) {
     this.organizationUnit = organizationUnit;
+    return this;
   }
 
-  public void setLocality(String locality) {
+  public CertificateGenerationParameters setLocality(String locality) {
     this.locality = locality;
+    return this;
   }
 
-  public void setState(String state) {
+  public CertificateGenerationParameters setState(String state) {
     this.state = state;
+    return this;
   }
 
-  public void setCountry(String country) {
+  public CertificateGenerationParameters setCountry(String country) {
     this.country = country;
+    return this;
   }
 
   public int getKeyLength() {
     return keyLength;
   }
 
-  public void setKeyLength(int keyLength) {
+  public CertificateGenerationParameters setKeyLength(int keyLength) {
     this.keyLength = keyLength;
+    return this;
   }
 
   public int getDuration() {
     return duration;
   }
 
-  public void setDuration(int duration) {
+  public CertificateGenerationParameters setDuration(int duration) {
     this.duration = duration;
+    return this;
   }
 
 
@@ -99,8 +108,9 @@ public class CertificateGenerationParameters {
   }
 
   @JsonProperty("ca")
-  public void setCaName(String caName) {
+  public CertificateGenerationParameters setCaName(String caName) {
     this.caName = caName;
+    return this;
   }
 
   public boolean isSelfSigned() {
@@ -108,40 +118,45 @@ public class CertificateGenerationParameters {
   }
 
   @JsonProperty("self_sign")
-  public void setSelfSigned(boolean selfSigned) {
+  public CertificateGenerationParameters setSelfSigned(boolean selfSigned) {
     this.selfSigned = selfSigned;
+    return this;
   }
 
   public boolean isCa() {
     return isCa;
   }
 
-  public void setIsCa(boolean isCa) {
+  public CertificateGenerationParameters setIsCa(boolean isCa) {
     this.isCa = isCa;
+    return this;
   }
 
   public String[] getAlternativeNames() {
     return alternativeNames;
   }
 
-  public void setAlternativeNames(String[] alternativeNames) {
+  public CertificateGenerationParameters setAlternativeNames(String[] alternativeNames) {
     this.alternativeNames = alternativeNames;
+    return this;
   }
 
   public String[] getExtendedKeyUsage() {
     return extendedKeyUsage;
   }
 
-  public void setExtendedKeyUsage(String[] extendedKeyUsage) {
+  public CertificateGenerationParameters setExtendedKeyUsage(String[] extendedKeyUsage) {
     this.extendedKeyUsage = extendedKeyUsage;
+    return this;
   }
 
   public String[] getKeyUsage() {
     return keyUsage;
   }
 
-  public void setKeyUsage(String[] keyUsage) {
+  public CertificateGenerationParameters setKeyUsage(String[] keyUsage) {
     this.keyUsage = keyUsage;
+    return this;
   }
 
   public String getOrganization() {
