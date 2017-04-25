@@ -58,7 +58,6 @@ public class UserGenerationTest {
     cleanUpDatabase(webApplicationContext);
   }
 
-
   @Test
   public void generatesCorrectUsernameAndPassword() throws Exception {
     getPost("/cred1");

@@ -35,7 +35,6 @@ import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static com.greghaskins.spectrum.Spectrum.let;
-import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -79,7 +78,7 @@ public class CertificateGeneratorTest {
       certificateAuthorityService = mock(CertificateAuthorityService.class);
 
       subject = new CertificateGenerator(keyGenerator, signedCertificateGenerator,
-          certificateAuthorityService, getBouncyCastleProvider());
+          certificateAuthorityService);
 
       fakeKeyPairGenerator = new FakeKeyPairGenerator();
 
@@ -127,8 +126,7 @@ public class CertificateGeneratorTest {
 
           when(
               signedCertificateGenerator
-                  .getSignedByIssuer(rootCaDn, rootCaKeyPair.getPrivate(),
-                      childCertificateKeyPair.get(), inputParameters)
+                  .getSignedByIssuer(childCertificateKeyPair.get(), inputParameters, rootCa)
           ).thenReturn(childX509Certificate);
         });
 
@@ -153,8 +151,7 @@ public class CertificateGeneratorTest {
 
           when(
               signedCertificateGenerator
-                  .getSignedByIssuer(rootCaDn, rootCaKeyPair.getPrivate(),
-                      childCertificateKeyPair.get(), params)
+                  .getSignedByIssuer(childCertificateKeyPair.get(), params, rootCa)
           ).thenReturn(childX509Certificate);
 
           Certificate certificate = subject.generateCredential(
@@ -195,8 +192,7 @@ public class CertificateGeneratorTest {
 
           when(
               signedCertificateGenerator
-                  .getSignedByIssuer(intermediateCaDn, intermediateCaKeyPair.getPrivate(),
-                      childCertificateKeyPair.get(), inputParameters)
+                  .getSignedByIssuer(childCertificateKeyPair.get(), inputParameters, intermediateCa)
           ).thenReturn(childX509Certificate);
         });
 

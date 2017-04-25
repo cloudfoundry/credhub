@@ -1,6 +1,8 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.domain.CertificateParameters;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
@@ -9,15 +11,26 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -30,6 +43,7 @@ public class SignedCertificateGenerator {
   private final X509ExtensionUtils x509ExtensionUtils;
   private JcaContentSignerBuilder jcaContentSignerBuilder;
   private JcaX509CertificateConverter jcaX509CertificateConverter;
+  private final BouncyCastleProvider jceProvider;
 
   @Autowired
   SignedCertificateGenerator(
@@ -37,13 +51,15 @@ public class SignedCertificateGenerator {
       RandomSerialNumberGenerator serialNumberGenerator,
       X509ExtensionUtils x509ExtensionUtils,
       JcaContentSignerBuilder jcaContentSignerBuilder,
-      JcaX509CertificateConverter jcaX509CertificateConverter
+      JcaX509CertificateConverter jcaX509CertificateConverter,
+      BouncyCastleProvider jceProvider
   ) throws Exception {
     this.timeProvider = timeProvider;
     this.serialNumberGenerator = serialNumberGenerator;
     this.x509ExtensionUtils = x509ExtensionUtils;
     this.jcaContentSignerBuilder = jcaContentSignerBuilder;
     this.jcaX509CertificateConverter = jcaX509CertificateConverter;
+    this.jceProvider = jceProvider;
   }
 
   X509Certificate getSelfSigned(KeyPair keyPair, CertificateParameters params) throws Exception {
@@ -51,6 +67,19 @@ public class SignedCertificateGenerator {
   }
 
   X509Certificate getSignedByIssuer(
+      KeyPair keyPair,
+      CertificateParameters params,
+      Certificate ca
+  ) throws Exception {
+    return getSignedByIssuer(
+        getSubjectNameFrom(ca),
+        getPrivateKeyFrom(ca),
+        keyPair,
+        params
+    );
+  }
+
+  private X509Certificate getSignedByIssuer(
       X500Name issuerDn,
       PrivateKey issuerKey,
       KeyPair keyPair,
@@ -92,5 +121,20 @@ public class SignedCertificateGenerator {
     X509CertificateHolder holder = certificateBuilder.build(contentSigner);
 
     return jcaX509CertificateConverter.getCertificate(holder);
+  }
+
+  private X500Name getSubjectNameFrom(Certificate ca) throws IOException, CertificateException {
+    X509Certificate certificate = (X509Certificate) CertificateFactory
+        .getInstance("X.509", jceProvider)
+        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
+    return new X500Name(certificate.getSubjectDN().getName());
+  }
+
+  private PrivateKey getPrivateKeyFrom(Certificate ca)
+      throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+    PEMParser pemParser = new PEMParser(new StringReader(ca.getPrivateKey()));
+    PEMKeyPair pemKeyPair = (PEMKeyPair) pemParser.readObject();
+    PrivateKeyInfo privateKeyInfo = pemKeyPair.getPrivateKeyInfo();
+    return new JcaPEMKeyConverter().getPrivateKey(privateKeyInfo);
   }
 }
