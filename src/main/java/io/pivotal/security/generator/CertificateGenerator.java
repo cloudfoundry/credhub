@@ -3,12 +3,13 @@ package io.pivotal.security.generator;
 import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.data.CertificateAuthorityService;
 import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.util.CertificateFormatter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+
+import static io.pivotal.security.util.CertificateFormatter.pemOf;
 
 @Component
 public class CertificateGenerator implements
@@ -32,26 +33,23 @@ public class CertificateGenerator implements
 
   @Override
   public Certificate generateCredential(CertificateParameters params) {
-    try{
-    KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
+    try {
+      KeyPair keyPair = keyGenerator.generateKeyPair(params.getKeyLength());
+      X509Certificate cert;
+      String caName = null;
+      String caCertificate = null;
+      String privatePem = pemOf(keyPair.getPrivate());
 
-    if (params.isSelfSigned()) {
-      X509Certificate cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
-      String certPem = CertificateFormatter.pemOf(cert);
-      String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-      return new Certificate(null, certPem, privatePem, null);
-    } else {
-      Certificate ca = certificateAuthorityService.findMostRecent(params.getCaName());
-
-      String caCertificate = ca.getCertificate();
-
-      X509Certificate cert = signedCertificateGenerator
-          .getSignedByIssuer(keyPair, params, ca);
-
-        String certPem = CertificateFormatter.pemOf(cert);
-        String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new Certificate(caCertificate, certPem, privatePem, params.getCaName());
+      if (params.isSelfSigned()) {
+        cert = signedCertificateGenerator.getSelfSigned(keyPair, params);
+      } else {
+        Certificate ca = certificateAuthorityService.findMostRecent(params.getCaName());
+        caCertificate = ca.getCertificate();
+        caName = params.getCaName();
+        cert = signedCertificateGenerator.getSignedByIssuer(keyPair, params, ca);
       }
+
+      return new Certificate(caCertificate, pemOf(cert), privatePem, caName);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
