@@ -210,7 +210,7 @@ public class CredentialsControllerErrorHandlingSetTest {
                 .andExpect(
                     jsonPath("$.error")
                         .value("The request does not include a valid type. " +
-                            "Valid values include 'value', 'json', 'password', 'certificate', " +
+                            "Valid values include 'value', 'json', 'password', 'user', 'certificate', " +
                             "'ssh' and 'rsa'.")
                 );
           });
@@ -232,7 +232,7 @@ public class CredentialsControllerErrorHandlingSetTest {
                 .andExpect(
                     jsonPath("$.error")
                         .value("The request does not include a valid type. " +
-                            "Valid values include 'value', 'json', 'password', 'certificate', " +
+                            "Valid values include 'value', 'json', 'password', 'user', 'certificate', " +
                             "'ssh' and 'rsa'.")
                 );
           });
@@ -254,7 +254,7 @@ public class CredentialsControllerErrorHandlingSetTest {
                 .andExpect(
                     jsonPath("$.error")
                         .value("The request does not include a valid type. " +
-                            "Valid values include 'value', 'json', 'password', 'certificate', " +
+                            "Valid values include 'value', 'json', 'password', 'user', 'certificate', " +
                             "'ssh' and 'rsa'.")
                 );
           });

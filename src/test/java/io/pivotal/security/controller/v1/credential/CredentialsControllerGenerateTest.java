@@ -159,7 +159,7 @@ public class CredentialsControllerGenerateTest {
             .andExpect(
                 jsonPath("$.error")
                     .value("The request does not include a valid type. " +
-                        "Valid values for generate include 'password', 'certificate', " +
+                        "Valid values for generate include 'password', 'user', 'certificate', " +
                         "'ssh' and 'rsa'.")
             );
       });
@@ -246,7 +246,7 @@ public class CredentialsControllerGenerateTest {
             .andExpect(
                 jsonPath("$.error")
                     .value("The request does not include a valid type. " +
-                        "Valid values for generate include 'password', 'certificate', " +
+                        "Valid values for generate include 'password', 'user', 'certificate', " +
                         "'ssh' and 'rsa'.")
             );
       });
@@ -315,7 +315,7 @@ public class CredentialsControllerGenerateTest {
             .andExpect(
                 jsonPath("$.error")
                     .value("The request does not include a valid type. " +
-                        "Valid values for generate include 'password', 'certificate', 'ssh' and 'rsa'.")
+                        "Valid values for generate include 'password', 'user', 'certificate', 'ssh' and 'rsa'.")
             );
       });
 
