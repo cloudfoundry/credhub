@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.PermissionException;
 import org.junit.runner.RunWith;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -23,6 +24,8 @@ public class PermissionServiceTest {
 
   private AccessControlDataService accessControlDataService;
 
+  public static final CredentialName CREDENTIAL_NAME = new CredentialName("test-credential");
+
   {
     describe("when security.authorization.acls.enabled = true", () -> {
       beforeEach(() -> {
@@ -40,9 +43,10 @@ public class PermissionServiceTest {
       describe("#verifyAclReadPermission", () -> {
         describe("when the user has permission to read the credential's ACL", () -> {
           it("should do nothing", () -> {
-            when(accessControlDataService.hasReadAclPermission("test-actor", "test-credential"))
+            when(accessControlDataService.hasReadAclPermission("test-actor",
+                CREDENTIAL_NAME))
                 .thenReturn(true);
-            subject.verifyAclReadPermission(userContext, "test-credential");
+            subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
             // pass
           });
         });
@@ -50,9 +54,9 @@ public class PermissionServiceTest {
         describe("when the user does not have permission to read the credential's ACL", () -> {
           itThrowsWithMessage("throws", PermissionException.class,
               "error.acl.lacks_acl_read", () -> {
-                when(accessControlDataService.hasReadAclPermission("test-actor", "test-credential"))
+                when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
                     .thenReturn(false);
-                subject.verifyAclReadPermission(userContext, "test-credential");
+                subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
               });
         });
       });
@@ -74,18 +78,18 @@ public class PermissionServiceTest {
       describe("#verifyAclReadPermission", () -> {
         describe("when the user has permission to read the credential's ACL", () -> {
           it("should do nothing", () -> {
-            when(accessControlDataService.hasReadAclPermission("test-actor", "test-credential"))
+            when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
                 .thenReturn(true);
-            subject.verifyAclReadPermission(userContext, "test-credential");
+            subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
             // pass
           });
         });
 
         describe("when the user does not have permission to read the credential's ACL", () -> {
           it("should do nothing", () -> {
-            when(accessControlDataService.hasReadAclPermission("test-actor", "test-credential"))
+            when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
                 .thenReturn(false);
-            subject.verifyAclReadPermission(userContext, "test-credential");
+            subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
             //pass
           });
         });

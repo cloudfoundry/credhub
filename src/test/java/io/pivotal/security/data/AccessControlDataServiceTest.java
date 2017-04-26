@@ -1,5 +1,27 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.repository.AccessEntryRepository;
+import io.pivotal.security.repository.CredentialNameRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
+
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,27 +34,6 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import io.pivotal.security.entity.ValueCredentialData;
-import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.CredentialNameRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import java.util.List;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -48,7 +49,11 @@ public class AccessControlDataServiceTest {
   @Autowired
   CredentialNameRepository credentialNameRepository;
 
+  @Autowired
+  TestEntityManager testEntityManager;
+
   private List<AccessControlEntry> aces;
+  private CredentialName credentialName;
 
   @Before
   public void beforeEach() {
@@ -61,11 +66,9 @@ public class AccessControlDataServiceTest {
   }
 
   @Test
-  public void getAccessControlList_whenGivenExistingCredentialName_returnsAcl() {
-    AccessControlListResponse response = subject.getAccessControlListResponse("lightsaber");
-    List<AccessControlEntry> accessControlEntries = response.getAccessControlList();
+  public void getAccessControlList_givenExistingCredentialName_returnsAcl() {
+    final List<AccessControlEntry> accessControlEntries = subject.getAccessControlList(credentialName);
 
-    assertThat("name has slash prepended", response.getCredentialName(), equalTo("/lightsaber"));
     assertThat(accessControlEntries, hasSize(3));
 
     assertThat(accessControlEntries, containsInAnyOrder(
@@ -82,7 +85,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void getAccessControlList_whenGivenNonExistentCredentialName_throwsException() {
     try {
-      subject.getAccessControlListResponse("/unicorn");
+      subject.getAccessControlList(new CredentialName("/unicorn"));
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -94,9 +97,9 @@ public class AccessControlDataServiceTest {
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ))
     );
 
-    subject.setAccessControlEntries("/lightsaber", aces);
+    subject.setAccessControlEntries(credentialName, aces);
 
-    List<AccessControlEntry> response = subject.getAccessControlListResponse("/lightsaber").getAccessControlList();
+    List<AccessControlEntry> response = subject.getAccessControlList(credentialName);
 
         assertThat(response, containsInAnyOrder(
         allOf(hasProperty("actor", equalTo("Luke")),
@@ -118,9 +121,9 @@ public class AccessControlDataServiceTest {
     aces = singletonList(
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
-    subject.setAccessControlEntries("lightsaber2", aces);
+    subject.setAccessControlEntries(credentialName2, aces);
 
-    List<AccessControlEntry> response = subject.getAccessControlListResponse("/lightsaber2").getAccessControlList();
+    List<AccessControlEntry> response = subject.getAccessControlList(credentialName2);
 
 
     final AccessControlEntry accessControlEntry = response.get(0);
@@ -134,10 +137,12 @@ public class AccessControlDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAcl() {
 
-    subject.deleteAccessControlEntries("Luke", "/lightsaber");
+    subject.deleteAccessControlEntries("Luke", credentialName);
+
+    testEntityManager.flush();
 
     final List<AccessControlEntry> accessControlList = subject
-        .getAccessControlListResponse("/lightsaber").getAccessControlList();
+        .getAccessControlList(credentialName);
 
     assertThat(accessControlList, hasSize(2));
 
@@ -148,7 +153,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenNonExistentResource_throwsException() {
     try {
-      subject.deleteAccessControlEntries( "Luke", "/some-thing-that-is-not-here");
+      subject.deleteAccessControlEntries( "Luke", new CredentialName("/some-thing-that-is-not-here"));
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -156,36 +161,30 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentAce_doesNothing() {
-    subject.deleteAccessControlEntries( "HelloKitty", "/lightsaber");
+    subject.deleteAccessControlEntries( "HelloKitty", credentialName);
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasAclRead_returnsTrue() {
-    assertThat(subject.hasReadAclPermission("HanSolo", "/lightsaber"),
-        is(true));
-  }
-
-  @Test
-  public void hasAclReadPermission_whenActorHasAclRead_returnsTrueRegardlessOfCredentialNameCase() {
-    assertThat(subject.hasReadAclPermission("HanSolo", "/LIGHTSABER"),
+    assertThat(subject.hasReadAclPermission("HanSolo", credentialName),
         is(true));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasReadButNotReadAcl_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Luke", "/lightsaber"),
+    assertThat(subject.hasReadAclPermission("Luke", credentialName),
         is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Chewie", "/lightsaber"),
+    assertThat(subject.hasReadAclPermission("Chewie", credentialName),
         is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Luke", "/crossbow"),
+    assertThat(subject.hasReadAclPermission("Luke", new CredentialName("/crossbow")),
         is(false));
   }
 
@@ -221,24 +220,24 @@ public class AccessControlDataServiceTest {
 
   private void seedDatabase() {
     final ValueCredentialData valueCredentialData = new ValueCredentialData("lightsaber");
-    final CredentialName credentialName = valueCredentialData.getCredentialName();
+    credentialName = valueCredentialData.getCredentialName();
 
-    credentialNameRepository.saveAndFlush(credentialName);
+    credentialName = credentialNameRepository.saveAndFlush(credentialName);
 
     subject.setAccessControlEntries(
-        "lightsaber",
+        credentialName,
         singletonList(new AccessControlEntry("Luke",
             singletonList(AccessControlOperation.WRITE)))
     );
 
     subject.setAccessControlEntries(
-        "lightsaber",
+        credentialName,
         singletonList(new AccessControlEntry("Leia",
             singletonList(AccessControlOperation.READ)))
     );
 
     subject.setAccessControlEntries(
-        "lightsaber",
+        credentialName,
         singletonList(new AccessControlEntry("HanSolo",
             singletonList(AccessControlOperation.READ_ACL)))
     );
