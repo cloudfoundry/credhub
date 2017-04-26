@@ -1,5 +1,8 @@
 package io.pivotal.security.data;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.repository.CredentialRepository.BATCH_SIZE;
+
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.entity.CredentialData;
@@ -8,6 +11,12 @@ import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.FindCredentialResult;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -15,16 +24,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.CredentialRepository.BATCH_SIZE;
 
 @Service
 public class CredentialDataService {
@@ -115,7 +114,7 @@ public class CredentialDataService {
 
   public Credential findMostRecent(String name) {
     CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
+        .findCredentialName(name);
 
     if (credentialName == null) {
       return null;
@@ -148,7 +147,7 @@ public class CredentialDataService {
 
   public List<Credential> findAllByName(String name) {
     CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
+        .findCredentialName(name);
 
     return credentialName != null ? credentialFactory.makeCredentialsFromEntities(credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
         : newArrayList();

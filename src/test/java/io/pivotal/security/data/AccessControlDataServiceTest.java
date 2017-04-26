@@ -21,6 +21,7 @@ import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
 import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -61,8 +62,10 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void getAccessControlList_whenGivenExistingCredentialName_returnsAcl() {
-    List<AccessControlEntry> accessControlEntries = subject.getAccessControlList("/lightsaber");
+    AccessControlListResponse response = subject.getAccessControlListResponse("lightsaber");
+    List<AccessControlEntry> accessControlEntries = response.getAccessControlList();
 
+    assertThat("name has slash prepended", response.getCredentialName(), equalTo("/lightsaber"));
     assertThat(accessControlEntries, hasSize(3));
 
     assertThat(accessControlEntries, containsInAnyOrder(
@@ -79,7 +82,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void getAccessControlList_whenGivenNonExistentCredentialName_throwsException() {
     try {
-      subject.getAccessControlList("/unicorn");
+      subject.getAccessControlListResponse("/unicorn");
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -91,9 +94,11 @@ public class AccessControlDataServiceTest {
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ))
     );
 
-    List<AccessControlEntry> response = subject.setAccessControlEntries("/lightsaber", aces);
+    subject.setAccessControlEntries("/lightsaber", aces);
 
-    assertThat(response, containsInAnyOrder(
+    List<AccessControlEntry> response = subject.getAccessControlListResponse("/lightsaber").getAccessControlList();
+
+        assertThat(response, containsInAnyOrder(
         allOf(hasProperty("actor", equalTo("Luke")),
             hasProperty("allowedOperations",
                 hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE))),
@@ -113,7 +118,10 @@ public class AccessControlDataServiceTest {
     aces = singletonList(
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
-    List<AccessControlEntry> response = subject.setAccessControlEntries("lightsaber2", aces);
+    subject.setAccessControlEntries("lightsaber2", aces);
+
+    List<AccessControlEntry> response = subject.getAccessControlListResponse("/lightsaber2").getAccessControlList();
+
 
     final AccessControlEntry accessControlEntry = response.get(0);
 
@@ -126,10 +134,10 @@ public class AccessControlDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAcl() {
 
-    subject.deleteAccessControlEntries("/lightsaber", "Luke");
+    subject.deleteAccessControlEntries("Luke", "/lightsaber");
 
     final List<AccessControlEntry> accessControlList = subject
-        .getAccessControlList("/lightsaber");
+        .getAccessControlListResponse("/lightsaber").getAccessControlList();
 
     assertThat(accessControlList, hasSize(2));
 
@@ -140,7 +148,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenNonExistentResource_throwsException() {
     try {
-      subject.deleteAccessControlEntries("/some-thing-that-is-not-here", "Luke");
+      subject.deleteAccessControlEntries( "Luke", "/some-thing-that-is-not-here");
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -148,7 +156,7 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentAce_doesNothing() {
-    subject.deleteAccessControlEntries("/lightsaber", "HelloKitty");
+    subject.deleteAccessControlEntries( "HelloKitty", "/lightsaber");
   }
 
   @Test

@@ -7,14 +7,13 @@ import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+import io.pivotal.security.view.AccessControlListResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessControlDataService {
@@ -31,12 +30,17 @@ public class AccessControlDataService {
     this.credentialNameRepository = credentialNameRepository;
   }
 
+  public AccessControlListResponse getAccessControlListResponse (String name){
+    CredentialName credentialName = findCredentialName(name);
+    return new AccessControlListResponse(credentialName.getName(), createViewsForAllAcesWithName(credentialName));
+  }
+
   public List<AccessControlEntry> getAccessControlList(String name) {
     CredentialName credentialName = findCredentialName(name);
     return createViewsForAllAcesWithName(credentialName);
   }
 
-  public List<AccessControlEntry> setAccessControlEntries(
+  public void setAccessControlEntries(
       String name,
       List<AccessControlEntry> entries
   ) {
@@ -49,49 +53,46 @@ public class AccessControlDataService {
       upsertAccessEntryOperations(credentialName, existingAccessEntries, ace.getActor(),
           ace.getAllowedOperations());
     }
-
-    return createViewsForAllAcesWithName(credentialName);
   }
 
-  public void deleteAccessControlEntries(String name, String actor) {
-    final CredentialName credentialName = findCredentialName(name);
-    accessEntryRepository.deleteByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
+  public AccessControlEntry deleteAccessControlEntries(String actor, String name) {
+    AccessEntryData entry = getPermissionIfCredentialExists(actor, name);
+    if (entry != null) {
+      accessEntryRepository.delete(entry);
+      return createViewFor(entry);
+    }
+    return null;
+  }
+
+  private AccessEntryData getPermissionIfCredentialExists(String actor, String credential){
+    CredentialName credentialName = findCredentialName(credential);
+    return getPermissionForCredential(actor, credentialName);
+
+  }
+
+  private AccessEntryData getPermissionForCredential(String actor, CredentialName credentialName){
+   UUID uuid = credentialName.getUuid();
+   return accessEntryRepository.findByCredentialNameUuidAndActor(uuid, actor);
+  }
+
+  private AccessEntryData getActorCredentialPermission(String actor, String credential){
+    CredentialName credentialName = credentialNameRepository.findCredentialName(credential);
+    if (credentialName != null) {
+      return getPermissionForCredential(actor, credentialName);
+    }
+    else {
+      return null;
+    }
   }
 
   public boolean hasReadAclPermission(String actor, String name) {
-    CredentialName credentialName = credentialNameRepository.findOneByNameIgnoreCase(name);
-
-    if (credentialName == null) {
-      return false;
-    }
-
-    UUID uuid = credentialName.getUuid();
-    AccessEntryData accessEntryData = accessEntryRepository
-        .findByCredentialNameUuidAndActor(uuid, actor);
-
-    if (accessEntryData == null) {
-      return false;
-    } else {
-      return (accessEntryData.hasReadAclPermission());
-    }
+    AccessEntryData accessEntryData = getActorCredentialPermission(actor, name);
+    return accessEntryData != null && accessEntryData.hasReadAclPermission();
   }
 
   public boolean hasReadPermission(String actor, String name) {
-    CredentialName credentialName = credentialNameRepository.findOneByNameIgnoreCase(name);
-
-    if (credentialName == null) {
-      return false;
-    }
-
-    UUID uuid = credentialName.getUuid();
-    AccessEntryData accessEntryData = accessEntryRepository
-        .findByCredentialNameUuidAndActor(uuid, actor);
-
-    if (accessEntryData == null) {
-      return false;
-    } else {
-      return (accessEntryData.hasReadPermission());
-    }
+    AccessEntryData accessEntryData = getActorCredentialPermission(actor, name);
+    return accessEntryData != null && accessEntryData.hasReadPermission();
   }
 
   private void upsertAccessEntryOperations(CredentialName credentialName,
@@ -107,9 +108,7 @@ public class AccessControlDataService {
   }
 
   private CredentialName findCredentialName(String name) {
-    name = StringUtils.prependIfMissing(name, "/");
-    final CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(name);
+    final CredentialName credentialName = credentialNameRepository.findCredentialName(name);
 
     if (credentialName == null) {
       throw new EntryNotFoundException("error.resource_not_found");

@@ -1,25 +1,5 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.RequestUuid;
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.function.Function;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -39,6 +19,25 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.audit.EventAuditLogService;
+import io.pivotal.security.audit.RequestUuid;
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.handler.AccessControlHandler;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.view.AccessControlListResponse;
+import java.util.function.Function;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(Spectrum.class)
 public class AccessControlEntryControllerTest {
@@ -151,7 +150,7 @@ public class AccessControlEntryControllerTest {
               .andExpect(content().string(""));
 
           verify(accessControlHandler, times(1))
-              .deleteAccessControlEntries("test-name", "test-actor");
+              .deleteAccessControlEntries( "test-actor", "test-name");
         });
       });
     });

@@ -6,8 +6,10 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
+import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.AccessControlListResponse;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(path = "/api/v1/aces", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -55,9 +55,23 @@ public class AccessControlEntryController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void deleteAccessControlEntries(
       @RequestParam("credential_name") String credentialName,
-      @RequestParam("actor") String actor
+      @RequestParam("actor") String actor,
+      RequestUuid requestUuid,
+      UserContext userContext
+
   ) {
-    accessControlHandler.deleteAccessControlEntries(credentialName, actor);
+    eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
+      AccessControlEntry entry = accessControlHandler.deleteAccessControlEntries(actor, credentialName);
+      if (entry != null) {
+        entry.getAllowedOperations().stream().forEach(operation ->
+            parameterList.add(new EventAuditRecordParameters(
+                AuditingOperationCode.ACL_DELETE,
+                credentialName,
+                operation,
+                actor)));
+      }
+      return entry;
+    });
   }
 
   private void addAuditParameters(

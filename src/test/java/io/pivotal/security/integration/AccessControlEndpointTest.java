@@ -1,29 +1,5 @@
 package io.pivotal.security.integration;
 
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditingOperationCode;
-import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
@@ -53,6 +29,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -191,6 +191,12 @@ public class AccessControlEndpointTest {
     mockMvc.perform(deleteRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The query parameter credential_name is required for this request.")));
+
+    verifyRequestAuditing(
+        requestAuditRecordRepository,
+        "/api/v1/aces",
+        400
+    );
   }
 
   @Test
@@ -201,6 +207,12 @@ public class AccessControlEndpointTest {
     mockMvc.perform(deleteRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The query parameter actor is required for this request.")));
+
+    verifyRequestAuditing(
+        requestAuditRecordRepository,
+        "/api/v1/aces",
+        400
+    );
   }
 
   @Test
@@ -234,6 +246,7 @@ public class AccessControlEndpointTest {
     )
         .andExpect(status().isNoContent());
 
+    verifyEntryAudit(AuditingOperationCode.ACL_DELETE, "/cred1", 204);
     mockMvc.perform(
         get("/api/v1/acls?credential_name=/cred1")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -245,12 +258,18 @@ public class AccessControlEndpointTest {
   @Test
   public void DELETE_whenTheCredentialDoesntExist_shouldReturnNotFound() throws Exception {
     mockMvc.perform(
-        get("/api/v1/acls?credential_name=/not-valid")
+        delete("/api/v1/aces?credential_name=/not-valid&actor=something")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error").value(
             "The request could not be fulfilled because the resource could not be found."));
+
+    verifyRequestAuditing(
+        requestAuditRecordRepository,
+        "/api/v1/aces",
+        404
+    );
   }
 
   @Test
@@ -498,6 +517,10 @@ public class AccessControlEndpointTest {
 
   private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
     verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, operation, credentialName, "/api/v1/acls", statusCode);
+  }
+
+  private void verifyEntryAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
+    verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, operation, credentialName, "/api/v1/aces", statusCode);
   }
 
   private void seedCredential() throws Exception {

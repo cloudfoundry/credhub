@@ -8,11 +8,8 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.AccessControlListResponse;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class AccessControlHandler {
@@ -32,13 +29,8 @@ public class AccessControlHandler {
     AccessControlListResponse response = null;
 
     try {
-      credentialName = addLeadingSlashIfMissing(credentialName);
       permissionService.verifyAclReadPermission(userContext, credentialName);
-
-      List<AccessControlEntry> accessControlList = accessControlDataService.getAccessControlList(credentialName);
-      response = new AccessControlListResponse();
-      response.setCredentialName(credentialName);
-      response.setAccessControlList(accessControlList);
+      response = accessControlDataService.getAccessControlListResponse(credentialName);
     } catch (PermissionException pe){
       // lack of permissions should be indistinguishable from not found.
       throw new EntryNotFoundException("error.resource_not_found");
@@ -48,23 +40,14 @@ public class AccessControlHandler {
   }
 
   public AccessControlListResponse setAccessControlEntries(AccessEntriesRequest request) {
-    String credentialName = addLeadingSlashIfMissing(request.getCredentialName());
+    accessControlDataService
+        .setAccessControlEntries(request.getCredentialName(), request.getAccessControlEntries());
 
-    List<AccessControlEntry> accessControlEntryList = accessControlDataService
-        .setAccessControlEntries(credentialName, request.getAccessControlEntries());
-
-    AccessControlListResponse response = new AccessControlListResponse();
-    response.setCredentialName(credentialName);
-    response.setAccessControlList(accessControlEntryList);
-
-    return response;
+    return accessControlDataService.getAccessControlListResponse(request.getCredentialName());
   }
 
-  public void deleteAccessControlEntries(String credentialName, String actor) {
-    accessControlDataService.deleteAccessControlEntries(credentialName, actor);
+  public AccessControlEntry deleteAccessControlEntries(String actor, String credentialName) {
+    return accessControlDataService.deleteAccessControlEntries(actor, credentialName);
   }
 
-  private static String addLeadingSlashIfMissing(String name) {
-    return StringUtils.prependIfMissing(name, "/");
-  }
 }

@@ -1,5 +1,20 @@
 package io.pivotal.security.data;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
+
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
@@ -19,7 +34,12 @@ import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.FindCredentialResult;
-import org.apache.commons.lang3.StringUtils;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,28 +52,6 @@ import org.springframework.data.domain.Slice;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -202,7 +200,7 @@ public class CredentialDataServiceTest {
     subject.delete("/my-credential");
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(0));
-    assertNull(nameRepository.findOneByNameIgnoreCase("/my-credential"));
+    assertNull(nameRepository.findCredentialName("/my-credential"));
   }
 
   @Test
@@ -487,7 +485,7 @@ public class CredentialDataServiceTest {
   private PasswordCredential savePassword(long timeMillis, String name, UUID canaryUuid) {
     fakeTimeSetter.accept(timeMillis);
     CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(StringUtils.prependIfMissing(name, "/"));
+        .findCredentialName(name);
     if (credentialName == null) {
       credentialName = credentialNameRepository.saveAndFlush(new CredentialName(name));
     }

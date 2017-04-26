@@ -1,15 +1,5 @@
 package io.pivotal.security.handler;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -18,14 +8,22 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.view.AccessControlListResponse;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class AccessControlHandlerTest {
@@ -44,22 +42,6 @@ public class AccessControlHandlerTest {
     });
 
     describe("#getAccessControlListResponse", () -> {
-      describe("when the requested credential name does not start with a slash", () -> {
-        beforeEach(() -> {
-          List<AccessControlEntry> accessControlList = newArrayList();
-          when(accessControlDataService.getAccessControlList(any(String.class)))
-              .thenReturn(accessControlList);
-        });
-
-        it("should ensure the response contains the corrected name", () -> {
-          AccessControlListResponse response = subject.getAccessControlListResponse(
-              null,
-              "test-credential"
-          );
-          assertThat(response.getCredentialName(), equalTo("/test-credential"));
-        });
-      });
-
       describe("when there is an ACL", () -> {
         beforeEach(() -> {
           ArrayList<AccessControlOperation> operations = newArrayList(
@@ -71,8 +53,8 @@ public class AccessControlHandlerTest {
               operations
           );
           List<AccessControlEntry> accessControlList = newArrayList(accessControlEntry);
-          when(accessControlDataService.getAccessControlList("/test-credential"))
-             .thenReturn(accessControlList);
+          when(accessControlDataService.getAccessControlListResponse("/test-credential"))
+             .thenReturn(new AccessControlListResponse("/test-credential", accessControlList));
         });
 
         it("verifies that the user has permission to read the credential's ACL", () -> {
@@ -105,18 +87,6 @@ public class AccessControlHandlerTest {
     });
 
     describe("#setAccessControlListResponse", () -> {
-      describe("when the requested credential name does not start with a slash", () -> {
-        it("should ensure the response contains the corrected name", () -> {
-          AccessEntriesRequest request = new AccessEntriesRequest("test-credential", newArrayList());
-
-          List<AccessControlEntry> accessControlList = newArrayList();
-          when(accessControlDataService.setAccessControlEntries(any(String.class), any(List.class)))
-              .thenReturn(accessControlList);
-
-          AccessControlListResponse response = subject.setAccessControlEntries(request);
-          assertThat(response.getCredentialName(), equalTo("/test-credential"));
-        });
-      });
 
       it("should set and return the ACEs", () -> {
         ArrayList<AccessControlOperation> operations = newArrayList(
@@ -133,8 +103,8 @@ public class AccessControlHandlerTest {
         List<AccessControlEntry> expectedControlList = newArrayList(accessControlEntry, preexistingAccessControlEntry);
 
         AccessEntriesRequest request = new AccessEntriesRequest("/test-credential", accessControlList);
-        when(accessControlDataService.setAccessControlEntries("/test-credential", accessControlList))
-            .thenReturn(expectedControlList);
+        when(accessControlDataService.getAccessControlListResponse("/test-credential"))
+            .thenReturn(new AccessControlListResponse("/test-credential", expectedControlList));
 
 
         AccessControlListResponse response = subject.setAccessControlEntries(request);
@@ -159,10 +129,10 @@ public class AccessControlHandlerTest {
 
     describe("#deleteAccessControlListResponse", () -> {
       it("should delete the actor's ACEs for the specified credential", () -> {
-        subject.deleteAccessControlEntries("/test-credential", "test-actor");
+        subject.deleteAccessControlEntries( "test-actor", "/test-credential");
 
-        verify(accessControlDataService, times(1)).deleteAccessControlEntries("/test-credential",
-            "test-actor");
+        verify(accessControlDataService, times(1)).deleteAccessControlEntries(
+            "test-actor", "/test-credential");
       });
     });
   }
