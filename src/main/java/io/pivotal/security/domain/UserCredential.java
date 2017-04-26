@@ -28,6 +28,7 @@ public class UserCredential extends Credential<UserCredential> {
 
     credential.setUsername(userValue.getUsername());
     credential.setPassword(userValue.getPassword());
+    credential.setSalt(userValue.getSalt());
 
     credential.setAccessControlList(accessControlEntries);
 
@@ -80,5 +81,14 @@ public class UserCredential extends Credential<UserCredential> {
 
   public String getUsername() {
     return delegate.getUsername();
+  }
+
+  public String getSalt() {
+    return delegate.getSalt();
+  }
+
+  public UserCredential setSalt(String salt) {
+    delegate.setSalt(salt);
+    return this;
   }
 }

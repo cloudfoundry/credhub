@@ -36,6 +36,7 @@ public class UserCredentialTest {
   private Encryptor encryptor;
   private final String CREDENTIAL_NAME = "/test/user";
   private final String USER_PASSWORD = "test-user-password";
+  private final String SALT = "test-salt";
   private final String USERNAME = "test-username";
   private final UUID ENCRYPTION_KEY_UUID = UUID.randomUUID();
   private final byte[] ENCRYPTED_PASSWORD = "encrypted-user-password".getBytes();
@@ -130,7 +131,7 @@ public class UserCredentialTest {
           subject = UserCredential.createNewVersion(
               new UserCredential(existingUserCredentialData),
               CREDENTIAL_NAME,
-              new User(USERNAME, USER_PASSWORD),
+              new User(USERNAME, USER_PASSWORD, SALT),
               encryptor,
               newArrayList());
 
@@ -143,7 +144,7 @@ public class UserCredentialTest {
           subject = UserCredential.createNewVersion(
               NO_EXISTING_CREDENTIAL,
               CREDENTIAL_NAME,
-              new User(USERNAME, USER_PASSWORD),
+              new User(USERNAME, USER_PASSWORD, SALT),
               encryptor,
               Arrays.asList(
                   new AccessControlEntry("test-user", Arrays.asList(READ, WRITE))

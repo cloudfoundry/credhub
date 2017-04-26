@@ -1,5 +1,6 @@
 package io.pivotal.security.generator;
 
+import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.credential.StringCredential;
 import io.pivotal.security.credential.User;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -24,16 +25,19 @@ public class UserGeneratorTest {
   public void beforeEach() {
     UsernameGenerator usernameGenerator = mock(UsernameGenerator.class);
     PasswordCredentialGenerator passwordGenerator = mock(PasswordCredentialGenerator.class);
+    CryptSaltFactory cryptSaltFactory = mock(CryptSaltFactory.class);
 
     passwordParameters = mock(StringGenerationParameters.class);
 
-    subject = new UserGenerator(usernameGenerator, passwordGenerator);
+    subject = new UserGenerator(usernameGenerator, passwordGenerator, cryptSaltFactory);
 
     StringCredential generatedUsername = new StringCredential("fake-generated-username");
     StringCredential generatedPassword = new StringCredential("fake-generated-password");
 
     when(usernameGenerator.generateCredential()).thenReturn(generatedUsername);
     when(passwordGenerator.generateCredential(passwordParameters)).thenReturn(generatedPassword);
+    when(cryptSaltFactory.generateSalt(generatedPassword.getStringCredential()))
+        .thenReturn("fake-generated-salt");
   }
 
   @Test
@@ -42,6 +46,7 @@ public class UserGeneratorTest {
 
     assertThat(user.getUsername(), equalTo("test-user"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));
+    assertThat(user.getSalt(), equalTo("fake-generated-salt"));
   }
 
   @Test
@@ -50,5 +55,6 @@ public class UserGeneratorTest {
 
     assertThat(user.getUsername(), equalTo("fake-generated-username"));
     assertThat(user.getPassword(), equalTo("fake-generated-password"));
+    assertThat(user.getSalt(), equalTo("fake-generated-salt"));
   }
 }

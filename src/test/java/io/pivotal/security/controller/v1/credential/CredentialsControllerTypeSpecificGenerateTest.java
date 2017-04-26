@@ -6,6 +6,7 @@ import com.greghaskins.spectrum.Spectrum.Block;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.credential.RsaKey;
 import io.pivotal.security.credential.SshKey;
 import io.pivotal.security.credential.StringCredential;
@@ -34,7 +35,6 @@ import io.pivotal.security.request.DefaultCredentialGenerateRequest;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -140,7 +140,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   private Encryptor encryptor;
 
   @Autowired
-  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private CryptSaltFactory cryptSaltFactory;
 
   private MockMvc mockMvc;
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -156,11 +156,13 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   private final String credentialName = "/my-namespace/subTree/credential-name";
   private ResultActions response;
   private MockHttpServletRequestBuilder post;
+  private String fakeSalt;
 
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
+      fakeSalt = cryptSaltFactory.generateSalt(fakePassword);
       fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
       fakeTimeSetter.accept(frozenTime.toEpochMilli());
@@ -182,7 +184,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           .thenReturn(new RsaKey(publicKey, privateKey));
 
       when(userGenerator.generateCredential(any(String.class), any(StringGenerationParameters.class)))
-          .thenReturn(new User(username, fakePassword));
+          .thenReturn(new User(username, fakePassword, fakeSalt));
     });
 
     describe("password", testCredentialBehaviour(

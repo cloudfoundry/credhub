@@ -44,7 +44,7 @@ public class UserGenerateRequestTest {
 
   @Test
   public void generateSetRequest_withoutAUsername_createsAndCopiesSetRequestGeneratingUsernameAndPassword() {
-    User expectedUser = new User("fake-user", "fake-password");
+    User expectedUser = new User("fake-user", "fake-password", "fake-salt");
     when(generatorService.generateUser(any(String.class), any(StringGenerationParameters.class)))
         .thenReturn(expectedUser);
 
@@ -72,7 +72,7 @@ public class UserGenerateRequestTest {
     usernameValue.setUsername("specified-username");
     subject.setValue(usernameValue);
 
-    User expectedUser = new User("fake-user", "fake-password");
+    User expectedUser = new User("fake-user", "fake-password", "fake-salt");
     when(generatorService.generateUser(any(String.class), any(StringGenerationParameters.class)))
         .thenReturn(expectedUser);
 
@@ -101,7 +101,7 @@ public class UserGenerateRequestTest {
         .setIncludeSpecial(true);
 
     when(generatorService.generateUser(any(String.class), eq(passwordGenerationParams)))
-        .thenReturn(new User("fake-generated-username", "fake-generated-password"));
+        .thenReturn(new User("fake-generated-username", "fake-generated-password", "fake-salt"));
 
     subject.setPasswordGenerationParameters(passwordGenerationParams);
 

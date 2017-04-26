@@ -1,6 +1,10 @@
 package io.pivotal.security.entity;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.DiscriminatorValue;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.SecondaryTable;
 
 @Entity
 @DiscriminatorValue("user")
@@ -14,6 +18,9 @@ public class UserCredentialData extends CredentialData<UserCredentialData> {
 
   @Column(table = UserCredentialData.TABLE_NAME, length = 7000)
   private String username;
+
+  @Column(table = UserCredentialData.TABLE_NAME, length = 20)
+  private String salt;
 
   public UserCredentialData() {
     this(null);
@@ -35,5 +42,14 @@ public class UserCredentialData extends CredentialData<UserCredentialData> {
   public UserCredentialData setUsername(String username) {
     this.username = username;
     return this;
+  }
+
+  public UserCredentialData setSalt(String salt) {
+    this.salt = salt;
+    return this;
+  }
+
+  public String getSalt() {
+    return salt;
   }
 }

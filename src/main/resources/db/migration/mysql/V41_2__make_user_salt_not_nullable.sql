@@ -1,0 +1,2 @@
+ALTER TABLE user_credential
+  MODIFY COLUMN salt VARCHAR(16) NOT NULL;

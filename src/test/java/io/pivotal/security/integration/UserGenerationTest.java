@@ -62,7 +62,7 @@ public class UserGenerationTest {
 
 
   @Test
-  public void userGeneration_shouldGenerateCorrectUsernameAndPassword() throws Exception {
+  public void generatesCorrectUsernameAndPassword() throws Exception {
     getPost("/cred1");
     getPost("/cred2");
 
@@ -94,7 +94,7 @@ public class UserGenerationTest {
   }
 
   @Test
-  public void userGeneration_shouldGenerateOnlyPasswordWhenGivenStaticUsername() throws Exception{
+  public void generatesOnlyPasswordWhenGivenStaticUsername() throws Exception{
     MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
       .accept(APPLICATION_JSON)
@@ -123,7 +123,7 @@ public class UserGenerationTest {
   }
 
   @Test
-  public void userGeneration_whenGivenPasswordParameters_shouldGeneratePasswordFromParameters() throws Exception {
+  public void whenGivenPasswordParameters_shouldGeneratePasswordFromParameters() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -156,7 +156,7 @@ public class UserGenerationTest {
   }
 
   @Test
-  public void userGeneration_whenGivenAUsernameAndPasswordParameters_usesUsernameAndGeneratesPassword() throws Exception {
+  public void whenGivenAUsernameAndPasswordParameters_usesUsernameAndGeneratesPassword() throws Exception {
     MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -166,7 +166,7 @@ public class UserGenerationTest {
             "\"type\": \"user\"," +
             "\"value\": {" +
               "\"username\": \"test-username\"" +
-              "}," +
+            "}," +
             "\"parameters\": {" +
               "\"length\": 40," +
               "\"exclude_upper\": true," +
@@ -188,6 +188,47 @@ public class UserGenerationTest {
 
     final String username = parsedResponse.read("$.value.username");
     assertThat(username, equalTo("test-username"));
+  }
+
+  @Test
+  public void returnsAConsistentPasswordHash() throws Exception {
+    MockHttpServletRequestBuilder postRequest = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\": \"cred1\"," +
+            "\"type\": \"user\"," +
+            "\"value\": {" +
+              "\"username\": \"test-username\"" +
+            "}" +
+          "}"
+        );
+
+    final MockHttpServletResponse postResponse = this.mockMvc.perform(postRequest)
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse();
+
+    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=/cred1")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+
+    final MockHttpServletResponse getResponse = this.mockMvc.perform(getRequest)
+        .andExpect(status().isOk())
+        .andReturn()
+        .getResponse();
+
+
+    final DocumentContext parsedPostResponse = JsonPath.parse(postResponse.getContentAsString());
+    final DocumentContext parsedGetResponse = JsonPath.parse(getResponse.getContentAsString());
+
+    final String postHash = parsedPostResponse.read("$.value.password_hash");
+    final String getHash = parsedGetResponse.read("$.data[0].value.password_hash");
+
+    assertThat(postHash, equalTo(getHash));
+    assertThat(postHash.matches("^\\$6\\$[a-zA-Z0-9/.]+\\$[a-zA-Z0-9/.]+$"), equalTo(true));
   }
 
   private JSONObject getJsonObject(MvcResult cred1) throws UnsupportedEncodingException {

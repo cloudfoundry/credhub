@@ -4,18 +4,26 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.*;
+import com.greghaskins.spectrum.Spectrum.Block;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.*;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.RsaCredential;
+import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialSetRequest;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.SetService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -42,16 +50,27 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.greghaskins.spectrum.Spectrum.*;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.TestConstants.*;
-import static io.pivotal.security.request.AccessControlOperation.*;
+import static io.pivotal.security.request.AccessControlOperation.DELETE;
+import static io.pivotal.security.request.AccessControlOperation.READ;
+import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
+import static io.pivotal.security.request.AccessControlOperation.WRITE;
+import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.MultiJsonPathMatcher.multiJsonPath;
+import static io.pivotal.security.util.TestConstants.PRIVATE_KEY_4096;
+import static io.pivotal.security.util.TestConstants.RSA_PUBLIC_KEY_4096;
+import static io.pivotal.security.util.TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT;
+import static io.pivotal.security.util.TestConstants.TEST_CA;
+import static io.pivotal.security.util.TestConstants.TEST_CERTIFICATE;
+import static io.pivotal.security.util.TestConstants.TEST_PRIVATE_KEY;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -59,7 +78,11 @@ import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -98,7 +121,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   private Encryptor encryptor;
 
   @Autowired
-  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private CryptSaltFactory cryptSaltFactory;
 
   private MockMvc mockMvc;
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -270,6 +293,7 @@ public class CredentialsControllerTypeSpecificSetTest {
             .setEncryptor(encryptor)
             .setUsername(username)
             .setPassword(password)
+            .setSalt(cryptSaltFactory.generateSalt(password))
             .setUuid(uuid)
             .setVersionCreatedAt(frozenTime.minusSeconds(1)))
     );
