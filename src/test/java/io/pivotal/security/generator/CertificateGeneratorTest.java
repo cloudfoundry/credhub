@@ -142,6 +142,8 @@ public class CertificateGeneratorTest {
           assertThat(certificateSignedByRoot.getCertificate(),
               equalTo(CertificateFormatter.pemOf(childX509Certificate)));
 
+          assertThat(certificateSignedByRoot.getCaName(), equalTo("my-ca-name"));
+
           verify(keyGenerator, times(1)).generateKeyPair(2048);
         });
 

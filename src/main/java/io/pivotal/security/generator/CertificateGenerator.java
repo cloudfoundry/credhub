@@ -50,7 +50,7 @@ public class CertificateGenerator implements
 
         String certPem = CertificateFormatter.pemOf(cert);
         String privatePem = CertificateFormatter.pemOf(keyPair.getPrivate());
-        return new Certificate(caCertificate, certPem, privatePem, ca.getCaName());
+        return new Certificate(caCertificate, certPem, privatePem, params.getCaName());
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
