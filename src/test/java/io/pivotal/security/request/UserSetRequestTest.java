@@ -73,5 +73,23 @@ public class UserSetRequestTest {
         assertThat(userValue.getPassword(), equalTo("example-password"));
       });
     });
+
+    describe("when password is not sent in request", () -> {
+      it("should be invalid", () -> {
+
+        String invalidSetRequestJson = "{\n" +
+            "  \"name\": \"some-name\",\n" +
+            "  \"type\": \"user\",\n" +
+            "  \"overwrite\": true,\n" +
+            "  \"value\": {\n" +
+            "    \"username\": \"dan\"\n" +
+            "  }\n" +
+            "}";
+
+        Set<ConstraintViolation<UserSetRequest>> violations = JsonHelper.deserializeAndValidate(invalidSetRequestJson, UserSetRequest.class);
+
+        assertThat(violations, contains(hasViolationWithMessage("error.missing_password")));
+      });
+    });
   }
 }

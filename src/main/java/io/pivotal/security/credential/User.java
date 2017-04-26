@@ -3,11 +3,13 @@ package io.pivotal.security.credential;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.codec.digest.Crypt;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
 
 public class User implements CredentialValue {
   private String username;
+  @NotEmpty(message = "error.missing_password")
   private String password;
   private String salt;
 

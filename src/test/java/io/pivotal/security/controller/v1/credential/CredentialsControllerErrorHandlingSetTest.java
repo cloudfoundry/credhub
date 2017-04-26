@@ -279,6 +279,28 @@ public class CredentialsControllerErrorHandlingSetTest {
                 );
           });
 
+          it("returns 400 when password is missing for user", () -> {
+            final MockHttpServletRequestBuilder put = put("/api/v1/data")
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+                .accept(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
+                .content("{" +
+                    "  \"name\":\"some-name\"," +
+                    "  \"type\":\"user\"," +
+                    "  \"value\": {" +
+                    "    \"username\": \"dan\"" +
+                    "  }" +
+                    "}");
+            final String expectedError = "A password value must be specified for the credential. Please validate and retry your request.";
+
+            mockMvc.perform(put)
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+                .andExpect(
+                    jsonPath("$.error").value(expectedError)
+                );
+          });
+
           it("returns an error message when an unknown top-level key is present", () -> {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
