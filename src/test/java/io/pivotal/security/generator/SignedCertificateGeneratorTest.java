@@ -6,6 +6,7 @@ import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.request.CertificateGenerationParameters;
 import io.pivotal.security.util.CertificateFormatter;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -17,6 +18,7 @@ import org.bouncycastle.cert.X509ExtensionUtils;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,12 +32,14 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -73,7 +77,9 @@ public class SignedCertificateGeneratorTest {
 
   @Autowired
   private JcaX509CertificateConverter jcaX509CertificateConverter;
+  private SubjectKeyIdentifier caSubjectKeyIdentifier;
   private Certificate certificateAuthority;
+  private Certificate certificateAuthorityWithSubjectKeyId;
 
   @Before
   public void beforeEach() throws Exception {
@@ -105,19 +111,33 @@ public class SignedCertificateGeneratorTest {
         getBouncyCastleProvider()
     );
 
-    X509CertificateHolder certificateHolder = new X509v3CertificateBuilder(
+    caSubjectKeyIdentifier =
+        x509ExtensionUtils.createSubjectKeyIdentifier(
+            SubjectPublicKeyInfo.getInstance(issuerKey.getPublic().getEncoded())
+        );
+
+    X509v3CertificateBuilder x509v3CertificateBuilder = new X509v3CertificateBuilder(
         issuerDn,
         serialNumberGenerator.generate(),
         Date.from(now.toInstant()),
         Date.from(later.toInstant()),
         issuerDn,
         SubjectPublicKeyInfo.getInstance(issuerKey.getPublic().getEncoded())
-    ).build(jcaContentSignerBuilder.build(issuerKey.getPrivate()));
+    );
+
+    certificateAuthority = createCertificateAuthority(x509v3CertificateBuilder);
+
+    x509v3CertificateBuilder.addExtension(Extension.subjectKeyIdentifier, false, caSubjectKeyIdentifier);
+    certificateAuthorityWithSubjectKeyId = createCertificateAuthority(x509v3CertificateBuilder);
+  }
+
+  private Certificate createCertificateAuthority(X509v3CertificateBuilder x509v3CertificateBuilder) throws OperatorCreationException, CertificateException, IOException {
+    X509CertificateHolder certificateHolder = x509v3CertificateBuilder.build(jcaContentSignerBuilder.build(issuerKey.getPrivate()));
     X509Certificate x509CertificateAuthority = jcaX509CertificateConverter.getCertificate(certificateHolder);
 
     String caPem = CertificateFormatter.pemOf(x509CertificateAuthority);
     String caPrivatePem = CertificateFormatter.pemOf(issuerKey.getPrivate());
-    certificateAuthority = new Certificate("", caPem, caPrivatePem, caName);
+    return new Certificate("", caPem, caPrivatePem, caName);
   }
 
   @Test
@@ -127,6 +147,12 @@ public class SignedCertificateGeneratorTest {
     assertThat(generatedCertificate.getIssuerDN().getName(), containsString("CN=my cert name"));
     assertThat(generatedCertificate.getSubjectDN().toString(), containsString("CN=my cert name"));
     generatedCertificate.verify(generatedCertificateKeyPair.getPublic());
+
+    byte[] authorityKeyIdDer = generatedCertificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
+    AuthorityKeyIdentifier authorityKeyIdentifier = AuthorityKeyIdentifier.getInstance(parseExtensionValue(authorityKeyIdDer));
+    byte[] authorityKeyId = authorityKeyIdentifier.getKeyIdentifier();
+
+    assertThat(authorityKeyId, equalTo(expectedSubjectKeyIdentifier));
   }
 
   @Test
@@ -149,6 +175,30 @@ public class SignedCertificateGeneratorTest {
         equalTo(new BasicConstraints(true).getEncoded()));
   }
 
+  @Test
+  public void getSignedByIssuer_withoutSubjectKeyIdentifier_doesNotSetAuthorityKeyIdentifier() throws Exception {
+    X509Certificate generatedCertificate =
+        subject.getSignedByIssuer(generatedCertificateKeyPair, certificateParameters, certificateAuthority);
+
+    assertThat(generatedCertificate.getExtensionValue(Extension.authorityKeyIdentifier.getId()), nullValue());
+  }
+
+  @Test
+  public void getSignedByIssuer_withSubjectKeyIdentifier_setsAuthorityKeyIdentifier() throws Exception {
+    when(serialNumberGenerator.generate())
+        .thenReturn(BigInteger.valueOf(1337))
+        .thenReturn(BigInteger.valueOf(666));
+    X509Certificate generatedCertificate =
+        subject.getSignedByIssuer(generatedCertificateKeyPair, certificateParameters, certificateAuthorityWithSubjectKeyId);
+
+    byte[] authorityKeyIdDer = generatedCertificate.getExtensionValue(Extension.authorityKeyIdentifier.getId());
+    AuthorityKeyIdentifier authorityKeyIdentifier =
+        AuthorityKeyIdentifier.getInstance(parseExtensionValue(authorityKeyIdDer));
+
+    assertThat(authorityKeyIdentifier.getKeyIdentifier(), equalTo(caSubjectKeyIdentifier.getKeyIdentifier()));
+    assertThat(authorityKeyIdentifier.getAuthorityCertSerialNumber(), equalTo(BigInteger.valueOf(1337)));
+    assertThat(authorityKeyIdentifier.getAuthorityCertIssuer().getNames()[0].getName().toString(), equalTo(caName));
+  }
 
   @Test
   public void getSignedByIssuer_setsSubjectKeyIdentifier() throws Exception {
@@ -185,8 +235,8 @@ public class SignedCertificateGeneratorTest {
     generatedCertificate = setupGetSignedByIssuer();
     byte[] actualKeyUsage = generatedCertificate.getExtensionValue(Extension.keyUsage.getId());
 
-      assertThat(Arrays.copyOfRange(actualKeyUsage, 5, actualKeyUsage.length),
-          equalTo(certificateParameters.getKeyUsage().getBytes()));
+    assertThat(Arrays.copyOfRange(actualKeyUsage, 5, actualKeyUsage.length),
+        equalTo(certificateParameters.getKeyUsage().getBytes()));
   }
 
   @Test
