@@ -6,6 +6,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -334,7 +335,7 @@ public class CredentialsControllerGetTest {
                 boolean.class);
 
         doThrow(PermissionException.class).when(permissionService)
-            .verifyReadPermission(any(UserContext.class), any(String.class));
+            .verifyReadPermission(any(UserContext.class), any(CredentialName.class));
         final MockHttpServletRequestBuilder get = get(validUrl)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON);

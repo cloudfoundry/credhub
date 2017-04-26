@@ -264,7 +264,7 @@ public class EncryptionKeyRotatorTest {
         String originalPassword = parse(content).get("value").textValue();
 
         CredentialName credentialName = credentialNameRepository
-            .findCredentialName("/cred1");
+            .findOneByNameIgnoreCase("/cred1");
 
         final PasswordCredentialData firstEncryption =
             (PasswordCredentialData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
@@ -305,7 +305,7 @@ public class EncryptionKeyRotatorTest {
         String originalCert = parse(content).get("value").get("private_key").textValue();
 
         CredentialName credentialName = credentialNameRepository
-            .findCredentialName("/cred1");
+            .findOneByNameIgnoreCase("/cred1");
 
         final CertificateCredentialData firstEncryption =
             (CertificateCredentialData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);

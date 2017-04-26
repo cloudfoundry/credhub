@@ -10,11 +10,10 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.AccessControlListResponse;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class AccessControlHandler {
   private final PermissionService permissionService;
   private final AccessControlDataService accessControlDataService;
@@ -61,8 +60,6 @@ public class AccessControlHandler {
   }
 
   private CredentialName getCredentialName(String name) {
-    name = StringUtils.prependIfMissing(name, "/");
-
     final CredentialName credentialName = credentialNameRepository
         .findOneByNameIgnoreCase(name);
 

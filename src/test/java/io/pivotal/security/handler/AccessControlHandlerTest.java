@@ -35,10 +35,9 @@ public class AccessControlHandlerTest {
 
   private PermissionService permissionService;
   private AccessControlDataService accessControlDataService;
+  private CredentialNameRepository credentialNameRepository;
 
   private final UserContext userContext = mock(UserContext.class);
-
-  private CredentialNameRepository credentialNameRepository;
 
   public static final CredentialName CREDENTIAL_NAME = new CredentialName("/test-credential");
 
@@ -58,6 +57,8 @@ public class AccessControlHandlerTest {
           List<AccessControlEntry> accessControlList = newArrayList();
           when(accessControlDataService.getAccessControlList(any(CredentialName.class)))
               .thenReturn(accessControlList);
+          when(credentialNameRepository.findOneByNameIgnoreCase(any(String.class)))
+              .thenReturn(new CredentialName("/test-credential"));
         });
 
         it("should ensure the response contains the corrected name", () -> {

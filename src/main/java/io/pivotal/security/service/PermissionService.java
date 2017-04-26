@@ -31,7 +31,7 @@ public class PermissionService {
     }
   }
 
-  public void verifyReadPermission(UserContext user, String credentialName) {
+  public void verifyReadPermission(UserContext user, CredentialName credentialName) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);
       if (StringUtils.isEmpty(actor) || !accessControlDataService.hasReadPermission(actor, credentialName)) {

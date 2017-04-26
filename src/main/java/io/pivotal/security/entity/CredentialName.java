@@ -1,6 +1,5 @@
 package io.pivotal.security.entity;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.List;
@@ -54,7 +53,7 @@ public class CredentialName {
   }
 
   public void setName(String name) {
-    this.name = StringUtils.prependIfMissing(name, "/");
+    this.name = name;
   }
 
   public List<AccessEntryData> getAccessControlList() {

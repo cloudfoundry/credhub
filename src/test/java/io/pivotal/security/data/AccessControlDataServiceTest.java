@@ -1,5 +1,6 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.aspect.CredentialNameAspect;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -16,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -39,6 +42,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
+@EnableAspectJAutoProxy
+@Import(CredentialNameAspect.class)
 public class AccessControlDataServiceTest {
 
   private AccessControlDataService subject;
@@ -190,31 +195,31 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void hasReadPermission_whenActorHasRead_returnsTrue() {
-    assertThat(subject.hasReadPermission("Leia", "/lightsaber"),
+    assertThat(subject.hasReadPermission("Leia", credentialName),
         is(true));
   }
 
   @Test
-  public void hasReadPermission_whenActorHasRead_returnsTrueRegardlessOfCredentialNameCase() {
-    assertThat(subject.hasReadPermission("Leia", "/LIGHTSABER"),
+  public void hasReadPermission_givenNameWithoutLeadingSlashAndHasRead_returnsTrue() {
+    assertThat(subject.hasReadPermission("Leia", credentialName),
         is(true));
   }
 
   @Test
   public void hasReadPermission_whenActorHasWriteButNotRead_returnsFalse() {
-    assertThat(subject.hasReadPermission("Luke", "/lightsaber"),
+    assertThat(subject.hasReadPermission("Luke", credentialName),
         is(false));
   }
 
   @Test
   public void hasReadPermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasReadPermission("Chewie", "/lightsaber"),
+    assertThat(subject.hasReadPermission("Chewie", credentialName),
         is(false));
   }
 
   @Test
   public void hasReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-    assertThat(subject.hasReadPermission("Luke", "/crossbow"),
+    assertThat(subject.hasReadPermission("Luke", new CredentialName("/crossbow")),
         is(false));
   }
 
