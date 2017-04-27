@@ -108,6 +108,7 @@ public class EncryptionKeyRotatorTest {
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
   private String passwordName;
+  private final String name = "/" + this.getClass().getName();
 
   {
     wireAndUnwire(this);
@@ -255,7 +256,7 @@ public class EncryptionKeyRotatorTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
-                + "  \"name\": \"/cred1\","
+                + "  \"name\": \"" + name + "\","
                 + "  \"type\": \"password\""
                 + "}");
 
@@ -264,7 +265,7 @@ public class EncryptionKeyRotatorTest {
         String originalPassword = parse(content).get("value").textValue();
 
         CredentialName credentialName = credentialNameRepository
-            .findOneByNameIgnoreCase("/cred1");
+            .findOneByNameIgnoreCase(name);
 
         final PasswordCredentialData firstEncryption =
             (PasswordCredentialData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
@@ -280,7 +281,7 @@ public class EncryptionKeyRotatorTest {
         assertThat(firstEncryption.getEncryptedGenerationParameters(),
             not(equalTo(secondEncryption.getEncryptedGenerationParameters())));
 
-        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1")
+        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + name)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
         this.mockMvc.perform(get).andExpect(status().isOk())
             .andExpect(jsonPath(".data[0].value").value(originalPassword));
@@ -292,7 +293,7 @@ public class EncryptionKeyRotatorTest {
             .accept(APPLICATION_JSON)
             .contentType(APPLICATION_JSON)
             .content("{"
-                + "  \"name\": \"/cred1\","
+                + "  \"name\": \"" + name + "\","
                 + "  \"type\": \"certificate\","
                 + "  \"parameters\": { "
                 + "    \"is_ca\": true,\n"
@@ -305,7 +306,7 @@ public class EncryptionKeyRotatorTest {
         String originalCert = parse(content).get("value").get("private_key").textValue();
 
         CredentialName credentialName = credentialNameRepository
-            .findOneByNameIgnoreCase("/cred1");
+            .findOneByNameIgnoreCase(name);
 
         final CertificateCredentialData firstEncryption =
             (CertificateCredentialData) credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()).get(0);
@@ -319,7 +320,7 @@ public class EncryptionKeyRotatorTest {
         assertThat(firstEncryption.getEncryptedValue(),
             not(equalTo(secondEncryption.getEncryptedValue())));
 
-        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=cred1")
+        final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + name)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
         this.mockMvc.perform(get).andExpect(status().isOk())
             .andExpect(jsonPath("$.data[0].value.private_key").value(originalCert));

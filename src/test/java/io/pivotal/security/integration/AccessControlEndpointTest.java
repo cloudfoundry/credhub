@@ -69,6 +69,8 @@ public class AccessControlEndpointTest {
   private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
+  private String credentialNameWithoutLeadingSlash = this.getClass().getName();
+  private String credentialName = "/" + credentialNameWithoutLeadingSlash;
 
   @Before
   public void beforeEach() throws Exception {
@@ -82,7 +84,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"name\": \"/cred1\","
+            + "  \"name\": \"" + credentialName + "\","
             + "  \"type\": \"password\","
             + "  \"value\": \"testpassword\""
             + "}");
@@ -106,7 +108,7 @@ public class AccessControlEndpointTest {
     seedCredential();
 
     MvcResult result = mockMvc.perform(
-        get("/api/v1/acls?credential_name=/cred1")
+        get("/api/v1/acls?credential_name=" + credentialName)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
@@ -117,7 +119,7 @@ public class AccessControlEndpointTest {
     String content = result.getResponse().getContentAsString();
     AccessControlListResponse acl = JsonHelper
         .deserialize(content, AccessControlListResponse.class);
-    assertThat(acl.getCredentialName(), equalTo("/cred1"));
+    assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getAccessControlList(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
@@ -126,7 +128,7 @@ public class AccessControlEndpointTest {
             new AccessControlEntry("dan", asList(READ)))
     ));
 
-    verifyAudit(ACL_ACCESS, "/cred1", 200);
+    verifyAudit(ACL_ACCESS, credentialName, 200);
   }
 
   @Test
@@ -134,7 +136,7 @@ public class AccessControlEndpointTest {
     seedCredential();
 
     MvcResult result = mockMvc.perform(
-        get("/api/v1/acls?credential_name=cred1")
+        get("/api/v1/acls?credential_name=" + credentialNameWithoutLeadingSlash)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
@@ -144,7 +146,7 @@ public class AccessControlEndpointTest {
         .andReturn();
     String content = result.getResponse().getContentAsString();
     AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-    assertThat(acl.getCredentialName(), equalTo("/cred1"));
+    assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getAccessControlList(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -152,13 +154,13 @@ public class AccessControlEndpointTest {
             new AccessControlEntry("dan", asList(READ)))
     ));
 
-    verifyAudit(ACL_ACCESS, "/cred1", 200);
+    verifyAudit(ACL_ACCESS, credentialName, 200);
   }
 
   @Test
   public void GET_whenTheUserLacksPermissionToReadTheAcl_returnsNotFound() throws Exception {
     // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
-    final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
+    final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=" + credentialName)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON);
 
@@ -222,7 +224,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"/cred1\",\n"
+            + "  \"credential_name\": \"" + credentialName + "\",\n"
             + "  \"access_control_entries\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
@@ -234,21 +236,21 @@ public class AccessControlEndpointTest {
         .andExpect(status().isOk());
 
     mockMvc.perform(
-        get("/api/v1/acls?credential_name=cred1")
+        get("/api/v1/acls?credential_name=" + credentialNameWithoutLeadingSlash)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.access_control_list").isNotEmpty());
 
     mockMvc.perform(
-        delete("/api/v1/aces?credential_name=/cred1&actor=dan")
+        delete("/api/v1/aces?credential_name=" + credentialName + "&actor=dan")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isNoContent());
 
-    verifyEntryAudit(AuditingOperationCode.ACL_DELETE, "/cred1", 204);
+    verifyEntryAudit(AuditingOperationCode.ACL_DELETE, credentialName, 204);
     mockMvc.perform(
-        get("/api/v1/acls?credential_name=/cred1")
+        get("/api/v1/acls?credential_name=" + credentialName)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
@@ -279,7 +281,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"/cred1\","
+            + "  \"credential_name\": \"" + credentialName + "\","
             + "  \"access_control_entries\": ["
             + "     {"
             + "       \"actor\": \"dan\","
@@ -300,7 +302,7 @@ public class AccessControlEndpointTest {
     String content = result.getResponse().getContentAsString();
     AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
     assertThat(acl.getAccessControlList(), hasSize(3));
-    assertThat(acl.getCredentialName(), equalTo("/cred1"));
+    assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getAccessControlList(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -316,9 +318,9 @@ public class AccessControlEndpointTest {
         "/api/v1/aces",
         200,
         newArrayList(
-            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", READ, "dan"),
-            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", WRITE, "dan"),
-            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", DELETE, "isobel")
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, DELETE, "isobel")
         )
     );
   }
@@ -330,7 +332,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"/cred1\","
+            + "  \"credential_name\": \"" + credentialName + "\","
             + "  \"access_control_entries\": ["
             + "     {"
             + "       \"actor\": \"dan\","
@@ -345,7 +347,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"/cred1\","
+            + "  \"credential_name\": \"" + credentialName + "\","
             + "  \"access_control_entries\": ["
             + "     {"
             + "       \"actor\": \"dan\","
@@ -361,7 +363,7 @@ public class AccessControlEndpointTest {
     String content = result.getResponse().getContentAsString();
     AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
     assertThat(acl.getAccessControlList(), hasSize(2));
-    assertThat(acl.getCredentialName(), equalTo("/cred1"));
+    assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getAccessControlList(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -378,8 +380,8 @@ public class AccessControlEndpointTest {
         "/api/v1/aces",
         200,
         newArrayList(
-            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", READ, "dan"),
-            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", WRITE, "dan")
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "dan")
         )
     );
   }
@@ -391,7 +393,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"cred1\",\n"
+            + "  \"credential_name\": \"" + credentialName + "\",\n"
             + "  \"access_control_entries\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
@@ -406,7 +408,7 @@ public class AccessControlEndpointTest {
         .andReturn();
     String content = result.getResponse().getContentAsString();
     AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-    assertThat(acl.getCredentialName(), equalTo("/cred1"));
+    assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getAccessControlList(), hasSize(2));
     assertThat(acl.getAccessControlList(), containsInAnyOrder(
         samePropertyValuesAs(
@@ -421,7 +423,7 @@ public class AccessControlEndpointTest {
         "/api/v1/aces",
         200,
         newArrayList(
-            new EventAuditRecordParameters(ACL_UPDATE, "/cred1", READ, "dan")
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan")
         )
     );
   }
@@ -494,7 +496,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"cred1\",\n"
+            + "  \"credential_name\": \"" + credentialName + "\",\n"
             + "  \"access_control_entries\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
@@ -529,7 +531,7 @@ public class AccessControlEndpointTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"credential_name\": \"/cred1\",\n"
+            + "  \"credential_name\": \"" + credentialName + "\",\n"
             + "  \"access_control_entries\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"

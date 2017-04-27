@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.UnsupportedEncodingException;
@@ -41,12 +42,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@Transactional
 public class UserGenerationTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
 
   private MockMvc mockMvc;
+
+  private final String credentialName1 = "/" + this.getClass().getName() + "1";
+  private final String credentialName2 = "/" + this.getClass().getName() + "2";
 
   @Before
   public void beforeEach() throws Exception {
@@ -60,10 +65,10 @@ public class UserGenerationTest {
 
   @Test
   public void generatesCorrectUsernameAndPassword() throws Exception {
-    getPost("/cred1");
-    getPost("/cred2");
+    getPost(credentialName1);
+    getPost(credentialName2);
 
-    MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=/cred1")
+    MvcResult cred1 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
@@ -73,7 +78,7 @@ public class UserGenerationTest {
       .andReturn();
 
 
-    MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=/cred2")
+    MvcResult cred2 = this.mockMvc.perform(get("/api/v1/data?name=" + credentialName2)
       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
@@ -97,7 +102,7 @@ public class UserGenerationTest {
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON)
       //language=JSON
-      .content("{  \"name\": \"cred1\", \n" +
+      .content("{  \"name\": \"" + credentialName1 + "\", \n" +
         "  \"type\": \"user\", \n" +
         "  \"value\": {\n" +
         "    \"username\": \"luke\" \n" +
@@ -108,7 +113,7 @@ public class UserGenerationTest {
       .andDo(print())
       .andExpect(status().isOk());
 
-    this.mockMvc.perform(get("/api/v1/data?name=/cred1")
+    this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON))
@@ -126,7 +131,7 @@ public class UserGenerationTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "\"name\": \"cred1\"," +
+            "\"name\": \"" + credentialName1 + "\"," +
             "\"type\": \"user\"," +
             "\"parameters\": {" +
             "\"length\": 40," +
@@ -159,7 +164,7 @@ public class UserGenerationTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "\"name\": \"cred1\"," +
+            "\"name\": \"" + credentialName1 + "\"," +
             "\"type\": \"user\"," +
             "\"value\": {" +
               "\"username\": \"test-username\"" +
@@ -194,7 +199,7 @@ public class UserGenerationTest {
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{" +
-            "\"name\": \"cred1\"," +
+            "\"name\": \"" + credentialName1 + "\"," +
             "\"type\": \"user\"," +
             "\"value\": {" +
               "\"username\": \"test-username\"" +
@@ -207,7 +212,7 @@ public class UserGenerationTest {
         .andReturn()
         .getResponse();
 
-    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=/cred1")
+    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + credentialName1)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON);
