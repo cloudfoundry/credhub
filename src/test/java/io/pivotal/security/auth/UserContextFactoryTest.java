@@ -110,7 +110,7 @@ public class UserContextFactoryTest {
     UserContext context = subject.createUserContext(authenticationToken);
 
     assertThat(context.getAclUser(),
-        equalTo("mtls:app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
+        equalTo("mtls-app:e054393e-c9c3-478b-9047-e6d05c307bf2"));
   }
 
 

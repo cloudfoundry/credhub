@@ -110,7 +110,7 @@ public class UserContext {
     }
 
     if (AUTH_METHOD_MUTUAL_TLS.equals(this.getAuthMethod())) {
-      return MTLS_ACTOR_PREFIX + ":" + parseAppIdentifier(this.getClientId());
+      return MTLS_ACTOR_PREFIX + "-" + parseAppIdentifier(this.getClientId());
     }
 
     return null;

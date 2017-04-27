@@ -176,7 +176,7 @@ public class PermissionAndCredentialTest {
             assertThat(acl.getCredentialName(), equalTo("/test-password"));
             assertThat(acl.getAccessControlList(), containsInAnyOrder(
                 samePropertyValuesAs(
-                    new AccessControlEntry("mtls:app:a12345e5-b2b0-4648-a0d0-772d3d399dcb",
+                    new AccessControlEntry("mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb",
                         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
           });
         });
@@ -190,7 +190,7 @@ public class PermissionAndCredentialTest {
               + "  \"name\":\"/test-password\",\n"
               + "  \"overwrite\":true, \n"
               + "  \"access_control_entries\": [{\n"
-              + "    \"actor\": \"mtls:app:app1-guid\",\n"
+              + "    \"actor\": \"mtls-app:app1-guid\",\n"
               + "    \"operations\": [\"read\"]\n"
               + "  }]\n"
               + additionalJsonPayload
@@ -219,7 +219,7 @@ public class PermissionAndCredentialTest {
                   new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                       asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
               samePropertyValuesAs(
-                  new AccessControlEntry("mtls:app:app1-guid", asList(READ)))
+                  new AccessControlEntry("mtls-app:app1-guid", asList(READ)))
           ));
         });
       });
@@ -256,7 +256,7 @@ public class PermissionAndCredentialTest {
                 + "  \"name\":\"/test-password\",\n"
                 + "  \"overwrite\":true, \n"
                 + "  \"access_control_entries\": [{\n"
-                + "    \"actor\": \"mtls:app:app1-guid\",\n"
+                + "    \"actor\": \"mtls-app:app1-guid\",\n"
                 + "    \"operations\": [\"write\"]},\n"
                 + "    {\"actor\": \"uaa-client:credhub_test\",\n"
                 + "    \"operations\": [\"read\", \"write\", \"delete\"]\n"
@@ -288,7 +288,7 @@ public class PermissionAndCredentialTest {
                     new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
                 samePropertyValuesAs(
-                    new AccessControlEntry("mtls:app:app1-guid",
+                    new AccessControlEntry("mtls-app:app1-guid",
                         asList(WRITE))),
                 samePropertyValuesAs(
                     new AccessControlEntry("uaa-client:credhub_test",
@@ -304,7 +304,7 @@ public class PermissionAndCredentialTest {
                 + "  \"name\":\"/test-password\",\n"
                 + "  \"overwrite\":false, \n"
                 + "  \"access_control_entries\": [{\n"
-                + "    \"actor\": \"mtls:app:app1-guid\",\n"
+                + "    \"actor\": \"mtls-app:app1-guid\",\n"
                 + "    \"operations\": [\"write\"]},\n"
                 + "    {\"actor\": \"uaa-client:credhub_test\",\n"
                 + "    \"operations\": [\"read\", \"write\", \"delete\"]\n"
@@ -353,7 +353,7 @@ public class PermissionAndCredentialTest {
                   + "  \"name\":\"/test-password\",\n"
                   + "  \"overwrite\":true, \n"
                   + "  \"access_control_entries\": [{\n"
-                  + "    \"actor\": \"mtls:app:app1-guid\",\n"
+                  + "    \"actor\": \"mtls-app:app1-guid\",\n"
                   + "    \"operations\": [\"unicorn\"]\n"
                   + "  }]\n"
                   + additionalJsonPayload
