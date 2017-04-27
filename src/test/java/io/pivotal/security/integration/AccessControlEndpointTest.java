@@ -1,5 +1,29 @@
 package io.pivotal.security.integration;
 
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
@@ -30,34 +54,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditingOperationCode;
-import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @Transactional
+@TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class AccessControlEndpointTest {
 
   @Autowired
@@ -91,7 +92,7 @@ public class AccessControlEndpointTest {
   }
 
   @Test
-  public void GET_whenTheCredentialNameParaemterIsMissing_returnsAnAppropriateError() throws Exception {
+  public void GET_whenTheCredentialNameParameterIsMissing_returnsAnAppropriateError() throws Exception {
     MockHttpServletRequestBuilder getRequest = get(
         "/api/v1/acls")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -155,7 +156,6 @@ public class AccessControlEndpointTest {
   }
 
   @Test
-  @Ignore("ACL enforcement is disabled in tests")
   public void GET_whenTheUserLacksPermissionToReadTheAcl_returnsNotFound() throws Exception {
     // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
     final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=/cred1")
