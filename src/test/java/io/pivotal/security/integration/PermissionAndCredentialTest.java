@@ -1,27 +1,11 @@
 package io.pivotal.security.integration;
 
-import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.Block;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.util.function.Supplier;
-
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
@@ -48,20 +32,51 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.greghaskins.spectrum.Spectrum.Block;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import java.util.List;
+import java.util.function.Supplier;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = {CredentialManagerApp.class})
 public class PermissionAndCredentialTest {
 
   @Autowired
-  WebApplicationContext webApplicationContext;
+  private WebApplicationContext webApplicationContext;
+  @Autowired
+  private RequestAuditRecordRepository requestAuditRecordRepository;
+  @Autowired
+  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
+  private AuditingHelper auditingHelper;
+  private ResultActions response;
 
   {
     wireAndUnwire(this);
 
     beforeEach(() -> {
+      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
       mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
@@ -78,24 +93,29 @@ public class PermissionAndCredentialTest {
       describe("with a credential and no ace", () -> {
         describe("and UAA authentication", () -> {
           describe("and a password grant", () -> {
-            it("should set the credential giving current user read and write permission", () -> {
+            beforeEach(() -> {
               String requestBody = "{\n"
                   + "  \"type\":\"password\",\n"
                   + "  \"name\":\"/test-password\"\n"
                   + additionalJsonPayload
                   + "}";
 
-              mockMvc.perform(requestBuilderProvider.get()
+              response = mockMvc.perform(requestBuilderProvider.get()
                   .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                   .accept(APPLICATION_JSON)
                   .contentType(APPLICATION_JSON)
-                  .content(requestBody))
+                  .content(requestBody));
+            });
 
+            it("succeeds", () -> {
+              response
                   .andExpect(status().isOk())
                   .andExpect(jsonPath("$.type", equalTo("password")));
+            });
 
+            it("should set the credential giving current user read and write permission", () -> {
               MvcResult result = mockMvc
-                  .perform(get("/api/v1/acls?credential_name=" + "/test-password")
+                  .perform(get("/api/v1/acls?credential_name=/test-password")
                       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
                   .andDo(print())
                   .andExpect(status().isOk())
@@ -109,27 +129,44 @@ public class PermissionAndCredentialTest {
                       new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                           asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
             });
+
+            it("audits the request", () -> {
+              List<EventAuditRecordParameters> parametersList = newArrayList(
+                  new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+              );
+              auditingHelper.verifyAuditing(
+                  "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                  "/api/v1/data",
+                  200,
+                  parametersList
+              );
+            });
           });
 
           describe("and a client credential", () -> {
-            it("should set the credential giving current user read and write permission", () -> {
+            beforeEach(() -> {
               String requestBody = "{\n"
                   + "  \"type\":\"password\",\n"
                   + "  \"name\":\"/test-password\"\n"
                   + additionalJsonPayload
                   + "}";
 
-              mockMvc.perform(requestBuilderProvider.get()
+              response = mockMvc.perform(requestBuilderProvider.get()
                   .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
                   .accept(APPLICATION_JSON)
                   .contentType(APPLICATION_JSON)
-                  .content(requestBody))
+                  .content(requestBody));
+            });
 
+            it("succeeds", () -> {
+              response
                   .andExpect(status().isOk())
                   .andExpect(jsonPath("$.type", equalTo("password")));
+            });
 
+            it("should set the credential giving current user read and write permission", () -> {
               MvcResult result = mockMvc
-                  .perform(get("/api/v1/acls?credential_name=" + "/test-password")
+                  .perform(get("/api/v1/acls?credential_name=/test-password")
                       .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN))
                   .andDo(print())
                   .andExpect(status().isOk())
@@ -143,11 +180,23 @@ public class PermissionAndCredentialTest {
                       new AccessControlEntry("uaa-client:credhub_test",
                           asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
             });
+
+            it("audits the request", () -> {
+              List<EventAuditRecordParameters> parametersList = newArrayList(
+                  new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+              );
+              auditingHelper.verifyAuditing(
+                  "uaa-client:credhub_test",
+                  "/api/v1/data",
+                  200,
+                  parametersList
+              );
+            });
           });
         });
 
         describe("and mTLS authentication", () -> {
-          it("should set the credential giving current user read and write permission", () -> {
+          beforeEach(() -> {
             // language=JSON
             String requestBody = "{\n"
                 + "  \"type\":\"password\",\n"
@@ -159,11 +208,16 @@ public class PermissionAndCredentialTest {
                 .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content(requestBody))
+                .content(requestBody));
+          });
 
+          it("succeeds", () -> {
+            response
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.type", equalTo("password")));
+          });
 
+          it("should set the credential giving current user read and write permission", () -> {
             MvcResult result = mockMvc
                 .perform(get("/api/v1/acls?credential_name=" + "/test-password")
                     .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT))))
@@ -179,11 +233,23 @@ public class PermissionAndCredentialTest {
                     new AccessControlEntry("mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb",
                         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
           });
+
+          it("audits the request", () -> {
+            List<EventAuditRecordParameters> parametersList = newArrayList(
+                new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+            );
+            auditingHelper.verifyAuditing(
+                "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb",
+                "/api/v1/data",
+                200,
+                parametersList
+            );
+          });
         });
       });
 
       describe("with a new credential and an ace", () -> {
-        it("should allow the credential and ACEs to be created", () -> {
+        beforeEach(() -> {
           // language=JSON
           String requestBody = "{\n"
               + "  \"type\":\"password\",\n"
@@ -196,15 +262,20 @@ public class PermissionAndCredentialTest {
               + additionalJsonPayload
               + "}";
 
-          mockMvc.perform(requestBuilderProvider.get()
+          response = mockMvc.perform(requestBuilderProvider.get()
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON)
               .contentType(APPLICATION_JSON)
-              .content(requestBody))
+              .content(requestBody));
+        });
 
+        it("succeeds", () -> {
+          response
               .andExpect(status().isOk())
               .andExpect(jsonPath("$.type", equalTo("password")));
+        });
 
+        it("should allow the credential and ACEs to be created", () -> {
           MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + "/test-password")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
               .andExpect(status().isOk())
@@ -221,6 +292,18 @@ public class PermissionAndCredentialTest {
               samePropertyValuesAs(
                   new AccessControlEntry("mtls-app:app1-guid", asList(READ)))
           ));
+        });
+
+        it("audits the request", () -> {
+          List<EventAuditRecordParameters> parametersList = newArrayList(
+              new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+          );
+          auditingHelper.verifyAuditing(
+              "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+              "/api/v1/data",
+              200,
+              parametersList
+          );
         });
       });
 
@@ -249,7 +332,7 @@ public class PermissionAndCredentialTest {
         });
 
         describe("and overwrite set to true", () -> {
-          it("should append new ACEs and not add full permissions for the current user", () -> {
+          beforeEach(() -> {
             // language=JSON
             String requestBodyWithNewAces = "{\n"
                 + "  \"type\":\"password\",\n"
@@ -264,15 +347,20 @@ public class PermissionAndCredentialTest {
                 + additionalJsonPayload
                 + "}";
 
-            mockMvc.perform(requestBuilderProvider.get()
+            response = mockMvc.perform(requestBuilderProvider.get()
                 .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content(requestBodyWithNewAces))
+                .content(requestBodyWithNewAces));
+          });
 
+          it("succeeds", () -> {
+            response
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.type", equalTo("password")));
+          });
 
+          it("should append new ACEs and not add full permissions for the current user", () -> {
             MvcResult result = mockMvc
                 .perform(get("/api/v1/acls?credential_name=" + "/test-password")
                     .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
@@ -294,10 +382,22 @@ public class PermissionAndCredentialTest {
                     new AccessControlEntry("uaa-client:credhub_test",
                         asList(READ, WRITE, DELETE)))));
           });
+
+          it("audits the request", () -> {
+            List<EventAuditRecordParameters> parametersList = newArrayList(
+                new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+            );
+            auditingHelper.verifyAuditing(
+                "uaa-client:credhub_test",
+                "/api/v1/data",
+                200,
+                parametersList
+            );
+          });
         });
 
         describe("and overwrite set to false", () -> {
-          it("should not append new ACEs and not add full permissions for the current user", () -> {
+          beforeEach(() -> {
             // language=JSON
             String requestBodyWithNewAces = "{\n"
                 + "  \"type\":\"password\",\n"
@@ -316,11 +416,16 @@ public class PermissionAndCredentialTest {
                 .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
                 .accept(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON)
-                .content(requestBodyWithNewAces))
+                .content(requestBodyWithNewAces));
+          });
 
+          it("succeeds", () -> {
+            response
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.type", equalTo("password")));
+          });
 
+          it("should not append new ACEs and not add full permissions for the current user", () -> {
             MvcResult result = mockMvc
                 .perform(get("/api/v1/acls?credential_name=" + "/test-password")
                     .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
@@ -338,6 +443,18 @@ public class PermissionAndCredentialTest {
                 samePropertyValuesAs(
                     new AccessControlEntry("uaa-client:credhub_test",
                         asList(READ, WRITE)))));
+          });
+
+          it("audits the request", () -> {
+            List<EventAuditRecordParameters> parametersList = newArrayList(
+                new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/test-password")
+            );
+            auditingHelper.verifyAuditing(
+                "uaa-client:credhub_test",
+                "/api/v1/data",
+                200,
+                parametersList
+            );
           });
         });
       });
