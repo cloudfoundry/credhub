@@ -139,7 +139,7 @@ public class CredentialsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName.toUpperCase(), "/api/v1/data", 204);
+          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName.toUpperCase(), "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
         });
       });
 
@@ -162,7 +162,7 @@ public class CredentialsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName, "/api/v1/data", 204);
+          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
         });
       });
 

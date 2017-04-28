@@ -357,7 +357,7 @@ public class CredentialsControllerTypeSpecificSetTest {
           });
 
           it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, credentialName, "/api/v1/data", 200);
+            auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
           });
 
           it("should create ACEs for the current user having full permissions " +
@@ -435,7 +435,7 @@ public class CredentialsControllerTypeSpecificSetTest {
           });
 
           it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, credentialName, "/api/v1/data", 200);
+            auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
           });
         });
 
@@ -468,7 +468,7 @@ public class CredentialsControllerTypeSpecificSetTest {
           });
 
           it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, credentialName, "/api/v1/data", 200);
+            auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
           });
         });
       });

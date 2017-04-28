@@ -312,6 +312,7 @@ public class AccessControlEndpointTest {
     ));
 
     auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
         "/api/v1/aces",
         200,
         newArrayList(
@@ -372,6 +373,7 @@ public class AccessControlEndpointTest {
     assertThat(eventAuditRecordRepository.count(), equalTo(5L));
 
     auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
         "/api/v1/aces",
         200,
         newArrayList(
@@ -413,6 +415,7 @@ public class AccessControlEndpointTest {
     ));
 
     auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
         "/api/v1/aces",
         200,
         newArrayList(
@@ -471,6 +474,7 @@ public class AccessControlEndpointTest {
             "The request could not be fulfilled because the resource could not be found.")));
 
     auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
         "/api/v1/aces",
         404,
         newArrayList(
@@ -507,11 +511,11 @@ public class AccessControlEndpointTest {
   }
 
   private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    auditingHelper.verifyAuditing(operation, credentialName, "/api/v1/acls", statusCode);
+    auditingHelper.verifyAuditing(operation, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/acls", statusCode);
   }
 
   private void verifyEntryAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    auditingHelper.verifyAuditing(operation, credentialName, "/api/v1/aces", statusCode);
+    auditingHelper.verifyAuditing(operation, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/aces", statusCode);
   }
 
   private void seedCredential() throws Exception {

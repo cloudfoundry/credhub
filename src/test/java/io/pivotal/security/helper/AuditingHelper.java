@@ -38,6 +38,7 @@ public class AuditingHelper {
   public void verifyAuditing(
       AuditingOperationCode auditingOperationCode,
       String credentialName,
+      String actor,
       String path,
       int statusCode
   ) {
@@ -49,11 +50,13 @@ public class AuditingHelper {
     assertThat(eventAuditRecord.getOperation(), equalTo(auditingOperationCode.toString()));
     assertThat(eventAuditRecord.getCredentialName(), equalTo(credentialName));
     assertThat(eventAuditRecord.isSuccess(), equalTo(HttpStatus.valueOf(statusCode).is2xxSuccessful()));
+    assertThat(eventAuditRecord.getActor(), equalTo(actor));
 
     assertThat(requestAuditRecord.getUuid(), equalTo(eventAuditRecord.getRequestUuid()));
   }
 
   public void verifyAuditing(
+      String actor,
       String path,
       int statusCode,
       List<EventAuditRecordParameters> eventAuditRecordParametersList
@@ -70,7 +73,7 @@ public class AuditingHelper {
     assertThat(eventAuditRecords.subList(0, eventAuditRecordParametersList.size()),
         containsInAnyOrder(
           eventAuditRecordParametersList.stream()
-              .map(parameters -> matchesExpectedEvent(parameters, expectedSuccess, requestAuditRecord.getUuid()))
+              .map(parameters -> matchesExpectedEvent(parameters, actor, expectedSuccess, requestAuditRecord.getUuid()))
               .collect(Collectors.toList())
     ));
   }
@@ -81,7 +84,7 @@ public class AuditingHelper {
     assertThat(requestAuditRecord.getStatusCode(), equalTo(statusCode));
   }
 
-  private static Matcher<EventAuditRecord> matchesExpectedEvent(EventAuditRecordParameters parameters, boolean expectedSuccess, UUID requestUuid ) {
+  private static Matcher<EventAuditRecord> matchesExpectedEvent(EventAuditRecordParameters parameters, String actor, boolean expectedSuccess, UUID requestUuid ) {
     return new BaseMatcher<EventAuditRecord>() {
       @Override
       public boolean matches(Object item) {
@@ -92,8 +95,9 @@ public class AuditingHelper {
             StringUtils.equals(actual.getCredentialName(), parameters.getCredentialName()) &&
             StringUtils.equals(actual.getAceOperation(), expectedAceOperation) &&
             StringUtils.equals(actual.getAceActor(), parameters.getAceActor()) &&
+            StringUtils.equals(actual.getActor(), actor) &&
             actual.isSuccess() == expectedSuccess &&
-            actual.getRequestUuid() == requestUuid;
+            actual.getRequestUuid().equals(requestUuid);
       }
 
       @Override

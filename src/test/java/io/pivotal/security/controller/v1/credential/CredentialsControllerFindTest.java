@@ -112,7 +112,7 @@ public class CredentialsControllerFindTest {
           });
 
           it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, "/api/v1/data", 200);
+            auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
           });
         });
       });
@@ -185,7 +185,7 @@ public class CredentialsControllerFindTest {
         });
 
         it("persists an audit entry", () -> {
-          auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, "/api/v1/data", 200);
+          auditingHelper.verifyAuditing(CREDENTIAL_FIND, null, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
         });
       });
 

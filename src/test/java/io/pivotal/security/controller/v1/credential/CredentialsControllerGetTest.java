@@ -244,6 +244,7 @@ public class CredentialsControllerGetTest {
           auditingHelper.verifyAuditing(
               CREDENTIAL_ACCESS,
               credentialName,
+              "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
               "/api/v1/data/" + uuid.toString(),
               200);
         });
@@ -308,7 +309,7 @@ public class CredentialsControllerGetTest {
       });
 
       it("persists an audit entry", () -> {
-        auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, credentialName, "/api/v1/data", 200);
+        auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
       });
 
       it("returns NOT_FOUND when the credential does not exist", () -> {
@@ -363,7 +364,7 @@ public class CredentialsControllerGetTest {
       it("persists an audit entry", () -> {
         auditingHelper.verifyAuditing
             (CREDENTIAL_ACCESS,
-                credentialName, "/api/v1/data", 404);
+                credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 404);
       });
 
       it("returns NOT_FOUND when the credential does not exist", () -> {
