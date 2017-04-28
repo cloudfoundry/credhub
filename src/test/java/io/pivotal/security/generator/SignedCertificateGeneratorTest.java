@@ -80,6 +80,7 @@ public class SignedCertificateGeneratorTest {
   private SubjectKeyIdentifier caSubjectKeyIdentifier;
   private Certificate certificateAuthority;
   private Certificate certificateAuthorityWithSubjectKeyId;
+  private BigInteger caSerialNumber;
 
   @Before
   public void beforeEach() throws Exception {
@@ -116,9 +117,10 @@ public class SignedCertificateGeneratorTest {
             SubjectPublicKeyInfo.getInstance(issuerKey.getPublic().getEncoded())
         );
 
+    caSerialNumber = BigInteger.valueOf(42l);
     X509v3CertificateBuilder x509v3CertificateBuilder = new X509v3CertificateBuilder(
         issuerDn,
-        serialNumberGenerator.generate(),
+        caSerialNumber,
         Date.from(now.toInstant()),
         Date.from(later.toInstant()),
         issuerDn,
@@ -153,6 +155,8 @@ public class SignedCertificateGeneratorTest {
     byte[] authorityKeyId = authorityKeyIdentifier.getKeyIdentifier();
 
     assertThat(authorityKeyId, equalTo(expectedSubjectKeyIdentifier));
+    assertThat(generatedCertificate.getSerialNumber(), equalTo(BigInteger.valueOf(1337)));
+    assertThat(authorityKeyIdentifier.getAuthorityCertSerialNumber(), equalTo(BigInteger.valueOf(1337)));
   }
 
   @Test
@@ -188,6 +192,7 @@ public class SignedCertificateGeneratorTest {
     when(serialNumberGenerator.generate())
         .thenReturn(BigInteger.valueOf(1337))
         .thenReturn(BigInteger.valueOf(666));
+
     X509Certificate generatedCertificate =
         subject.getSignedByIssuer(generatedCertificateKeyPair, certificateParameters, certificateAuthorityWithSubjectKeyId);
 
@@ -196,7 +201,7 @@ public class SignedCertificateGeneratorTest {
         AuthorityKeyIdentifier.getInstance(parseExtensionValue(authorityKeyIdDer));
 
     assertThat(authorityKeyIdentifier.getKeyIdentifier(), equalTo(caSubjectKeyIdentifier.getKeyIdentifier()));
-    assertThat(authorityKeyIdentifier.getAuthorityCertSerialNumber(), equalTo(BigInteger.valueOf(1337)));
+    assertThat(authorityKeyIdentifier.getAuthorityCertSerialNumber(), equalTo(caSerialNumber));
     assertThat(authorityKeyIdentifier.getAuthorityCertIssuer().getNames()[0].getName().toString(), equalTo(caName));
   }
 

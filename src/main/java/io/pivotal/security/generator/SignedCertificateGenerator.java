@@ -72,7 +72,7 @@ public class SignedCertificateGenerator {
   X509Certificate getSelfSigned(KeyPair keyPair, CertificateParameters params) throws Exception {
     SubjectKeyIdentifier keyIdentifier = getSubjectKeyIdentifierFromKeyInfo(getKeyInfoFromKeyPair(keyPair));
 
-    return getSignedByIssuer(params.getX500Name(), keyPair.getPrivate(), keyPair, params, keyIdentifier);
+    return getSignedByIssuer(params.getX500Name(), keyPair.getPrivate(), keyPair, params, keyIdentifier, null);
   }
 
   X509Certificate getSignedByIssuer(
@@ -86,7 +86,8 @@ public class SignedCertificateGenerator {
         getPrivateKeyFrom(ca),
         keyPair,
         params,
-        getSubjectKeyIdentifierFrom(ca)
+        getSubjectKeyIdentifierFrom(ca),
+        getSerialNumberFrom(ca)
     );
   }
 
@@ -95,15 +96,17 @@ public class SignedCertificateGenerator {
       PrivateKey issuerKey,
       KeyPair keyPair,
       CertificateParameters params,
-      SubjectKeyIdentifier caSubjectKeyIdentifier
-  ) throws Exception {
+      SubjectKeyIdentifier caSubjectKeyIdentifier,
+      BigInteger caSerialNumber) throws Exception {
     Instant now = timeProvider.getNow().toInstant();
     SubjectPublicKeyInfo publicKeyInfo = getKeyInfoFromKeyPair(keyPair);
 
-    BigInteger serialNumber = serialNumberGenerator.generate();
+    BigInteger certificateSerialNumber = serialNumberGenerator.generate();
+    caSerialNumber = caSerialNumber != null ? caSerialNumber : certificateSerialNumber;
+
     final X509v3CertificateBuilder certificateBuilder = new X509v3CertificateBuilder(
         issuerDn,
-        serialNumber,
+        certificateSerialNumber,
         Date.from(now),
         Date.from(now.plus(Duration.ofDays(params.getDuration()))),
         params.getX500Name(),
@@ -133,7 +136,7 @@ public class SignedCertificateGenerator {
           new AuthorityKeyIdentifier(
               caSubjectKeyIdentifier.getKeyIdentifier(),
               new GeneralNames(new GeneralName(issuerDn)),
-              serialNumber);
+              caSerialNumber);
 
       certificateBuilder
           .addExtension(Extension.authorityKeyIdentifier, false, authorityKeyIdentifier);
@@ -159,9 +162,7 @@ public class SignedCertificateGenerator {
   }
 
   private X500Name getSubjectNameFrom(Certificate ca) throws IOException, CertificateException {
-    X509Certificate certificate = (X509Certificate) CertificateFactory
-        .getInstance("X.509", jceProvider)
-        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
+    X509Certificate certificate = getX509Certificate(ca);
     return new X500Name(certificate.getSubjectDN().getName());
   }
 
@@ -174,13 +175,23 @@ public class SignedCertificateGenerator {
   }
 
   private SubjectKeyIdentifier getSubjectKeyIdentifierFrom(Certificate ca) throws Exception {
-    X509Certificate certificate = (X509Certificate) CertificateFactory
-        .getInstance("X.509", jceProvider)
-        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
+    X509Certificate certificate = getX509Certificate(ca);
 
     byte[] extensionValue = certificate.getExtensionValue(Extension.subjectKeyIdentifier.getId());
     return extensionValue == null ?
         new SubjectKeyIdentifier(null) :
         SubjectKeyIdentifier.getInstance(parseExtensionValue(extensionValue));
+  }
+
+  private BigInteger getSerialNumberFrom(Certificate ca) throws Exception {
+    X509Certificate certificate = getX509Certificate(ca);
+
+    return certificate.getSerialNumber();
+  }
+
+  private X509Certificate getX509Certificate(Certificate ca) throws CertificateException {
+    return (X509Certificate) CertificateFactory
+        .getInstance("X.509", jceProvider)
+        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
   }
 }
