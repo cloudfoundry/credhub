@@ -24,9 +24,18 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 
 public class AuditingHelper {
-  public static void verifyAuditing(
-      RequestAuditRecordRepository requestAuditRecordRepository,
-      EventAuditRecordRepository eventAuditRecordRepository,
+
+  private final RequestAuditRecordRepository requestAuditRecordRepository;
+  private final EventAuditRecordRepository eventAuditRecordRepository;
+
+  public AuditingHelper(RequestAuditRecordRepository requestAuditRecordRepository,
+      EventAuditRecordRepository eventAuditRecordRepository) {
+
+    this.requestAuditRecordRepository = requestAuditRecordRepository;
+    this.eventAuditRecordRepository = eventAuditRecordRepository;
+  }
+
+  public void verifyAuditing(
       AuditingOperationCode auditingOperationCode,
       String credentialName,
       String path,
@@ -44,9 +53,7 @@ public class AuditingHelper {
     assertThat(requestAuditRecord.getUuid(), equalTo(eventAuditRecord.getRequestUuid()));
   }
 
-  public static void verifyAuditing(
-      RequestAuditRecordRepository requestAuditRecordRepository,
-      EventAuditRecordRepository eventAuditRecordRepository,
+  public void verifyAuditing(
       String path,
       int statusCode,
       List<EventAuditRecordParameters> eventAuditRecordParametersList
@@ -68,7 +75,7 @@ public class AuditingHelper {
     ));
   }
 
-  public static void verifyRequestAuditing(RequestAuditRecordRepository requestAuditRecordRepository, String path, int statusCode) {
+  public void verifyRequestAuditing(String path, int statusCode) {
     RequestAuditRecord requestAuditRecord = requestAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
     assertThat(requestAuditRecord.getPath(), equalTo(path));
     assertThat(requestAuditRecord.getStatusCode(), equalTo(statusCode));

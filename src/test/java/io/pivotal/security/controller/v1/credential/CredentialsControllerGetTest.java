@@ -1,43 +1,10 @@
 package io.pivotal.security.controller.v1.credential;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.exceptions.KeyNotFoundException;
-import io.pivotal.security.exceptions.PermissionException;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.function.Consumer;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
@@ -53,6 +20,38 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.exceptions.KeyNotFoundException;
+import io.pivotal.security.exceptions.PermissionException;
+import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.function.Consumer;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -79,6 +78,8 @@ public class CredentialsControllerGetTest {
 
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
+
+  private AuditingHelper auditingHelper;
 
   private MockMvc mockMvc;
 
@@ -107,6 +108,8 @@ public class CredentialsControllerGetTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
+
+      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
     });
 
     describe("getting a credential", () -> {
@@ -238,8 +241,11 @@ public class CredentialsControllerGetTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository,
-              CREDENTIAL_ACCESS, credentialName, "/api/v1/data/" + uuid.toString(), 200);
+          auditingHelper.verifyAuditing(
+              CREDENTIAL_ACCESS,
+              credentialName,
+              "/api/v1/data/" + uuid.toString(),
+              200);
         });
       });
     });
@@ -302,7 +308,7 @@ public class CredentialsControllerGetTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS, credentialName, "/api/v1/data", 200);
+        auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, credentialName, "/api/v1/data", 200);
       });
 
       it("returns NOT_FOUND when the credential does not exist", () -> {
@@ -355,8 +361,8 @@ public class CredentialsControllerGetTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing
-            (requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_ACCESS,
+        auditingHelper.verifyAuditing
+            (CREDENTIAL_ACCESS,
                 credentialName, "/api/v1/data", 404);
       });
 

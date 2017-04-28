@@ -1,34 +1,8 @@
 package io.pivotal.security.integration;
 
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditingOperationCode;
-import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
-import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
-import static io.pivotal.security.helper.AuditingHelper.verifyRequestAuditing;
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
@@ -54,6 +28,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -68,6 +67,7 @@ public class AccessControlEndpointTest {
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
 
+  private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
   private String credentialNameWithoutLeadingSlash = this.getClass().getName();
   private String credentialName = "/" + credentialNameWithoutLeadingSlash;
@@ -91,6 +91,8 @@ public class AccessControlEndpointTest {
 
     this.mockMvc.perform(put)
         .andExpect(status().isOk());
+
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -194,8 +196,7 @@ public class AccessControlEndpointTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The query parameter credential_name is required for this request.")));
 
-    verifyRequestAuditing(
-        requestAuditRecordRepository,
+    auditingHelper.verifyRequestAuditing(
         "/api/v1/aces",
         400
     );
@@ -210,8 +211,7 @@ public class AccessControlEndpointTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The query parameter actor is required for this request.")));
 
-    verifyRequestAuditing(
-        requestAuditRecordRepository,
+    auditingHelper.verifyRequestAuditing(
         "/api/v1/aces",
         400
     );
@@ -267,8 +267,7 @@ public class AccessControlEndpointTest {
         .andExpect(jsonPath("$.error").value(
             "The request could not be fulfilled because the resource could not be found."));
 
-    verifyRequestAuditing(
-        requestAuditRecordRepository,
+    auditingHelper.verifyRequestAuditing(
         "/api/v1/aces",
         404
     );
@@ -312,9 +311,7 @@ public class AccessControlEndpointTest {
             new AccessControlEntry("isobel", asList(DELETE)))
     ));
 
-    verifyAuditing(
-        requestAuditRecordRepository,
-        eventAuditRecordRepository,
+    auditingHelper.verifyAuditing(
         "/api/v1/aces",
         200,
         newArrayList(
@@ -374,9 +371,7 @@ public class AccessControlEndpointTest {
     // 1 from beforeEach for credential, 2 from initialPost, 2 from updatePost
     assertThat(eventAuditRecordRepository.count(), equalTo(5L));
 
-    verifyAuditing(
-        requestAuditRecordRepository,
-        eventAuditRecordRepository,
+    auditingHelper.verifyAuditing(
         "/api/v1/aces",
         200,
         newArrayList(
@@ -417,9 +412,7 @@ public class AccessControlEndpointTest {
             new AccessControlEntry("dan", singletonList(READ)))
     ));
 
-    verifyAuditing(
-        requestAuditRecordRepository,
-        eventAuditRecordRepository,
+    auditingHelper.verifyAuditing(
         "/api/v1/aces",
         200,
         newArrayList(
@@ -451,8 +444,7 @@ public class AccessControlEndpointTest {
                 + " not meet expectation. Please check the documentation for required "
                 + "formatting and retry your request.")));
 
-    verifyRequestAuditing(
-        requestAuditRecordRepository,
+    auditingHelper.verifyRequestAuditing(
         "/api/v1/aces",
         400
     );
@@ -478,9 +470,7 @@ public class AccessControlEndpointTest {
         .andExpect(jsonPath("$.error", equalTo(
             "The request could not be fulfilled because the resource could not be found.")));
 
-    verifyAuditing(
-        requestAuditRecordRepository,
-        eventAuditRecordRepository,
+    auditingHelper.verifyAuditing(
         "/api/v1/aces",
         404,
         newArrayList(
@@ -510,19 +500,18 @@ public class AccessControlEndpointTest {
             "The provided operation is not supported."
                 + " Valid values include read, write, delete, read_acl, and write_acl."));
 
-    verifyRequestAuditing(
-        requestAuditRecordRepository,
+    auditingHelper.verifyRequestAuditing(
         "/api/v1/aces",
         400
     );
   }
 
   private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, operation, credentialName, "/api/v1/acls", statusCode);
+    auditingHelper.verifyAuditing(operation, credentialName, "/api/v1/acls", statusCode);
   }
 
   private void verifyEntryAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, operation, credentialName, "/api/v1/aces", statusCode);
+    auditingHelper.verifyAuditing(operation, credentialName, "/api/v1/aces", statusCode);
   }
 
   private void seedCredential() throws Exception {

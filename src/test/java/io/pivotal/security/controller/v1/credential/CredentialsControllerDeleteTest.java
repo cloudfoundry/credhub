@@ -1,10 +1,27 @@
 package io.pivotal.security.controller.v1.credential;
 
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -18,23 +35,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -53,6 +53,8 @@ public class CredentialsControllerDeleteTest {
   @Autowired
   EventAuditRecordRepository eventAuditRecordRepository;
 
+  private AuditingHelper auditingHelper;
+
   private MockMvc mockMvc;
 
   private final String credentialName = "/my-namespace/subTree/credential-name";
@@ -67,6 +69,8 @@ public class CredentialsControllerDeleteTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
+
+      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
     });
 
     describe("#delete", () -> {
@@ -135,7 +139,7 @@ public class CredentialsControllerDeleteTest {
         });
 
         it("persists an audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, credentialName.toUpperCase(), "/api/v1/data", 204);
+          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName.toUpperCase(), "/api/v1/data", 204);
         });
       });
 
@@ -158,7 +162,7 @@ public class CredentialsControllerDeleteTest {
         });
 
         it("persists a single audit entry", () -> {
-          verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_DELETE, credentialName, "/api/v1/data", 204);
+          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName, "/api/v1/data", 204);
         });
       });
 

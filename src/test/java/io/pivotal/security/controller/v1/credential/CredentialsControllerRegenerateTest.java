@@ -1,48 +1,9 @@
 package io.pivotal.security.controller.v1.credential;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.credential.SshKey;
-import io.pivotal.security.credential.StringCredential;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.generator.PassayStringCredentialGenerator;
-import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.helper.AuditingHelper.verifyAuditing;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
@@ -61,6 +22,44 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.RsaCredential;
+import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.entity.PasswordCredentialData;
+import io.pivotal.security.generator.PassayStringCredentialGenerator;
+import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
+import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -97,6 +96,8 @@ public class CredentialsControllerRegenerateTest {
   @Autowired
   EventAuditRecordRepository eventAuditRecordRepository;
 
+  private AuditingHelper auditingHelper;
+
   private MockMvc mockMvc;
 
   private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
@@ -118,6 +119,8 @@ public class CredentialsControllerRegenerateTest {
           .webAppContextSetup(webApplicationContext)
           .apply(springSecurity())
           .build();
+
+      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
     });
 
     describe("regenerating a password", () -> {
@@ -170,7 +173,7 @@ public class CredentialsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-password", "/api/v1/data", 200);
+        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", "/api/v1/data", 200);
       });
     });
 
@@ -220,7 +223,7 @@ public class CredentialsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-rsa", "/api/v1/data", 200);
+        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-rsa", "/api/v1/data", 200);
       });
     });
 
@@ -270,7 +273,7 @@ public class CredentialsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, "/my-ssh", "/api/v1/data", 200);
+        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-ssh", "/api/v1/data", 200);
       });
     });
 
@@ -298,7 +301,7 @@ public class CredentialsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null, "/api/v1/data", 404);
+        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, null, "/api/v1/data", 404);
       });
     });
 
@@ -327,7 +330,7 @@ public class CredentialsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         // https://www.pivotaltracker.com/story/show/139762105
-        verifyAuditing(requestAuditRecordRepository, eventAuditRecordRepository, CREDENTIAL_UPDATE, null, "/api/v1/data", 400);
+        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, null, "/api/v1/data", 400);
       });
     });
 
