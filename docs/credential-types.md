@@ -41,6 +41,21 @@ CredHub supports the following credential types:
   }
   ```
 
+* **User** - This type holds username and password values. The response also includes a derived SHA-512 hash of the password. It is meant for username and passwords combination credentials and passwords which require a hashed password value. Values for this type may be automatically generated. 
+
+  ```json
+  {
+    "name": "/example/user",
+    "type": "user",
+    "value": {
+      "username": "zCpbxxHMNmLvwjvAUhHT",
+      "password": "nZaowPHTl0CQYVyYA0nV7ayHVulCBU3WTmwJKiZm",
+      "password_hash": "$6$oCjU9.sR$Eeeu5sZP636cVNbpZLaeVbHlsr.zrs6/ygOkiBlGEEBq4zh3j3ybGHAp/EKvxhQ8NDQPqlYyqDK9X36XNJHru1"
+    },
+    "version_created_at": "2016-10-13T21:03:42Z"
+  }
+  ```
+
 * **Certificate** - This type holds an object containing a root CA, certificate and private key. It it meant for key pair applications, such as TLS connections, that utilize a certificate. Values for this type may be automatically generated. 
 
   ```json
