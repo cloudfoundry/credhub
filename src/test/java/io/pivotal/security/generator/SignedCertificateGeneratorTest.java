@@ -70,7 +70,7 @@ public class SignedCertificateGeneratorTest {
   private final String expectedCertificateCommonName = "my cert name";
   private final byte[] expectedSubjectKeyIdentifier = "expected subject key identifier".getBytes();
   private final String[] alternateNames = {"alt1", "alt2"};
-  private final String[] keyUsage = {"digital_signature", "key_encipherment"};
+  private final String[] keyUsage = {DIGITAL_SIGNATURE, KEY_ENCIPHERMENT};
   private final String[] extendedKeyUsage = {SERVER_AUTH, CODE_SIGNING};
 
   @Autowired

@@ -22,6 +22,15 @@ public class CertificateGenerationParameters {
   public static final String CODE_SIGNING = "code_signing";
   public static final String EMAIL_PROTECTION = "email_protection";
   public static final String TIMESTAMPING = "timestamping";
+  public static final String DIGITAL_SIGNATURE = "digital_signature";
+  public static final String NON_REPUDIATION = "non_repudiation";
+  public static final String KEY_ENCIPHERMENT = "key_encipherment";
+  public static final String DATA_ENCIPHERMENT = "data_encipherment";
+  public static final String KEY_AGREEMENT = "key_agreement";
+  public static final String KEY_CERT_SIGN = "key_cert_sign";
+  public static final String CRL_SIGN = "crl_sign";
+  public static final String ENCIPHER_ONLY = "encipher_only";
+  public static final String DECIPHER_ONLY = "decipher_only";
 
   // Parameters used in RDN; at least one must be set
   private String organization;
@@ -51,8 +60,8 @@ public class CertificateGenerationParameters {
       .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING);
 
   private List<String> validKeyUsages = Arrays
-      .asList("digital_signature", "non_repudiation", "key_encipherment", "data_enchipherment",
-          "key_agreement", "key_cert_sign", "crl_sign", "encipher_only", "decipher_only");
+      .asList(DIGITAL_SIGNATURE, NON_REPUDIATION, KEY_ENCIPHERMENT, DATA_ENCIPHERMENT,
+          KEY_AGREEMENT, KEY_CERT_SIGN, CRL_SIGN, ENCIPHER_ONLY, DECIPHER_ONLY);
 
   private int TEN_YEARS = 3650;
   private int ONE_DAY = 1;

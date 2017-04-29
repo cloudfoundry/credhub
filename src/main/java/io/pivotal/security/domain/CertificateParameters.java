@@ -100,33 +100,35 @@ public class CertificateParameters {
     int bitmask = 0;
     for (String keyUsage : keyUsageList.getKeyUsage()) {
       switch (keyUsage) {
-        case "digital_signature":
+        case DIGITAL_SIGNATURE:
           bitmask |= KeyUsage.digitalSignature;
           break;
-        case "non_repudiation":
+        case NON_REPUDIATION:
           bitmask |= KeyUsage.nonRepudiation;
           break;
-        case "key_encipherment":
+        case KEY_ENCIPHERMENT:
           bitmask |= KeyUsage.keyEncipherment;
           break;
-        case "data_encipherment":
+        case DATA_ENCIPHERMENT:
           bitmask |= KeyUsage.dataEncipherment;
           break;
-        case "key_agreement":
+        case KEY_AGREEMENT:
           bitmask |= KeyUsage.keyAgreement;
           break;
-        case "key_cert_sign":
+        case KEY_CERT_SIGN:
           bitmask |= KeyUsage.keyCertSign;
           break;
-        case "crl_sign":
+        case CRL_SIGN:
           bitmask |= KeyUsage.cRLSign;
           break;
-        case "encipher_only":
+        case ENCIPHER_ONLY:
           bitmask |= KeyUsage.encipherOnly;
           break;
-        case "decipher_only":
+        case DECIPHER_ONLY:
           bitmask |= KeyUsage.decipherOnly;
           break;
+        default:
+          throw new ParameterizedValidationException("error.invalid_key_usage", keyUsage);
       }
     }
     return new KeyUsage(bitmask);
