@@ -1,5 +1,8 @@
 package io.pivotal.security.controller.v1.credential;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.JsonPath;
@@ -15,6 +18,7 @@ import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.PermissionException;
+import io.pivotal.security.handler.CredentialHandler;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
@@ -28,6 +32,12 @@ import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResult;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,16 +56,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.function.Function;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
-
 @RestController
 @RequestMapping(
     path = CredentialsController.API_V1_DATA,
@@ -72,6 +72,7 @@ public class CredentialsController {
   private final SetService setService;
   private final RegenerateService regenerateService;
   private final PermissionService permissionService;
+  private final CredentialHandler credentialHandler;
 
   @Autowired
   public CredentialsController(CredentialDataService credentialDataService,
@@ -80,7 +81,8 @@ public class CredentialsController {
                                GenerateService generateService,
                                SetService setService,
                                RegenerateService regenerateService,
-                               PermissionService permissionService
+                               PermissionService permissionService,
+                               CredentialHandler credentialHandler
   ) {
     this.credentialDataService = credentialDataService;
     this.eventAuditLogService = eventAuditLogService;
@@ -89,6 +91,7 @@ public class CredentialsController {
     this.setService = setService;
     this.regenerateService = regenerateService;
     this.permissionService = permissionService;
+    this.credentialHandler = credentialHandler;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -146,11 +149,7 @@ public class CredentialsController {
       eventAuditRecordParameters.setCredentialName(credentialName);
       eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
 
-      boolean deleteSucceeded = credentialDataService.delete(credentialName);
-
-      if (!deleteSucceeded) {
-        throw new EntryNotFoundException("error.credential_not_found");
-      }
+      credentialHandler.deleteCredential(credentialName);
 
       return true;
     });
