@@ -17,6 +17,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 @JsonInclude(NON_DEFAULT)
 public class CertificateGenerationParameters {
 
+  public static final String SERVER_AUTH = "server_auth";
+  public static final String CLIENT_AUTH = "client_auth";
+  public static final String CODE_SIGNING = "code_signing";
+  public static final String EMAIL_PROTECTION = "email_protection";
+  public static final String TIMESTAMPING = "timestamping";
+
   // Parameters used in RDN; at least one must be set
   private String organization;
 
@@ -42,7 +48,7 @@ public class CertificateGenerationParameters {
       .compile("^\\*?(?:\\.[a-zA-Z0-9\\-]+)*$");
 
   private List<String> validExtendedKeyUsages = Arrays
-      .asList("server_auth", "client_auth", "code_signing", "email_protection", "time_stamping");
+      .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING);
 
   private List<String> validKeyUsages = Arrays
       .asList("digital_signature", "non_repudiation", "key_encipherment", "data_enchipherment",

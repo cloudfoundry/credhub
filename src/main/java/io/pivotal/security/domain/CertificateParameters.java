@@ -1,6 +1,7 @@
 package io.pivotal.security.domain;
 
 import com.google.common.net.InetAddresses;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.CertificateGenerationParameters;
 import io.pivotal.security.util.CertificateReader;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -13,6 +14,8 @@ import org.bouncycastle.asn1.x509.GeneralNamesBuilder;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.springframework.util.StringUtils;
+
+import static io.pivotal.security.request.CertificateGenerationParameters.*;
 
 public class CertificateParameters {
 
@@ -183,21 +186,23 @@ public class CertificateParameters {
     KeyPurposeId[] keyPurposeIds = new KeyPurposeId[extendedKeyUsageList.length];
     for (int i = 0; i < extendedKeyUsageList.length; i++) {
       switch (extendedKeyUsageList[i]) {
-        case "server_auth":
+        case SERVER_AUTH:
           keyPurposeIds[i] = KeyPurposeId.id_kp_serverAuth;
           break;
-        case "client_auth":
+        case CLIENT_AUTH:
           keyPurposeIds[i] = KeyPurposeId.id_kp_clientAuth;
           break;
-        case "code_signing":
+        case CODE_SIGNING:
           keyPurposeIds[i] = KeyPurposeId.id_kp_codeSigning;
           break;
-        case "email_protection":
+        case EMAIL_PROTECTION:
           keyPurposeIds[i] = KeyPurposeId.id_kp_emailProtection;
           break;
-        case "time_stamping":
+        case TIMESTAMPING:
           keyPurposeIds[i] = KeyPurposeId.id_kp_timeStamping;
           break;
+        default:
+          throw new ParameterizedValidationException("error.invalid_extended_key_usage", extendedKeyUsageList[i]);
       }
     }
     return new ExtendedKeyUsage(keyPurposeIds);

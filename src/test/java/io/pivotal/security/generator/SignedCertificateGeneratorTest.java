@@ -39,6 +39,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static io.pivotal.security.request.CertificateGenerationParameters.*;
 import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -70,7 +71,7 @@ public class SignedCertificateGeneratorTest {
   private final byte[] expectedSubjectKeyIdentifier = "expected subject key identifier".getBytes();
   private final String[] alternateNames = {"alt1", "alt2"};
   private final String[] keyUsage = {"digital_signature", "key_encipherment"};
-  private final String[] extendedKeyUsage = {"server_auth", "code_signing"};
+  private final String[] extendedKeyUsage = {SERVER_AUTH, CODE_SIGNING};
 
   @Autowired
   private JcaContentSignerBuilder jcaContentSignerBuilder;

@@ -1,5 +1,9 @@
 package io.pivotal.security.request;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.junit.runner.RunWith;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -7,10 +11,6 @@ import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class CertificateGenerationParametersTest {
@@ -20,18 +20,30 @@ public class CertificateGenerationParametersTest {
   {
     describe("#validate", () -> {
 
-      it("validates extended key usages", () -> {
-        try {
+      describe("extended key usages", () -> {
+        beforeEach(() -> {
           certificateGenerationParameters = new CertificateGenerationParameters();
           certificateGenerationParameters.setCountry("My Country");
           certificateGenerationParameters.setIsCa(true);
-          certificateGenerationParameters
-              .setExtendedKeyUsage(new String[]{"client_auth", "server_off"});
-          certificateGenerationParameters.validate();
-        } catch (ParameterizedValidationException pve) {
-          assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
-          assertThat(pve.getParameter(), equalTo("server_off"));
-        }
+        });
+        describe("invalid key usage", () -> {
+          it("throws the correct exception", () -> {
+            try {
+              certificateGenerationParameters.setExtendedKeyUsage(new String[]{CertificateGenerationParameters.CLIENT_AUTH, "server_off"});
+              certificateGenerationParameters.validate();
+            } catch (ParameterizedValidationException pve) {
+              assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
+              assertThat(pve.getParameter(), equalTo("server_off"));
+            }
+          });
+        });
+
+        describe("timestamping key usage", () -> {
+          it("is valid", () -> {
+            certificateGenerationParameters.setExtendedKeyUsage(new String[]{CertificateGenerationParameters.TIMESTAMPING});
+            certificateGenerationParameters.validate();
+          });
+        });
       });
 
       describe("with self_sign set to true and no ca name", () -> {
