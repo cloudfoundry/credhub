@@ -27,6 +27,6 @@ public class SshSetRequest extends BaseCredentialSetRequest<SshCredential> {
   public SshCredential createNewVersion(SshCredential existing, Encryptor encryptor) {
     return SshCredential
         .createNewVersion(existing, getName(), this.getSshKeyValue(),
-            encryptor, getAccessControlEntries());
+            encryptor);
   }
 }

@@ -25,7 +25,7 @@ public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredential> {
         existing,
         this.getName(),
         this.getValue(),
-        encryptor,
-        this.getAccessControlEntries());
+        encryptor
+    );
   }
 }

@@ -1,12 +1,10 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import org.hibernate.annotations.GenericGenerator;
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
+import io.pivotal.security.request.AccessControlOperation;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,8 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "AccessEntry")
@@ -63,30 +60,9 @@ public class AccessEntryData {
     enableOperations(operations);
   }
 
-  public AccessEntryData(CredentialName credentialName, AccessControlEntry accessControlEntry) {
-    this(credentialName, accessControlEntry.getActor());
-    enableOperations(accessControlEntry.getAllowedOperations());
-  }
-
   public AccessEntryData(CredentialName credentialName, String actor) {
     this.credentialName = credentialName;
     this.actor = actor;
-  }
-
-  public static AccessEntryData fromCredentialName(CredentialName credentialName,
-                                                   AccessControlEntry accessControlEntry) {
-    if (credentialName.getAccessControlList() == null) {
-      return new AccessEntryData(credentialName, accessControlEntry);
-    }
-    Optional<AccessEntryData> accessEntryDataOptional = credentialName.getAccessControlList().stream()
-        .filter((entry) -> accessControlEntry.getActor().equals(entry.getActor())).findFirst();
-    if (accessEntryDataOptional.isPresent()) {
-      AccessEntryData entryData = accessEntryDataOptional.get();
-      entryData.enableOperations(accessControlEntry.getAllowedOperations());
-      return entryData;
-    } else {
-      return new AccessEntryData(credentialName, accessControlEntry);
-    }
   }
 
   public UUID getUuid() {

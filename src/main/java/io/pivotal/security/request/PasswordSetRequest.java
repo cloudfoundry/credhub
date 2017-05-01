@@ -34,8 +34,7 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredent
         getName(),
         getPassword(),
         generationParameters,
-        encryptor,
-        getAccessControlEntries()
+        encryptor
     );
   }
 }

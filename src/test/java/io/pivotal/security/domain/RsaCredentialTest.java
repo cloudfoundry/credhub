@@ -1,14 +1,5 @@
 package io.pivotal.security.domain;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.entity.RsaCredentialData;
-import io.pivotal.security.service.Encryption;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -16,6 +7,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.entity.RsaCredentialData;
+import io.pivotal.security.service.Encryption;
+import java.util.UUID;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class RsaCredentialTest {
@@ -54,8 +52,7 @@ public class RsaCredentialTest {
       it("copies name from existing", () -> {
         RsaKey fields = new RsaKey("public key", "new private key");
         RsaCredential newCredential = RsaCredential
-            .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor,
-                new ArrayList<>());
+            .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor);
 
         assertThat(newCredential.getName(), equalTo("/existingName"));
         assertThat(newCredential.getPrivateKey(), equalTo("new private key"));
@@ -65,7 +62,7 @@ public class RsaCredentialTest {
       it("creates new if no existing", () -> {
         RsaKey fields = new RsaKey("public key", "new private key");
         RsaCredential newCredential = RsaCredential
-            .createNewVersion(null, "/newName", fields, encryptor, new ArrayList<>());
+            .createNewVersion(null, "/newName", fields, encryptor);
 
         assertThat(newCredential.getName(), equalTo("/newName"));
         assertThat(newCredential.getPrivateKey(), equalTo("new private key"));

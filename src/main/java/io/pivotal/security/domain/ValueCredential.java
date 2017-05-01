@@ -1,10 +1,7 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.entity.ValueCredentialData;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
-
-import java.util.List;
 
 public class ValueCredential extends Credential<ValueCredential> {
 
@@ -24,7 +21,7 @@ public class ValueCredential extends Credential<ValueCredential> {
   }
 
   public static ValueCredential createNewVersion(ValueCredential existing, String name,
-                                                 String value, Encryptor encryptor, List<AccessControlEntry> accessControlEntries) {
+      String value, Encryptor encryptor) {
     ValueCredential credential;
 
     if (existing == null) {
@@ -34,7 +31,6 @@ public class ValueCredential extends Credential<ValueCredential> {
       credential.copyNameReferenceFrom(existing);
     }
 
-    credential.setAccessControlList(accessControlEntries);
     credential.setEncryptor(encryptor);
     credential.setValue(value);
     return credential;

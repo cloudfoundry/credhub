@@ -2,12 +2,8 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.SshKey;
 import io.pivotal.security.entity.SshCredentialData;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SshCredential extends Credential<SshCredential> {
 
@@ -27,8 +23,7 @@ public class SshCredential extends Credential<SshCredential> {
   }
 
   public static SshCredential createNewVersion(SshCredential existing, String name,
-                                               SshKey sshKeyValue, Encryptor encryptor,
-                                               List<AccessControlEntry> accessControlEntries) {
+      SshKey sshKeyValue, Encryptor encryptor) {
     SshCredential credential;
 
     if (existing == null) {
@@ -37,12 +32,6 @@ public class SshCredential extends Credential<SshCredential> {
       credential = new SshCredential();
       credential.copyNameReferenceFrom(existing);
     }
-
-    if (accessControlEntries == null) {
-      accessControlEntries = new ArrayList<>();
-    }
-
-    credential.setAccessControlList(accessControlEntries);
 
     credential.setEncryptor(encryptor);
     credential.setPrivateKey(sshKeyValue.getPrivateKey());

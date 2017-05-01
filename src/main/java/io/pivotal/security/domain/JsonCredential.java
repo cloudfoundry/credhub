@@ -4,11 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.entity.JsonCredentialData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
-
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public class JsonCredential extends Credential<JsonCredential> {
@@ -34,8 +31,7 @@ public class JsonCredential extends Credential<JsonCredential> {
       JsonCredential existing,
       String name,
       Map<String, Object> value,
-      Encryptor encryptor,
-      List<AccessControlEntry> accessControlEntries
+      Encryptor encryptor
   ) {
     JsonCredential credential;
 
@@ -46,7 +42,6 @@ public class JsonCredential extends Credential<JsonCredential> {
       credential.copyNameReferenceFrom(existing);
     }
 
-    credential.setAccessControlList(accessControlEntries);
     credential.setEncryptor(encryptor);
     credential.setValue(value);
 

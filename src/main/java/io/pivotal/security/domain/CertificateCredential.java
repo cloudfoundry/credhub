@@ -2,10 +2,7 @@ package io.pivotal.security.domain;
 
 import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.entity.CertificateCredentialData;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.Encryption;
-
-import java.util.List;
 
 public class CertificateCredential extends Credential<CertificateCredential> {
 
@@ -28,8 +25,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
       CertificateCredential existing,
       String name,
       Certificate certificateValue,
-      Encryptor encryptor,
-      List<AccessControlEntry> accessControlEntries
+      Encryptor encryptor
   ) {
     CertificateCredential credential;
 
@@ -40,8 +36,6 @@ public class CertificateCredential extends Credential<CertificateCredential> {
       credential.copyNameReferenceFrom(existing);
       credential.setCaName(existing.getCaName());
     }
-
-    credential.setAccessControlList(accessControlEntries);
 
     credential.setEncryptor(encryptor);
     credential.setPrivateKey(certificateValue.getPrivateKey());

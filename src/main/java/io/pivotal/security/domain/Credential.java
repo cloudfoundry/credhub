@@ -1,15 +1,10 @@
 package io.pivotal.security.domain;
 
 import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.CredentialData;
-import io.pivotal.security.request.AccessControlEntry;
-
+import io.pivotal.security.entity.CredentialName;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public abstract class Credential<Z extends Credential> {
 
@@ -55,11 +50,6 @@ public abstract class Credential<Z extends Credential> {
     return (Z) credentialDataService.save(delegate);
   }
 
-  public void setAccessControlList(List<AccessControlEntry> accessControlEntries) {
-    List<AccessEntryData> accessEntryData = this.getAccessEntryData(accessControlEntries);
-    delegate.getCredentialName().setAccessControlList(accessEntryData);
-  }
-
   public CredentialName getCredentialName() {
     return delegate.getCredentialName();
   }
@@ -68,10 +58,4 @@ public abstract class Credential<Z extends Credential> {
     this.delegate.setCredentialName(credential.delegate.getCredentialName());
   }
 
-  List<AccessEntryData> getAccessEntryData(List<AccessControlEntry> accessControlEntries) {
-    CredentialName credentialName = delegate.getCredentialName();
-    return accessControlEntries.stream()
-        .map((entry) -> AccessEntryData.fromCredentialName(credentialName, entry))
-        .collect(Collectors.toList());
-  }
 }

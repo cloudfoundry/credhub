@@ -35,7 +35,7 @@ public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateC
             existing,
             getName(),
             getCertificateValue(),
-            encryptor,
-            getAccessControlEntries());
+            encryptor
+        );
   }
 }

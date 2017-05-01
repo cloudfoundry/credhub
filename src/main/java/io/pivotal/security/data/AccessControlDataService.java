@@ -107,13 +107,4 @@ public class AccessControlDataService {
     return temp.orElse(null);
   }
 
-  private AccessEntryData getActorCredentialPermission(String actor, String credential){
-    CredentialName credentialName = credentialNameRepository.findOneByNameIgnoreCase(credential);
-    if (credentialName != null) {
-      return accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-    }
-    else {
-      return null;
-    }
-  }
 }

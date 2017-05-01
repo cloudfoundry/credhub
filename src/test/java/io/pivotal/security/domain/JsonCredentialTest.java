@@ -1,17 +1,5 @@
 package io.pivotal.security.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.entity.JsonCredentialData;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.service.Encryption;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -21,6 +9,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.JsonCredentialData;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.service.Encryption;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class JsonCredentialTest {
@@ -115,8 +113,7 @@ public class JsonCredentialTest {
             .thenReturn(serializedValue);
 
         JsonCredential newCredential = JsonCredential
-            .createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor,
-                new ArrayList<>());
+            .createNewVersion(subject, "anything I AM IGNORED", newValue, encryptor);
 
         assertThat(newCredential.getName(), equalTo("/existingName"));
         assertThat(newCredential.getValue(), equalTo(newValue));
@@ -127,8 +124,8 @@ public class JsonCredentialTest {
             null,
             "/newName",
             value,
-            encryptor,
-            new ArrayList<>());
+            encryptor
+        );
 
         assertThat(newCredential.getName(), equalTo("/newName"));
         assertThat(newCredential.getValue(), equalTo(value));

@@ -2,14 +2,10 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
-import org.springframework.util.Assert;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.util.Assert;
 
 public class PasswordCredential extends Credential<PasswordCredential> {
 
@@ -36,8 +32,8 @@ public class PasswordCredential extends Credential<PasswordCredential> {
       String name,
       String password,
       StringGenerationParameters generationParameters,
-      Encryptor encryptor,
-      List<AccessControlEntry> accessControlEntries) {
+      Encryptor encryptor
+  ) {
     PasswordCredential credential;
 
     if (existing == null) {
@@ -46,12 +42,6 @@ public class PasswordCredential extends Credential<PasswordCredential> {
       credential = new PasswordCredential();
       credential.copyNameReferenceFrom(existing);
     }
-
-    if (accessControlEntries == null) {
-      accessControlEntries = new ArrayList<>();
-    }
-
-    credential.setAccessControlList(accessControlEntries);
 
     credential.setEncryptor(encryptor);
     credential.setPasswordAndGenerationParameters(password, generationParameters);

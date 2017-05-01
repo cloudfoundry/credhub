@@ -1,26 +1,8 @@
 package io.pivotal.security.domain;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.User;
-import io.pivotal.security.entity.AccessEntryData;
-import io.pivotal.security.entity.UserCredentialData;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.service.Encryption;
-import org.junit.runner.RunWith;
-import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.UUID;
-
-import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -29,6 +11,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.User;
+import io.pivotal.security.entity.UserCredentialData;
+import io.pivotal.security.service.Encryption;
+import java.lang.reflect.Field;
+import java.util.UUID;
+import org.junit.runner.RunWith;
+import org.springframework.util.ReflectionUtils;
 
 @RunWith(Spectrum.class)
 public class UserCredentialTest {
@@ -132,8 +123,8 @@ public class UserCredentialTest {
               new UserCredential(existingUserCredentialData),
               CREDENTIAL_NAME,
               new User(USERNAME, USER_PASSWORD, SALT),
-              encryptor,
-              newArrayList());
+              encryptor
+          );
 
           assertThat(subject.getCredentialName(), equalTo(existingUserCredentialData.getCredentialName()));
         });
@@ -145,10 +136,7 @@ public class UserCredentialTest {
               NO_EXISTING_CREDENTIAL,
               CREDENTIAL_NAME,
               new User(USERNAME, USER_PASSWORD, SALT),
-              encryptor,
-              Arrays.asList(
-                  new AccessControlEntry("test-user", Arrays.asList(READ, WRITE))
-              ));
+              encryptor);
         });
 
         it("should create new credential with name", () -> {
@@ -165,15 +153,6 @@ public class UserCredentialTest {
         it("should copy request fields", () -> {
           verify(encryptor).encrypt(USER_PASSWORD);
           assertThat(subject.getUsername(), equalTo(USERNAME));
-        });
-
-        it("should set access control entries", () -> {
-          AccessEntryData expectedAce = new AccessEntryData(
-              subject.getCredentialName(), "test-user", Arrays.asList(READ, WRITE));
-          assertThat(subject.getCredentialName().getAccessControlList(),
-              containsInAnyOrder(
-                  samePropertyValuesAs(expectedAce)
-              ));
         });
       });
     });

@@ -1,5 +1,21 @@
 package io.pivotal.security.domain;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.PasswordCredentialData;
@@ -7,23 +23,10 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
-import org.junit.runner.RunWith;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class PasswordCredentialTest {
@@ -163,13 +166,11 @@ public class PasswordCredentialTest {
             AccessControlOperation.WRITE);
         List<AccessControlEntry> accessControlEntries = newArrayList(
             new AccessControlEntry("Bob", operations));
-        subject.setAccessControlList(accessControlEntries);
       });
 
       it("copies values from existing, except password", () -> {
         PasswordCredential newCredential = PasswordCredential
-            .createNewVersion(subject, "anything I AM IGNORED", PASSWORD, NO_PASSWORD_PARAMS,
-                encryptor, EMPTY_ENTRIES_LIST);
+            .createNewVersion(subject, "anything I AM IGNORED", PASSWORD, NO_PASSWORD_PARAMS, encryptor);
 
         assertThat(newCredential.getName(), equalTo("/existingName"));
         assertThat(newCredential.getPassword(), equalTo(PASSWORD));
@@ -181,18 +182,11 @@ public class PasswordCredentialTest {
             "/newName",
             PASSWORD,
             NO_PASSWORD_PARAMS,
-            encryptor,
-            EMPTY_ENTRIES_LIST);
+            encryptor
+        );
 
         assertThat(newCredential.getName(), equalTo("/newName"));
         assertThat(newCredential.getPassword(), equalTo(PASSWORD));
-      });
-
-      it("ignores ACEs if not provided", () -> {
-        PasswordCredential newCredential = PasswordCredential
-            .createNewVersion(subject, "anything I AM IGNORED", PASSWORD, NO_PASSWORD_PARAMS,
-                encryptor, NULL_ENTRIES_LIST);
-        assertThat(newCredential.getCredentialName().getAccessControlList(), hasSize(0));
       });
     });
   }
