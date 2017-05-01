@@ -51,8 +51,8 @@ CredHub stores historical credential values when a credential is modified. When 
 
 ### Configuration
 
-The process to enable the config server integration is documented [here.][1] You can also review the sample manifests [here.][2] An ops file that includes only modifications to a standard BOSH Director deployment can be found [here.][3]
+The process to enable the config server integration is documented [here.][1] You can also review sample deployment manifests [here.][2] An ops file that includes only modifications to a standard BOSH Director deployment can be found [here.][3]
 
 [1]:https://github.com/pivotal-cf/credhub-release/blob/master/docs/bosh-install-with-credhub.md
 [2]:https://github.com/pivotal-cf/credhub-release/tree/master/sample-manifests
-[3]:https://github.com/cloudfoundry/bosh-deployment/blob/master/credhub.yml
+[3]:https://github.com/pivotal-danjahner/bosh-deployment/blob/patch-2/credhub.yml
