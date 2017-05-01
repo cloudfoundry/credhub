@@ -25,9 +25,9 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
@@ -338,7 +338,7 @@ public class CredentialsControllerGetTest {
                 boolean.class);
 
         doReturn(false).when(permissionService)
-            .hasCredentialReadPermission(any(UserContext.class), any(CredentialName.class));
+            .hasCredentialReadPermission(any(UserContext.class), any(Credential.class));
         final MockHttpServletRequestBuilder get = get(validUrl)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON);

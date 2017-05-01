@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.PermissionException;
 import org.junit.Before;
@@ -26,11 +27,13 @@ public class PermissionServiceTest {
 
   private UserContext userContext;
   private AccessControlDataService accessControlDataService;
+  private SshCredential credential = mock(SshCredential.class);
 
   @Before
   public void beforeEach() {
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn("test-actor");
+    when(credential.getCredentialName()).thenReturn(CREDENTIAL_NAME);
 
     accessControlDataService = mock(AccessControlDataService.class);
 
@@ -89,7 +92,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
+    assertTrue(subject.hasCredentialReadPermission(userContext, credential));
   }
 
   @Test
@@ -99,7 +102,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    assertFalse(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
+    assertFalse(subject.hasCredentialReadPermission(userContext, credential));
   }
 
   @Test
@@ -109,7 +112,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
+    assertTrue(subject.hasCredentialReadPermission(userContext, credential));
   }
 
   @Test
@@ -119,7 +122,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
+    assertTrue(subject.hasCredentialReadPermission(userContext, credential));
   }
 
   private void initializeEnforcement(boolean enabled) {

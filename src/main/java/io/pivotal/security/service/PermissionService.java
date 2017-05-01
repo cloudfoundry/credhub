@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.domain.Credential;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.PermissionException;
 import org.apache.commons.lang.StringUtils;
@@ -31,10 +32,10 @@ public class PermissionService {
     }
   }
 
-  public boolean hasCredentialReadPermission(UserContext user, CredentialName credentialName) {
+  public boolean hasCredentialReadPermission(UserContext user, Credential credential) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);
-      return accessControlDataService.hasReadPermission(actor, credentialName);
+      return accessControlDataService.hasReadPermission(actor, credential.getCredentialName());
     } else {
       return true;
     }

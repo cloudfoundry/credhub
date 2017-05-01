@@ -1,6 +1,5 @@
 package io.pivotal.security.controller.v1.credential;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,9 +12,6 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialHandler;
 import io.pivotal.security.request.AccessControlEntry;
@@ -160,13 +156,9 @@ public class CredentialsController {
       @PathVariable String id,
       RequestUuid requestUuid,
       UserContext userContext) {
-
-    return CredentialView.fromEntity(retrieveCredentialWithAuditing(
-        id,
-        findAsList(credentialDataService::findByUuid),
-        requestUuid,
-        userContext
-    ).get(0));
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> (
+        credentialHandler.getCredentialVersion(userContext, eventAuditRecordParameters, id)
+    ));
   }
 
   @GetMapping(path = "")
@@ -180,12 +172,13 @@ public class CredentialsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    return DataResponse.fromEntity(retrieveCredentialWithAuditing(
-        credentialName,
-        selectLookupFunction(current),
-        requestUuid,
-        userContext
-    ));
+    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+      if (current) {
+        return credentialHandler.getMostRecentCredentialVersion(userContext, eventAuditRecordParameters, credentialName);
+      } else {
+        return credentialHandler.getAllCredentialVersions(userContext, eventAuditRecordParameters, credentialName);
+      }
+    });
   }
 
   @RequestMapping(path = "", params = "path", method = RequestMethod.GET)
@@ -302,43 +295,6 @@ public class CredentialsController {
   ) {
     return setService
         .performSet(eventAuditRecordParameters, requestBody, currentUserAccessControlEntry);
-  }
-
-  private Function<String, List<Credential>> selectLookupFunction(boolean current) {
-    if (current) {
-      return findAsList(credentialDataService::findMostRecent);
-    } else {
-      return credentialDataService::findAllByName;
-    }
-  }
-
-  private Function<String, List<Credential>> findAsList(Function<String, Credential> finder) {
-    return (toFind) -> {
-      Credential credential = finder.apply(toFind);
-      return credential != null ? newArrayList(credential) : newArrayList();
-    };
-  }
-
-  private List<Credential> retrieveCredentialWithAuditing(String identifier,
-                                                          Function<String, List<Credential>> finder,
-                                                          RequestUuid requestUuid,
-                                                          UserContext userContext) {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
-      eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
-          final List<Credential> credentials = finder.apply(identifier);
-          final boolean isEmpty = credentials.isEmpty();
-          final CredentialName credentialName = isEmpty ? null : credentials.get(0).getCredentialName();
-
-          if (credentialName != null) {
-            eventAuditRecordParameters.setCredentialName(credentialName.getName());
-          }
-
-          if (!isEmpty && permissionService.hasCredentialReadPermission(userContext, credentialName)) {
-            return credentials;
-          } else {
-            throw new EntryNotFoundException("error.credential_not_found");
-          }
-        });
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {
