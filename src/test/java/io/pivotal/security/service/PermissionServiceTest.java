@@ -80,6 +80,51 @@ public class PermissionServiceTest {
     subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
   }
 
+  @Test
+  public void verifyReadPermission_withEnforcement_whenTheUserPermission_doesNothing() {
+    initializeEnforcement(true);
+
+    when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
+
+    subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void verifyReadPermission_withEnforcement_whenTheUserDoesNotHavePermission_throwsException() {
+    initializeEnforcement(true);
+
+    when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
+
+    try {
+      subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
+      fail("should throw exception");
+    } catch (PermissionException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_read"));
+    }
+  }
+
+  @Test
+  public void verifyReadPermission_withOutEnforcement_whenTheUserPermission_doesNothing() {
+    initializeEnforcement(false);
+
+    when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
+
+    subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void verifyReadPermission_withoutEnforcement_whenTheUserDoesNotHavePermission_doesNothing() {
+    initializeEnforcement(false);
+
+    when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
+
+    subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
+  }
+
   private void initializeEnforcement(boolean enabled) {
     ReflectionTestUtils
         .setField(subject, PermissionService.class, "enforcePermissions", enabled, boolean.class);
