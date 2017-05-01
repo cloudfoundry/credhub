@@ -31,12 +31,12 @@ public class PermissionService {
     }
   }
 
-  public void verifyReadPermission(UserContext user, CredentialName credentialName) {
+  public boolean hasCredentialReadPermission(UserContext user, CredentialName credentialName) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);
-      if (StringUtils.isEmpty(actor) || !accessControlDataService.hasReadPermission(actor, credentialName)) {
-        throw new PermissionException("error.acl.lacks_read");
-      }
+      return accessControlDataService.hasReadPermission(actor, credentialName);
+    } else {
+      return true;
     }
   }
 

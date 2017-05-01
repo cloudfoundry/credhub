@@ -29,7 +29,6 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.KeyNotFoundException;
-import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -154,9 +153,8 @@ public class CredentialsControllerGetTest {
       describe(
           "when user does not have permissions to retrieve the credential",
           makeGetByNameBlockWithNoPermissions(
-              credentialValue,
               "/api/v1/data?name=" + credentialName.toUpperCase(),
-              "/api/v1/data?name=invalid_name", "$.data[0]"
+              "/api/v1/data?name=invalid_name"
           ));
 
       describe("getting a credential by name when name has multiple leading slashes", () -> {
@@ -330,10 +328,8 @@ public class CredentialsControllerGetTest {
   }
 
   private Spectrum.Block makeGetByNameBlockWithNoPermissions(
-      String credentialValue,
       String validUrl,
-      String invalidUrl,
-      String jsonPathPrefix
+      String invalidUrl
   ) {
     return () -> {
       beforeEach(() -> {
@@ -341,8 +337,8 @@ public class CredentialsControllerGetTest {
             .setField(permissionService, PermissionService.class, "enforcePermissions", true,
                 boolean.class);
 
-        doThrow(PermissionException.class).when(permissionService)
-            .verifyReadPermission(any(UserContext.class), any(CredentialName.class));
+        doReturn(false).when(permissionService)
+            .hasCredentialReadPermission(any(UserContext.class), any(CredentialName.class));
         final MockHttpServletRequestBuilder get = get(validUrl)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON);

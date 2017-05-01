@@ -17,7 +17,6 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
-import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.handler.CredentialHandler;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
@@ -326,19 +325,17 @@ public class CredentialsController {
                                                           UserContext userContext) {
     return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
       eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
-          try {
-            List<Credential> credentials = finder.apply(identifier);
-            if (!credentials.isEmpty()) {
-              final CredentialName credentialName = credentials.get(0).getCredentialName();
-              eventAuditRecordParameters.setCredentialName(credentialName.getName());
-              //The permission check is done this late to allow the audit log to distinguish between
-              //404s caused by permission errors and actual 404s.
-              permissionService.verifyReadPermission(userContext, credentialName);
-              return credentials;
-            } else {
-              throw new EntryNotFoundException("error.credential_not_found");
-            }
-          } catch (PermissionException e) {
+          final List<Credential> credentials = finder.apply(identifier);
+          final boolean isEmpty = credentials.isEmpty();
+          final CredentialName credentialName = isEmpty ? null : credentials.get(0).getCredentialName();
+
+          if (credentialName != null) {
+            eventAuditRecordParameters.setCredentialName(credentialName.getName());
+          }
+
+          if (!isEmpty && permissionService.hasCredentialReadPermission(userContext, credentialName)) {
+            return credentials;
+          } else {
             throw new EntryNotFoundException("error.credential_not_found");
           }
         });

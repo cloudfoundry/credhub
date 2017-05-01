@@ -1,5 +1,7 @@
 package io.pivotal.security.service;
 
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -81,48 +83,43 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void verifyReadPermission_withEnforcement_whenTheUserPermission_doesNothing() {
+  public void hasCredentialReadPermission_withEnforcement_whenTheUserPermission_returnsTrue() {
     initializeEnforcement(true);
 
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
+    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
-  public void verifyReadPermission_withEnforcement_whenTheUserDoesNotHavePermission_throwsException() {
+  public void hasCredentialReadPermission_withEnforcement_whenTheUserDoesNotHavePermission_returnsFalse() {
     initializeEnforcement(true);
 
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    try {
-      subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
-      fail("should throw exception");
-    } catch (PermissionException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_read"));
-    }
+    assertFalse(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
-  public void verifyReadPermission_withOutEnforcement_whenTheUserPermission_doesNothing() {
+  public void hasCredentialReadPermission_withOutEnforcement_whenTheUserPermission_returnsTrue() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
+    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
-  public void verifyReadPermission_withoutEnforcement_whenTheUserDoesNotHavePermission_doesNothing() {
+  public void hasCredentialReadPermission_withoutEnforcement_whenTheUserDoesNotHavePermission_returnsTrue() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    subject.verifyReadPermission(userContext, CREDENTIAL_NAME);
+    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   private void initializeEnforcement(boolean enabled) {
