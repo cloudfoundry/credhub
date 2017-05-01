@@ -1,99 +1,87 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
+import static org.assertj.core.api.Java6Assertions.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.PermissionException;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class PermissionServiceTest {
-
-  private UserContext userContext;
+  private static final CredentialName CREDENTIAL_NAME = new CredentialName("test-credential");
 
   private PermissionService subject;
 
+  private UserContext userContext;
   private AccessControlDataService accessControlDataService;
 
-  public static final CredentialName CREDENTIAL_NAME = new CredentialName("test-credential");
+  @Before
+  public void beforeEach() {
+    userContext = mock(UserContext.class);
+    when(userContext.getAclUser()).thenReturn("test-actor");
 
-  {
-    describe("when security.authorization.acls.enabled = true", () -> {
-      beforeEach(() -> {
-        userContext = mock(UserContext.class);
-        when(userContext.getAclUser()).thenReturn("test-actor");
+    accessControlDataService = mock(AccessControlDataService.class);
 
-        accessControlDataService = mock(AccessControlDataService.class);
+    subject = new PermissionService(accessControlDataService);
+  }
 
-        subject = new PermissionService(accessControlDataService);
+  @Test
+  public void verifyAclReadPermission_withEnforcement_whenTheUserPermission_doesNothing() {
+    initializeEnforcement(true);
 
-        ReflectionTestUtils
-            .setField(subject, PermissionService.class, "enforcePermissions", true, boolean.class);
-      });
+    when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
 
-      describe("#verifyAclReadPermission", () -> {
-        describe("when the user has permission to read the credential's ACL", () -> {
-          it("should do nothing", () -> {
-            when(accessControlDataService.hasReadAclPermission("test-actor",
-                CREDENTIAL_NAME))
-                .thenReturn(true);
-            subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
-            // pass
-          });
-        });
+    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+  }
 
-        describe("when the user does not have permission to read the credential's ACL", () -> {
-          itThrowsWithMessage("throws", PermissionException.class,
-              "error.acl.lacks_acl_read", () -> {
-                when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
-                    .thenReturn(false);
-                subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
-              });
-        });
-      });
-    });
+  @Test
+  public void verifyAclReadPermission_withEnforcement_whenTheUserDoesNotHavePermission_throwsException() {
+    initializeEnforcement(true);
 
-    describe("when security.authorization.acls.enabled = false", () -> {
-      beforeEach(() -> {
-        userContext = mock(UserContext.class);
-        when(userContext.getAclUser()).thenReturn("test-actor");
+    when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
 
-        accessControlDataService = mock(AccessControlDataService.class);
+    try {
+      subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+      fail("should throw exception");
+    } catch (PermissionException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_acl_read"));
+    }
+  }
 
-        subject = new PermissionService(accessControlDataService);
+  @Test
+  public void verifyAclReadPermission_withOutEnforcement_whenTheUserPermission_doesNothing() {
+    initializeEnforcement(false);
 
-        ReflectionTestUtils
-            .setField(subject, PermissionService.class, "enforcePermissions", false, boolean.class);
-      });
+    when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
 
-      describe("#verifyAclReadPermission", () -> {
-        describe("when the user has permission to read the credential's ACL", () -> {
-          it("should do nothing", () -> {
-            when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
-                .thenReturn(true);
-            subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
-            // pass
-          });
-        });
+    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+  }
 
-        describe("when the user does not have permission to read the credential's ACL", () -> {
-          it("should do nothing", () -> {
-            when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
-                .thenReturn(false);
-            subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
-            //pass
-          });
-        });
-      });
-    });
+  @Test
+  public void verifyAclReadPermission_withoutEnforcement_whenTheUserDoesNotHavePermission_doesNothing() {
+    initializeEnforcement(false);
+
+    when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
+
+    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+  }
+
+  private void initializeEnforcement(boolean enabled) {
+    ReflectionTestUtils
+        .setField(subject, PermissionService.class, "enforcePermissions", enabled, boolean.class);
   }
 }
