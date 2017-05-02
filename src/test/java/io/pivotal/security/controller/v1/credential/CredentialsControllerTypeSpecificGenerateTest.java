@@ -1,8 +1,10 @@
 package io.pivotal.security.controller.v1.credential;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
@@ -321,7 +323,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           it("asks the data service to persist the credential", () -> {
             verify(generateService, times(1))
                 .performGenerate(
-                    isA(EventAuditRecordParameters.class),
+                    any(),
                     isA(BaseCredentialGenerateRequest.class),
                     isA(AccessControlEntry.class));
             ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
@@ -333,7 +335,14 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           });
 
           it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+            auditingHelper.verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200, newArrayList(
+                new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName),
+                new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                new EventAuditRecordParameters(ACL_UPDATE, credentialName, DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
+            ));
           });
 
           it("should create an ACL with the current user having full permissions", () -> {

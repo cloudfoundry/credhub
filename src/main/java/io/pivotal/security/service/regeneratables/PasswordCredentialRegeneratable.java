@@ -16,9 +16,9 @@ public class PasswordCredentialRegeneratable implements Regeneratable {
 
     generateRequest.setName(passwordCredential.getName());
     generateRequest.setType(passwordCredential.getCredentialType());
+    generateRequest.setOverwrite(true);
     StringGenerationParameters generationParameters;
     generationParameters = passwordCredential.getGenerationParameters();
-    generateRequest.setOverwrite(true);
 
     if (generationParameters == null) {
       throw new ParameterizedValidationException(

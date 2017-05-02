@@ -428,7 +428,7 @@ public class CredentialsControllerErrorHandlingSetTest {
 
         auditingHelper.verifyAuditing(
             CREDENTIAL_UPDATE,
-            null,
+            credentialName,
             "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
             "/api/v1/data",
             400

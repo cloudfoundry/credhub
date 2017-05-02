@@ -369,8 +369,8 @@ public class AccessControlEndpointTest {
             new AccessControlEntry("dan", asList(READ, WRITE, DELETE)))
     ));
 
-    // 1 from beforeEach for credential, 2 from initialPost, 2 from updatePost
-    assertThat(eventAuditRecordRepository.count(), equalTo(5L));
+    // 6 from beforeEach for credential, 2 from initialPost, 2 from updatePost
+    assertThat(eventAuditRecordRepository.count(), equalTo(10L));
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",

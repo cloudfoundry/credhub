@@ -219,17 +219,17 @@ public class CredentialsController {
       AccessControlEntry currentUserAccessControlEntry
   ) {
     return eventAuditLogService
-        .auditEvent(requestUuid, userContext, (auditRecordParameters -> {
+        .auditEvents(requestUuid, userContext, (parametersList -> {
           return deserializeAndHandlePostRequest(
               inputStream,
-              auditRecordParameters,
+              parametersList,
               currentUserAccessControlEntry);
         }));
   }
 
   private CredentialView deserializeAndHandlePostRequest(
       InputStream inputStream,
-      EventAuditRecordParameters eventAuditRecordParameters,
+      List<EventAuditRecordParameters> parametersList,
       AccessControlEntry currentUserAccessControlEntry
   ) {
     try {
@@ -242,10 +242,10 @@ public class CredentialsController {
         // would be nice if Jackson could pick a subclass based on an arbitrary function, since
         // we want to consider both type and .regenerate. We could do custom deserialization but
         // then we'd have to do the entire job by hand.
-        return handleRegenerateRequest(eventAuditRecordParameters, requestString,
+        return handleRegenerateRequest(parametersList, requestString,
             currentUserAccessControlEntry);
       } else {
-        return handleGenerateRequest(eventAuditRecordParameters, requestString,
+        return handleGenerateRequest(parametersList, requestString,
             currentUserAccessControlEntry);
       }
     } catch (IOException e) {
@@ -254,7 +254,7 @@ public class CredentialsController {
   }
 
   private CredentialView handleGenerateRequest(
-      EventAuditRecordParameters eventAuditRecordParameters,
+      List<EventAuditRecordParameters> parametersList,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
@@ -263,11 +263,11 @@ public class CredentialsController {
     requestBody.validate();
 
     return generateService
-        .performGenerate(eventAuditRecordParameters, requestBody, currentUserAccessControlEntry);
+        .performGenerate(parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private CredentialView handleRegenerateRequest(
-      EventAuditRecordParameters eventAuditRecordParameters,
+      List<EventAuditRecordParameters> parametersList,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
   ) throws IOException {
@@ -275,7 +275,7 @@ public class CredentialsController {
         .readValue(requestString, CredentialRegenerateRequest.class);
 
     return regenerateService
-        .performRegenerate(eventAuditRecordParameters, requestBody, currentUserAccessControlEntry);
+        .performRegenerate(parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private CredentialView auditedHandlePutRequest(
@@ -284,17 +284,17 @@ public class CredentialsController {
       UserContext userContext,
       AccessControlEntry currentUserAccessControlEntry
   ) {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters ->
-        handlePutRequest(requestBody, eventAuditRecordParameters, currentUserAccessControlEntry));
+    return eventAuditLogService.auditEvents(requestUuid, userContext, parametersList ->
+        handlePutRequest(requestBody, parametersList, currentUserAccessControlEntry));
   }
 
   private CredentialView handlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
-      EventAuditRecordParameters eventAuditRecordParameters,
+      List<EventAuditRecordParameters> parametersList,
       AccessControlEntry currentUserAccessControlEntry
   ) {
     return setService
-        .performSet(eventAuditRecordParameters, requestBody, currentUserAccessControlEntry);
+        .performSet(parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {

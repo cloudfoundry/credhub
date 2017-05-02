@@ -3,29 +3,24 @@ package io.pivotal.security.data;
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AccessControlDataService {
 
   private AccessEntryRepository accessEntryRepository;
-  private CredentialNameRepository credentialNameRepository;
 
   @Autowired
   public AccessControlDataService(
-      AccessEntryRepository accessEntryRepository,
-      CredentialNameRepository credentialNameRepository
+      AccessEntryRepository accessEntryRepository
   ) {
     this.accessEntryRepository = accessEntryRepository;
-    this.credentialNameRepository = credentialNameRepository;
   }
 
   public List<AccessControlEntry> getAccessControlList(CredentialName credentialName) {

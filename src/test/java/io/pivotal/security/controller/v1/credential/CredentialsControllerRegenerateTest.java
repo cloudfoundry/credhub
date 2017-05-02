@@ -300,8 +300,7 @@ public class CredentialsControllerRegenerateTest {
       });
 
       it("persists an audit entry", () -> {
-        // https://www.pivotaltracker.com/story/show/139762105
-        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, null, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 404);
+        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 404);
       });
     });
 
@@ -330,7 +329,7 @@ public class CredentialsControllerRegenerateTest {
 
       it("persists an audit entry", () -> {
         // https://www.pivotaltracker.com/story/show/139762105
-        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, null, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 400);
+        auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 400);
       });
     });
 

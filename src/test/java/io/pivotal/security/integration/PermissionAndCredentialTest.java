@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
@@ -132,7 +133,12 @@ public class PermissionAndCredentialTest {
 
             it("audits the request", () -> {
               List<EventAuditRecordParameters> parametersList = newArrayList(
-                  new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+                  new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
               );
               auditingHelper.verifyAuditing(
                   "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
@@ -183,7 +189,12 @@ public class PermissionAndCredentialTest {
 
             it("audits the request", () -> {
               List<EventAuditRecordParameters> parametersList = newArrayList(
-                  new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+                  new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "uaa-client:credhub_test"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, "uaa-client:credhub_test"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, "uaa-client:credhub_test"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ_ACL, "uaa-client:credhub_test"),
+                  new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE_ACL, "uaa-client:credhub_test")
               );
               auditingHelper.verifyAuditing(
                   "uaa-client:credhub_test",
@@ -236,7 +247,12 @@ public class PermissionAndCredentialTest {
 
           it("audits the request", () -> {
             List<EventAuditRecordParameters> parametersList = newArrayList(
-                new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+                new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ_ACL, "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE_ACL, "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb")
             );
             auditingHelper.verifyAuditing(
                 "mtls-app:a12345e5-b2b0-4648-a0d0-772d3d399dcb",
@@ -296,7 +312,13 @@ public class PermissionAndCredentialTest {
 
         it("audits the request", () -> {
           List<EventAuditRecordParameters> parametersList = newArrayList(
-              new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+              new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
+              new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "mtls-app:app1-guid"),
+              new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+              new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+              new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+              new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+              new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
           );
           auditingHelper.verifyAuditing(
               "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
@@ -385,7 +407,11 @@ public class PermissionAndCredentialTest {
 
           it("audits the request", () -> {
             List<EventAuditRecordParameters> parametersList = newArrayList(
-                new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password")
+                new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, "mtls-app:app1-guid"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "uaa-client:credhub_test"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, "uaa-client:credhub_test"),
+                new EventAuditRecordParameters(ACL_UPDATE, "/test-password", DELETE, "uaa-client:credhub_test")
             );
             auditingHelper.verifyAuditing(
                 "uaa-client:credhub_test",

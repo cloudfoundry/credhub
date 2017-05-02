@@ -1,30 +1,5 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.aspect.CredentialNameAspect;
-import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.entity.ValueCredentialData;
-import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.CredentialNameRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Import;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import java.util.List;
-
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -37,6 +12,30 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
+
+import io.pivotal.security.aspect.CredentialNameAspect;
+import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.repository.AccessEntryRepository;
+import io.pivotal.security.repository.CredentialNameRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import java.util.List;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -62,10 +61,7 @@ public class AccessControlDataServiceTest {
 
   @Before
   public void beforeEach() {
-    subject = new AccessControlDataService(
-        accessEntryRepository,
-        credentialNameRepository
-    );
+    subject = new AccessControlDataService(accessEntryRepository);
 
     seedDatabase();
   }

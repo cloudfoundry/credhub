@@ -1,8 +1,10 @@
 package io.pivotal.security.service;
 
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
+import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialDataService;
@@ -34,7 +36,7 @@ public class SetService {
   }
 
   public CredentialView performSet(
-      EventAuditRecordParameters eventAuditRecordParameters,
+      List<EventAuditRecordParameters> parametersList,
       BaseCredentialSetRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
     final String credentialName = requestBody.getName();
@@ -43,16 +45,22 @@ public class SetService {
 
     boolean shouldWriteNewEntity = existingCredential == null || requestBody.isOverwrite();
 
-    eventAuditRecordParameters.setAuditingOperationCode(shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS);
-
+    AuditingOperationCode credentialOperationCode =
+        shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
     final String type = requestBody.getType();
-    validateCredentialType(existingCredential, type);
+
+    if (existingCredential != null && !existingCredential.getCredentialType().equals(type)) {
+      parametersList.add(new EventAuditRecordParameters(credentialOperationCode, existingCredential.getName()));
+      throw new ParameterizedValidationException("error.type_mismatch");
+    }
 
     Credential storedEntity = existingCredential;
     if (shouldWriteNewEntity) {
       Credential newEntity = (Credential) requestBody.createNewVersion(existingCredential, encryptor);
       storedEntity = credentialDataService.save(newEntity);
     }
+    parametersList.add(new EventAuditRecordParameters(credentialOperationCode, storedEntity.getName()));
+
 
     List<AccessControlEntry> accessControlEntryList = requestBody.getAccessControlEntries();
 
@@ -60,18 +68,25 @@ public class SetService {
       accessControlEntryList.add(currentUserAccessControlEntry);
     }
 
+    final String name = storedEntity.getName();
+
     if (shouldWriteNewEntity) {
+      accessControlEntryList.stream()
+          .forEach(entry -> {
+            String actor = entry.getActor();
+            entry.getAllowedOperations().stream()
+                .forEach(operation -> {
+                  parametersList.add(new EventAuditRecordParameters(
+                      ACL_UPDATE,
+                      name,
+                      operation,
+                      actor));
+                });
+          });
+
       accessControlDataService.setAccessControlEntries(storedEntity.getCredentialName(), requestBody.getAccessControlEntries());
     }
 
-    eventAuditRecordParameters.setCredentialName(storedEntity.getName());
-
     return CredentialView.fromEntity(storedEntity);
-  }
-
-  private void validateCredentialType(Credential existingCredential, String secretType) {
-    if (existingCredential != null && !existingCredential.getCredentialType().equals(secretType)) {
-      throw new ParameterizedValidationException("error.type_mismatch");
-    }
   }
 }
