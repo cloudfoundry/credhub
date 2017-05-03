@@ -1,15 +1,17 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import io.pivotal.security.audit.AuditingOperationCode;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
+import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionEventAuditRecordParameters;
+import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
+
 import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.AccessControlListResponse;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -46,7 +48,11 @@ public class AccessControlEntryController {
       @Validated @RequestBody AccessEntriesRequest accessEntriesRequest
   ) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, parametersList -> {
-      addAuditParameters(accessEntriesRequest, parametersList);
+      parametersList.addAll(createPermissionsEventAuditParameters(
+          ACL_UPDATE,
+          accessEntriesRequest.getCredentialName(),
+          accessEntriesRequest.getAccessControlEntries())
+      );
       return accessControlHandler.setAccessControlEntries(accessEntriesRequest);
     });
   }
@@ -63,33 +69,13 @@ public class AccessControlEntryController {
     eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
       AccessControlEntry entry = accessControlHandler.deleteAccessControlEntries(actor, credentialName);
       if (entry != null) {
-        entry.getAllowedOperations().stream().forEach(operation ->
-            parameterList.add(new EventAuditRecordParameters(
-                AuditingOperationCode.ACL_DELETE,
-                credentialName,
-                operation,
-                actor)));
+        parameterList.addAll(createPermissionEventAuditRecordParameters(
+            ACL_DELETE,
+            credentialName,
+            entry
+        ));
       }
       return entry;
     });
-  }
-
-  private void addAuditParameters(
-      AccessEntriesRequest accessEntriesRequest,
-      List<EventAuditRecordParameters> parametersList
-  ) {
-    accessEntriesRequest.getAccessControlEntries()
-        .stream()
-        .forEach(entry -> {
-          entry.getAllowedOperations()
-              .stream()
-              .forEach(operation -> {
-                parametersList.add(new EventAuditRecordParameters(
-                    AuditingOperationCode.ACL_UPDATE,
-                    accessEntriesRequest.getCredentialName(),
-                    operation,
-                    entry.getActor()));
-              });
-        });
   }
 }

@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
@@ -68,21 +69,12 @@ public class SetService {
       accessControlEntryList.add(currentUserAccessControlEntry);
     }
 
-    final String name = storedEntity.getName();
-
     if (shouldWriteNewEntity) {
-      accessControlEntryList.stream()
-          .forEach(entry -> {
-            String actor = entry.getActor();
-            entry.getAllowedOperations().stream()
-                .forEach(operation -> {
-                  parametersList.add(new EventAuditRecordParameters(
-                      ACL_UPDATE,
-                      name,
-                      operation,
-                      actor));
-                });
-          });
+      parametersList.addAll(createPermissionsEventAuditParameters(
+          ACL_UPDATE,
+          storedEntity.getName(),
+          accessControlEntryList
+      ));
 
       accessControlDataService.setAccessControlEntries(storedEntity.getCredentialName(), requestBody.getAccessControlEntries());
     }

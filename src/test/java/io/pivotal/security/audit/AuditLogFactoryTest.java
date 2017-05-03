@@ -1,13 +1,5 @@
 package io.pivotal.security.audit;
 
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.entity.EventAuditRecord;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import java.util.UUID;
-
 import static io.pivotal.security.audit.AuditLogFactory.createEventAuditRecord;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -17,6 +9,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.entity.EventAuditRecord;
+import java.util.UUID;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class AuditLogFactoryTest {
