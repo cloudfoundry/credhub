@@ -32,7 +32,6 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CredentialHandlerTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
-  private static final String CREDENTIAL_NAME_WITH_DIFFERENT_CASING = CREDENTIAL_NAME.toUpperCase();
   private static final Instant VERSION1_CREATED_AT = Instant.ofEpochMilli(555555555);
   private static final Instant VERSION2_CREATED_AT = Instant.ofEpochMilli(777777777);
   private static final String UUID_STRING = "fake-uuid";
@@ -44,7 +43,6 @@ public class CredentialHandlerTest {
   private UserContext userContext;
   private SshCredential version1;
   private SshCredential version2;
-  private SshCredential credentialWithWeirdCasing;
 
   @Before
   public void beforeEach() {
@@ -63,9 +61,6 @@ public class CredentialHandlerTest {
     version2 = new SshCredential(CREDENTIAL_NAME);
     version2.setVersionCreatedAt(VERSION2_CREATED_AT);
     version2.setEncryptor(encryptor);
-
-    credentialWithWeirdCasing = new SshCredential(CREDENTIAL_NAME_WITH_DIFFERENT_CASING);
-    credentialWithWeirdCasing.setEncryptor(encryptor);
   }
 
   @Test
@@ -111,14 +106,14 @@ public class CredentialHandlerTest {
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_setsCorrectAuditingParameters() {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
-    List<Credential> credentials = newArrayList(credentialWithWeirdCasing);
+    List<Credential> credentials = newArrayList(version1);
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
-    when(permissionService.hasCredentialReadPermission(userContext, credentialWithWeirdCasing))
+    when(permissionService.hasCredentialReadPermission(userContext, version1))
         .thenReturn(true);
 
     subject.getAllCredentialVersions(userContext, auditRecordParameters, CREDENTIAL_NAME);
-    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME_WITH_DIFFERENT_CASING));
+    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
   }
 
@@ -141,19 +136,18 @@ public class CredentialHandlerTest {
 
   @Test
   public void getAllCredentialVersions_whenTheUserLacksPermission_setsCorrectAuditingParameters() {
-    List<Credential> credentials = newArrayList(credentialWithWeirdCasing);
+    List<Credential> credentials = newArrayList(version1);
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
-    when(permissionService.hasCredentialReadPermission(userContext, credentialWithWeirdCasing))
+    when(permissionService.hasCredentialReadPermission(userContext, version1))
         .thenReturn(false);
 
     try {
-      subject.getAllCredentialVersions(userContext, auditRecordParameters, CREDENTIAL_NAME
-      );
+      subject.getAllCredentialVersions(userContext, auditRecordParameters, CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME_WITH_DIFFERENT_CASING));
+      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
     }
   }
 
@@ -209,13 +203,13 @@ public class CredentialHandlerTest {
   public void getMostRecentCredentialVersion_whenTheCredentialExists_setsCorrectAuditingParameters() {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
-        .thenReturn(credentialWithWeirdCasing);
-    when(permissionService.hasCredentialReadPermission(userContext, credentialWithWeirdCasing))
+        .thenReturn(version1);
+    when(permissionService.hasCredentialReadPermission(userContext, version1))
         .thenReturn(true);
 
     subject.getMostRecentCredentialVersion(userContext, auditRecordParameters, CREDENTIAL_NAME);
 
-    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME_WITH_DIFFERENT_CASING));
+    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
   }
 
@@ -254,15 +248,15 @@ public class CredentialHandlerTest {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
 
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
-        .thenReturn(credentialWithWeirdCasing);
-    when(permissionService.hasCredentialReadPermission(userContext, credentialWithWeirdCasing))
+        .thenReturn(version1);
+    when(permissionService.hasCredentialReadPermission(userContext, version1))
         .thenReturn(false);
 
     try {
       subject.getMostRecentCredentialVersion(userContext, auditRecordParameters, CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME_WITH_DIFFERENT_CASING));
+      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
       assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     }
   }
@@ -286,13 +280,13 @@ public class CredentialHandlerTest {
   public void getCredentialVersion_whenTheVersionExists_setsCorrectAuditingParameters() {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
     when(credentialDataService.findByUuid(UUID_STRING))
-        .thenReturn(credentialWithWeirdCasing);
-    when(permissionService.hasCredentialReadPermission(userContext, credentialWithWeirdCasing))
+        .thenReturn(version1);
+    when(permissionService.hasCredentialReadPermission(userContext, version1))
         .thenReturn(true);
 
     subject.getCredentialVersion(userContext, auditRecordParameters, UUID_STRING);
 
-    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME_WITH_DIFFERENT_CASING));
+    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
   }
 
@@ -329,15 +323,15 @@ public class CredentialHandlerTest {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
 
     when(credentialDataService.findByUuid(UUID_STRING))
-        .thenReturn(credentialWithWeirdCasing);
-    when(permissionService.hasCredentialReadPermission(userContext, credentialWithWeirdCasing))
+        .thenReturn(version1);
+    when(permissionService.hasCredentialReadPermission(userContext, version1))
         .thenReturn(false);
 
     try {
       subject.getCredentialVersion(userContext, auditRecordParameters, UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME_WITH_DIFFERENT_CASING));
+      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
       assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     }
   }

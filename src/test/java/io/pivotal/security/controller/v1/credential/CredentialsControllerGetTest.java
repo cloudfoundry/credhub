@@ -133,34 +133,34 @@ public class CredentialsControllerGetTest {
         ).when(credentialDataService).findMostRecent(credentialName);
         doReturn(
             newArrayList(valueCredential1, valueCredential2)
-        ).when(credentialDataService).findAllByName(credentialName.toUpperCase());
+        ).when(credentialDataService).findAllByName(credentialName);
         doReturn(
             valueCredential1
-        ).when(credentialDataService).findMostRecent(credentialName.toUpperCase());
+        ).when(credentialDataService).findMostRecent(credentialName);
         doReturn(
             valueCredential1
         ).when(credentialDataService).findByUuid(uuid.toString());
       });
 
       describe(
-          "case insensitive get credential by name (with name query param, and no leading slash)",
+          "get credential by name (with name query param, and no leading slash)",
           makeGetByNameBlock(
               credentialValue,
-              "/api/v1/data?name=" + credentialName.toUpperCase(),
+              "/api/v1/data?name=" + credentialName,
               "/api/v1/data?name=invalid_name", "$.data[0]"
           ));
 
       describe(
           "when user does not have permissions to retrieve the credential",
           makeGetByNameBlockWithNoPermissions(
-              "/api/v1/data?name=" + credentialName.toUpperCase(),
+              "/api/v1/data?name=" + credentialName,
               "/api/v1/data?name=invalid_name"
           ));
 
       describe("getting a credential by name when name has multiple leading slashes", () -> {
         it("returns NOT_FOUND", () -> {
           final MockHttpServletRequestBuilder get = get(
-              "/api/v1/data?name=//" + credentialName.toUpperCase())
+              "/api/v1/data?name=//" + credentialName)
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
@@ -177,18 +177,18 @@ public class CredentialsControllerGetTest {
 
       describe("when passing a 'current' query parameter", () -> {
         it("when true should return only the most recent version", () -> {
-          mockMvc.perform(get("/api/v1/data?current=true&name=" + credentialName.toUpperCase())
+          mockMvc.perform(get("/api/v1/data?current=true&name=" + credentialName)
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON))
               .andExpect(status().isOk())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(jsonPath("$.data", hasSize(1)));
 
-          verify(credentialDataService).findMostRecent(credentialName.toUpperCase());
+          verify(credentialDataService).findMostRecent(credentialName);
         });
 
         it("when false should return all versions", () -> {
-          mockMvc.perform(get("/api/v1/data?current=false&name=" + credentialName.toUpperCase())
+          mockMvc.perform(get("/api/v1/data?current=false&name=" + credentialName)
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON))
               .andExpect(status().isOk())
@@ -197,7 +197,7 @@ public class CredentialsControllerGetTest {
         });
 
         it("when omitted should return all versions", () -> {
-          mockMvc.perform(get("/api/v1/data?name=" + credentialName.toUpperCase())
+          mockMvc.perform(get("/api/v1/data?name=" + credentialName)
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON))
               .andExpect(status().isOk())
@@ -261,12 +261,12 @@ public class CredentialsControllerGetTest {
         doThrow(new KeyNotFoundException("error.missing_encryption_key"))
             .when(encryptor).decrypt(any());
         doReturn(Arrays.asList(valueCredential)).when(credentialDataService)
-            .findAllByName(credentialName.toUpperCase());
+            .findAllByName(credentialName);
       });
 
       it("returns KEY_NOT_PRESENT", () -> {
         final MockHttpServletRequestBuilder get =
-            get("/api/v1/data?name=" + credentialName.toUpperCase())
+            get("/api/v1/data?name=" + credentialName)
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .accept(APPLICATION_JSON);
 

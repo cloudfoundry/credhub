@@ -246,7 +246,7 @@ public class CredentialsControllerAuditLogTest {
         EventAuditRecord auditRecord = (EventAuditRecord) recordCaptor.getValue().get(0);
 
         assertThat(auditRecord.getOperation(), equalTo(CREDENTIAL_ACCESS.toString()));
-        assertThat(auditRecord.getCredentialName(), equalTo(null));
+        assertThat(auditRecord.getCredentialName(), equalTo("/foo"));
       });
     });
 

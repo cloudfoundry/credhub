@@ -40,12 +40,9 @@ public class CredentialHandler {
       EventAuditRecordParameters auditRecordParameters, String credentialName
   ) {
     auditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
+    auditRecordParameters.setCredentialName(credentialName);
 
     List<Credential> credentials = credentialDataService.findAllByName(credentialName);
-
-    if (!credentials.isEmpty()) {
-      auditRecordParameters.setCredentialName(credentials.get(0).getName());
-    }
 
     if (credentials.isEmpty() || !permissionService.hasCredentialReadPermission(userContext, credentials.get(0))) {
       throw new EntryNotFoundException("error.credential_not_found");

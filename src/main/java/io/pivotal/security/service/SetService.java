@@ -48,10 +48,10 @@ public class SetService {
 
     AuditingOperationCode credentialOperationCode =
         shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    final String type = requestBody.getType();
+    parametersList.add(new EventAuditRecordParameters(credentialOperationCode, requestBody.getName()));
 
+    final String type = requestBody.getType();
     if (existingCredential != null && !existingCredential.getCredentialType().equals(type)) {
-      parametersList.add(new EventAuditRecordParameters(credentialOperationCode, existingCredential.getName()));
       throw new ParameterizedValidationException("error.type_mismatch");
     }
 
@@ -60,8 +60,6 @@ public class SetService {
       Credential newEntity = (Credential) requestBody.createNewVersion(existingCredential, encryptor);
       storedEntity = credentialDataService.save(newEntity);
     }
-    parametersList.add(new EventAuditRecordParameters(credentialOperationCode, storedEntity.getName()));
-
 
     List<AccessControlEntry> accessControlEntryList = requestBody.getAccessControlEntries();
 
