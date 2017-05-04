@@ -130,7 +130,8 @@ Translated to yaml:
 If you want to leverage a non-string typed credentials, you must update your release to properly consume the new format. The following example shows how to configure a release to accept the above certificate credential. It includes an example to instruct users on how to define the values if they are not using a CredHub credential. 
 
 **Release job spec:**
-  ```yml
+
+```yml
 ---
 name: demo
 
@@ -150,17 +151,19 @@ properties:
           -----BEGIN RSA PRIVATE KEY-----
           ...
           -----END RSA PRIVATE KEY-----
-  ```
+```
 
 **Job Template ERB:**
-  ```erb
+
+```erb
 api-ca=<%= p("demo.tls.ca") %>
 api-certificate=<%= p("demo.tls.certificate") %>
 api-private-key=<%= p("demo.tls.private_key") %>
-  ```
+```
 
 **Deployment manifest:**
-  ```yml
+
+```yml
 ---
 name: demo-deploy
 
@@ -168,7 +171,7 @@ instance_groups:
   properties:
     demo:
       tls: ((demo-tls))
-  ```
+```
 
 Updating a release for other types is similar to the example above, being mindful of the key name for each value you wish to consume. 
 
@@ -179,7 +182,8 @@ CredHub and BOSH are integrated to automatically generate missing credential val
 The sample below demonstrates how a job release spec can be configured to provide generation parameters. The details that should be provided in a release spec are attributes that do not vary per deployment, e.g. type and password attributes.
 
 **Release job spec:**
-  ```yml
+
+```yml
 ---
 name: demo
 
@@ -189,18 +193,18 @@ properties:
     type: password
     parameters: 
       length: 40
-
   demo.tls:
     description: "Certificate and private key for TLS connection to API"
     type: certificate
     parameters: 
       key_length: 4096
-  ```
+ ```
 
 You may also define these generation parameters in the deployment itself, as shown below. This is best used for generation parameters that are deployment-specific, e.g. a certificate common name. 
 
 **Deployment manifest:**
-  ```yml
+
+```yml
 ---
 name: demo-deploy
 
@@ -230,4 +234,4 @@ instance_groups:
     demo:
       admin-password: ((demo-password))
       tls: ((demo-tls))
-  ```
+```
