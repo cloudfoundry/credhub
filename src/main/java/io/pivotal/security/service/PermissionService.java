@@ -32,6 +32,15 @@ public class PermissionService {
     }
   }
 
+  public void verifyCredentialWritePermission(UserContext user, CredentialName credentialName) {
+    if (enforcePermissions) {
+      String actor = getActorFromUserContext(user);
+      if (StringUtils.isEmpty(actor) || !accessControlDataService.hasCredentialWritePermission(actor, credentialName)) {
+        throw new PermissionException("error.acl.lacks_credential_write");
+      }
+    }
+  }
+
   public boolean hasCredentialReadPermission(UserContext user, Credential credential) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);

@@ -1,7 +1,5 @@
 package io.pivotal.security.controller.v1.credential;
 
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.JsonPath;
@@ -19,7 +17,6 @@ import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.service.GenerateService;
-import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.service.SetService;
 import io.pivotal.security.view.CredentialView;
@@ -27,12 +24,6 @@ import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResult;
 import io.pivotal.security.view.FindCredentialResults;
 import io.pivotal.security.view.FindPathResults;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-import java.util.function.Function;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +42,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+import java.util.function.Function;
+
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
+
 @RestController
 @RequestMapping(
     path = CredentialsController.API_V1_DATA,
@@ -66,7 +66,6 @@ public class CredentialsController {
   private final GenerateService generateService;
   private final SetService setService;
   private final RegenerateService regenerateService;
-  private final PermissionService permissionService;
   private final CredentialHandler credentialHandler;
 
   @Autowired
@@ -76,7 +75,6 @@ public class CredentialsController {
                                GenerateService generateService,
                                SetService setService,
                                RegenerateService regenerateService,
-                               PermissionService permissionService,
                                CredentialHandler credentialHandler
   ) {
     this.credentialDataService = credentialDataService;
@@ -85,7 +83,6 @@ public class CredentialsController {
     this.generateService = generateService;
     this.setService = setService;
     this.regenerateService = regenerateService;
-    this.permissionService = permissionService;
     this.credentialHandler = credentialHandler;
   }
 
@@ -222,6 +219,7 @@ public class CredentialsController {
         .auditEvents(requestUuid, userContext, (parametersList -> {
           return deserializeAndHandlePostRequest(
               inputStream,
+              userContext,
               parametersList,
               currentUserAccessControlEntry);
         }));
@@ -229,6 +227,7 @@ public class CredentialsController {
 
   private CredentialView deserializeAndHandlePostRequest(
       InputStream inputStream,
+      UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       AccessControlEntry currentUserAccessControlEntry
   ) {
@@ -242,10 +241,10 @@ public class CredentialsController {
         // would be nice if Jackson could pick a subclass based on an arbitrary function, since
         // we want to consider both type and .regenerate. We could do custom deserialization but
         // then we'd have to do the entire job by hand.
-        return handleRegenerateRequest(parametersList, requestString,
+        return handleRegenerateRequest(userContext, parametersList, requestString,
             currentUserAccessControlEntry);
       } else {
-        return handleGenerateRequest(parametersList, requestString,
+        return handleGenerateRequest(userContext, parametersList, requestString,
             currentUserAccessControlEntry);
       }
     } catch (IOException e) {
@@ -254,6 +253,7 @@ public class CredentialsController {
   }
 
   private CredentialView handleGenerateRequest(
+      UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
@@ -263,10 +263,11 @@ public class CredentialsController {
     requestBody.validate();
 
     return generateService
-        .performGenerate(parametersList, requestBody, currentUserAccessControlEntry);
+        .performGenerate(userContext, parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private CredentialView handleRegenerateRequest(
+      UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       String requestString,
       AccessControlEntry currentUserAccessControlEntry
@@ -275,7 +276,7 @@ public class CredentialsController {
         .readValue(requestString, CredentialRegenerateRequest.class);
 
     return regenerateService
-        .performRegenerate(parametersList, requestBody, currentUserAccessControlEntry);
+        .performRegenerate(userContext, parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private CredentialView auditedHandlePutRequest(
@@ -285,16 +286,17 @@ public class CredentialsController {
       AccessControlEntry currentUserAccessControlEntry
   ) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, parametersList ->
-        handlePutRequest(requestBody, parametersList, currentUserAccessControlEntry));
+        handlePutRequest(requestBody, userContext, parametersList, currentUserAccessControlEntry));
   }
 
   private CredentialView handlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
+      UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       AccessControlEntry currentUserAccessControlEntry
   ) {
     return setService
-        .performSet(parametersList, requestBody, currentUserAccessControlEntry);
+        .performSet(userContext, parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {

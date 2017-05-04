@@ -1,12 +1,8 @@
 package io.pivotal.security.service;
 
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
-
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
@@ -15,28 +11,38 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.view.CredentialView;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
+import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 
 @Service
 public class SetService {
   private final CredentialDataService credentialDataService;
   private final AccessControlDataService accessControlDataService;
+  private PermissionService permissionService;
   private final Encryptor encryptor;
 
   @Autowired
   public SetService(
       CredentialDataService credentialDataService,
       AccessControlDataService accessControlDataService,
+      PermissionService permissionService,
       Encryptor encryptor
   ) {
     this.credentialDataService = credentialDataService;
     this.accessControlDataService = accessControlDataService;
+    this.permissionService = permissionService;
     this.encryptor = encryptor;
   }
 
   public CredentialView performSet(
+      UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       BaseCredentialSetRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
@@ -50,31 +56,32 @@ public class SetService {
         shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
     parametersList.add(new EventAuditRecordParameters(credentialOperationCode, requestBody.getName()));
 
+    if (existingCredential != null) {
+      permissionService.verifyCredentialWritePermission(userContext, existingCredential.getCredentialName());
+    }
+
     final String type = requestBody.getType();
     if (existingCredential != null && !existingCredential.getCredentialType().equals(type)) {
       throw new ParameterizedValidationException("error.type_mismatch");
     }
 
-    Credential storedEntity = existingCredential;
-    if (shouldWriteNewEntity) {
-      Credential newEntity = (Credential) requestBody.createNewVersion(existingCredential, encryptor);
-      storedEntity = credentialDataService.save(newEntity);
-    }
-
     List<AccessControlEntry> accessControlEntryList = requestBody.getAccessControlEntries();
-
-    if (existingCredential == null) {
-      accessControlEntryList.add(currentUserAccessControlEntry);
-    }
+    Credential storedEntity = existingCredential;
 
     if (shouldWriteNewEntity) {
+      if (existingCredential == null) {
+        accessControlEntryList.add(currentUserAccessControlEntry);
+      }
+
       parametersList.addAll(createPermissionsEventAuditParameters(
           ACL_UPDATE,
-          storedEntity.getName(),
+          requestBody.getName(),
           accessControlEntryList
       ));
 
-      accessControlDataService.setAccessControlEntries(storedEntity.getCredentialName(), requestBody.getAccessControlEntries());
+      Credential newEntity = (Credential) requestBody.createNewVersion(existingCredential, encryptor);
+      storedEntity = credentialDataService.save(newEntity);
+      accessControlDataService.setAccessControlEntries(storedEntity.getCredentialName(), accessControlEntryList);
     }
 
     return CredentialView.fromEntity(storedEntity);

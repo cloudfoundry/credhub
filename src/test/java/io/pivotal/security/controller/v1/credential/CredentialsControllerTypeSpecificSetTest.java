@@ -1,5 +1,57 @@
 package io.pivotal.security.controller.v1.credential;
 
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.greghaskins.spectrum.Spectrum;
+import com.greghaskins.spectrum.Spectrum.Block;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.credential.CryptSaltFactory;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.JsonCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.RsaCredential;
+import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.BaseCredentialSetRequest;
+import io.pivotal.security.service.SetService;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import net.minidev.json.JSONObject;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import java.io.InputStream;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -41,56 +93,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.Block;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.credential.CryptSaltFactory;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.JsonCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.domain.UserCredential;
-import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.BaseCredentialSetRequest;
-import io.pivotal.security.service.SetService;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import java.io.InputStream;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import net.minidev.json.JSONObject;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -347,6 +349,7 @@ public class CredentialsControllerTypeSpecificSetTest {
           it("asks the data service to persist the credential", () -> {
             verify(setService, times(1))
                 .performSet(
+                    isA(UserContext.class),
                     any(),
                     isA(BaseCredentialSetRequest.class),
                     isA(AccessControlEntry.class));

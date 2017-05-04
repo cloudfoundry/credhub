@@ -1,22 +1,8 @@
 package io.pivotal.security.service;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.PasswordCredential;
@@ -32,9 +18,26 @@ import io.pivotal.security.request.RsaGenerateRequest;
 import io.pivotal.security.request.SshGenerateRequest;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.view.CredentialView;
-import java.util.List;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
+import static io.pivotal.security.helper.SpectrumHelper.itThrows;
+import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(Spectrum.class)
 public class RegenerateServiceTest {
@@ -63,7 +66,8 @@ public class RegenerateServiceTest {
           .thenReturn(credentialOfUnsupportedType);
       when(generateService
           .performGenerate(
-              eq(parametersList),
+              isA(UserContext.class),
+              any(),
               isA(BaseCredentialGenerateRequest.class),
               isA(AccessControlEntry.class)))
           .thenReturn(mock(CredentialView.class));
@@ -88,7 +92,7 @@ public class RegenerateServiceTest {
               .thenReturn(expectedParameters);
 
           subject
-              .performRegenerate(parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
+              .performRegenerate(mock(UserContext.class), parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
         });
 
         describe("when regenerating password", () -> {
@@ -98,7 +102,8 @@ public class RegenerateServiceTest {
 
             verify(generateService)
                 .performGenerate(
-                    eq(parametersList),
+                    isA(UserContext.class),
+                    any(),
                     generateRequestCaptor.capture(),
                     isA(AccessControlEntry.class));
 
@@ -128,7 +133,7 @@ public class RegenerateServiceTest {
                     .setName("password");
 
                 subject
-                    .performRegenerate(parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
+                    .performRegenerate(mock(UserContext.class), parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
               });
         });
       });
@@ -144,7 +149,7 @@ public class RegenerateServiceTest {
             when(sshCredential.getCredentialType()).thenReturn("ssh");
 
             subject
-                .performRegenerate(parametersList, sshRegenerateRequest, mock(AccessControlEntry.class));
+                .performRegenerate(mock(UserContext.class), parametersList, sshRegenerateRequest, mock(AccessControlEntry.class));
           });
 
           it("should generate a new ssh key pair", () -> {
@@ -153,6 +158,7 @@ public class RegenerateServiceTest {
 
             verify(generateService)
                 .performGenerate(
+                    isA(UserContext.class),
                     eq(parametersList),
                     generateRequestCaptor.capture(),
                     isA(AccessControlEntry.class));
@@ -175,7 +181,7 @@ public class RegenerateServiceTest {
             when(rsaCredential.getCredentialType()).thenReturn("rsa");
 
             subject
-                .performRegenerate(parametersList, rsaRegenerateRequest, mock(AccessControlEntry.class));
+                .performRegenerate(mock(UserContext.class), parametersList, rsaRegenerateRequest, mock(AccessControlEntry.class));
           });
 
           it("should generate a new rsa key pair", () -> {
@@ -184,6 +190,7 @@ public class RegenerateServiceTest {
 
             verify(generateService)
                 .performGenerate(
+                    isA(UserContext.class),
                     eq(parametersList),
                     generateRequestCaptor.capture(),
                     isA(AccessControlEntry.class));
@@ -202,7 +209,7 @@ public class RegenerateServiceTest {
           CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
               .setName("missing_entry");
 
-          subject.performRegenerate(parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
+          subject.performRegenerate(mock(UserContext.class), parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
         });
       });
 
@@ -211,7 +218,7 @@ public class RegenerateServiceTest {
           CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
               .setName("unsupported");
 
-          subject.performRegenerate(parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
+          subject.performRegenerate(mock(UserContext.class), parametersList, passwordGenerateRequest, mock(AccessControlEntry.class));
         });
       });
     });

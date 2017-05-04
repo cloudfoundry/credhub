@@ -1,13 +1,15 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.view.CredentialView;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class GenerateService {
@@ -21,8 +23,8 @@ public class GenerateService {
     this.setService = setService;
   }
 
-  public CredentialView performGenerate(List<EventAuditRecordParameters> parametersList, BaseCredentialGenerateRequest requestBody, AccessControlEntry currentUserAccessControlEntry) {
+  public CredentialView performGenerate(UserContext userContext, List<EventAuditRecordParameters> parametersList, BaseCredentialGenerateRequest requestBody, AccessControlEntry currentUserAccessControlEntry) {
     BaseCredentialSetRequest setRequest = requestBody.generateSetRequest(generatorService);
-    return setService.performSet(parametersList, setRequest, currentUserAccessControlEntry);
+    return setService.performSet(userContext, parametersList, setRequest, currentUserAccessControlEntry);
   }
 }

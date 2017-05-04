@@ -214,6 +214,21 @@ public class AccessControlDataServiceTest {
   }
 
   @Test
+  public void hasCredentialWritePermission_whenActorHasWritePermission_returnsTrue() {
+    assertThat(subject.hasCredentialWritePermission("Luke", credentialName), is(true));
+  }
+
+  @Test
+  public void hasCredentialWritePermission_whenActorOnlyHasOtherPermissions_returnsFalse() {
+    assertThat(subject.hasCredentialWritePermission("Leia", credentialName), is(false));
+  }
+
+  @Test
+  public void hasCredentialWritePermission_whenActorHasNoPermissions_returnsFalse() {
+    assertThat(subject.hasCredentialWritePermission("Darth", credentialName), is(false));
+  }
+
+  @Test
   public void hasReadPermission_whenCredentialDoesNotExist_returnsFalse() {
     assertThat(subject.hasReadPermission("Luke", new CredentialName("/crossbow")),
         is(false));

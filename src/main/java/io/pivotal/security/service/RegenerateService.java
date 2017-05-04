@@ -1,8 +1,7 @@
 package io.pivotal.security.service;
 
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-
 import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.PasswordCredential;
@@ -16,11 +15,14 @@ import io.pivotal.security.service.regeneratables.Regeneratable;
 import io.pivotal.security.service.regeneratables.RsaCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.SshCredentialRegeneratable;
 import io.pivotal.security.view.CredentialView;
+import org.springframework.stereotype.Service;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.springframework.stereotype.Service;
+
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 
 @Service
 public class RegenerateService {
@@ -44,6 +46,7 @@ public class RegenerateService {
   }
 
   public CredentialView performRegenerate(
+      UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       CredentialRegenerateRequest requestBody,
       AccessControlEntry currentUserAccessControlEntry) {
@@ -62,6 +65,6 @@ public class RegenerateService {
     }
 
     return generateService
-        .performGenerate(parametersList, regeneratable.createGenerateRequest(credential), currentUserAccessControlEntry);
+        .performGenerate(userContext, parametersList, regeneratable.createGenerateRequest(credential), currentUserAccessControlEntry);
   }
 }
