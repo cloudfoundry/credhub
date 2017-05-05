@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 @SuppressWarnings("unused")
-public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateCredential> {
+public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateCredential, CertificateCredentialValue> {
 
   @NotNull(message = "error.missing_value")
   @Valid
@@ -36,5 +36,10 @@ public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateC
             getCertificateValue(),
             encryptor
         );
+  }
+
+  @Override
+  public CertificateCredentialValue getCredentialValue() {
+    return certificateValue;
   }
 }

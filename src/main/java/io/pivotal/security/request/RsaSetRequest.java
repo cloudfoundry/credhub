@@ -8,7 +8,7 @@ import io.pivotal.security.domain.RsaCredential;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredential> {
+public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredential, RsaCredentialValue> {
 
   @NotNull(message = "error.missing_value")
   @Valid
@@ -32,5 +32,10 @@ public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredential> {
             getRsaKeyValue(),
             encryptor
         );
+  }
+
+  @Override
+  public RsaCredentialValue getCredentialValue() {
+    return rsaKeyValue;
   }
 }

@@ -16,4 +16,6 @@ public class StringCredentialValue implements CredentialValue {
   public String getStringCredential() {
     return string;
   }
+
+
 }

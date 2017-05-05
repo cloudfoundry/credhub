@@ -1,5 +1,6 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.service.Encryption;
 
@@ -18,6 +19,12 @@ public class ValueCredential extends Credential<ValueCredential> {
 
   public ValueCredential() {
     this(new ValueCredentialData());
+  }
+
+  public ValueCredential(StringCredentialValue value, Encryptor encryptor) {
+    this();
+    this.setEncryptor(encryptor);
+    this.setValue(value.getStringCredential());
   }
 
   public static ValueCredential createNewVersion(ValueCredential existing, String name,

@@ -1,6 +1,5 @@
 package io.pivotal.security.domain;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -20,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import java.util.ArrayList;
@@ -149,45 +147,6 @@ public class PasswordCredentialTest {
             assertThat(passwordCredentialData.getEncryptedGenerationParameters(), nullValue());
             assertThat(passwordCredentialData.getParametersNonce(), nullValue());
           });
-    });
-
-    describe("#createNewVersion", () -> {
-      beforeEach(() -> {
-        passwordCredentialData = new PasswordCredentialData("/existingName");
-        passwordCredentialData.setEncryptedValue("old-encrypted-value".getBytes());
-        passwordCredentialData.setNonce("old-nonce".getBytes());
-        passwordCredentialData
-            .setEncryptedGenerationParameters("old-encrypted-parameters".getBytes());
-        passwordCredentialData.setParametersNonce("old-parameters-nonce".getBytes());
-        subject = new PasswordCredential(passwordCredentialData);
-        subject.setEncryptor(encryptor);
-
-        ArrayList<AccessControlOperation> operations = newArrayList(AccessControlOperation.READ,
-            AccessControlOperation.WRITE);
-        List<AccessControlEntry> accessControlEntries = newArrayList(
-            new AccessControlEntry("Bob", operations));
-      });
-
-      it("copies values from existing, except password", () -> {
-        PasswordCredential newCredential = PasswordCredential
-            .createNewVersion(subject, "anything I AM IGNORED", PASSWORD, NO_PASSWORD_PARAMS, encryptor);
-
-        assertThat(newCredential.getName(), equalTo("/existingName"));
-        assertThat(newCredential.getPassword(), equalTo(PASSWORD));
-      });
-
-      it("creates new if no existing", () -> {
-        PasswordCredential newCredential = PasswordCredential.createNewVersion(
-            NO_EXISTING_NAMED_PASSWORD_CREDENTIAL,
-            "/newName",
-            PASSWORD,
-            NO_PASSWORD_PARAMS,
-            encryptor
-        );
-
-        assertThat(newCredential.getName(), equalTo("/newName"));
-        assertThat(newCredential.getPassword(), equalTo(PASSWORD));
-      });
     });
   }
 }

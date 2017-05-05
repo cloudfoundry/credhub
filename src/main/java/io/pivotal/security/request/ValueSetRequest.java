@@ -7,7 +7,7 @@ import io.pivotal.security.domain.ValueCredential;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class ValueSetRequest extends BaseCredentialSetRequest<ValueCredential> {
+public class ValueSetRequest extends BaseCredentialSetRequest<ValueCredential, StringCredentialValue> {
 
   @NotNull(message = "error.missing_value")
   @Valid
@@ -30,5 +30,10 @@ public class ValueSetRequest extends BaseCredentialSetRequest<ValueCredential> {
             getName(),
             getValue().getStringCredential(),
             encryptor);
+  }
+
+  @Override
+  public StringCredentialValue getCredentialValue() {
+    return value;
   }
 }

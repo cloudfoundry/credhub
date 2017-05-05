@@ -22,6 +22,13 @@ public class SshCredential extends Credential<SshCredential> {
     this(new SshCredentialData());
   }
 
+  public SshCredential(SshCredentialValue sshValue, Encryptor encryptor) {
+    this();
+    this.setEncryptor(encryptor);
+    this.setPublicKey(sshValue.getPublicKey());
+    this.setPrivateKey(sshValue.getPrivateKey());
+  }
+
   public static SshCredential createNewVersion(SshCredential existing, String name,
       SshCredentialValue sshKeyValue, Encryptor encryptor) {
     SshCredential credential;

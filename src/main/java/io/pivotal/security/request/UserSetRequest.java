@@ -8,7 +8,7 @@ import io.pivotal.security.domain.UserCredential;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class UserSetRequest extends BaseCredentialSetRequest<UserCredential> {
+public class UserSetRequest extends BaseCredentialSetRequest<UserCredential, UserCredentialValue> {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
@@ -32,5 +32,10 @@ public class UserSetRequest extends BaseCredentialSetRequest<UserCredential> {
         getUserValue(),
         encryptor
     );
+  }
+
+  @Override
+  public UserCredentialValue getCredentialValue() {
+    return userValue;
   }
 }

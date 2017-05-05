@@ -58,4 +58,7 @@ public abstract class Credential<Z extends Credential> {
     this.delegate.setCredentialName(credential.delegate.getCredentialName());
   }
 
+  public void createName(String name) {
+    delegate.setCredentialName(new CredentialName(name));
+  }
 }

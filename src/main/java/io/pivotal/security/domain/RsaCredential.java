@@ -21,6 +21,13 @@ public class RsaCredential extends Credential<RsaCredential> {
     this(new RsaCredentialData());
   }
 
+  public RsaCredential(RsaCredentialValue rsaValue, Encryptor encryptor) {
+    this();
+    this.setEncryptor(encryptor);
+    this.setPublicKey(rsaValue.getPublicKey());
+    this.setPrivateKey(rsaValue.getPrivateKey());
+  }
+
   public static RsaCredential createNewVersion(RsaCredential existing, String name,
       RsaCredentialValue rsaKey, Encryptor encryptor) {
     RsaCredential credential;

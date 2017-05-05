@@ -8,7 +8,7 @@ import io.pivotal.security.domain.SshCredential;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class SshSetRequest extends BaseCredentialSetRequest<SshCredential> {
+public class SshSetRequest extends BaseCredentialSetRequest<SshCredential, SshCredentialValue> {
 
   @NotNull(message = "error.missing_value")
   @Valid
@@ -28,5 +28,10 @@ public class SshSetRequest extends BaseCredentialSetRequest<SshCredential> {
     return SshCredential
         .createNewVersion(existing, getName(), this.getSshKeyValue(),
             encryptor);
+  }
+
+  @Override
+  public SshCredentialValue getCredentialValue() {
+    return sshKeyValue;
   }
 }

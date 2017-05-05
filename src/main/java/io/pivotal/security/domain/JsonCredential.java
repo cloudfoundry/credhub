@@ -2,6 +2,7 @@ package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.pivotal.security.credential.JsonCredentialValue;
 import io.pivotal.security.entity.JsonCredentialData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.Encryption;
@@ -25,6 +26,12 @@ public class JsonCredential extends Credential<JsonCredential> {
 
   public JsonCredential(String name) {
     this(new JsonCredentialData(name));
+  }
+
+  public JsonCredential(JsonCredentialValue jsonValue, Encryptor encryptor) {
+    this();
+    this.setEncryptor(encryptor);
+    this.setValue(jsonValue.getValue());
   }
 
   public static JsonCredential createNewVersion(

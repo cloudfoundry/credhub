@@ -21,6 +21,15 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     this(new CertificateCredentialData());
   }
 
+  public CertificateCredential(CertificateCredentialValue certificate, Encryptor encryptor) {
+    this();
+    this.setEncryptor(encryptor);
+    this.setCa(certificate.getCa());
+    this.setCertificate(certificate.getCertificate());
+    this.setPrivateKey(certificate.getPrivateKey());
+    this.setCaName(certificate.getCaName());
+  }
+
   public static CertificateCredential createNewVersion(
       CertificateCredential existing,
       String name,

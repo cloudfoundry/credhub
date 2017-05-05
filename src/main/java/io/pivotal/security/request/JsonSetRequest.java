@@ -8,7 +8,7 @@ import io.pivotal.security.domain.JsonCredential;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredential> {
+public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredential, JsonCredentialValue> {
 
   @NotNull(message = "error.missing_value")
   @Valid
@@ -32,5 +32,10 @@ public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredential> {
         getValue().getValue(),
         encryptor
     );
+  }
+
+  @Override
+  public JsonCredentialValue getCredentialValue() {
+    return value;
   }
 }

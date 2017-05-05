@@ -42,6 +42,14 @@ public class UserCredential extends Credential<UserCredential> {
     this(new UserCredentialData(name));
   }
 
+  public UserCredential(UserCredentialValue userValue, Encryptor encryptor) {
+    this();
+    this.setEncryptor(encryptor);
+    this.setPassword(userValue.getPassword());
+    this.setUsername(userValue.getUsername());
+    this.setSalt(userValue.getSalt());
+  }
+
   @Override
   public String getCredentialType() {
     return delegate.getCredentialType();

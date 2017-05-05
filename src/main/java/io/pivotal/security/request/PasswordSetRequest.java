@@ -8,13 +8,12 @@ import io.pivotal.security.domain.PasswordCredential;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredential> {
+public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredential, StringCredentialValue> {
 
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
   private StringCredentialValue password;
-
   @JsonIgnore
   private StringGenerationParameters generationParameters;
 
@@ -37,12 +36,11 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredent
   @Override
   @JsonIgnore
   public PasswordCredential createNewVersion(PasswordCredential existing, Encryptor encryptor) {
-    return PasswordCredential.createNewVersion(
-        existing,
-        getName(),
-        getPassword().getStringCredential(),
-        getGenerationParameters(),
-        encryptor
-    );
+    return null;
+  }
+
+  @Override
+  public StringCredentialValue getCredentialValue() {
+    return password;
   }
 }
