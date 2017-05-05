@@ -7,28 +7,6 @@ import io.pivotal.security.service.Encryption;
 public class UserCredential extends Credential<UserCredential> {
   private final UserCredentialData delegate;
 
-  public static UserCredential createNewVersion(
-      UserCredential existing,
-      String name,
-      UserCredentialValue userValue,
-      Encryptor encryptor) {
-    UserCredential credential;
-    if (existing == null) {
-      credential = new UserCredential(name);
-    } else {
-      credential = new UserCredential();
-      credential.copyNameReferenceFrom(existing);
-    }
-
-    credential.setEncryptor(encryptor);
-
-    credential.setUsername(userValue.getUsername());
-    credential.setPassword(userValue.getPassword());
-    credential.setSalt(userValue.getSalt());
-
-    return credential;
-  }
-
   public UserCredential() {
     this(new UserCredentialData());
   }

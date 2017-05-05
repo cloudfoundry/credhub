@@ -30,30 +30,6 @@ public class CertificateCredential extends Credential<CertificateCredential> {
     this.setCaName(certificate.getCaName());
   }
 
-  public static CertificateCredential createNewVersion(
-      CertificateCredential existing,
-      String name,
-      CertificateCredentialValue certificateValue,
-      Encryptor encryptor
-  ) {
-    CertificateCredential credential;
-
-    if (existing == null) {
-      credential = new CertificateCredential(name);
-    } else {
-      credential = new CertificateCredential();
-      credential.copyNameReferenceFrom(existing);
-      credential.setCaName(existing.getCaName());
-    }
-
-    credential.setEncryptor(encryptor);
-    credential.setPrivateKey(certificateValue.getPrivateKey());
-    credential.setCertificate(certificateValue.getCertificate());
-    credential.setCa(certificateValue.getCa());
-    credential.setCaName(certificateValue.getCaName());
-    return credential;
-  }
-
   public String getCa() {
     return delegate.getCa();
   }

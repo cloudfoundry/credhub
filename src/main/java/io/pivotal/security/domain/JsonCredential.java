@@ -34,28 +34,6 @@ public class JsonCredential extends Credential<JsonCredential> {
     this.setValue(jsonValue.getValue());
   }
 
-  public static JsonCredential createNewVersion(
-      JsonCredential existing,
-      String name,
-      Map<String, Object> value,
-      Encryptor encryptor
-  ) {
-    JsonCredential credential;
-
-    if (existing == null) {
-      credential = new JsonCredential(name);
-    } else {
-      credential = new JsonCredential();
-      credential.copyNameReferenceFrom(existing);
-    }
-
-    credential.setEncryptor(encryptor);
-    credential.setValue(value);
-
-    return credential;
-  }
-
-
   @Override
   public String getCredentialType() {
     return delegate.getCredentialType();

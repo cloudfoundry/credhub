@@ -29,24 +29,6 @@ public class SshCredential extends Credential<SshCredential> {
     this.setPrivateKey(sshValue.getPrivateKey());
   }
 
-  public static SshCredential createNewVersion(SshCredential existing, String name,
-      SshCredentialValue sshKeyValue, Encryptor encryptor) {
-    SshCredential credential;
-
-    if (existing == null) {
-      credential = new SshCredential(name);
-    } else {
-      credential = new SshCredential();
-      credential.copyNameReferenceFrom(existing);
-    }
-
-    credential.setEncryptor(encryptor);
-    credential.setPrivateKey(sshKeyValue.getPrivateKey());
-    credential.setPublicKey(sshKeyValue.getPublicKey());
-
-    return credential;
-  }
-
   public String getPublicKey() {
     return delegate.getPublicKey();
   }

@@ -1,5 +1,12 @@
 package io.pivotal.security.domain;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.entity.UserCredentialData;
+import io.pivotal.security.service.Encryption;
+import org.junit.runner.RunWith;
+
+import java.util.UUID;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -11,15 +18,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.entity.UserCredentialData;
-import io.pivotal.security.service.Encryption;
-import java.lang.reflect.Field;
-import java.util.UUID;
-import org.junit.runner.RunWith;
-import org.springframework.util.ReflectionUtils;
 
 @RunWith(Spectrum.class)
 public class UserCredentialTest {
@@ -107,53 +105,6 @@ public class UserCredentialTest {
         assertThat(userCredentialData.getEncryptionKeyUuid(), equalTo(ENCRYPTION_KEY_UUID));
         assertThat(userCredentialData.getEncryptedValue(), equalTo(ENCRYPTED_PASSWORD));
         assertThat(userCredentialData.getNonce(), equalTo(NONCE));
-      });
-    });
-
-    describe("create new version", () -> {
-      beforeEach(() -> {
-        when(encryptor.encrypt(eq(USER_PASSWORD)))
-            .thenReturn(new Encryption(ENCRYPTION_KEY_UUID, ENCRYPTED_PASSWORD, NONCE));
-      });
-
-      describe("when there is an existing credential", () -> {
-        it("should set name reference from existing credential if present", () -> {
-          UserCredentialData existingUserCredentialData = new UserCredentialData(CREDENTIAL_NAME);
-          subject = UserCredential.createNewVersion(
-              new UserCredential(existingUserCredentialData),
-              CREDENTIAL_NAME,
-              new UserCredentialValue(USERNAME, USER_PASSWORD, SALT),
-              encryptor
-          );
-
-          assertThat(subject.getCredentialName(), equalTo(existingUserCredentialData.getCredentialName()));
-        });
-      });
-
-      describe("when there is no existing credential", () -> {
-        beforeEach(() -> {
-          subject = UserCredential.createNewVersion(
-              NO_EXISTING_CREDENTIAL,
-              CREDENTIAL_NAME,
-              new UserCredentialValue(USERNAME, USER_PASSWORD, SALT),
-              encryptor);
-        });
-
-        it("should create new credential with name", () -> {
-          assertThat(subject.getCredentialName().getName(), equalTo(CREDENTIAL_NAME));
-        });
-
-        it("should set encryptor", () -> {
-          Field encryptorField = ReflectionUtils.findField(UserCredential.class, "encryptor");
-          ReflectionUtils.makeAccessible(encryptorField);
-          Encryptor actualEncryptor = (Encryptor) encryptorField.get(subject);
-          assertThat(actualEncryptor, equalTo(encryptor));
-        });
-
-        it("should copy request fields", () -> {
-          verify(encryptor).encrypt(USER_PASSWORD);
-          assertThat(subject.getUsername(), equalTo(USERNAME));
-        });
       });
     });
 

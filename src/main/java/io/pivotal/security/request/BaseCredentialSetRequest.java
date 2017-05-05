@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -25,9 +24,6 @@ import static com.google.common.collect.Lists.newArrayList;
     @JsonSubTypes.Type(name = "user", value = UserSetRequest.class)
 })
 public abstract class BaseCredentialSetRequest<Z, T extends CredentialValue> extends BaseCredentialRequest {
-
-  @JsonIgnore
-  public abstract Z createNewVersion(Z existing, Encryptor encryptor);
 
   @JsonIgnore
   public abstract T getCredentialValue();

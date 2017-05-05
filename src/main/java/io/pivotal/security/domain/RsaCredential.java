@@ -28,24 +28,6 @@ public class RsaCredential extends Credential<RsaCredential> {
     this.setPrivateKey(rsaValue.getPrivateKey());
   }
 
-  public static RsaCredential createNewVersion(RsaCredential existing, String name,
-      RsaCredentialValue rsaKey, Encryptor encryptor) {
-    RsaCredential credential;
-
-    if (existing == null) {
-      credential = new RsaCredential(name);
-    } else {
-      credential = new RsaCredential();
-      credential.copyNameReferenceFrom(existing);
-    }
-
-    credential.setEncryptor(encryptor);
-    credential.setPrivateKey(rsaKey.getPrivateKey());
-    credential.setPublicKey(rsaKey.getPublicKey());
-
-    return credential;
-  }
-
   public int getKeyLength() {
     return delegate.getKeyLength();
   }

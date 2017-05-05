@@ -2,7 +2,6 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.credential.RsaCredentialValue;
-import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.RsaCredential;
 
 import javax.validation.Valid;
@@ -21,17 +20,6 @@ public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredential, RsaCr
 
   public void setRsaKeyValue(RsaCredentialValue rsaKeyValue) {
     this.rsaKeyValue = rsaKeyValue;
-  }
-
-  @Override
-  public RsaCredential createNewVersion(RsaCredential existing, Encryptor encryptor) {
-    return RsaCredential
-        .createNewVersion(
-            existing,
-            getName(),
-            getRsaKeyValue(),
-            encryptor
-        );
   }
 
   @Override

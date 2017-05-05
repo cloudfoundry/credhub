@@ -2,7 +2,6 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.credential.SshCredentialValue;
-import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredential;
 
 import javax.validation.Valid;
@@ -21,13 +20,6 @@ public class SshSetRequest extends BaseCredentialSetRequest<SshCredential, SshCr
 
   public void setSshKeyValue(SshCredentialValue sshKeyValue) {
     this.sshKeyValue = sshKeyValue;
-  }
-
-  @Override
-  public SshCredential createNewVersion(SshCredential existing, Encryptor encryptor) {
-    return SshCredential
-        .createNewVersion(existing, getName(), this.getSshKeyValue(),
-            encryptor);
   }
 
   @Override

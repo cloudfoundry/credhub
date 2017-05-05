@@ -2,7 +2,6 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.UserCredential;
 
 import javax.validation.Valid;
@@ -20,18 +19,6 @@ public class UserSetRequest extends BaseCredentialSetRequest<UserCredential, Use
 
   public UserCredentialValue getUserValue() {
     return userValue;
-  }
-
-  @Override
-  public UserCredential createNewVersion(
-      UserCredential existing,
-      Encryptor encryptor) {
-    return UserCredential.createNewVersion(
-        existing,
-        getName(),
-        getUserValue(),
-        encryptor
-    );
   }
 
   @Override
