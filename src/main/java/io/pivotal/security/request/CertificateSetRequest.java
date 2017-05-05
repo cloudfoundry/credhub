@@ -1,12 +1,11 @@
 package io.pivotal.security.request;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Encryptor;
-import org.codehaus.jackson.annotate.JsonIgnore;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 

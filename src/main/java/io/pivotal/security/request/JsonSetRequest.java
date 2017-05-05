@@ -1,30 +1,35 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.pivotal.security.credential.JsonCredentialValue;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.JsonCredential;
-import org.hibernate.validator.constraints.NotEmpty;
-
-import java.util.Map;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public class JsonSetRequest extends BaseCredentialSetRequest<JsonCredential> {
 
-  @NotEmpty(message = "error.missing_value")
-  private Map<String, Object> value;
+  @NotNull(message = "error.missing_value")
+  @Valid
+  @JsonProperty("value")
+  private JsonCredentialValue value;
 
-  public Map<String, Object> getValue() {
+  public JsonCredentialValue getValue() {
     return value;
   }
 
-  public void setValue(Map<String, Object> value) {
+  public void setValue(JsonCredentialValue value) {
     this.value = value;
   }
 
   @Override
+  @JsonIgnore
   public JsonCredential createNewVersion(JsonCredential existing, Encryptor encryptor) {
     return JsonCredential.createNewVersion(
         existing,
-        this.getName(),
-        this.getValue(),
+        getName(),
+        getValue().getValue(),
         encryptor
     );
   }

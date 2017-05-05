@@ -1,8 +1,8 @@
 package io.pivotal.security.view;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import io.pivotal.security.request.AccessControlEntry;
 import java.util.List;
-import org.codehaus.jackson.annotate.JsonAutoDetect;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
