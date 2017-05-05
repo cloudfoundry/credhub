@@ -1,21 +1,21 @@
 package io.pivotal.security.credential;
 
+import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.codec.digest.Crypt;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.READ_ONLY;
-
-public class User implements CredentialValue {
+public class UserCredentialValue implements CredentialValue {
   private String username;
   @NotEmpty(message = "error.missing_password")
   private String password;
   private String salt;
 
-  public User() {}
+  public UserCredentialValue() {}
 
-  public User(String username, String password, String salt) {
+  public UserCredentialValue(String username, String password, String salt) {
     this.username = username;
     this.password = password;
     this.salt = salt;

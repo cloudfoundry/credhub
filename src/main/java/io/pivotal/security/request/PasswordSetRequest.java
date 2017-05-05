@@ -2,7 +2,7 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import javax.validation.Valid;
@@ -13,16 +13,16 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredent
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
-  private StringCredential password;
+  private StringCredentialValue password;
 
   @JsonIgnore
   private StringGenerationParameters generationParameters;
 
-  public StringCredential getPassword() {
+  public StringCredentialValue getPassword() {
     return password;
   }
 
-  public void setPassword(StringCredential password) {
+  public void setPassword(StringCredentialValue password) {
     this.password = password;
   }
 

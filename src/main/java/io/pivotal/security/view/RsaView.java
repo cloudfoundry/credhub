@@ -1,7 +1,7 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.RsaCredentialValue;
 
 @SuppressWarnings("unused")
 public class RsaView extends CredentialView {
@@ -14,7 +14,7 @@ public class RsaView extends CredentialView {
         rsaCredential.getUuid(),
         rsaCredential.getName(),
         rsaCredential.getCredentialType(),
-        new RsaKey(rsaCredential.getPublicKey(), rsaCredential.getPrivateKey())
+        new RsaCredentialValue(rsaCredential.getPublicKey(), rsaCredential.getPrivateKey())
     );
   }
 }

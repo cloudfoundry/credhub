@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.service.Encryption;
 import java.util.UUID;
@@ -48,7 +48,7 @@ public class SshCredentialTest {
       });
 
       it("copies name from existing", () -> {
-        SshKey fields = new SshKey("public key", "new private key", null);
+        SshCredentialValue fields = new SshCredentialValue("public key", "new private key", null);
         SshCredential newCredential = SshCredential
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor);
 
@@ -58,7 +58,7 @@ public class SshCredentialTest {
       });
 
       it("creates new if no existing", () -> {
-        SshKey sshKey = new SshKey("public key", "new private key", null);
+        SshCredentialValue sshKey = new SshCredentialValue("public key", "new private key", null);
         SshCredential newCredential = SshCredential
             .createNewVersion(null, "/newName", sshKey, encryptor);
 

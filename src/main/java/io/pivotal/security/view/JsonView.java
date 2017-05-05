@@ -1,5 +1,6 @@
 package io.pivotal.security.view;
 
+import io.pivotal.security.credential.JsonCredentialValue;
 import io.pivotal.security.domain.JsonCredential;
 
 @SuppressWarnings("unused")
@@ -13,7 +14,7 @@ public class JsonView extends CredentialView {
         jsonCredential.getUuid(),
         jsonCredential.getName(),
         jsonCredential.getCredentialType(),
-        new io.pivotal.security.credential.JsonCredential(jsonCredential.getValue())
+        new JsonCredentialValue(jsonCredential.getValue())
     );
   }
 }

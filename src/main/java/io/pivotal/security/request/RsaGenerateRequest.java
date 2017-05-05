@@ -1,7 +1,7 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.service.GeneratorService;
 
 public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
@@ -29,7 +29,7 @@ public class RsaGenerateRequest extends BaseCredentialGenerateRequest {
 
   public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
     RsaSetRequest rsaSetRequest = new RsaSetRequest();
-    RsaKey rsaKey = generatorService.generateRsaKeys(getGenerationParameters());
+    RsaCredentialValue rsaKey = generatorService.generateRsaKeys(getGenerationParameters());
     rsaSetRequest.setRsaKeyValue(rsaKey);
     rsaSetRequest.setType(getType());
     rsaSetRequest.setName(getName());

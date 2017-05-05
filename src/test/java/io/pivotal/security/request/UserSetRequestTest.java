@@ -1,7 +1,7 @@
 package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.User;
+import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.helper.JsonHelper;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
@@ -68,7 +68,7 @@ public class UserSetRequestTest {
       it("should have valid 'value' field", () -> {
         UserSetRequest userSetRequest = JsonHelper.deserialize(validSetRequestJson, UserSetRequest.class);
 
-        User userValue = userSetRequest.getUserValue();
+        UserCredentialValue userValue = userSetRequest.getUserValue();
         assertThat(userValue.getUsername(), equalTo("dan"));
         assertThat(userValue.getPassword(), equalTo("example-password"));
       });

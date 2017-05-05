@@ -1,10 +1,10 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.credential.SshKey;
-import io.pivotal.security.credential.StringCredential;
-import io.pivotal.security.credential.User;
+import io.pivotal.security.credential.CertificateCredentialValue;
+import io.pivotal.security.credential.RsaCredentialValue;
+import io.pivotal.security.credential.SshCredentialValue;
+import io.pivotal.security.credential.StringCredentialValue;
+import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.generator.CertificateGenerator;
 import io.pivotal.security.generator.PasswordCredentialGenerator;
@@ -41,23 +41,23 @@ public class GeneratorService {
     this.userGenerator = userGenerator;
   }
 
-  public StringCredential generatePassword(StringGenerationParameters passwordParameters) {
+  public StringCredentialValue generatePassword(StringGenerationParameters passwordParameters) {
     return passwordGenerator.generateCredential(passwordParameters);
   }
 
-  public SshKey generateSshKeys(SshGenerationParameters generationParameters) {
+  public SshCredentialValue generateSshKeys(SshGenerationParameters generationParameters) {
     return sshGenerator.generateCredential(generationParameters);
   }
 
-  public RsaKey generateRsaKeys(RsaGenerationParameters generationParameters) {
+  public RsaCredentialValue generateRsaKeys(RsaGenerationParameters generationParameters) {
     return rsaGenerator.generateCredential(generationParameters);
   }
 
-  public Certificate generateCertificate(CertificateParameters generationParameters) {
+  public CertificateCredentialValue generateCertificate(CertificateParameters generationParameters) {
     return certificateGenerator.generateCredential(generationParameters);
   }
 
-  public User generateUser(String username, StringGenerationParameters passwordParameters) {
+  public UserCredentialValue generateUser(String username, StringGenerationParameters passwordParameters) {
     return userGenerator.generateCredential(username, passwordParameters);
   }
 }

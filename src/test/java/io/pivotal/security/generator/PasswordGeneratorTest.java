@@ -1,16 +1,16 @@
 package io.pivotal.security.generator;
 
-import io.pivotal.security.credential.StringCredential;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.request.StringGenerationParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class PasswordGeneratorTest {
@@ -27,7 +27,7 @@ public class PasswordGeneratorTest {
   @Test
   public void generateCredential_usesTheParametersToGenerateAPassword() {
     final StringGenerationParameters stringGenerationParameters = mock(StringGenerationParameters.class);
-    final StringCredential credential = new StringCredential("fake-generated-password");
+    final StringCredentialValue credential = new StringCredentialValue("fake-generated-password");
 
     when(passayStringCredentialGenerator.generateCredential(stringGenerationParameters))
         .thenReturn(credential);

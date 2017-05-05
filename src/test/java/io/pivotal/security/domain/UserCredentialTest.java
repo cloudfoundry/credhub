@@ -13,7 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.User;
+import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.service.Encryption;
 import java.lang.reflect.Field;
@@ -122,7 +122,7 @@ public class UserCredentialTest {
           subject = UserCredential.createNewVersion(
               new UserCredential(existingUserCredentialData),
               CREDENTIAL_NAME,
-              new User(USERNAME, USER_PASSWORD, SALT),
+              new UserCredentialValue(USERNAME, USER_PASSWORD, SALT),
               encryptor
           );
 
@@ -135,7 +135,7 @@ public class UserCredentialTest {
           subject = UserCredential.createNewVersion(
               NO_EXISTING_CREDENTIAL,
               CREDENTIAL_NAME,
-              new User(USERNAME, USER_PASSWORD, SALT),
+              new UserCredentialValue(USERNAME, USER_PASSWORD, SALT),
               encryptor);
         });
 

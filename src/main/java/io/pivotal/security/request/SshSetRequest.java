@@ -1,7 +1,7 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredential;
 
@@ -13,13 +13,13 @@ public class SshSetRequest extends BaseCredentialSetRequest<SshCredential> {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
-  private SshKey sshKeyValue;
+  private SshCredentialValue sshKeyValue;
 
-  public SshKey getSshKeyValue() {
+  public SshCredentialValue getSshKeyValue() {
     return sshKeyValue;
   }
 
-  public void setSshKeyValue(SshKey sshKeyValue) {
+  public void setSshKeyValue(SshCredentialValue sshKeyValue) {
     this.sshKeyValue = sshKeyValue;
   }
 

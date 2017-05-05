@@ -1,7 +1,7 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.User;
+import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.UserCredential;
 
@@ -12,13 +12,13 @@ public class UserSetRequest extends BaseCredentialSetRequest<UserCredential> {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
-  private User userValue;
+  private UserCredentialValue userValue;
 
-  public void setUserValue(User userValue) {
+  public void setUserValue(UserCredentialValue userValue) {
     this.userValue = userValue;
   }
 
-  public User getUserValue() {
+  public UserCredentialValue getUserValue() {
     return userValue;
   }
 

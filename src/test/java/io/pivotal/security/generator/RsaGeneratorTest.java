@@ -1,13 +1,5 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.util.CertificateFormatter;
-import org.junit.runner.RunWith;
-
-import java.security.KeyPair;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -17,6 +9,13 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.RsaCredentialValue;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.util.CertificateFormatter;
+import java.security.KeyPair;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class RsaGeneratorTest {
@@ -40,7 +39,7 @@ public class RsaGeneratorTest {
 
     describe("generateCredential", () -> {
       it("should return a generated credential", () -> {
-        final RsaKey rsa = subject.generateCredential(new RsaGenerationParameters());
+        final RsaCredentialValue rsa = subject.generateCredential(new RsaGenerationParameters());
 
         verify(keyPairGenerator).generateKeyPair(2048);
 

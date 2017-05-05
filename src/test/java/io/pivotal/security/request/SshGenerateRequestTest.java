@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.service.GeneratorService;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
@@ -34,7 +34,7 @@ public class SshGenerateRequestTest {
       beforeEach(() -> {
         generatorService = mock(GeneratorService.class);
         when(generatorService.generateSshKeys(any(SshGenerationParameters.class)))
-            .thenReturn(new SshKey("pub","priv", "fingerprint"));
+            .thenReturn(new SshCredentialValue("pub","priv", "fingerprint"));
 
         accessControlEntry = new AccessControlEntry("test-actor",
             Arrays.asList(READ, WRITE));

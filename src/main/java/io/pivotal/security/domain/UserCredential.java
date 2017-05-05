@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.credential.User;
+import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.service.Encryption;
 
@@ -10,7 +10,7 @@ public class UserCredential extends Credential<UserCredential> {
   public static UserCredential createNewVersion(
       UserCredential existing,
       String name,
-      User userValue,
+      UserCredentialValue userValue,
       Encryptor encryptor) {
     UserCredential credential;
     if (existing == null) {

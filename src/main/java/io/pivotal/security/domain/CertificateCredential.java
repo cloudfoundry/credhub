@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.service.Encryption;
 
@@ -24,7 +24,7 @@ public class CertificateCredential extends Credential<CertificateCredential> {
   public static CertificateCredential createNewVersion(
       CertificateCredential existing,
       String name,
-      Certificate certificateValue,
+      CertificateCredentialValue certificateValue,
       Encryptor encryptor
   ) {
     CertificateCredential credential;

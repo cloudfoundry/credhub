@@ -1,7 +1,7 @@
 package io.pivotal.security.view;
 
 import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.SshCredentialValue;
 
 @SuppressWarnings("unused")
 public class SshView extends CredentialView {
@@ -14,7 +14,7 @@ public class SshView extends CredentialView {
         sshCredential.getUuid(),
         sshCredential.getName(),
         sshCredential.getCredentialType(),
-        new SshKey(sshCredential.getPublicKey(), sshCredential.getPrivateKey(),
+        new SshCredentialValue(sshCredential.getPublicKey(), sshCredential.getPrivateKey(),
             sshCredential.getFingerprint())
     );
   }

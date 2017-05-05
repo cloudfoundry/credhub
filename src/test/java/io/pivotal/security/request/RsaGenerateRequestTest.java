@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.service.GeneratorService;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
@@ -34,7 +34,7 @@ public class RsaGenerateRequestTest {
       beforeEach(() -> {
         generatorService = mock(GeneratorService.class);
         when(generatorService.generateRsaKeys(any(RsaGenerationParameters.class)))
-            .thenReturn(new RsaKey("pub","priv"));
+            .thenReturn(new RsaCredentialValue("pub","priv"));
 
         accessControlEntry = new AccessControlEntry("test-actor",
             Arrays.asList(READ, WRITE));

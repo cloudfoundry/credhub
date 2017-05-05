@@ -105,7 +105,7 @@ public class VcapControllerTest {
           });
         });
 
-        describe("when the requested credential is not a JsonCredential", () -> {
+        describe("when the requested credential is not a JsonCredentialValue", () -> {
           it("should return an error", () -> {
             ValueCredential valueCredential = mock(ValueCredential.class);
             doReturn("something").when(valueCredential).getValue();

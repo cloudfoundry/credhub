@@ -1,15 +1,5 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.config.BouncyCastleProviderConfiguration;
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.Matchers.equalTo;
@@ -19,17 +9,27 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import io.pivotal.security.config.BouncyCastleProviderConfiguration;
+import io.pivotal.security.credential.CertificateCredentialValue;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.junit4.SpringRunner;
+
 @RunWith(SpringRunner.class)
 public class CertificateAuthorityServiceTest {
 
   CertificateAuthorityService certificateAuthorityService;
   CredentialDataService credentialDataService;
-  Certificate certificate;
+  CertificateCredentialValue certificate;
   CertificateCredential certificateCredential;
 
   @Before
   public void beforeEach() {
-    certificate = new Certificate(null, SELF_SIGNED_CA_CERT, "my-key", null);
+    certificate = new CertificateCredentialValue(null, SELF_SIGNED_CA_CERT, "my-key", null);
     certificateCredential = mock(CertificateCredential.class);
 
     credentialDataService = mock(CredentialDataService.class);

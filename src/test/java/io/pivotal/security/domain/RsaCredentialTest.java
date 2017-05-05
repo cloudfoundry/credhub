@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.service.Encryption;
 import java.util.UUID;
@@ -50,7 +50,7 @@ public class RsaCredentialTest {
       });
 
       it("copies name from existing", () -> {
-        RsaKey fields = new RsaKey("public key", "new private key");
+        RsaCredentialValue fields = new RsaCredentialValue("public key", "new private key");
         RsaCredential newCredential = RsaCredential
             .createNewVersion(subject, "anything I AM IGNORED", fields, encryptor);
 
@@ -60,7 +60,7 @@ public class RsaCredentialTest {
       });
 
       it("creates new if no existing", () -> {
-        RsaKey fields = new RsaKey("public key", "new private key");
+        RsaCredentialValue fields = new RsaCredentialValue("public key", "new private key");
         RsaCredential newCredential = RsaCredential
             .createNewVersion(null, "/newName", fields, encryptor);
 

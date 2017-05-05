@@ -1,7 +1,7 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
 import javax.validation.Valid;
@@ -12,13 +12,13 @@ public class ValueSetRequest extends BaseCredentialSetRequest<ValueCredential> {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
-  private StringCredential value;
+  private StringCredentialValue value;
 
-  public StringCredential getValue() {
+  public StringCredentialValue getValue() {
     return value;
   }
 
-  public void setValue(StringCredential value) {
+  public void setValue(StringCredentialValue value) {
     this.value = value;
   }
 

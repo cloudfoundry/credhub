@@ -1,6 +1,6 @@
 package io.pivotal.security.view;
 
-import io.pivotal.security.credential.User;
+import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.domain.UserCredential;
 
 public class UserView extends CredentialView {
@@ -10,7 +10,7 @@ public class UserView extends CredentialView {
         userCredential.getUuid(),
         userCredential.getName(),
         userCredential.getCredentialType(),
-        new User(userCredential.getUsername(), userCredential.getPassword(), userCredential.getSalt())
+        new UserCredentialValue(userCredential.getUsername(), userCredential.getPassword(), userCredential.getSalt())
     );
   }
 }

@@ -1,36 +1,5 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.data.CertificateAuthorityService;
-import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.request.CertificateGenerationParameters;
-import io.pivotal.security.util.CertificateFormatter;
-import io.pivotal.security.util.CurrentTimeProvider;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.cert.CertIOException;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v3CertificateBuilder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.junit.runner.RunWith;
-
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
-import java.util.function.Supplier;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -44,6 +13,36 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.CertificateCredentialValue;
+import io.pivotal.security.data.CertificateAuthorityService;
+import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.request.CertificateGenerationParameters;
+import io.pivotal.security.util.CertificateFormatter;
+import io.pivotal.security.util.CurrentTimeProvider;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+import java.util.function.Supplier;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class CertificateGeneratorTest {
@@ -59,12 +58,12 @@ public class CertificateGeneratorTest {
   private X500Name rootCaDn;
   private X500Name signeeDn;
   private KeyPair rootCaKeyPair;
-  private Certificate rootCa;
+  private CertificateCredentialValue rootCa;
   private X509Certificate rootCaX509Certificate;
 
   private X500Name intermediateCaDn;
   private KeyPair intermediateCaKeyPair;
-  private Certificate intermediateCa;
+  private CertificateCredentialValue intermediateCa;
   private X509Certificate intermediateX509Certificate;
 
   private CertificateParameters inputParameters;
@@ -89,7 +88,7 @@ public class CertificateGeneratorTest {
           rootCaDn, rootCaDn, true);
       rootCaX509Certificate = new JcaX509CertificateConverter()
           .setProvider(BouncyCastleProvider.PROVIDER_NAME).getCertificate(caX509CertHolder);
-      rootCa = new Certificate(
+      rootCa = new CertificateCredentialValue(
           null,
           CertificateFormatter.pemOf(rootCaX509Certificate),
           CertificateFormatter.pemOf(rootCaKeyPair.getPrivate()),
@@ -131,7 +130,7 @@ public class CertificateGeneratorTest {
         });
 
         it("generates a valid childCertificate", () -> {
-          Certificate certificateSignedByRoot = subject.generateCredential(inputParameters);
+          CertificateCredentialValue certificateSignedByRoot = subject.generateCredential(inputParameters);
 
           assertThat(certificateSignedByRoot.getCa(),
               equalTo(rootCa.getCertificate()));
@@ -156,7 +155,7 @@ public class CertificateGeneratorTest {
                   .getSignedByIssuer(childCertificateKeyPair.get(), params, rootCa)
           ).thenReturn(childX509Certificate);
 
-          Certificate certificate = subject.generateCredential(
+          CertificateCredentialValue certificate = subject.generateCredential(
               params);
 
           assertThat(certificate, notNullValue());
@@ -173,7 +172,7 @@ public class CertificateGeneratorTest {
           intermediateX509Certificate = new JcaX509CertificateConverter()
               .setProvider(BouncyCastleProvider.PROVIDER_NAME)
               .getCertificate(intermediateCaCertificateHolder);
-          intermediateCa = new Certificate(
+          intermediateCa = new CertificateCredentialValue(
               null,
               CertificateFormatter.pemOf(intermediateX509Certificate),
               CertificateFormatter.pemOf(intermediateCaKeyPair.getPrivate()),
@@ -199,7 +198,7 @@ public class CertificateGeneratorTest {
         });
 
         it("generates a valid childCertificate", () -> {
-          Certificate certificateSignedByIntermediate = subject.generateCredential(inputParameters);
+          CertificateCredentialValue certificateSignedByIntermediate = subject.generateCredential(inputParameters);
 
           assertThat(certificateSignedByIntermediate.getCa(),
               equalTo(intermediateCa.getCertificate()));
@@ -231,7 +230,7 @@ public class CertificateGeneratorTest {
       });
 
       it("generates a valid self-signed certificate", () -> {
-        Certificate certificateCredential = subject.generateCredential(inputParameters);
+        CertificateCredentialValue certificateCredential = subject.generateCredential(inputParameters);
         assertThat(certificateCredential.getPrivateKey(),
             equalTo(CertificateFormatter.pemOf(rootCaKeyPair.getPrivate())));
         assertThat(certificateCredential.getCertificate(),

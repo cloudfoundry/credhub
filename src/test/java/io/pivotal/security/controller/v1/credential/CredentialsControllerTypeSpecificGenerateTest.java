@@ -1,65 +1,5 @@
 package io.pivotal.security.controller.v1.credential;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.Block;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.credential.CryptSaltFactory;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.credential.SshKey;
-import io.pivotal.security.credential.StringCredential;
-import io.pivotal.security.credential.User;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.RsaCredential;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.domain.UserCredential;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.generator.CertificateGenerator;
-import io.pivotal.security.generator.PassayStringCredentialGenerator;
-import io.pivotal.security.generator.RsaGenerator;
-import io.pivotal.security.generator.SshGenerator;
-import io.pivotal.security.generator.UserGenerator;
-import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.DefaultCredentialGenerateRequest;
-import io.pivotal.security.request.RsaGenerationParameters;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.GenerateService;
-import io.pivotal.security.util.CurrentTimeProvider;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-import java.time.Instant;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -97,6 +37,65 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import com.greghaskins.spectrum.Spectrum.Block;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.credential.CertificateCredentialValue;
+import io.pivotal.security.credential.CryptSaltFactory;
+import io.pivotal.security.credential.RsaCredentialValue;
+import io.pivotal.security.credential.SshCredentialValue;
+import io.pivotal.security.credential.StringCredentialValue;
+import io.pivotal.security.credential.UserCredentialValue;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.RsaCredential;
+import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.domain.UserCredential;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.generator.CertificateGenerator;
+import io.pivotal.security.generator.PassayStringCredentialGenerator;
+import io.pivotal.security.generator.RsaGenerator;
+import io.pivotal.security.generator.SshGenerator;
+import io.pivotal.security.generator.UserGenerator;
+import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.BaseCredentialGenerateRequest;
+import io.pivotal.security.request.DefaultCredentialGenerateRequest;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.request.StringGenerationParameters;
+import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.util.CurrentTimeProvider;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
@@ -176,19 +175,19 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           .build();
 
       when(passwordGenerator.generateCredential(any(StringGenerationParameters.class)))
-          .thenReturn(new StringCredential(fakePassword));
+          .thenReturn(new StringCredentialValue(fakePassword));
 
       when(certificateGenerator.generateCredential(any(CertificateParameters.class)))
-          .thenReturn(new Certificate(ca, certificate, privateKey, null));
+          .thenReturn(new CertificateCredentialValue(ca, certificate, privateKey, null));
 
       when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
-          .thenReturn(new SshKey(publicKey, privateKey, null));
+          .thenReturn(new SshCredentialValue(publicKey, privateKey, null));
 
       when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
-          .thenReturn(new RsaKey(publicKey, privateKey));
+          .thenReturn(new RsaCredentialValue(publicKey, privateKey));
 
       when(userGenerator.generateCredential(any(String.class), any(StringGenerationParameters.class)))
-          .thenReturn(new User(username, fakePassword, fakeSalt));
+          .thenReturn(new UserCredentialValue(username, fakePassword, fakeSalt));
 
       auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
     });

@@ -6,7 +6,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.service.Encryption;
 import java.util.UUID;
@@ -84,7 +84,7 @@ public class CertificateCredentialTest {
   @Test
   public void createNewVersion_copiesCaNameFromExisting() {
     setUpEncryptor();
-    Certificate certificateValue = new Certificate(
+    CertificateCredentialValue certificateValue = new CertificateCredentialValue(
         "ca", "certificate", "new private key", null);
     CertificateCredential newCredential = CertificateCredential
         .createNewVersion(subject, "anything I AM IGNORED", certificateValue, encryptor);
@@ -99,7 +99,7 @@ public class CertificateCredentialTest {
   @Test
   public void createNewVersion_createsNewIfNoExisting() {
     setUpEncryptor();
-    Certificate certificateValue = new Certificate(
+    CertificateCredentialValue certificateValue = new CertificateCredentialValue(
         "ca", "certificate", "new private key", null);
     CertificateCredential newCredential = CertificateCredential
         .createNewVersion(null, "/newName", certificateValue, encryptor);

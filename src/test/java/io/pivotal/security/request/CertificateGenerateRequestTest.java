@@ -1,14 +1,5 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.Certificate;
-import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.service.GeneratorService;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-
-import java.util.Arrays;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -23,6 +14,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.CertificateCredentialValue;
+import io.pivotal.security.domain.CertificateParameters;
+import io.pivotal.security.service.GeneratorService;
+import java.util.Arrays;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+
 @RunWith(Spectrum.class)
 public class CertificateGenerateRequestTest {
   private GeneratorService generatorService;
@@ -36,7 +35,7 @@ public class CertificateGenerateRequestTest {
       beforeEach(() -> {
         generatorService = mock(GeneratorService.class);
         when(generatorService.generateCertificate(any(CertificateParameters.class)))
-            .thenReturn(new Certificate("ca", "certificate", "private_key", null));
+            .thenReturn(new CertificateCredentialValue("ca", "certificate", "private_key", null));
 
         accessControlEntry = new AccessControlEntry("test-actor",
             Arrays.asList(READ, WRITE));

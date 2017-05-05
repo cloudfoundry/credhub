@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.service.Encryption;
 
@@ -22,7 +22,7 @@ public class RsaCredential extends Credential<RsaCredential> {
   }
 
   public static RsaCredential createNewVersion(RsaCredential existing, String name,
-      RsaKey rsaKey, Encryptor encryptor) {
+      RsaCredentialValue rsaKey, Encryptor encryptor) {
     RsaCredential credential;
 
     if (existing == null) {

@@ -2,7 +2,7 @@ package io.pivotal.security.request;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Encryptor;
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -16,14 +16,14 @@ public class CertificateSetRequest extends BaseCredentialSetRequest<CertificateC
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
-  private Certificate certificateValue;
+  private CertificateCredentialValue certificateValue;
 
-  public Certificate getCertificateValue() {
+  public CertificateCredentialValue getCertificateValue() {
     return certificateValue;
   }
 
   public void setCertificateValue(
-      Certificate certificateValue) {
+      CertificateCredentialValue certificateValue) {
     this.certificateValue = certificateValue;
   }
 

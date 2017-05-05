@@ -1,10 +1,33 @@
 package io.pivotal.security.generator;
 
+import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
+import static io.pivotal.security.request.CertificateGenerationParameters.CODE_SIGNING;
+import static io.pivotal.security.request.CertificateGenerationParameters.DIGITAL_SIGNATURE;
+import static io.pivotal.security.request.CertificateGenerationParameters.KEY_ENCIPHERMENT;
+import static io.pivotal.security.request.CertificateGenerationParameters.SERVER_AUTH;
+import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.pivotal.security.config.BouncyCastleProviderConfiguration;
-import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.request.CertificateGenerationParameters;
 import io.pivotal.security.util.CertificateFormatter;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -28,27 +51,6 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-
-import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
-import static io.pivotal.security.request.CertificateGenerationParameters.*;
-import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = BouncyCastleProviderConfiguration.class)
 public class SignedCertificateGeneratorTest {
@@ -64,7 +66,7 @@ public class SignedCertificateGeneratorTest {
   private DateTimeProvider timeProvider;
   private Calendar now;
   private Calendar later;
-  private Certificate ca;
+  private CertificateCredentialValue ca;
   private final int expectedDurationInDays = 10;
   private final String caName = "CN=ca DN,O=credhub";
   private final String expectedCertificateCommonName = "my cert name";
@@ -79,8 +81,8 @@ public class SignedCertificateGeneratorTest {
   @Autowired
   private JcaX509CertificateConverter jcaX509CertificateConverter;
   private SubjectKeyIdentifier caSubjectKeyIdentifier;
-  private Certificate certificateAuthority;
-  private Certificate certificateAuthorityWithSubjectKeyId;
+  private CertificateCredentialValue certificateAuthority;
+  private CertificateCredentialValue certificateAuthorityWithSubjectKeyId;
   private BigInteger caSerialNumber;
 
   @Before
@@ -134,13 +136,13 @@ public class SignedCertificateGeneratorTest {
     certificateAuthorityWithSubjectKeyId = createCertificateAuthority(x509v3CertificateBuilder);
   }
 
-  private Certificate createCertificateAuthority(X509v3CertificateBuilder x509v3CertificateBuilder) throws OperatorCreationException, CertificateException, IOException {
+  private CertificateCredentialValue createCertificateAuthority(X509v3CertificateBuilder x509v3CertificateBuilder) throws OperatorCreationException, CertificateException, IOException {
     X509CertificateHolder certificateHolder = x509v3CertificateBuilder.build(jcaContentSignerBuilder.build(issuerKey.getPrivate()));
     X509Certificate x509CertificateAuthority = jcaX509CertificateConverter.getCertificate(certificateHolder);
 
     String caPem = CertificateFormatter.pemOf(x509CertificateAuthority);
     String caPrivatePem = CertificateFormatter.pemOf(issuerKey.getPrivate());
-    return new Certificate("", caPem, caPrivatePem, caName);
+    return new CertificateCredentialValue("", caPem, caPrivatePem, caName);
   }
 
   @Test

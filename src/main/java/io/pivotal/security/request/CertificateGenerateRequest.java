@@ -3,7 +3,7 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.domain.CertificateParameters;
-import io.pivotal.security.credential.Certificate;
+import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.service.GeneratorService;
 
 public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
@@ -37,7 +37,7 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
     if (certificateParameters == null) {
        certificateParameters = new CertificateParameters(getGenerationParameters());
     }
-    Certificate certificate = generatorService.generateCertificate(certificateParameters);
+    CertificateCredentialValue certificate = generatorService.generateCertificate(certificateParameters);
     certificateSetRequest.setName(getName());
     certificateSetRequest.setType(getType());
     certificateSetRequest.setOverwrite(isOverwrite());

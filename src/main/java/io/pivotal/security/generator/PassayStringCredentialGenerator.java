@@ -1,7 +1,7 @@
 package io.pivotal.security.generator;
 
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.credential.StringCredentialValue;
 import org.passay.CharacterRule;
 import org.passay.PasswordGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import java.util.List;
 
 @Component
 public class PassayStringCredentialGenerator implements
-    CredentialGenerator<StringGenerationParameters, StringCredential> {
+    CredentialGenerator<StringGenerationParameters, StringCredentialValue> {
 
   public static final int DEFAULT_LENGTH = 30;
   public static final int MIN_LENGTH = 4;
@@ -24,12 +24,12 @@ public class PassayStringCredentialGenerator implements
   }
 
   @Override
-  public StringCredential generateCredential(StringGenerationParameters parameters) {
+  public StringCredentialValue generateCredential(StringGenerationParameters parameters) {
     int passwordLength = normalizedLength(parameters.getLength());
 
     List<CharacterRule> characterRules = CharacterRuleProvider.getCharacterRules(parameters);
 
-    return new StringCredential(passwordGenerator.generatePassword(passwordLength, characterRules));
+    return new StringCredentialValue(passwordGenerator.generatePassword(passwordLength, characterRules));
   }
 
   private int normalizedLength(int length) {

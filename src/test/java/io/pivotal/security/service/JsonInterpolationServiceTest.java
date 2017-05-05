@@ -113,7 +113,7 @@ public class JsonInterpolationServiceTest {
           assertThat(secondServiceCredentials.get("secret3-2"), equalTo("secret3-2-value"));
         });
 
-        itThrows("an exception when credential is not JsonCredential",
+        itThrows("an exception when credential is not JsonCredentialValue",
             ParameterizedValidationException.class, () -> {
               String inputJson = "{"
                   + "  \"VCAP_SERVICES\": {"

@@ -1,7 +1,7 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.RsaKey;
+import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.RsaCredential;
 
@@ -13,13 +13,13 @@ public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredential> {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")
-  private RsaKey rsaKeyValue;
+  private RsaCredentialValue rsaKeyValue;
 
-  public RsaKey getRsaKeyValue() {
+  public RsaCredentialValue getRsaKeyValue() {
     return rsaKeyValue;
   }
 
-  public void setRsaKeyValue(RsaKey rsaKeyValue) {
+  public void setRsaKeyValue(RsaCredentialValue rsaKeyValue) {
     this.rsaKeyValue = rsaKeyValue;
   }
 

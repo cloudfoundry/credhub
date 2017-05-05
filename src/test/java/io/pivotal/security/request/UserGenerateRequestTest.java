@@ -1,6 +1,6 @@
 package io.pivotal.security.request;
 
-import io.pivotal.security.credential.User;
+import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.service.GeneratorService;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class UserGenerateRequestTest {
 
   @Test
   public void generateSetRequest_withoutAUsername_createsAndCopiesSetRequestGeneratingUsernameAndPassword() {
-    User expectedUser = new User("fake-user", "fake-password", "fake-salt");
+    UserCredentialValue expectedUser = new UserCredentialValue("fake-user", "fake-password", "fake-salt");
     when(generatorService.generateUser(any(String.class), any(StringGenerationParameters.class)))
         .thenReturn(expectedUser);
 
@@ -72,7 +72,7 @@ public class UserGenerateRequestTest {
     usernameValue.setUsername("specified-username");
     subject.setValue(usernameValue);
 
-    User expectedUser = new User("fake-user", "fake-password", "fake-salt");
+    UserCredentialValue expectedUser = new UserCredentialValue("fake-user", "fake-password", "fake-salt");
     when(generatorService.generateUser(any(String.class), any(StringGenerationParameters.class)))
         .thenReturn(expectedUser);
 
@@ -101,7 +101,7 @@ public class UserGenerateRequestTest {
         .setIncludeSpecial(true);
 
     when(generatorService.generateUser(any(String.class), eq(passwordGenerationParams)))
-        .thenReturn(new User("fake-generated-username", "fake-generated-password", "fake-salt"));
+        .thenReturn(new UserCredentialValue("fake-generated-username", "fake-generated-password", "fake-salt"));
 
     subject.setPasswordGenerationParameters(passwordGenerationParams);
 

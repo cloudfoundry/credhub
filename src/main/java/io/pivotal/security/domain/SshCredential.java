@@ -1,6 +1,6 @@
 package io.pivotal.security.domain;
 
-import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.SshPublicKeyParser;
@@ -23,7 +23,7 @@ public class SshCredential extends Credential<SshCredential> {
   }
 
   public static SshCredential createNewVersion(SshCredential existing, String name,
-      SshKey sshKeyValue, Encryptor encryptor) {
+      SshCredentialValue sshKeyValue, Encryptor encryptor) {
     SshCredential credential;
 
     if (existing == null) {

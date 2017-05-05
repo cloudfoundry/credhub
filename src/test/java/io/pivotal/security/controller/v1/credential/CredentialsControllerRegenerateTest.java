@@ -25,9 +25,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.credential.RsaKey;
-import io.pivotal.security.credential.SshKey;
-import io.pivotal.security.credential.StringCredential;
+import io.pivotal.security.credential.RsaCredentialValue;
+import io.pivotal.security.credential.SshCredentialValue;
+import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
@@ -126,7 +126,7 @@ public class CredentialsControllerRegenerateTest {
     describe("regenerating a password", () -> {
       beforeEach(() -> {
         when(passwordGenerator.generateCredential(any(StringGenerationParameters.class)))
-            .thenReturn(new StringCredential("generated-credential"));
+            .thenReturn(new StringCredentialValue("generated-credential"));
         PasswordCredential originalCredential = new PasswordCredential("my-password");
         originalCredential.setEncryptor(encryptor);
         StringGenerationParameters generationParameters = new StringGenerationParameters();
@@ -180,7 +180,7 @@ public class CredentialsControllerRegenerateTest {
     describe("regenerating an rsa", () -> {
       beforeEach(() -> {
         when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
-            .thenReturn(new RsaKey("public_key", "private_key"));
+            .thenReturn(new RsaCredentialValue("public_key", "private_key"));
         RsaCredential originalCredential = new RsaCredential("my-rsa");
         originalCredential.setEncryptor(encryptor);
         originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));
@@ -230,7 +230,7 @@ public class CredentialsControllerRegenerateTest {
     describe("regenerating an ssh", () -> {
       beforeEach(() -> {
         when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
-            .thenReturn(new SshKey("public_key", "private_key", null));
+            .thenReturn(new SshCredentialValue("public_key", "private_key", null));
         SshCredential originalCredential = new SshCredential("my-ssh");
         originalCredential.setEncryptor(encryptor);
         originalCredential.setVersionCreatedAt(frozenTime.plusSeconds(1));

@@ -1,14 +1,5 @@
 package io.pivotal.security.generator;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.SshKey;
-import io.pivotal.security.request.SshGenerationParameters;
-import io.pivotal.security.util.CertificateFormatter;
-import org.junit.runner.RunWith;
-
-import java.security.KeyPair;
-import java.security.interfaces.RSAPublicKey;
-
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -18,6 +9,14 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.SshCredentialValue;
+import io.pivotal.security.request.SshGenerationParameters;
+import io.pivotal.security.util.CertificateFormatter;
+import java.security.KeyPair;
+import java.security.interfaces.RSAPublicKey;
+import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class SshGeneratorTest {
@@ -38,7 +37,7 @@ public class SshGeneratorTest {
 
     describe("generateCredential", () -> {
       it("should return a generated credential", () -> {
-        final SshKey ssh = subject.generateCredential(new SshGenerationParameters());
+        final SshCredentialValue ssh = subject.generateCredential(new SshGenerationParameters());
 
         verify(keyPairGeneratorMock).generateKeyPair(2048);
 
@@ -60,7 +59,7 @@ public class SshGeneratorTest {
         SshGenerationParameters sshGenerationParameters = new SshGenerationParameters();
         sshGenerationParameters.setSshComment("this is an ssh comment");
 
-        final SshKey ssh = subject.generateCredential(sshGenerationParameters);
+        final SshCredentialValue ssh = subject.generateCredential(sshGenerationParameters);
 
         String expectedPublicKey = CertificateFormatter.derOf((RSAPublicKey) keyPair.getPublic())
             + " this is an ssh comment";

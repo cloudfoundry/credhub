@@ -7,7 +7,7 @@ import io.pivotal.security.validator.RequireAnyOf;
 
 @RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate",
     "privateKey"})
-public class Certificate implements CredentialValue {
+public class CertificateCredentialValue implements CredentialValue {
 
   @JsonDeserialize(using = EmptyStringToNull.class)
   private String ca;
@@ -18,9 +18,9 @@ public class Certificate implements CredentialValue {
   private String caName;
 
   @SuppressWarnings("unused")
-  public Certificate() {}
+  public CertificateCredentialValue() {}
 
-  public Certificate(
+  public CertificateCredentialValue(
       String ca,
       String certificate,
       String privateKey,
