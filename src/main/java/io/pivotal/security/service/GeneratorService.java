@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.credential.Certificate;
 import io.pivotal.security.credential.RsaKey;
 import io.pivotal.security.credential.SshKey;
+import io.pivotal.security.credential.StringCredential;
 import io.pivotal.security.credential.User;
 import io.pivotal.security.domain.CertificateParameters;
 import io.pivotal.security.generator.CertificateGenerator;
@@ -40,8 +41,8 @@ public class GeneratorService {
     this.userGenerator = userGenerator;
   }
 
-  public String generatePassword(StringGenerationParameters passwordParameters) {
-    return passwordGenerator.generateCredential(passwordParameters).getStringCredential();
+  public StringCredential generatePassword(StringGenerationParameters passwordParameters) {
+    return passwordGenerator.generateCredential(passwordParameters);
   }
 
   public SshKey generateSshKeys(SshGenerationParameters generationParameters) {

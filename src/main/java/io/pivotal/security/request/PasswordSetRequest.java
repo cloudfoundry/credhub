@@ -2,28 +2,36 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.pivotal.security.credential.StringCredential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredential> {
 
-  @NotEmpty(message = "error.missing_value")
+  @NotNull(message = "error.missing_value")
+  @Valid
   @JsonProperty("value")
-  private String password;
+  private StringCredential password;
+
   @JsonIgnore
   private StringGenerationParameters generationParameters;
 
-  public String getPassword() {
+  public StringCredential getPassword() {
     return password;
   }
 
-  public void setPassword(String password) {
+  public void setPassword(StringCredential password) {
     this.password = password;
   }
 
   public void setGenerationParameters(StringGenerationParameters generationParameters) {
     this.generationParameters = generationParameters;
+  }
+
+  public StringGenerationParameters getGenerationParameters() {
+    return generationParameters;
   }
 
   @Override
@@ -32,8 +40,8 @@ public class PasswordSetRequest extends BaseCredentialSetRequest<PasswordCredent
     return PasswordCredential.createNewVersion(
         existing,
         getName(),
-        getPassword(),
-        generationParameters,
+        getPassword().getStringCredential(),
+        getGenerationParameters(),
         encryptor
     );
   }

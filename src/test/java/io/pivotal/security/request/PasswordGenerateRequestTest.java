@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.StringCredential;
 import io.pivotal.security.service.GeneratorService;
 import java.util.Arrays;
 import org.junit.runner.RunWith;
@@ -32,7 +33,8 @@ public class PasswordGenerateRequestTest {
     describe("#generateSetRequest", () -> {
       beforeEach(() -> {
         generatorService = mock(GeneratorService.class);
-        when(generatorService.generatePassword(any(StringGenerationParameters.class))).thenReturn("fake-password");
+        when(generatorService.generatePassword(any(StringGenerationParameters.class)))
+            .thenReturn(new StringCredential("fake-password"));
         accessControlEntry = new AccessControlEntry("test-actor",
             Arrays.asList(READ, WRITE));
         subject = new PasswordGenerateRequest();
@@ -51,7 +53,8 @@ public class PasswordGenerateRequestTest {
         assertThat(setRequest.getName(), equalTo("test-name"));
         assertTrue(setRequest.isOverwrite());
         assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(accessControlEntry)));
-        assertThat(((PasswordSetRequest) setRequest).getPassword(), equalTo("fake-password"));
+        assertThat(((PasswordSetRequest) setRequest).getPassword().getStringCredential(),
+            equalTo("fake-password"));
         ArgumentCaptor<StringGenerationParameters> captor = ArgumentCaptor.forClass(StringGenerationParameters.class);
         verify(generatorService).generatePassword(captor.capture());
 
