@@ -1,11 +1,10 @@
 package io.pivotal.security.data;
 
-import io.pivotal.security.aspect.CredentialNameAspect;
+import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -14,14 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -41,10 +36,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = Replace.NONE)
-@EnableAspectJAutoProxy
-@Import(CredentialNameAspect.class)
+@SpringBootTest(classes = CredentialManagerApp.class)
+@Transactional
 public class AccessControlDataServiceTest {
 
   private AccessControlDataService subject;
@@ -53,10 +46,7 @@ public class AccessControlDataServiceTest {
   AccessEntryRepository accessEntryRepository;
 
   @Autowired
-  CredentialNameRepository credentialNameRepository;
-
-  @Autowired
-  TestEntityManager testEntityManager;
+  CredentialNameDataService credentialNameDataService;
 
   private List<AccessControlEntry> aces;
   private CredentialName credentialName;
@@ -120,7 +110,7 @@ public class AccessControlDataServiceTest {
     final ValueCredentialData valueCredentialData2 = new ValueCredentialData("lightsaber2");
     final CredentialName credentialName2 = valueCredentialData2.getCredentialName();
 
-    credentialNameRepository.saveAndFlush(credentialName2);
+    credentialNameDataService.save(credentialName2);
     aces = singletonList(
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
@@ -141,8 +131,6 @@ public class AccessControlDataServiceTest {
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAcl() {
 
     subject.deleteAccessControlEntries("Luke", credentialName);
-
-    testEntityManager.flush();
 
     final List<AccessControlEntry> accessControlList = subject
         .getAccessControlList(credentialName);
@@ -255,7 +243,7 @@ public class AccessControlDataServiceTest {
     final ValueCredentialData valueCredentialData = new ValueCredentialData("lightsaber");
     credentialName = valueCredentialData.getCredentialName();
 
-    credentialName = credentialNameRepository.saveAndFlush(credentialName);
+    credentialName = credentialNameDataService.save(credentialName);
 
     subject.saveAccessControlEntries(
         credentialName,

@@ -1,22 +1,12 @@
 package io.pivotal.security.data;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.repository.CredentialRepository.BATCH_SIZE;
-
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.entity.CredentialData;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.FindCredentialResult;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -25,11 +15,21 @@ import org.springframework.data.domain.SliceImpl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.repository.CredentialRepository.BATCH_SIZE;
+
 @Service
 public class CredentialDataService {
 
-  protected final CredentialRepository credentialRepository;
-  private final CredentialNameRepository credentialNameRepository;
+  private final CredentialRepository credentialRepository;
+  private final CredentialNameDataService credentialNameDataService;
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final CredentialFactory credentialFactory;
@@ -49,13 +49,13 @@ public class CredentialDataService {
   @Autowired
   protected CredentialDataService(
       CredentialRepository credentialRepository,
-      CredentialNameRepository credentialNameRepository,
+      CredentialNameDataService credentialNameDataService,
       JdbcTemplate jdbcTemplate,
       EncryptionKeyCanaryMapper encryptionKeyCanaryMapper,
       CredentialFactory credentialFactory
   ) {
     this.credentialRepository = credentialRepository;
-    this.credentialNameRepository = credentialNameRepository;
+    this.credentialNameDataService = credentialNameDataService;
     this.jdbcTemplate = jdbcTemplate;
     this.encryptionKeyCanaryMapper = encryptionKeyCanaryMapper;
     this.credentialFactory = credentialFactory;
@@ -73,7 +73,7 @@ public class CredentialDataService {
     CredentialName credentialName = credentialData.getCredentialName();
 
     if (credentialName.getUuid() == null) {
-      credentialData.setCredentialName(credentialNameRepository.saveAndFlush(credentialName));
+      credentialData.setCredentialName(credentialNameDataService.save(credentialName));
     }
 
     return (Z) credentialFactory.makeCredentialFromEntity(credentialRepository.saveAndFlush(credentialData));
@@ -113,8 +113,7 @@ public class CredentialDataService {
   }
 
   public Credential findMostRecent(String name) {
-    CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(name);
+    CredentialName credentialName = credentialNameDataService.find(name);
 
     if (credentialName == null) {
       return null;
@@ -140,13 +139,11 @@ public class CredentialDataService {
   }
 
   public boolean delete(String name) {
-    long numDeleted = credentialNameRepository.deleteByNameIgnoreCase(name);
-    return numDeleted > 0;
+    return credentialNameDataService.delete(name);
   }
 
   public List<Credential> findAllByName(String name) {
-    CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(name);
+    CredentialName credentialName = credentialNameDataService.find(name);
 
     return credentialName != null ? credentialFactory.makeCredentialsFromEntities(credentialRepository.findAllByCredentialNameUuid(credentialName.getUuid()))
         : newArrayList();

@@ -13,7 +13,6 @@ import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
-import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -63,14 +62,12 @@ public class CredentialDataServiceTest {
   @Autowired
   CredentialRepository credentialRepository;
 
-  @Autowired
-  CredentialNameRepository nameRepository;
 
   @Autowired
   EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
 
   @Autowired
-  CredentialNameRepository credentialNameRepository;
+  CredentialNameDataService credentialNameDataService;
 
   @SpyBean
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
@@ -175,14 +172,14 @@ public class CredentialDataServiceTest {
 
   @Test
   public void delete_onAnExistingCredential_returnsTrue() {
-    credentialNameRepository.saveAndFlush(new CredentialName("/my-credential"));
+    credentialNameDataService.save(new CredentialName("/my-credential"));
 
     assertThat(subject.delete("/my-credential"), equalTo(true));
   }
 
   @Test
   public void delete_onACredentialName_deletesAllCredentialsWithTheName() {
-    CredentialName credentialName = credentialNameRepository.saveAndFlush(new CredentialName("/my-credential"));
+    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-credential"));
 
     PasswordCredentialData credentialData = new PasswordCredentialData();
     credentialData.setCredentialName(credentialName);
@@ -201,12 +198,12 @@ public class CredentialDataServiceTest {
     subject.delete("/my-credential");
 
     assertThat(subject.findAllByName("/my-credential"), hasSize(0));
-    assertNull(nameRepository.findOneByNameIgnoreCase("/my-credential"));
+    assertNull(credentialNameDataService.find("/my-credential"));
   }
 
   @Test
   public void delete_givenACredentialNameCasedDifferentlyFromTheActual_shouldBeCaseInsensitive() {
-    CredentialName credentialName = credentialNameRepository.saveAndFlush(new CredentialName("/my-credential"));
+    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-credential"));
 
     PasswordCredentialData credential = new PasswordCredentialData();
     credential.setCredentialName(credentialName);
@@ -248,7 +245,7 @@ public class CredentialDataServiceTest {
 
   @Test
   public void findMostRecent_givenACredentialNameWithoutVersions_returnsNull() {
-    credentialNameRepository.saveAndFlush(new CredentialName("/my-unused-CREDENTIAL"));
+    credentialNameDataService.save(new CredentialName("/my-unused-CREDENTIAL"));
 
     assertNull(subject.findMostRecent("/my-unused-CREDENTIAL"));
   }
@@ -485,10 +482,9 @@ public class CredentialDataServiceTest {
 
   private PasswordCredential savePassword(long timeMillis, String name, UUID canaryUuid) {
     fakeTimeSetter.accept(timeMillis);
-    CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(name);
+    CredentialName credentialName = credentialNameDataService.find(name);
     if (credentialName == null) {
-      credentialName = credentialNameRepository.saveAndFlush(new CredentialName(name));
+      credentialName = credentialNameDataService.save(new CredentialName(name));
     }
     PasswordCredentialData credentialObject = new PasswordCredentialData();
     credentialObject.setCredentialName(credentialName);
@@ -502,7 +498,7 @@ public class CredentialDataServiceTest {
 
 
   private void setupTestFixtureForFindMostRecent() {
-    CredentialName credentialName = credentialNameRepository.saveAndFlush(new CredentialName("/my-CREDENTIAL"));
+    CredentialName credentialName = credentialNameDataService.save(new CredentialName("/my-CREDENTIAL"));
 
     namedPasswordCredential1 = new PasswordCredentialData();
     namedPasswordCredential1.setCredentialName(credentialName);

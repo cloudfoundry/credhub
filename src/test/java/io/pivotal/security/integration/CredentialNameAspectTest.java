@@ -1,8 +1,8 @@
 package io.pivotal.security.integration;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,39 +23,36 @@ import static org.hamcrest.core.IsNull.notNullValue;
 @Transactional
 public class CredentialNameAspectTest {
   @Autowired
-  CredentialNameRepository credentialNameRepository;
+  CredentialNameDataService credentialNameDataService;
 
   @Before
   public void setup() {
-    credentialNameRepository.save(new CredentialName("/test/name"));
+    credentialNameDataService.save(new CredentialName("/test/name"));
   }
 
   @Test
   public void save_prependsLeadingSlashToCredentialNameIfMissing() {
-    CredentialName savedCredential = credentialNameRepository
+    CredentialName savedCredential = credentialNameDataService
         .save(new CredentialName("new/name"));
     assertThat(savedCredential.getName(), equalTo("/new/name"));
   }
 
   @Test
   public void saveAndFlush_prependsLeadingSlashToCredentialNameIfMissing() {
-    CredentialName savedCredential = credentialNameRepository
-        .saveAndFlush(new CredentialName("new/name"));
+    CredentialName savedCredential = credentialNameDataService.save(new CredentialName("new/name"));
     assertThat(savedCredential.getName(), equalTo("/new/name"));
   }
 
   @Test
   public void findOneByNameIgnoreCase_prependsLeadingSlashToCredentialNameIfMissing() {
-    CredentialName foundCredentialName = credentialNameRepository
-        .findOneByNameIgnoreCase("test/name");
+    CredentialName foundCredentialName = credentialNameDataService.find("test/name");
     assertThat(foundCredentialName, notNullValue());
     assertThat(foundCredentialName.getName(), equalTo("/test/name"));
   }
 
   @Test
   public void deleteByNameIgnoreCase_prependsLeadingSlashToCredentialNameIfMissing() {
-    long numberOfDeletedRecords = credentialNameRepository
-        .deleteByNameIgnoreCase("test/name");
-    assertThat(numberOfDeletedRecords, equalTo(1L));
+    boolean deleted = credentialNameDataService.delete("test/name");
+    assertThat(deleted, equalTo(true));
   }
 }

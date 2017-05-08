@@ -1,5 +1,22 @@
 package io.pivotal.security.handler;
 
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.CredentialNameDataService;
+import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.service.PermissionService;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -11,42 +28,30 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.entity.CredentialName;
-import io.pivotal.security.repository.CredentialNameRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.view.AccessControlListResponse;
-import java.util.ArrayList;
-import java.util.List;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
 @RunWith(JUnit4.class)
 public class AccessControlHandlerTest {
+  private static final CredentialName CREDENTIAL_NAME = new CredentialName("/test-credential");
+
   private AccessControlHandler subject;
 
   private PermissionService permissionService;
   private AccessControlDataService accessControlDataService;
-  private CredentialNameRepository credentialNameRepository;
+  private CredentialNameDataService credentialNameDataService;
 
   private final UserContext userContext = mock(UserContext.class);
-
-  private static final CredentialName CREDENTIAL_NAME = new CredentialName("/test-credential");
 
   @Before
   public void beforeEach() {
     permissionService = mock(PermissionService.class);
     accessControlDataService = mock(AccessControlDataService.class);
-    credentialNameRepository = mock(CredentialNameRepository.class);
-    subject = new AccessControlHandler(permissionService, accessControlDataService, credentialNameRepository);
+    credentialNameDataService = mock(CredentialNameDataService.class);
+    subject = new AccessControlHandler(
+        permissionService,
+        accessControlDataService,
+        credentialNameDataService
+    );
 
-    when(credentialNameRepository.findOneByNameIgnoreCase(any(String.class))).thenReturn(CREDENTIAL_NAME);
+    when(credentialNameDataService.find(any(String.class))).thenReturn(CREDENTIAL_NAME);
   }
 
   @Test
@@ -54,7 +59,7 @@ public class AccessControlHandlerTest {
     List<AccessControlEntry> accessControlList = newArrayList();
     when(accessControlDataService.getAccessControlList(any(CredentialName.class)))
         .thenReturn(accessControlList);
-    when(credentialNameRepository.findOneByNameIgnoreCase(any(String.class)))
+    when(credentialNameDataService.find(any(String.class)))
         .thenReturn(new CredentialName("/test-credential"));
 
     AccessControlListResponse response = subject.getAccessControlListResponse(
@@ -141,7 +146,7 @@ public class AccessControlHandlerTest {
 
   @Test
   public void deleteAccessControlEntries_deletesTheAce() {
-    when(credentialNameRepository.findOneByNameIgnoreCase(any(String.class))).thenReturn(CREDENTIAL_NAME);
+    when(credentialNameDataService.find("/test-credential")).thenReturn(CREDENTIAL_NAME);
 
     subject.deleteAccessControlEntries( "test-actor", "/test-credential");
 

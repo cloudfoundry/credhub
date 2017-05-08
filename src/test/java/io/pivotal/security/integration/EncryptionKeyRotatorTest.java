@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
+import io.pivotal.security.data.CredentialNameDataService;
+import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.CertificateCredential;
@@ -14,7 +16,6 @@ import io.pivotal.security.entity.CertificateCredentialData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
@@ -47,6 +48,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.parse;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
@@ -86,7 +90,7 @@ public class EncryptionKeyRotatorTest {
   private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   @Autowired
-  private CredentialNameRepository credentialNameRepository;
+  private CredentialNameDataService credentialNameDataService;
 
   @Autowired
   private EncryptionKeyRotator encryptionKeyRotator;
@@ -202,8 +206,7 @@ public class EncryptionKeyRotatorTest {
         .getResponse().getContentAsString();
     String originalPassword = parse(content).get("value").textValue();
 
-    CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(passwordName);
+        CredentialName credentialName = credentialNameDataService.find(passwordName);
 
     final PasswordCredentialData firstEncryption =
         (PasswordCredentialData) credentialRepository
@@ -252,8 +255,7 @@ public class EncryptionKeyRotatorTest {
         .getResponse().getContentAsString();
     String originalCert = parse(content).get("value").get("private_key").textValue();
 
-    CredentialName credentialName = credentialNameRepository
-        .findOneByNameIgnoreCase(certificateName);
+        CredentialName credentialName = credentialNameDataService.find(certificateName);
 
     final byte[] firstEncryption =
         credentialRepository
