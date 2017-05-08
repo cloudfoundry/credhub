@@ -1,8 +1,6 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.service.GeneratorService;
 
 public class UserGenerateRequest extends BaseCredentialGenerateRequest {
   @JsonProperty("parameters")
@@ -16,24 +14,15 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
     super.validate();
   }
 
-  public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
-    UserSetRequest userSetRequest = new UserSetRequest();
-    userSetRequest.setType(getType());
-    userSetRequest.setName(getName());
-    userSetRequest.setOverwrite(isOverwrite());
-    userSetRequest.setAccessControlEntries(getAccessControlEntries());
+  public StringGenerationParameters getPasswordGenerationParameters() {
+    return passwordGenerationParameters;
+  }
 
-    UserCredentialValue user = generatorService.generateUser(value.getUsername(), passwordGenerationParameters);
-    userSetRequest.setUserValue(user);
-
-    return userSetRequest;
+  public String getUserName() {
+    return value.getUsername();
   }
 
   public void setValue(UsernameValue value) {
     this.value = value;
-  }
-
-  public void setPasswordGenerationParameters(StringGenerationParameters passwordGenerationParameters) {
-    this.passwordGenerationParameters = passwordGenerationParameters;
   }
 }

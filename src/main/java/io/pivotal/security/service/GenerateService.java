@@ -2,10 +2,11 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.credential.CredentialValue;
+import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
-import io.pivotal.security.request.BaseCredentialSetRequest;
-import io.pivotal.security.request.PasswordSetRequest;
+import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,23 +26,27 @@ public class GenerateService {
     this.setService = setService;
   }
 
-  public CredentialView performGenerate(UserContext userContext, List<EventAuditRecordParameters> parametersList, BaseCredentialGenerateRequest requestBody, AccessControlEntry currentUserAccessControlEntry) {
-    BaseCredentialSetRequest setRequest = requestBody.generateSetRequest(generatorService);
+  public CredentialView performGenerate(
+      UserContext userContext,
+      List<EventAuditRecordParameters> parametersList,
+      BaseCredentialGenerateRequest requestBody,
+      AccessControlEntry currentUserAccessControlEntry) {
+
+    CredentialValue value = CredentialValueFactory.generateValue(requestBody, generatorService);
 
     StringGenerationParameters generationParameters = null;
-    if (setRequest instanceof PasswordSetRequest) {
-      generationParameters = ((PasswordSetRequest) setRequest).getGenerationParameters();
+    if (requestBody instanceof PasswordGenerateRequest) {
+      generationParameters = ((PasswordGenerateRequest) requestBody).getGenerationParameters();
     }
 
-    return setService.performSet(
-        userContext,
+    return setService.performSet(userContext,
         parametersList,
-        setRequest.getName(),
-        setRequest.isOverwrite(),
-        setRequest.getType(),
+        requestBody.getName(),
+        requestBody.isOverwrite(),
+        requestBody.getType(),
         generationParameters,
-        setRequest.getCredentialValue(),
-        setRequest.getAccessControlEntries(),
+        value,
+        requestBody.getAccessControlEntries(),
         currentUserAccessControlEntry);
   }
 }

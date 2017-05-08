@@ -1,8 +1,6 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.pivotal.security.credential.SshCredentialValue;
-import io.pivotal.security.service.GeneratorService;
 
 public class SshGenerateRequest extends BaseCredentialGenerateRequest {
 
@@ -25,17 +23,5 @@ public class SshGenerateRequest extends BaseCredentialGenerateRequest {
     super.validate();
 
     getGenerationParameters().validate();
-  }
-
-  public BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService) {
-    SshSetRequest sshSetRequest = new SshSetRequest();
-    SshCredentialValue sshKey = generatorService.generateSshKeys(getGenerationParameters());
-    sshSetRequest.setSshKeyValue(sshKey);
-    sshSetRequest.setType(getType());
-    sshSetRequest.setName(getName());
-    sshSetRequest.setOverwrite(isOverwrite());
-    sshSetRequest.setAccessControlEntries(getAccessControlEntries());
-
-    return sshSetRequest;
   }
 }

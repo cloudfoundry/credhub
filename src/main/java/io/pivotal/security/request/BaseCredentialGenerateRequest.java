@@ -49,6 +49,4 @@ public abstract class BaseCredentialGenerateRequest extends BaseCredentialReques
   public void setRegenerate(boolean regenerate) {
     this.regenerate = regenerate;
   }
-
-  public abstract BaseCredentialSetRequest generateSetRequest(GeneratorService generatorService);
 }
