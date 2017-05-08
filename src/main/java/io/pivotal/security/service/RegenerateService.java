@@ -2,12 +2,17 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
+import io.pivotal.security.request.PasswordGenerateRequest;
+import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.regeneratables.CertificateCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.NotRegeneratable;
 import io.pivotal.security.service.regeneratables.PasswordCredentialRegeneratable;
@@ -28,15 +33,17 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 public class RegenerateService {
 
   private CredentialDataService credentialDataService;
-  private GenerateRequestHandler generateRequestHandler;
   private Map<String, Supplier<Regeneratable>> regeneratableTypes;
+  private SetService setService;
+  private GeneratorService generatorService;
 
   RegenerateService(
       CredentialDataService credentialDataService,
-      GenerateRequestHandler generateRequestHandler
-  ) {
+      SetService setService,
+      GeneratorService generatorService) {
     this.credentialDataService = credentialDataService;
-    this.generateRequestHandler = generateRequestHandler;
+    this.setService = setService;
+    this.generatorService = generatorService;
 
     this.regeneratableTypes = new HashMap<>();
     this.regeneratableTypes.put("password", PasswordCredentialRegeneratable::new);
@@ -64,7 +71,26 @@ public class RegenerateService {
       parametersList.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, requestBody.getName()));
     }
 
-    return generateRequestHandler
-        .handle(userContext, parametersList, regeneratable.createGenerateRequest(credential), currentUserAccessControlEntry);
+    final BaseCredentialGenerateRequest generateRequest = regeneratable
+        .createGenerateRequest(credential);
+
+    final CredentialValue credentialValue = CredentialValueFactory
+        .generateValue(generateRequest, generatorService);
+
+    StringGenerationParameters generationParameters = null;
+    if (generateRequest instanceof PasswordGenerateRequest) {
+      generationParameters = ((PasswordGenerateRequest) generateRequest).getGenerationParameters();
+    }
+
+    return setService.performSet(
+        userContext,
+        parametersList,
+        generateRequest.getName(),
+        generateRequest.isOverwrite(),
+        generateRequest.getType(),
+        generationParameters,
+        credentialValue,
+        generateRequest.getAccessControlEntries(),
+        currentUserAccessControlEntry);
   }
 }

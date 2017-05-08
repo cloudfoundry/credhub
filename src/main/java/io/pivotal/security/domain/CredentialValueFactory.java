@@ -14,6 +14,7 @@ import io.pivotal.security.request.UserGenerateRequest;
 import io.pivotal.security.service.GeneratorService;
 
 public class CredentialValueFactory {
+
   public static CredentialValue generateValue(BaseCredentialGenerateRequest requestBody,
       GeneratorService generatorService) {
     CredentialValue credentialValue;
@@ -25,9 +26,16 @@ public class CredentialValueFactory {
         credentialValue = generatorService.generatePassword(stringGenerationParameters);
         break;
       case "certificate":
-        final CertificateGenerationParameters certificateGenerationParameters = ((CertificateGenerateRequest) requestBody)
-            .getGenerationParameters();
-        credentialValue = generatorService.generateCertificate(new CertificateParameters(certificateGenerationParameters));
+        final CertificateGenerateRequest certificateRequest = (CertificateGenerateRequest) requestBody;
+        if (certificateRequest.getCertificateParameters() == null) {
+          final CertificateGenerationParameters certificateGenerationParameters = certificateRequest
+              .getGenerationParameters();
+          credentialValue = generatorService
+              .generateCertificate(new CertificateParameters(certificateGenerationParameters));
+        } else {
+          credentialValue = generatorService
+              .generateCertificate(certificateRequest.getCertificateParameters());
+        }
         break;
       case "rsa":
         final RsaGenerationParameters rsaGenerationParameters = ((RsaGenerateRequest) requestBody)

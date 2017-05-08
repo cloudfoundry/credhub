@@ -30,6 +30,10 @@ public class CertificateGenerateRequest extends BaseCredentialGenerateRequest {
     getGenerationParameters().validate();
   }
 
+  public CertificateParameters getCertificateParameters() {
+    return certificateParameters;
+  }
+
   public void setCertificateParameters(
       CertificateParameters certificateParameters) {
     this.certificateParameters = certificateParameters;
