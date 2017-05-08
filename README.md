@@ -31,6 +31,16 @@ Follow these steps to make a contribution to any of our open source repositories
         git config --global user.name "Firstname Lastname"
         git config --global user.email "your_email@example.com"
 
+## Reporting a Vulnerability
+
+We strongly encourage people to report security vulnerabilities privately to our security team before disclosing them in a public forum.
+
+Please note that the e-mail address below should only be used for reporting undisclosed security vulnerabilities in open source Cloud Foundry codebases and managing the process of fixing such vulnerabilities. We cannot accept regular bug reports or other security-related queries at this address.
+
+The e-mail address to use to contact the CFF Security Team is security@cloudfoundry.org.
+
+Our public PGP key can be obtained from a public key server such as [pgp.mit.edu](https://pgp.mit.edu). Its fingerprint is: 3FC8 9AF3 940B E270 CF25  E122 9965 0006 EF9D C642. More information can be found at [cloudfoundry.org/security](https://cloudfoundry.org/security).
+
 ## General Workflow
 
 1. Fork the repository
