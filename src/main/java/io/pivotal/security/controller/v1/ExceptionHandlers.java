@@ -43,7 +43,7 @@ public class ExceptionHandlers {
   }
 
   @ExceptionHandler(PermissionException.class)
-  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
   @ResponseBody
   public ResponseError handlePermissionException(PermissionException error) {
     return constructError(error.getMessage());

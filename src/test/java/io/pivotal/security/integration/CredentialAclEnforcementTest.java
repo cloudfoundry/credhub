@@ -117,7 +117,7 @@ public class CredentialAclEnforcementTest {
 
     this.mockMvc.perform(edit)
         .andDo(print())
-        .andExpect(status().isUnauthorized())
+        .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error", equalTo(expectedError)));
   }
 
