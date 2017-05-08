@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class PermissionServiceTest {
-  private static final CredentialName CREDENTIAL_NAME = new CredentialName("test-credential");
+  private static final String CREDENTIAL_NAME = "/test/credential";
 
   private PermissionService subject;
 
@@ -29,11 +29,15 @@ public class PermissionServiceTest {
   private AccessControlDataService accessControlDataService;
   private SshCredential credential = mock(SshCredential.class);
 
+  private CredentialName credentialName;
+
   @Before
   public void beforeEach() {
+    credentialName = new CredentialName(CREDENTIAL_NAME);
+
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn("test-actor");
-    when(credential.getCredentialName()).thenReturn(CREDENTIAL_NAME);
+    when(credential.getCredentialName()).thenReturn(credentialName);
 
     accessControlDataService = mock(AccessControlDataService.class);
 
@@ -47,7 +51,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+    subject.verifyAclReadPermission(userContext, credentialName);
   }
 
   @Test
@@ -58,7 +62,7 @@ public class PermissionServiceTest {
         .thenReturn(false);
 
     try {
-      subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+      subject.verifyAclReadPermission(userContext, credentialName);
       fail("should throw exception");
     } catch (PermissionException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_acl_read"));
@@ -72,7 +76,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+    subject.verifyAclReadPermission(userContext, credentialName);
   }
 
   @Test
@@ -82,7 +86,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+    subject.verifyAclReadPermission(userContext, credentialName);
   }
 
   @Test
@@ -92,7 +96,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
+    subject.verifyCredentialWritePermission(userContext, credentialName);
   }
 
   @Test
@@ -103,7 +107,7 @@ public class PermissionServiceTest {
         .thenReturn(false);
 
     try {
-      subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
+      subject.verifyCredentialWritePermission(userContext, credentialName);
       fail("should throw exception");
     } catch (PermissionException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
@@ -117,7 +121,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
+    subject.verifyCredentialWritePermission(userContext, credentialName);
   }
 
   @Test
@@ -127,7 +131,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
+    subject.verifyCredentialWritePermission(userContext, credentialName);
   }
 
   @Test

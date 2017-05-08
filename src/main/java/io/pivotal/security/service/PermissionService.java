@@ -26,7 +26,7 @@ public class PermissionService {
   public void verifyAclReadPermission(UserContext user, CredentialName credentialName) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);
-      if (StringUtils.isEmpty(actor) || !accessControlDataService.hasReadAclPermission(actor, credentialName)) {
+      if (StringUtils.isEmpty(actor) || !accessControlDataService.hasReadAclPermission(actor, credentialName.getName())) {
         throw new PermissionException("error.acl.lacks_acl_read");
       }
     }
@@ -35,7 +35,7 @@ public class PermissionService {
   public void verifyCredentialWritePermission(UserContext user, CredentialName credentialName) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);
-      if (StringUtils.isEmpty(actor) || !accessControlDataService.hasCredentialWritePermission(actor, credentialName)) {
+      if (StringUtils.isEmpty(actor) || !accessControlDataService.hasCredentialWritePermission(actor, credentialName.getName())) {
         throw new PermissionException("error.acl.lacks_credential_write");
       }
     }
@@ -44,7 +44,7 @@ public class PermissionService {
   public boolean hasCredentialReadPermission(UserContext user, Credential credential) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);
-      return accessControlDataService.hasReadPermission(actor, credential.getCredentialName());
+      return accessControlDataService.hasReadPermission(actor, credential.getCredentialName().getName());
     } else {
       return true;
     }
@@ -53,7 +53,7 @@ public class PermissionService {
   public boolean hasCredentialDeletePermission(UserContext user, Credential credential) {
     if (enforcePermissions) {
       String actor = getActorFromUserContext(user);
-      return accessControlDataService.hasCredentialDeletePermission(actor, credential.getCredentialName());
+      return accessControlDataService.hasCredentialDeletePermission(actor, credential.getCredentialName().getName());
     } else {
       return true;
     }

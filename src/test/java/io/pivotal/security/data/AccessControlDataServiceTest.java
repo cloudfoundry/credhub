@@ -4,7 +4,6 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.repository.AccessEntryRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -39,22 +38,20 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class AccessControlDataServiceTest {
+  private static final String CREDENTIAL_NAME = "/lightsaber";
+  private static final String CREDENTIAL_NAME_DOES_NOT_EXIST = "/this/credential/does/not/exist";
 
+  @Autowired
   private AccessControlDataService subject;
 
   @Autowired
-  AccessEntryRepository accessEntryRepository;
-
-  @Autowired
-  CredentialNameDataService credentialNameDataService;
+  private CredentialNameDataService credentialNameDataService;
 
   private List<AccessControlEntry> aces;
   private CredentialName credentialName;
 
   @Before
   public void beforeEach() {
-    subject = new AccessControlDataService(accessEntryRepository);
-
     seedDatabase();
   }
 
@@ -157,90 +154,90 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void hasAclReadPermission_whenActorHasAclRead_returnsTrue() {
-    assertThat(subject.hasReadAclPermission("HanSolo", credentialName),
+    assertThat(subject.hasReadAclPermission("HanSolo", CREDENTIAL_NAME),
         is(true));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasReadButNotReadAcl_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Luke", credentialName),
+    assertThat(subject.hasReadAclPermission("Luke", CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Chewie", credentialName),
+    assertThat(subject.hasReadAclPermission("Chewie", CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Luke", new CredentialName("/crossbow")),
+    assertThat(subject.hasReadAclPermission("Luke", CREDENTIAL_NAME_DOES_NOT_EXIST),
         is(false));
   }
 
   @Test
   public void hasReadPermission_whenActorHasRead_returnsTrue() {
-    assertThat(subject.hasReadPermission("Leia", credentialName),
+    assertThat(subject.hasReadPermission("Leia", CREDENTIAL_NAME),
         is(true));
   }
 
   @Test
   public void hasReadPermission_givenNameWithoutLeadingSlashAndHasRead_returnsTrue() {
-    assertThat(subject.hasReadPermission("Leia", credentialName),
+    assertThat(subject.hasReadPermission("Leia", CREDENTIAL_NAME),
         is(true));
   }
 
   @Test
   public void hasReadPermission_whenActorHasWriteButNotRead_returnsFalse() {
-    assertThat(subject.hasReadPermission("Luke", credentialName),
+    assertThat(subject.hasReadPermission("Luke", CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasReadPermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasReadPermission("Chewie", credentialName),
+    assertThat(subject.hasReadPermission("Chewie", CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasCredentialWritePermission_whenActorHasWritePermission_returnsTrue() {
-    assertThat(subject.hasCredentialWritePermission("Luke", credentialName), is(true));
+    assertThat(subject.hasCredentialWritePermission("Luke", CREDENTIAL_NAME), is(true));
   }
 
   @Test
   public void hasCredentialWritePermission_whenActorOnlyHasOtherPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialWritePermission("Leia", credentialName), is(false));
+    assertThat(subject.hasCredentialWritePermission("Leia", CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasCredentialWritePermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialWritePermission("Darth", credentialName), is(false));
+    assertThat(subject.hasCredentialWritePermission("Darth", CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasCredentialDeletePermission_whenActorHasDeletePermission_returnsTrue() {
-    assertThat(subject.hasCredentialDeletePermission("Luke", credentialName), is(true));
+    assertThat(subject.hasCredentialDeletePermission("Luke", CREDENTIAL_NAME), is(true));
   }
 
   @Test
   public void hasCredentialDeletePermission_whenActorOnlyHasOtherPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialDeletePermission("Leia", credentialName), is(false));
+    assertThat(subject.hasCredentialDeletePermission("Leia", CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasCredentialDeletePermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialDeletePermission("Darth", credentialName), is(false));
+    assertThat(subject.hasCredentialDeletePermission("Darth", CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-    assertThat(subject.hasReadPermission("Luke", new CredentialName("/crossbow")),
+    assertThat(subject.hasReadPermission("Luke", CREDENTIAL_NAME_DOES_NOT_EXIST),
         is(false));
   }
 
   private void seedDatabase() {
-    final ValueCredentialData valueCredentialData = new ValueCredentialData("lightsaber");
+    final ValueCredentialData valueCredentialData = new ValueCredentialData(CREDENTIAL_NAME);
     credentialName = valueCredentialData.getCredentialName();
 
     credentialName = credentialNameDataService.save(credentialName);
