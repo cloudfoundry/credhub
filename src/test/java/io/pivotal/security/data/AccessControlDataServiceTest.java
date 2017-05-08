@@ -98,7 +98,7 @@ public class AccessControlDataServiceTest {
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ))
     );
 
-    subject.setAccessControlEntries(credentialName, aces);
+    subject.saveAccessControlEntries(credentialName, aces);
 
     List<AccessControlEntry> response = subject.getAccessControlList(credentialName);
 
@@ -122,7 +122,7 @@ public class AccessControlDataServiceTest {
     aces = singletonList(
         new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
 
-    subject.setAccessControlEntries(credentialName2, aces);
+    subject.saveAccessControlEntries(credentialName2, aces);
 
     List<AccessControlEntry> response = subject.getAccessControlList(credentialName2);
 
@@ -240,19 +240,19 @@ public class AccessControlDataServiceTest {
 
     credentialName = credentialNameRepository.saveAndFlush(credentialName);
 
-    subject.setAccessControlEntries(
+    subject.saveAccessControlEntries(
         credentialName,
         singletonList(new AccessControlEntry("Luke",
             singletonList(AccessControlOperation.WRITE)))
     );
 
-    subject.setAccessControlEntries(
+    subject.saveAccessControlEntries(
         credentialName,
         singletonList(new AccessControlEntry("Leia",
             singletonList(AccessControlOperation.READ)))
     );
 
-    subject.setAccessControlEntries(
+    subject.saveAccessControlEntries(
         credentialName,
         singletonList(new AccessControlEntry("HanSolo",
             singletonList(AccessControlOperation.READ_ACL)))

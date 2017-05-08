@@ -20,13 +20,13 @@ import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.handler.SetRequestHandler;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialSetRequest;
-import io.pivotal.security.service.SetService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
@@ -106,7 +106,7 @@ public class CredentialsControllerTypeSpecificSetTest {
   CredentialDataService credentialDataService;
 
   @SpyBean
-  SetService setService;
+  SetRequestHandler setRequestHandler;
 
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
@@ -347,8 +347,8 @@ public class CredentialsControllerTypeSpecificSetTest {
           });
 
           it("asks the data service to persist the credential", () -> {
-            verify(setService, times(1))
-                .performSet(
+            verify(setRequestHandler, times(1))
+                .handleSetRequest(
                     isA(UserContext.class),
                     any(),
                     isA(BaseCredentialSetRequest.class),

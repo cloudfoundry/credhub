@@ -12,13 +12,13 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialHandler;
+import io.pivotal.security.handler.SetRequestHandler;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.service.GenerateService;
 import io.pivotal.security.service.RegenerateService;
-import io.pivotal.security.service.SetService;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResult;
@@ -63,27 +63,27 @@ public class CredentialsController {
   private final CredentialDataService credentialDataService;
   private final EventAuditLogService eventAuditLogService;
   private final ObjectMapper objectMapper;
+  private final SetRequestHandler setRequestHandler;
   private final GenerateService generateService;
-  private final SetService setService;
   private final RegenerateService regenerateService;
   private final CredentialHandler credentialHandler;
 
   @Autowired
   public CredentialsController(CredentialDataService credentialDataService,
-                               EventAuditLogService eventAuditLogService,
-                               ObjectMapper objectMapper,
-                               GenerateService generateService,
-                               SetService setService,
-                               RegenerateService regenerateService,
-                               CredentialHandler credentialHandler
+      EventAuditLogService eventAuditLogService,
+      ObjectMapper objectMapper,
+      GenerateService generateService,
+      RegenerateService regenerateService,
+      CredentialHandler credentialHandler,
+      SetRequestHandler setRequestHandler
   ) {
     this.credentialDataService = credentialDataService;
     this.eventAuditLogService = eventAuditLogService;
     this.objectMapper = objectMapper;
     this.generateService = generateService;
-    this.setService = setService;
     this.regenerateService = regenerateService;
     this.credentialHandler = credentialHandler;
+    this.setRequestHandler = setRequestHandler;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
@@ -233,9 +233,8 @@ public class CredentialsController {
   ) {
     try {
       String requestString = IOUtils.toString(new InputStreamReader(inputStream));
-      boolean isRegenerateRequest = readRegenerateFlagFrom(requestString);
 
-      if (isRegenerateRequest) {
+      if (readRegenerateFlagFrom(requestString)) {
         // If it's a regenerate request deserialization is simple; the generation case requires
         // polymorphic deserialization See BaseCredentialGenerateRequest to see how that's done. It
         // would be nice if Jackson could pick a subclass based on an arbitrary function, since
@@ -295,8 +294,7 @@ public class CredentialsController {
       List<EventAuditRecordParameters> parametersList,
       AccessControlEntry currentUserAccessControlEntry
   ) {
-    return setService
-        .performSet(userContext, parametersList, requestBody, currentUserAccessControlEntry);
+    return setRequestHandler.handleSetRequest(userContext, parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {

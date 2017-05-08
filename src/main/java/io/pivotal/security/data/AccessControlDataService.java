@@ -27,7 +27,7 @@ public class AccessControlDataService {
     return createViewsForAllAcesWithName(credentialName);
   }
 
-  public void setAccessControlEntries(
+  public void saveAccessControlEntries(
       CredentialName credentialName,
       List<AccessControlEntry> entries
   ) {

@@ -15,7 +15,17 @@ import io.pivotal.security.entity.RsaCredentialData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.UserCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.request.BaseCredentialGenerateRequest;
+import io.pivotal.security.request.CertificateGenerateRequest;
+import io.pivotal.security.request.CertificateGenerationParameters;
+import io.pivotal.security.request.PasswordGenerateRequest;
+import io.pivotal.security.request.RsaGenerateRequest;
+import io.pivotal.security.request.RsaGenerationParameters;
+import io.pivotal.security.request.SshGenerateRequest;
+import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
+import io.pivotal.security.request.UserGenerateRequest;
+import io.pivotal.security.service.GeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
