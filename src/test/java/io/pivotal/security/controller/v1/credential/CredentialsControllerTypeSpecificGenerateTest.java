@@ -37,7 +37,7 @@ import io.pivotal.security.request.DefaultCredentialGenerateRequest;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.service.GenerateRequestHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
@@ -110,7 +110,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
   CredentialDataService credentialDataService;
 
   @SpyBean
-  GenerateService generateService;
+  GenerateRequestHandler generateRequestHandler;
 
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
@@ -323,8 +323,8 @@ public class CredentialsControllerTypeSpecificGenerateTest {
           });
 
           it("asks the data service to persist the credential", () -> {
-            verify(generateService, times(1))
-                .performGenerate(
+            verify(generateRequestHandler, times(1))
+                .handle(
                     isA(UserContext.class),
                     any(),
                     isA(BaseCredentialGenerateRequest.class),

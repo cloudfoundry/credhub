@@ -23,7 +23,7 @@ public class SetRequestHandler {
     this.setService = setService;
   }
 
-  public CredentialView handleSetRequest(UserContext userContext,
+  public CredentialView handle(UserContext userContext,
       List<EventAuditRecordParameters> eventAuditRecordParameters,
       BaseCredentialSetRequest setRequest,
       AccessControlEntry currentEntry) {

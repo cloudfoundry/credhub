@@ -15,18 +15,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class GenerateService {
+public class GenerateRequestHandler {
 
   private final GeneratorService generatorService;
   private final SetService setService;
 
   @Autowired
-  public GenerateService(GeneratorService generatorService, SetService setService) {
+  public GenerateRequestHandler(GeneratorService generatorService, SetService setService) {
     this.generatorService = generatorService;
     this.setService = setService;
   }
 
-  public CredentialView performGenerate(
+  public CredentialView handle(
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       BaseCredentialGenerateRequest requestBody,

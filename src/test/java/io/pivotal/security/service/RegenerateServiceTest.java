@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 public class RegenerateServiceTest {
 
   private CredentialDataService credentialDataService;
-  private GenerateService generateService;
+  private GenerateRequestHandler generateRequestHandler;
   private RegenerateService subject;
 
   private PasswordCredential passwordCredential;
@@ -56,7 +56,7 @@ public class RegenerateServiceTest {
   {
     beforeEach(() -> {
       credentialDataService = mock(CredentialDataService.class);
-      generateService = mock(GenerateService.class);
+      generateRequestHandler = mock(GenerateRequestHandler.class);
       passwordCredential = mock(PasswordCredential.class);
       sshCredential = mock(SshCredential.class);
       rsaCredential = mock(RsaCredential.class);
@@ -64,15 +64,15 @@ public class RegenerateServiceTest {
 
       when(credentialDataService.findMostRecent(eq("unsupported")))
           .thenReturn(credentialOfUnsupportedType);
-      when(generateService
-          .performGenerate(
+      when(generateRequestHandler
+          .handle(
               isA(UserContext.class),
               any(),
               isA(BaseCredentialGenerateRequest.class),
               isA(AccessControlEntry.class)))
           .thenReturn(mock(CredentialView.class));
       credentialOfUnsupportedType = new JsonCredential();
-      subject = new RegenerateService(credentialDataService, generateService);
+      subject = new RegenerateService(credentialDataService, generateRequestHandler);
     });
 
     describe("#performRegenerate", () -> {
@@ -100,8 +100,8 @@ public class RegenerateServiceTest {
             ArgumentCaptor<BaseCredentialGenerateRequest> generateRequestCaptor =
                 ArgumentCaptor.forClass(BaseCredentialGenerateRequest.class);
 
-            verify(generateService)
-                .performGenerate(
+            verify(generateRequestHandler)
+                .handle(
                     isA(UserContext.class),
                     any(),
                     generateRequestCaptor.capture(),
@@ -156,8 +156,8 @@ public class RegenerateServiceTest {
             ArgumentCaptor<BaseCredentialGenerateRequest> generateRequestCaptor =
                 ArgumentCaptor.forClass(BaseCredentialGenerateRequest.class);
 
-            verify(generateService)
-                .performGenerate(
+            verify(generateRequestHandler)
+                .handle(
                     isA(UserContext.class),
                     eq(parametersList),
                     generateRequestCaptor.capture(),
@@ -188,8 +188,8 @@ public class RegenerateServiceTest {
             ArgumentCaptor<BaseCredentialGenerateRequest> generateRequestCaptor =
                 ArgumentCaptor.forClass(BaseCredentialGenerateRequest.class);
 
-            verify(generateService)
-                .performGenerate(
+            verify(generateRequestHandler)
+                .handle(
                     isA(UserContext.class),
                     eq(parametersList),
                     generateRequestCaptor.capture(),

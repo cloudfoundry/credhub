@@ -74,7 +74,7 @@ public class SetRequestHandlerTest {
         .thenReturn(credentialView);
 
     final CredentialView returnValue = subject
-        .handleSetRequest(
+        .handle(
             userContext,
             eventAuditRecordParameters,
             setRequest,
@@ -113,7 +113,7 @@ public class SetRequestHandlerTest {
         .thenReturn(credentialView);
 
     final CredentialView returnValue = subject
-        .handleSetRequest(
+        .handle(
             userContext,
             eventAuditRecordParameters,
             setRequest,

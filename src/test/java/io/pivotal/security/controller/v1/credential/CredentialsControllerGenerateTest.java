@@ -40,7 +40,7 @@ import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
-import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.service.GenerateRequestHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import java.time.Instant;
@@ -72,7 +72,7 @@ public class CredentialsControllerGenerateTest {
   CredentialDataService credentialDataService;
 
   @SpyBean
-  GenerateService generateService;
+  GenerateRequestHandler generateRequestHandler;
 
   @MockBean
   PassayStringCredentialGenerator credentialGenerator;

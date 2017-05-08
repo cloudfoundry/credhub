@@ -28,15 +28,15 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 public class RegenerateService {
 
   private CredentialDataService credentialDataService;
-  private GenerateService generateService;
+  private GenerateRequestHandler generateRequestHandler;
   private Map<String, Supplier<Regeneratable>> regeneratableTypes;
 
   RegenerateService(
       CredentialDataService credentialDataService,
-      GenerateService generateService
+      GenerateRequestHandler generateRequestHandler
   ) {
     this.credentialDataService = credentialDataService;
-    this.generateService = generateService;
+    this.generateRequestHandler = generateRequestHandler;
 
     this.regeneratableTypes = new HashMap<>();
     this.regeneratableTypes.put("password", PasswordCredentialRegeneratable::new);
@@ -64,7 +64,7 @@ public class RegenerateService {
       parametersList.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, requestBody.getName()));
     }
 
-    return generateService
-        .performGenerate(userContext, parametersList, regeneratable.createGenerateRequest(credential), currentUserAccessControlEntry);
+    return generateRequestHandler
+        .handle(userContext, parametersList, regeneratable.createGenerateRequest(credential), currentUserAccessControlEntry);
   }
 }

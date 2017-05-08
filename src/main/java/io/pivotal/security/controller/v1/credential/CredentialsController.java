@@ -17,7 +17,7 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
-import io.pivotal.security.service.GenerateService;
+import io.pivotal.security.service.GenerateRequestHandler;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
@@ -64,7 +64,7 @@ public class CredentialsController {
   private final EventAuditLogService eventAuditLogService;
   private final ObjectMapper objectMapper;
   private final SetRequestHandler setRequestHandler;
-  private final GenerateService generateService;
+  private final GenerateRequestHandler generateRequestHandler;
   private final RegenerateService regenerateService;
   private final CredentialHandler credentialHandler;
 
@@ -72,7 +72,7 @@ public class CredentialsController {
   public CredentialsController(CredentialDataService credentialDataService,
       EventAuditLogService eventAuditLogService,
       ObjectMapper objectMapper,
-      GenerateService generateService,
+      GenerateRequestHandler generateRequestHandler,
       RegenerateService regenerateService,
       CredentialHandler credentialHandler,
       SetRequestHandler setRequestHandler
@@ -80,7 +80,7 @@ public class CredentialsController {
     this.credentialDataService = credentialDataService;
     this.eventAuditLogService = eventAuditLogService;
     this.objectMapper = objectMapper;
-    this.generateService = generateService;
+    this.generateRequestHandler = generateRequestHandler;
     this.regenerateService = regenerateService;
     this.credentialHandler = credentialHandler;
     this.setRequestHandler = setRequestHandler;
@@ -261,8 +261,8 @@ public class CredentialsController {
         .readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
 
-    return generateService
-        .performGenerate(userContext, parametersList, requestBody, currentUserAccessControlEntry);
+    return generateRequestHandler
+        .handle(userContext, parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private CredentialView handleRegenerateRequest(
@@ -294,7 +294,7 @@ public class CredentialsController {
       List<EventAuditRecordParameters> parametersList,
       AccessControlEntry currentUserAccessControlEntry
   ) {
-    return setRequestHandler.handleSetRequest(userContext, parametersList, requestBody, currentUserAccessControlEntry);
+    return setRequestHandler.handle(userContext, parametersList, requestBody, currentUserAccessControlEntry);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {

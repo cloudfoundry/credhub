@@ -348,7 +348,7 @@ public class CredentialsControllerTypeSpecificSetTest {
 
           it("asks the data service to persist the credential", () -> {
             verify(setRequestHandler, times(1))
-                .handleSetRequest(
+                .handle(
                     isA(UserContext.class),
                     any(),
                     isA(BaseCredentialSetRequest.class),
