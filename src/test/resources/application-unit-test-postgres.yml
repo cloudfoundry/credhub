@@ -4,8 +4,8 @@ spring:
     password: root
     url: jdbc:postgresql://localhost:5432/credhub_test?user=root
     tomcat:
-      max-active: 20
-      max-idle: 10
+      max-active: 4 # UserSaltMigrationTest ties up more than it ought to
+      max-idle: 0
 
 flyway:
   locations: classpath:/db/migration/common,classpath:/db/migration/postgres
