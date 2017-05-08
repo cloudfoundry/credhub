@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class AccessControlHandlerTest {
-  private static final CredentialName CREDENTIAL_NAME = new CredentialName("/test-credential");
+  private static final String CREDENTIAL_NAME = "/test-credential";
 
   private AccessControlHandler subject;
 
@@ -38,6 +38,7 @@ public class AccessControlHandlerTest {
   private AccessControlDataService accessControlDataService;
   private CredentialNameDataService credentialNameDataService;
 
+  private final CredentialName credentialName = new CredentialName(CREDENTIAL_NAME);
   private final UserContext userContext = mock(UserContext.class);
 
   @Before
@@ -51,7 +52,7 @@ public class AccessControlHandlerTest {
         credentialNameDataService
     );
 
-    when(credentialNameDataService.find(any(String.class))).thenReturn(CREDENTIAL_NAME);
+    when(credentialNameDataService.find(any(String.class))).thenReturn(credentialName);
   }
 
   @Test
@@ -80,7 +81,7 @@ public class AccessControlHandlerTest {
         operations
     );
     List<AccessControlEntry> accessControlList = newArrayList(accessControlEntry);
-    when(accessControlDataService.getAccessControlList(CREDENTIAL_NAME))
+    when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(accessControlList);
 
     AccessControlListResponse response = subject.getAccessControlListResponse(
@@ -122,7 +123,7 @@ public class AccessControlHandlerTest {
     List<AccessControlEntry> expectedControlList = newArrayList(accessControlEntry, preexistingAccessControlEntry);
 
     AccessEntriesRequest request = new AccessEntriesRequest("/test-credential", accessControlList);
-    when(accessControlDataService.getAccessControlList(CREDENTIAL_NAME))
+    when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(expectedControlList);
 
     AccessControlListResponse response = subject.setAccessControlEntries(request);
@@ -146,11 +147,11 @@ public class AccessControlHandlerTest {
 
   @Test
   public void deleteAccessControlEntries_deletesTheAce() {
-    when(credentialNameDataService.find("/test-credential")).thenReturn(CREDENTIAL_NAME);
+    when(credentialNameDataService.find("/test-credential")).thenReturn(credentialName);
 
     subject.deleteAccessControlEntries( "test-actor", "/test-credential");
 
     verify(accessControlDataService, times(1)).deleteAccessControlEntries(
-        "test-actor", CREDENTIAL_NAME);
+        "test-actor", credentialName);
   }
 }

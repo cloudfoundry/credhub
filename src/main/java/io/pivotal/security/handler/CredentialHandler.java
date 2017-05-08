@@ -29,9 +29,7 @@ public class CredentialHandler {
   }
 
   public void deleteCredential(UserContext userContext, String credentialName) {
-    Credential credential = credentialDataService.findMostRecent(credentialName);
-
-    if (credential != null && !permissionService.hasCredentialDeletePermission(userContext, credential)) {
+    if (!permissionService.hasCredentialDeletePermission(userContext, credentialName)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
@@ -44,14 +42,16 @@ public class CredentialHandler {
 
   public DataResponse getAllCredentialVersions(
       UserContext userContext,
-      EventAuditRecordParameters auditRecordParameters, String credentialName
+      EventAuditRecordParameters auditRecordParameters,
+      String credentialName
   ) {
     auditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
     auditRecordParameters.setCredentialName(credentialName);
 
     List<Credential> credentials = credentialDataService.findAllByName(credentialName);
 
-    if (credentials.isEmpty() || !permissionService.hasCredentialReadPermission(userContext, credentials.get(0))) {
+    // We need this extra check in case permissions aren't being enforced.
+    if (credentials.isEmpty() || !permissionService.hasCredentialReadPermission(userContext, credentialName)) {
       throw new EntryNotFoundException("error.credential_not_found");
     }
 
@@ -99,7 +99,7 @@ public class CredentialHandler {
       auditRecordParameters.setCredentialName(credential.getName());
     }
 
-    if (credential == null || !permissionService.hasCredentialReadPermission(userContext, credential)) {
+    if (credential == null || !permissionService.hasCredentialReadPermission(userContext, credential.getName())) {
       throw new EntryNotFoundException("error.credential_not_found");
     }
 

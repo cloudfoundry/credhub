@@ -166,7 +166,7 @@ public class CredentialServiceTest {
         currentUserPermissions);
 
     verify(permissionService)
-        .verifyCredentialWritePermission(userContext, existingCredential.getCredentialName());
+        .verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -185,7 +185,7 @@ public class CredentialServiceTest {
         currentUserPermissions);
 
     verify(permissionService, times(0))
-        .verifyCredentialWritePermission(userContext, existingCredential.getCredentialName());
+        .verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test

@@ -2,8 +2,6 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.PermissionException;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,17 +25,11 @@ public class PermissionServiceTest {
 
   private UserContext userContext;
   private AccessControlDataService accessControlDataService;
-  private SshCredential credential = mock(SshCredential.class);
-
-  private CredentialName credentialName;
 
   @Before
   public void beforeEach() {
-    credentialName = new CredentialName(CREDENTIAL_NAME);
-
     userContext = mock(UserContext.class);
     when(userContext.getAclUser()).thenReturn("test-actor");
-    when(credential.getCredentialName()).thenReturn(credentialName);
 
     accessControlDataService = mock(AccessControlDataService.class);
 
@@ -51,7 +43,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyAclReadPermission(userContext, credentialName);
+    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -62,7 +54,7 @@ public class PermissionServiceTest {
         .thenReturn(false);
 
     try {
-      subject.verifyAclReadPermission(userContext, credentialName);
+      subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (PermissionException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_acl_read"));
@@ -76,7 +68,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyAclReadPermission(userContext, credentialName);
+    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -86,7 +78,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    subject.verifyAclReadPermission(userContext, credentialName);
+    subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -96,7 +88,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyCredentialWritePermission(userContext, credentialName);
+    subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -107,7 +99,7 @@ public class PermissionServiceTest {
         .thenReturn(false);
 
     try {
-      subject.verifyCredentialWritePermission(userContext, credentialName);
+      subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (PermissionException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
@@ -121,7 +113,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyCredentialWritePermission(userContext, credentialName);
+    subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -131,7 +123,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    subject.verifyCredentialWritePermission(userContext, credentialName);
+    subject.verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -141,7 +133,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    assertTrue(subject.hasCredentialReadPermission(userContext, credential));
+    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
@@ -151,7 +143,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    assertFalse(subject.hasCredentialReadPermission(userContext, credential));
+    assertFalse(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
@@ -161,7 +153,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    assertTrue(subject.hasCredentialReadPermission(userContext, credential));
+    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
@@ -171,7 +163,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    assertTrue(subject.hasCredentialReadPermission(userContext, credential));
+    assertTrue(subject.hasCredentialReadPermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
@@ -181,7 +173,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    assertTrue(subject.hasCredentialDeletePermission(userContext, credential));
+    assertTrue(subject.hasCredentialDeletePermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
@@ -191,7 +183,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    assertFalse(subject.hasCredentialDeletePermission(userContext, credential));
+    assertFalse(subject.hasCredentialDeletePermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
@@ -201,7 +193,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    assertTrue(subject.hasCredentialDeletePermission(userContext, credential));
+    assertTrue(subject.hasCredentialDeletePermission(userContext, CREDENTIAL_NAME));
   }
 
   @Test
@@ -211,7 +203,7 @@ public class PermissionServiceTest {
     when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    assertTrue(subject.hasCredentialDeletePermission(userContext, credential));
+    assertTrue(subject.hasCredentialDeletePermission(userContext, CREDENTIAL_NAME));
   }
 
   private void initializeEnforcement(boolean enabled) {

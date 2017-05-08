@@ -65,7 +65,7 @@ public class CredentialService {
 
     if (existingCredential != null) {
       permissionService
-          .verifyCredentialWritePermission(userContext, existingCredential.getCredentialName());
+          .verifyCredentialWritePermission(userContext, credentialName);
     }
 
     if (existingCredential != null && !existingCredential.getCredentialType().equals(type)) {

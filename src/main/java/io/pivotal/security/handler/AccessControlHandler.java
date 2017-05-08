@@ -34,7 +34,7 @@ public class AccessControlHandler {
     try {
       final CredentialName credentialName = getCredentialName(name);
 
-      permissionService.verifyAclReadPermission(userContext, credentialName);
+      permissionService.verifyAclReadPermission(userContext, name);
 
       return new AccessControlListResponse(
           credentialName.getName(),
