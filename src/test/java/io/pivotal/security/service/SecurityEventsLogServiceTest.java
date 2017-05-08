@@ -1,12 +1,13 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.RunWith;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.time.Instant;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -22,30 +23,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
-
 @RunWith(Spectrum.class)
 public class SecurityEventsLogServiceTest {
 
   private final Instant now = Instant.now();
-  private final String version = "FAKE-VERSION";
+  private final String fakeVersion = "FAKE-VERSION";
 
   private Logger securityEventsLogger;
   private CurrentTimeProvider currentTimeProvider;
-  private VersionProvider versionProvider;
   private SecurityEventsLogService subject;
 
   {
     beforeEach(() -> {
       securityEventsLogger = mock(Logger.class);
 
-      versionProvider = mock(VersionProvider.class);
-      when(versionProvider.getVersion()).thenReturn(version);
-
       currentTimeProvider = mock(CurrentTimeProvider.class);
       when(currentTimeProvider.getInstant()).thenReturn(now);
 
-      subject = new SecurityEventsLogService(securityEventsLogger, versionProvider);
+      subject = new SecurityEventsLogService(securityEventsLogger, fakeVersion);
     });
 
     afterEach(SecurityContextHolder::clearContext);
@@ -60,7 +55,7 @@ public class SecurityEventsLogServiceTest {
 
         verify(securityEventsLogger).info(
             "CEF:0|cloud_foundry|credhub|"
-                + version + "|GET /api/some-path|"
+                + fakeVersion + "|GET /api/some-path|"
                 + "GET /api/some-path|0|rt="
                 + String.valueOf(now.toEpochMilli())
                 + " suser=user-name "
@@ -86,7 +81,7 @@ public class SecurityEventsLogServiceTest {
 
         verify(securityEventsLogger).info(
             "CEF:0|cloud_foundry|credhub|"
-                + version
+                + fakeVersion
                 + "|GET /api/some-path|"
                 + "GET /api/some-path|0|rt="
                 + String.valueOf(now.toEpochMilli())
@@ -113,8 +108,8 @@ public class SecurityEventsLogServiceTest {
           );
           subject.log(requestAuditRecord);
 
-          assertThat(version, notNullValue());
-          assertThat(version.length(), greaterThan(0));
+          assertThat(fakeVersion, notNullValue());
+          assertThat(fakeVersion.length(), greaterThan(0));
 
           verify(securityEventsLogger).info(contains("request=/api/some-path requestMethod=GET"));
         });
@@ -125,8 +120,8 @@ public class SecurityEventsLogServiceTest {
           RequestAuditRecord requestAuditRecord = makeOperationAuditRecord("", AUTH_METHOD_UAA);
           subject.log(requestAuditRecord);
 
-          assertThat(version, notNullValue());
-          assertThat(version.length(), greaterThan(0));
+          assertThat(fakeVersion, notNullValue());
+          assertThat(fakeVersion.length(), greaterThan(0));
 
           verify(securityEventsLogger).info(contains("request=/api/some-path requestMethod=GET"));
         });

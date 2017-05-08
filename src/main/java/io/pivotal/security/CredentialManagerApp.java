@@ -2,7 +2,6 @@ package io.pivotal.security;
 
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import io.pivotal.security.config.AuthServerProperties;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
@@ -12,7 +11,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -20,7 +18,6 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
 
 @SpringBootApplication
-@EnableConfigurationProperties({AuthServerProperties.class})
 @EnableJpaAuditing(dateTimeProviderRef = "currentTimeProvider")
 public class CredentialManagerApp {
 

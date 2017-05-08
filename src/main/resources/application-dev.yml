@@ -1,3 +1,7 @@
+info:
+  app:
+    version: dev
+
 auth_server:
   # Public dummy UAA for local development usage only!
   # Username/password: credhub/password
