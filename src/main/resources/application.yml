@@ -1,6 +1,7 @@
 info:
   app:
     name: CredHub
+    version: default-placeholder
 
 security:
   oauth2:
