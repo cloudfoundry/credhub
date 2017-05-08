@@ -1,42 +1,44 @@
 package io.pivotal.security.controller.v1;
 
 import com.google.common.collect.ImmutableMap;
+import io.pivotal.security.config.AuthServerProperties;
+import io.pivotal.security.config.VersionProvider;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
+@SuppressWarnings("unused")
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class InfoController {
 
-  private final String uaaUrl;
-  private final String credhubVersion;
-  private String name;
+  private final AuthServerProperties authServerProperties;
+  private final Environment environment;
+  private final VersionProvider versionProvider;
 
   @Autowired
   InfoController(
-      @Value("${auth_server.url}") String uaaUrl,
-      @Value("${info.app.version}") String credhubVersion,
-      @Value("${info.app.name}") String name
+      AuthServerProperties authServerProperties,
+      Environment environment,
+      VersionProvider versionProvider
   ) {
-    this.uaaUrl = uaaUrl;
-    this.credhubVersion = credhubVersion;
-    this.name = name;
+    this.authServerProperties = authServerProperties;
+    this.environment = environment;
+    this.versionProvider = versionProvider;
   }
 
   @RequestMapping(method = RequestMethod.GET, path = "/info")
   public Map<String, ?> info() {
 
     return ImmutableMap.of(
-        "auth-server", ImmutableMap.of("url", uaaUrl),
+        "auth-server", ImmutableMap.of("url", authServerProperties.getUrl()),
         "app", ImmutableMap.of(
-            "name", name,
-            "version", credhubVersion
+            "name", environment.getProperty("info.app.name"),
+            "version", versionProvider.getVersion()
         ));
   }
 }
