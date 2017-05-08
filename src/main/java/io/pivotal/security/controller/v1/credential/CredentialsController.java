@@ -141,7 +141,7 @@ public class CredentialsController {
       eventAuditRecordParameters.setCredentialName(credentialName);
       eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
 
-      credentialHandler.deleteCredential(credentialName);
+      credentialHandler.deleteCredential(userContext, credentialName);
 
       return true;
     });

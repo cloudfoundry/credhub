@@ -170,6 +170,46 @@ public class PermissionServiceTest {
     assertTrue(subject.hasCredentialReadPermission(userContext, credential));
   }
 
+  @Test
+  public void hasCredentialDeletePermission_withEnforcement_whenTheUserPermission_returnsTrue() {
+    initializeEnforcement(true);
+
+    when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
+
+    assertTrue(subject.hasCredentialDeletePermission(userContext, credential));
+  }
+
+  @Test
+  public void hasCredentialDeletePermission_withEnforcement_whenTheUserDoesNotHavePermission_returnsFalse() {
+    initializeEnforcement(true);
+
+    when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
+
+    assertFalse(subject.hasCredentialDeletePermission(userContext, credential));
+  }
+
+  @Test
+  public void hasCredentialDeletePermission_withOutEnforcement_whenTheUserHasPermission_returnsTrue() {
+    initializeEnforcement(false);
+
+    when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
+
+    assertTrue(subject.hasCredentialDeletePermission(userContext, credential));
+  }
+
+  @Test
+  public void hasCredentialDeletePermission_withoutEnforcement_whenTheUserDoesNotHavePermission_returnsTrue() {
+    initializeEnforcement(false);
+
+    when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
+
+    assertTrue(subject.hasCredentialDeletePermission(userContext, credential));
+  }
+
   private void initializeEnforcement(boolean enabled) {
     ReflectionTestUtils
         .setField(subject, PermissionService.class, "enforcePermissions", enabled, boolean.class);

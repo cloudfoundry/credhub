@@ -74,6 +74,12 @@ public class AccessControlDataService {
     return accessEntryData != null && accessEntryData.hasWritePermission();
   }
 
+  public boolean hasCredentialDeletePermission(String actor, CredentialName credentialName) {
+    AccessEntryData accessEntryData =
+        accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
+    return accessEntryData != null && accessEntryData.hasDeletePermission();
+  }
+
   private void upsertAccessEntryOperations(CredentialName credentialName,
       List<AccessEntryData> accessEntries, String actor, List<AccessControlOperation> operations) {
     AccessEntryData entry = findAccessEntryForActor(accessEntries, actor);

@@ -1,7 +1,5 @@
 package io.pivotal.security.handler;
 
-import static java.util.Collections.singletonList;
-
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
@@ -11,10 +9,13 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
-import java.util.List;
-import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.function.Function;
+
+import static java.util.Collections.singletonList;
 
 @Component
 public class CredentialHandler {
@@ -27,7 +28,13 @@ public class CredentialHandler {
     this.permissionService = permissionService;
   }
 
-  public void deleteCredential(String credentialName) {
+  public void deleteCredential(UserContext userContext, String credentialName) {
+    Credential credential = credentialDataService.findMostRecent(credentialName);
+
+    if (credential != null && !permissionService.hasCredentialDeletePermission(userContext, credential)) {
+      throw new EntryNotFoundException("error.credential_not_found");
+    }
+
     boolean deleteSucceeded = credentialDataService.delete(credentialName);
 
     if (!deleteSucceeded) {

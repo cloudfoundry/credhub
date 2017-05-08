@@ -50,6 +50,15 @@ public class PermissionService {
     }
   }
 
+  public boolean hasCredentialDeletePermission(UserContext user, Credential credential) {
+    if (enforcePermissions) {
+      String actor = getActorFromUserContext(user);
+      return accessControlDataService.hasCredentialDeletePermission(actor, credential.getCredentialName());
+    } else {
+      return true;
+    }
+  }
+
   private String getActorFromUserContext(UserContext user) {
     return user.getAclUser();
   }

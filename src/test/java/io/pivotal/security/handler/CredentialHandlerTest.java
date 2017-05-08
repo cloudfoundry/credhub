@@ -1,17 +1,5 @@
 package io.pivotal.security.handler;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static java.util.Collections.emptyList;
-import static org.assertj.core.api.Java6Assertions.fail;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
@@ -22,12 +10,26 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
-import java.time.Instant;
-import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+
+import java.time.Instant;
+import java.util.List;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static java.util.Collections.emptyList;
+import static org.assertj.core.api.Java6Assertions.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
 public class CredentialHandlerTest {
@@ -66,18 +68,39 @@ public class CredentialHandlerTest {
   @Test
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
     when(credentialDataService.delete(CREDENTIAL_NAME)).thenReturn(true);
+    when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
+        .thenReturn(version1);
+    when(permissionService.hasCredentialDeletePermission(userContext, version1))
+        .thenReturn(true);
 
-    subject.deleteCredential(CREDENTIAL_NAME);
+    subject.deleteCredential(userContext, CREDENTIAL_NAME);
 
     verify(credentialDataService, times(1)).delete(CREDENTIAL_NAME);
   }
 
   @Test
+  public void deleteCredential_whenTheUserLacksPermission_throwsAnException() {
+    when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
+        .thenReturn(version1);
+    when(permissionService.hasCredentialDeletePermission(userContext, version1))
+        .thenReturn(false);
+
+    try {
+      subject.deleteCredential(userContext, CREDENTIAL_NAME);
+      fail("Should throw exception");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+    }
+  }
+
+  @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
+    when(permissionService.hasCredentialDeletePermission(any(), any()))
+        .thenReturn(true);
     when(credentialDataService.delete(CREDENTIAL_NAME)).thenReturn(false);
 
     try {
-      subject.deleteCredential(CREDENTIAL_NAME);
+      subject.deleteCredential(userContext, CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential_not_found"));

@@ -27,6 +27,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.x509;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -40,13 +41,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class CredentialAclEnforcementTest {
+  private static final String CREDENTIAL_NAME = "/TEST/CREDENTIAL";
 
   @Autowired
   WebApplicationContext webApplicationContext;
 
   private MockMvc mockMvc;
   private String uuid;
-  private String credentialName = "/" + this.getClass().getName();
 
   @Before
   public void setup() throws Exception {
@@ -58,18 +59,18 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void GET_byCredentialName_whenTheUserHasPermissionToReadCredential_returnsTheCredential() throws Exception {
-    final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + credentialName)
+    final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].type", equalTo("password")))
-        .andExpect(jsonPath("$.data[0].name", equalTo(credentialName)));
+        .andExpect(jsonPath("$.data[0].name", equalTo(CREDENTIAL_NAME)));
   }
 
   @Test
   public void GET_byCredentialName_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
-    final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + credentialName)
+    final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
     mockMvc.perform(get)
         .andDo(print())
@@ -85,7 +86,7 @@ public class CredentialAclEnforcementTest {
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.type", equalTo("password")))
-        .andExpect(jsonPath("$.name", equalTo(credentialName)));
+        .andExpect(jsonPath("$.name", equalTo(CREDENTIAL_NAME)));
   }
 
   @Test
@@ -107,7 +108,7 @@ public class CredentialAclEnforcementTest {
         .contentType(APPLICATION_JSON)
         // language=JSON
         .content("{\n"
-            + "  \"name\" : \"" + credentialName + "\",\n"
+            + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
             + "  \"value\" : \"Resistance is futile\",\n"
             + "  \"type\" : \"password\"\n"
             + "}")
@@ -121,13 +122,39 @@ public class CredentialAclEnforcementTest {
         .andExpect(jsonPath("$.error", equalTo(expectedError)));
   }
 
+  @Test
+  public void DELETE_whenTheUserHasPermissionToDeleteTheCredential_succeeds() throws Exception {
+    final MockHttpServletRequestBuilder deleteRequest = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    mockMvc.perform(deleteRequest)
+        .andExpect(status().isNoContent());
+
+    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    mockMvc.perform(getRequest)
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  public void DELETE_whenTheUserLacksPermissionToDeleteTheCredential_returns404() throws Exception {
+    final MockHttpServletRequestBuilder deleteRequest = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
+    mockMvc.perform(deleteRequest)
+        .andExpect(status().isNotFound());
+
+    final MockHttpServletRequestBuilder getRequest = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
+    mockMvc.perform(getRequest)
+        .andExpect(status().isOk());
+  }
+
   private void seedCredential() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
-            + "  \"name\": \"" + credentialName + "\",\n"
+            + "  \"name\": \"" + CREDENTIAL_NAME + "\",\n"
             + "  \"type\": \"password\","
             + "  \"access_control_entries\": [\n"
             + "     { \n"
