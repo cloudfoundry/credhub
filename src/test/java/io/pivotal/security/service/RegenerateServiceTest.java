@@ -52,7 +52,7 @@ public class RegenerateServiceTest {
   private JsonCredential credentialOfUnsupportedType;
   private StringGenerationParameters expectedParameters;
   private List<EventAuditRecordParameters> parametersList;
-  private SetService setService;
+  private CredentialService credentialService;
   private AccessControlEntry currentUser;
 
   private GeneratorService generatorService;
@@ -66,15 +66,15 @@ public class RegenerateServiceTest {
       sshCredential = mock(SshCredential.class);
       rsaCredential = mock(RsaCredential.class);
       parametersList = newArrayList();
-      setService = mock(SetService.class);
+      credentialService = mock(CredentialService.class);
       generatorService = mock(GeneratorService.class);
       userContext = mock(UserContext.class);
       currentUser = mock(AccessControlEntry.class);
 
       when(credentialDataService.findMostRecent(eq("unsupported")))
           .thenReturn(credentialOfUnsupportedType);
-      when(setService
-          .performSet(
+      when(credentialService
+          .save(
               eq(userContext),
               eq(parametersList),
               eq("password"),
@@ -86,7 +86,7 @@ public class RegenerateServiceTest {
               any(AccessControlEntry.class)))
           .thenReturn(mock(CredentialView.class));
       credentialOfUnsupportedType = new JsonCredential();
-      subject = new RegenerateService(credentialDataService, setService,
+      subject = new RegenerateService(credentialDataService, credentialService,
           generatorService);
     });
 
@@ -118,8 +118,8 @@ public class RegenerateServiceTest {
         describe("when regenerating password", () -> {
           it("should generate a new password", () -> {
 
-            verify(setService)
-                .performSet(
+            verify(credentialService)
+                .save(
                     eq(userContext),
                     eq(parametersList),
                     eq("password"),
@@ -170,8 +170,8 @@ public class RegenerateServiceTest {
           });
 
           it("should generate a new ssh key pair", () -> {
-            verify(setService)
-                .performSet(
+            verify(credentialService)
+                .save(
                     eq(userContext),
                     eq(parametersList),
                     eq("ssh"),
@@ -200,8 +200,8 @@ public class RegenerateServiceTest {
           });
 
           it("should generate a new rsa key pair", () -> {
-            verify(setService)
-                .performSet(
+            verify(credentialService)
+                .save(
                 eq(userContext),
                 eq(parametersList),
                 eq("rsa"),

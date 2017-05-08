@@ -18,12 +18,12 @@ import java.util.List;
 public class GenerateRequestHandler {
 
   private final GeneratorService generatorService;
-  private final SetService setService;
+  private final CredentialService credentialService;
 
   @Autowired
-  public GenerateRequestHandler(GeneratorService generatorService, SetService setService) {
+  public GenerateRequestHandler(GeneratorService generatorService, CredentialService credentialService) {
     this.generatorService = generatorService;
-    this.setService = setService;
+    this.credentialService = credentialService;
   }
 
   public CredentialView handle(
@@ -39,7 +39,7 @@ public class GenerateRequestHandler {
       generationParameters = ((PasswordGenerateRequest) requestBody).getGenerationParameters();
     }
 
-    return setService.performSet(userContext,
+    return credentialService.save(userContext,
         parametersList,
         requestBody.getName(),
         requestBody.isOverwrite(),

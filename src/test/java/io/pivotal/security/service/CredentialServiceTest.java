@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(JUnit4.class)
-public class SetServiceTest {
+public class CredentialServiceTest {
 
   @Mock
   private CredentialDataService credentialDataService;
@@ -60,7 +60,7 @@ public class SetServiceTest {
   @Mock
   private CredentialFactory credentialFactory;
 
-  private SetService subject;
+  private CredentialService subject;
 
   private Credential existingCredential;
   private UserContext userContext;
@@ -76,11 +76,10 @@ public class SetServiceTest {
   public void setUp() throws Exception {
     initMocks(this);
 
-    subject = new SetService(
+    subject = new CredentialService(
         credentialDataService,
         accessControlDataService,
         permissionService,
-        encryptor,
         credentialFactory);
 
     userContext = mock(UserContext.class);
@@ -100,7 +99,7 @@ public class SetServiceTest {
   @Test(expected = ParameterizedValidationException.class)
   public void performSet_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -115,7 +114,7 @@ public class SetServiceTest {
   @Test
   public void performSet_whenThereIsAnExistingCredentialAndOverwriteIsFalse_itLogsCREDENTIAL_ACCESS() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -136,7 +135,7 @@ public class SetServiceTest {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
 
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -154,7 +153,7 @@ public class SetServiceTest {
   @Test
   public void performSet_whenThereIsAnExistingCredential_itShouldCallVerifyCredentialWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -173,7 +172,7 @@ public class SetServiceTest {
   public void performSet_whenThereIsNoExistingCredential_itShouldNotCallVerifyCredentialWritePermission() {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -192,7 +191,7 @@ public class SetServiceTest {
   public void performSet_whenThereIsNoExistingCredential_itShouldAddAceForTheCurrentUser() {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -217,7 +216,7 @@ public class SetServiceTest {
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
 
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -244,7 +243,7 @@ public class SetServiceTest {
         null,
         generationParameters)).thenReturn(newVersion);
 
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -263,7 +262,7 @@ public class SetServiceTest {
     PasswordCredential credential = new PasswordCredential().setEncryptor(encryptor);
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
 
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,
@@ -288,7 +287,7 @@ public class SetServiceTest {
         new AccessControlEntry("McCoy", Arrays.asList(DELETE))
     ));
 
-    subject.performSet(
+    subject.save(
         userContext,
         parametersList,
         CREDENTIAL_NAME,

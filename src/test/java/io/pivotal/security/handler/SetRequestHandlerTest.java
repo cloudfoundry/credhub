@@ -8,7 +8,7 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserSetRequest;
-import io.pivotal.security.service.SetService;
+import io.pivotal.security.service.CredentialService;
 import io.pivotal.security.view.CredentialView;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.when;
 public class SetRequestHandlerTest {
 
   @MockBean
-  private SetService setService;
+  private CredentialService credentialService;
 
   private SetRequestHandler subject;
 
@@ -38,7 +38,7 @@ public class SetRequestHandlerTest {
 
   @Before
   public void setUp() throws Exception {
-    subject = new SetRequestHandler(setService);
+    subject = new SetRequestHandler(credentialService);
 
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
@@ -61,7 +61,7 @@ public class SetRequestHandlerTest {
 
     CredentialView credentialView = mock(CredentialView.class);
 
-    when(setService.performSet(
+    when(credentialService.save(
         userContext,
         eventAuditRecordParameters,
         "government",
@@ -100,7 +100,7 @@ public class SetRequestHandlerTest {
 
     CredentialView credentialView = mock(CredentialView.class);
 
-    when(setService.performSet(
+    when(credentialService.save(
         userContext,
         eventAuditRecordParameters,
         "captain",

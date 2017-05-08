@@ -6,7 +6,7 @@ import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.SetService;
+import io.pivotal.security.service.CredentialService;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,11 +16,11 @@ import java.util.List;
 @Component
 public class SetRequestHandler {
 
-  private SetService setService;
+  private CredentialService credentialService;
 
   @Autowired
-  public SetRequestHandler(SetService setService) {
-    this.setService = setService;
+  public SetRequestHandler(CredentialService credentialService) {
+    this.credentialService = credentialService;
   }
 
   public CredentialView handle(UserContext userContext,
@@ -34,7 +34,7 @@ public class SetRequestHandler {
       generationParameters = ((PasswordSetRequest) setRequest).getGenerationParameters();
     }
 
-    return setService.performSet(
+    return credentialService.save(
         userContext,
         eventAuditRecordParameters,
         setRequest.getName(),

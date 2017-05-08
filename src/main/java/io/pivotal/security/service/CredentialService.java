@@ -8,7 +8,6 @@ import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
-import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -24,30 +23,27 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 
 @Service
-public class SetService {
+public class CredentialService {
 
   private final CredentialDataService credentialDataService;
   private final AccessControlDataService accessControlDataService;
   private PermissionService permissionService;
-  private final Encryptor encryptor;
   private final CredentialFactory credentialFactory;
 
   @Autowired
-  public SetService(
+  public CredentialService(
       CredentialDataService credentialDataService,
       AccessControlDataService accessControlDataService,
       PermissionService permissionService,
-      Encryptor encryptor,
       CredentialFactory credentialFactory
   ) {
     this.credentialDataService = credentialDataService;
     this.accessControlDataService = accessControlDataService;
     this.permissionService = permissionService;
-    this.encryptor = encryptor;
     this.credentialFactory = credentialFactory;
   }
 
-  public CredentialView performSet(
+  public CredentialView save(
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       String credentialName,

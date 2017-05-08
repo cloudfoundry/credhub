@@ -34,15 +34,15 @@ public class RegenerateService {
 
   private CredentialDataService credentialDataService;
   private Map<String, Supplier<Regeneratable>> regeneratableTypes;
-  private SetService setService;
+  private CredentialService credentialService;
   private GeneratorService generatorService;
 
   RegenerateService(
       CredentialDataService credentialDataService,
-      SetService setService,
+      CredentialService credentialService,
       GeneratorService generatorService) {
     this.credentialDataService = credentialDataService;
-    this.setService = setService;
+    this.credentialService = credentialService;
     this.generatorService = generatorService;
 
     this.regeneratableTypes = new HashMap<>();
@@ -82,7 +82,7 @@ public class RegenerateService {
       generationParameters = ((PasswordGenerateRequest) generateRequest).getGenerationParameters();
     }
 
-    return setService.performSet(
+    return credentialService.save(
         userContext,
         parametersList,
         generateRequest.getName(),
