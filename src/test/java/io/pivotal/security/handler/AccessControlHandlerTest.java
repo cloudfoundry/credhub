@@ -23,8 +23,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -111,6 +111,9 @@ public class AccessControlHandlerTest {
 
   @Test
   public void setAccessControlEntries_setsAndReturnsTheAces() {
+    when(permissionService.hasAclWritePermission(userContext, "/test-credential"))
+        .thenReturn(true);
+
     ArrayList<AccessControlOperation> operations = newArrayList(
         AccessControlOperation.READ,
         AccessControlOperation.WRITE
@@ -146,15 +149,16 @@ public class AccessControlHandlerTest {
     assertThat(entry2.getAllowedOperations(), contains(equalTo(AccessControlOperation.READ)));
   }
 
-  @Test(expected = PermissionException.class)
-  public void setAccessControlEntries_verifiesUserHasPermission() {
-    doThrow(new PermissionException("test"))
-        .when(permissionService).verifyAclWritePermission(any(), any());
+  @Test
+  public void setAccessControlEntries_whenUserDoesNotHavePermission_throwsException() {
+    when(permissionService.hasAclWritePermission(userContext, "/test/credential"))
+        .thenReturn(false);
 
     try {
       subject.setAccessControlEntries(userContext, "/test/credential", emptyList());
-    } finally {
-      verify(permissionService, times(1)).verifyAclWritePermission(userContext, "/test/credential");
+      fail("should throw");
+    } catch (PermissionException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
       verify(accessControlDataService, times(0)).saveAccessControlEntries(any(), any());
     }
   }

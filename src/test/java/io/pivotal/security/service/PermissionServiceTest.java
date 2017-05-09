@@ -82,48 +82,43 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void verifyAclWritePermission_withEnforcement_whenTheUserHasPermission_doesNothing() {
+  public void hasAclWritePermission_withEnforcement_whenTheUserHasPermission_returnsTrue() {
     initializeEnforcement(true);
 
     when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
+    assertThat(subject.hasAclWritePermission(userContext, CREDENTIAL_NAME), equalTo(true));
   }
 
   @Test
-  public void verifyAclWritePermission_withEnforcement_whenTheUserDoesNotHavePermission_throwsException() {
+  public void hasAclWritePermission_withEnforcement_whenTheUserDoesNotHavePermission_returnsFalse() {
     initializeEnforcement(true);
 
     when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    try {
-      subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
-      fail("should throw exception");
-    } catch (PermissionException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
-    }
+    assertThat(subject.hasAclWritePermission(userContext, CREDENTIAL_NAME), equalTo(false));
   }
 
   @Test
-  public void verifyAclWritePermission_withoutEnforcement_whenTheUserHasPermission_doesNothing() {
+  public void hasAclWritePermission_withoutEnforcement_whenTheUserHasPermission_returnsTrue() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
+    assertThat(subject.hasAclWritePermission(userContext, CREDENTIAL_NAME), equalTo(true));
   }
 
   @Test
-  public void verifyAclWritePermission_withoutEnforcement_whenTheUserDoesNotHavePermission_doesNothing() {
+  public void hasAclWritePermission_withoutEnforcement_whenTheUserDoesNotHavePermission_returnsTrue() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
         .thenReturn(false);
 
-    subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
+    assertThat(subject.hasAclWritePermission(userContext, CREDENTIAL_NAME), equalTo(true));
   }
 
   @Test
