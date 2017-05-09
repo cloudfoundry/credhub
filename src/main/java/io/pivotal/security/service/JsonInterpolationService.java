@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.InvalidJsonException;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
@@ -12,7 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.InvalidObjectException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 
 @Service
 public class JsonInterpolationService {
@@ -24,7 +28,8 @@ public class JsonInterpolationService {
   }
 
   public DocumentContext interpolateCredhubReferences(String requestBody,
-                                                      CredentialDataService credentialDataService) throws Exception {
+      CredentialDataService credentialDataService,
+      List<EventAuditRecordParameters> eventAuditRecordParameters) throws Exception {
     DocumentContext requestJson = parseToJson(requestBody);
 
     Object request = requestJson.json();
@@ -57,12 +62,14 @@ public class JsonInterpolationService {
               continue;
             }
             String credentialName = getCredentialNameFromRef((String) credhubRef);
+
             Credential credential = credentialDataService.findMostRecent(credentialName);
             if (credential == null) {
               throw new InvalidObjectException("error.invalid_access");
             }
             if (credential instanceof JsonCredential) {
               propertiesMap.put("credentials", ((JsonCredential) credential).getValue());
+              eventAuditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credential.getName()));
             } else {
               throw new ParameterizedValidationException("error.invalid_interpolation_type",
                   credentialName);
