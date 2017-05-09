@@ -6,7 +6,6 @@ import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.junit.Before;
@@ -122,11 +121,10 @@ public class AccessControlHandlerTest {
     );
     List<AccessControlEntry> expectedControlList = newArrayList(accessControlEntry, preexistingAccessControlEntry);
 
-    AccessEntriesRequest request = new AccessEntriesRequest("/test-credential", accessControlList);
     when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(expectedControlList);
 
-    AccessControlListResponse response = subject.setAccessControlEntries(request);
+    AccessControlListResponse response = subject.setAccessControlEntries("/test-credential", accessControlList);
 
     List<AccessControlEntry> accessControlEntries = response.getAccessControlList();
 

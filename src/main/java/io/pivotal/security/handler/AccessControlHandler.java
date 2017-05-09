@@ -7,11 +7,12 @@ import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class AccessControlHandler {
@@ -46,10 +47,11 @@ public class AccessControlHandler {
     }
   }
 
-  public AccessControlListResponse setAccessControlEntries(AccessEntriesRequest request) {
-    final CredentialName credentialName = getCredentialName(request.getCredentialName());
+  public AccessControlListResponse setAccessControlEntries(String name, List<AccessControlEntry> accessControlEntryList) {
+    final CredentialName credentialName = getCredentialName(name);
+
     accessControlDataService
-        .saveAccessControlEntries(credentialName, request.getAccessControlEntries());
+        .saveAccessControlEntries(credentialName, accessControlEntryList);
 
     return new AccessControlListResponse(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
   }

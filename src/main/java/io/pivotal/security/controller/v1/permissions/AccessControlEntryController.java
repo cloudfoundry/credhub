@@ -1,10 +1,5 @@
 package io.pivotal.security.controller.v1.permissions;
 
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
-import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
-import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionEventAuditRecordParameters;
-import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
-
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
@@ -23,6 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
+import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionEventAuditRecordParameters;
+import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
 
 @RestController
 @RequestMapping(path = "/api/v1/aces", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -53,7 +53,10 @@ public class AccessControlEntryController {
           accessEntriesRequest.getCredentialName(),
           accessEntriesRequest.getAccessControlEntries())
       );
-      return accessControlHandler.setAccessControlEntries(accessEntriesRequest);
+      return accessControlHandler.setAccessControlEntries(
+          accessEntriesRequest.getCredentialName(),
+          accessEntriesRequest.getAccessControlEntries()
+      );
     });
   }
 

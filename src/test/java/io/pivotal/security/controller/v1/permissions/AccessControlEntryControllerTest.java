@@ -1,5 +1,26 @@
 package io.pivotal.security.controller.v1.permissions;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.audit.EventAuditLogService;
+import io.pivotal.security.audit.RequestUuid;
+import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.handler.AccessControlHandler;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.MediaType;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.List;
+import java.util.function.Function;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -11,6 +32,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -19,25 +41,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.audit.EventAuditLogService;
-import io.pivotal.security.audit.RequestUuid;
-import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.view.AccessControlListResponse;
-import java.util.function.Function;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @RunWith(Spectrum.class)
 public class AccessControlEntryControllerTest {
@@ -96,7 +99,7 @@ public class AccessControlEntryControllerTest {
               "  ]\n" +
               "}";
 
-          when(accessControlHandler.setAccessControlEntries(any(AccessEntriesRequest.class)))
+          when(accessControlHandler.setAccessControlEntries(any(String.class), any(List.class)))
               .thenReturn(JsonHelper.deserialize(expectedResponse, AccessControlListResponse.class));
 
           MockHttpServletRequestBuilder request = post("/api/v1/aces")
@@ -107,13 +110,11 @@ public class AccessControlEntryControllerTest {
               .andExpect(status().isOk())
               .andExpect(content().json(expectedResponse));
 
-          ArgumentCaptor<AccessEntriesRequest> captor = ArgumentCaptor
-              .forClass(AccessEntriesRequest.class);
-          verify(accessControlHandler, times(1)).setAccessControlEntries(captor.capture());
+          ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+          verify(accessControlHandler, times(1)).setAccessControlEntries(eq("test-credential-name"), captor.capture());
 
-          AccessEntriesRequest actualRequest = captor.getValue();
-          assertThat(actualRequest.getCredentialName(), equalTo("test-credential-name"));
-          assertThat(actualRequest.getAccessControlEntries(),
+          List<AccessControlEntry> accessControlEntries = captor.getValue();
+          assertThat(accessControlEntries,
               hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
                   hasProperty("allowedOperations",
                       hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
