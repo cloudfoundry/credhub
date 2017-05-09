@@ -1,6 +1,7 @@
 package io.pivotal.security.data;
 
 import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.repository.CredentialNameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,16 @@ public class CredentialNameDataService {
 
   public CredentialName find(String name) {
     return credentialNameRepository.findOneByNameIgnoreCase(name);
+  }
+
+  public CredentialName findOrThrow(String name) {
+    final CredentialName credentialName = find(name);
+
+    if (credentialName == null) {
+      throw new EntryNotFoundException("error.resource_not_found");
+    }
+
+    return credentialName;
   }
 
   public CredentialName save(CredentialName credentialName) {

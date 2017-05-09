@@ -3,6 +3,7 @@ package io.pivotal.security.controller.v1.permissions;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessEntriesRequest;
@@ -28,16 +29,18 @@ import static io.pivotal.security.audit.EventAuditRecordParametersFactory.create
 @RequestMapping(path = "/api/v1/aces", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class AccessControlEntryController {
 
-  private AccessControlHandler accessControlHandler;
+  private final AccessControlHandler accessControlHandler;
   private final EventAuditLogService eventAuditLogService;
+  private final AccessControlDataService accessControlDataService;
 
   @Autowired
   public AccessControlEntryController(
       AccessControlHandler accessControlHandler,
-      EventAuditLogService eventAuditLogService
-  ) {
+      EventAuditLogService eventAuditLogService,
+      AccessControlDataService accessControlDataService) {
     this.accessControlHandler = accessControlHandler;
     this.eventAuditLogService = eventAuditLogService;
+    this.accessControlDataService = accessControlDataService;
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -71,13 +74,15 @@ public class AccessControlEntryController {
 
   ) {
     eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
-      AccessControlEntry entry = accessControlHandler.deleteAccessControlEntries(actor, credentialName);
+      AccessControlEntry entry = accessControlDataService.getAccessControlEntry(actor, credentialName);
+
       if (entry != null) {
         parameterList.addAll(createPermissionEventAuditRecordParameters(
             ACL_DELETE,
             credentialName,
             entry
         ));
+        accessControlHandler.deleteAccessControlEntries(userContext, credentialName, actor);
       }
       return entry;
     });

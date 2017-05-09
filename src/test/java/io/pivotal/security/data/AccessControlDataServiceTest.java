@@ -127,7 +127,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAcl() {
 
-    subject.deleteAccessControlEntries("Luke", credentialName);
+    subject.deleteAccessControlEntry("Luke", credentialName);
 
     final List<AccessControlEntry> accessControlList = subject
         .getAccessControlList(credentialName);
@@ -141,7 +141,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenNonExistentResource_throwsException() {
     try {
-      subject.deleteAccessControlEntries( "Luke", new CredentialName("/some-thing-that-is-not-here"));
+      subject.deleteAccessControlEntry( "Luke", new CredentialName("/some-thing-that-is-not-here"));
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -149,7 +149,7 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentAce_doesNothing() {
-    subject.deleteAccessControlEntries( "HelloKitty", credentialName);
+    subject.deleteAccessControlEntry( "HelloKitty", credentialName);
   }
 
   @Test

@@ -5,6 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
@@ -47,6 +48,7 @@ public class AccessControlEntryControllerTest {
 
   private AccessControlEntryController subject;
   private AccessControlHandler accessControlHandler;
+  private AccessControlDataService accessControlDataService;
   private EventAuditLogService eventAuditLogService;
   private MockMvc mockMvc;
 
@@ -54,11 +56,12 @@ public class AccessControlEntryControllerTest {
     beforeEach(() -> {
       accessControlHandler = mock(AccessControlHandler.class);
       eventAuditLogService = mock(EventAuditLogService.class);
+      accessControlDataService = mock(AccessControlDataService.class);
 
       when(eventAuditLogService.auditEvents(any(RequestUuid.class), any(UserContext.class), any(Function.class)))
           .thenAnswer(invocation -> invocation.getArgumentAt(2, Function.class).apply(newArrayList()));
 
-      subject = new AccessControlEntryController(accessControlHandler, eventAuditLogService);
+      subject = new AccessControlEntryController(accessControlHandler, eventAuditLogService, accessControlDataService);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
           new MappingJackson2HttpMessageConverter();
@@ -149,13 +152,18 @@ public class AccessControlEntryControllerTest {
       });
 
       describe("#DELETE", () -> {
+        beforeEach(() -> {
+          when(accessControlDataService.getAccessControlEntry(any(), any()))
+              .thenReturn(new AccessControlEntry("Eddie Murphy", newArrayList()));
+        });
+
         it("removes ACE, returns 204", () -> {
           mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
               .andExpect(status().isNoContent())
               .andExpect(content().string(""));
 
           verify(accessControlHandler, times(1))
-              .deleteAccessControlEntries( "test-actor", "test-name");
+              .deleteAccessControlEntries(any(UserContext.class), eq("test-name"), eq("test-actor"));
         });
       });
     });

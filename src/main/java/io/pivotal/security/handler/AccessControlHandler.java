@@ -33,7 +33,7 @@ public class AccessControlHandler {
 
   public AccessControlListResponse getAccessControlListResponse(UserContext userContext, String name) {
     try {
-      final CredentialName credentialName = getCredentialName(name);
+      final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
       permissionService.verifyAclReadPermission(userContext, name);
 
@@ -48,7 +48,7 @@ public class AccessControlHandler {
   }
 
   public AccessControlListResponse setAccessControlEntries(UserContext userContext, String name, List<AccessControlEntry> accessControlEntryList) {
-    final CredentialName credentialName = getCredentialName(name);
+    final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
     if (!permissionService.hasAclWritePermission(userContext, name)) {
       throw new PermissionException("error.acl.lacks_credential_write");
@@ -60,18 +60,13 @@ public class AccessControlHandler {
     return new AccessControlListResponse(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
   }
 
-  public AccessControlEntry deleteAccessControlEntries(String actor, String name) {
-    final CredentialName credentialName = getCredentialName(name);
-    return accessControlDataService.deleteAccessControlEntries(actor, credentialName);
-  }
-
-  private CredentialName getCredentialName(String name) {
-    final CredentialName credentialName = credentialNameDataService.find(name);
-
-    if (credentialName == null) {
-      throw new EntryNotFoundException("error.resource_not_found");
+  public AccessControlEntry deleteAccessControlEntries(UserContext userContext, String name, String actor) {
+    if (!permissionService.hasAclWritePermission(userContext, name)) {
+      throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    return credentialName;
+    final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
+    return accessControlDataService.deleteAccessControlEntry(actor, credentialName);
   }
+
 }

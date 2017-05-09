@@ -27,6 +27,10 @@ public class AccessControlDataService {
     this.credentialNameDataService = credentialNameDataService;
   }
 
+  public List<AccessControlEntry> getAccessControlList(String name) {
+    return getAccessControlList(credentialNameDataService.findOrThrow(name));
+  }
+
   public List<AccessControlEntry> getAccessControlList(CredentialName credentialName) {
     return createViewsForAllAcesWithName(credentialName);
   }
@@ -44,13 +48,20 @@ public class AccessControlDataService {
     }
   }
 
-  public AccessControlEntry deleteAccessControlEntries(String actor, CredentialName credentialName) {
+  public AccessControlEntry getAccessControlEntry(String actor, String name) {
+    CredentialName credentialName = credentialNameDataService.findOrThrow(name);
     AccessEntryData entry = accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
+    return createViewFor(entry);
+  }
+
+  public AccessControlEntry deleteAccessControlEntry(String actor, CredentialName credentialName) {
+    AccessEntryData entry = accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
+
     if (entry != null) {
       accessEntryRepository.delete(entry);
-      return createViewFor(entry);
     }
-    return null;
+
+    return createViewFor(entry);
   }
 
   public boolean hasReadAclPermission(String actor, String name) {
@@ -110,6 +121,9 @@ public class AccessControlDataService {
   }
 
   private AccessControlEntry createViewFor(AccessEntryData data) {
+    if (data == null ) {
+      return null;
+    }
     AccessControlEntry entry = new AccessControlEntry();
     List<AccessControlOperation> operations = data.generateAccessControlOperations();
     entry.setAllowedOperations(operations);

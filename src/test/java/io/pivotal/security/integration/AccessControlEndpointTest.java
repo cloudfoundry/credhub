@@ -258,7 +258,46 @@ public class AccessControlEndpointTest {
   }
 
   @Test
-  public void DELETE_whenTheCredentialDoesntExist_shouldReturnNotFound() throws Exception {
+  public void DELETE_whenTheActorDoesNotHavePermissionToDeleteACEs_returnsNotFound() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"credential_name\": \"" + credentialName + "\",\n"
+            + "  \"access_control_entries\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"dan\",\n"
+            + "       \"operations\": [\"read\"]\n"
+            + "     }]"
+            + "}");
+
+    mockMvc.perform(post)
+        .andExpect(status().isOk());
+
+    mockMvc.perform(
+        delete("/api/v1/aces?credential_name=" + credentialName + "&actor=dan")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+    )
+        .andExpect(status().isNotFound());
+
+    auditingHelper.verifyAuditing(
+        "uaa-client:credhub_test",
+        "/api/v1/aces",
+        404,
+        newArrayList(new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "dan"))
+    );
+
+    mockMvc.perform(
+        get("/api/v1/acls?credential_name=" + credentialName)
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+    )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.access_control_list", hasSize(2)));
+  }
+
+  @Test
+  public void DELETE_whenTheCredentialDoesNotExist_shouldReturnNotFound() throws Exception {
     mockMvc.perform(
         delete("/api/v1/aces?credential_name=/not-valid&actor=something")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -550,10 +589,6 @@ public class AccessControlEndpointTest {
 
   private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
     auditingHelper.verifyAuditing(operation, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/acls", statusCode);
-  }
-
-  private void verifyEntryAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    auditingHelper.verifyAuditing(operation, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/aces", statusCode);
   }
 
   private void seedCredential() throws Exception {

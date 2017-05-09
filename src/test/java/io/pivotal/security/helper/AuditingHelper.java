@@ -1,27 +1,28 @@
 package io.pivotal.security.helper;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.springframework.data.domain.Sort.Direction.DESC;
-
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 public class AuditingHelper {
 

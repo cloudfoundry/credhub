@@ -4,6 +4,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
@@ -54,7 +55,7 @@ public class AccessControlHandlerTest {
         credentialNameDataService
     );
 
-    when(credentialNameDataService.find(any(String.class))).thenReturn(credentialName);
+    when(credentialNameDataService.findOrThrow(any(String.class))).thenReturn(credentialName);
   }
 
   @Test
@@ -62,7 +63,7 @@ public class AccessControlHandlerTest {
     List<AccessControlEntry> accessControlList = newArrayList();
     when(accessControlDataService.getAccessControlList(any(CredentialName.class)))
         .thenReturn(accessControlList);
-    when(credentialNameDataService.find(any(String.class)))
+    when(credentialNameDataService.findOrThrow(any(String.class)))
         .thenReturn(new CredentialName("/test-credential"));
 
     AccessControlListResponse response = subject.getAccessControlListResponse(
@@ -165,11 +166,26 @@ public class AccessControlHandlerTest {
 
   @Test
   public void deleteAccessControlEntries_deletesTheAce() {
-    when(credentialNameDataService.find("/test-credential")).thenReturn(credentialName);
+    when(credentialNameDataService.findOrThrow("/test-credential")).thenReturn(credentialName);
+    when(permissionService.hasAclWritePermission(userContext, "/test-credential"))
+        .thenReturn(true);
 
-    subject.deleteAccessControlEntries( "test-actor", "/test-credential");
+    subject.deleteAccessControlEntries( userContext, "/test-credential", "test-actor");
 
-    verify(accessControlDataService, times(1)).deleteAccessControlEntries(
+    verify(accessControlDataService, times(1)).deleteAccessControlEntry(
         "test-actor", credentialName);
+  }
+
+  @Test
+  public void deleteAccessControlEntries_verifiesTheUserHasPermission() {
+    when(permissionService.hasAclWritePermission(userContext, "/test-credential"))
+        .thenReturn(false);
+
+    try {
+      subject.deleteAccessControlEntries(userContext, "/test-credential", "test-actor");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      verify(accessControlDataService, times(0)).deleteAccessControlEntry(any(), any());
+    }
   }
 }
