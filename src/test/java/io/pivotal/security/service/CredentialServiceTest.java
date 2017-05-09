@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialDataService;
@@ -237,7 +238,7 @@ public class CredentialServiceTest {
     final PasswordCredential newVersion = new PasswordCredential();
 
     when(credentialFactory.makeNewCredentialVersion(
-        "password",
+        CredentialType.valueOf("password"),
         CREDENTIAL_NAME,
         credentialValue,
         null,

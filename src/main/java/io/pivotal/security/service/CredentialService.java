@@ -3,6 +3,7 @@ package io.pivotal.security.service;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialDataService;
@@ -78,11 +79,11 @@ public class CredentialService {
       }
 
       Credential newVersion = credentialFactory.makeNewCredentialVersion(
-              type,
-              credentialName,
-              credentialValue,
-              existingCredential,
-              generationParameters);
+          CredentialType.valueOf(type),
+          credentialName,
+          credentialValue,
+          existingCredential,
+          generationParameters);
       storedCredentialVersion = credentialDataService.save(newVersion);
 
       accessControlDataService.saveAccessControlEntries(

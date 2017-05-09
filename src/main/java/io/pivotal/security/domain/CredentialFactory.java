@@ -1,5 +1,6 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.credential.JsonCredentialValue;
@@ -65,7 +66,7 @@ public class CredentialFactory {
   }
 
   public Credential makeNewCredentialVersion(
-      String type,
+      CredentialType type,
       String name,
       CredentialValue credentialValue,
       Credential existingCredential,
@@ -73,31 +74,31 @@ public class CredentialFactory {
   ) {
     Credential credential;
     switch (type) {
-      case "password":
+      case password:
         credential = new PasswordCredential((StringCredentialValue) credentialValue,
             passwordGenerationParameters, encryptor);
         break;
-      case "certificate":
+      case certificate:
         credential = new CertificateCredential((CertificateCredentialValue) credentialValue,
             encryptor);
         break;
-      case "value":
+      case value:
         credential = new ValueCredential((StringCredentialValue) credentialValue,
             encryptor);
         break;
-      case "rsa":
+      case rsa:
         credential = new RsaCredential((RsaCredentialValue) credentialValue,
             encryptor);
         break;
-      case "ssh":
+      case ssh:
         credential = new SshCredential((SshCredentialValue) credentialValue,
             encryptor);
         break;
-      case "json":
+      case json:
         credential = new JsonCredential((JsonCredentialValue) credentialValue,
             encryptor);
         break;
-      case "user":
+      case user:
         credential = new UserCredential((UserCredentialValue) credentialValue,
             encryptor);
         break;

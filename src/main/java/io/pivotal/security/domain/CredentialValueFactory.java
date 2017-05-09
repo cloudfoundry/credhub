@@ -1,5 +1,6 @@
 package io.pivotal.security.domain;
 
+import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.CertificateGenerateRequest;
@@ -19,13 +20,13 @@ public class CredentialValueFactory {
       GeneratorService generatorService) {
     CredentialValue credentialValue;
 
-    switch (requestBody.getType()) {
-      case "password":
+    switch (CredentialType.valueOf(requestBody.getType())) {
+      case password:
         final StringGenerationParameters stringGenerationParameters = ((PasswordGenerateRequest) requestBody)
             .getGenerationParameters();
         credentialValue = generatorService.generatePassword(stringGenerationParameters);
         break;
-      case "certificate":
+      case certificate:
         final CertificateGenerateRequest certificateRequest = (CertificateGenerateRequest) requestBody;
         if (certificateRequest.getCertificateParameters() == null) {
           final CertificateGenerationParameters certificateGenerationParameters = certificateRequest
@@ -37,17 +38,17 @@ public class CredentialValueFactory {
               .generateCertificate(certificateRequest.getCertificateParameters());
         }
         break;
-      case "rsa":
+      case rsa:
         final RsaGenerationParameters rsaGenerationParameters = ((RsaGenerateRequest) requestBody)
             .getGenerationParameters();
         credentialValue = generatorService.generateRsaKeys(rsaGenerationParameters);
         break;
-      case "ssh":
+      case ssh:
         final SshGenerationParameters sshGenerationParameters = ((SshGenerateRequest) requestBody)
             .getGenerationParameters();
         credentialValue = generatorService.generateSshKeys(sshGenerationParameters);
         break;
-      case "user":
+      case user:
         final StringGenerationParameters userGenerationParameters = ((UserGenerateRequest) requestBody)
             .getPasswordGenerationParameters();
         final String userName = ((UserGenerateRequest) requestBody).getUserName();

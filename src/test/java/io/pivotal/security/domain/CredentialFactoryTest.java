@@ -3,6 +3,7 @@ package io.pivotal.security.domain;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.credential.JsonCredentialValue;
 import io.pivotal.security.credential.RsaCredentialValue;
@@ -69,7 +70,7 @@ public class CredentialFactoryTest {
     Credential existingCredential = new PasswordCredential(CREDENTIAL_NAME);
     Credential credential =
         subject.makeNewCredentialVersion(
-            "password",
+            CredentialType.valueOf("password"),
             CREDENTIAL_NAME,
             passwordValue,
             existingCredential,
@@ -83,7 +84,7 @@ public class CredentialFactoryTest {
 
     PasswordCredential credential =
         (PasswordCredential) subject.makeNewCredentialVersion(
-            "password",
+            CredentialType.valueOf("password"),
             CREDENTIAL_NAME,
             passwordValue,
             null,
@@ -99,7 +100,7 @@ public class CredentialFactoryTest {
 
     ValueCredential credential =
         (ValueCredential) subject.makeNewCredentialVersion(
-            "value",
+            CredentialType.valueOf("value"),
             CREDENTIAL_NAME,
             passwordValue,
             null,
@@ -118,7 +119,7 @@ public class CredentialFactoryTest {
 
     CertificateCredential credential =
         (CertificateCredential) subject.makeNewCredentialVersion(
-            "certificate",
+            CredentialType.valueOf("certificate"),
             CREDENTIAL_NAME,
             certificateValue,
             null,
@@ -138,7 +139,7 @@ public class CredentialFactoryTest {
 
     RsaCredential credential =
         (RsaCredential) subject.makeNewCredentialVersion(
-            "rsa",
+            CredentialType.valueOf("rsa"),
             CREDENTIAL_NAME,
             rsaValue,
             null,
@@ -157,7 +158,7 @@ public class CredentialFactoryTest {
 
     SshCredential credential =
         (SshCredential) subject.makeNewCredentialVersion(
-            "ssh",
+            CredentialType.valueOf("ssh"),
             CREDENTIAL_NAME,
             sshValue,
             null,
@@ -173,7 +174,7 @@ public class CredentialFactoryTest {
 
     JsonCredential credential =
         (JsonCredential) subject.makeNewCredentialVersion(
-            "json",
+            CredentialType.valueOf("json"),
             CREDENTIAL_NAME,
             jsonValue,
             null,
@@ -188,7 +189,7 @@ public class CredentialFactoryTest {
 
     UserCredential credential =
         (UserCredential) subject.makeNewCredentialVersion(
-            "user",
+            CredentialType.valueOf("user"),
             CREDENTIAL_NAME,
             userValue,
             null,
