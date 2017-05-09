@@ -1,3 +1,8 @@
+Outdated - See [CredHub API specification](https://credhub-api.cfapps.io)
+
+***
+
+
 Contents -
 * [Considerations](#-considerations)
 * [Credentials](#-credential-operations)
