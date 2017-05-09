@@ -63,6 +63,16 @@ public class AccessControlDataService {
     return false;
   }
 
+  public boolean hasAclWritePermission(String actor, String name) {
+    CredentialName credentialName = credentialNameDataService.find(name);
+    if (credentialName != null) {
+      final AccessEntryData accessEntryData =
+          accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
+      return accessEntryData != null && accessEntryData.hasWriteAclPermission();
+    }
+    return false;
+  }
+
   public boolean hasReadPermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     if (credentialName != null) {

@@ -1,7 +1,33 @@
 package io.pivotal.security.integration;
 
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.audit.AuditingOperationCode;
+import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.helper.AuditingHelper;
+import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.EventAuditRecordRepository;
+import io.pivotal.security.repository.RequestAuditRecordRepository;
+import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import io.pivotal.security.view.AccessControlListResponse;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
+import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
@@ -27,31 +53,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.audit.AuditingOperationCode;
-import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -236,19 +237,18 @@ public class AccessControlEndpointTest {
         .andExpect(status().isOk());
 
     mockMvc.perform(
-        get("/api/v1/acls?credential_name=" + credentialNameWithoutLeadingSlash)
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-    )
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.access_control_list").isNotEmpty());
-
-    mockMvc.perform(
         delete("/api/v1/aces?credential_name=" + credentialName + "&actor=dan")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isNoContent());
 
-    verifyEntryAudit(AuditingOperationCode.ACL_DELETE, credentialName, 204);
+    auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        "/api/v1/aces",
+        204,
+        newArrayList(new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "dan"))
+    );
+
     mockMvc.perform(
         get("/api/v1/acls?credential_name=" + credentialName)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -379,6 +379,44 @@ public class AccessControlEndpointTest {
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "dan")
+        )
+    );
+  }
+
+  @Test
+  public void POST_whenTheUserDoesNotHavePermissionToWriteACEs_returnsNotFound() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"credential_name\": \"" + credentialName + "\","
+            + "  \"access_control_entries\": ["
+            + "     {"
+            + "       \"actor\": \"dan\","
+            + "       \"operations\": [\"read\",\"write\"]"
+            + "     },"
+            + "     {"
+            + "       \"actor\": \"isobel\","
+            + "       \"operations\": [\"delete\"]"
+            + "     }" +
+            "]"
+            + "}");
+
+    final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    this.mockMvc.perform(post)
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error").value(expectedError));
+
+    auditingHelper.verifyAuditing(
+        "uaa-client:credhub_test",
+        "/api/v1/aces",
+        403,
+        newArrayList(
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "dan"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, DELETE, "isobel")
         )
     );
   }

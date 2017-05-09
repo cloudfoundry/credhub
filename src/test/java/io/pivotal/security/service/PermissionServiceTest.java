@@ -62,7 +62,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void verifyAclReadPermission_withOutEnforcement_whenTheUserHasPermission_doesNothing() {
+  public void verifyAclReadPermission_withoutEnforcement_whenTheUserHasPermission_doesNothing() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasReadAclPermission("test-actor", CREDENTIAL_NAME))
@@ -79,6 +79,51 @@ public class PermissionServiceTest {
         .thenReturn(false);
 
     subject.verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void verifyAclWritePermission_withEnforcement_whenTheUserHasPermission_doesNothing() {
+    initializeEnforcement(true);
+
+    when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
+
+    subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void verifyAclWritePermission_withEnforcement_whenTheUserDoesNotHavePermission_throwsException() {
+    initializeEnforcement(true);
+
+    when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
+
+    try {
+      subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
+      fail("should throw exception");
+    } catch (PermissionException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+    }
+  }
+
+  @Test
+  public void verifyAclWritePermission_withoutEnforcement_whenTheUserHasPermission_doesNothing() {
+    initializeEnforcement(false);
+
+    when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(true);
+
+    subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void verifyAclWritePermission_withoutEnforcement_whenTheUserDoesNotHavePermission_doesNothing() {
+    initializeEnforcement(false);
+
+    when(accessControlDataService.hasAclWritePermission("test-actor", CREDENTIAL_NAME))
+        .thenReturn(false);
+
+    subject.verifyAclWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -107,7 +152,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void verifyCredentialWritePermission_withOutEnforcement_whenTheUserHasPermission_doesNothing() {
+  public void verifyCredentialWritePermission_withoutEnforcement_whenTheUserHasPermission_doesNothing() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasCredentialWritePermission("test-actor", CREDENTIAL_NAME))
@@ -147,7 +192,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void hasCredentialReadPermission_withOutEnforcement_whenTheUserHasPermission_returnsTrue() {
+  public void hasCredentialReadPermission_withoutEnforcement_whenTheUserHasPermission_returnsTrue() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasReadPermission("test-actor", CREDENTIAL_NAME))
@@ -187,7 +232,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void hasCredentialDeletePermission_withOutEnforcement_whenTheUserHasPermission_returnsTrue() {
+  public void hasCredentialDeletePermission_withoutEnforcement_whenTheUserHasPermission_returnsTrue() {
     initializeEnforcement(false);
 
     when(accessControlDataService.hasCredentialDeletePermission("test-actor", CREDENTIAL_NAME))

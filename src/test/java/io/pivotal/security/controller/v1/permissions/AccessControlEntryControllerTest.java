@@ -99,7 +99,7 @@ public class AccessControlEntryControllerTest {
               "  ]\n" +
               "}";
 
-          when(accessControlHandler.setAccessControlEntries(any(String.class), any(List.class)))
+          when(accessControlHandler.setAccessControlEntries(any(UserContext.class), any(String.class), any(List.class)))
               .thenReturn(JsonHelper.deserialize(expectedResponse, AccessControlListResponse.class));
 
           MockHttpServletRequestBuilder request = post("/api/v1/aces")
@@ -111,7 +111,11 @@ public class AccessControlEntryControllerTest {
               .andExpect(content().json(expectedResponse));
 
           ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-          verify(accessControlHandler, times(1)).setAccessControlEntries(eq("test-credential-name"), captor.capture());
+          verify(accessControlHandler, times(1)).setAccessControlEntries(
+              any(UserContext.class),
+              eq("test-credential-name"),
+              captor.capture()
+          );
 
           List<AccessControlEntry> accessControlEntries = captor.getValue();
           assertThat(accessControlEntries,

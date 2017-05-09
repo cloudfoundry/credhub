@@ -47,8 +47,10 @@ public class AccessControlHandler {
     }
   }
 
-  public AccessControlListResponse setAccessControlEntries(String name, List<AccessControlEntry> accessControlEntryList) {
+  public AccessControlListResponse setAccessControlEntries(UserContext userContext, String name, List<AccessControlEntry> accessControlEntryList) {
     final CredentialName credentialName = getCredentialName(name);
+
+    permissionService.verifyAclWritePermission(userContext, name);
 
     accessControlDataService
         .saveAccessControlEntries(credentialName, accessControlEntryList);

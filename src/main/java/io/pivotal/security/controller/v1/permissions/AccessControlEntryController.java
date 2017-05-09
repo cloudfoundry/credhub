@@ -54,6 +54,7 @@ public class AccessControlEntryController {
           accessEntriesRequest.getAccessControlEntries())
       );
       return accessControlHandler.setAccessControlEntries(
+          userContext,
           accessEntriesRequest.getCredentialName(),
           accessEntriesRequest.getAccessControlEntries()
       );

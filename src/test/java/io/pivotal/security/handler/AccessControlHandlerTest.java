@@ -4,6 +4,7 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.service.PermissionService;
@@ -17,11 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -107,7 +110,7 @@ public class AccessControlHandlerTest {
   }
 
   @Test
-  public void setAccessControlListResponse_setsAndReturnsTheAces() {
+  public void setAccessControlEntries_setsAndReturnsTheAces() {
     ArrayList<AccessControlOperation> operations = newArrayList(
         AccessControlOperation.READ,
         AccessControlOperation.WRITE
@@ -124,7 +127,7 @@ public class AccessControlHandlerTest {
     when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(expectedControlList);
 
-    AccessControlListResponse response = subject.setAccessControlEntries("/test-credential", accessControlList);
+    AccessControlListResponse response = subject.setAccessControlEntries(userContext, "/test-credential", accessControlList);
 
     List<AccessControlEntry> accessControlEntries = response.getAccessControlList();
 
@@ -141,6 +144,19 @@ public class AccessControlHandlerTest {
     AccessControlEntry entry2 = accessControlEntries.get(1);
     assertThat(entry2.getActor(), equalTo("someone-else"));
     assertThat(entry2.getAllowedOperations(), contains(equalTo(AccessControlOperation.READ)));
+  }
+
+  @Test(expected = PermissionException.class)
+  public void setAccessControlEntries_verifiesUserHasPermission() {
+    doThrow(new PermissionException("test"))
+        .when(permissionService).verifyAclWritePermission(any(), any());
+
+    try {
+      subject.setAccessControlEntries(userContext, "/test/credential", emptyList());
+    } finally {
+      verify(permissionService, times(1)).verifyAclWritePermission(userContext, "/test/credential");
+      verify(accessControlDataService, times(0)).saveAccessControlEntries(any(), any());
+    }
   }
 
   @Test

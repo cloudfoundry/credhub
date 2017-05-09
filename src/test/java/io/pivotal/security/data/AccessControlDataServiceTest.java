@@ -177,6 +177,30 @@ public class AccessControlDataServiceTest {
   }
 
   @Test
+  public void hasAclWritePermission_whenActorHasAclWrite_returnsTrue() {
+    assertThat(subject.hasAclWritePermission("HanSolo", CREDENTIAL_NAME),
+        is(true));
+  }
+
+  @Test
+  public void hasAclWritePermission_whenActorHasWriteButNotWriteAcl_returnsFalse() {
+    assertThat(subject.hasAclWritePermission("Luke", CREDENTIAL_NAME),
+        is(false));
+  }
+
+  @Test
+  public void hasAclWritePermission_whenActorHasNoPermissions_returnsFalse() {
+    assertThat(subject.hasAclWritePermission("Chewie", CREDENTIAL_NAME),
+        is(false));
+  }
+
+  @Test
+  public void hasAclWritePermission_whenCredentialDoesNotExist_returnsFalse() {
+    assertThat(subject.hasAclWritePermission("Luke", CREDENTIAL_NAME_DOES_NOT_EXIST),
+        is(false));
+  }
+
+  @Test
   public void hasReadPermission_whenActorHasRead_returnsTrue() {
     assertThat(subject.hasReadPermission("Leia", CREDENTIAL_NAME),
         is(true));
@@ -257,7 +281,7 @@ public class AccessControlDataServiceTest {
     subject.saveAccessControlEntries(
         credentialName,
         singletonList(new AccessControlEntry("HanSolo",
-            singletonList(AccessControlOperation.READ_ACL)))
+            newArrayList(AccessControlOperation.READ_ACL, AccessControlOperation.WRITE_ACL)))
     );
   }
 }
