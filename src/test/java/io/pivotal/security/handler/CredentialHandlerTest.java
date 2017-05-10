@@ -89,7 +89,7 @@ public class CredentialHandlerTest {
       subject.deleteCredential(userContext, CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
     }
   }
 
@@ -103,7 +103,7 @@ public class CredentialHandlerTest {
       subject.deleteCredential(userContext, CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
     }
   }
 

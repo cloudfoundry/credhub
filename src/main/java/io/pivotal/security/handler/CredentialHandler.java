@@ -32,13 +32,13 @@ public class CredentialHandler {
     Credential credential = credentialDataService.findMostRecent(credentialName);
 
     if (credential != null && !permissionService.hasCredentialDeletePermission(userContext, credential)) {
-      throw new EntryNotFoundException("error.credential_not_found");
+      throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
     boolean deleteSucceeded = credentialDataService.delete(credentialName);
 
     if (!deleteSucceeded) {
-      throw new EntryNotFoundException("error.credential_not_found");
+      throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
   }
 
