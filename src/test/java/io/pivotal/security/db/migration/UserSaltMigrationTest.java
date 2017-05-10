@@ -75,7 +75,7 @@ public class UserSaltMigrationTest {
     flyway.migrate();
 
     final UserCredential migratedUser = (UserCredential) credentialDataService.findMostRecent(credentialName);
-    assertThat(migratedUser.getSalt().matches("^\\$6\\$[a-zA-Z0-9/.]+$"),
+    assertThat(migratedUser.getSalt().matches("^\\$6\\$[a-zA-Z0-9/.]{8}$"),
         equalTo(true));
   }
 
