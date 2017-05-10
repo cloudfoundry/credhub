@@ -3,6 +3,7 @@ package io.pivotal.security.audit;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.auth.UserContextFactory;
 import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +59,7 @@ public class AuditInterceptor extends HandlerInterceptorAdapter {
     try {
       requestAuditRecordDataService.save(requestAuditRecord);
     } finally {
-      securityEventsLogService.log(requestAuditRecord);
+      securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getAclUser()));
     }
   }
 }

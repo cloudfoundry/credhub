@@ -1,19 +1,5 @@
 package io.pivotal.security.integration;
 
-import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
@@ -23,7 +9,6 @@ import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +23,22 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.List;
+
+import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -208,11 +209,29 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isNotFound());
 
-    assertThat(requestAuditRecordRepository.count(), equalTo(0L));
-    assertThat(eventAuditRecordRepository.count(), equalTo(1L));
+    assertThat("it does not log a request", requestAuditRecordRepository.count(), equalTo(0L));
+    assertThat("it does log the event", eventAuditRecordRepository.count(), equalTo(1L));
 
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(logger, times(1)).info(captor.capture());
-    assertThat(captor.getValue(), containsString("cs4=404"));
+    assertThat("failure is in CEF log", captor.getValue(), containsString("cs4=404"));
+  }
+
+  @Test
+  public void given_request_it_logs_to_CEF_logs_with_correct_user() throws  Exception{
+    mockMvc.perform(post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .content("{\"name\" : \"/cred1\", \"type\": \"password\"}")
+        .contentType(APPLICATION_JSON)
+    ).andExpect(status().isOk());
+
+    ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+    verify(logger).info(captor.capture());
+
+    String expectedOutputPart1 = "CEF:0|cloud_foundry|credhub|unit-test-version|POST /api/v1/data|POST /api/v1/data|0|";
+    String expectedOutputPart2 = "suser=credhub_cli suid=uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d cs1Label=userAuthenticationMechanism cs1=oauth-access-token request=/api/v1/data requestMethod=POST cs3Label=result cs3=success cs4Label=httpStatusCode cs4=200 src=127.0.0.1 dst=localhost";
+    assertThat("it logs correct entry", captor.getValue(), containsString(expectedOutputPart1));
+    assertThat("it logs correct entry", captor.getValue(), containsString(expectedOutputPart2));
   }
 }

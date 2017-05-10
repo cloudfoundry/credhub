@@ -1,9 +1,7 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.config.VersionProvider;
-import io.pivotal.security.entity.RequestAuditRecord;
-import org.apache.commons.lang.StringUtils;
+import io.pivotal.security.domain.SecurityEventAuditRecord;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -20,55 +18,28 @@ public class SecurityEventsLogService {
     this.versionProvider = versionProvider;
   }
 
-  public void log(RequestAuditRecord requestAuditRecord) {
-    String signature = requestAuditRecord.getMethod() + " " + requestAuditRecord.getPath();
+  public void log(SecurityEventAuditRecord securityEventAuditRecord) {
+    String signature = securityEventAuditRecord.getSignature();
     String header = String
         .join("|", "CEF:0|cloud_foundry|credhub", versionProvider.getVersion(), signature,
             signature, "0");
     String message = String.join(
         " ",
-        "rt=" + String.valueOf(requestAuditRecord.getNow().toEpochMilli()),
-        "suser=" + requestAuditRecord.getUserName(),
-        "suid=" + requestAuditRecord.getUserId(),
+        "rt=" + securityEventAuditRecord.getTime(),
+        "suser=" + securityEventAuditRecord.getUserName(),
+        "suid=" + securityEventAuditRecord.getActor(),
         "cs1Label=userAuthenticationMechanism",
-        "cs1=" + determineCs1(requestAuditRecord),
-        "request=" + getPathWithQueryParameters(requestAuditRecord),
-        "requestMethod=" + requestAuditRecord.getMethod(),
+        "cs1=" + securityEventAuditRecord.determineCs1(),
+        "request=" + securityEventAuditRecord.getPathWithQueryParameters(),
+        "requestMethod=" + securityEventAuditRecord.getMethod(),
         "cs3Label=result",
-        "cs3=" + getResultCode(requestAuditRecord.getStatusCode()),
+        "cs3=" + securityEventAuditRecord.getResultCode(),
         "cs4Label=httpStatusCode",
-        "cs4=" + requestAuditRecord.getStatusCode(),
-        "src=" + requestAuditRecord.getRequesterIp(),
-        "dst=" + requestAuditRecord.getHostName()
+        "cs4=" + securityEventAuditRecord.getStatusCode(),
+        "src=" + securityEventAuditRecord.getRequesterIp(),
+        "dst=" + securityEventAuditRecord.getHostName()
     );
 
     securityEventsLogger.info(String.join("|", header, message));
-  }
-
-  private String determineCs1(RequestAuditRecord requestAuditRecord) {
-    final boolean isMutualTls = UserContext.AUTH_METHOD_MUTUAL_TLS
-        .equals(requestAuditRecord.getAuthMethod());
-    return isMutualTls ? "mutual-tls" : "oauth-access-token";
-  }
-
-  private String getPathWithQueryParameters(RequestAuditRecord requestAuditRecord) {
-    String queryParameters = requestAuditRecord.getQueryParameters();
-    String path = requestAuditRecord.getPath();
-
-    return StringUtils.isEmpty(queryParameters) ? path : String.join("?", path, queryParameters);
-  }
-
-  private String getResultCode(int statusCode) {
-    if (statusCode <= 199) {
-      return "info";
-    } else if (statusCode <= 299) {
-      return "success";
-    } else if (statusCode <= 399) {
-      return "redirect";
-    } else if (statusCode <= 499) {
-      return "clientError";
-    } else {
-      return "serverError";
-    }
   }
 }

@@ -2,6 +2,7 @@ package io.pivotal.security.auth;
 
 import io.pivotal.security.audit.AuditLogFactory;
 import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       );
 
       requestAuditRecordDataService.save(requestAuditRecord);
-      securityEventsLogService.log(requestAuditRecord);
+      securityEventsLogService.log(new SecurityEventAuditRecord(requestAuditRecord, userContext.getAclUser()));
     }
   }
 

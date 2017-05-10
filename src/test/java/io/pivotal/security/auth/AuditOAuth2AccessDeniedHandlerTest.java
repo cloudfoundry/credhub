@@ -2,6 +2,7 @@ package io.pivotal.security.auth;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.service.SecurityEventsLogService;
@@ -117,7 +118,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
       });
 
       it("should log the failure in the CEF syslog file", () -> {
-        verify(securityEventsLogService).log(isA(RequestAuditRecord.class));
+        verify(securityEventsLogService).log(isA(SecurityEventAuditRecord.class));
       });
     });
   }

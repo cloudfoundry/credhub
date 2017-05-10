@@ -36,7 +36,6 @@ public class RequestAuditRecord {
   private String userId;
   private String userName;
   private String requesterIp;
-  @SuppressWarnings("checkstyle:membername")
   private String xForwardedFor;
   private String clientId;
   private String scope;
@@ -48,7 +47,6 @@ public class RequestAuditRecord {
   public RequestAuditRecord() {
   }
 
-  @SuppressWarnings("checkstyle:parametername")
   public RequestAuditRecord(
       UUID uuid,
       Instant now,

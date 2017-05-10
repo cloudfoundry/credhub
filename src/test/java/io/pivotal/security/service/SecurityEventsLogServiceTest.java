@@ -2,11 +2,14 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.VersionProvider;
+import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.RunWith;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.time.Instant;
 
 import static com.greghaskins.spectrum.Spectrum.afterEach;
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
@@ -21,8 +24,6 @@ import static org.mockito.Matchers.contains;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.time.Instant;
 
 @RunWith(Spectrum.class)
 public class SecurityEventsLogServiceTest {
@@ -56,7 +57,7 @@ public class SecurityEventsLogServiceTest {
             "foo=bar",
             AUTH_METHOD_UAA);
 
-        subject.log(requestAuditRecord);
+        subject.log(new SecurityEventAuditRecord(requestAuditRecord, "actor-id"));
 
         verify(securityEventsLogger).info(
             "CEF:0|cloud_foundry|credhub|"
@@ -64,7 +65,7 @@ public class SecurityEventsLogServiceTest {
                 + "GET /api/some-path|0|rt="
                 + String.valueOf(now.toEpochMilli())
                 + " suser=user-name "
-                + "suid=user-id "
+                + "suid=actor-id "
                 + "cs1Label=userAuthenticationMechanism "
                 + "cs1=oauth-access-token "
                 + "request=/api/some-path?foo=bar "
@@ -82,7 +83,7 @@ public class SecurityEventsLogServiceTest {
         RequestAuditRecord requestAuditRecord = makeOperationAuditRecord("foo=bar",
             AUTH_METHOD_MUTUAL_TLS);
 
-        subject.log(requestAuditRecord);
+        subject.log(new SecurityEventAuditRecord(requestAuditRecord, "actor-id"));
 
         verify(securityEventsLogger).info(
             "CEF:0|cloud_foundry|credhub|"
@@ -91,7 +92,7 @@ public class SecurityEventsLogServiceTest {
                 + "GET /api/some-path|0|rt="
                 + String.valueOf(now.toEpochMilli())
                 + " suser=user-name "
-                + "suid=user-id "
+                + "suid=actor-id "
                 + "cs1Label=userAuthenticationMechanism "
                 + "cs1=mutual-tls "
                 + "request=/api/some-path?foo=bar "
@@ -111,7 +112,7 @@ public class SecurityEventsLogServiceTest {
               null,
               AUTH_METHOD_UAA
           );
-          subject.log(requestAuditRecord);
+          subject.log(new SecurityEventAuditRecord(requestAuditRecord, "actor-id"));
 
           assertThat(version, notNullValue());
           assertThat(version.length(), greaterThan(0));
@@ -123,7 +124,7 @@ public class SecurityEventsLogServiceTest {
       describe("when the query param string is an empty string", () -> {
         it("should specify only the path in the request", () -> {
           RequestAuditRecord requestAuditRecord = makeOperationAuditRecord("", AUTH_METHOD_UAA);
-          subject.log(requestAuditRecord);
+          subject.log(new SecurityEventAuditRecord(requestAuditRecord, "actor-id"));
 
           assertThat(version, notNullValue());
           assertThat(version.length(), greaterThan(0));
