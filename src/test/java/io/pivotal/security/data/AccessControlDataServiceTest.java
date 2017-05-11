@@ -40,6 +40,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class AccessControlDataServiceTest {
   private static final String CREDENTIAL_NAME = "/lightsaber";
   private static final String CREDENTIAL_NAME_DOES_NOT_EXIST = "/this/credential/does/not/exist";
+  
+  private static final String LUKE = "Luke";
+  private static final String LEIA = "Leia";
+  private static final String HAN_SOLO = "HansSolo";
+  private static final String DARTH = "Darth";
+  private static final String CHEWIE = "Chewie";
 
   @Autowired
   private AccessControlDataService subject;
@@ -62,11 +68,11 @@ public class AccessControlDataServiceTest {
     assertThat(accessControlEntries, hasSize(3));
 
     assertThat(accessControlEntries, containsInAnyOrder(
-        allOf(hasProperty("actor", equalTo("Luke")),
+        allOf(hasProperty("actor", equalTo(LUKE)),
             hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
-        allOf(hasProperty("actor", equalTo("Leia")),
+        allOf(hasProperty("actor", equalTo(LEIA)),
             hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))),
-        allOf(hasProperty("actor", equalTo("HanSolo")),
+        allOf(hasProperty("actor", equalTo(HAN_SOLO)),
             hasProperty("allowedOperations",
                 hasItems(AccessControlOperation.READ_ACL))))
     );
@@ -75,7 +81,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void getAccessControlList_whenGivenNonExistentCredentialName_throwsException() {
     try {
-      subject.getAccessControlList(new CredentialName("/unicorn"));
+      subject.getAccessControlList(new CredentialName(CREDENTIAL_NAME_DOES_NOT_EXIST));
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -84,7 +90,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void setAccessControlEntries_whenGivenAnExistingAce_returnsTheAcl() {
     aces = singletonList(
-        new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ))
+        new AccessControlEntry(LUKE, singletonList(AccessControlOperation.READ))
     );
 
     subject.saveAccessControlEntries(credentialName, aces);
@@ -92,12 +98,12 @@ public class AccessControlDataServiceTest {
     List<AccessControlEntry> response = subject.getAccessControlList(credentialName);
 
         assertThat(response, containsInAnyOrder(
-        allOf(hasProperty("actor", equalTo("Luke")),
+        allOf(hasProperty("actor", equalTo(LUKE)),
             hasProperty("allowedOperations",
                 hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE))),
-        allOf(hasProperty("actor", equalTo("Leia")),
+        allOf(hasProperty("actor", equalTo(LEIA)),
             hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))),
-        allOf(hasProperty("actor", equalTo("HanSolo")),
+        allOf(hasProperty("actor", equalTo(HAN_SOLO)),
             hasProperty("allowedOperations",
                 hasItems(AccessControlOperation.READ_ACL)))));
   }
@@ -109,7 +115,7 @@ public class AccessControlDataServiceTest {
 
     credentialNameDataService.save(credentialName2);
     aces = singletonList(
-        new AccessControlEntry("Luke", singletonList(AccessControlOperation.READ)));
+        new AccessControlEntry(LUKE, singletonList(AccessControlOperation.READ)));
 
     subject.saveAccessControlEntries(credentialName2, aces);
 
@@ -119,7 +125,7 @@ public class AccessControlDataServiceTest {
     final AccessControlEntry accessControlEntry = response.get(0);
 
     assertThat(response, hasSize(1));
-    assertThat(accessControlEntry.getActor(), equalTo("Luke"));
+    assertThat(accessControlEntry.getActor(), equalTo(LUKE));
     assertThat(accessControlEntry.getAllowedOperations(), hasSize(1));
     assertThat(accessControlEntry.getAllowedOperations(), hasItem(AccessControlOperation.READ));
   }
@@ -127,7 +133,7 @@ public class AccessControlDataServiceTest {
   @Test
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAcl() {
 
-    subject.deleteAccessControlEntry("Luke", credentialName);
+    subject.deleteAccessControlEntry(LUKE, credentialName);
 
     final List<AccessControlEntry> accessControlList = subject
         .getAccessControlList(credentialName);
@@ -135,13 +141,13 @@ public class AccessControlDataServiceTest {
     assertThat(accessControlList, hasSize(2));
 
     assertThat(accessControlList,
-        not(contains(hasProperty("actor", equalTo("Luke")))));
+        not(contains(hasProperty("actor", equalTo(LUKE)))));
   }
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentResource_throwsException() {
     try {
-      subject.deleteAccessControlEntry( "Luke", new CredentialName("/some-thing-that-is-not-here"));
+      subject.deleteAccessControlEntry( LUKE, new CredentialName(CREDENTIAL_NAME_DOES_NOT_EXIST));
     } catch (EntryNotFoundException enfe) {
       assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
     }
@@ -149,114 +155,114 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentAce_doesNothing() {
-    subject.deleteAccessControlEntry( "HelloKitty", credentialName);
+    subject.deleteAccessControlEntry( DARTH, credentialName);
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasAclRead_returnsTrue() {
-    assertThat(subject.hasReadAclPermission("HanSolo", CREDENTIAL_NAME),
+    assertThat(subject.hasReadAclPermission(HAN_SOLO, CREDENTIAL_NAME),
         is(true));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasReadButNotReadAcl_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Luke", CREDENTIAL_NAME),
+    assertThat(subject.hasReadAclPermission(LUKE, CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Chewie", CREDENTIAL_NAME),
+    assertThat(subject.hasReadAclPermission(CHEWIE, CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasAclReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-    assertThat(subject.hasReadAclPermission("Luke", CREDENTIAL_NAME_DOES_NOT_EXIST),
+    assertThat(subject.hasReadAclPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST),
         is(false));
   }
 
   @Test
   public void hasAclWritePermission_whenActorHasAclWrite_returnsTrue() {
-    assertThat(subject.hasAclWritePermission("HanSolo", CREDENTIAL_NAME),
+    assertThat(subject.hasAclWritePermission(HAN_SOLO, CREDENTIAL_NAME),
         is(true));
   }
 
   @Test
   public void hasAclWritePermission_whenActorHasWriteButNotWriteAcl_returnsFalse() {
-    assertThat(subject.hasAclWritePermission("Luke", CREDENTIAL_NAME),
+    assertThat(subject.hasAclWritePermission(LUKE, CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasAclWritePermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasAclWritePermission("Chewie", CREDENTIAL_NAME),
+    assertThat(subject.hasAclWritePermission(CHEWIE, CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasAclWritePermission_whenCredentialDoesNotExist_returnsFalse() {
-    assertThat(subject.hasAclWritePermission("Luke", CREDENTIAL_NAME_DOES_NOT_EXIST),
+    assertThat(subject.hasAclWritePermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST),
         is(false));
   }
 
   @Test
   public void hasReadPermission_whenActorHasRead_returnsTrue() {
-    assertThat(subject.hasReadPermission("Leia", CREDENTIAL_NAME),
+    assertThat(subject.hasReadPermission(LEIA, CREDENTIAL_NAME),
         is(true));
   }
 
   @Test
   public void hasReadPermission_givenNameWithoutLeadingSlashAndHasRead_returnsTrue() {
-    assertThat(subject.hasReadPermission("Leia", CREDENTIAL_NAME),
+    assertThat(subject.hasReadPermission(LEIA, CREDENTIAL_NAME),
         is(true));
   }
 
   @Test
   public void hasReadPermission_whenActorHasWriteButNotRead_returnsFalse() {
-    assertThat(subject.hasReadPermission("Luke", CREDENTIAL_NAME),
+    assertThat(subject.hasReadPermission(LUKE, CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasReadPermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasReadPermission("Chewie", CREDENTIAL_NAME),
+    assertThat(subject.hasReadPermission(CHEWIE, CREDENTIAL_NAME),
         is(false));
   }
 
   @Test
   public void hasCredentialWritePermission_whenActorHasWritePermission_returnsTrue() {
-    assertThat(subject.hasCredentialWritePermission("Luke", CREDENTIAL_NAME), is(true));
+    assertThat(subject.hasCredentialWritePermission(LUKE, CREDENTIAL_NAME), is(true));
   }
 
   @Test
   public void hasCredentialWritePermission_whenActorOnlyHasOtherPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialWritePermission("Leia", CREDENTIAL_NAME), is(false));
+    assertThat(subject.hasCredentialWritePermission(LEIA, CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasCredentialWritePermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialWritePermission("Darth", CREDENTIAL_NAME), is(false));
+    assertThat(subject.hasCredentialWritePermission(DARTH, CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasCredentialDeletePermission_whenActorHasDeletePermission_returnsTrue() {
-    assertThat(subject.hasCredentialDeletePermission("Luke", CREDENTIAL_NAME), is(true));
+    assertThat(subject.hasCredentialDeletePermission(LUKE, CREDENTIAL_NAME), is(true));
   }
 
   @Test
   public void hasCredentialDeletePermission_whenActorOnlyHasOtherPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialDeletePermission("Leia", CREDENTIAL_NAME), is(false));
+    assertThat(subject.hasCredentialDeletePermission(LEIA, CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasCredentialDeletePermission_whenActorHasNoPermissions_returnsFalse() {
-    assertThat(subject.hasCredentialDeletePermission("Darth", CREDENTIAL_NAME), is(false));
+    assertThat(subject.hasCredentialDeletePermission(DARTH, CREDENTIAL_NAME), is(false));
   }
 
   @Test
   public void hasReadPermission_whenCredentialDoesNotExist_returnsFalse() {
-    assertThat(subject.hasReadPermission("Luke", CREDENTIAL_NAME_DOES_NOT_EXIST),
+    assertThat(subject.hasReadPermission(LUKE, CREDENTIAL_NAME_DOES_NOT_EXIST),
         is(false));
   }
 
@@ -268,19 +274,19 @@ public class AccessControlDataServiceTest {
 
     subject.saveAccessControlEntries(
         credentialName,
-        singletonList(new AccessControlEntry("Luke",
+        singletonList(new AccessControlEntry(LUKE,
             newArrayList(AccessControlOperation.WRITE, AccessControlOperation.DELETE)))
     );
 
     subject.saveAccessControlEntries(
         credentialName,
-        singletonList(new AccessControlEntry("Leia",
+        singletonList(new AccessControlEntry(LEIA,
             singletonList(AccessControlOperation.READ)))
     );
 
     subject.saveAccessControlEntries(
         credentialName,
-        singletonList(new AccessControlEntry("HanSolo",
+        singletonList(new AccessControlEntry(HAN_SOLO,
             newArrayList(AccessControlOperation.READ_ACL, AccessControlOperation.WRITE_ACL)))
     );
   }
