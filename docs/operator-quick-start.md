@@ -132,7 +132,9 @@ More information on the BOSH Director integration can be [found here.](https://g
 
 The CredHub CLI can be used to interact with CredHub credentials. You must first target the CredHub API using the `api` command. Once targeted, you may login with your user credentials. All subsequent requests will be sent to the targeted CredHub API using the authentication credentials. 
 
-CredHub CLI commands are named based on action - get, set, generate and delete. Each command requires a credential name to be specified using the flag `--name`. Each command includes a command-specific help menu, which lists its supported commands and a description of each. When a command is type-specific, it will be prefixed with the supported type in the command description, e.g. `-l, --length=     [Password] Length of the generated value (Default: 30)`.
+CredHub CLI commands are named based on action - get, set, generate and delete. Each command requires a credential name to be specified using the flag `--name`. Commands which set or generate values must include a credential type using the flag `--type`.
+
+Each command includes a command-specific help menu, which lists its supported commands and a description of each. When a command is type-specific, it will be prefixed with the supported type in the command description, e.g. `-l, --length=     [Password] Length of the generated value (Default: 30)`.
 
 
 ```
