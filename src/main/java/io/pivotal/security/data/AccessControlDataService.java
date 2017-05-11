@@ -66,45 +66,36 @@ public class AccessControlDataService {
 
   public boolean hasReadAclPermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
-    if (credentialName != null) {
-      final AccessEntryData accessEntryData =
-          accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-      return accessEntryData != null && accessEntryData.hasReadAclPermission();
-    }
-    return false;
+    final AccessEntryData accessEntryData =
+        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
+    return accessEntryData != null && accessEntryData.hasReadAclPermission();
   }
 
   public boolean hasAclWritePermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
-    if (credentialName != null) {
-      final AccessEntryData accessEntryData =
-          accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-      return accessEntryData != null && accessEntryData.hasWriteAclPermission();
-    }
-    return false;
+    final AccessEntryData accessEntryData =
+        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
+    return accessEntryData != null && accessEntryData.hasWriteAclPermission();
   }
 
   public boolean hasReadPermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
-    if (credentialName != null) {
-      AccessEntryData accessEntryData =
-          accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-      return accessEntryData != null && accessEntryData.hasReadPermission();
-    }
-    return false;
+    AccessEntryData accessEntryData =
+        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
+    return accessEntryData != null && accessEntryData.hasReadPermission();
   }
 
   public boolean hasCredentialWritePermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
+        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
     return accessEntryData != null && accessEntryData.hasWritePermission();
   }
 
   public boolean hasCredentialDeletePermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
+        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
     return accessEntryData != null && accessEntryData.hasDeletePermission();
   }
 
