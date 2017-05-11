@@ -168,8 +168,9 @@ public class AccessControlHandlerTest {
 
   @Test
   public void deleteAccessControlEntries_whenTheUserHasPermission_deletesTheAce() {
-    when(credentialNameDataService.findOrThrow(CREDENTIAL_NAME)).thenReturn(credentialName);
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
+    when(accessControlDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
 
     subject.deleteAccessControlEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
@@ -179,12 +180,28 @@ public class AccessControlHandlerTest {
   }
 
   @Test
+  public void deleteAccessControlEntries_whenNothingIsDeleted_throwsAnException() {
+    when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
+    when(accessControlDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
+        .thenReturn(false);
+
+    try {
+      subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      fail("should throw");
+    } catch (EntryNotFoundException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+    }
+  }
+
+  @Test
   public void deleteAccessControlEntries_whenTheUserLacksPermission_throwsInsteadOfDeletingThePermissions() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(false);
 
     try {
       subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
       verify(accessControlDataService, times(0)).deleteAccessControlEntry(any(), any());

@@ -298,13 +298,15 @@ public class AccessControlEndpointTest {
 
   @Test
   public void DELETE_whenTheCredentialDoesNotExist_shouldReturnNotFound() throws Exception {
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+
     mockMvc.perform(
         delete("/api/v1/aces?credential_name=/not-valid&actor=something")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error").value(
-            "The request could not be fulfilled because the resource could not be found."));
+            expectedError));
 
     auditingHelper.verifyRequestAuditing(
         "/api/v1/aces",

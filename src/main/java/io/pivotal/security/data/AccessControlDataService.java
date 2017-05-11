@@ -72,9 +72,9 @@ public class AccessControlDataService {
     return operations;
   }
 
-  public void deleteAccessControlEntry(String name, String actor) {
+  public boolean deleteAccessControlEntry(String name, String actor) {
     CredentialName credentialName = credentialNameDataService.find(name);
-    accessEntryRepository.deleteByCredentialNameAndActor(credentialName, actor);
+    return accessEntryRepository.deleteByCredentialNameAndActor(credentialName, actor) > 0;
   }
 
   public boolean hasReadAclPermission(String actor, String name) {

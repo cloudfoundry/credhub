@@ -22,6 +22,8 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
+import static junit.framework.TestCase.assertFalse;
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -173,7 +175,9 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void deleteAccessControlEntry_whenNameIsMissingLeadingSlash_deletesTheAce() {
-    subject.deleteAccessControlEntry(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE);
+    boolean deleted = subject.deleteAccessControlEntry(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE);
+
+    assertTrue(deleted);
 
     final List<AccessControlEntry> accessControlList = subject
         .getAccessControlList(credentialName);
@@ -185,15 +189,15 @@ public class AccessControlDataServiceTest {
   }
 
   @Test
-  public void deleteAccessControlEntry_whenNonExistentResource_doesNothing() {
-    subject.deleteAccessControlEntry("/some-thing-that-is-not-here", LUKE);
-    // pass
+  public void deleteAccessControlEntry_whenNonExistentResource_returnsFalse() {
+    boolean deleted = subject.deleteAccessControlEntry("/some-thing-that-is-not-here", LUKE);
+    assertFalse(deleted);
   }
 
   @Test
-  public void deleteAccessControlEntry_whenNonExistentAce_doesNothing() {
-    subject.deleteAccessControlEntry(CREDENTIAL_NAME, DARTH);
-    // pass
+  public void deleteAccessControlEntry_whenNonExistentAce_returnsFalse() {
+    boolean deleted = subject.deleteAccessControlEntry(CREDENTIAL_NAME, DARTH);
+    assertFalse(deleted);
   }
 
   @Test

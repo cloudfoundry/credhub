@@ -65,6 +65,10 @@ public class AccessControlHandler {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    accessControlDataService.deleteAccessControlEntry(credentialName, actor);
+    boolean successfullyDeleted = accessControlDataService.deleteAccessControlEntry(credentialName, actor);
+
+    if (!successfullyDeleted) {
+      throw new EntryNotFoundException("error.acl.lacks_credential_write");
+    }
   }
 }
