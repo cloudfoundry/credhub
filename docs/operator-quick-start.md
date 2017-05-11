@@ -65,8 +65,6 @@ CredHub supports the following credential types:
     rsa-private: ((example.private_key))
     ```
 
-More information on credential types can be [found here.](https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/credential-types.md)
-
 ## Deployment Manifest Changes 
 
 When CredHub is enabled on the BOSH Director, it will perform interpolation of credential values into manifests that use the `((variables))` syntax. When the Director encounters a variable using this syntax, it will make requests to CredHub to retrieve the credential value. If the credential does not exist and the release or manifest contains generation properties, the value will be automatically generated. 
@@ -120,6 +118,7 @@ instance_groups:
           certificate: ((example-tls.certificate))
           private_key: ((example-tls.private_key))
 ```
+
 
 ## Variable Namespacing
 
