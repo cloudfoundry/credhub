@@ -158,7 +158,7 @@ public class AccessControlEntryControllerTest {
               .andExpect(content().string(""));
 
           verify(accessControlHandler, times(1))
-              .deleteAccessControlEntries(any(UserContext.class), eq("test-name"), eq("test-actor"));
+              .deleteAccessControlEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
         });
       });
     });

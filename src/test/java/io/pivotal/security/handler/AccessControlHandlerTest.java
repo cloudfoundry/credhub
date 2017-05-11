@@ -172,7 +172,7 @@ public class AccessControlHandlerTest {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
 
-    subject.deleteAccessControlEntries( userContext, CREDENTIAL_NAME, ACTOR_NAME);
+    subject.deleteAccessControlEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
 
     verify(accessControlDataService, times(1)).deleteAccessControlEntry(
         CREDENTIAL_NAME, ACTOR_NAME);
@@ -184,7 +184,7 @@ public class AccessControlHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.deleteAccessControlEntries(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
       verify(accessControlDataService, times(0)).deleteAccessControlEntry(any(), any());

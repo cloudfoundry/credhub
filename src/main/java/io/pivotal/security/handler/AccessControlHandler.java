@@ -60,7 +60,7 @@ public class AccessControlHandler {
     return new AccessControlListResponse(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
   }
 
-  public void deleteAccessControlEntries(UserContext userContext, String credentialName, String actor) {
+  public void deleteAccessControlEntry(UserContext userContext, String credentialName, String actor) {
     if (!permissionService.hasAclWritePermission(userContext, credentialName)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }

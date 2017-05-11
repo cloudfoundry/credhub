@@ -68,7 +68,7 @@ public class AccessControlEntryController {
 
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteAccessControlEntries(
+  public void deleteAccessControlEntry(
       @RequestParam("credential_name") String credentialName,
       @RequestParam("actor") String actor,
       RequestUuid requestUuid,
@@ -85,7 +85,7 @@ public class AccessControlEntryController {
           operationList
       ));
 
-      accessControlHandler.deleteAccessControlEntries(userContext, credentialName, actor);
+      accessControlHandler.deleteAccessControlEntry(userContext, credentialName, actor);
 
       return true;
     });
