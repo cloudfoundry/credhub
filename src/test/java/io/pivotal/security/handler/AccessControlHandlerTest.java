@@ -5,7 +5,6 @@ import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.service.PermissionService;
@@ -133,6 +132,9 @@ public class AccessControlHandlerTest {
     when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(expectedControlList);
 
+    when(credentialNameDataService.find(CREDENTIAL_NAME))
+        .thenReturn(credentialName);
+
     AccessControlListResponse response = subject.setAccessControlEntries(userContext, CREDENTIAL_NAME, accessControlList);
 
     List<AccessControlEntry> accessControlEntries = response.getAccessControlList();
@@ -160,7 +162,7 @@ public class AccessControlHandlerTest {
     try {
       subject.setAccessControlEntries(userContext, CREDENTIAL_NAME, emptyList());
       fail("should throw");
-    } catch (PermissionException e) {
+    } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
       verify(accessControlDataService, times(0)).saveAccessControlEntries(any(), any());
     }

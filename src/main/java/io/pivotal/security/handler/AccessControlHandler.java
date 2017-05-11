@@ -48,12 +48,11 @@ public class AccessControlHandler {
   }
 
   public AccessControlListResponse setAccessControlEntries(UserContext userContext, String name, List<AccessControlEntry> accessControlEntryList) {
-    final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
-
     if (!permissionService.hasAclWritePermission(userContext, name)) {
-      throw new PermissionException("error.acl.lacks_credential_write");
+      throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
+    final CredentialName credentialName = credentialNameDataService.find(name);
     accessControlDataService
         .saveAccessControlEntries(credentialName, accessControlEntryList);
 

@@ -447,13 +447,13 @@ public class AccessControlEndpointTest {
     final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     this.mockMvc.perform(post)
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(status().isForbidden())
+        .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.error").value(expectedError));
 
     auditingHelper.verifyAuditing(
         "uaa-client:credhub_test",
         "/api/v1/aces",
-        403,
+        404,
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "dan"),
@@ -546,11 +546,11 @@ public class AccessControlEndpointTest {
             + "       \"operations\": [\"read\"]\n"
             + "     }]"
             + "}");
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     this.mockMvc.perform(post).andExpect(status().isNotFound())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(jsonPath("$.error", equalTo(
-            "The request could not be fulfilled because the resource could not be found.")));
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
