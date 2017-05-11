@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 @Component
 public class AccessControlDataService {
 
@@ -25,10 +27,6 @@ public class AccessControlDataService {
   ) {
     this.accessEntryRepository = accessEntryRepository;
     this.credentialNameDataService = credentialNameDataService;
-  }
-
-  public List<AccessControlEntry> getAccessControlList(String name) {
-    return getAccessControlList(credentialNameDataService.findOrThrow(name));
   }
 
   public List<AccessControlEntry> getAccessControlList(CredentialName credentialName) {
@@ -48,20 +46,35 @@ public class AccessControlDataService {
     }
   }
 
-  public AccessControlEntry getAccessControlEntry(String actor, String name) {
-    CredentialName credentialName = credentialNameDataService.findOrThrow(name);
-    AccessEntryData entry = accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-    return createViewFor(entry);
-  }
+  public List<AccessControlOperation> getAllowedOperations(String name, String actor) {
+    List<AccessControlOperation> operations = newArrayList();
+    CredentialName credentialName = credentialNameDataService.find(name);
+    AccessEntryData accessEntryData = accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
 
-  public AccessControlEntry deleteAccessControlEntry(String actor, CredentialName credentialName) {
-    AccessEntryData entry = accessEntryRepository.findByCredentialNameUuidAndActor(credentialName.getUuid(), actor);
-
-    if (entry != null) {
-      accessEntryRepository.delete(entry);
+    if (accessEntryData != null) {
+      if (accessEntryData.hasReadPermission()) {
+        operations.add(AccessControlOperation.READ);
+      }
+      if (accessEntryData.hasWritePermission()) {
+        operations.add(AccessControlOperation.WRITE);
+      }
+      if (accessEntryData.hasDeletePermission()) {
+        operations.add(AccessControlOperation.DELETE);
+      }
+      if (accessEntryData.hasReadAclPermission()) {
+        operations.add(AccessControlOperation.READ_ACL);
+      }
+      if (accessEntryData.hasWriteAclPermission()) {
+        operations.add(AccessControlOperation.WRITE_ACL);
+      }
     }
 
-    return createViewFor(entry);
+    return operations;
+  }
+
+  public void deleteAccessControlEntry(String name, String actor) {
+    CredentialName credentialName = credentialNameDataService.find(name);
+    accessEntryRepository.deleteByCredentialNameAndActor(credentialName, actor);
   }
 
   public boolean hasReadAclPermission(String actor, String name) {

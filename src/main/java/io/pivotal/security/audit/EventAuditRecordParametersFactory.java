@@ -1,22 +1,28 @@
 package io.pivotal.security.audit;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Collections.singletonList;
-
 import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EventAuditRecordParametersFactory {
   public static List<EventAuditRecordParameters> createPermissionEventAuditRecordParameters(
       AuditingOperationCode auditingOperationCode,
       String credentialName,
-      AccessControlEntry accessControlEntry
+      String actor,
+      List<AccessControlOperation> operations
   ) {
-    return createPermissionsEventAuditParameters(
-        auditingOperationCode,
-        credentialName,
-        singletonList(accessControlEntry)
-    );
+    return operations.stream()
+        .map(operation -> (
+            new EventAuditRecordParameters(
+                auditingOperationCode,
+                credentialName,
+                operation,
+                actor
+            )
+        ))
+        .collect(Collectors.toList());
   }
 
   public static List<EventAuditRecordParameters> createPermissionsEventAuditParameters(
@@ -24,19 +30,21 @@ public class EventAuditRecordParametersFactory {
       String credentialName,
       List<AccessControlEntry> accessControlEntries
   ) {
-    List<EventAuditRecordParameters> eventAuditRecordParameters = newArrayList();
-    accessControlEntries.stream()
-        .forEach(entry -> {
+    return accessControlEntries.stream()
+        .map(entry -> {
           String actor = entry.getActor();
-          entry.getAllowedOperations().stream()
-              .forEach(operation -> {
-                eventAuditRecordParameters.add(new EventAuditRecordParameters(
+          return entry.getAllowedOperations().stream()
+              .map(operation -> (
+                new EventAuditRecordParameters(
                     auditingOperationCode,
                     credentialName,
                     operation,
-                    actor));
-              });
-        });
-    return eventAuditRecordParameters;
+                    actor
+                )
+              ))
+              .collect(Collectors.toList());
+        })
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
   }
 }

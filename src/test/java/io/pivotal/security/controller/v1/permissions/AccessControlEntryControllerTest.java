@@ -152,11 +152,6 @@ public class AccessControlEntryControllerTest {
       });
 
       describe("#DELETE", () -> {
-        beforeEach(() -> {
-          when(accessControlDataService.getAccessControlEntry(any(), any()))
-              .thenReturn(new AccessControlEntry("Eddie Murphy", newArrayList()));
-        });
-
         it("removes ACE, returns 204", () -> {
           mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
               .andExpect(status().isNoContent())

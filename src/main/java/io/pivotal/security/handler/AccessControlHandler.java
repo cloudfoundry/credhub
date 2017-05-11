@@ -60,13 +60,11 @@ public class AccessControlHandler {
     return new AccessControlListResponse(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
   }
 
-  public AccessControlEntry deleteAccessControlEntries(UserContext userContext, String name, String actor) {
-    if (!permissionService.hasAclWritePermission(userContext, name)) {
+  public void deleteAccessControlEntries(UserContext userContext, String credentialName, String actor) {
+    if (!permissionService.hasAclWritePermission(userContext, credentialName)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
-    return accessControlDataService.deleteAccessControlEntry(actor, credentialName);
+    accessControlDataService.deleteAccessControlEntry(credentialName, actor);
   }
-
 }

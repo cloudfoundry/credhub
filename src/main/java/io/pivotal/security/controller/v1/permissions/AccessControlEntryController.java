@@ -5,7 +5,7 @@ import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntriesRequest;
 import io.pivotal.security.view.AccessControlListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
@@ -74,17 +76,18 @@ public class AccessControlEntryController {
 
   ) {
     eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
-      AccessControlEntry entry = accessControlDataService.getAccessControlEntry(actor, credentialName);
+      List<AccessControlOperation> operationList = accessControlDataService.getAllowedOperations(credentialName, actor);
 
-      if (entry != null) {
-        parameterList.addAll(createPermissionEventAuditRecordParameters(
-            ACL_DELETE,
-            credentialName,
-            entry
-        ));
-        accessControlHandler.deleteAccessControlEntries(userContext, credentialName, actor);
-      }
-      return entry;
+      parameterList.addAll(createPermissionEventAuditRecordParameters(
+          ACL_DELETE,
+          credentialName,
+          actor,
+          operationList
+      ));
+
+      accessControlHandler.deleteAccessControlEntries(userContext, credentialName, actor);
+
+      return true;
     });
   }
 }

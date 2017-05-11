@@ -167,7 +167,7 @@ public class AccessControlHandlerTest {
   }
 
   @Test
-  public void deleteAccessControlEntries_deletesTheAce() {
+  public void deleteAccessControlEntries_whenTheUserHasPermission_deletesTheAce() {
     when(credentialNameDataService.findOrThrow(CREDENTIAL_NAME)).thenReturn(credentialName);
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
@@ -175,11 +175,11 @@ public class AccessControlHandlerTest {
     subject.deleteAccessControlEntries( userContext, CREDENTIAL_NAME, ACTOR_NAME);
 
     verify(accessControlDataService, times(1)).deleteAccessControlEntry(
-        ACTOR_NAME, credentialName);
+        CREDENTIAL_NAME, ACTOR_NAME);
   }
 
   @Test
-  public void deleteAccessControlEntries_verifiesTheUserHasPermission() {
+  public void deleteAccessControlEntries_whenTheUserLacksPermission_throwsInsteadOfDeletingThePermissions() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(false);
 

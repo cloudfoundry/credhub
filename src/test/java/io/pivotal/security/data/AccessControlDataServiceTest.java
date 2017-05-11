@@ -7,6 +7,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,8 +40,9 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @Transactional
 public class AccessControlDataServiceTest {
   private static final String CREDENTIAL_NAME = "/lightsaber";
+  private static final String CREDENTIAL_NAME_WITHOUT_LEADING_SLASH = StringUtils.removeStart(CREDENTIAL_NAME, "/");
   private static final String CREDENTIAL_NAME_DOES_NOT_EXIST = "/this/credential/does/not/exist";
-  
+
   private static final String LUKE = "Luke";
   private static final String LEIA = "Leia";
   private static final String HAN_SOLO = "HansSolo";
@@ -76,6 +78,32 @@ public class AccessControlDataServiceTest {
             hasProperty("allowedOperations",
                 hasItems(AccessControlOperation.READ_ACL))))
     );
+  }
+
+  @Test
+  public void getAllowedOperations_whenTheCredentialExists_andTheActorHasPermissions_returnsListOfActivePermissions() {
+    assertThat(subject.getAllowedOperations(CREDENTIAL_NAME, LUKE), containsInAnyOrder(
+        AccessControlOperation.WRITE,
+        AccessControlOperation.DELETE
+    ));
+  }
+
+  @Test
+  public void getAllowedOperations_whenTheNameIsMissingTheLeadingSlash_returnsListOfActivePermissions() {
+    assertThat(subject.getAllowedOperations(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE), containsInAnyOrder(
+        AccessControlOperation.WRITE,
+        AccessControlOperation.DELETE
+    ));
+  }
+
+  @Test
+  public void getAllowedOperations_whenTheCredentialExists_andTheActorHasNoPermissions_returnsEmptyList() {
+    assertThat(subject.getAllowedOperations(CREDENTIAL_NAME, DARTH).size(), equalTo(0));
+  }
+
+  @Test
+  public void getAllowedOperations_whenTheCredentialDoesNotExist_returnsEmptyList() {
+    assertThat(subject.getAllowedOperations("/unicorn", LEIA).size(), equalTo(0));
   }
 
   @Test
@@ -131,9 +159,8 @@ public class AccessControlDataServiceTest {
   }
 
   @Test
-  public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAcl() {
-
-    subject.deleteAccessControlEntry(LUKE, credentialName);
+  public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAce() {
+    subject.deleteAccessControlEntry(CREDENTIAL_NAME, LUKE);
 
     final List<AccessControlEntry> accessControlList = subject
         .getAccessControlList(credentialName);
@@ -145,17 +172,28 @@ public class AccessControlDataServiceTest {
   }
 
   @Test
-  public void deleteAccessControlEntry_whenNonExistentResource_throwsException() {
-    try {
-      subject.deleteAccessControlEntry( LUKE, new CredentialName(CREDENTIAL_NAME_DOES_NOT_EXIST));
-    } catch (EntryNotFoundException enfe) {
-      assertThat(enfe.getMessage(), Matchers.equalTo("error.resource_not_found"));
-    }
+  public void deleteAccessControlEntry_whenNameIsMissingLeadingSlash_deletesTheAce() {
+    subject.deleteAccessControlEntry(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE);
+
+    final List<AccessControlEntry> accessControlList = subject
+        .getAccessControlList(credentialName);
+
+    assertThat(accessControlList, hasSize(2));
+
+    assertThat(accessControlList,
+        not(contains(hasProperty("actor", equalTo(LUKE)))));
+  }
+
+  @Test
+  public void deleteAccessControlEntry_whenNonExistentResource_doesNothing() {
+    subject.deleteAccessControlEntry("/some-thing-that-is-not-here", LUKE);
+    // pass
   }
 
   @Test
   public void deleteAccessControlEntry_whenNonExistentAce_doesNothing() {
-    subject.deleteAccessControlEntry( DARTH, credentialName);
+    subject.deleteAccessControlEntry(CREDENTIAL_NAME, DARTH);
+    // pass
   }
 
   @Test
