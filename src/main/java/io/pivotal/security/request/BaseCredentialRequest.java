@@ -21,7 +21,7 @@ public abstract class BaseCredentialRequest {
       message = "error.invalid_name_has_slash")
   private String name;
   private String type;
-  private Boolean overwrite;
+  private boolean overwrite;
   private List<AccessControlEntry> accessControlEntries = new ArrayList<>();
 
   public String getType() {
@@ -40,11 +40,11 @@ public abstract class BaseCredentialRequest {
     this.name = name;
   }
 
-  public Boolean isOverwrite() {
-    return overwrite != null && overwrite;
+  public boolean isOverwrite() {
+    return overwrite;
   }
 
-  public void setOverwrite(Boolean overwrite) {
+  public void setOverwrite(boolean overwrite) {
     this.overwrite = overwrite;
   }
 

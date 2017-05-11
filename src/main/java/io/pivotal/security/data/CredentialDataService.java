@@ -83,7 +83,7 @@ public class CredentialDataService {
     return findAllPaths(true);
   }
 
-  private List<String> findAllPaths(Boolean findPaths) {
+  private List<String> findAllPaths(boolean findPaths) {
     if (!findPaths) {
       return newArrayList();
     }

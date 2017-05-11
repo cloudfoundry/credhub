@@ -1,8 +1,8 @@
 package io.pivotal.security.entity;
 
-import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
-
 import io.pivotal.security.request.AccessControlOperation;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.hibernate.annotations.GenericGenerator;
+
+import static io.pivotal.security.constants.UuidConstants.UUID_BYTES;
 
 @Entity
 @Table(name = "AccessEntry")
@@ -35,19 +36,19 @@ public class AccessEntryData {
   private String actor;
 
   @Column(name = "read_permission", nullable = false)
-  private Boolean readPermission = DEFAULT_DENY;
+  private boolean readPermission = DEFAULT_DENY;
 
   @Column(name = "write_permission", nullable = false)
-  private Boolean writePermission = DEFAULT_DENY;
+  private boolean writePermission = DEFAULT_DENY;
 
   @Column(name = "delete_permission", nullable = false)
-  private Boolean deletePermission = DEFAULT_DENY;
+  private boolean deletePermission = DEFAULT_DENY;
 
   @Column(name = "read_acl_permission", nullable = false)
-  private Boolean readAclPermission = DEFAULT_DENY;
+  private boolean readAclPermission = DEFAULT_DENY;
 
   @Column(name = "write_acl_permission", nullable = false)
-  private Boolean writeAclPermission = DEFAULT_DENY;
+  private boolean writeAclPermission = DEFAULT_DENY;
 
   @SuppressWarnings("unused")
   public AccessEntryData() {
@@ -89,23 +90,23 @@ public class AccessEntryData {
     this.actor = actor;
   }
 
-  public Boolean hasReadPermission() {
+  public boolean hasReadPermission() {
     return readPermission;
   }
 
-  public Boolean hasWritePermission() {
+  public boolean hasWritePermission() {
     return writePermission;
   }
 
-  public Boolean hasDeletePermission() {
+  public boolean hasDeletePermission() {
     return deletePermission;
   }
 
-  public Boolean hasWriteAclPermission() {
+  public boolean hasWriteAclPermission() {
     return writeAclPermission;
   }
 
-  public Boolean hasReadAclPermission() {
+  public boolean hasReadAclPermission() {
     return readAclPermission;
   }
 
@@ -136,23 +137,23 @@ public class AccessEntryData {
     return operations;
   }
 
-  private void setReadPermission(Boolean readPermission) {
+  private void setReadPermission(boolean readPermission) {
     this.readPermission = readPermission;
   }
 
-  private void setWritePermission(Boolean writePermission) {
+  private void setWritePermission(boolean writePermission) {
     this.writePermission = writePermission;
   }
 
-  private void setDeletePermission(Boolean deletePermission) {
+  private void setDeletePermission(boolean deletePermission) {
     this.deletePermission = deletePermission;
   }
 
-  private void setReadAclPermission(Boolean readAclPermission) {
+  private void setReadAclPermission(boolean readAclPermission) {
     this.readAclPermission = readAclPermission;
   }
 
-  private void setWriteAclPermission(Boolean writeAclPermission) {
+  private void setWriteAclPermission(boolean writeAclPermission) {
     this.writeAclPermission = writeAclPermission;
   }
 

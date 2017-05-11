@@ -74,7 +74,7 @@ public class CertificateReader {
     return KeyUsage.fromExtensions(certificateHolder.getExtensions());
   }
 
-  public Boolean isSelfSigned() {
+  public boolean isSelfSigned() {
     final String issuerName = certificate.getIssuerDN().getName();
 
     if (!issuerName.equals(getSubjectName().toString())) {
