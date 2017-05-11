@@ -20,7 +20,7 @@ CredHub supports the following credential types:
   ```json
   {
     "name": "/example/value",
-    "type": "value",
+    "type": "json",
     "value": {
       "key": 123,
       "key_list": [ "val1", "val2", "val3" ],
