@@ -1,6 +1,7 @@
 package io.pivotal.security.integration;
 
 import com.google.common.collect.ImmutableMap;
+import com.greghaskins.spectrum.Spectrum;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
@@ -10,28 +11,28 @@ import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.AccessControlListResponse;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.greghaskins.spectrum.Spectrum.beforeEach;
+import static com.greghaskins.spectrum.Spectrum.describe;
+import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
+import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
 import static io.pivotal.security.request.AccessControlOperation.READ;
 import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
@@ -53,143 +54,150 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(Spectrum.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
-@Transactional
 public class NoOverwriteTest {
 
   private static final String CREDENTIAL_NAME = "TEST-SECRET";
   private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
-
   @Autowired
   WebApplicationContext webApplicationContext;
   @Autowired
   EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   @MockBean
   CurrentTimeProvider mockCurrentTimeProvider;
+  private ResultActions[] responses;
   private MockMvc mockMvc;
   private Consumer<Long> fakeTimeSetter;
 
-  @Before
-  public void beforeEach() {
-    fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+  {
+    wireAndUnwire(this);
 
-    fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
-    mockMvc = MockMvcBuilders
-        .webAppContextSetup(webApplicationContext)
-        .apply(springSecurity())
-        .build();
-  }
+    beforeEach(() -> {
+      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
-  @Test
-  public void whenMultipleThreadsCreateSameCredentialWithNoOverwrite_itShouldNotOverwrite()
-      throws Exception {
-    final ResultActions[] responses = runRequestsConcurrently(
-        ",\"value\":\"thread1\"",
-        ",\"value\":\"thread2\"",
-        () -> put("/api/v1/data"));
+      encryptionKeyCanaryMapper.mapUuidsToKeys();
+      fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
+      mockMvc = MockMvcBuilders
+          .webAppContextSetup(webApplicationContext)
+          .apply(springSecurity())
+          .build();
+    });
 
-    MvcResult result1 = responses[0]
-        .andDo(print())
-        .andReturn();
-    final DocumentContext context1 = JsonPath.parse(result1.getResponse().getContentAsString());
-    MvcResult result2 = responses[1]
-        .andDo(print())
-        .andReturn();
-    final DocumentContext context2 = JsonPath.parse(result2.getResponse().getContentAsString());
+    describe("when multiple threads attempt to create a credential with the same name with no-overwrite", () -> {
+      beforeEach(() -> {
+        runRequestsConcurrently(
+            ",\"value\":\"thread1\"",
+            ",\"value\":\"thread2\"",
+            () -> put("/api/v1/data"));
+      });
 
-    assertThat(context1.read("$.value"), equalTo(context2.read("$.value")));
+      it("should not overwrite the value and the ACEs", () -> {
+        MvcResult result1 = responses[0]
+            .andDo(print())
+            .andReturn();
+        final DocumentContext context1 = JsonPath.parse(result1.getResponse().getContentAsString());
+        MvcResult result2 = responses[1]
+            .andDo(print())
+            .andReturn();
+        final DocumentContext context2 = JsonPath.parse(result2.getResponse().getContentAsString());
 
-    String winningValue = context1.read("$.value");
+        assertThat(context1.read("$.value"), equalTo(context2.read("$.value")));
 
-    String tokenForWinningActor = ImmutableMap
-        .of("thread1", UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
-            "thread2", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
-        .get(winningValue);
-    String winningActor = ImmutableMap
-        .of("thread1", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-            "thread2", "uaa-client:credhub_test")
-        .get(winningValue);
+        String winningValue = context1.read("$.value");
 
-    MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
-        .header("Authorization", "Bearer " + tokenForWinningActor))
-        .andDo(print())
-        .andExpect(status().isOk())
-        .andReturn();
-    String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper
-        .deserialize(content, AccessControlListResponse.class);
+        String tokenForWinningActor = ImmutableMap
+            .of("thread1", UAA_OAUTH2_PASSWORD_GRANT_TOKEN,
+                "thread2", UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+            .get(winningValue);
+        String winningActor = ImmutableMap
+            .of("thread1", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                "thread2", "uaa-client:credhub_test")
+            .get(winningValue);
 
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+        MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
+            .header("Authorization", "Bearer " + tokenForWinningActor))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andReturn();
+        String content = result.getResponse().getContentAsString();
+        AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+
+        assertThat(acl.getAccessControlList(), containsInAnyOrder(
+            samePropertyValuesAs(
+                new AccessControlEntry(winningActor,
+                    asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            samePropertyValuesAs(
+                new AccessControlEntry("uaa-client:a-different-actor", asList(READ)))
+        ));
+      });
+    });
+
+    describe("when multiple threads attempt to generate a credential with the same name with no-overwrite", () -> {
+      beforeEach(() -> {
+        // We need to set the parameters so that we can determine which actor's request won,
+        // even with authorization enforcement disabled.
+        runRequestsConcurrently(
+            ",\"parameters\":{\"exclude_lower\":true,\"exclude_upper\":true}",
+            ",\"parameters\":{\"exclude_number\":true}",
+            () -> post("/api/v1/data"));
+      });
+
+      it("should not overwrite the value and the ACEs", () -> {
+        MvcResult result1 = responses[0]
+            .andDo(print())
+            .andReturn();
+        final DocumentContext context1 = JsonPath.parse(result1.getResponse().getContentAsString());
+
+        MvcResult result2 = responses[1]
+            .andDo(print())
+            .andReturn();
+        final DocumentContext context2 = JsonPath.parse(result2.getResponse().getContentAsString());
+
+        assertThat(context1.read("$.value"), equalTo(context2.read("$.value")));
+
+        MockHttpServletResponse response1 = mockMvc
+            .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
+            .andDo(print())
+            .andReturn().getResponse();
+
+        MockHttpServletResponse response2 = mockMvc
+            .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
+                .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN))
+            .andDo(print())
+            .andReturn().getResponse();
+
+        String winningPassword = context1.read("$.value");
+        String winningActor;
+        String winningResponse;
+
+        if (winningPassword.matches("\\d+")) {
+          winningActor = "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d";
+          winningResponse = response1.getContentAsString();
+        } else {
+          winningActor = "uaa-client:credhub_test";
+          winningResponse = response2.getContentAsString();
+        }
+
+        AccessControlListResponse acl = JsonHelper.deserialize(winningResponse, AccessControlListResponse.class);
+        assertThat(acl.getAccessControlList(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry(winningActor,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-client:a-different-actor", asList(READ)))));
+            new AccessControlEntry("uaa-client:a-different-actor", singletonList(READ)))
+        ));
+      });
+    });
   }
 
-  @Test
-  public void whenMultipleThreadsGenerateSameCredentialWithNoOverwrite_itShouldNotOverwrite()
-  throws Exception {
-      // We need to set the parameters so that we can determine which actor's request won,
-      // even with authorization enforcement disabled.
-    final ResultActions[] responses = runRequestsConcurrently(
-        ",\"parameters\":{\"exclude_lower\":true,\"exclude_upper\":true}",
-        ",\"parameters\":{\"exclude_number\":true}",
-        () -> post("/api/v1/data"));
-
-    MvcResult result1 = responses[0]
-          .andDo(print())
-          .andReturn();
-      final DocumentContext context1 = JsonPath.parse(result1.getResponse().getContentAsString());
-
-      MvcResult result2 = responses[1]
-          .andDo(print())
-          .andReturn();
-      final DocumentContext context2 = JsonPath.parse(result2.getResponse().getContentAsString());
-
-      assertThat(context1.read("$.value"), equalTo(context2.read("$.value")));
-
-      MockHttpServletResponse response1 = mockMvc
-          .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-          .andDo(print())
-          .andReturn().getResponse();
-
-      MockHttpServletResponse response2 = mockMvc
-          .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN))
-          .andDo(print())
-          .andReturn().getResponse();
-
-      String winningPassword = context1.read("$.value");
-      String winningActor;
-      String winningResponse;
-
-      if (winningPassword.matches("\\d+")) {
-        winningActor = "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d";
-        winningResponse = response1.getContentAsString();
-      } else {
-        winningActor = "uaa-client:credhub_test";
-        winningResponse = response2.getContentAsString();
-      }
-
-      AccessControlListResponse acl = JsonHelper
-          .deserialize(winningResponse, AccessControlListResponse.class);
-      assertThat(acl.getAccessControlList(), containsInAnyOrder(
-          samePropertyValuesAs(
-              new AccessControlEntry(winningActor,
-                  asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-          samePropertyValuesAs(
-              new AccessControlEntry("uaa-client:a-different-actor", singletonList(READ)))));
-  }
-
-  private ResultActions[] runRequestsConcurrently(
+  private void runRequestsConcurrently(
       String additionalJsonPayload1,
       String additionalJsonPayload2,
       Supplier<MockHttpServletRequestBuilder> requestBuilderProvider) throws InterruptedException {
-    ResultActions[] responses = new ResultActions[2];
+    responses = new ResultActions[2];
 
     Thread thread1 = new Thread("thread1") {
       @Override
@@ -251,7 +259,5 @@ public class NoOverwriteTest {
     thread2.start();
     thread1.join();
     thread2.join();
-
-    return responses;
   }
 }
