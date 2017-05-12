@@ -1,27 +1,27 @@
 package io.pivotal.security.service;
 
-import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.domain.SecurityEventAuditRecord;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SecurityEventsLogService {
 
   private final Logger securityEventsLogger;
-  private final VersionProvider versionProvider;
+  private final String credhubVersion;
 
   @Autowired
-  SecurityEventsLogService(Logger securityEventsLogger, VersionProvider versionProvider) {
+  SecurityEventsLogService(Logger securityEventsLogger, @Value("${info.app.version}") String credhubVersion) {
     this.securityEventsLogger = securityEventsLogger;
-    this.versionProvider = versionProvider;
+    this.credhubVersion = credhubVersion;
   }
 
   public void log(SecurityEventAuditRecord securityEventAuditRecord) {
     String signature = securityEventAuditRecord.getSignature();
     String header = String
-        .join("|", "CEF:0|cloud_foundry|credhub", versionProvider.getVersion(), signature,
+        .join("|", "CEF:0|cloud_foundry|credhub", credhubVersion, signature,
             signature, "0");
     String message = String.join(
         " ",
