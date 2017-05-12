@@ -1,186 +1,228 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class CertificateGenerationParametersTest {
 
-  private CertificateGenerationParameters certificateGenerationParameters;
+  private CertificateGenerationParameters subject;
 
-  {
-    describe("#validate", () -> {
+  @Before
+  public void beforeEach() {
+    subject = new CertificateGenerationParameters();
+    subject.setCommonName("test");
+    subject.setSelfSigned(true);
+  }
 
-      describe("extended key usages", () -> {
-        beforeEach(() -> {
-          certificateGenerationParameters = new CertificateGenerationParameters();
-          certificateGenerationParameters.setCountry("My Country");
-          certificateGenerationParameters.setIsCa(true);
-        });
-        describe("invalid key usage", () -> {
-          it("throws the correct exception", () -> {
-            try {
-              certificateGenerationParameters.setExtendedKeyUsage(new String[]{CertificateGenerationParameters.CLIENT_AUTH, "server_off"});
-              certificateGenerationParameters.validate();
-            } catch (ParameterizedValidationException pve) {
-              assertThat(pve.getLocalizedMessage(), equalTo("error.invalid_extended_key_usage"));
-              assertThat(pve.getParameter(), equalTo("server_off"));
-            }
-          });
-        });
+  @Test
+  public void validate_allowsAllValidExtendedKeyUsages() {
+    String[] validExtendedKeyUsages = new String[]{"server_auth", "client_auth", "code_signing", "email_protection", "timestamping"};
+    subject.setExtendedKeyUsage(validExtendedKeyUsages);
 
-        describe("timestamping key usage", () -> {
-          it("is valid", () -> {
-            certificateGenerationParameters.setExtendedKeyUsage(new String[]{CertificateGenerationParameters.TIMESTAMPING});
-            certificateGenerationParameters.validate();
-          });
-        });
-      });
+    subject.validate();
+    //pass
+  }
 
-      describe("with self_sign set to true and no ca name", () -> {
-        itThrowsWithMessage("when is_ca is set to false", ParameterizedValidationException.class,
-            "error.missing_signing_ca", () -> {
-              certificateGenerationParameters = new CertificateGenerationParameters();
-              certificateGenerationParameters.setCommonName("foo");
-              certificateGenerationParameters.setIsCa(false);
-              certificateGenerationParameters.validate();
-            });
-      });
-      describe("when is_ca is set to true", () -> {
-        it("should not throw an exception", () -> {
-          certificateGenerationParameters = new CertificateGenerationParameters();
-          certificateGenerationParameters.setCaName("test-ca");
-          certificateGenerationParameters.setIsCa(true);
-          certificateGenerationParameters.setCommonName("foo");
-          certificateGenerationParameters.setDuration(10);
-          certificateGenerationParameters.validate();
-        });
-      });
-      itThrowsWithMessage("when duration is greater than 3650",
-          ParameterizedValidationException.class, "error.invalid_duration", () -> {
-            certificateGenerationParameters = new CertificateGenerationParameters();
-            certificateGenerationParameters.setCaName("test-ca");
-            certificateGenerationParameters.setCommonName("foo");
-            certificateGenerationParameters.setDuration(3651);
-            certificateGenerationParameters.validate();
-          });
+  @Test
+  public void validate_rejectsInvalidExtendedKeyUsages() {
+    subject.setExtendedKeyUsage(new String[]{"server_auth", "this_is_invalid"});
 
-      itThrowsWithMessage("when all of DN parameters are empty",
-          ParameterizedValidationException.class, "error.missing_certificate_parameters",
-          () -> {
-            certificateGenerationParameters = new CertificateGenerationParameters();
-            certificateGenerationParameters.setCaName("test-ca");
-            certificateGenerationParameters.setOrganization("");
-            certificateGenerationParameters.setState("");
-            certificateGenerationParameters.setCountry("");
-            certificateGenerationParameters.setCommonName("");
-            certificateGenerationParameters.setOrganizationUnit("");
-            certificateGenerationParameters.setLocality("");
-            certificateGenerationParameters.validate();
-          });
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_extended_key_usage"));
+      assertThat(e.getParameter(), equalTo("this_is_invalid"));
+    }
+  }
 
-      describe("when key lengths are invalid", () -> {
-        itThrowsWithMessage("when key length is less than 2048",
-            ParameterizedValidationException.class, "error.invalid_key_length", () -> {
-              certificateGenerationParameters = new CertificateGenerationParameters();
-              certificateGenerationParameters.setCaName("test-ca");
-              certificateGenerationParameters.setCommonName("foo");
-              certificateGenerationParameters.setKeyLength(1024);
-              certificateGenerationParameters.validate();
-            });
+  @Test
+  public void validate_withoutSelfSigned_orIsCa_requiresCaName() {
+    subject.setIsCa(false);
+    subject.setSelfSigned(false);
+    subject.setCommonName("foo");
 
-        itThrowsWithMessage("when key length is between 2048 and 3072",
-            ParameterizedValidationException.class, "error.invalid_key_length", () -> {
-              certificateGenerationParameters = new CertificateGenerationParameters();
-              certificateGenerationParameters.setCaName("test-ca");
-              certificateGenerationParameters.setCommonName("foo");
-              certificateGenerationParameters.setKeyLength(2222);
-              certificateGenerationParameters.validate();
-            });
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.missing_signing_ca"));
+    }
+  }
 
-        itThrowsWithMessage("when key length is greater than 4096",
-            ParameterizedValidationException.class, "error.invalid_key_length", () -> {
-              certificateGenerationParameters = new CertificateGenerationParameters();
-              certificateGenerationParameters.setCaName("test-ca");
-              certificateGenerationParameters.setCommonName("foo");
-              certificateGenerationParameters.setKeyLength(9192);
-              certificateGenerationParameters.validate();
-            });
-      });
+  @Test
+  public void validate_withSelfSigned_andIsCa_shouldNotThrow() {
+    subject.setIsCa(true);
+    subject.setSelfSigned(false);
+    subject.setCommonName("foo");
 
-      describe("with alternate names", () -> {
-        beforeEach(() -> {
-          certificateGenerationParameters = new CertificateGenerationParameters();
-          certificateGenerationParameters.setOrganization("my-org");
-          certificateGenerationParameters.setState("NY");
-          certificateGenerationParameters.setCountry("USA");
-          certificateGenerationParameters.setSelfSigned(true);
-        });
+    subject.validate();
+    // pass
+  }
 
-        it("are supported", () -> {
-          certificateGenerationParameters
-              .setAlternativeNames(
-                  new String[]{"1.1.1.1", "example.com", "foo.pivotal.io", "*.pivotal.io"});
+  @Test
+  public void validate_requiresDurationToBeLessThan3650Days() {
+    subject.setDuration(3651);
 
-          certificateGenerationParameters.validate();
-        });
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_duration"));
+    }
+  }
 
-        itThrows("with invalid special DNS characters throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              certificateGenerationParameters
-                  .setAlternativeNames(new String[]{"foo!@#$%^&*()_-+=.com"});
-              certificateGenerationParameters.validate();
-            });
+  @Test
+  public void validate_requiresADNParameter() {
+    subject.setOrganization("");
+    subject.setState("");
+    subject.setCountry("");
+    subject.setCommonName("");
+    subject.setOrganizationUnit("");
+    subject.setLocality("");
 
-        itThrows("with space character throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              certificateGenerationParameters.setAlternativeNames(new String[]{"foo pivotal.io"});
-              certificateGenerationParameters.validate();
-            });
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.missing_certificate_parameters"));
+    }
+  }
 
-        itThrows("with invalid IP address throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              certificateGenerationParameters.setAlternativeNames(new String[]{"1.2.3.999"});
-              certificateGenerationParameters.validate();
-            });
+  @Test
+  public void validate_allowsAllValidKeyLengths() {
+    subject.setKeyLength(2048);
+    subject.validate();
 
-        // email addresses are allowed in certificate spec,
-        // but we do not allow them per PM requirements
-        itThrows("with email address throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              certificateGenerationParameters.setAlternativeNames(new String[]{"x@y.com"});
-              certificateGenerationParameters.validate();
-            });
+    subject.setKeyLength(3072);
+    subject.validate();
 
-        itThrows("with URL throws a validation exception", ParameterizedValidationException.class,
-            () -> {
-              certificateGenerationParameters.setAlternativeNames(new String[]{"https://foo.com"});
-              certificateGenerationParameters.validate();
-            });
-      });
+    subject.setKeyLength(4096);
+    subject.validate();
 
-      describe("with extended key usages", () -> {
-        itThrows("with space character throws a validation exception",
-            ParameterizedValidationException.class, () -> {
-              certificateGenerationParameters = new CertificateGenerationParameters();
-              certificateGenerationParameters.setOrganization("my-org");
-              certificateGenerationParameters.setState("NY");
-              certificateGenerationParameters.setCountry("USA");
-              certificateGenerationParameters
-                  .setExtendedKeyUsage(new String[]{"not an extended key"});
-              certificateGenerationParameters.validate();
-            });
-      });
-    });
+    // pass
+  }
 
+  @Test
+  public void validate_rejectsKeyLengthLessThan2048() {
+    subject.setKeyLength(2047);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+    }
+  }
+
+  @Test
+  public void validate_rejectsKeyLengthBetween2048And3072() {
+    subject.setKeyLength(2222);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+    }
+  }
+
+  @Test
+  public void validate_rejectsKeyLengthBetween3072And4096() {
+    subject.setKeyLength(4000);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+    }
+  }
+
+
+  @Test
+  public void validate_rejectsKeyLengthGreaterThan4096() {
+    subject.setKeyLength(4097);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_key_length"));
+    }
+  }
+
+  @Test
+  public void validate_allowsValidAlternativeNames() {
+    subject.setAlternativeNames(new String[]{"1.1.1.1", "example.com", "foo.pivotal.io", "*.pivotal.io"});
+
+    subject.validate();
+
+    // pass
+  }
+
+  @Test
+  public void validate_rejectsInvalidDNSCharactersInAlternativeNames() {
+    try {
+      subject.setAlternativeNames(new String[]{"foo!@#$%^&*()_-+=.com"});
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+    }
+  }
+
+  @Test
+  public void validate_rejectsSpaceCharacterInAlternativeNames() {
+    try {
+      subject.setAlternativeNames(new String[]{"foo pivotal.io"});
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+    }
+  }
+
+  @Test
+  public void validate_rejectsInvalidIpAddressInAlternativeNames() {
+    try {
+      subject.setAlternativeNames(new String[]{"1.2.3.999"});
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+    }
+  }
+
+  @Test
+  public void validate_rejectsEmailAddressesInAlternativeNames() {
+    // email addresses are allowed in certificate spec,
+    // but we do not allow them per PM requirements
+    try {
+      subject.setAlternativeNames(new String[]{"x@y.com"});
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+    }
+  }
+
+  @Test
+  public void validate_rejectsUrlsInAlternativeNames() {
+    try {
+      subject.setAlternativeNames(new String[]{"https://foo.com"});
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+    }
   }
 }
