@@ -90,7 +90,7 @@ public class RegenerateService {
         generateRequest.getType(),
         generationParameters,
         credentialValue,
-        generateRequest.getAccessControlEntries(),
+        generateRequest.getAdditionalPermissions(),
         currentUserAccessControlEntry);
   }
 }

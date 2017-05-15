@@ -42,7 +42,7 @@ public class SetRequestHandler {
         setRequest.getType(),
         generationParameters,
         setRequest.getCredentialValue(),
-        setRequest.getAccessControlEntries(),
+        setRequest.getAdditionalPermissions(),
         currentEntry);
   }
 }

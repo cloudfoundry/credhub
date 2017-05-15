@@ -56,7 +56,7 @@ public class SetRequestHandlerTest {
     setRequest.setGenerationParameters(generationParameters);
     setRequest.setPassword(password);
     setRequest.setName("government");
-    setRequest.setAccessControlEntries(accessControlEntries);
+    setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setOverwrite(false);
 
     CredentialView credentialView = mock(CredentialView.class);
@@ -94,7 +94,7 @@ public class SetRequestHandlerTest {
     final ArrayList<EventAuditRecordParameters> eventAuditRecordParameters = new ArrayList<>();
     setRequest.setType("user");
     setRequest.setName("captain");
-    setRequest.setAccessControlEntries(accessControlEntries);
+    setRequest.setAdditionalPermissions(accessControlEntries);
     setRequest.setOverwrite(false);
     setRequest.setUserValue(userCredentialValue);
 

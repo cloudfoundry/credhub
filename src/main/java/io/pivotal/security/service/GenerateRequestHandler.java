@@ -46,7 +46,7 @@ public class GenerateRequestHandler {
         requestBody.getType(),
         generationParameters,
         value,
-        requestBody.getAccessControlEntries(),
+        requestBody.getAdditionalPermissions(),
         currentUserAccessControlEntry);
   }
 }

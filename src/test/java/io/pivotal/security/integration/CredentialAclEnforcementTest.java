@@ -156,7 +156,7 @@ public class CredentialAclEnforcementTest {
         .content("{"
             + "  \"name\": \"" + CREDENTIAL_NAME + "\",\n"
             + "  \"type\": \"password\","
-            + "  \"access_control_entries\": [\n"
+            + "  \"additional_permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"uaa-client:credhub_test\",\n"
             + "       \"operations\": [\"read\"]\n"

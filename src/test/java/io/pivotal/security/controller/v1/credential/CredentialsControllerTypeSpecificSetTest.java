@@ -323,7 +323,7 @@ public class CredentialsControllerTypeSpecificSetTest {
                   "\"type\":\"" + credentialType + "\"," +
                   "\"value\":" + value + "," +
                   "\"overwrite\":" + false + "," +
-                  "\"access_control_entries\": [" +
+                  "\"additional_permissions\": [" +
                   "{\"actor\": \"app1-guid\"," +
                   "\"operations\": [\"read\"]}]" +
                   "}");

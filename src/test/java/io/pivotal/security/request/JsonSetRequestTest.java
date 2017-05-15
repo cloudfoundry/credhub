@@ -1,5 +1,14 @@
 package io.pivotal.security.request;
 
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.credential.JsonCredentialValue;
+import org.junit.runner.RunWith;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
@@ -10,14 +19,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.credential.JsonCredentialValue;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import org.junit.runner.RunWith;
-
 @RunWith(Spectrum.class)
 public class JsonSetRequestTest {
 
@@ -27,7 +28,7 @@ public class JsonSetRequestTest {
           + "\"type\":\"json\","
           + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]},"
           + "\"overwrite\":false,"
-          + "\"access_control_entries\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
+          + "\"additional_permissions\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
 
       BaseCredentialSetRequest deserialize = deserialize(requestJson,
           BaseCredentialSetRequest.class);

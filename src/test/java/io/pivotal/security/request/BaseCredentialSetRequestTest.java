@@ -87,7 +87,7 @@ public class BaseCredentialSetRequestTest {
           BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
           AccessControlEntry expectedEntry = new AccessControlEntry("my-actor", Arrays.asList(READ, WRITE));
           setRequest.addCurrentUser(expectedEntry);
-          assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(expectedEntry)));
+          assertThat(setRequest.getAdditionalPermissions(), equalTo(Arrays.asList(expectedEntry)));
         });
       });
 
@@ -99,7 +99,7 @@ public class BaseCredentialSetRequestTest {
               "\"type\":\"password\"," +
               "\"value\":\"some-value\"," +
               "\"overwrite\":true, \n" +
-              "\"access_control_entries\": [{\n" +
+              "\"additional_permissions\": [{\n" +
               "  \"actor\": \"my-other-actor\",\n" +
               "  \"operations\": [\"read\"]\n" +
               "}]\n" +
@@ -110,7 +110,7 @@ public class BaseCredentialSetRequestTest {
           AccessControlEntry passedAccessControlEntry =
               new AccessControlEntry("my-other-actor", Arrays.asList(READ));
           setRequest.addCurrentUser(currentUserAccessControlEntry);
-          assertThat(setRequest.getAccessControlEntries(),
+          assertThat(setRequest.getAdditionalPermissions(),
               containsInAnyOrder(
                   samePropertyValuesAs(currentUserAccessControlEntry),
                   samePropertyValuesAs(passedAccessControlEntry)));
@@ -123,7 +123,7 @@ public class BaseCredentialSetRequestTest {
               "\"type\":\"password\"," +
               "\"value\":\"some-value\"," +
               "\"overwrite\":true, \n" +
-              "\"access_control_entries\": [{\n" +
+              "\"additional_permissions\": [{\n" +
               "  \"actor\": \"my-actor\",\n" +
               "  \"operations\": [\"read\"]\n" +
               "}]\n" +
@@ -131,7 +131,7 @@ public class BaseCredentialSetRequestTest {
           BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
           AccessControlEntry expectedEntry = new AccessControlEntry("my-actor", Arrays.asList(READ, WRITE));
           setRequest.addCurrentUser(expectedEntry);
-          assertThat(setRequest.getAccessControlEntries(), equalTo(Arrays.asList(expectedEntry)));
+          assertThat(setRequest.getAdditionalPermissions(), equalTo(Arrays.asList(expectedEntry)));
         });
       });
     });

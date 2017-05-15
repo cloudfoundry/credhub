@@ -192,17 +192,17 @@ public class BaseCredentialRequestTest {
 
         final BaseCredentialSetRequest request = JsonHelper
             .deserialize(json, BaseCredentialSetRequest.class);
-        assertThat(request.getAccessControlEntries(), empty());
+        assertThat(request.getAdditionalPermissions(), empty());
       });
 
-      it("should parse access control entry included in the request", () -> {
+      it("should parse additional permissions included in the request", () -> {
         // language=JSON
         String json = "{\n"
             + "  \"name\": \"some-name\",\n"
             + "  \"type\": \"value\",\n"
             + "  \"value\": \"some-value\",\n"
             + "  \"overwrite\": true,\n"
-            + "  \"access_control_entries\": [\n"
+            + "  \"additional_permissions\": [\n"
             + "    {\n"
             + "      \"actor\": \"some-actor\",\n"
             + "      \"operations\": [\n"
@@ -220,7 +220,7 @@ public class BaseCredentialRequestTest {
         final List<AccessControlEntry> expectedAces = new ArrayList<>(
             Arrays.asList(new AccessControlEntry("some-actor", operations)));
 
-        assertThat(request.getAccessControlEntries(), samePropertyValuesAs(expectedAces));
+        assertThat(request.getAdditionalPermissions(), samePropertyValuesAs(expectedAces));
       });
     });
 
