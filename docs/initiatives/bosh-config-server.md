@@ -1,11 +1,13 @@
 # BOSH Config Server Integration
 
 ### Description
+
 BOSH deployments are created and managed via BOSH deployment manifests. These artifacts contain all of the information, both configurations and credentials, needed to deploy one or many VM instances and services. A BOSH operator is responsible for creating, managing and controlling these manifests so that a deployment can be created, modified or recreated in another environment. Deployment manifests are often shared by release authors and between users to reduce the complexity of deploying services, e.g. [cf-deployment][5] for deploying Cloud Foundry.
 
 [5]:https://github.com/cloudfoundry/cf-deployment
 
 ### Motivation
+
 A few common issues arise from this workflow. 
 
 * Manifests must be managed with same controls as credentials
@@ -31,7 +33,10 @@ The config server integration intends to solve the above issues, which will simp
 
 ### Implementation
 
+<img align="center" src="../images/bosh-deploy.png">
+
 #### Interpolation
+
 The BOSH Director has been updated to perform interpolation of credential values into manifests that use the `((variables))` syntax. When the Director encounters a variable using this syntax, it will make requests to CredHub to retrieve the credential value. If the credential does not exist and the release or manifest contains generation properties, the value will be automatically generated. More information on generation properties can be [found here.](../credential-types.md#enabling-credhub-automatic-generation-in-releases)
 
 <img src="../images/director-retrieve.png">
@@ -39,14 +44,17 @@ The BOSH Director has been updated to perform interpolation of credential values
 This workflow allows an operator to deploy a manifest without being concerned about whether a credential exists or must be generated. 
 
 #### Namespacing 
+
 To prevent name collisions between deployments, the BOSH Director performs automatic namespacing of credentials. Variable names are prefixed with the director name and deployment name when retrieved or generated in CredHub. For example, a variable `((password))` in deployment `example-deployment` on director `bosh-director` will be retrieved and generated as `/bosh-director/example-deployment/password`. The same manifest with deployment name `deployment2` will be retrieved and generated as `/bosh-director/deployment2/password`. If you wish to escape the namespacing to share credentials between deloyments, you can simply start the credential with a / character. For example, `((/iaas-password))` is named as-is.  
 
 #### Property Accessors 
+
 CredHub credentials may contain multiple components in the response value, depending on [type][4]. If you wish to use only a single component of a complex credential, you can do so using a dot syntax, like `((api-tls.certificate))`. This will return only the value of the `certificate` key from the `api-tls` credential object. 
 
 [4]:../credential-types.md  
 
 #### Pinning to Credential IDs 
+
 CredHub stores historical credential values when a credential is modified. When a deployment occurs, the Director's request to CredHub will return the latest credential value. This ensures that deployments use the latest value for a credential. Some non-user-initiated operations, such as scaling and resurrection, should not receive the latest value. These operations should use the same values as the original deployment, to avoid leaking credential changes during lifecycle events. To achieve this level of safety, the Director tracks each credential ID on deploy and retrieves by ID for these operatons. The credential ID is version specific, so it will always return the same value regardless of subsequent modifications.   
 
 ### Configuration
