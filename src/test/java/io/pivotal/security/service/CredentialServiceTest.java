@@ -4,7 +4,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
@@ -50,7 +50,7 @@ public class CredentialServiceTest {
   private CredentialDataService credentialDataService;
 
   @Mock
-  private AccessControlDataService accessControlDataService;
+  private PermissionsDataService permissionsDataService;
 
   @Mock
   private PermissionService permissionService;
@@ -79,7 +79,7 @@ public class CredentialServiceTest {
 
     subject = new CredentialService(
         credentialDataService,
-        accessControlDataService,
+        permissionsDataService,
         permissionService,
         credentialFactory);
 
@@ -274,7 +274,7 @@ public class CredentialServiceTest {
         accessControlEntries,
         currentUserPermissions);
 
-    verify(accessControlDataService)
+    verify(permissionsDataService)
         .saveAccessControlEntries(credential.getCredentialName(), accessControlEntries);
   }
 

@@ -40,7 +40,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class AccessControlDataServiceTest {
+public class PermissionsDataServiceTest {
   private static final String CREDENTIAL_NAME = "/lightsaber";
   private static final String CREDENTIAL_NAME_WITHOUT_LEADING_SLASH = StringUtils.removeStart(CREDENTIAL_NAME, "/");
   private static final String CREDENTIAL_NAME_DOES_NOT_EXIST = "/this/credential/does/not/exist";
@@ -52,7 +52,7 @@ public class AccessControlDataServiceTest {
   private static final String CHEWIE = "Chewie";
 
   @Autowired
-  private AccessControlDataService subject;
+  private PermissionsDataService subject;
 
   @Autowired
   private CredentialNameDataService credentialNameDataService;

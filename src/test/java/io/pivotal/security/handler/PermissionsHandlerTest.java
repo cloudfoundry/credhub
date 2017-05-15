@@ -1,7 +1,7 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -39,7 +39,7 @@ public class PermissionsHandlerTest {
   private PermissionsHandler subject;
 
   private PermissionService permissionService;
-  private AccessControlDataService accessControlDataService;
+  private PermissionsDataService permissionsDataService;
   private CredentialNameDataService credentialNameDataService;
 
   private final CredentialName credentialName = new CredentialName(CREDENTIAL_NAME);
@@ -48,11 +48,11 @@ public class PermissionsHandlerTest {
   @Before
   public void beforeEach() {
     permissionService = mock(PermissionService.class);
-    accessControlDataService = mock(AccessControlDataService.class);
+    permissionsDataService = mock(PermissionsDataService.class);
     credentialNameDataService = mock(CredentialNameDataService.class);
     subject = new PermissionsHandler(
         permissionService,
-        accessControlDataService,
+        permissionsDataService,
         credentialNameDataService
     );
 
@@ -62,7 +62,7 @@ public class PermissionsHandlerTest {
   @Test
   public void getAccessControlListResponse_whenTheNameDoesntStartWithASlash_fixesTheName() {
     List<PermissionEntry> accessControlList = newArrayList();
-    when(accessControlDataService.getAccessControlList(any(CredentialName.class)))
+    when(permissionsDataService.getAccessControlList(any(CredentialName.class)))
         .thenReturn(accessControlList);
     when(credentialNameDataService.findOrThrow(any(String.class)))
         .thenReturn(new CredentialName(CREDENTIAL_NAME));
@@ -85,7 +85,7 @@ public class PermissionsHandlerTest {
         operations
     );
     List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
-    when(accessControlDataService.getAccessControlList(credentialName))
+    when(permissionsDataService.getAccessControlList(credentialName))
         .thenReturn(accessControlList);
 
     PermissionsView response = subject.getPermissions(
@@ -130,7 +130,7 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
         preexistingPermissionEntry);
 
-    when(accessControlDataService.getAccessControlList(credentialName))
+    when(permissionsDataService.getAccessControlList(credentialName))
         .thenReturn(expectedControlList);
 
     when(credentialNameDataService.find(CREDENTIAL_NAME))
@@ -165,7 +165,7 @@ public class PermissionsHandlerTest {
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
-      verify(accessControlDataService, times(0)).saveAccessControlEntries(any(), any());
+      verify(permissionsDataService, times(0)).saveAccessControlEntries(any(), any());
     }
   }
 
@@ -173,12 +173,12 @@ public class PermissionsHandlerTest {
   public void deleteAccessControlEntries_whenTheUserHasPermission_deletesTheAce() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
-    when(accessControlDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
+    when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
 
     subject.deletePermissionEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
 
-    verify(accessControlDataService, times(1)).deleteAccessControlEntry(
+    verify(permissionsDataService, times(1)).deleteAccessControlEntry(
         CREDENTIAL_NAME, ACTOR_NAME);
   }
 
@@ -186,7 +186,7 @@ public class PermissionsHandlerTest {
   public void deleteAccessControlEntries_whenNothingIsDeleted_throwsAnException() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
-    when(accessControlDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
+    when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(false);
 
     try {
@@ -207,7 +207,7 @@ public class PermissionsHandlerTest {
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
-      verify(accessControlDataService, times(0)).deleteAccessControlEntry(any(), any());
+      verify(permissionsDataService, times(0)).deleteAccessControlEntry(any(), any());
     }
   }
 }

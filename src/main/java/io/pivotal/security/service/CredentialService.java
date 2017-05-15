@@ -5,7 +5,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
@@ -27,19 +27,19 @@ import static io.pivotal.security.audit.EventAuditRecordParametersFactory.create
 public class CredentialService {
 
   private final CredentialDataService credentialDataService;
-  private final AccessControlDataService accessControlDataService;
+  private final PermissionsDataService permissionsDataService;
   private PermissionService permissionService;
   private final CredentialFactory credentialFactory;
 
   @Autowired
   public CredentialService(
       CredentialDataService credentialDataService,
-      AccessControlDataService accessControlDataService,
+      PermissionsDataService permissionsDataService,
       PermissionService permissionService,
       CredentialFactory credentialFactory
   ) {
     this.credentialDataService = credentialDataService;
-    this.accessControlDataService = accessControlDataService;
+    this.permissionsDataService = permissionsDataService;
     this.permissionService = permissionService;
     this.credentialFactory = credentialFactory;
   }
@@ -86,7 +86,7 @@ public class CredentialService {
           generationParameters);
       storedCredentialVersion = credentialDataService.save(newVersion);
 
-      accessControlDataService.saveAccessControlEntries(
+      permissionsDataService.saveAccessControlEntries(
           storedCredentialVersion.getCredentialName(),
           accessControlEntries);
       parametersList.addAll(createPermissionsEventAuditParameters(

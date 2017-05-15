@@ -1,7 +1,7 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
@@ -17,17 +17,17 @@ import java.util.List;
 @Component
 public class PermissionsHandler {
   private final PermissionService permissionService;
-  private final AccessControlDataService accessControlDataService;
+  private final PermissionsDataService permissionsDataService;
   private final CredentialNameDataService credentialNameDataService;
 
   @Autowired
   PermissionsHandler(
       PermissionService permissionService,
-      AccessControlDataService accessControlDataService,
+      PermissionsDataService permissionsDataService,
       CredentialNameDataService credentialNameDataService
   ) {
     this.permissionService = permissionService;
-    this.accessControlDataService = accessControlDataService;
+    this.permissionsDataService = permissionsDataService;
     this.credentialNameDataService = credentialNameDataService;
   }
 
@@ -39,7 +39,7 @@ public class PermissionsHandler {
 
       return new PermissionsView(
           credentialName.getName(),
-          accessControlDataService.getAccessControlList(credentialName)
+          permissionsDataService.getAccessControlList(credentialName)
       );
     } catch (PermissionException pe){
       // lack of permissions should be indistinguishable from not found.
@@ -53,10 +53,10 @@ public class PermissionsHandler {
     }
 
     final CredentialName credentialName = credentialNameDataService.find(name);
-    accessControlDataService
+    permissionsDataService
         .saveAccessControlEntries(credentialName, permissionEntryList);
 
-    return new PermissionsView(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
+    return new PermissionsView(credentialName.getName(), permissionsDataService.getAccessControlList(credentialName));
   }
 
   public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {
@@ -64,7 +64,8 @@ public class PermissionsHandler {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    boolean successfullyDeleted = accessControlDataService.deleteAccessControlEntry(credentialName, actor);
+    boolean successfullyDeleted = permissionsDataService
+        .deleteAccessControlEntry(credentialName, actor);
 
     if (!successfullyDeleted) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");

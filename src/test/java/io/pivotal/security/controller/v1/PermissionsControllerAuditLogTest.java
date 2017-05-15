@@ -1,7 +1,7 @@
-package io.pivotal.security.controller.v1.permissions;
+package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EventAuditRecord;
@@ -45,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
-public class AccessControlAuditingTest {
+public class PermissionsControllerAuditLogTest {
 
   public static final CredentialName CRED1 = new CredentialName("/cred1");
   public static final String TESTPASSWORD = "testpassword";
@@ -56,7 +56,7 @@ public class AccessControlAuditingTest {
   private EventAuditRecordDataService eventAuditRecordDataService;
 
   @MockBean
-  private AccessControlDataService accessControlDataService;
+  private PermissionsDataService permissionsDataService;
 
   @MockBean
   private CredentialNameRepository credentialNameRepository;
@@ -74,14 +74,14 @@ public class AccessControlAuditingTest {
     PermissionEntry ace = new PermissionEntry(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
         Arrays.asList(PermissionOperation.READ_ACL));
-    when(accessControlDataService.getAccessControlList(eq(CRED1)))
+    when(permissionsDataService.getAccessControlList(eq(CRED1)))
         .thenReturn(Arrays.asList(ace));
     when(credentialNameRepository.findOneByNameIgnoreCase(CRED1.getName())).thenReturn(CRED1);
     reset(eventAuditRecordDataService);
   }
 
   @Test
-  public void whenGettingAnAcl_itLogsTheRetrieval() throws Exception {
+  public void whenGettingAPermission_itLogsTheRetrieval() throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/permissions?credential_name=" + CRED1.getName())
       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
       .accept(APPLICATION_JSON)

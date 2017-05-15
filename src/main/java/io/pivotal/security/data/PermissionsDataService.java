@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.Lists.newArrayList;
 
 @Component
-public class AccessControlDataService {
+public class PermissionsDataService {
 
   private AccessEntryRepository accessEntryRepository;
   private final CredentialNameDataService credentialNameDataService;
 
   @Autowired
-  public AccessControlDataService(
+  public PermissionsDataService(
       AccessEntryRepository accessEntryRepository,
       CredentialNameDataService credentialNameDataService
   ) {

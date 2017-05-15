@@ -1,4 +1,34 @@
-package io.pivotal.security.config;
+package io.pivotal.security.controller.v1.credential;
+
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.EventAuditRecordDataService;
+import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.Encryptor;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.domain.ValueCredential;
+import io.pivotal.security.entity.EventAuditRecord;
+import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -24,35 +54,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.data.EventAuditRecordDataService;
-import io.pivotal.security.data.RequestAuditRecordDataService;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.entity.EventAuditRecord;
-import io.pivotal.security.entity.RequestAuditRecord;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
 @RunWith(Spectrum.class)
 @ActiveProfiles(profiles = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
@@ -71,7 +72,7 @@ public class CredentialsControllerAuditLogTest {
   CredentialDataService credentialDataService;
 
   @MockBean
-  AccessControlDataService accessControlDataService;
+  PermissionsDataService permissionsDataService;
 
   @SpyBean
   Encryptor encryptor;

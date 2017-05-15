@@ -3,7 +3,7 @@ package io.pivotal.security.controller.v1;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.handler.PermissionsHandler;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.PermissionsRequest;
@@ -34,17 +34,17 @@ import static io.pivotal.security.audit.EventAuditRecordParametersFactory.create
 public class PermissionsController {
   private final PermissionsHandler permissionsHandler;
   private final EventAuditLogService eventAuditLogService;
-  private AccessControlDataService accessControlDataService;
+  private PermissionsDataService permissionsDataService;
 
   @Autowired
   public PermissionsController(
       PermissionsHandler permissionsHandler,
       EventAuditLogService eventAuditLogService,
-      AccessControlDataService accessControlDataService
+      PermissionsDataService permissionsDataService
   ) {
     this.permissionsHandler = permissionsHandler;
     this.eventAuditLogService = eventAuditLogService;
-    this.accessControlDataService = accessControlDataService;
+    this.permissionsDataService = permissionsDataService;
   }
 
   @GetMapping
@@ -96,7 +96,8 @@ public class PermissionsController {
 
   ) {
     eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
-      List<PermissionOperation> operationList = accessControlDataService.getAllowedOperations(credentialName, actor);
+      List<PermissionOperation> operationList = permissionsDataService
+          .getAllowedOperations(credentialName, actor);
 
       parameterList.addAll(createPermissionEventAuditRecordParameters(
           ACL_DELETE,

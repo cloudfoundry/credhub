@@ -1,5 +1,13 @@
 package io.pivotal.security.request;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.greghaskins.spectrum.Spectrum;
+import org.junit.runner.RunWith;
+
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
@@ -9,15 +17,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.greghaskins.spectrum.Spectrum;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import org.junit.runner.RunWith;
-
 @RunWith(Spectrum.class)
-public class AccessControlEntryTest {
+public class PermissionEntryTest {
 
   {
     describe("JSON serialization", () -> {

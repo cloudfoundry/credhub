@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.AccessControlDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.domain.Credential;
@@ -61,7 +61,7 @@ public class AuthConfigurationTest {
   CredentialDataService credentialDataService;
 
   @MockBean
-  AccessControlDataService accessControlDataService;
+  PermissionsDataService permissionsDataService;
 
   @SpyBean
   RequestAuditRecordDataService requestAuditRecordDataService;
