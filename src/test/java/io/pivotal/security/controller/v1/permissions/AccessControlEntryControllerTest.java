@@ -5,6 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.controller.v1.PermissionsController;
 import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
@@ -46,7 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(Spectrum.class)
 public class AccessControlEntryControllerTest {
 
-  private AccessControlEntryController subject;
+  private PermissionsController subject;
   private AccessControlHandler accessControlHandler;
   private AccessControlDataService accessControlDataService;
   private EventAuditLogService eventAuditLogService;
@@ -61,7 +62,7 @@ public class AccessControlEntryControllerTest {
       when(eventAuditLogService.auditEvents(any(RequestUuid.class), any(UserContext.class), any(Function.class)))
           .thenAnswer(invocation -> invocation.getArgumentAt(2, Function.class).apply(newArrayList()));
 
-      subject = new AccessControlEntryController(accessControlHandler, eventAuditLogService, accessControlDataService);
+      subject = new PermissionsController(accessControlHandler, eventAuditLogService, accessControlDataService);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
           new MappingJackson2HttpMessageConverter();
@@ -72,13 +73,13 @@ public class AccessControlEntryControllerTest {
           .build();
     });
 
-    describe("/api/v1/aces", () -> {
+    describe("/api/v1/permissions", () -> {
       describe("#POST", () -> {
         it("returns a response containing the new ACE", () -> {
           // language=JSON
           String accessControlEntriesJson = "{\n" +
               "  \"credential_name\": \"test-credential-name\",\n" +
-              "  \"access_control_entries\": [\n" +
+              "  \"permissions\": [\n" +
               "    {\n" +
               "      \"actor\": \"test-actor\",\n" +
               "      \"operations\": [\n" +
@@ -105,7 +106,7 @@ public class AccessControlEntryControllerTest {
           when(accessControlHandler.setAccessControlEntries(any(UserContext.class), any(String.class), any(List.class)))
               .thenReturn(JsonHelper.deserialize(expectedResponse, PermissionsView.class));
 
-          MockHttpServletRequestBuilder request = post("/api/v1/aces")
+          MockHttpServletRequestBuilder request = post("/api/v1/permissions")
               .contentType(MediaType.APPLICATION_JSON)
               .content(accessControlEntriesJson);
 
@@ -131,7 +132,7 @@ public class AccessControlEntryControllerTest {
           // language=JSON
           String accessControlEntriesJson = "{\n" +
               // no credential_name
-              "  \"access_control_entries\": [\n" +
+              "  \"permissions\": [\n" +
               "    {\n" +
               "      \"actor\": \"test-actor\",\n" +
               "      \"operations\": [\n" +
@@ -142,7 +143,7 @@ public class AccessControlEntryControllerTest {
               "  ]\n" +
               "}";
 
-          MockHttpServletRequestBuilder request = post("/api/v1/aces")
+          MockHttpServletRequestBuilder request = post("/api/v1/permissions")
               .contentType(MediaType.APPLICATION_JSON)
               .content(accessControlEntriesJson);
 
@@ -153,7 +154,7 @@ public class AccessControlEntryControllerTest {
 
       describe("#DELETE", () -> {
         it("removes ACE, returns 204", () -> {
-          mockMvc.perform(delete("/api/v1/aces?credential_name=test-name&actor=test-actor"))
+          mockMvc.perform(delete("/api/v1/permissions?credential_name=test-name&actor=test-actor"))
               .andExpect(status().isNoContent())
               .andExpect(content().string(""));
 

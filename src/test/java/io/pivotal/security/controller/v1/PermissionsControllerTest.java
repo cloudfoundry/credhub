@@ -5,6 +5,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
+import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.view.PermissionsView;
@@ -36,13 +37,15 @@ public class PermissionsControllerTest {
   private AccessControlHandler accessControlHandler;
   private MockMvc mockMvc;
   private EventAuditLogService eventAuditLogService;
+  private AccessControlDataService accessControlDataService;
 
   {
     beforeEach(() -> {
       accessControlHandler = mock(AccessControlHandler.class);
       eventAuditLogService = mock(EventAuditLogService.class);
+      accessControlDataService = mock(AccessControlDataService.class);
 
-      subject = new PermissionsController(accessControlHandler, eventAuditLogService);
+      subject = new PermissionsController(accessControlHandler, eventAuditLogService, accessControlDataService);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
         new MappingJackson2HttpMessageConverter();

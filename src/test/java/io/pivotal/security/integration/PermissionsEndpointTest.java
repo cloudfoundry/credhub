@@ -194,14 +194,14 @@ public class PermissionsEndpointTest {
   @Test
   public void DELETE_whenTheCredentialParameterNameIsMissing_returnsBadRequest() throws Exception {
     MockHttpServletRequestBuilder deleteRequest = delete(
-        "/api/v1/aces?actor=dan")
+        "/api/v1/permissions?actor=dan")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
     mockMvc.perform(deleteRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The query parameter credential_name is required for this request.")));
 
     auditingHelper.verifyRequestAuditing(
-        "/api/v1/aces",
+        "/api/v1/permissions",
         400
     );
   }
@@ -209,27 +209,27 @@ public class PermissionsEndpointTest {
   @Test
   public void DELETE_whenTheActorParameterIsMissing_returnsBadRequest() throws Exception {
     MockHttpServletRequestBuilder deleteRequest = delete(
-        "/api/v1/aces?credential_name=octopus")
+        "/api/v1/permissions?credential_name=octopus")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
     mockMvc.perform(deleteRequest)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo("The query parameter actor is required for this request.")));
 
     auditingHelper.verifyRequestAuditing(
-        "/api/v1/aces",
+        "/api/v1/permissions",
         400
     );
   }
 
   @Test
-  public void DELETE_whenTheActorIsAllowedToDeleteACEs_shouldDeleteTheSpecifiedACE() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+  public void DELETE_whenTheActorIsAllowedToDeletePermissions_shouldDeleteTheSpecifiedACE() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\",\n"
-            + "  \"access_control_entries\": [\n"
+            + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
             + "       \"operations\": [\"read\"]\n"
@@ -240,14 +240,14 @@ public class PermissionsEndpointTest {
         .andExpect(status().isOk());
 
     mockMvc.perform(
-        delete("/api/v1/aces?credential_name=" + credentialName + "&actor=dan")
+        delete("/api/v1/permissions?credential_name=" + credentialName + "&actor=dan")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isNoContent());
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-        "/api/v1/aces",
+        "/api/v1/permissions",
         204,
         newArrayList(new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "dan"))
     );
@@ -261,14 +261,14 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void DELETE_whenTheActorDoesNotHavePermissionToDeleteACEs_returnsNotFound() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+  public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_returnsNotFound() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\",\n"
-            + "  \"access_control_entries\": [\n"
+            + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
             + "       \"operations\": [\"read\"]\n"
@@ -279,14 +279,14 @@ public class PermissionsEndpointTest {
         .andExpect(status().isOk());
 
     mockMvc.perform(
-        delete("/api/v1/aces?credential_name=" + credentialName + "&actor=dan")
+        delete("/api/v1/permissions?credential_name=" + credentialName + "&actor=dan")
             .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
     )
         .andExpect(status().isNotFound());
 
     auditingHelper.verifyAuditing(
         "uaa-client:credhub_test",
-        "/api/v1/aces",
+        "/api/v1/permissions",
         404,
         newArrayList(new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "dan"))
     );
@@ -304,7 +304,7 @@ public class PermissionsEndpointTest {
     String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
 
     mockMvc.perform(
-        delete("/api/v1/aces?credential_name=/not-valid&actor=something")
+        delete("/api/v1/permissions?credential_name=/not-valid&actor=something")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isNotFound())
@@ -312,20 +312,20 @@ public class PermissionsEndpointTest {
             expectedError));
 
     auditingHelper.verifyRequestAuditing(
-        "/api/v1/aces",
+        "/api/v1/permissions",
         404
     );
   }
 
   @Test
-  public void POST_whenTheUserHasPermissionToWriteACEs_returnsTheACL() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+  public void POST_whenTheUserHasPermissionToWritePermissions_returnsTheACL() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\","
-            + "  \"access_control_entries\": ["
+            + "  \"permissions\": ["
             + "     {"
             + "       \"actor\": \"dan\","
             + "       \"operations\": [\"read\",\"write\"]"
@@ -357,7 +357,7 @@ public class PermissionsEndpointTest {
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-        "/api/v1/aces",
+        "/api/v1/permissions",
         200,
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
@@ -368,15 +368,15 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void POST_whenTheUserHasPermissionToWriteACEs_updatesTheACL() throws Exception {
+  public void POST_whenTheUserHasPermissionToWritePermissions_updatesTheACL() throws Exception {
     Long initialCount = eventAuditRecordRepository.count();
-    final MockHttpServletRequestBuilder initialPost = post("/api/v1/aces")
+    final MockHttpServletRequestBuilder initialPost = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\","
-            + "  \"access_control_entries\": ["
+            + "  \"permissions\": ["
             + "     {"
             + "       \"actor\": \"dan\","
             + "       \"operations\": [\"read\",\"delete\"]"
@@ -385,13 +385,13 @@ public class PermissionsEndpointTest {
     mockMvc.perform(initialPost)
         .andExpect(status().isOk());
 
-    final MockHttpServletRequestBuilder updatePost = post("/api/v1/aces")
+    final MockHttpServletRequestBuilder updatePost = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\","
-            + "  \"access_control_entries\": ["
+            + "  \"permissions\": ["
             + "     {"
             + "       \"actor\": \"dan\","
             + "       \"operations\": [\"write\",\"read\"]"
@@ -419,7 +419,7 @@ public class PermissionsEndpointTest {
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-        "/api/v1/aces",
+        "/api/v1/permissions",
         200,
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
@@ -429,14 +429,14 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void POST_whenTheUserDoesNotHavePermissionToWriteACEs_returnsNotFound() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+  public void POST_whenTheUserDoesNotHavePermissionToWritePermissions_returnsNotFound() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\","
-            + "  \"access_control_entries\": ["
+            + "  \"permissions\": ["
             + "     {"
             + "       \"actor\": \"dan\","
             + "       \"operations\": [\"read\",\"write\"]"
@@ -456,7 +456,7 @@ public class PermissionsEndpointTest {
 
     auditingHelper.verifyAuditing(
         "uaa-client:credhub_test",
-        "/api/v1/aces",
+        "/api/v1/permissions",
         404,
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
@@ -468,13 +468,13 @@ public class PermissionsEndpointTest {
 
   @Test
   public void POST_whenTheLeadingSlashIsMissing_prependsTheSlashCorrectly() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\",\n"
-            + "  \"access_control_entries\": [\n"
+            + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
             + "       \"operations\": [\"read\"]\n"
@@ -499,7 +499,7 @@ public class PermissionsEndpointTest {
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-        "/api/v1/aces",
+        "/api/v1/permissions",
         200,
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan")
@@ -511,13 +511,13 @@ public class PermissionsEndpointTest {
   public void POST_whenMalformedJsonIsSent_returnsBadRequest() throws Exception {
     final String malformedJson = "{"
         + "  \"credential_name\": \"foo\","
-        + "  \"access_control_entries\": ["
+        + "  \"permissions\": ["
         + "     {"
         + "       \"actor\": \"dan\","
         + "       \"operations\":"
         + "     }]"
         + "}";
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
@@ -531,20 +531,20 @@ public class PermissionsEndpointTest {
                 + "formatting and retry your request.")));
 
     auditingHelper.verifyRequestAuditing(
-        "/api/v1/aces",
+        "/api/v1/permissions",
         400
     );
   }
 
   @Test
   public void POST_whenTheCredentialDoesntExist_returnsNotFound() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"/this-is-a-fake-credential\",\n"
-            + "  \"access_control_entries\": [\n"
+            + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
             + "       \"operations\": [\"read\"]\n"
@@ -558,7 +558,7 @@ public class PermissionsEndpointTest {
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-        "/api/v1/aces",
+        "/api/v1/permissions",
         404,
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, "/this-is-a-fake-credential", READ, "dan")
@@ -568,13 +568,13 @@ public class PermissionsEndpointTest {
 
   @Test
   public void POST_withAnInvalidOperation_returnsBadRequest() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\",\n"
-            + "  \"access_control_entries\": [\n"
+            + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
             + "       \"operations\": [\"unicorn\"]\n"
@@ -588,7 +588,7 @@ public class PermissionsEndpointTest {
                 + " Valid values include read, write, delete, read_acl, and write_acl."));
 
     auditingHelper.verifyRequestAuditing(
-        "/api/v1/aces",
+        "/api/v1/permissions",
         400
     );
   }
@@ -598,13 +598,13 @@ public class PermissionsEndpointTest {
   }
 
   private void seedCredential() throws Exception {
-    final MockHttpServletRequestBuilder post = post("/api/v1/aces")
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
         .content("{"
             + "  \"credential_name\": \"" + credentialName + "\",\n"
-            + "  \"access_control_entries\": [\n"
+            + "  \"permissions\": [\n"
             + "     { \n"
             + "       \"actor\": \"dan\",\n"
             + "       \"operations\": [\"read\"]\n"

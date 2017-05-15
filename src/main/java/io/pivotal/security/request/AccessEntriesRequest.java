@@ -1,9 +1,10 @@
 package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import java.util.List;
 import javax.validation.Valid;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
@@ -12,15 +13,15 @@ public class AccessEntriesRequest {
   @NotEmpty(message = "error.missing_name")
   private String credentialName;
   @NotEmpty(message = "error.acl.missing_aces")
-  private List<AccessControlEntry> accessControlEntries;
+  private List<AccessControlEntry> permissions;
 
   public AccessEntriesRequest() {
         /* this needs to be there for jackson to be happy */
   }
 
-  public AccessEntriesRequest(String credentialName, List<AccessControlEntry> accessControlEntries) {
+  public AccessEntriesRequest(String credentialName, List<AccessControlEntry> permissions) {
     this.credentialName = credentialName;
-    this.accessControlEntries = accessControlEntries;
+    this.permissions = permissions;
   }
 
   public String getCredentialName() {
@@ -32,11 +33,11 @@ public class AccessEntriesRequest {
   }
 
   @Valid
-  public List<AccessControlEntry> getAccessControlEntries() {
-    return accessControlEntries;
+  public List<AccessControlEntry> getPermissions() {
+    return permissions;
   }
 
-  public void setAccessControlEntries(List<AccessControlEntry> accessControlEntries) {
-    this.accessControlEntries = accessControlEntries;
+  public void setPermissions(List<AccessControlEntry> permissions) {
+    this.permissions = permissions;
   }
 }

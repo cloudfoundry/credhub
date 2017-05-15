@@ -33,7 +33,7 @@ public class AccessEntriesRequestTest {
         AccessEntriesRequest actual = deserialize(json, AccessEntriesRequest.class);
 
         assertThat(actual.getCredentialName(), equalTo("test-name"));
-        assertThat(actual.getAccessControlEntries(), contains(
+        assertThat(actual.getPermissions(), contains(
             allOf(
                 hasProperty("actor", equalTo("someone")),
                 hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))
