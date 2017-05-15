@@ -1,6 +1,6 @@
 package io.pivotal.security.entity;
 
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionOperation;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ public class AccessEntryData {
   }
 
   public AccessEntryData(CredentialName credentialName, String actor,
-                         List<AccessControlOperation> operations) {
+                         List<PermissionOperation> operations) {
     this(credentialName, actor);
     enableOperations(operations);
   }
@@ -110,29 +110,29 @@ public class AccessEntryData {
     return readAclPermission;
   }
 
-  public void enableOperations(Iterable<AccessControlOperation> operations) {
-    for (AccessControlOperation operation : operations) {
+  public void enableOperations(Iterable<PermissionOperation> operations) {
+    for (PermissionOperation operation : operations) {
       enableOperation(operation);
     }
   }
 
-  public List<AccessControlOperation> generateAccessControlOperations() {
-    List<AccessControlOperation> operations = new ArrayList<>();
+  public List<PermissionOperation> generateAccessControlOperations() {
+    List<PermissionOperation> operations = new ArrayList<>();
 
     if (hasReadPermission()) {
-      operations.add(AccessControlOperation.READ);
+      operations.add(PermissionOperation.READ);
     }
     if (hasWritePermission()) {
-      operations.add(AccessControlOperation.WRITE);
+      operations.add(PermissionOperation.WRITE);
     }
     if (hasDeletePermission()) {
-      operations.add(AccessControlOperation.DELETE);
+      operations.add(PermissionOperation.DELETE);
     }
     if (hasReadAclPermission()) {
-      operations.add(AccessControlOperation.READ_ACL);
+      operations.add(PermissionOperation.READ_ACL);
     }
     if (hasWriteAclPermission()) {
-      operations.add(AccessControlOperation.WRITE_ACL);
+      operations.add(PermissionOperation.WRITE_ACL);
     }
     return operations;
   }
@@ -157,7 +157,7 @@ public class AccessEntryData {
     this.writeAclPermission = writeAclPermission;
   }
 
-  private void enableOperation(AccessControlOperation operation) {
+  private void enableOperation(PermissionOperation operation) {
     switch (operation) {
       case READ:
         setReadPermission(true);

@@ -6,7 +6,7 @@ import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.handler.AccessControlHandler;
+import io.pivotal.security.handler.PermissionsHandler;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.runner.RunWith;
@@ -34,18 +34,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PermissionsControllerTest {
 
   private PermissionsController subject;
-  private AccessControlHandler accessControlHandler;
+  private PermissionsHandler permissionsHandler;
   private MockMvc mockMvc;
   private EventAuditLogService eventAuditLogService;
   private AccessControlDataService accessControlDataService;
 
   {
     beforeEach(() -> {
-      accessControlHandler = mock(AccessControlHandler.class);
+      permissionsHandler = mock(PermissionsHandler.class);
       eventAuditLogService = mock(EventAuditLogService.class);
       accessControlDataService = mock(AccessControlDataService.class);
 
-      subject = new PermissionsController(accessControlHandler, eventAuditLogService, accessControlDataService);
+      subject = new PermissionsController(permissionsHandler, eventAuditLogService, accessControlDataService);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
         new MappingJackson2HttpMessageConverter();
@@ -62,7 +62,7 @@ public class PermissionsControllerTest {
           PermissionsView permissionsView = new PermissionsView(
               "test_credential_name", newArrayList());
 
-          when(accessControlHandler.getAccessControlListResponse(any(UserContext.class), eq("test_credential_name")))
+          when(permissionsHandler.getPermissions(any(UserContext.class), eq("test_credential_name")))
               .thenReturn(permissionsView);
 
           when(eventAuditLogService.auditEvent(any(), any(), any())).thenAnswer(answer -> {

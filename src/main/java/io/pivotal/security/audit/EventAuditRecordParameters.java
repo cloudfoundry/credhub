@@ -1,13 +1,13 @@
 package io.pivotal.security.audit;
 
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionOperation;
 
 import static io.pivotal.security.audit.AuditingOperationCode.UNKNOWN_OPERATION;
 
 public class EventAuditRecordParameters {
   private AuditingOperationCode auditingOperationCode;
   private String credentialName;
-  private AccessControlOperation aceOperation;
+  private PermissionOperation aceOperation;
   private String aceActor;
 
   public EventAuditRecordParameters() {
@@ -21,13 +21,13 @@ public class EventAuditRecordParameters {
   public EventAuditRecordParameters(
       AuditingOperationCode auditingOperationCode,
       String credentialName,
-      AccessControlOperation accessControlOperation,
+      PermissionOperation permissionOperation,
       String aceActor
   ) {
     this.auditingOperationCode = auditingOperationCode;
     this.credentialName = credentialName;
     this.aceActor = aceActor;
-    this.aceOperation = accessControlOperation;
+    this.aceOperation = permissionOperation;
   }
 
   public AuditingOperationCode getAuditingOperationCode() {
@@ -46,11 +46,11 @@ public class EventAuditRecordParameters {
     this.credentialName = credentialName;
   }
 
-  public AccessControlOperation getAceOperation() {
+  public PermissionOperation getAceOperation() {
     return aceOperation;
   }
 
-  public void setAceOperation(AccessControlOperation aceOperation) {
+  public void setAceOperation(PermissionOperation aceOperation) {
     this.aceOperation = aceOperation;
   }
 

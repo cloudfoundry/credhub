@@ -22,7 +22,7 @@ public abstract class BaseCredentialRequest {
   private String name;
   private String type;
   private boolean overwrite;
-  private List<AccessControlEntry> additionalPermissions = new ArrayList<>();
+  private List<PermissionEntry> additionalPermissions = new ArrayList<>();
 
   public String getType() {
     return type;
@@ -48,15 +48,15 @@ public abstract class BaseCredentialRequest {
     this.overwrite = overwrite;
   }
 
-  public List<AccessControlEntry> getAdditionalPermissions() {
+  public List<PermissionEntry> getAdditionalPermissions() {
     return additionalPermissions;
   }
 
-  public void setAdditionalPermissions(List<AccessControlEntry> additionalPermissions) {
+  public void setAdditionalPermissions(List<PermissionEntry> additionalPermissions) {
     this.additionalPermissions = additionalPermissions;
   }
 
-  public void addCurrentUser(AccessControlEntry entry) {
+  public void addCurrentUser(PermissionEntry entry) {
     additionalPermissions = additionalPermissions
         .stream()
         .filter(ace -> !(ace.getActor().equals(entry.getActor())))

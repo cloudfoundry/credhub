@@ -8,7 +8,7 @@ import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
@@ -30,11 +30,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
-import static io.pivotal.security.request.AccessControlOperation.DELETE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
@@ -128,10 +128,10 @@ public class PermissionsEndpointTest {
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("dan", asList(READ)))
+            new PermissionEntry("dan", asList(READ)))
     ));
 
     verifyAudit(ACL_ACCESS, credentialName, 200);
@@ -155,9 +155,9 @@ public class PermissionsEndpointTest {
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("dan", asList(READ)))
+            new PermissionEntry("dan", asList(READ)))
     ));
 
     verifyAudit(ACL_ACCESS, credentialName, 200);
@@ -348,11 +348,11 @@ public class PermissionsEndpointTest {
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("dan", asList(READ, WRITE))),
+            new PermissionEntry("dan", asList(READ, WRITE))),
         samePropertyValuesAs(
-            new AccessControlEntry("isobel", asList(DELETE)))
+            new PermissionEntry("isobel", asList(DELETE)))
     ));
 
     auditingHelper.verifyAuditing(
@@ -409,9 +409,9 @@ public class PermissionsEndpointTest {
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("dan", asList(READ, WRITE, DELETE)))
+            new PermissionEntry("dan", asList(READ, WRITE, DELETE)))
     ));
 
     // 2 from initialPost, 2 from updatePost
@@ -492,9 +492,9 @@ public class PermissionsEndpointTest {
     assertThat(acl.getPermissions(), hasSize(2));
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("dan", singletonList(READ)))
+            new PermissionEntry("dan", singletonList(READ)))
     ));
 
     auditingHelper.verifyAuditing(

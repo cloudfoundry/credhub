@@ -2,7 +2,7 @@ package io.pivotal.security.handler;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -26,7 +26,7 @@ public class SetRequestHandler {
   public CredentialView handle(UserContext userContext,
       List<EventAuditRecordParameters> eventAuditRecordParameters,
       BaseCredentialSetRequest setRequest,
-      AccessControlEntry currentEntry) {
+      PermissionEntry currentEntry) {
 
     StringGenerationParameters generationParameters = null;
 

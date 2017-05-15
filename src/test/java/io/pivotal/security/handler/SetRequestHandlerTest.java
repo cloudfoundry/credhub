@@ -4,7 +4,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PasswordSetRequest;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.request.UserSetRequest;
@@ -32,9 +32,9 @@ public class SetRequestHandlerTest {
   private SetRequestHandler subject;
 
   private StringGenerationParameters generationParameters;
-  private ArrayList<AccessControlEntry> accessControlEntries;
+  private ArrayList<PermissionEntry> accessControlEntries;
   private UserContext userContext;
-  private AccessControlEntry currentEntry;
+  private PermissionEntry currentEntry;
 
   @Before
   public void setUp() throws Exception {
@@ -43,7 +43,7 @@ public class SetRequestHandlerTest {
     generationParameters = new StringGenerationParameters();
     accessControlEntries = new ArrayList<>();
     userContext = new UserContext();
-    currentEntry = new AccessControlEntry();
+    currentEntry = new PermissionEntry();
   }
 
   @Test

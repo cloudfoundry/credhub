@@ -10,19 +10,19 @@ import java.util.List;
 
 @JsonAutoDetect
 @Validated
-public class AccessControlEntry {
+public class PermissionEntry {
 
   @NotEmpty(message = "error.acl.missing_actor")
   private String actor;
 
   @NotEmpty(message = "error.acl.missing_operations")
   @JsonProperty("operations")
-  private List<AccessControlOperation> allowedOperations;
+  private List<PermissionOperation> allowedOperations;
 
-  public AccessControlEntry() {
+  public PermissionEntry() {
   }
 
-  public AccessControlEntry(String actor, List<AccessControlOperation> operations) {
+  public PermissionEntry(String actor, List<PermissionOperation> operations) {
     this.actor = actor;
     this.allowedOperations = operations;
   }
@@ -35,11 +35,11 @@ public class AccessControlEntry {
     this.actor = actor;
   }
 
-  public List<AccessControlOperation> getAllowedOperations() {
+  public List<PermissionOperation> getAllowedOperations() {
     return allowedOperations;
   }
 
-  public void setAllowedOperations(List<AccessControlOperation> allowedOperations) {
+  public void setAllowedOperations(List<PermissionOperation> allowedOperations) {
     this.allowedOperations = allowedOperations;
   }
 }

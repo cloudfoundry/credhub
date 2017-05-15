@@ -5,8 +5,8 @@ import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
@@ -31,12 +31,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class AccessControlHandlerTest {
+public class PermissionsHandlerTest {
   private static final String CREDENTIAL_NAME = "/test-credential";
   private static final String ACTOR_NAME = "test-actor";
   private static final String ACTOR_NAME2 = "someone-else";
 
-  private AccessControlHandler subject;
+  private PermissionsHandler subject;
 
   private PermissionService permissionService;
   private AccessControlDataService accessControlDataService;
@@ -50,7 +50,7 @@ public class AccessControlHandlerTest {
     permissionService = mock(PermissionService.class);
     accessControlDataService = mock(AccessControlDataService.class);
     credentialNameDataService = mock(CredentialNameDataService.class);
-    subject = new AccessControlHandler(
+    subject = new PermissionsHandler(
         permissionService,
         accessControlDataService,
         credentialNameDataService
@@ -61,13 +61,13 @@ public class AccessControlHandlerTest {
 
   @Test
   public void getAccessControlListResponse_whenTheNameDoesntStartWithASlash_fixesTheName() {
-    List<AccessControlEntry> accessControlList = newArrayList();
+    List<PermissionEntry> accessControlList = newArrayList();
     when(accessControlDataService.getAccessControlList(any(CredentialName.class)))
         .thenReturn(accessControlList);
     when(credentialNameDataService.findOrThrow(any(String.class)))
         .thenReturn(new CredentialName(CREDENTIAL_NAME));
 
-    PermissionsView response = subject.getAccessControlListResponse(
+    PermissionsView response = subject.getPermissions(
         null,
         CREDENTIAL_NAME
     );
@@ -76,19 +76,19 @@ public class AccessControlHandlerTest {
 
   @Test
   public void getAccessControlListResponse_verifiesTheUserHasPermissionToReadTheAcl_andReturnsTheAclResponse() {
-    ArrayList<AccessControlOperation> operations = newArrayList(
-        AccessControlOperation.READ,
-        AccessControlOperation.WRITE
+    ArrayList<PermissionOperation> operations = newArrayList(
+        PermissionOperation.READ,
+        PermissionOperation.WRITE
     );
-    AccessControlEntry accessControlEntry = new AccessControlEntry(
+    PermissionEntry permissionEntry = new PermissionEntry(
         ACTOR_NAME,
         operations
     );
-    List<AccessControlEntry> accessControlList = newArrayList(accessControlEntry);
+    List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
     when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(accessControlList);
 
-    PermissionsView response = subject.getAccessControlListResponse(
+    PermissionsView response = subject.getPermissions(
         userContext,
         CREDENTIAL_NAME
     );
@@ -96,18 +96,18 @@ public class AccessControlHandlerTest {
     verify(permissionService, times(1))
         .verifyAclReadPermission(userContext, CREDENTIAL_NAME);
 
-    List<AccessControlEntry> accessControlEntries = response.getPermissions();
+    List<PermissionEntry> accessControlEntries = response.getPermissions();
 
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(accessControlEntries, hasSize(1));
 
-    AccessControlEntry entry = accessControlEntries.get(0);
+    PermissionEntry entry = accessControlEntries.get(0);
     assertThat(entry.getActor(), equalTo(ACTOR_NAME));
 
-    List<AccessControlOperation> allowedOperations = entry.getAllowedOperations();
+    List<PermissionOperation> allowedOperations = entry.getAllowedOperations();
     assertThat(allowedOperations, contains(
-        equalTo(AccessControlOperation.READ),
-        equalTo(AccessControlOperation.WRITE)
+        equalTo(PermissionOperation.READ),
+        equalTo(PermissionOperation.WRITE)
     ));
   }
 
@@ -116,18 +116,19 @@ public class AccessControlHandlerTest {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
 
-    ArrayList<AccessControlOperation> operations = newArrayList(
-        AccessControlOperation.READ,
-        AccessControlOperation.WRITE
+    ArrayList<PermissionOperation> operations = newArrayList(
+        PermissionOperation.READ,
+        PermissionOperation.WRITE
     );
-    AccessControlEntry accessControlEntry = new AccessControlEntry(ACTOR_NAME, operations);
-    List<AccessControlEntry> accessControlList = newArrayList(accessControlEntry);
+    PermissionEntry permissionEntry = new PermissionEntry(ACTOR_NAME, operations);
+    List<PermissionEntry> accessControlList = newArrayList(permissionEntry);
 
-    AccessControlEntry preexistingAccessControlEntry = new AccessControlEntry(
+    PermissionEntry preexistingPermissionEntry = new PermissionEntry(
         ACTOR_NAME2,
-        newArrayList(AccessControlOperation.READ)
+        newArrayList(PermissionOperation.READ)
     );
-    List<AccessControlEntry> expectedControlList = newArrayList(accessControlEntry, preexistingAccessControlEntry);
+    List<PermissionEntry> expectedControlList = newArrayList(permissionEntry,
+        preexistingPermissionEntry);
 
     when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(expectedControlList);
@@ -135,23 +136,23 @@ public class AccessControlHandlerTest {
     when(credentialNameDataService.find(CREDENTIAL_NAME))
         .thenReturn(credentialName);
 
-    PermissionsView response = subject.setAccessControlEntries(userContext, CREDENTIAL_NAME, accessControlList);
+    PermissionsView response = subject.setPermissions(userContext, CREDENTIAL_NAME, accessControlList);
 
-    List<AccessControlEntry> accessControlEntries = response.getPermissions();
+    List<PermissionEntry> accessControlEntries = response.getPermissions();
 
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(accessControlEntries, hasSize(2));
 
-    AccessControlEntry entry1 = accessControlEntries.get(0);
+    PermissionEntry entry1 = accessControlEntries.get(0);
     assertThat(entry1.getActor(), equalTo(ACTOR_NAME));
     assertThat(entry1.getAllowedOperations(), contains(
-        equalTo(AccessControlOperation.READ),
-        equalTo(AccessControlOperation.WRITE)
+        equalTo(PermissionOperation.READ),
+        equalTo(PermissionOperation.WRITE)
     ));
 
-    AccessControlEntry entry2 = accessControlEntries.get(1);
+    PermissionEntry entry2 = accessControlEntries.get(1);
     assertThat(entry2.getActor(), equalTo(ACTOR_NAME2));
-    assertThat(entry2.getAllowedOperations(), contains(equalTo(AccessControlOperation.READ)));
+    assertThat(entry2.getAllowedOperations(), contains(equalTo(PermissionOperation.READ)));
   }
 
   @Test
@@ -160,7 +161,7 @@ public class AccessControlHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.setAccessControlEntries(userContext, CREDENTIAL_NAME, emptyList());
+      subject.setPermissions(userContext, CREDENTIAL_NAME, emptyList());
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
@@ -175,7 +176,7 @@ public class AccessControlHandlerTest {
     when(accessControlDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
 
-    subject.deleteAccessControlEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
+    subject.deletePermissionEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
 
     verify(accessControlDataService, times(1)).deleteAccessControlEntry(
         CREDENTIAL_NAME, ACTOR_NAME);
@@ -189,7 +190,7 @@ public class AccessControlHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
@@ -202,7 +203,7 @@ public class AccessControlHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.deleteAccessControlEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
       fail("should throw");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));

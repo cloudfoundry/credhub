@@ -3,8 +3,8 @@ package io.pivotal.security.data;
 import io.pivotal.security.entity.AccessEntryData;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.repository.AccessEntryRepository;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,43 +29,43 @@ public class AccessControlDataService {
     this.credentialNameDataService = credentialNameDataService;
   }
 
-  public List<AccessControlEntry> getAccessControlList(CredentialName credentialName) {
+  public List<PermissionEntry> getAccessControlList(CredentialName credentialName) {
     return createViewsForAllAcesWithName(credentialName);
   }
 
   public void saveAccessControlEntries(
       CredentialName credentialName,
-      List<AccessControlEntry> entries
+      List<PermissionEntry> entries
   ) {
     List<AccessEntryData> existingAccessEntries = accessEntryRepository
         .findAllByCredentialNameUuid(credentialName.getUuid());
 
-    for (AccessControlEntry ace : entries) {
+    for (PermissionEntry ace : entries) {
       upsertAccessEntryOperations(credentialName, existingAccessEntries, ace.getActor(),
           ace.getAllowedOperations());
     }
   }
 
-  public List<AccessControlOperation> getAllowedOperations(String name, String actor) {
-    List<AccessControlOperation> operations = newArrayList();
+  public List<PermissionOperation> getAllowedOperations(String name, String actor) {
+    List<PermissionOperation> operations = newArrayList();
     CredentialName credentialName = credentialNameDataService.find(name);
     AccessEntryData accessEntryData = accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
 
     if (accessEntryData != null) {
       if (accessEntryData.hasReadPermission()) {
-        operations.add(AccessControlOperation.READ);
+        operations.add(PermissionOperation.READ);
       }
       if (accessEntryData.hasWritePermission()) {
-        operations.add(AccessControlOperation.WRITE);
+        operations.add(PermissionOperation.WRITE);
       }
       if (accessEntryData.hasDeletePermission()) {
-        operations.add(AccessControlOperation.DELETE);
+        operations.add(PermissionOperation.DELETE);
       }
       if (accessEntryData.hasReadAclPermission()) {
-        operations.add(AccessControlOperation.READ_ACL);
+        operations.add(PermissionOperation.READ_ACL);
       }
       if (accessEntryData.hasWriteAclPermission()) {
-        operations.add(AccessControlOperation.WRITE_ACL);
+        operations.add(PermissionOperation.WRITE_ACL);
       }
     }
 
@@ -113,7 +113,7 @@ public class AccessControlDataService {
   }
 
   private void upsertAccessEntryOperations(CredentialName credentialName,
-      List<AccessEntryData> accessEntries, String actor, List<AccessControlOperation> operations) {
+      List<AccessEntryData> accessEntries, String actor, List<PermissionOperation> operations) {
     AccessEntryData entry = findAccessEntryForActor(accessEntries, actor);
 
     if (entry == null) {
@@ -124,18 +124,18 @@ public class AccessControlDataService {
     accessEntryRepository.saveAndFlush(entry);
   }
 
-  private AccessControlEntry createViewFor(AccessEntryData data) {
+  private PermissionEntry createViewFor(AccessEntryData data) {
     if (data == null ) {
       return null;
     }
-    AccessControlEntry entry = new AccessControlEntry();
-    List<AccessControlOperation> operations = data.generateAccessControlOperations();
+    PermissionEntry entry = new PermissionEntry();
+    List<PermissionOperation> operations = data.generateAccessControlOperations();
     entry.setAllowedOperations(operations);
     entry.setActor(data.getActor());
     return entry;
   }
 
-  private List<AccessControlEntry> createViewsForAllAcesWithName(CredentialName credentialName) {
+  private List<PermissionEntry> createViewsForAllAcesWithName(CredentialName credentialName) {
     return accessEntryRepository.findAllByCredentialNameUuid(credentialName.getUuid())
         .stream()
         .map(this::createViewFor)

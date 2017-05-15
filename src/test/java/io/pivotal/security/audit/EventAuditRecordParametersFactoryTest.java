@@ -1,7 +1,7 @@
 package io.pivotal.security.audit;
 
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -11,10 +11,10 @@ import java.util.List;
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -26,16 +26,16 @@ public class EventAuditRecordParametersFactoryTest {
   @Test
   public void createPermissionsEventAuditParameters_returnsPermissionsEventsList() {
     String credentialName = "/test";
-    List<AccessControlEntry> accessControlEntryList = asList(
-        new AccessControlEntry("actor1", asList(READ, WRITE)),
-        new AccessControlEntry("actor2", asList(READ_ACL, WRITE_ACL))
+    List<PermissionEntry> permissionEntryList = asList(
+        new PermissionEntry("actor1", asList(READ, WRITE)),
+        new PermissionEntry("actor2", asList(READ_ACL, WRITE_ACL))
     );
 
     List<EventAuditRecordParameters> permissionsEventAuditParameters = EventAuditRecordParametersFactory
         .createPermissionsEventAuditParameters(
             ACL_UPDATE,
             credentialName,
-            accessControlEntryList);
+            permissionEntryList);
 
     assertThat(permissionsEventAuditParameters, containsInAnyOrder(
         samePropertyValuesAs(new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "actor1")),
@@ -48,7 +48,7 @@ public class EventAuditRecordParametersFactoryTest {
   @Test
   public void createPermissionEventAuditRecordParameters_returnsPermissionsEventsList() {
     String credentialName = "/test";
-    List<AccessControlOperation> operations = newArrayList(READ, WRITE);
+    List<PermissionOperation> operations = newArrayList(READ, WRITE);
 
     List<EventAuditRecordParameters> permissionsEventAuditParameters = EventAuditRecordParametersFactory
         .createPermissionEventAuditRecordParameters(

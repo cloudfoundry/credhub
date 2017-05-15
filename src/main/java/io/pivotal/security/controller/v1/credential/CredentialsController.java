@@ -13,7 +13,7 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialHandler;
 import io.pivotal.security.handler.SetRequestHandler;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
@@ -91,18 +91,18 @@ public class CredentialsController {
   public CredentialView generate(InputStream inputStream,
                                  RequestUuid requestUuid,
                                  UserContext userContext,
-                                 AccessControlEntry currentUserAccessControlEntry) throws IOException {
+                                 PermissionEntry currentUserPermissionEntry) throws IOException {
     InputStream requestInputStream = new ByteArrayInputStream(ByteStreams.toByteArray(inputStream));
     try {
       return auditedHandlePostRequest(requestInputStream, requestUuid, userContext,
-          currentUserAccessControlEntry);
+          currentUserPermissionEntry);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       requestInputStream.reset();
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
       return auditedHandlePostRequest(requestInputStream, requestUuid, userContext,
-          currentUserAccessControlEntry);
+          currentUserPermissionEntry);
     }
   }
 
@@ -111,18 +111,18 @@ public class CredentialsController {
   public CredentialView set(@RequestBody BaseCredentialSetRequest requestBody,
                             RequestUuid requestUuid,
                             UserContext userContext,
-                            AccessControlEntry currentUserAccessControlEntry) {
+                            PermissionEntry currentUserPermissionEntry) {
     requestBody.validate();
 
     try {
       return auditedHandlePutRequest(requestBody, requestUuid, userContext,
-          currentUserAccessControlEntry);
+          currentUserPermissionEntry);
     } catch (JpaSystemException | DataIntegrityViolationException e) {
       LOGGER.error(
           "Exception \"" + e.getMessage() + "\" with class \"" + e.getClass().getCanonicalName()
               + "\" while storing credential, possibly caused by race condition, retrying...");
       return auditedHandlePutRequest(requestBody, requestUuid, userContext,
-          currentUserAccessControlEntry);
+          currentUserPermissionEntry);
     }
   }
 
@@ -213,7 +213,7 @@ public class CredentialsController {
       InputStream inputStream,
       RequestUuid requestUuid,
       UserContext userContext,
-      AccessControlEntry currentUserAccessControlEntry
+      PermissionEntry currentUserPermissionEntry
   ) {
     return eventAuditLogService
         .auditEvents(requestUuid, userContext, (parametersList -> {
@@ -221,7 +221,7 @@ public class CredentialsController {
               inputStream,
               userContext,
               parametersList,
-              currentUserAccessControlEntry);
+              currentUserPermissionEntry);
         }));
   }
 
@@ -229,7 +229,7 @@ public class CredentialsController {
       InputStream inputStream,
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
-      AccessControlEntry currentUserAccessControlEntry
+      PermissionEntry currentUserPermissionEntry
   ) {
     try {
       String requestString = IOUtils.toString(new InputStreamReader(inputStream));
@@ -241,10 +241,10 @@ public class CredentialsController {
         // we want to consider both type and .regenerate. We could do custom deserialization but
         // then we'd have to do the entire job by hand.
         return handleRegenerateRequest(userContext, parametersList, requestString,
-            currentUserAccessControlEntry);
+            currentUserPermissionEntry);
       } else {
         return handleGenerateRequest(userContext, parametersList, requestString,
-            currentUserAccessControlEntry);
+            currentUserPermissionEntry);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -255,46 +255,47 @@ public class CredentialsController {
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       String requestString,
-      AccessControlEntry currentUserAccessControlEntry
+      PermissionEntry currentUserPermissionEntry
   ) throws IOException {
     BaseCredentialGenerateRequest requestBody = objectMapper
         .readValue(requestString, BaseCredentialGenerateRequest.class);
     requestBody.validate();
 
     return generateRequestHandler
-        .handle(userContext, parametersList, requestBody, currentUserAccessControlEntry);
+        .handle(userContext, parametersList, requestBody, currentUserPermissionEntry);
   }
 
   private CredentialView handleRegenerateRequest(
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       String requestString,
-      AccessControlEntry currentUserAccessControlEntry
+      PermissionEntry currentUserPermissionEntry
   ) throws IOException {
     CredentialRegenerateRequest requestBody = objectMapper
         .readValue(requestString, CredentialRegenerateRequest.class);
 
     return regenerateService
-        .performRegenerate(userContext, parametersList, requestBody, currentUserAccessControlEntry);
+        .performRegenerate(userContext, parametersList, requestBody, currentUserPermissionEntry);
   }
 
   private CredentialView auditedHandlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
       RequestUuid requestUuid,
       UserContext userContext,
-      AccessControlEntry currentUserAccessControlEntry
+      PermissionEntry currentUserPermissionEntry
   ) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, parametersList ->
-        handlePutRequest(requestBody, userContext, parametersList, currentUserAccessControlEntry));
+        handlePutRequest(requestBody, userContext, parametersList, currentUserPermissionEntry));
   }
 
   private CredentialView handlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
-      AccessControlEntry currentUserAccessControlEntry
+      PermissionEntry currentUserPermissionEntry
   ) {
-    return setRequestHandler.handle(userContext, parametersList, requestBody, currentUserAccessControlEntry);
+    return setRequestHandler.handle(userContext, parametersList, requestBody,
+        currentUserPermissionEntry);
   }
 
   private boolean readRegenerateFlagFrom(String requestString) {

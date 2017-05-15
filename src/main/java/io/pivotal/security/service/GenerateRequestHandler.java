@@ -4,7 +4,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.domain.CredentialValueFactory;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
 import io.pivotal.security.request.StringGenerationParameters;
@@ -30,7 +30,7 @@ public class GenerateRequestHandler {
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       BaseCredentialGenerateRequest requestBody,
-      AccessControlEntry currentUserAccessControlEntry) {
+      PermissionEntry currentUserPermissionEntry) {
 
     CredentialValue value = CredentialValueFactory.generateValue(requestBody, generatorService);
 
@@ -47,6 +47,6 @@ public class GenerateRequestHandler {
         generationParameters,
         value,
         requestBody.getAdditionalPermissions(),
-        currentUserAccessControlEntry);
+        currentUserPermissionEntry);
   }
 }

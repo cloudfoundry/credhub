@@ -215,10 +215,10 @@ public class BaseCredentialRequestTest {
         final BaseCredentialSetRequest request = JsonHelper
             .deserialize(json, BaseCredentialSetRequest.class);
 
-        final List<AccessControlOperation> operations = new ArrayList<>(
-            Arrays.asList(AccessControlOperation.READ, AccessControlOperation.WRITE));
-        final List<AccessControlEntry> expectedAces = new ArrayList<>(
-            Arrays.asList(new AccessControlEntry("some-actor", operations)));
+        final List<PermissionOperation> operations = new ArrayList<>(
+            Arrays.asList(PermissionOperation.READ, PermissionOperation.WRITE));
+        final List<PermissionEntry> expectedAces = new ArrayList<>(
+            Arrays.asList(new PermissionEntry("some-actor", operations)));
 
         assertThat(request.getAdditionalPermissions(), samePropertyValuesAs(expectedAces));
       });

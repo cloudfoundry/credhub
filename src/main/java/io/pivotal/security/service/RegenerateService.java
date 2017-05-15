@@ -8,7 +8,7 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
@@ -56,7 +56,7 @@ public class RegenerateService {
       UserContext userContext,
       List<EventAuditRecordParameters> parametersList,
       CredentialRegenerateRequest requestBody,
-      AccessControlEntry currentUserAccessControlEntry) {
+      PermissionEntry currentUserPermissionEntry) {
     Credential credential = credentialDataService.findMostRecent(requestBody.getName());
     if (credential == null) {
       parametersList.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, requestBody.getName()));
@@ -91,6 +91,6 @@ public class RegenerateService {
         generationParameters,
         credentialValue,
         generateRequest.getAdditionalPermissions(),
-        currentUserAccessControlEntry);
+        currentUserPermissionEntry);
   }
 }

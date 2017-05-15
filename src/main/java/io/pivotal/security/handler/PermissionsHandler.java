@@ -6,7 +6,7 @@ import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class AccessControlHandler {
+public class PermissionsHandler {
   private final PermissionService permissionService;
   private final AccessControlDataService accessControlDataService;
   private final CredentialNameDataService credentialNameDataService;
 
   @Autowired
-  AccessControlHandler(
+  PermissionsHandler(
       PermissionService permissionService,
       AccessControlDataService accessControlDataService,
       CredentialNameDataService credentialNameDataService
@@ -31,7 +31,7 @@ public class AccessControlHandler {
     this.credentialNameDataService = credentialNameDataService;
   }
 
-  public PermissionsView getAccessControlListResponse(UserContext userContext, String name) {
+  public PermissionsView getPermissions(UserContext userContext, String name) {
     try {
       final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
@@ -47,19 +47,19 @@ public class AccessControlHandler {
     }
   }
 
-  public PermissionsView setAccessControlEntries(UserContext userContext, String name, List<AccessControlEntry> accessControlEntryList) {
+  public PermissionsView setPermissions(UserContext userContext, String name, List<PermissionEntry> permissionEntryList) {
     if (!permissionService.hasAclWritePermission(userContext, name)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
     final CredentialName credentialName = credentialNameDataService.find(name);
     accessControlDataService
-        .saveAccessControlEntries(credentialName, accessControlEntryList);
+        .saveAccessControlEntries(credentialName, permissionEntryList);
 
     return new PermissionsView(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
   }
 
-  public void deleteAccessControlEntry(UserContext userContext, String credentialName, String actor) {
+  public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {
     if (!permissionService.hasAclWritePermission(userContext, credentialName)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }

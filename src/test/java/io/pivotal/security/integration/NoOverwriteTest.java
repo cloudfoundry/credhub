@@ -5,7 +5,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.After;
@@ -26,11 +26,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.function.Supplier;
 
-import static io.pivotal.security.request.AccessControlOperation.DELETE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Arrays.asList;
@@ -115,10 +115,10 @@ public class NoOverwriteTest {
 
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new AccessControlEntry(winningActor,
+            new PermissionEntry(winningActor,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-client:a-different-actor", asList(READ)))
+            new PermissionEntry("uaa-client:a-different-actor", asList(READ)))
     ));
 
   }
@@ -173,10 +173,10 @@ public class NoOverwriteTest {
         .deserialize(winningResponse, PermissionsView.class);
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
-            new AccessControlEntry(winningActor,
+            new PermissionEntry(winningActor,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
-            new AccessControlEntry("uaa-client:a-different-actor", singletonList(READ)))
+            new PermissionEntry("uaa-client:a-different-actor", singletonList(READ)))
     ));
 
   }

@@ -4,9 +4,9 @@ import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.request.AccessEntriesRequest;
+import io.pivotal.security.handler.PermissionsHandler;
+import io.pivotal.security.request.PermissionOperation;
+import io.pivotal.security.request.PermissionsRequest;
 import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -32,17 +32,17 @@ import static io.pivotal.security.audit.EventAuditRecordParametersFactory.create
 @RestController
 @RequestMapping(path = "/api/v1/permissions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class PermissionsController {
-  private final AccessControlHandler accessControlHandler;
+  private final PermissionsHandler permissionsHandler;
   private final EventAuditLogService eventAuditLogService;
   private AccessControlDataService accessControlDataService;
 
   @Autowired
   public PermissionsController(
-      AccessControlHandler accessControlHandler,
+      PermissionsHandler permissionsHandler,
       EventAuditLogService eventAuditLogService,
       AccessControlDataService accessControlDataService
   ) {
-    this.accessControlHandler = accessControlHandler;
+    this.permissionsHandler = permissionsHandler;
     this.eventAuditLogService = eventAuditLogService;
     this.accessControlDataService = accessControlDataService;
   }
@@ -58,7 +58,7 @@ public class PermissionsController {
       eventAuditRecordParameters.setCredentialName(credentialName);
       eventAuditRecordParameters.setAuditingOperationCode(ACL_ACCESS);
 
-      final PermissionsView response = accessControlHandler.getAccessControlListResponse(userContext, credentialName);
+      final PermissionsView response = permissionsHandler.getPermissions(userContext, credentialName);
       eventAuditRecordParameters.setCredentialName(response.getCredentialName());
 
       return response;
@@ -70,7 +70,7 @@ public class PermissionsController {
   public PermissionsView setAccessControlEntries(
       RequestUuid requestUuid,
       UserContext userContext,
-      @Validated @RequestBody AccessEntriesRequest accessEntriesRequest
+      @Validated @RequestBody PermissionsRequest accessEntriesRequest
   ) {
     return eventAuditLogService.auditEvents(requestUuid, userContext, parametersList -> {
       parametersList.addAll(createPermissionsEventAuditParameters(
@@ -78,7 +78,7 @@ public class PermissionsController {
           accessEntriesRequest.getCredentialName(),
           accessEntriesRequest.getPermissions())
       );
-      return accessControlHandler.setAccessControlEntries(
+      return permissionsHandler.setPermissions(
           userContext,
           accessEntriesRequest.getCredentialName(),
           accessEntriesRequest.getPermissions()
@@ -96,7 +96,7 @@ public class PermissionsController {
 
   ) {
     eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
-      List<AccessControlOperation> operationList = accessControlDataService.getAllowedOperations(credentialName, actor);
+      List<PermissionOperation> operationList = accessControlDataService.getAllowedOperations(credentialName, actor);
 
       parameterList.addAll(createPermissionEventAuditRecordParameters(
           ACL_DELETE,
@@ -105,7 +105,7 @@ public class PermissionsController {
           operationList
       ));
 
-      accessControlHandler.deleteAccessControlEntry(userContext, credentialName, actor);
+      permissionsHandler.deletePermissionEntry(userContext, credentialName, actor);
 
       return true;
     });

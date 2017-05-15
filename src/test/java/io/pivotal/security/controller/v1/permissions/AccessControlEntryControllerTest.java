@@ -7,10 +7,10 @@ import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.controller.v1.PermissionsController;
 import io.pivotal.security.data.AccessControlDataService;
-import io.pivotal.security.handler.AccessControlHandler;
+import io.pivotal.security.handler.PermissionsHandler;
 import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.view.PermissionsView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -48,21 +48,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class AccessControlEntryControllerTest {
 
   private PermissionsController subject;
-  private AccessControlHandler accessControlHandler;
+  private PermissionsHandler permissionsHandler;
   private AccessControlDataService accessControlDataService;
   private EventAuditLogService eventAuditLogService;
   private MockMvc mockMvc;
 
   {
     beforeEach(() -> {
-      accessControlHandler = mock(AccessControlHandler.class);
+      permissionsHandler = mock(PermissionsHandler.class);
       eventAuditLogService = mock(EventAuditLogService.class);
       accessControlDataService = mock(AccessControlDataService.class);
 
       when(eventAuditLogService.auditEvents(any(RequestUuid.class), any(UserContext.class), any(Function.class)))
           .thenAnswer(invocation -> invocation.getArgumentAt(2, Function.class).apply(newArrayList()));
 
-      subject = new PermissionsController(accessControlHandler, eventAuditLogService, accessControlDataService);
+      subject = new PermissionsController(permissionsHandler, eventAuditLogService, accessControlDataService);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
           new MappingJackson2HttpMessageConverter();
@@ -103,7 +103,7 @@ public class AccessControlEntryControllerTest {
               "  ]\n" +
               "}";
 
-          when(accessControlHandler.setAccessControlEntries(any(UserContext.class), any(String.class), any(List.class)))
+          when(permissionsHandler.setPermissions(any(UserContext.class), any(String.class), any(List.class)))
               .thenReturn(JsonHelper.deserialize(expectedResponse, PermissionsView.class));
 
           MockHttpServletRequestBuilder request = post("/api/v1/permissions")
@@ -115,17 +115,17 @@ public class AccessControlEntryControllerTest {
               .andExpect(content().json(expectedResponse));
 
           ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-          verify(accessControlHandler, times(1)).setAccessControlEntries(
+          verify(permissionsHandler, times(1)).setPermissions(
               any(UserContext.class),
               eq("test-credential-name"),
               captor.capture()
           );
 
-          List<AccessControlEntry> accessControlEntries = captor.getValue();
+          List<PermissionEntry> accessControlEntries = captor.getValue();
           assertThat(accessControlEntries,
               hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
                   hasProperty("allowedOperations",
-                      hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE)))));
+                      hasItems(PermissionOperation.READ, PermissionOperation.WRITE)))));
         });
 
         it("validates request JSON on POST", () -> {
@@ -158,8 +158,8 @@ public class AccessControlEntryControllerTest {
               .andExpect(status().isNoContent())
               .andExpect(content().string(""));
 
-          verify(accessControlHandler, times(1))
-              .deleteAccessControlEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
+          verify(permissionsHandler, times(1))
+              .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
         });
       });
     });

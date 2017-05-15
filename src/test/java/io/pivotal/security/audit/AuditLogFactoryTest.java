@@ -3,7 +3,7 @@ package io.pivotal.security.audit;
 import static io.pivotal.security.audit.AuditLogFactory.createEventAuditRecord;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;

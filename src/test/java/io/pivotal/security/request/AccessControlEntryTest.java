@@ -28,16 +28,16 @@ public class AccessControlEntryTest {
               + "\"operations\": [\"read\"]\n"
               + "}";
           ObjectMapper om = new ObjectMapper();
-          AccessControlEntry accessControlEntry = om.readValue(json, AccessControlEntry.class);
-          assertThat(accessControlEntry.getActor(), equalTo("dan"));
+          PermissionEntry permissionEntry = om.readValue(json, PermissionEntry.class);
+          assertThat(permissionEntry.getActor(), equalTo("dan"));
         });
 
         it("should validate presence of actor", () -> {
           String json = "{ \n"
               + "\"operations\": [\"read\"]\n"
               + "}";
-          Set<ConstraintViolation<AccessControlEntry>> constraintViolations =
-              deserializeAndValidate(json, AccessControlEntry.class);
+          Set<ConstraintViolation<PermissionEntry>> constraintViolations =
+              deserializeAndValidate(json, PermissionEntry.class);
           assertThat(constraintViolations,
               contains(hasViolationWithMessage("error.acl.missing_actor")));
         });
@@ -47,8 +47,8 @@ public class AccessControlEntryTest {
               + "\"actor\":\"\","
               + "\"operations\": [\"read\"]\n"
               + "}";
-          Set<ConstraintViolation<AccessControlEntry>> constraintViolations =
-              deserializeAndValidate(json, AccessControlEntry.class);
+          Set<ConstraintViolation<PermissionEntry>> constraintViolations =
+              deserializeAndValidate(json, PermissionEntry.class);
           assertThat(constraintViolations,
               contains(hasViolationWithMessage("error.acl.missing_actor")));
         });
@@ -58,8 +58,8 @@ public class AccessControlEntryTest {
             String json = "{"
                 + "\"actor\": \"dan\""
                 + "}";
-            Set<ConstraintViolation<AccessControlEntry>> constraintViolations =
-                deserializeAndValidate(json, AccessControlEntry.class);
+            Set<ConstraintViolation<PermissionEntry>> constraintViolations =
+                deserializeAndValidate(json, PermissionEntry.class);
             assertThat(constraintViolations,
                 contains(hasViolationWithMessage("error.acl.missing_operations")));
           });
@@ -69,8 +69,8 @@ public class AccessControlEntryTest {
                 + "\"actor\": \"dan\","
                 + "\"operations\": []"
                 + "}";
-            Set<ConstraintViolation<AccessControlEntry>> constraintViolations =
-                deserializeAndValidate(json, AccessControlEntry.class);
+            Set<ConstraintViolation<PermissionEntry>> constraintViolations =
+                deserializeAndValidate(json, PermissionEntry.class);
             assertThat(constraintViolations,
                 contains(hasViolationWithMessage("error.acl.missing_operations")));
           });
@@ -81,7 +81,7 @@ public class AccessControlEntryTest {
                 + "\"operations\": [\"foo\", \"read\"]\n"
                 + "}";
             try {
-              deserializeAndValidate(json, AccessControlEntry.class);
+              deserializeAndValidate(json, PermissionEntry.class);
             } catch (RuntimeException e) {
               throw e.getCause();
             }

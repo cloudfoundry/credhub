@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
 import java.util.ArrayList;
@@ -29,10 +29,10 @@ import org.junit.runner.RunWith;
 @RunWith(Spectrum.class)
 public class PasswordCredentialTest {
 
-  private static final List<AccessControlEntry> EMPTY_ENTRIES_LIST = new ArrayList<>();
+  private static final List<PermissionEntry> EMPTY_ENTRIES_LIST = new ArrayList<>();
   private static final StringGenerationParameters NO_PASSWORD_PARAMS = null;
   private static final PasswordCredential NO_EXISTING_NAMED_PASSWORD_CREDENTIAL = null;
-  private static final List<AccessControlEntry> NULL_ENTRIES_LIST = null;
+  private static final List<PermissionEntry> NULL_ENTRIES_LIST = null;
   private static final String PASSWORD = "my-password";
 
   private PasswordCredential subject;

@@ -2,7 +2,7 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum AccessControlOperation {
+public enum PermissionOperation {
   READ("read"),
   WRITE("write"),
   DELETE("delete"),
@@ -11,7 +11,7 @@ public enum AccessControlOperation {
 
   private final String operation;
 
-  AccessControlOperation(String operation) {
+  PermissionOperation(String operation) {
     this.operation = operation;
   }
 

@@ -10,7 +10,7 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +52,8 @@ public class CredentialService {
       String type,
       StringGenerationParameters generationParameters,
       CredentialValue credentialValue,
-      List<AccessControlEntry> accessControlEntries,
-      AccessControlEntry currentUserAccessControlEntry) {
+      List<PermissionEntry> accessControlEntries,
+      PermissionEntry currentUserPermissionEntry) {
     Credential existingCredential = credentialDataService.findMostRecent(credentialName);
 
     boolean shouldWriteNewEntity = existingCredential == null || isOverwrite;
@@ -75,7 +75,7 @@ public class CredentialService {
     Credential storedCredentialVersion = existingCredential;
     if (shouldWriteNewEntity) {
       if (existingCredential == null) {
-        accessControlEntries.add(currentUserAccessControlEntry);
+        accessControlEntries.add(currentUserPermissionEntry);
       }
 
       Credential newVersion = credentialFactory.makeNewCredentialVersion(

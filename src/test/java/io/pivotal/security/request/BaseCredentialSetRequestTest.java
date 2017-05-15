@@ -13,8 +13,8 @@ import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonHelper.deserializeChecked;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -85,7 +85,7 @@ public class BaseCredentialSetRequestTest {
               "\"overwrite\":true" +
               "}";
           BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
-          AccessControlEntry expectedEntry = new AccessControlEntry("my-actor", Arrays.asList(READ, WRITE));
+          PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
           setRequest.addCurrentUser(expectedEntry);
           assertThat(setRequest.getAdditionalPermissions(), equalTo(Arrays.asList(expectedEntry)));
         });
@@ -105,15 +105,15 @@ public class BaseCredentialSetRequestTest {
               "}]\n" +
               "}";
           BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
-          AccessControlEntry currentUserAccessControlEntry =
-              new AccessControlEntry("my-actor", Arrays.asList(READ, WRITE));
-          AccessControlEntry passedAccessControlEntry =
-              new AccessControlEntry("my-other-actor", Arrays.asList(READ));
-          setRequest.addCurrentUser(currentUserAccessControlEntry);
+          PermissionEntry currentUserPermissionEntry =
+              new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
+          PermissionEntry passedPermissionEntry =
+              new PermissionEntry("my-other-actor", Arrays.asList(READ));
+          setRequest.addCurrentUser(currentUserPermissionEntry);
           assertThat(setRequest.getAdditionalPermissions(),
               containsInAnyOrder(
-                  samePropertyValuesAs(currentUserAccessControlEntry),
-                  samePropertyValuesAs(passedAccessControlEntry)));
+                  samePropertyValuesAs(currentUserPermissionEntry),
+                  samePropertyValuesAs(passedPermissionEntry)));
         });
 
         it("should overwrite the entry passed in the request for the current user", () -> {
@@ -129,7 +129,7 @@ public class BaseCredentialSetRequestTest {
               "}]\n" +
               "}";
           BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
-          AccessControlEntry expectedEntry = new AccessControlEntry("my-actor", Arrays.asList(READ, WRITE));
+          PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
           setRequest.addCurrentUser(expectedEntry);
           assertThat(setRequest.getAdditionalPermissions(), equalTo(Arrays.asList(expectedEntry)));
         });

@@ -1,7 +1,7 @@
 package io.pivotal.security.audit;
 
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,7 +11,7 @@ public class EventAuditRecordParametersFactory {
       AuditingOperationCode auditingOperationCode,
       String credentialName,
       String actor,
-      List<AccessControlOperation> operations
+      List<PermissionOperation> operations
   ) {
     return operations.stream()
         .map(operation -> (
@@ -28,7 +28,7 @@ public class EventAuditRecordParametersFactory {
   public static List<EventAuditRecordParameters> createPermissionsEventAuditParameters(
       AuditingOperationCode auditingOperationCode,
       String credentialName,
-      List<AccessControlEntry> accessControlEntries
+      List<PermissionEntry> accessControlEntries
   ) {
     return accessControlEntries.stream()
         .map(entry -> {

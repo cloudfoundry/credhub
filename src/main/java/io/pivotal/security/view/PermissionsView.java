@@ -1,7 +1,7 @@
 package io.pivotal.security.view;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import java.util.List;
 
 @JsonAutoDetect
@@ -9,13 +9,13 @@ import java.util.List;
 public class PermissionsView {
 
   private String credentialName;
-  private List<AccessControlEntry> permissions;
+  private List<PermissionEntry> permissions;
 
   public PermissionsView() {
   }
 
   public PermissionsView(String credentialName,
-      List<AccessControlEntry> accessControlList) {
+      List<PermissionEntry> accessControlList) {
     this.credentialName = credentialName;
     this.permissions = accessControlList;
   }
@@ -28,11 +28,11 @@ public class PermissionsView {
     this.credentialName = credentialName;
   }
 
-  public List<AccessControlEntry> getPermissions() {
+  public List<PermissionEntry> getPermissions() {
     return permissions;
   }
 
-  public void setPermissions(List<AccessControlEntry> permissions) {
+  public void setPermissions(List<PermissionEntry> permissions) {
     this.permissions = permissions;
   }
 }

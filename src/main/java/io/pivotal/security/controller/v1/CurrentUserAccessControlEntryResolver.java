@@ -2,7 +2,7 @@ package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.auth.UserContextFactory;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
@@ -14,11 +14,11 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 
 import java.util.Arrays;
 
-import static io.pivotal.security.request.AccessControlOperation.DELETE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 
 @Component
 public class CurrentUserAccessControlEntryResolver implements HandlerMethodArgumentResolver {
@@ -31,7 +31,7 @@ public class CurrentUserAccessControlEntryResolver implements HandlerMethodArgum
 
   @Override
   public boolean supportsParameter(MethodParameter parameter) {
-    return parameter.getParameterType().equals(AccessControlEntry.class);
+    return parameter.getParameterType().equals(PermissionEntry.class);
   }
 
   @Override
@@ -40,7 +40,7 @@ public class CurrentUserAccessControlEntryResolver implements HandlerMethodArgum
       NativeWebRequest webRequest,
       WebDataBinderFactory binderFactory) throws Exception {
     UserContext userContext = userContextFactory.createUserContext((Authentication) webRequest.getUserPrincipal());
-    return new AccessControlEntry(
+    return new PermissionEntry(
         userContext.getAclUser(),
         Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
   }

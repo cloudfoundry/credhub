@@ -4,8 +4,8 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.request.AccessControlOperation;
+import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
@@ -57,7 +57,7 @@ public class AccessControlDataServiceTest {
   @Autowired
   private CredentialNameDataService credentialNameDataService;
 
-  private List<AccessControlEntry> aces;
+  private List<PermissionEntry> aces;
   private CredentialName credentialName;
 
   @Before
@@ -67,34 +67,34 @@ public class AccessControlDataServiceTest {
 
   @Test
   public void getAccessControlList_givenExistingCredentialName_returnsAcl() {
-    final List<AccessControlEntry> accessControlEntries = subject.getAccessControlList(credentialName);
+    final List<PermissionEntry> accessControlEntries = subject.getAccessControlList(credentialName);
 
     assertThat(accessControlEntries, hasSize(3));
 
     assertThat(accessControlEntries, containsInAnyOrder(
         allOf(hasProperty("actor", equalTo(LUKE)),
-            hasProperty("allowedOperations", hasItems(AccessControlOperation.WRITE))),
+            hasProperty("allowedOperations", hasItems(PermissionOperation.WRITE))),
         allOf(hasProperty("actor", equalTo(LEIA)),
-            hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))),
+            hasProperty("allowedOperations", hasItems(PermissionOperation.READ))),
         allOf(hasProperty("actor", equalTo(HAN_SOLO)),
             hasProperty("allowedOperations",
-                hasItems(AccessControlOperation.READ_ACL))))
+                hasItems(PermissionOperation.READ_ACL))))
     );
   }
 
   @Test
   public void getAllowedOperations_whenTheCredentialExists_andTheActorHasPermissions_returnsListOfActivePermissions() {
     assertThat(subject.getAllowedOperations(CREDENTIAL_NAME, LUKE), containsInAnyOrder(
-        AccessControlOperation.WRITE,
-        AccessControlOperation.DELETE
+        PermissionOperation.WRITE,
+        PermissionOperation.DELETE
     ));
   }
 
   @Test
   public void getAllowedOperations_whenTheNameIsMissingTheLeadingSlash_returnsListOfActivePermissions() {
     assertThat(subject.getAllowedOperations(CREDENTIAL_NAME_WITHOUT_LEADING_SLASH, LUKE), containsInAnyOrder(
-        AccessControlOperation.WRITE,
-        AccessControlOperation.DELETE
+        PermissionOperation.WRITE,
+        PermissionOperation.DELETE
     ));
   }
 
@@ -120,22 +120,22 @@ public class AccessControlDataServiceTest {
   @Test
   public void setAccessControlEntries_whenGivenAnExistingAce_returnsTheAcl() {
     aces = singletonList(
-        new AccessControlEntry(LUKE, singletonList(AccessControlOperation.READ))
+        new PermissionEntry(LUKE, singletonList(PermissionOperation.READ))
     );
 
     subject.saveAccessControlEntries(credentialName, aces);
 
-    List<AccessControlEntry> response = subject.getAccessControlList(credentialName);
+    List<PermissionEntry> response = subject.getAccessControlList(credentialName);
 
         assertThat(response, containsInAnyOrder(
         allOf(hasProperty("actor", equalTo(LUKE)),
             hasProperty("allowedOperations",
-                hasItems(AccessControlOperation.READ, AccessControlOperation.WRITE))),
+                hasItems(PermissionOperation.READ, PermissionOperation.WRITE))),
         allOf(hasProperty("actor", equalTo(LEIA)),
-            hasProperty("allowedOperations", hasItems(AccessControlOperation.READ))),
+            hasProperty("allowedOperations", hasItems(PermissionOperation.READ))),
         allOf(hasProperty("actor", equalTo(HAN_SOLO)),
             hasProperty("allowedOperations",
-                hasItems(AccessControlOperation.READ_ACL)))));
+                hasItems(PermissionOperation.READ_ACL)))));
   }
 
   @Test
@@ -145,26 +145,26 @@ public class AccessControlDataServiceTest {
 
     credentialNameDataService.save(credentialName2);
     aces = singletonList(
-        new AccessControlEntry(LUKE, singletonList(AccessControlOperation.READ)));
+        new PermissionEntry(LUKE, singletonList(PermissionOperation.READ)));
 
     subject.saveAccessControlEntries(credentialName2, aces);
 
-    List<AccessControlEntry> response = subject.getAccessControlList(credentialName2);
+    List<PermissionEntry> response = subject.getAccessControlList(credentialName2);
 
 
-    final AccessControlEntry accessControlEntry = response.get(0);
+    final PermissionEntry permissionEntry = response.get(0);
 
     assertThat(response, hasSize(1));
-    assertThat(accessControlEntry.getActor(), equalTo(LUKE));
-    assertThat(accessControlEntry.getAllowedOperations(), hasSize(1));
-    assertThat(accessControlEntry.getAllowedOperations(), hasItem(AccessControlOperation.READ));
+    assertThat(permissionEntry.getActor(), equalTo(LUKE));
+    assertThat(permissionEntry.getAllowedOperations(), hasSize(1));
+    assertThat(permissionEntry.getAllowedOperations(), hasItem(PermissionOperation.READ));
   }
 
   @Test
   public void deleteAccessControlEntry_whenGivenExistingCredentialAndActor_deletesTheAce() {
     subject.deleteAccessControlEntry(CREDENTIAL_NAME, LUKE);
 
-    final List<AccessControlEntry> accessControlList = subject
+    final List<PermissionEntry> accessControlList = subject
         .getAccessControlList(credentialName);
 
     assertThat(accessControlList, hasSize(2));
@@ -179,7 +179,7 @@ public class AccessControlDataServiceTest {
 
     assertTrue(deleted);
 
-    final List<AccessControlEntry> accessControlList = subject
+    final List<PermissionEntry> accessControlList = subject
         .getAccessControlList(credentialName);
 
     assertThat(accessControlList, hasSize(2));
@@ -316,20 +316,20 @@ public class AccessControlDataServiceTest {
 
     subject.saveAccessControlEntries(
         credentialName,
-        singletonList(new AccessControlEntry(LUKE,
-            newArrayList(AccessControlOperation.WRITE, AccessControlOperation.DELETE)))
+        singletonList(new PermissionEntry(LUKE,
+            newArrayList(PermissionOperation.WRITE, PermissionOperation.DELETE)))
     );
 
     subject.saveAccessControlEntries(
         credentialName,
-        singletonList(new AccessControlEntry(LEIA,
-            singletonList(AccessControlOperation.READ)))
+        singletonList(new PermissionEntry(LEIA,
+            singletonList(PermissionOperation.READ)))
     );
 
     subject.saveAccessControlEntries(
         credentialName,
-        singletonList(new AccessControlEntry(HAN_SOLO,
-            newArrayList(AccessControlOperation.READ_ACL, AccessControlOperation.WRITE_ACL)))
+        singletonList(new PermissionEntry(HAN_SOLO,
+            newArrayList(PermissionOperation.READ_ACL, PermissionOperation.WRITE_ACL)))
     );
   }
 }

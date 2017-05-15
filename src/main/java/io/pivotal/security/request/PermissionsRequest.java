@@ -8,18 +8,18 @@ import javax.validation.Valid;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
-public class AccessEntriesRequest {
+public class PermissionsRequest {
 
   @NotEmpty(message = "error.missing_name")
   private String credentialName;
   @NotEmpty(message = "error.acl.missing_aces")
-  private List<AccessControlEntry> permissions;
+  private List<PermissionEntry> permissions;
 
-  public AccessEntriesRequest() {
+  public PermissionsRequest() {
         /* this needs to be there for jackson to be happy */
   }
 
-  public AccessEntriesRequest(String credentialName, List<AccessControlEntry> permissions) {
+  public PermissionsRequest(String credentialName, List<PermissionEntry> permissions) {
     this.credentialName = credentialName;
     this.permissions = permissions;
   }
@@ -33,11 +33,11 @@ public class AccessEntriesRequest {
   }
 
   @Valid
-  public List<AccessControlEntry> getPermissions() {
+  public List<PermissionEntry> getPermissions() {
     return permissions;
   }
 
-  public void setPermissions(List<AccessControlEntry> permissions) {
+  public void setPermissions(List<PermissionEntry> permissions) {
     this.permissions = permissions;
   }
 }

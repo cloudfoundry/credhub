@@ -14,7 +14,7 @@ import io.pivotal.security.domain.RsaCredential;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
@@ -53,7 +53,7 @@ public class RegenerateServiceTest {
   private StringGenerationParameters expectedParameters;
   private List<EventAuditRecordParameters> parametersList;
   private CredentialService credentialService;
-  private AccessControlEntry currentUser;
+  private PermissionEntry currentUser;
 
   private GeneratorService generatorService;
 
@@ -69,7 +69,7 @@ public class RegenerateServiceTest {
       credentialService = mock(CredentialService.class);
       generatorService = mock(GeneratorService.class);
       userContext = mock(UserContext.class);
-      currentUser = mock(AccessControlEntry.class);
+      currentUser = mock(PermissionEntry.class);
 
       when(credentialDataService.findMostRecent(eq("unsupported")))
           .thenReturn(credentialOfUnsupportedType);
@@ -83,7 +83,7 @@ public class RegenerateServiceTest {
               isA(StringGenerationParameters.class),
               isA(CredentialValue.class),
               anyList(),
-              any(AccessControlEntry.class)))
+              any(PermissionEntry.class)))
           .thenReturn(mock(CredentialView.class));
       credentialOfUnsupportedType = new JsonCredential();
       subject = new RegenerateService(credentialDataService, credentialService,

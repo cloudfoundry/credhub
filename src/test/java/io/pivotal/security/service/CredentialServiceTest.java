@@ -11,7 +11,7 @@ import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,11 +26,11 @@ import java.util.List;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
-import static io.pivotal.security.request.AccessControlOperation.DELETE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
@@ -68,8 +68,8 @@ public class CredentialServiceTest {
   private List<EventAuditRecordParameters> parametersList;
   private StringGenerationParameters generationParameters;
   private CredentialValue credentialValue;
-  private List<AccessControlEntry> accessControlEntries;
-  private AccessControlEntry currentUserPermissions;
+  private List<PermissionEntry> accessControlEntries;
+  private PermissionEntry currentUserPermissions;
 
   private static final String CREDENTIAL_NAME = "/Picard";
 
@@ -90,7 +90,7 @@ public class CredentialServiceTest {
     accessControlEntries = new ArrayList<>();
 
     when(userContext.getAclUser()).thenReturn("Kirk");
-    currentUserPermissions = new AccessControlEntry(userContext.getAclUser(),
+    currentUserPermissions = new PermissionEntry(userContext.getAclUser(),
         Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL));
 
     existingCredential = new PasswordCredential();
@@ -205,7 +205,7 @@ public class CredentialServiceTest {
 
     assertThat(accessControlEntries, hasItem(
         samePropertyValuesAs(
-            new AccessControlEntry("Kirk", Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL))
+            new PermissionEntry("Kirk", Arrays.asList(READ, WRITE, DELETE, WRITE_ACL, READ_ACL))
         )
         )
     );
@@ -284,8 +284,8 @@ public class CredentialServiceTest {
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
 
     accessControlEntries.addAll(Arrays.asList(
-        new AccessControlEntry("Spock", Arrays.asList(WRITE)),
-        new AccessControlEntry("McCoy", Arrays.asList(DELETE))
+        new PermissionEntry("Spock", Arrays.asList(WRITE)),
+        new PermissionEntry("McCoy", Arrays.asList(DELETE))
     ));
 
     subject.save(

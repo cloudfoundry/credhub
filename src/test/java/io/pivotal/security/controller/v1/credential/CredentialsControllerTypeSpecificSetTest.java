@@ -25,7 +25,7 @@ import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.AccessControlEntry;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
@@ -61,11 +61,11 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-import static io.pivotal.security.request.AccessControlOperation.DELETE;
-import static io.pivotal.security.request.AccessControlOperation.READ;
-import static io.pivotal.security.request.AccessControlOperation.READ_ACL;
-import static io.pivotal.security.request.AccessControlOperation.WRITE;
-import static io.pivotal.security.request.AccessControlOperation.WRITE_ACL;
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.MultiJsonPathMatcher.multiJsonPath;
 import static io.pivotal.security.util.TestConstants.PRIVATE_KEY_4096;
@@ -352,7 +352,7 @@ public class CredentialsControllerTypeSpecificSetTest {
                     isA(UserContext.class),
                     any(),
                     isA(BaseCredentialSetRequest.class),
-                    isA(AccessControlEntry.class));
+                    isA(PermissionEntry.class));
             ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
             verify(credentialDataService, times(1)).save(argumentCaptor.capture());
 
@@ -388,10 +388,10 @@ public class CredentialsControllerTypeSpecificSetTest {
             assertThat(acl.getCredentialName(), equalTo(credentialName));
             assertThat(acl.getPermissions(), containsInAnyOrder(
                 samePropertyValuesAs(
-                    new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                    new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
                 samePropertyValuesAs(
-                    new AccessControlEntry("app1-guid",
+                    new PermissionEntry("app1-guid",
                         asList(READ)))));
           });
         });
