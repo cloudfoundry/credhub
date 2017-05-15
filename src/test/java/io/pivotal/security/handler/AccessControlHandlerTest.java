@@ -8,7 +8,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +67,7 @@ public class AccessControlHandlerTest {
     when(credentialNameDataService.findOrThrow(any(String.class)))
         .thenReturn(new CredentialName(CREDENTIAL_NAME));
 
-    AccessControlListResponse response = subject.getAccessControlListResponse(
+    PermissionsView response = subject.getAccessControlListResponse(
         null,
         CREDENTIAL_NAME
     );
@@ -88,7 +88,7 @@ public class AccessControlHandlerTest {
     when(accessControlDataService.getAccessControlList(credentialName))
         .thenReturn(accessControlList);
 
-    AccessControlListResponse response = subject.getAccessControlListResponse(
+    PermissionsView response = subject.getAccessControlListResponse(
         userContext,
         CREDENTIAL_NAME
     );
@@ -96,7 +96,7 @@ public class AccessControlHandlerTest {
     verify(permissionService, times(1))
         .verifyAclReadPermission(userContext, CREDENTIAL_NAME);
 
-    List<AccessControlEntry> accessControlEntries = response.getAccessControlList();
+    List<AccessControlEntry> accessControlEntries = response.getPermissions();
 
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(accessControlEntries, hasSize(1));
@@ -135,9 +135,9 @@ public class AccessControlHandlerTest {
     when(credentialNameDataService.find(CREDENTIAL_NAME))
         .thenReturn(credentialName);
 
-    AccessControlListResponse response = subject.setAccessControlEntries(userContext, CREDENTIAL_NAME, accessControlList);
+    PermissionsView response = subject.setAccessControlEntries(userContext, CREDENTIAL_NAME, accessControlList);
 
-    List<AccessControlEntry> accessControlEntries = response.getAccessControlList();
+    List<AccessControlEntry> accessControlEntries = response.getPermissions();
 
     assertThat(response.getCredentialName(), equalTo(CREDENTIAL_NAME));
     assertThat(accessControlEntries, hasSize(2));

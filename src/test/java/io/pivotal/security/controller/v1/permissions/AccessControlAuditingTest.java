@@ -82,7 +82,7 @@ public class AccessControlAuditingTest {
 
   @Test
   public void whenGettingAnAcl_itLogsTheRetrieval() throws Exception {
-    final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=" + CRED1.getName())
+    final MockHttpServletRequestBuilder get = get("/api/v1/permissions?credential_name=" + CRED1.getName())
       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
       .accept(APPLICATION_JSON)
       .contentType(APPLICATION_JSON);

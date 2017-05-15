@@ -7,7 +7,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
 import java.util.function.Supplier;
 
 import static io.pivotal.security.request.AccessControlOperation.DELETE;
@@ -105,16 +104,16 @@ public class NoOverwriteTest {
             "thread2", "uaa-client:credhub_test")
         .get(winningValue);
 
-    MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
+    MvcResult result = mockMvc.perform(get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + tokenForWinningActor))
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper
-        .deserialize(content, AccessControlListResponse.class);
+    PermissionsView acl = JsonHelper
+        .deserialize(content, PermissionsView.class);
 
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry(winningActor,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -147,13 +146,13 @@ public class NoOverwriteTest {
     assertThat(context1.read("$.value"), equalTo(context2.read("$.value")));
 
     MockHttpServletResponse response1 = mockMvc
-        .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
+        .perform(get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
         .andDo(print())
         .andReturn().getResponse();
 
     MockHttpServletResponse response2 = mockMvc
-        .perform(get("/api/v1/acls?credential_name=" + CREDENTIAL_NAME)
+        .perform(get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
             .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN))
         .andDo(print())
         .andReturn().getResponse();
@@ -170,9 +169,9 @@ public class NoOverwriteTest {
       winningResponse = response2.getContentAsString();
     }
 
-    AccessControlListResponse acl = JsonHelper
-        .deserialize(winningResponse, AccessControlListResponse.class);
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    PermissionsView acl = JsonHelper
+        .deserialize(winningResponse, PermissionsView.class);
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry(winningActor,
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),

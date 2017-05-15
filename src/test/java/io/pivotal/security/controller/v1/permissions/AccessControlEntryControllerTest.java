@@ -10,7 +10,7 @@ import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.request.AccessControlOperation;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
@@ -91,7 +91,7 @@ public class AccessControlEntryControllerTest {
           // language=JSON
           String expectedResponse = "{\n" +
               "  \"credential_name\": \"test-actor\",\n" +
-              "  \"access_control_list\": [\n" +
+              "  \"permissions\": [\n" +
               "    {\n" +
               "      \"actor\": \"test-actor\",\n" +
               "      \"operations\": [\n" +
@@ -103,7 +103,7 @@ public class AccessControlEntryControllerTest {
               "}";
 
           when(accessControlHandler.setAccessControlEntries(any(UserContext.class), any(String.class), any(List.class)))
-              .thenReturn(JsonHelper.deserialize(expectedResponse, AccessControlListResponse.class));
+              .thenReturn(JsonHelper.deserialize(expectedResponse, PermissionsView.class));
 
           MockHttpServletRequestBuilder request = post("/api/v1/aces")
               .contentType(MediaType.APPLICATION_JSON)

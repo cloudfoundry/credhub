@@ -6,18 +6,18 @@ import java.util.List;
 
 @JsonAutoDetect
 @SuppressWarnings("unused")
-public class AccessControlListResponse {
+public class PermissionsView {
 
   private String credentialName;
-  private List<AccessControlEntry> accessControlList;
+  private List<AccessControlEntry> permissions;
 
-  public AccessControlListResponse() {
+  public PermissionsView() {
   }
 
-  public AccessControlListResponse(String credentialName,
+  public PermissionsView(String credentialName,
       List<AccessControlEntry> accessControlList) {
     this.credentialName = credentialName;
-    this.accessControlList = accessControlList;
+    this.permissions = accessControlList;
   }
 
   public String getCredentialName() {
@@ -28,11 +28,11 @@ public class AccessControlListResponse {
     this.credentialName = credentialName;
   }
 
-  public List<AccessControlEntry> getAccessControlList() {
-    return accessControlList;
+  public List<AccessControlEntry> getPermissions() {
+    return permissions;
   }
 
-  public void setAccessControlList(List<AccessControlEntry> accessControlList) {
-    this.accessControlList = accessControlList;
+  public void setPermissions(List<AccessControlEntry> permissions) {
+    this.permissions = permissions;
   }
 }

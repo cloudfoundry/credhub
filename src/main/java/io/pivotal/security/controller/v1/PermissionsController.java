@@ -1,10 +1,10 @@
-package io.pivotal.security.controller.v1.permissions;
+package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 
 @RestController
-@RequestMapping(path = "/api/v1/acls", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-public class AccessControlListController {
+@RequestMapping(path = "/api/v1/permissions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+public class PermissionsController {
   private final AccessControlHandler accessControlHandler;
   private final EventAuditLogService eventAuditLogService;
 
   @Autowired
-  public AccessControlListController(
+  public PermissionsController(
       AccessControlHandler accessControlHandler,
       EventAuditLogService eventAuditLogService
   ) {
@@ -33,7 +33,7 @@ public class AccessControlListController {
 
   @GetMapping
   @ResponseStatus(HttpStatus.OK)
-  public AccessControlListResponse getAccessControlList(
+  public PermissionsView getAccessControlList(
     @RequestParam("credential_name") String credentialName,
     RequestUuid requestUuid,
     UserContext userContext
@@ -42,7 +42,7 @@ public class AccessControlListController {
       eventAuditRecordParameters.setCredentialName(credentialName);
       eventAuditRecordParameters.setAuditingOperationCode(ACL_ACCESS);
 
-      final AccessControlListResponse response = accessControlHandler.getAccessControlListResponse(userContext, credentialName);
+      final PermissionsView response = accessControlHandler.getAccessControlListResponse(userContext, credentialName);
       eventAuditRecordParameters.setCredentialName(response.getCredentialName());
 
       return response;

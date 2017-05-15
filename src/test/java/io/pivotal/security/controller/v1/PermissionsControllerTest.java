@@ -1,4 +1,4 @@
-package io.pivotal.security.controller.v1.permissions;
+package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
@@ -7,7 +7,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.helper.JsonHelper;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.junit.runner.RunWith;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -25,13 +25,14 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(Spectrum.class)
-public class AccessControlListControllerTest {
+public class PermissionsControllerTest {
 
-  private AccessControlListController subject;
+  private PermissionsController subject;
   private AccessControlHandler accessControlHandler;
   private MockMvc mockMvc;
   private EventAuditLogService eventAuditLogService;
@@ -41,7 +42,7 @@ public class AccessControlListControllerTest {
       accessControlHandler = mock(AccessControlHandler.class);
       eventAuditLogService = mock(EventAuditLogService.class);
 
-      subject = new AccessControlListController(accessControlHandler, eventAuditLogService);
+      subject = new PermissionsController(accessControlHandler, eventAuditLogService);
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
         new MappingJackson2HttpMessageConverter();
@@ -52,23 +53,24 @@ public class AccessControlListControllerTest {
         .build();
     });
 
-    describe("/acls", () -> {
+    describe("/permissions", () -> {
       describe("#GET", () -> {
         it("should return the ACL for the credential", () -> {
-          AccessControlListResponse accessControlListResponse = new AccessControlListResponse(
+          PermissionsView permissionsView = new PermissionsView(
               "test_credential_name", newArrayList());
 
           when(accessControlHandler.getAccessControlListResponse(any(UserContext.class), eq("test_credential_name")))
-              .thenReturn(accessControlListResponse);
+              .thenReturn(permissionsView);
 
           when(eventAuditLogService.auditEvent(any(), any(), any())).thenAnswer(answer -> {
             Function<EventAuditRecordParameters, RequestEntity> block = answer.getArgumentAt(2, Function.class);
             return block.apply(mock(EventAuditRecordParameters.class));
           });
 
-          mockMvc.perform(get("/api/v1/acls?credential_name=test_credential_name"))
+          mockMvc.perform(get("/api/v1/permissions?credential_name=test_credential_name"))
               .andExpect(status().isOk())
-              .andExpect(jsonPath("$.credential_name").value("test_credential_name"));
+              .andExpect(jsonPath("$.credential_name").value("test_credential_name"))
+              .andExpect(jsonPath("$.permissions").exists()).andDo(print());
         });
       });
     });

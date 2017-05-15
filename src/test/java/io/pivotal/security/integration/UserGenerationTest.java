@@ -25,7 +25,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.UnsupportedEncodingException;
 
-import static io.pivotal.security.helper.DatabaseHelper.cleanUpDatabase;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,8 +58,6 @@ public class UserGenerationTest {
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
-
-    cleanUpDatabase(webApplicationContext);
   }
 
   @Test

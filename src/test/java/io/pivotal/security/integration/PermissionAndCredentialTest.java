@@ -7,9 +7,8 @@ import io.pivotal.security.helper.JsonHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,8 +68,6 @@ public class PermissionAndCredentialTest {
   private RequestAuditRecordRepository requestAuditRecordRepository;
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
-  @Autowired
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
 
   private MockMvc mockMvc;
   private AuditingHelper auditingHelper;
@@ -78,8 +75,6 @@ public class PermissionAndCredentialTest {
 
   @Before
   public void setUp() throws Exception {
-    encryptionKeyCanaryMapper.mapUuidsToKeys();
-
     auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
@@ -447,16 +442,16 @@ public class PermissionAndCredentialTest {
 
   private void hasUnchangedAcl() throws Exception {
     MvcResult result = mockMvc
-        .perform(get("/api/v1/acls?credential_name=" + "/test-password")
+        .perform(get("/api/v1/permissions?credential_name=" + "/test-password")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper
-        .deserialize(content, AccessControlListResponse.class);
+    PermissionsView acl = JsonHelper
+        .deserialize(content, PermissionsView.class);
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -479,16 +474,16 @@ public class PermissionAndCredentialTest {
 
   private void hasEditedAcl(String token) throws Exception {
     MvcResult result = mockMvc
-        .perform(get("/api/v1/acls?credential_name=/test-password")
+        .perform(get("/api/v1/permissions?credential_name=/test-password")
             .header("Authorization", "Bearer " + token))
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper
-        .deserialize(content, AccessControlListResponse.class);
+    PermissionsView acl = JsonHelper
+        .deserialize(content, PermissionsView.class);
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -516,27 +511,27 @@ public class PermissionAndCredentialTest {
     );
   }
 
-  private AccessControlListResponse getAcl(String token) throws Exception {
+  private PermissionsView getAcl(String token) throws Exception {
     MvcResult result = mockMvc
-        .perform(get("/api/v1/acls?credential_name=/test-password")
+        .perform(get("/api/v1/permissions?credential_name=/test-password")
             .header("Authorization", "Bearer " + token))
         .andDo(print())
         .andExpect(status().isOk())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper
-        .deserialize(content, AccessControlListResponse.class);
+    PermissionsView acl = JsonHelper
+        .deserialize(content, PermissionsView.class);
     assertThat(acl.getCredentialName(), equalTo("/test-password"));
     return acl;
   }
 
   private void hasCreatorAcl(String token, String actor) throws Exception {
-    assertThat(getAcl(token).getAccessControlList(), containsInAnyOrder(samePropertyValuesAs(new AccessControlEntry(actor,
+    assertThat(getAcl(token).getPermissions(), containsInAnyOrder(samePropertyValuesAs(new AccessControlEntry(actor,
         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));
   }
 
   private void hasCreatorAndOtherAcl(String token, String actor) throws Exception {
-    assertThat(getAcl(token).getAccessControlList(), containsInAnyOrder(
+    assertThat(getAcl(token).getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry(actor,
             asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),

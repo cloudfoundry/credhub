@@ -8,7 +8,7 @@ import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -31,13 +31,13 @@ public class AccessControlHandler {
     this.credentialNameDataService = credentialNameDataService;
   }
 
-  public AccessControlListResponse getAccessControlListResponse(UserContext userContext, String name) {
+  public PermissionsView getAccessControlListResponse(UserContext userContext, String name) {
     try {
       final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
       permissionService.verifyAclReadPermission(userContext, name);
 
-      return new AccessControlListResponse(
+      return new PermissionsView(
           credentialName.getName(),
           accessControlDataService.getAccessControlList(credentialName)
       );
@@ -47,7 +47,7 @@ public class AccessControlHandler {
     }
   }
 
-  public AccessControlListResponse setAccessControlEntries(UserContext userContext, String name, List<AccessControlEntry> accessControlEntryList) {
+  public PermissionsView setAccessControlEntries(UserContext userContext, String name, List<AccessControlEntry> accessControlEntryList) {
     if (!permissionService.hasAclWritePermission(userContext, name)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
@@ -56,7 +56,7 @@ public class AccessControlHandler {
     accessControlDataService
         .saveAccessControlEntries(credentialName, accessControlEntryList);
 
-    return new AccessControlListResponse(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
+    return new PermissionsView(credentialName.getName(), accessControlDataService.getAccessControlList(credentialName));
   }
 
   public void deleteAccessControlEntry(UserContext userContext, String credentialName, String actor) {

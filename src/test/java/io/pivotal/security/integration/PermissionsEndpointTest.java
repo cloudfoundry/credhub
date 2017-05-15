@@ -5,11 +5,12 @@ import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.AccessControlEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -59,7 +60,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @Transactional
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
-public class AccessControlEndpointTest {
+public class PermissionsEndpointTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -67,6 +68,8 @@ public class AccessControlEndpointTest {
   private RequestAuditRecordRepository requestAuditRecordRepository;
   @Autowired
   private EventAuditRecordRepository eventAuditRecordRepository;
+  @Autowired
+  private CredentialRepository repository;
 
   private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
@@ -99,7 +102,7 @@ public class AccessControlEndpointTest {
   @Test
   public void GET_whenTheCredentialNameParameterIsMissing_returnsAnAppropriateError() throws Exception {
     MockHttpServletRequestBuilder getRequest = get(
-        "/api/v1/acls")
+        "/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
     mockMvc.perform(getRequest)
         .andExpect(status().isBadRequest())
@@ -111,7 +114,7 @@ public class AccessControlEndpointTest {
     seedCredential();
 
     MvcResult result = mockMvc.perform(
-        get("/api/v1/acls?credential_name=" + credentialName)
+        get("/api/v1/permissions?credential_name=" + credentialName)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
@@ -120,10 +123,10 @@ public class AccessControlEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper
-        .deserialize(content, AccessControlListResponse.class);
+    PermissionsView acl = JsonHelper
+        .deserialize(content, PermissionsView.class);
     assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -139,7 +142,7 @@ public class AccessControlEndpointTest {
     seedCredential();
 
     MvcResult result = mockMvc.perform(
-        get("/api/v1/acls?credential_name=" + credentialNameWithoutLeadingSlash)
+        get("/api/v1/permissions?credential_name=" + credentialNameWithoutLeadingSlash)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
@@ -148,9 +151,9 @@ public class AccessControlEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
     assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
@@ -163,7 +166,7 @@ public class AccessControlEndpointTest {
   @Test
   public void GET_whenTheUserLacksPermissionToReadTheAcl_returnsNotFound() throws Exception {
     // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
-    final MockHttpServletRequestBuilder get = get("/api/v1/acls?credential_name=" + credentialName)
+    final MockHttpServletRequestBuilder get = get("/api/v1/permissions?credential_name=" + credentialName)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON);
 
@@ -177,7 +180,7 @@ public class AccessControlEndpointTest {
   @Test
   public void GET_whenTheCredentialDoesntExist_returnsNotFound() throws Exception {
     mockMvc.perform(
-        get("/api/v1/acls?credential_name=/unicorn")
+        get("/api/v1/permissions?credential_name=/unicorn")
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     ).andExpect(status().isNotFound())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
@@ -250,11 +253,11 @@ public class AccessControlEndpointTest {
     );
 
     mockMvc.perform(
-        get("/api/v1/acls?credential_name=" + credentialName)
+        get("/api/v1/permissions?credential_name=" + credentialName)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.access_control_list", hasSize(1)));
+        .andExpect(jsonPath("$.permissions", hasSize(1)));
   }
 
   @Test
@@ -289,11 +292,11 @@ public class AccessControlEndpointTest {
     );
 
     mockMvc.perform(
-        get("/api/v1/acls?credential_name=" + credentialName)
+        get("/api/v1/permissions?credential_name=" + credentialName)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.access_control_list", hasSize(2)));
+        .andExpect(jsonPath("$.permissions", hasSize(2)));
   }
 
   @Test
@@ -340,10 +343,10 @@ public class AccessControlEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-    assertThat(acl.getAccessControlList(), hasSize(3));
+    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
+    assertThat(acl.getPermissions(), hasSize(3));
     assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
@@ -366,6 +369,7 @@ public class AccessControlEndpointTest {
 
   @Test
   public void POST_whenTheUserHasPermissionToWriteACEs_updatesTheACL() throws Exception {
+    Long initialCount = eventAuditRecordRepository.count();
     final MockHttpServletRequestBuilder initialPost = post("/api/v1/aces")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -400,18 +404,18 @@ public class AccessControlEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
-    assertThat(acl.getAccessControlList(), hasSize(2));
+    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
+    assertThat(acl.getPermissions(), hasSize(2));
     assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
             new AccessControlEntry("dan", asList(READ, WRITE, DELETE)))
     ));
 
-    // 6 from beforeEach for credential, 2 from initialPost, 2 from updatePost
-    assertThat(eventAuditRecordRepository.count(), equalTo(10L));
+    // 2 from initialPost, 2 from updatePost
+    assertThat(eventAuditRecordRepository.count(), equalTo(4L + initialCount));
 
     auditingHelper.verifyAuditing(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
@@ -483,10 +487,10 @@ public class AccessControlEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    AccessControlListResponse acl = JsonHelper.deserialize(content, AccessControlListResponse.class);
+    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
     assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getAccessControlList(), hasSize(2));
-    assertThat(acl.getAccessControlList(), containsInAnyOrder(
+    assertThat(acl.getPermissions(), hasSize(2));
+    assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
@@ -590,7 +594,7 @@ public class AccessControlEndpointTest {
   }
 
   private void verifyAudit(AuditingOperationCode operation, String credentialName, int statusCode) {
-    auditingHelper.verifyAuditing(operation, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/acls", statusCode);
+    auditingHelper.verifyAuditing(operation, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/permissions", statusCode);
   }
 
   private void seedCredential() throws Exception {

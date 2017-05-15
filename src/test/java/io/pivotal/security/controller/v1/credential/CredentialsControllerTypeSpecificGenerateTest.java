@@ -40,7 +40,7 @@ import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.GenerateRequestHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -350,17 +350,17 @@ public class CredentialsControllerTypeSpecificGenerateTest {
 
           it("should create an ACL with the current user having full permissions", () -> {
             response.andExpect(status().isOk());
-            MvcResult result = mockMvc.perform(get("/api/v1/acls?credential_name=" + credentialName)
+            MvcResult result = mockMvc.perform(get("/api/v1/permissions?credential_name=" + credentialName)
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andReturn();
             String content = result.getResponse().getContentAsString();
-            AccessControlListResponse acl = JsonHelper
-                .deserialize(content, AccessControlListResponse.class);
+            PermissionsView acl = JsonHelper
+                .deserialize(content, PermissionsView.class);
 
             assertThat(acl.getCredentialName(), equalTo(credentialName));
-            assertThat(acl.getAccessControlList(), containsInAnyOrder(
+            assertThat(acl.getPermissions(), containsInAnyOrder(
                 samePropertyValuesAs(
                     new AccessControlEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                         asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL)))));

@@ -7,7 +7,7 @@ import io.pivotal.security.data.AccessControlDataService;
 import io.pivotal.security.handler.AccessControlHandler;
 import io.pivotal.security.request.AccessControlOperation;
 import io.pivotal.security.request.AccessEntriesRequest;
-import io.pivotal.security.view.AccessControlListResponse;
+import io.pivotal.security.view.PermissionsView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -47,7 +47,7 @@ public class AccessControlEntryController {
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  public AccessControlListResponse setAccessControlEntries(
+  public PermissionsView setAccessControlEntries(
       RequestUuid requestUuid,
       UserContext userContext,
       @Validated @RequestBody AccessEntriesRequest accessEntriesRequest
