@@ -110,7 +110,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void GET_whenTheUserHasPermissionToAccessTheACL_returnsTheFullACL() throws Exception {
+  public void GET_whenTheUserHasPermissionToAccessPermissions_returnPermissions() throws Exception {
     seedCredential();
 
     MvcResult result = mockMvc.perform(
@@ -123,10 +123,10 @@ public class PermissionsEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonHelper
+    PermissionsView permission = JsonHelper
         .deserialize(content, PermissionsView.class);
-    assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
+    assertThat(permission.getCredentialName(), equalTo(credentialName));
+    assertThat(permission.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
                 asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
@@ -138,7 +138,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void GET_whenTheUserHasPermissionToAccessTheACL_andTheLeadingSlashIsMissing_returnsTheFullACL() throws Exception {
+  public void GET_whenTheUserHasPermissionToAccessPermissions_andTheLeadingSlashIsMissing_returnsPermissions() throws Exception {
     seedCredential();
 
     MvcResult result = mockMvc.perform(
@@ -151,9 +151,9 @@ public class PermissionsEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
-    assertThat(acl.getCredentialName(), equalTo(credentialName));
-    assertThat(acl.getPermissions(), containsInAnyOrder(
+    PermissionsView permission = JsonHelper.deserialize(content, PermissionsView.class);
+    assertThat(permission.getCredentialName(), equalTo(credentialName));
+    assertThat(permission.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
             new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
         samePropertyValuesAs(
@@ -164,7 +164,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void GET_whenTheUserLacksPermissionToReadTheAcl_returnsNotFound() throws Exception {
+  public void GET_whenTheUserLacksPermissionToReadPermissions_returnsNotFound() throws Exception {
     // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
     final MockHttpServletRequestBuilder get = get("/api/v1/permissions?credential_name=" + credentialName)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
@@ -222,7 +222,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void DELETE_whenTheActorIsAllowedToDeletePermissions_shouldDeleteTheSpecifiedACE() throws Exception {
+  public void DELETE_whenTheActorIsAllowedToDeletePermissions_shouldDeleteThePermissionEntry() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -318,7 +318,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void POST_whenTheUserHasPermissionToWritePermissions_returnsTheACL() throws Exception {
+  public void POST_whenTheUserHasPermissionToWritePermissions_returnsPermissions() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -368,7 +368,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void POST_whenTheUserHasPermissionToWritePermissions_updatesTheACL() throws Exception {
+  public void POST_whenTheUserHasPermissionToWritePermissions_updatesPermissions() throws Exception {
     Long initialCount = eventAuditRecordRepository.count();
     final MockHttpServletRequestBuilder initialPost = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

@@ -15,9 +15,9 @@ public class PermissionsView {
   }
 
   public PermissionsView(String credentialName,
-      List<PermissionEntry> accessControlList) {
+      List<PermissionEntry> permissions) {
     this.credentialName = credentialName;
-    this.permissions = accessControlList;
+    this.permissions = permissions;
   }
 
   public String getCredentialName() {
