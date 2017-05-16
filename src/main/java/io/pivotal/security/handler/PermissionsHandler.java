@@ -48,11 +48,13 @@ public class PermissionsHandler {
   }
 
   public PermissionsView setPermissions(UserContext userContext, String name, List<PermissionEntry> permissionEntryList) {
-    if (!permissionService.hasAclWritePermission(userContext, name)) {
+    final CredentialName credentialName = credentialNameDataService.find(name);
+
+    // We need to verify that the credential exists in case ACL enforcement is off
+    if (credentialName == null || !permissionService.hasAclWritePermission(userContext, name)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    final CredentialName credentialName = credentialNameDataService.find(name);
     permissionsDataService
         .saveAccessControlEntries(credentialName, permissionEntryList);
 

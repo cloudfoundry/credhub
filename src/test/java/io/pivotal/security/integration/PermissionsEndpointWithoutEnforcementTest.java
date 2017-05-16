@@ -58,8 +58,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @Transactional
-@TestPropertySource(properties = "security.authorization.acls.enabled=true")
-public class PermissionsEndpointTest {
+@TestPropertySource(properties = "security.authorization.acls.enabled=false")
+public class PermissionsEndpointWithoutEnforcementTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -161,7 +161,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void GET_whenTheUserLacksPermissionToReadPermissions_returnsNotFound() throws Exception {
+  public void GET_whenTheUserLacksPermissionToReadPermissions_stillDisplaysThePermission() throws Exception {
     // Credential was created with UAA_OAUTH2_PASSWORD_GRANT_TOKEN
     final MockHttpServletRequestBuilder get = get("/api/v1/permissions?credential_name=" + credentialName)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
@@ -169,9 +169,7 @@ public class PermissionsEndpointTest {
 
     String expectedError = "The request could not be fulfilled because the resource could not be found.";
     this.mockMvc.perform(get)
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.error", equalTo(
-            expectedError)));
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -258,7 +256,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_returnsNotFound() throws Exception {
+  public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_stillDeletesThePermissions() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -279,12 +277,12 @@ public class PermissionsEndpointTest {
         delete("/api/v1/permissions?credential_name=" + credentialName + "&actor=dan")
             .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
     )
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNoContent());
 
     auditingHelper.verifyAuditing(
         "uaa-client:credhub_test",
         "/api/v1/permissions",
-        404,
+        204,
         newArrayList(new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "dan"))
     );
 
@@ -293,7 +291,7 @@ public class PermissionsEndpointTest {
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
     )
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.permissions", hasSize(2)));
+        .andExpect(jsonPath("$.permissions", hasSize(1)));
   }
 
   @Test
@@ -426,7 +424,7 @@ public class PermissionsEndpointTest {
   }
 
   @Test
-  public void POST_whenTheUserDoesNotHavePermissionToWritePermissions_returnsNotFound() throws Exception {
+  public void POST_whenTheUserDoesNotHavePermissionToWritePermissions_stillAllowsThemToWritePermissions() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON)
@@ -448,13 +446,12 @@ public class PermissionsEndpointTest {
     final String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     this.mockMvc.perform(post)
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.error").value(expectedError));
+        .andExpect(status().isOk());
 
     auditingHelper.verifyAuditing(
         "uaa-client:credhub_test",
         "/api/v1/permissions",
-        404,
+        200,
         newArrayList(
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "dan"),
             new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "dan"),
