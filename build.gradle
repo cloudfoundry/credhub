@@ -22,7 +22,6 @@ apply plugin: "jacoco"
 
 jar {
     baseName = "credhub"
-    version = "${System.getenv("VERSION") ?: "DEV"}"
 }
 sourceCompatibility = 1.8
 
