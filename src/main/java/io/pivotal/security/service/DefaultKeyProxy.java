@@ -55,12 +55,6 @@ class DefaultKeyProxy implements KeyProxy {
         throw new IncorrectKeyException(e);
       }
       // Could not process input data: function 'C_Decrypt' returns 0x40
-    } catch (BadPaddingException e) {
-      // Our guess(es) at "DSM key was wrong":
-      if (!e.getMessage().contains("rv=48")) {
-        throw new IncorrectKeyException(e);
-      }
-      // javax.crypto.BadPaddingException: Decrypt error: rv=48
     } catch (Exception e) {
       throw new IncorrectKeyException(e);
     }

@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -242,43 +241,6 @@ public class EncryptionKeyCanaryMapperTest {
               itThrowsWithMessage("something", RuntimeException.class,
                   "javax.crypto.IllegalBlockSizeException:"
                       + " I don't know what 0x41 means and neither do you",
-                  () -> {
-                    subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
-                        encryptionKeysConfiguration, encryptionService);
-                  });
-            });
-
-        describe(
-            "when decrypting with the wrong key raises a known BadPaddingException error -- DSM",
-            () -> {
-              beforeEach(() -> {
-                when(activeKeyProxy.matchesCanary(nonMatchingCanary))
-                    .thenReturn(false);
-                when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
-                    .thenReturn(activeKeyCanary);
-
-                subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
-                    encryptionKeysConfiguration, encryptionService);
-              });
-
-              it("should create a canary for the key", () -> {
-                assertCanaryValueWasEncryptedAndSavedToDatabase();
-              });
-            });
-
-        describe(
-            "when decrypting with the wrong key raises an unknown BadPaddingException error -- DSM",
-            () -> {
-              beforeEach(() -> {
-                when(activeKeyProxy.matchesCanary(nonMatchingCanary))
-                    .thenThrow(new RuntimeException(
-                        new BadPaddingException("Decrypt error: rv=1337 too cool for school")));
-                when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
-                    .thenReturn(activeKeyCanary);
-              });
-
-              itThrowsWithMessage("something", RuntimeException.class,
-                  "javax.crypto.BadPaddingException: Decrypt error: rv=1337 too cool for school",
                   () -> {
                     subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
                         encryptionKeysConfiguration, encryptionService);
