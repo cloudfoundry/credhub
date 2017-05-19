@@ -87,23 +87,6 @@ public class DefaultKeyProxyTest {
             });
           });
 
-      describe("when decrypt throws BadPaddingException containing \"rv=48\" message", () -> {
-        beforeEach(() -> {
-          subject = new DefaultKeyProxy(encryptionKey,
-              new BcEncryptionService(getBouncyCastleProvider()) {
-                @Override
-                public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-                    throws Exception {
-                  throw new BadPaddingException("rv=48");
-                }
-              });
-        });
-
-        it("returns false", () -> {
-          assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
-        });
-      });
-
       describe("when decrypt throws AEADBadTagException", () -> {
         beforeEach(() -> {
           subject = new DefaultKeyProxy(encryptionKey,
