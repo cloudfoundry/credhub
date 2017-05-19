@@ -36,7 +36,7 @@ public class DefaultKeyProxyTest {
       final BcEncryptionService encryptionService = new BcEncryptionService(
           getBouncyCastleProvider());
       EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
-      keyMetadata.setDevKey("0123456789ABCDEF0123456789ABCDEF");
+      keyMetadata.setEncryptionPassword("p@ssword");
 
       encryptionKey = encryptionService.createKeyProxy(keyMetadata).getKey();
       canary = new EncryptionKeyCanary();

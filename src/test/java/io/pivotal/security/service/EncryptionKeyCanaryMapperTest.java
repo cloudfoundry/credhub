@@ -73,9 +73,18 @@ public class EncryptionKeyCanaryMapperTest {
       existingCanaryUuid2 = UUID.randomUUID();
       unknownCanaryUuid = UUID.randomUUID();
 
-      activeKeyData = new EncryptionKeyMetadata("activeDevKey", "activeDevKeyName", true);
-      existingKey1Data = new EncryptionKeyMetadata("key1", "key1Name", false);
-      existingKey2Data = new EncryptionKeyMetadata("key2", "key2Name", false);
+      activeKeyData = new EncryptionKeyMetadata();
+      activeKeyData.setEncryptionPassword("this-is-active");
+      activeKeyData.setActive(true);
+
+      existingKey1Data = new EncryptionKeyMetadata();
+      existingKey1Data.setEncryptionPassword("existing-key-1");
+      existingKey1Data.setActive(false);
+
+      existingKey2Data = new EncryptionKeyMetadata();
+      existingKey2Data.setEncryptionPassword("existing-key-2");
+      existingKey2Data.setActive(false);
+
       activeKey = mock(Key.class, "active key");
       existingKey1 = mock(Key.class, "key 1");
       existingKey2 = mock(Key.class, "key 2");

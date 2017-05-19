@@ -8,7 +8,7 @@ auth_server:
 encryption:
   provider: internal
   keys:
-  - dev_key: D673ACD01DA091B08144FBC8C0B5F524
+  - encryption_password: opensesame
     active: true
   - encryption_password: correcthorsebatterystaple
 

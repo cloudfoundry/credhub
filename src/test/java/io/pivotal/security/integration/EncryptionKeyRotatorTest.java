@@ -342,17 +342,19 @@ public class EncryptionKeyRotatorTest {
 
   private void setActiveKey(int index) {
     List<EncryptionKeyMetadata> keys = new ArrayList<>();
+
     for (EncryptionKeyMetadata encryptionKeyMetadata : encryptionKeysConfiguration.getKeys()) {
-      keys.add(new EncryptionKeyMetadata(encryptionKeyMetadata.getDevKey(),
-          encryptionKeyMetadata.getEncryptionKeyName(), false,
-          encryptionKeyMetadata.getEncryptionPassword()));
+      EncryptionKeyMetadata clonedKey = new EncryptionKeyMetadata();
+
+      clonedKey.setActive(false);
+      clonedKey.setEncryptionPassword(encryptionKeyMetadata.getEncryptionPassword());
+
+      keys.add(clonedKey);
     }
 
     keys.get(index).setActive(true);
 
-    doReturn(
-        keys
-    ).when(encryptionKeysConfiguration).getKeys();
+    doReturn(keys).when(encryptionKeysConfiguration).getKeys();
 
     encryptionKeyCanaryMapper.mapUuidsToKeys();
   }
