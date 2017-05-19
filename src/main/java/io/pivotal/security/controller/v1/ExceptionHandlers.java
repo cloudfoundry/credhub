@@ -19,14 +19,13 @@ import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.InvalidObjectException;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class ExceptionHandlers {
   private final MessageSourceAccessor messageSourceAccessor;
 
@@ -37,21 +36,18 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(EntryNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  @ResponseBody
   public ResponseError handleNotFoundException(EntryNotFoundException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(PermissionException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
-  @ResponseBody
   public ResponseError handlePermissionException(PermissionException error) {
     return constructError(error.getMessage());
   }
 
   @ExceptionHandler(JsonMappingException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleJsonMappingException(JsonMappingException e) {
     for (com.fasterxml.jackson.databind.JsonMappingException.Reference reference : e.getPath()) {
       if ("operations".equals(reference.getFieldName())) {
@@ -64,28 +60,24 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(InvalidQueryParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleInvalidParameterException(InvalidQueryParameterException e) {
     return constructError(e.getMessage(), e.getMissingQueryParameter());
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleMissingParameterException(MissingServletRequestParameterException e) {
     return constructError("error.missing_query_parameter", e.getParameterName());
   }
 
   @ExceptionHandler(JsonParseException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleJsonMappingException(JsonParseException e) {
     return badRequestResponse();
   }
 
   @ExceptionHandler(ParameterizedValidationException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleParameterizedValidationException(
       ParameterizedValidationException exception
   ) {
@@ -94,14 +86,12 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(UnrecognizedPropertyException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleUnrecognizedPropertyException(UnrecognizedPropertyException exception) {
     return constructError("error.invalid_json_key", exception.getPropertyName());
   }
 
   @ExceptionHandler({HttpMessageNotReadableException.class, InvalidJsonException.class, InvalidFormatException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleInputNotReadableException(Exception exception) {
     final Throwable cause = exception.getCause() == null ? exception : exception.getCause();
     if (cause instanceof UnrecognizedPropertyException) {
@@ -123,21 +113,18 @@ public class ExceptionHandlers {
 
   @ExceptionHandler(AuditSaveFailureException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  @ResponseBody
   public ResponseError handleAuditSaveFailureException(AuditSaveFailureException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(KeyNotFoundException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  @ResponseBody
   public ResponseError handleKeyNotFoundException(KeyNotFoundException e) {
     return constructError(e.getMessage());
   }
 
   @ExceptionHandler(InvalidObjectException.class)
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-  @ResponseBody
   public ResponseError handleInvalidTypeAccess(InvalidObjectException exception) {
     return constructError(exception.getMessage());
   }
