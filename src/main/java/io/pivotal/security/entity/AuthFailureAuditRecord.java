@@ -45,7 +45,6 @@ public class AuthFailureAuditRecord {
   private String userId;
   private String userName;
   private String requesterIp;
-  @SuppressWarnings("checkstyle:membername")
   private String xForwardedFor;
   private String clientId;
   private String scope;
@@ -169,7 +168,6 @@ public class AuthFailureAuditRecord {
     return xForwardedFor;
   }
 
-  @SuppressWarnings("checkstyle:parametername")
   public AuthFailureAuditRecord setXForwardedFor(String xForwardedFor) {
     this.xForwardedFor = xForwardedFor;
     return this;

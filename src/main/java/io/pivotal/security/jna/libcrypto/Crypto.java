@@ -3,7 +3,6 @@ package io.pivotal.security.jna.libcrypto;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 
-@SuppressWarnings({"checkstyle:methodname", "checkstyle:abbreviationaswordinname"})
 class Crypto {
 
   static final long RSA_F4 = 0x10001L;

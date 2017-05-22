@@ -1,6 +1,5 @@
 package io.pivotal.security.util;
 
-@SuppressWarnings("checkstyle:linelength")
 public class AuthConstants {
   // Actor ID: uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d
   // Grant type: password

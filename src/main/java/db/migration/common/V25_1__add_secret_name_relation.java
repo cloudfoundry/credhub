@@ -7,7 +7,6 @@ import java.util.List;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-@SuppressWarnings("checkstyle:typename")
 public class V25_1__add_secret_name_relation implements SpringJdbcMigration {
 
   public void migrate(JdbcTemplate jdbcTemplate) throws Exception {

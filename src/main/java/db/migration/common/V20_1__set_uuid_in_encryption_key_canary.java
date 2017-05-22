@@ -7,7 +7,6 @@ import java.util.UUID;
 import org.flywaydb.core.api.migration.spring.SpringJdbcMigration;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-@SuppressWarnings("checkstyle:typename")
 public class V20_1__set_uuid_in_encryption_key_canary implements SpringJdbcMigration {
 
   public void migrate(JdbcTemplate jdbcTemplate) throws Exception {

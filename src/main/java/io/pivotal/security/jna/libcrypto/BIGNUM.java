@@ -5,7 +5,6 @@ import com.sun.jna.Structure;
 import java.util.Arrays;
 import java.util.List;
 
-@SuppressWarnings("checkstyle:abbreviationaswordinname")
 public class BIGNUM extends Structure {
 
   public Pointer dp;
