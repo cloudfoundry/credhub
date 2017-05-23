@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -37,11 +38,16 @@ public class InfoControllerTest {
 
   @Test
   public void infoController_givenInfoPath_respondsWithApplicationInfo() throws Exception {
-    mockMvc.perform(get("/info"))
+    final String info = mockMvc.perform(get("/info"))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.auth-server.url").value("https://uaa.url.example.com"))
-        .andExpect(jsonPath("$.app.version").value("0.7.0"))
-        .andExpect(jsonPath("$.app.name").value("notCredHubLol"));
+        .andExpect(jsonPath("$.app.version").isNotEmpty())
+        .andExpect(jsonPath("$.app.name").value("notCredHubLol"))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+
+    assertTrue(info.matches(".*\"version\":\"\\d+\\.\\d+\\.\\d+(?:-(?:alpha|beta|rc)\\.\\d+)?\".*"));
   }
 }
