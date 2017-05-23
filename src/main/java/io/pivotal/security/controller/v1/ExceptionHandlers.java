@@ -8,14 +8,15 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
+import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -25,7 +26,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.io.InvalidObjectException;
 
+import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
+
 @RestControllerAdvice
+@Order(HIGHEST_PRECEDENCE)
 public class ExceptionHandlers {
   private final MessageSourceAccessor messageSourceAccessor;
 

@@ -5,6 +5,7 @@ import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.RequestAuditRecordDataService;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
@@ -20,6 +21,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
@@ -27,6 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.List;
 
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -61,12 +64,15 @@ public class AuditTest {
   private RequestAuditRecordDataService requestAuditRecordDataService;
 
   private MockMvc mockMvc;
+  private AuditingHelper auditingHelper;
 
   @Before
   public void setup() {
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
+
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
   @Test
@@ -218,7 +224,7 @@ public class AuditTest {
   }
 
   @Test
-  public void given_request_it_logs_to_CEF_logs_with_correct_user() throws  Exception{
+  public void given_request_it_logs_to_CEF_logs_with_correct_user() throws Exception {
     mockMvc.perform(post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -233,5 +239,27 @@ public class AuditTest {
     String expectedOutputPart2 = "suser=credhub_cli suid=uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d cs1Label=userAuthenticationMechanism cs1=oauth-access-token request=/api/v1/data requestMethod=POST cs3Label=result cs3=success cs4Label=httpStatusCode cs4=200 src=127.0.0.1 dst=localhost";
     assertThat("it logs correct entry", captor.getValue(), containsString(expectedOutputPart1));
     assertThat("it logs correct entry", captor.getValue(), containsString(expectedOutputPart2));
+  }
+
+  @Test
+  public void correctly_logs_exceptions_not_handled_specifically() throws Exception {
+    MockHttpServletRequestBuilder request = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON);
+    mockMvc.perform(request)
+        .andExpect(status().isInternalServerError());
+
+    ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+    verify(logger).info(captor.capture());
+
+    assertThat(captor.getValue(), containsString("cs4Label=httpStatusCode cs4=500"));
+
+    auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        "/api/v1/data",
+        500,
+        emptyList()
+    );
   }
 }
