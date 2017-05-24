@@ -1,9 +1,11 @@
 package io.pivotal.security.controller.v1;
 
+import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -24,11 +26,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class InfoControllerTest {
 
   private MockMvc mockMvc;
-  private InfoController infoController;
+
+  @Autowired
+  VersionProvider versionProvider;
 
   @Before
   public void beforeEach() {
-    infoController = new InfoController("https://uaa.url.example.com", "notCredHubLol");
+    final InfoController infoController = new InfoController(
+        "https://uaa.url.example.com",
+        "test-credhub-name",
+        versionProvider
+    );
 
     mockMvc = MockMvcBuilders
         .standaloneSetup(infoController)
@@ -43,7 +51,7 @@ public class InfoControllerTest {
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.auth-server.url").value("https://uaa.url.example.com"))
         .andExpect(jsonPath("$.app.version").isNotEmpty())
-        .andExpect(jsonPath("$.app.name").value("notCredHubLol"))
+        .andExpect(jsonPath("$.app.name").value("test-credhub-name"))
         .andReturn()
         .getResponse()
         .getContentAsString();

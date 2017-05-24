@@ -235,10 +235,12 @@ public class AuditTest {
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(logger).info(captor.capture());
 
-    String expectedOutputPart1 = "CEF:0|cloud_foundry|credhub|unit-test-version|POST /api/v1/data|POST /api/v1/data|0|";
-    String expectedOutputPart2 = "suser=credhub_cli suid=uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d cs1Label=userAuthenticationMechanism cs1=oauth-access-token request=/api/v1/data requestMethod=POST cs3Label=result cs3=success cs4Label=httpStatusCode cs4=200 src=127.0.0.1 dst=localhost";
+    String expectedOutputPart1 = "CEF:0|cloud_foundry|credhub|";
+    String expectedOutputPart2 = "|POST /api/v1/data|POST /api/v1/data|0|";
+    String expectedOutputPart3 = "suser=credhub_cli suid=uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d cs1Label=userAuthenticationMechanism cs1=oauth-access-token request=/api/v1/data requestMethod=POST cs3Label=result cs3=success cs4Label=httpStatusCode cs4=200 src=127.0.0.1 dst=localhost";
     assertThat("it logs correct entry", captor.getValue(), containsString(expectedOutputPart1));
     assertThat("it logs correct entry", captor.getValue(), containsString(expectedOutputPart2));
+    assertThat("it logs correct entry", captor.getValue(), containsString(expectedOutputPart3));
   }
 
   @Test

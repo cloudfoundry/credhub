@@ -1,8 +1,7 @@
 package io.pivotal.security.controller.v1;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Resources;
+import io.pivotal.security.config.VersionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -24,14 +22,11 @@ public class InfoController {
   @Autowired
   InfoController(
       @Value("${auth_server.url}") String uaaUrl,
-      @Value("${info.app.name}") String name
+      @Value("${info.app.name}") String name,
+      VersionProvider versionProvider
   ) {
     this.uaaUrl = uaaUrl;
-    try {
-      this.credhubVersion = Resources.toString(Resources.getResource("version"), Charsets.UTF_8).trim();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    this.credhubVersion = versionProvider.currentVersion();
     this.name = name;
   }
 

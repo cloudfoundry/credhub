@@ -1,7 +1,3 @@
-info:
-  app:
-    version: unit-test-version
-
 auth_server:
   url: https://example.com:8443
 

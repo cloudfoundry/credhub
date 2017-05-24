@@ -1,6 +1,7 @@
 package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.config.VersionProvider;
 import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -34,20 +35,22 @@ public class SecurityEventsLogServiceTest {
   private CurrentTimeProvider currentTimeProvider;
   private SecurityEventsLogService subject;
 
+  private VersionProvider versionProvider = mock(VersionProvider.class);
   {
     beforeEach(() -> {
       securityEventsLogger = mock(Logger.class);
-
       currentTimeProvider = mock(CurrentTimeProvider.class);
-      when(currentTimeProvider.getInstant()).thenReturn(now);
 
-      subject = new SecurityEventsLogService(securityEventsLogger, fakeVersion);
+      when(currentTimeProvider.getInstant()).thenReturn(now);
+      when(versionProvider.currentVersion()).thenReturn(fakeVersion);
+
+      subject = new SecurityEventsLogService(securityEventsLogger, versionProvider);
     });
 
     afterEach(SecurityContextHolder::clearContext);
 
     describe("log", () -> {
-      it("should log an operation audit record to the sys logwhen using oauth", () -> {
+      it("should log an operation audit record to the sys log when using oauth", () -> {
         RequestAuditRecord requestAuditRecord = makeOperationAuditRecord(
             "foo=bar",
             AUTH_METHOD_UAA);
