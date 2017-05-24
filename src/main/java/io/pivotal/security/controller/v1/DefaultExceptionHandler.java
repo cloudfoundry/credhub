@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1;
 
 import org.springframework.boot.autoconfigure.web.DefaultErrorAttributes;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,15 +17,20 @@ public class DefaultExceptionHandler {
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ExceptionHandler(Exception.class)
   @ResponseBody
-  public Map<String, Object> handleGeneralException(HttpServletRequest request, Exception exception)
+  public Map<String, Object> handleGeneralException(HttpServletRequest request)
       throws Exception {
-    if (AnnotationUtils.findAnnotation(exception.getClass(), ResponseStatus.class) != null) {
-      throw exception;
-    }
-
     RequestAttributes requestAttributes = new ServletRequestAttributes(request);
 
-    return new DefaultErrorAttributes()
+    final Map<String, Object> errorAttributes = new DefaultErrorAttributes()
         .getErrorAttributes(requestAttributes, false);
+    int status = (int) errorAttributes.getOrDefault("status", 500);
+
+    if (status == 999) {
+      status = 500;
+    }
+
+    errorAttributes.put("status", status);
+
+    return errorAttributes;
   }
 }
