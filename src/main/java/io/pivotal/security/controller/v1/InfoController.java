@@ -14,20 +14,18 @@ import java.util.Map;
 @RestController
 @RequestMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class InfoController {
+  private static final String CREDHUB_NAME = "CredHub";
 
   private final String uaaUrl;
   private final String credhubVersion;
-  private final String name;
 
   @Autowired
   InfoController(
       @Value("${auth_server.url}") String uaaUrl,
-      @Value("${info.app.name}") String name,
       VersionProvider versionProvider
   ) {
     this.uaaUrl = uaaUrl;
     this.credhubVersion = versionProvider.currentVersion();
-    this.name = name;
   }
 
   @RequestMapping(method = RequestMethod.GET, path = "/info")
@@ -36,7 +34,7 @@ public class InfoController {
     return ImmutableMap.of(
         "auth-server", ImmutableMap.of("url", uaaUrl),
         "app", ImmutableMap.of(
-            "name", name,
+            "name", CREDHUB_NAME,
             "version", credhubVersion
         ));
   }
