@@ -22,9 +22,9 @@ apply plugin: "jacoco"
 
 jar {
     baseName = "credhub"
-    if (System.getenv("BETA_VERSION")) {
+    if (System.getenv("VERSION")) {
         def versionFile = new File("$projectDir/src/main/resources/version")
-        versionFile.write(System.getenv("BETA_VERSION"))
+        versionFile.write(System.getenv("VERSION"))
     }
 }
 sourceCompatibility = 1.8
