@@ -80,16 +80,9 @@ public class CredentialDataService {
   }
 
   public List<String> findAllPaths() {
-    return findAllPaths(true);
-  }
-
-  private List<String> findAllPaths(boolean findPaths) {
-    if (!findPaths) {
-      return newArrayList();
-    }
-
-    return credentialRepository.findAll().stream()
-        .map(credential -> credential.getCredentialName().getName())
+    return credentialNameDataService.findAll()
+        .stream()
+        .map(CredentialName::getName)
         .flatMap(CredentialDataService::fullHierarchyForPath)
         .distinct()
         .sorted()

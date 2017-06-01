@@ -13,10 +13,14 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 @RunWith(SpringRunner.class)
@@ -25,6 +29,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @Transactional
 public class CredentialNameDataServiceTest {
   private static final String CREDENTIAL_NAME = "/test/credential";
+  private static final String CREDENTIAL_NAME2 = "/test/credential2";
 
   @Autowired
   private CredentialNameDataService subject;
@@ -111,5 +116,24 @@ public class CredentialNameDataServiceTest {
 
     assertThat(subject.delete(StringUtils.removeStart(CREDENTIAL_NAME, "/")), equalTo(true));
     assertThat(credentialNameRepository.count(), equalTo(0L));
+  }
+
+  @Test
+  public void findAll_whenThereAreNoCredentials_returnsAnEmptyList() {
+    assertThat(subject.findAll().isEmpty(), equalTo(true));
+  }
+
+  @Test
+  public void findAll_whenThereAreCredentials_returnsTheListOfNames() {
+    credentialNameRepository.save(new CredentialName(CREDENTIAL_NAME));
+    credentialNameRepository.save(new CredentialName(CREDENTIAL_NAME2));
+
+    List<CredentialName> credentialNames = subject.findAll();
+    List<String> names = credentialNames.stream()
+        .map(CredentialName::getName)
+        .collect(Collectors.toList());
+
+    assertThat(names, hasSize(2));
+    assertThat(names, containsInAnyOrder(CREDENTIAL_NAME, CREDENTIAL_NAME2));
   }
 }

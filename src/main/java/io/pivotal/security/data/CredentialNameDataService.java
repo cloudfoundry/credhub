@@ -6,6 +6,8 @@ import io.pivotal.security.repository.CredentialNameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class CredentialNameDataService {
   private final CredentialNameRepository credentialNameRepository;
@@ -35,5 +37,9 @@ public class CredentialNameDataService {
 
   public boolean delete(String credentialName) {
     return credentialNameRepository.deleteByNameIgnoreCase(credentialName) > 0;
+  }
+
+  public List<CredentialName> findAll() {
+    return credentialNameRepository.findAll();
   }
 }
