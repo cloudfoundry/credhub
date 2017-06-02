@@ -4,6 +4,7 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.entity.CredentialData;
 import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.view.FindCredentialResult;
@@ -74,6 +75,11 @@ public class CredentialDataService {
 
     if (credentialName.getUuid() == null) {
       credentialData.setCredentialName(credentialNameDataService.save(credentialName));
+    } else {
+      Credential existingCredential = findMostRecent(credentialName.getName());
+      if (existingCredential != null && !existingCredential.getCredentialType().equals(credentialData.getCredentialType())) {
+        throw new ParameterizedValidationException("error.type_mismatch");
+      }
     }
 
     return (Z) credentialFactory.makeCredentialFromEntity(credentialRepository.saveAndFlush(credentialData));

@@ -12,6 +12,7 @@ import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.entity.SshCredentialData;
 import io.pivotal.security.entity.ValueCredentialData;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.helper.EncryptionCanaryHelper;
 import io.pivotal.security.repository.CredentialRepository;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
@@ -134,6 +135,26 @@ public class CredentialDataServiceTest {
     assertThat(credentialData.getCredentialName().getName(), equalTo("/my-credential-2"));
     assertThat(credentialData.getEncryptedValue(), equalTo("irynas-ninja-skills".getBytes()));
     assertThat(credentialData.getUuid(), equalTo(credential.getUuid()));
+  }
+
+  @Test(expected = ParameterizedValidationException.class)
+  public void save_givenAnExistingCredential_throwsExceptionIfTypeMismatch() {
+    PasswordCredentialData passwordCredentialData = new PasswordCredentialData("/my-credential-3");
+    passwordCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
+    passwordCredentialData.setEncryptedValue("credential-password".getBytes());
+    PasswordCredential credential = new PasswordCredential(passwordCredentialData);
+
+    subject.save(credential);
+
+    //forcing credentialName uuid to match so we can test race conditions on type change
+    ValueCredentialData newCredentialData = new ValueCredentialData();
+    newCredentialData.setEncryptionKeyUuid(activeCanaryUuid);
+    newCredentialData.setEncryptedValue("some value".getBytes());
+    newCredentialData.setCredentialName(passwordCredentialData.getCredentialName());
+    ValueCredential newCredential = new ValueCredential(newCredentialData);
+
+    subject.save(newCredential);
+
   }
 
   @Test
