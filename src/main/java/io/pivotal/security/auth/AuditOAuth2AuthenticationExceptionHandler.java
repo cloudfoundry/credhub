@@ -104,7 +104,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
       final Map<String, Object> map = objectMapper.parseMap(jwt.getClaims());
       if (map.containsKey(EXP) && map.get(EXP) instanceof Integer) {
         Integer intValue = (Integer) map.get(EXP);
-        map.put(EXP, new Long(intValue));
+        map.put(EXP, Long.valueOf(intValue));
       }
 
       return map;

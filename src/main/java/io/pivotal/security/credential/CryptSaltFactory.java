@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CryptSaltFactory {
-  private final String NON_EXISTENT_PASSWORD = "";
+  private static final String NON_EXISTENT_PASSWORD = "";
 
   public String generateSalt() {
     return generateSalt(NON_EXISTENT_PASSWORD);

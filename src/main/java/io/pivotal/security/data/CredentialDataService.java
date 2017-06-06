@@ -34,7 +34,7 @@ public class CredentialDataService {
   private final JdbcTemplate jdbcTemplate;
   private final EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
   private final CredentialFactory credentialFactory;
-  private final String findMatchingNameQuery =
+  private static final String findMatchingNameQuery =
       " select name.name, credential.version_created_at from ("
           + "   select"
           + "     max(version_created_at) as version_created_at,"
