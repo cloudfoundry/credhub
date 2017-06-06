@@ -6,7 +6,7 @@ import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.service.JsonInterpolationService;
-import org.apache.logging.log4j.core.util.IOUtils;
+import io.pivotal.security.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import javax.servlet.http.HttpServletRequest;
 
 @SuppressWarnings("unused")
@@ -47,7 +46,7 @@ public class InterpolationController {
       Authentication authentication,
       RequestUuid requestUuid,
       UserContext userContext) throws Exception {
-    String requestAsString = IOUtils.toString(new InputStreamReader(requestBody));
+    String requestAsString = StringUtil.fromInputStream(requestBody);
 
     return eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParameters -> {
       DocumentContext responseJson;

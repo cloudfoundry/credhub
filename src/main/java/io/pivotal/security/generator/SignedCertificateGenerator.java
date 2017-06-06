@@ -1,23 +1,7 @@
 package io.pivotal.security.generator;
 
-import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
-
 import io.pivotal.security.credential.CertificateCredentialValue;
 import io.pivotal.security.domain.CertificateParameters;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Date;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -40,6 +24,24 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.stereotype.Component;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
+
+import static io.pivotal.security.util.StringUtil.UTF_8;
+import static org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils.parseExtensionValue;
 
 @Component
 public class SignedCertificateGenerator {
@@ -191,6 +193,6 @@ public class SignedCertificateGenerator {
   private X509Certificate getX509Certificate(CertificateCredentialValue ca) throws CertificateException {
     return (X509Certificate) CertificateFactory
         .getInstance("X.509", jceProvider)
-        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes()));
+        .generateCertificate(new ByteArrayInputStream(ca.getCertificate().getBytes(UTF_8)));
   }
 }

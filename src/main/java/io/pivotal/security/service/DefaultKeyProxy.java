@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.crypto.AEADBadTagException;
-import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
+import static io.pivotal.security.util.StringUtil.UTF_8;
 import static java.util.Collections.unmodifiableList;
 
 class DefaultKeyProxy implements KeyProxy {
@@ -45,8 +45,8 @@ class DefaultKeyProxy implements KeyProxy {
 
     try {
       plaintext = encryptionService.decrypt(key, canary.getEncryptedCanaryValue(), canary.getNonce());
-      return Arrays.equals(CANARY_VALUE.getBytes(), plaintext.getBytes())
-          || Arrays.equals(DEPRECATED_CANARY_VALUE.getBytes(), plaintext.getBytes());
+      return Arrays.equals(CANARY_VALUE.getBytes(UTF_8), plaintext.getBytes(UTF_8))
+          || Arrays.equals(DEPRECATED_CANARY_VALUE.getBytes(UTF_8), plaintext.getBytes(UTF_8));
     } catch (AEADBadTagException e) {
       // internal key was wrong
     } catch (IllegalBlockSizeException e) {

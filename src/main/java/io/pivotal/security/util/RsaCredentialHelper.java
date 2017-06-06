@@ -10,6 +10,8 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
+import static io.pivotal.security.util.StringUtil.UTF_8;
+
 public class RsaCredentialHelper {
 
   private static final String RSA_START = "-----BEGIN PUBLIC KEY-----\n";
@@ -34,7 +36,7 @@ public class RsaCredentialHelper {
           .replaceFirst(RSA_START, "")
           .replaceFirst(RSA_END, "")
           .replaceAll(NEW_LINE, "");
-      byte[] byteKey = Base64.decodeBase64(key.getBytes());
+      byte[] byteKey = Base64.decodeBase64(key.getBytes(UTF_8));
       X509EncodedKeySpec x509publicKey = new X509EncodedKeySpec(byteKey);
       KeyFactory kf = KeyFactory.getInstance("RSA");
       return ((RSAPublicKey) kf.generatePublic(x509publicKey)).getModulus().bitLength();

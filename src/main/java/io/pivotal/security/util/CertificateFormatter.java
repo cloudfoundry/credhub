@@ -1,12 +1,15 @@
 package io.pivotal.security.util;
 
+import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.security.interfaces.RSAPublicKey;
-import org.apache.commons.codec.binary.Base64;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+
+import static io.pivotal.security.util.StringUtil.UTF_8;
 
 public class CertificateFormatter {
 
@@ -28,11 +31,11 @@ public class CertificateFormatter {
     ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
     DataOutputStream dataStream = new DataOutputStream(byteStream);
 
-    writeBytesToDataStream(SSH_RSA.getBytes(), dataStream);
+    writeBytesToDataStream(SSH_RSA.getBytes(UTF_8), dataStream);
     writeBytesToDataStream(rsaPublicKey.getPublicExponent().toByteArray(), dataStream);
     writeBytesToDataStream(rsaPublicKey.getModulus().toByteArray(), dataStream);
 
-    String publicKeyEncoded = new String(Base64.encodeBase64(byteStream.toByteArray()));
+    String publicKeyEncoded = new String(Base64.encodeBase64(byteStream.toByteArray()), UTF_8);
     return SSH_RSA + " " + publicKeyEncoded;
   }
 

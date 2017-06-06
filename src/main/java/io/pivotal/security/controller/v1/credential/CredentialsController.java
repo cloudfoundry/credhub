@@ -13,12 +13,13 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialHandler;
 import io.pivotal.security.handler.SetRequestHandler;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.GenerateRequestHandler;
 import io.pivotal.security.service.RegenerateService;
+import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CredentialView;
 import io.pivotal.security.view.DataResponse;
 import io.pivotal.security.view.FindCredentialResult;
@@ -27,7 +28,6 @@ import io.pivotal.security.view.FindPathResults;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.util.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -45,7 +45,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 import java.util.function.Function;
 
@@ -232,7 +231,7 @@ public class CredentialsController {
       PermissionEntry currentUserPermissionEntry
   ) {
     try {
-      String requestString = IOUtils.toString(new InputStreamReader(inputStream));
+      String requestString = StringUtil.fromInputStream(inputStream);
 
       if (readRegenerateFlagFrom(requestString)) {
         // If it's a regenerate request deserialization is simple; the generation case requires

@@ -1,15 +1,5 @@
 package io.pivotal.security.util;
 
-import static java.lang.Math.toIntExact;
-import static java.time.temporal.ChronoUnit.DAYS;
-
-import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.security.InvalidKeyException;
-import java.security.SignatureException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.RSAPublicKey;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
@@ -21,6 +11,18 @@ import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.security.InvalidKeyException;
+import java.security.SignatureException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPublicKey;
+
+import static io.pivotal.security.util.StringUtil.UTF_8;
+import static java.lang.Math.toIntExact;
+import static java.time.temporal.ChronoUnit.DAYS;
+
 public class CertificateReader {
 
   private final X509Certificate certificate;
@@ -31,7 +33,7 @@ public class CertificateReader {
     try {
       certificate = (X509Certificate) CertificateFactory
           .getInstance("X.509", BouncyCastleProvider.PROVIDER_NAME)
-          .generateCertificate(new ByteArrayInputStream(pemString.getBytes()));
+          .generateCertificate(new ByteArrayInputStream(pemString.getBytes(UTF_8)));
       certificateHolder = (X509CertificateHolder) (new PEMParser((new StringReader(pemString)))
           .readObject());
     } catch (Exception e) {
