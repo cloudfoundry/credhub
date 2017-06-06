@@ -17,7 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 
 @Component
 public class AuditInterceptor extends HandlerInterceptorAdapter {
-  public static String REQUEST_UUID_ATTRIBUTE = "REQUEST_UUID";
+  public static final String REQUEST_UUID_ATTRIBUTE = "REQUEST_UUID";
+
   private final RequestAuditRecordDataService requestAuditRecordDataService;
   private final SecurityEventsLogService securityEventsLogService;
   private final AuditLogFactory auditLogFactory;
