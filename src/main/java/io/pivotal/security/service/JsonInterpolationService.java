@@ -37,42 +37,39 @@ public class JsonInterpolationService {
     }
 
     Map<String, Object> servicesMap = (Map<String, Object>) request;
-      for (Object serviceProperties : servicesMap.values()) {
-        if (!(serviceProperties instanceof JSONArray)) {
+    for (Object serviceProperties : servicesMap.values()) {
+      if (serviceProperties == null || !(serviceProperties instanceof JSONArray)) {
+        continue;
+      }
+      for (Object properties : ((JSONArray) serviceProperties)) {
+        if (!(properties instanceof Map)) {
           continue;
         }
-        JSONArray servicePropertiesAsArray = (JSONArray) serviceProperties;
-        for (Object properties : servicePropertiesAsArray) {
-          if (!(properties instanceof Map)) {
-            continue;
-          }
-          Map<String, Object> propertiesMap = (Map<String, Object>) properties;
-          Object credentials = propertiesMap.get("credentials");
-          if (!(credentials instanceof Map)) {
-            continue;
-          }
-          Map<String, Object> credentialsWrapper = (Map<String, Object>) credentials;
-          if (credentialsWrapper != null && credentialsWrapper.get("credhub-ref") != null) {
-            Object credhubRef = credentialsWrapper.get("credhub-ref");
-            if (!(credhubRef instanceof String)) {
-              continue;
-            }
-            String credentialName = getCredentialNameFromRef((String) credhubRef);
+        Map<String, Object> propertiesMap = (Map<String, Object>) properties;
+        Object credentials = propertiesMap.get("credentials");
+        if (credentials == null || !(credentials instanceof Map)) {
+          continue;
+        }
+        Object credhubRef = ((Map)credentials).get("credhub-ref");
+        if (credhubRef == null || !(credhubRef instanceof String)) {
+          continue;
+        }
+        String credentialName = getCredentialNameFromRef((String) credhubRef);
 
-            Credential credential = credentialDataService.findMostRecent(credentialName);
-            if (credential == null) {
-              throw new InvalidObjectException("error.invalid_access");
-            }
-            if (credential instanceof JsonCredential) {
-              propertiesMap.put("credentials", ((JsonCredential) credential).getValue());
-              eventAuditRecordParameters.add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credential.getName()));
-            } else {
-              throw new ParameterizedValidationException("error.invalid_interpolation_type",
-                  credentialName);
-            }
-          }
+        Credential credential = credentialDataService.findMostRecent(credentialName);
+        if (credential == null) {
+          throw new InvalidObjectException("error.invalid_access");
+        }
+        if (credential instanceof JsonCredential) {
+          propertiesMap.put("credentials", ((JsonCredential) credential).getValue());
+          eventAuditRecordParameters
+              .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credential.getName()));
+        } else {
+          throw new ParameterizedValidationException("error.invalid_interpolation_type",
+              credentialName);
         }
       }
+    }
     return requestJson;
   }
 
