@@ -183,3 +183,12 @@ CREDENTIAL_ROOT=/path/to/credhub/repo/plus/src/test/resources ./run_tests.sh
 ```
 
 Assuming it works, that will generate some test client certificates for testing mutual TLS (in `certs/` in the acceptance test directory) and run the acceptance test suite against your locally running credhub server.
+
+#### Setting up FindBugs in Intellij
+
+1. Goto Preferences -> Plugins
+2. Search for and install FindBugs
+3. Goto Preferences -> Other Settings -> FindBugs-IDEA
+4. Click on import button and import config/findbugs/findbugs-idea.xml
+5. Click on filters
+6. Click `+` under `Exclude filter files` and select config/findbugs/findbugs-filter.xml
