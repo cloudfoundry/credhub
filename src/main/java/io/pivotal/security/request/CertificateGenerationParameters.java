@@ -148,29 +148,29 @@ public class CertificateGenerationParameters {
   }
 
   public String[] getAlternativeNames() {
-    return alternativeNames;
+    return alternativeNames == null ? null : alternativeNames.clone();
   }
 
   public CertificateGenerationParameters setAlternativeNames(String[] alternativeNames) {
-    this.alternativeNames = alternativeNames;
+    this.alternativeNames = alternativeNames == null ? null : alternativeNames.clone();
     return this;
   }
 
   public String[] getExtendedKeyUsage() {
-    return extendedKeyUsage;
+    return extendedKeyUsage == null ? null: extendedKeyUsage.clone();
   }
 
   public CertificateGenerationParameters setExtendedKeyUsage(String[] extendedKeyUsage) {
-    this.extendedKeyUsage = extendedKeyUsage;
+    this.extendedKeyUsage = extendedKeyUsage == null ? null: extendedKeyUsage.clone();
     return this;
   }
 
   public String[] getKeyUsage() {
-    return keyUsage;
+    return keyUsage == null ? null : keyUsage.clone();
   }
 
   public CertificateGenerationParameters setKeyUsage(String[] keyUsage) {
-    this.keyUsage = keyUsage;
+    this.keyUsage = keyUsage == null ? null : keyUsage.clone();
     return this;
   }
 
