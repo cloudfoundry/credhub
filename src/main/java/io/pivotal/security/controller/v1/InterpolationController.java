@@ -40,7 +40,7 @@ public class InterpolationController {
     this.eventAuditLogService = eventAuditLogService;
   }
 
-  @RequestMapping(method = RequestMethod.POST, path = "/vcap")
+  @RequestMapping(method = RequestMethod.POST, path = "/interpolate")
   @ResponseStatus(HttpStatus.OK)
   public String interpolate(InputStream requestBody,
       HttpServletRequest request,

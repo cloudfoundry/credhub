@@ -247,9 +247,9 @@ public class AuthConfigurationTest {
       });
     });
 
-    describe("/api/v1/vcap", () -> {
+    describe("/api/v1/interpolate", () -> {
       it("denies access without authentication", () -> {
-        mockMvc.perform(post("/api/v1/vcap")
+        mockMvc.perform(post("/api/v1/interpolate")
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON)
             .content("{}")
@@ -258,7 +258,7 @@ public class AuthConfigurationTest {
 
       describe("with a token accepted by our security config", () -> {
         it("allows access", () -> {
-          final MockHttpServletRequestBuilder post = post("/api/v1/vcap")
+          final MockHttpServletRequestBuilder post = post("/api/v1/interpolate")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(MediaType.APPLICATION_JSON)
               .contentType(MediaType.APPLICATION_JSON)

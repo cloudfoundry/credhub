@@ -74,10 +74,10 @@ public class InterpolationControllerTest {
       auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
     });
 
-    describe("/vcap", () -> {
+    describe("/interpolate", () -> {
       describe("#POST", () -> {
         beforeEach(() -> {
-          post = post("/api/v1/vcap")
+          post = post("/api/v1/interpolate")
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .contentType(MediaType.APPLICATION_JSON)
               .content(
@@ -147,7 +147,7 @@ public class InterpolationControllerTest {
             mockMvc.perform(post).andExpect(status().isOk());
 
             auditingHelper
-                .verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/vcap",
+                .verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/interpolate",
                     200, Lists
                         .newArrayList(
                             new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1"),
@@ -165,7 +165,7 @@ public class InterpolationControllerTest {
                 valueCredential
             ).when(mockCredentialDataService).findMostRecent("/cred1");
 
-            mockMvc.perform(post("/api/v1/vcap")
+            mockMvc.perform(post("/api/v1/interpolate")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -193,7 +193,7 @@ public class InterpolationControllerTest {
                 null
             ).when(mockCredentialDataService).findMostRecent("/cred1");
 
-            mockMvc.perform(post("/api/v1/vcap")
+            mockMvc.perform(post("/api/v1/interpolate")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -225,7 +225,7 @@ public class InterpolationControllerTest {
                 + "      \"label\": \"pp-config-server\""
                 + "    }]"
                 + "}";
-            MockHttpServletResponse response = mockMvc.perform(post("/api/v1/vcap")
+            MockHttpServletResponse response = mockMvc.perform(post("/api/v1/interpolate")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inputJsonString)
@@ -238,7 +238,7 @@ public class InterpolationControllerTest {
         describe("when it's not even json", () -> {
           it("should fail with \"Bad Request\"", () -> {
             String inputJsonString = "</xml?>";
-            mockMvc.perform(post("/api/v1/vcap")
+            mockMvc.perform(post("/api/v1/interpolate")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(inputJsonString)
