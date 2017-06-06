@@ -106,7 +106,11 @@ public class SshPublicKeyParser {
     byte[] buf;
     int length = dataStream.readInt();
     buf = new byte[length];
-    dataStream.read(buf, 0, length);
+
+    // FindBugs exposed possible bug of not checking for correct output from InputStream
+    if (dataStream.read(buf, 0, length) != length) {
+      throw new IOException("Could not read int as bytes");
+    }
     return buf;
   }
 }

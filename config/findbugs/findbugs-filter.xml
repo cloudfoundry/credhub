@@ -3,4 +3,7 @@
     <Package name="~.*db\.migration\.common.*" />
     <Bug pattern="ODR_OPEN_DATABASE_RESOURCE"/>
   </Match>
+  <Match>
+    <Package name="~.*jna\.libcrypto.*" />
+  </Match>
 </FindBugsFilter>
