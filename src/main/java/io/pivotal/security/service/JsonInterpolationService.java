@@ -12,7 +12,6 @@ import net.minidev.json.JSONArray;
 import org.springframework.stereotype.Service;
 
 import java.io.InvalidObjectException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,11 +36,8 @@ public class JsonInterpolationService {
       throw new InvalidJsonException();
     }
 
-    Map<String, Object> requestAsMap = (Map<String, Object>) request;
-    Object vcapServices = requestAsMap.get("VCAP_SERVICES");
-    if (vcapServices != null && vcapServices instanceof Map) {
-      Map<String, Object> vcapServicesMap = (LinkedHashMap<String, Object>) vcapServices;
-      for (Object serviceProperties : vcapServicesMap.values()) {
+    Map<String, Object> servicesMap = (Map<String, Object>) request;
+      for (Object serviceProperties : servicesMap.values()) {
         if (!(serviceProperties instanceof JSONArray)) {
           continue;
         }
@@ -77,7 +73,6 @@ public class JsonInterpolationService {
           }
         }
       }
-    }
     return requestJson;
   }
 

@@ -57,29 +57,27 @@ public class JsonInterpolationServiceTest {
         describe("and the request is correct", () -> {
           beforeEach(() -> {
             String inputJson = "{"
-                + "  \"VCAP_SERVICES\": {"
-                + "    \"pp-config-server\": ["
-                + "      {"
-                + "        \"credentials\": {"
-                + "          \"credhub-ref\": \"((/cred1))\""
-                + "        },"
-                + "        \"label\": \"pp-config-server\""
+                + "  \"pp-config-server\": ["
+                + "    {"
+                + "      \"credentials\": {"
+                + "        \"credhub-ref\": \"((/cred1))\""
                 + "      },"
-                + "      {"
-                + "        \"credentials\": {"
-                + "          \"credhub-ref\": \"((/cred2))\""
-                + "        }"
+                + "      \"label\": \"pp-config-server\""
+                + "    },"
+                + "    {"
+                + "      \"credentials\": {"
+                + "        \"credhub-ref\": \"((/cred2))\""
                 + "      }"
-                + "    ],"
-                + "    \"pp-something-else\": ["
-                + "      {"
-                + "        \"credentials\": {"
-                + "          \"credhub-ref\": \"((/cred3))\""
-                + "        },"
-                + "        \"something\": [\"pp-config-server\"]"
-                + "      }"
-                + "    ]"
-                + "  }"
+                + "    }"
+                + "  ],"
+                + "  \"pp-something-else\": ["
+                + "    {"
+                + "      \"credentials\": {"
+                + "        \"credhub-ref\": \"((/cred3))\""
+                + "      },"
+                + "      \"something\": [\"pp-config-server\"]"
+                + "    }"
+                + "  ]"
                 + "}";
 
             JsonCredential jsonCredential = mock(JsonCredential.class);
@@ -121,11 +119,11 @@ public class JsonInterpolationServiceTest {
           it("should replace the credhub-ref element with something else", () -> {
 
             Map<String, Object> firstCredentialsBlock = response
-                .read("$.VCAP_SERVICES.pp-config-server[0].credentials");
+                .read("$.pp-config-server[0].credentials");
             Map<String, Object> secondCredentialsBlock = response
-                .read("$.VCAP_SERVICES.pp-config-server[1].credentials");
+                .read("$.pp-config-server[1].credentials");
             Map<String, Object> secondServiceCredentials = response
-                .read("$.VCAP_SERVICES.pp-something-else[0].credentials");
+                .read("$.pp-something-else[0].credentials");
 
             assertThat(firstCredentialsBlock.get("credhub-ref"), nullValue());
             assertThat(firstCredentialsBlock.size(), equalTo(1));
@@ -153,16 +151,14 @@ public class JsonInterpolationServiceTest {
         itThrows("an exception when credential is not JsonCredentialValue",
             ParameterizedValidationException.class, () -> {
               String inputJson = "{"
-                  + "  \"VCAP_SERVICES\": {"
-                  + "    \"pp-config-server\": ["
-                  + "      {"
-                  + "        \"credentials\": {"
-                  + "          \"credhub-ref\": \"((/password_cred))\""
-                  + "        },"
-                  + "        \"label\": \"pp-config-server\""
-                  + "      }"
-                  + "    ]"
-                  + "  }"
+                  + "  \"pp-config-server\": ["
+                  + "    {"
+                  + "      \"credentials\": {"
+                  + "        \"credhub-ref\": \"((/password_cred))\""
+                  + "      },"
+                  + "      \"label\": \"pp-config-server\""
+                  + "    }"
+                  + "  ]"
                   + "}";
 
               PasswordCredential passwordCredential = mock(PasswordCredential.class);
@@ -180,16 +176,14 @@ public class JsonInterpolationServiceTest {
         itThrows("an exception when credential is not accessible in datastore",
             InvalidObjectException.class, () -> {
               String inputJson = "{"
-                  + "  \"VCAP_SERVICES\": {"
-                  + "    \"pp-config-server\": ["
-                  + "      {"
-                  + "        \"credentials\": {"
-                  + "          \"credhub-ref\": \"((/missing_cred))\""
-                  + "        },"
-                  + "        \"label\": \"pp-config-server\""
-                  + "      }"
-                  + "    ]"
-                  + "  }"
+                  + "  \"pp-config-server\": ["
+                  + "    {"
+                  + "      \"credentials\": {"
+                  + "        \"credhub-ref\": \"((/missing_cred))\""
+                  + "      },"
+                  + "      \"label\": \"pp-config-server\""
+                  + "    }"
+                  + "  ]"
                   + "}";
 
               CredentialDataService mockCredentialDataService = mock(CredentialDataService.class);
@@ -206,14 +200,12 @@ public class JsonInterpolationServiceTest {
     describe("when the services properties do not have credentials", () -> {
       it("is ignored", () -> {
         String inputJsonString = "{"
-            + "  \"VCAP_SERVICES\": {"
-            + "    \"pp-config-server\": [{"
-            + "      \"blah\": {"
-            + "        \"credhub-ref\": \"((/cred1))\""
-            + "       },"
-            + "      \"label\": \"pp-config-server\""
-            + "    }]"
-            + "  }"
+            + "  \"pp-config-server\": [{"
+            + "    \"blah\": {"
+            + "      \"credhub-ref\": \"((/cred1))\""
+            + "     },"
+            + "    \"label\": \"pp-config-server\""
+            + "  }]"
             + "}";
         DocumentContext response = subject
             .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
@@ -226,16 +218,14 @@ public class JsonInterpolationServiceTest {
     describe("when credentials is somewhere unexpected", () -> {
       it("is ignored", () -> {
         String inputJsonString = "{"
-            + "  \"VCAP_SERVICES\": {"
-            + "    \"pp-config-server\": [{"
-            + "      \"foo\": {"
-            + "        \"credentials\": {"
-            + "          \"credhub-ref\": \"((/cred1))\""
-            + "         }"
-            + "       },"
-            + "      \"label\": \"pp-config-server\""
-            + "    }]"
-            + "  }"
+            + "  \"pp-config-server\": [{"
+            + "    \"foo\": {"
+            + "      \"credentials\": {"
+            + "        \"credhub-ref\": \"((/cred1))\""
+            + "       }"
+            + "     },"
+            + "    \"label\": \"pp-config-server\""
+            + "  }]"
             + "}";
         DocumentContext response = subject
             .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
@@ -248,9 +238,7 @@ public class JsonInterpolationServiceTest {
     describe("when properties are not hashes", () -> {
       it("is ignored", () -> {
         String inputJsonString = "{"
-            + "  \"VCAP_SERVICES\": {"
-            + "    \"pp-config-server\": [\"what is this?\"]"
-            + "  }"
+            + "  \"pp-config-server\": [\"what is this?\"]"
             + "}";
         DocumentContext response = subject
             .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
@@ -263,12 +251,10 @@ public class JsonInterpolationServiceTest {
     describe("credentials is not a hash", () -> {
       it("is ignored", () -> {
         String inputJsonString = "{"
-            + "  \"VCAP_SERVICES\": {"
-            + "    \"pp-config-server\": [{"
-            + "      \"credentials\": \"moose\","
-            + "      \"label\": \"squirrel\""
-            + "    }]"
-            + "  }"
+            + "  \"pp-config-server\": [{"
+            + "    \"credentials\": \"moose\","
+            + "    \"label\": \"squirrel\""
+            + "  }]"
             + "}";
         DocumentContext response = subject
             .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
@@ -288,44 +274,14 @@ public class JsonInterpolationServiceTest {
       });
     });
 
-    describe("when no VCAP_SERVICES key is present", () -> {
-      it("is ignored", () -> {
-        String inputJsonString = "{"
-            + "  \"credentials\":{"
-            + "    \"credhub-ref\":\"((/some/known/path))\""
-            + "  }"
-            + "}";
-        DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
-                eventAuditRecordParameters);
-
-        assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
-      });
-    });
-
-    describe("when VCAP_SERVICES is not an object", () -> {
-      it("is ignored", () -> {
-        String inputJsonString = "{"
-            + "  \"VCAP_SERVICES\":[]"
-            + "}";
-        DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
-                eventAuditRecordParameters);
-
-        assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
-      });
-    });
-
     describe("when the services properties are not arrays", () -> {
       it("is ignored", () -> {
         String inputJsonString = "{"
-            + "  \"VCAP_SERVICES\": {"
-            + "    \"pp-config-server\": {"
-            + "      \"credentials\": {"
-            + "        \"credhub-ref\": \"((/cred1))\""
-            + "       },"
-            + "      \"label\": \"pp-config-server\""
-            + "    }"
+            + "  \"pp-config-server\": {"
+            + "    \"credentials\": {"
+            + "      \"credhub-ref\": \"((/cred1))\""
+            + "     },"
+            + "    \"label\": \"pp-config-server\""
             + "  }"
             + "}";
         DocumentContext response = subject

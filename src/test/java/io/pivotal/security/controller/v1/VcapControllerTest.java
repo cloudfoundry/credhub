@@ -78,31 +78,29 @@ public class VcapControllerTest {
       describe("#POST", () -> {
         beforeEach(() -> {
           post = post("/api/v1/vcap")
-                  .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(
-                      "{"
-                          + "  \"VCAP_SERVICES\": {"
-                          + "    \"pp-config-server\": ["
-                          + "      {"
-                          + "        \"credentials\": {"
-                          + "          \"credhub-ref\": \"((/cred1))\""
-                          + "        },"
-                          + "        \"label\": \"pp-config-server\""
-                          + "      }"
-                          + "    ],"
-                          + "    \"pp-something-else\": ["
-                          + "      {"
-                          + "        \"credentials\": {"
-                          + "          \"credhub-ref\": \"((/cred2))\""
-                          + "        },"
-                          + "        \"something\": [\"pp-config-server\"]"
-                          + "      }"
-                          + "    ]"
-                          + "  }"
-                          + "}"
-                  );
-            });
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .contentType(MediaType.APPLICATION_JSON)
+              .content(
+                  "{"
+                      + "    \"pp-config-server\": ["
+                      + "      {"
+                      + "        \"credentials\": {"
+                      + "          \"credhub-ref\": \"((/cred1))\""
+                      + "        },"
+                      + "        \"label\": \"pp-config-server\""
+                      + "      }"
+                      + "    ],"
+                      + "    \"pp-something-else\": ["
+                      + "      {"
+                      + "        \"credentials\": {"
+                      + "          \"credhub-ref\": \"((/cred2))\""
+                      + "        },"
+                      + "        \"something\": [\"pp-config-server\"]"
+                      + "      }"
+                      + "    ]"
+                      + "  }"
+              );
+        });
 
         describe("when properly formatted credentials section is found", () -> {
           it("should replace the credhub-ref element with something else", () -> {
@@ -123,9 +121,9 @@ public class VcapControllerTest {
             ).when(mockCredentialDataService).findMostRecent("/cred2");
 
             mockMvc.perform(post).andDo(print()).andExpect(status().isOk())
-                .andExpect(jsonPath("$.VCAP_SERVICES.pp-config-server[0].credentials.secret1")
+                .andExpect(jsonPath("$.pp-config-server[0].credentials.secret1")
                     .value(equalTo("secret1-value")))
-                .andExpect(jsonPath("$.VCAP_SERVICES.pp-something-else[0].credentials.secret2")
+                .andExpect(jsonPath("$.pp-something-else[0].credentials.secret2")
                     .value(equalTo("secret2-value")));
           });
 
@@ -148,11 +146,13 @@ public class VcapControllerTest {
 
             mockMvc.perform(post).andExpect(status().isOk());
 
-            auditingHelper.verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/vcap", 200, Lists
-                .newArrayList(
-                    new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1"),
-                    new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred2")
-                ));
+            auditingHelper
+                .verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/vcap",
+                    200, Lists
+                        .newArrayList(
+                            new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1"),
+                            new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred2")
+                        ));
           });
         });
 
@@ -170,7 +170,6 @@ public class VcapControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
-                        + "  \"VCAP_SERVICES\": {"
                         + "    \"pp-config-server\": ["
                         + "      {"
                         + "        \"credentials\": {"
@@ -179,7 +178,6 @@ public class VcapControllerTest {
                         + "        \"label\": \"pp-config-server\""
                         + "      }"
                         + "    ]"
-                        + "  }"
                         + "}"
                 )
             ).andExpect(status().is4xxClientError())
@@ -200,7 +198,6 @@ public class VcapControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{"
-                        + "  \"VCAP_SERVICES\": {"
                         + "    \"pp-config-server\": ["
                         + "      {"
                         + "        \"credentials\": {"
@@ -209,7 +206,6 @@ public class VcapControllerTest {
                         + "        \"label\": \"pp-config-server\""
                         + "      }"
                         + "    ]"
-                        + "  }"
                         + "}"
                 )
             ).andExpect(status().is4xxClientError())
@@ -222,14 +218,12 @@ public class VcapControllerTest {
         describe("when the services properties do not have credentials", () -> {
           it("is ignored", () -> {
             String inputJsonString = "{"
-                + "  \"VCAP_SERVICES\": {"
                 + "    \"pp-config-server\": [{"
                 + "      \"blah\": {"
                 + "        \"credhub-ref\": \"((/cred1))\""
                 + "       },"
                 + "      \"label\": \"pp-config-server\""
                 + "    }]"
-                + "  }"
                 + "}";
             MockHttpServletResponse response = mockMvc.perform(post("/api/v1/vcap")
                 .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
