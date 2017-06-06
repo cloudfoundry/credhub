@@ -1,0 +1,6 @@
+<FindBugsFilter>
+  <Match>
+    <Package name="~.*db\.migration\.common.*" />
+    <Bug pattern="ODR_OPEN_DATABASE_RESOURCE"/>
+  </Match>
+</FindBugsFilter>
