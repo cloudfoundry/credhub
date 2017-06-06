@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import javax.servlet.http.HttpServletRequest;
 
 @SuppressWarnings("unused")
 @RestController
-@RequestMapping(path = VcapController.API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-public class VcapController {
+@RequestMapping(path = InterpolationController.API_V1, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+public class InterpolationController {
 
   static final String API_V1 = "/api/v1";
   private final CredentialDataService credentialDataService;
@@ -31,7 +31,7 @@ public class VcapController {
   private final EventAuditLogService eventAuditLogService;
 
   @Autowired
-  VcapController(
+  InterpolationController(
       JsonInterpolationService jsonInterpolationService,
       CredentialDataService credentialDataService,
       EventAuditLogService eventAuditLogService) {
