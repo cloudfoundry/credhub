@@ -215,6 +215,24 @@ public class JsonInterpolationServiceTest {
       });
     });
 
+    describe("when the services properties have interpolated credentials", () -> {
+      it("is ignored", () -> {
+        String inputJsonString = "{"
+            + "  \"pp-config-server\": [{"
+            + "    \"credentials\": {"
+            + "      \"key\": \"value\""
+            + "     },"
+            + "    \"label\": \"pp-config-server\""
+            + "  }]"
+            + "}";
+        DocumentContext response = subject
+            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+                eventAuditRecordParameters);
+
+        assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
+      });
+    });
+
     describe("when credentials is somewhere unexpected", () -> {
       it("is ignored", () -> {
         String inputJsonString = "{"
