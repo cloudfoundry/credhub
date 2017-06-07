@@ -28,21 +28,21 @@ public class PasswordCredentialData extends CredentialData<PasswordCredentialDat
   }
 
   public byte[] getEncryptedGenerationParameters() {
-    return encryptedGenerationParameters;
+    return encryptedGenerationParameters == null ? null : encryptedGenerationParameters.clone();
   }
 
   public PasswordCredentialData setEncryptedGenerationParameters(
       byte[] encryptedGenerationParameters) {
-    this.encryptedGenerationParameters = encryptedGenerationParameters;
+    this.encryptedGenerationParameters = encryptedGenerationParameters == null ? null : encryptedGenerationParameters.clone();
     return this;
   }
 
   public byte[] getParametersNonce() {
-    return parametersNonce;
+    return parametersNonce == null ? null : parametersNonce.clone();
   }
 
   public PasswordCredentialData setParametersNonce(byte[] parametersNonce) {
-    this.parametersNonce = parametersNonce;
+    this.parametersNonce = parametersNonce == null ? null : parametersNonce.clone();
     return this;
   }
 

@@ -50,20 +50,20 @@ public class EncryptionKeyCanary {
   }
 
   public byte[] getEncryptedCanaryValue() {
-    return encryptedCanaryValue;
+    return encryptedCanaryValue  == null ? null : encryptedCanaryValue.clone();
   }
 
   public EncryptionKeyCanary setEncryptedCanaryValue(byte[] encryptedCanaryValue) {
-    this.encryptedCanaryValue = encryptedCanaryValue;
+    this.encryptedCanaryValue = encryptedCanaryValue == null ? null : encryptedCanaryValue.clone();
     return this;
   }
 
   public byte[] getNonce() {
-    return nonce;
+    return nonce == null ? null : nonce.clone();
   }
 
   public EncryptionKeyCanary setNonce(byte[] nonce) {
-    this.nonce = nonce;
+    this.nonce = nonce == null ? null : nonce.clone();
     return this;
   }
 
@@ -78,6 +78,6 @@ public class EncryptionKeyCanary {
   }
 
   public void setSalt(byte[] salt) {
-    this.salt = salt;
+    this.salt = salt == null ? null : salt.clone();
   }
 }

@@ -103,20 +103,20 @@ public abstract class CredentialData<Z extends CredentialData> {
   }
 
   public byte[] getEncryptedValue() {
-    return encryptedValue;
+    return encryptedValue == null ? null : encryptedValue.clone();
   }
 
   public Z setEncryptedValue(byte[] encryptedValue) {
-    this.encryptedValue = encryptedValue;
+    this.encryptedValue = encryptedValue == null ? null : encryptedValue.clone();
     return (Z) this;
   }
 
   public byte[] getNonce() {
-    return nonce;
+    return nonce == null ? null : nonce.clone();
   }
 
   public Z setNonce(byte[] nonce) {
-    this.nonce = nonce;
+    this.nonce = nonce == null ? null : nonce.clone();
     return (Z) this;
   }
 

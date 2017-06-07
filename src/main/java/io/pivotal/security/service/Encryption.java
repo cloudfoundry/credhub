@@ -11,8 +11,8 @@ public class Encryption {
 
   public Encryption(UUID canaryUuid, byte[] encryptedValue, byte[] nonce) {
     this.canaryUuid = canaryUuid;
-    this.nonce = nonce;
-    this.encryptedValue = encryptedValue;
+    this.nonce = nonce == null ? null : nonce.clone();
+    this.encryptedValue = encryptedValue == null ? null : encryptedValue.clone();
   }
 
   @Override
