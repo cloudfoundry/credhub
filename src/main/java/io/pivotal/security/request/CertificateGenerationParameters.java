@@ -54,7 +54,7 @@ public class CertificateGenerationParameters {
   private String[] keyUsage;
   private List<Integer> validKeyLengths = Arrays.asList(2048, 3072, 4096);
   private static final Pattern DNS_WILDCARD_PATTERN = Pattern
-      .compile("^\\*?(?:\\.[a-zA-Z0-9\\-]+)*$");
+      .compile("^\\*?(?>(?:\\.[a-zA-Z0-9\\-]+))*$");
 
   private List<String> validExtendedKeyUsages = Arrays
       .asList(SERVER_AUTH, CLIENT_AUTH, CODE_SIGNING, EMAIL_PROTECTION, TIMESTAMPING);
