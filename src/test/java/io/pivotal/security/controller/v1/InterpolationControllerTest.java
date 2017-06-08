@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1;
 
 import com.google.common.collect.Lists;
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.data.CredentialDataService;
@@ -12,6 +11,8 @@ import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.assertj.core.util.Maps;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,17 +20,15 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.JsonHelper.parse;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,210 +41,198 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@Transactional
 public class InterpolationControllerTest {
+  @Autowired
+  private WebApplicationContext webApplicationContext;
 
   @Autowired
-  WebApplicationContext webApplicationContext;
+  private RequestAuditRecordRepository requestAuditRecordRepository;
 
   @Autowired
-  RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  EventAuditRecordRepository eventAuditRecordRepository;
+  private EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  CredentialDataService mockCredentialDataService;
+  private CredentialDataService mockCredentialDataService;
+
   private MockMvc mockMvc;
   private AuditingHelper auditingHelper;
-  MockHttpServletRequestBuilder post;
 
-  {
-    wireAndUnwire(this);
+  @Before
+  public void beforeEach() {
+    mockMvc = MockMvcBuilders
+        .webAppContextSetup(webApplicationContext)
+        .apply(springSecurity())
+        .build();
 
-    beforeEach(() -> {
-      mockMvc = MockMvcBuilders
-          .webAppContextSetup(webApplicationContext)
-          .apply(springSecurity())
-          .build();
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
+  }
 
-      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
-    });
+  @Test
+  public void POST_replacesTheCredHubRefWithTheCredentialValue() throws Exception {
+    JsonCredential jsonCredential = mock(JsonCredential.class);
+    doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
+    when(jsonCredential.getName()).thenReturn("/cred1");
 
-    describe("/interpolate", () -> {
-      describe("#POST", () -> {
-        beforeEach(() -> {
-          post = post("/api/v1/interpolate")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content(
-                  "{"
-                      + "    \"pp-config-server\": ["
-                      + "      {"
-                      + "        \"credentials\": {"
-                      + "          \"credhub-ref\": \"((/cred1))\""
-                      + "        },"
-                      + "        \"label\": \"pp-config-server\""
-                      + "      }"
-                      + "    ],"
-                      + "    \"pp-something-else\": ["
-                      + "      {"
-                      + "        \"credentials\": {"
-                      + "          \"credhub-ref\": \"((/cred2))\""
-                      + "        },"
-                      + "        \"something\": [\"pp-config-server\"]"
-                      + "      }"
-                      + "    ]"
-                      + "  }"
-              );
-        });
+    JsonCredential jsonCredential1 = mock(JsonCredential.class);
+    doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
+    when(jsonCredential1.getName()).thenReturn("/cred2");
 
-        describe("when properly formatted credentials section is found", () -> {
-          it("should replace the credhub-ref element with something else", () -> {
-            JsonCredential jsonCredential = mock(JsonCredential.class);
-            doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
-            when(jsonCredential.getName()).thenReturn("/cred1");
+    doReturn(
+        jsonCredential
+    ).when(mockCredentialDataService).findMostRecent("/cred1");
 
-            JsonCredential jsonCredential1 = mock(JsonCredential.class);
-            doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
-            when(jsonCredential1.getName()).thenReturn("/cred2");
+    doReturn(
+        jsonCredential1
+    ).when(mockCredentialDataService).findMostRecent("/cred2");
 
-            doReturn(
-                jsonCredential
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+    mockMvc.perform(makeValidPostRequest()).andDo(print()).andExpect(status().isOk())
+        .andExpect(jsonPath("$.pp-config-server[0].credentials.secret1")
+            .value(equalTo("secret1-value")))
+        .andExpect(jsonPath("$.pp-something-else[0].credentials.secret2")
+            .value(equalTo("secret2-value")));
+  }
 
-            doReturn(
-                jsonCredential1
-            ).when(mockCredentialDataService).findMostRecent("/cred2");
+  @Test
+  public void POST_logsTheCredentialAccess() throws Exception {
+    JsonCredential jsonCredential = mock(JsonCredential.class);
+    doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
+    when(jsonCredential.getName()).thenReturn("/cred1");
 
-            mockMvc.perform(post).andDo(print()).andExpect(status().isOk())
-                .andExpect(jsonPath("$.pp-config-server[0].credentials.secret1")
-                    .value(equalTo("secret1-value")))
-                .andExpect(jsonPath("$.pp-something-else[0].credentials.secret2")
-                    .value(equalTo("secret2-value")));
-          });
+    JsonCredential jsonCredential1 = mock(JsonCredential.class);
+    doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
+    when(jsonCredential1.getName()).thenReturn("/cred2");
 
-          it("logs the credential access", () -> {
-            JsonCredential jsonCredential = mock(JsonCredential.class);
-            doReturn(Maps.newHashMap("secret1", "secret1-value")).when(jsonCredential).getValue();
-            when(jsonCredential.getName()).thenReturn("/cred1");
+    doReturn(
+        jsonCredential
+    ).when(mockCredentialDataService).findMostRecent("/cred1");
 
-            JsonCredential jsonCredential1 = mock(JsonCredential.class);
-            doReturn(Maps.newHashMap("secret2", "secret2-value")).when(jsonCredential1).getValue();
-            when(jsonCredential1.getName()).thenReturn("/cred2");
+    doReturn(
+        jsonCredential1
+    ).when(mockCredentialDataService).findMostRecent("/cred2");
 
-            doReturn(
-                jsonCredential
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+    mockMvc.perform(makeValidPostRequest()).andExpect(status().isOk());
 
-            doReturn(
-                jsonCredential1
-            ).when(mockCredentialDataService).findMostRecent("/cred2");
+    auditingHelper
+        .verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/interpolate",
+            200, Lists
+                .newArrayList(
+                    new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1"),
+                    new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred2")
+                ));
+  }
 
-            mockMvc.perform(post).andExpect(status().isOk());
+  @Test
+  public void POST_whenAReferencedCredentialIsNotJsonType_throwsAnError() throws Exception {
+    ValueCredential valueCredential = mock(ValueCredential.class);
+    doReturn("something").when(valueCredential).getValue();
 
-            auditingHelper
-                .verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/interpolate",
-                    200, Lists
-                        .newArrayList(
-                            new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1"),
-                            new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred2")
-                        ));
-          });
-        });
+    doReturn(
+        valueCredential
+    ).when(mockCredentialDataService).findMostRecent("/cred1");
 
-        describe("when the requested credential is not a JsonCredentialValue", () -> {
-          it("should return an error", () -> {
-            ValueCredential valueCredential = mock(ValueCredential.class);
-            doReturn("something").when(valueCredential).getValue();
+    String expectedMessage = "The credential '/cred1' is not the expected type. A credhub-ref credential must be of type 'JSON'.";
 
-            doReturn(
-                valueCredential
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+    mockMvc.perform(post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(
+            "{"
+                + "    \"pp-config-server\": ["
+                + "      {"
+                + "        \"credentials\": {"
+                + "          \"credhub-ref\": \"((/cred1))\""
+                + "        },"
+                + "        \"label\": \"pp-config-server\""
+                + "      }"
+                + "    ]"
+                + "}"
+        )
+    ).andExpect(status().is4xxClientError())
+        .andExpect(jsonPath("$.error", equalTo(expectedMessage)));
+  }
 
-            mockMvc.perform(post("/api/v1/interpolate")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    "{"
-                        + "    \"pp-config-server\": ["
-                        + "      {"
-                        + "        \"credentials\": {"
-                        + "          \"credhub-ref\": \"((/cred1))\""
-                        + "        },"
-                        + "        \"label\": \"pp-config-server\""
-                        + "      }"
-                        + "    ]"
-                        + "}"
-                )
-            ).andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.error", equalTo(
-                    "The credential '/cred1' is not the expected type. "
-                        + "A credhub-ref credential must be of type 'JSON'.")));
-          });
-        });
+  @Test
+  public void POST_whenAReferencedCredentialDoesNotExist_throwsAnError() throws Exception {
+    doReturn(
+        null
+    ).when(mockCredentialDataService).findMostRecent("/cred1");
 
-        describe("when the requested credential is not accessible", () -> {
-          it("should return an error", () -> {
-            doReturn(
-                null
-            ).when(mockCredentialDataService).findMostRecent("/cred1");
+    String expectedMessage = "The request could not be completed because a reference credential could not be accessed. Please update and retry your request.";
+    mockMvc.perform(post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(
+            "{"
+                + "    \"pp-config-server\": ["
+                + "      {"
+                + "        \"credentials\": {"
+                + "          \"credhub-ref\": \"((/cred1))\""
+                + "        },"
+                + "        \"label\": \"pp-config-server\""
+                + "      }"
+                + "    ]"
+                + "}"
+        )
+    ).andExpect(status().is4xxClientError())
+        .andExpect(jsonPath("$.error", equalTo(expectedMessage)));
+  }
 
-            mockMvc.perform(post("/api/v1/interpolate")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    "{"
-                        + "    \"pp-config-server\": ["
-                        + "      {"
-                        + "        \"credentials\": {"
-                        + "          \"credhub-ref\": \"((/cred1))\""
-                        + "        },"
-                        + "        \"label\": \"pp-config-server\""
-                        + "      }"
-                        + "    ]"
-                        + "}"
-                )
-            ).andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.error", equalTo(
-                    "The request could not be completed because a reference credential"
-                        + " could not be accessed. Please update and retry your request.")));
-          });
-        });
+  @Test
+  public void POST_whenTheServicesPropertiesDoNotHaveCredentials_doesNotInterpolateThem() throws Exception {
+    String inputJsonString = "{"
+        + "    \"pp-config-server\": [{"
+        + "      \"blah\": {"
+        + "        \"credhub-ref\": \"((/cred1))\""
+        + "       },"
+        + "      \"label\": \"pp-config-server\""
+        + "    }]"
+        + "}";
+    MockHttpServletResponse response = mockMvc.perform(post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(inputJsonString)
+    ).andExpect(status().isOk()).andReturn().getResponse();
 
-        describe("when the services properties do not have credentials", () -> {
-          it("is ignored", () -> {
-            String inputJsonString = "{"
-                + "    \"pp-config-server\": [{"
-                + "      \"blah\": {"
-                + "        \"credhub-ref\": \"((/cred1))\""
-                + "       },"
-                + "      \"label\": \"pp-config-server\""
-                + "    }]"
-                + "}";
-            MockHttpServletResponse response = mockMvc.perform(post("/api/v1/interpolate")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(inputJsonString)
-            ).andExpect(status().isOk()).andReturn().getResponse();
+    assertThat(parse(response.getContentAsString()), equalTo(parse(inputJsonString)));
+  }
 
-            assertThat(parse(response.getContentAsString()), equalTo(parse(inputJsonString)));
-          });
-        });
+  @Test
+  public void POST_whenTheRequestBodyIsNotJSON_throwsAnError() throws Exception {
+    String inputJsonString = "</xml?>";
+    mockMvc.perform(post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(inputJsonString)
+    ).andExpect(status().isBadRequest());
+  }
 
-        describe("when it's not even json", () -> {
-          it("should fail with \"Bad Request\"", () -> {
-            String inputJsonString = "</xml?>";
-            mockMvc.perform(post("/api/v1/interpolate")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(inputJsonString)
-            ).andExpect(status().isBadRequest());
-          });
-        });
-      });
-    });
+  private MockHttpServletRequestBuilder makeValidPostRequest() {
+    return post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(
+            "{"
+                + "    \"pp-config-server\": ["
+                + "      {"
+                + "        \"credentials\": {"
+                + "          \"credhub-ref\": \"((/cred1))\""
+                + "        },"
+                + "        \"label\": \"pp-config-server\""
+                + "      }"
+                + "    ],"
+                + "    \"pp-something-else\": ["
+                + "      {"
+                + "        \"credentials\": {"
+                + "          \"credhub-ref\": \"((/cred2))\""
+                + "        },"
+                + "        \"something\": [\"pp-config-server\"]"
+                + "      }"
+                + "    ]"
+                + "  }"
+        );
   }
 }
