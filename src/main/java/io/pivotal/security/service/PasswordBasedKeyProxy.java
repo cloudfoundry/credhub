@@ -1,12 +1,8 @@
 package io.pivotal.security.service;
 
-import static io.pivotal.security.constants.EncryptionConstants.ITERATIONS;
-import static io.pivotal.security.constants.EncryptionConstants.KEY_BIT_LENGTH;
-import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
-import static java.util.Arrays.asList;
-import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
-
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -15,7 +11,13 @@ import java.util.Collections;
 import java.util.List;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import org.apache.commons.lang3.ArrayUtils;
+
+import static io.pivotal.security.constants.EncryptionConstants.ITERATIONS;
+import static io.pivotal.security.constants.EncryptionConstants.KEY_BIT_LENGTH;
+import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableList;
+import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 
 public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
 
@@ -70,11 +72,11 @@ public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
 
   @Override
   public boolean matchesCanary(EncryptionKeyCanary canary) {
-    if (canary.getSalt() == null || canary.getSalt().size() == 0) {
+    if (canary.getSalt() == null || canary.getSalt().length == 0) {
       return false;
     }
 
-    Key key = deriveKey(canary.getSalt());
+    Key key = deriveKey(unmodifiableList(asList(ArrayUtils.toObject(canary.getSalt()))));
 
     boolean result = super.matchesCanary(key, canary);
     if (result) {
