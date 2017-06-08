@@ -39,7 +39,12 @@ public class JsonInterpolationService {
         if (credentials == null || !(credentials instanceof Map)) {
           continue;
         }
-        Object credhubRef = ((Map)credentials).get("credhub-ref");
+        // Allow either snake_case or kebab-case
+        Object credhubRef = ((Map) credentials).get("credhub_ref");
+        if (credhubRef == null) {
+          credhubRef = ((Map) credentials).get("credhub-ref");
+        }
+
         if (credhubRef == null || !(credhubRef instanceof String)) {
           continue;
         }
@@ -47,12 +52,17 @@ public class JsonInterpolationService {
 
         Credential credential = credentialDataService.findMostRecent(credentialName);
         if (credential == null) {
+          eventAuditRecordParameters
+              .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
+
           throw new ParameterizedValidationException("error.interpolation.invalid_access");
         }
+
+        eventAuditRecordParameters
+            .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credential.getName()));
+
         if (credential instanceof JsonCredential) {
           propertiesMap.put("credentials", ((JsonCredential) credential).getValue());
-          eventAuditRecordParameters
-              .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credential.getName()));
         } else {
           throw new ParameterizedValidationException("error.interpolation.invalid_type",
               credentialName);

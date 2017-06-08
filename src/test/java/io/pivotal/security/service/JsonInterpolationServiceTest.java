@@ -19,6 +19,7 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.JsonHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -95,6 +96,7 @@ public class JsonInterpolationServiceTest {
           + "}";
 
       PasswordCredential passwordCredential = mock(PasswordCredential.class);
+      when(passwordCredential.getName()).thenReturn("/password_cred");
 
       doReturn(
           passwordCredential
@@ -105,6 +107,10 @@ public class JsonInterpolationServiceTest {
             eventAuditRecordParameters);
       } catch (ParameterizedValidationException exception) {
         assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_type"));
+        assertThat(eventAuditRecordParameters, hasSize(1));
+        assertThat(eventAuditRecordParameters, contains(
+            samePropertyValuesAs(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/password_cred"))
+        ));
       }
   }
 
@@ -130,6 +136,11 @@ public class JsonInterpolationServiceTest {
       subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
     } catch (ParameterizedValidationException exception) {
       assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_access"));
+
+      assertThat(eventAuditRecordParameters, hasSize(1));
+      assertThat(eventAuditRecordParameters, contains(
+          samePropertyValuesAs(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/missing_cred"))
+      ));
     }
   }
 
@@ -147,6 +158,7 @@ public class JsonInterpolationServiceTest {
         .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
+    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -163,6 +175,7 @@ public class JsonInterpolationServiceTest {
         .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
+    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -182,6 +195,7 @@ public class JsonInterpolationServiceTest {
         .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
+    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -194,6 +208,7 @@ public class JsonInterpolationServiceTest {
         .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
+    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -209,6 +224,7 @@ public class JsonInterpolationServiceTest {
         .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
+    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -218,6 +234,7 @@ public class JsonInterpolationServiceTest {
         .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
+    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   @Test
@@ -234,6 +251,7 @@ public class JsonInterpolationServiceTest {
     Map response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
+    assertThat(eventAuditRecordParameters, hasSize(0));
   }
 
   private void setupValidRequest() {
