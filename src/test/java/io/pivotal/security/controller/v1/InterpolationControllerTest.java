@@ -203,11 +203,15 @@ public class InterpolationControllerTest {
   @Test
   public void POST_whenTheRequestBodyIsNotJSON_throwsAnError() throws Exception {
     String inputJsonString = "</xml?>";
+    String expectedMessage = "The request could not be fulfilled because the request path or body did not meet expectation. Please check the documentation for required formatting and retry your request.";
+
     mockMvc.perform(post("/api/v1/interpolate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
         .content(inputJsonString)
-    ).andExpect(status().isBadRequest());
+    )
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo(expectedMessage)));
   }
 
   private MockHttpServletRequestBuilder makeValidPostRequest() {

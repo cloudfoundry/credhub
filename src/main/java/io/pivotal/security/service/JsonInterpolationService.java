@@ -1,17 +1,14 @@
 package io.pivotal.security.service;
 
-import com.jayway.jsonpath.DocumentContext;
-import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import net.minidev.json.JSONArray;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.InvalidObjectException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,33 +16,25 @@ import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 
 @Service
 public class JsonInterpolationService {
+  private CredentialDataService credentialDataService;
 
-  private final JsonContextFactory jsonContextFactory;
-
-  public JsonInterpolationService(JsonContextFactory jsonContextFactory) {
-    this.jsonContextFactory = jsonContextFactory;
+  @Autowired
+  public JsonInterpolationService(CredentialDataService credentialDataService) {
+    this.credentialDataService = credentialDataService;
   }
 
-  public DocumentContext interpolateCredHubReferences(String requestBody,
-      CredentialDataService credentialDataService,
-      List<EventAuditRecordParameters> eventAuditRecordParameters) throws Exception {
-    DocumentContext requestJson = parseToJson(requestBody);
+  public Map<String, Object> interpolateCredHubReferences(Map<String, Object> servicesMap,
+      List<EventAuditRecordParameters> eventAuditRecordParameters) {
 
-    Object request = requestJson.json();
-    if (!(request instanceof Map)) {
-      throw new InvalidJsonException();
-    }
-
-    Map<String, Object> servicesMap = (Map<String, Object>) request;
     for (Object serviceProperties : servicesMap.values()) {
-      if (serviceProperties == null || !(serviceProperties instanceof JSONArray)) {
+      if (serviceProperties == null || !(serviceProperties instanceof ArrayList)) {
         continue;
       }
-      for (Object properties : ((JSONArray) serviceProperties)) {
+      for (Object properties : (ArrayList) serviceProperties) {
         if (!(properties instanceof Map)) {
           continue;
         }
-        Map<String, Object> propertiesMap = (Map<String, Object>) properties;
+        Map<String, Object> propertiesMap = (Map) properties;
         Object credentials = propertiesMap.get("credentials");
         if (credentials == null || !(credentials instanceof Map)) {
           continue;
@@ -58,26 +47,22 @@ public class JsonInterpolationService {
 
         Credential credential = credentialDataService.findMostRecent(credentialName);
         if (credential == null) {
-          throw new InvalidObjectException("error.invalid_access");
+          throw new ParameterizedValidationException("error.interpolation.invalid_access");
         }
         if (credential instanceof JsonCredential) {
           propertiesMap.put("credentials", ((JsonCredential) credential).getValue());
           eventAuditRecordParameters
               .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credential.getName()));
         } else {
-          throw new ParameterizedValidationException("error.invalid_interpolation_type",
+          throw new ParameterizedValidationException("error.interpolation.invalid_type",
               credentialName);
         }
       }
     }
-    return requestJson;
+    return servicesMap;
   }
 
   private String getCredentialNameFromRef(String credhubRef) {
     return credhubRef.replaceFirst("^\\(\\(", "").replaceFirst("\\)\\)$", "");
-  }
-
-  private DocumentContext parseToJson(String requestBody) throws Exception {
-    return jsonContextFactory.getParseContext().parse(requestBody);
   }
 }
