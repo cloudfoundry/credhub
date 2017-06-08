@@ -52,7 +52,7 @@ public class JsonInterpolationServiceTest {
       requestUUID = UUID.randomUUID();
     });
 
-    describe("#interpolateCredhubReferences", () -> {
+    describe("#interpolateCredHubReferences", () -> {
       describe("when properly formatted credentials section is found", () -> {
         describe("and the request is correct", () -> {
           beforeEach(() -> {
@@ -109,7 +109,7 @@ public class JsonInterpolationServiceTest {
             ).when(mockCredentialDataService).findMostRecent("/cred3");
 
             response = subject
-                .interpolateCredhubReferences(
+                .interpolateCredHubReferences(
                     inputJson,
                     mockCredentialDataService,
                     eventAuditRecordParameters
@@ -169,7 +169,7 @@ public class JsonInterpolationServiceTest {
                   passwordCredential
               ).when(mockCredentialDataService).findMostRecent("/password_cred");
 
-              subject.interpolateCredhubReferences(inputJson, mockCredentialDataService,
+              subject.interpolateCredHubReferences(inputJson, mockCredentialDataService,
                   eventAuditRecordParameters);
             });
 
@@ -192,7 +192,7 @@ public class JsonInterpolationServiceTest {
                   null
               ).when(mockCredentialDataService).findMostRecent("/missing_cred");
 
-              subject.interpolateCredhubReferences(inputJson, mockCredentialDataService,
+              subject.interpolateCredHubReferences(inputJson, mockCredentialDataService,
                   eventAuditRecordParameters);
             });
       });
@@ -208,7 +208,7 @@ public class JsonInterpolationServiceTest {
             + "  }]"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+            .interpolateCredHubReferences(inputJsonString, mock(CredentialDataService.class),
                 eventAuditRecordParameters);
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
@@ -226,7 +226,7 @@ public class JsonInterpolationServiceTest {
             + "  }]"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+            .interpolateCredHubReferences(inputJsonString, mock(CredentialDataService.class),
                 eventAuditRecordParameters);
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
@@ -246,7 +246,7 @@ public class JsonInterpolationServiceTest {
             + "  }]"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+            .interpolateCredHubReferences(inputJsonString, mock(CredentialDataService.class),
                 eventAuditRecordParameters);
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
@@ -259,7 +259,7 @@ public class JsonInterpolationServiceTest {
             + "  \"pp-config-server\": [\"what is this?\"]"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+            .interpolateCredHubReferences(inputJsonString, mock(CredentialDataService.class),
                 eventAuditRecordParameters);
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
@@ -275,7 +275,7 @@ public class JsonInterpolationServiceTest {
             + "  }]"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+            .interpolateCredHubReferences(inputJsonString, mock(CredentialDataService.class),
                 eventAuditRecordParameters);
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
@@ -285,7 +285,7 @@ public class JsonInterpolationServiceTest {
     describe("when no properly formatted credentials section exists", () -> {
       it("is ignored", () -> {
         DocumentContext response = subject
-            .interpolateCredhubReferences("{}", mock(CredentialDataService.class),
+            .interpolateCredHubReferences("{}", mock(CredentialDataService.class),
                 eventAuditRecordParameters);
 
         assertThat(parse(response.jsonString()), equalTo(parse("{}")));
@@ -303,7 +303,7 @@ public class JsonInterpolationServiceTest {
             + "  }"
             + "}";
         DocumentContext response = subject
-            .interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+            .interpolateCredHubReferences(inputJsonString, mock(CredentialDataService.class),
                 eventAuditRecordParameters);
 
         assertThat(parse(response.jsonString()), equalTo(parse(inputJsonString)));
@@ -313,7 +313,7 @@ public class JsonInterpolationServiceTest {
     describe("when input is not even json", () -> {
       itThrows("should throw exception", InvalidJsonException.class, () -> {
         String inputJsonString = "</xml?>";
-        subject.interpolateCredhubReferences(inputJsonString, mock(CredentialDataService.class),
+        subject.interpolateCredHubReferences(inputJsonString, mock(CredentialDataService.class),
             eventAuditRecordParameters);
       });
     });

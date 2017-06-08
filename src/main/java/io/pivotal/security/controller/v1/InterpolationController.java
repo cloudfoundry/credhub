@@ -52,7 +52,7 @@ public class InterpolationController {
       DocumentContext responseJson;
       try {
         responseJson = jsonInterpolationService
-            .interpolateCredhubReferences(requestAsString, credentialDataService,
+            .interpolateCredHubReferences(requestAsString, credentialDataService,
                 eventAuditRecordParameters);
       } catch (Exception e) {
         throw new RuntimeException(e);

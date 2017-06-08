@@ -26,7 +26,7 @@ public class JsonInterpolationService {
     this.jsonContextFactory = jsonContextFactory;
   }
 
-  public DocumentContext interpolateCredhubReferences(String requestBody,
+  public DocumentContext interpolateCredHubReferences(String requestBody,
       CredentialDataService credentialDataService,
       List<EventAuditRecordParameters> eventAuditRecordParameters) throws Exception {
     DocumentContext requestJson = parseToJson(requestBody);
