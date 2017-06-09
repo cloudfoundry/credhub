@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import io.pivotal.security.config.JsonContextFactory;
 import io.pivotal.security.util.CurrentTimeProvider;
+import org.apache.coyote.http11.AbstractHttp11Protocol;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509ExtensionUtils;
@@ -11,6 +12,8 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
@@ -53,5 +56,12 @@ public class CredentialManagerApp {
   public X509ExtensionUtils x509ExtensionUtils() throws OperatorCreationException {
     return new X509ExtensionUtils(new BcDigestCalculatorProvider().get(
         AlgorithmIdentifier.getInstance(OIWObjectIdentifiers.idSHA1)));
+  }
+
+  @Bean
+  public EmbeddedServletContainerCustomizer servletContainerCustomizer() {
+    return (factory) -> ((TomcatEmbeddedServletContainerFactory) factory)
+        .addConnectorCustomizers((connector) -> ((AbstractHttp11Protocol<?>) connector.getProtocolHandler())
+            .setUseServerCipherSuitesOrder(Boolean.toString(true)));
   }
 }
