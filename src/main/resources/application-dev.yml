@@ -43,3 +43,4 @@ server:
     trust_store: src/test/resources/trust_store.jks
     trust_store_password: changeit
     trust_store_type: JKS
+    enabled-protocols: TLSv1.2
