@@ -55,8 +55,6 @@ public class EncryptorTest {
             "AES");
         when(keyMapper.getKeyForUuid(oldUuid)).thenReturn(oldKey);
         when(keyMapper.getKeyForUuid(newUuid)).thenReturn(newKey);
-        when(keyMapper.getUuidForKey(oldKey)).thenReturn(oldUuid);
-        when(keyMapper.getUuidForKey(newKey)).thenReturn(newUuid);
 
         RetryingEncryptionService encryptionService = new RetryingEncryptionService(
             bcEncryptionService, keyMapper, new BcNullConnection());

@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 
 import java.security.Key;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -161,10 +160,14 @@ public class EncryptionKeyCanaryMapperTest {
 
       describe("when there are no canaries in the database", () -> {
         beforeEach(() -> {
-          when(encryptionKeyCanaryDataService.findAll()).thenReturn(new ArrayList<>());
+          List<EncryptionKeyCanary> canaries = newArrayList();
+          when(encryptionKeyCanaryDataService.findAll()).thenReturn(canaries);
 
           when(encryptionKeyCanaryDataService.save(any(EncryptionKeyCanary.class)))
-              .thenReturn(activeKeyCanary);
+              .thenAnswer(invocation -> {
+                canaries.add(activeKeyCanary);
+                return activeKeyCanary;
+              });
 
           subject = new EncryptionKeyCanaryMapper(encryptionKeyCanaryDataService,
               encryptionKeysConfiguration, encryptionService);
@@ -176,7 +179,6 @@ public class EncryptionKeyCanaryMapperTest {
 
         it("maps between the new canary and the active key", () -> {
           assertThat(subject.getKeyForUuid(activeCanaryUuid), equalTo(activeKey));
-          assertThat(subject.getUuidForKey(activeKey), equalTo(activeCanaryUuid));
         });
 
         it("sets the new canary's UUID as active", () -> {

@@ -367,7 +367,6 @@ public class RetryingEncryptionServiceTest {
 
           when(encryptionService.decrypt(any(Key.class), any(byte[].class), any(byte[].class)))
               .thenThrow(new ProviderException("function 'C_GenerateRandom' returns 0x30"));
-          when(keyMapper.getUuidForKey(eq(key))).thenReturn(activeKeyUuid);
 
           firstThread.start();
 
