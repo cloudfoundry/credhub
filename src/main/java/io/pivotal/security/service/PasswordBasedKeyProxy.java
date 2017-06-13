@@ -9,8 +9,10 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.List;
+import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 import static io.pivotal.security.constants.EncryptionConstants.ITERATIONS;
 import static io.pivotal.security.constants.EncryptionConstants.KEY_BIT_LENGTH;
@@ -46,12 +48,14 @@ public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
 
   public Key deriveKey(List<Byte> salt) {
     final Byte[] saltArray = salt.toArray(new Byte[salt.size()]);
-    PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), toPrimitive(saltArray), ITERATIONS,
+    PBEKeySpec pbeSpec = new PBEKeySpec(password.toCharArray(), toPrimitive(saltArray), ITERATIONS,
         KEY_BIT_LENGTH);
 
     try {
-      SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA384");
-      return skf.generateSecret(spec);
+      SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA384");
+      final SecretKey pbeKey = keyFactory.generateSecret(pbeSpec);
+      SecretKeySpec aesKeySpec = new SecretKeySpec(pbeKey.getEncoded(), "AES");
+      return SecretKeyFactory.getInstance("AES").generateSecret(aesKeySpec);
     } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
       throw new RuntimeException(e);
     }

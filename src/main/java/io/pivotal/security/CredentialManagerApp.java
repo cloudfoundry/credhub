@@ -55,7 +55,7 @@ public class CredentialManagerApp {
   @Bean
   public X509ExtensionUtils x509ExtensionUtils() throws OperatorCreationException {
     return new X509ExtensionUtils(new BcDigestCalculatorProvider().get(
-        AlgorithmIdentifier.getInstance(OIWObjectIdentifiers.idSHA1)));
+        new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1)));
   }
 
   @Bean

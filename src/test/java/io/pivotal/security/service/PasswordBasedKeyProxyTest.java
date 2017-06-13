@@ -62,11 +62,7 @@ public class PasswordBasedKeyProxyTest {
         assertThat(hexOutput, equalTo(knownGeneratedKey));
       });
 
-      it("should use PBKDF2WithHmacSHA384 as the hashing algorithm", () -> {
-        assertThat(derivedKey.getAlgorithm(), equalTo("PBKDF2WithHmacSHA384"));
-      });
-
-      it("should derive the key that is 256 bits long", () -> {
+      it("should derive a key that is 256 bits long", () -> {
         assertThat(derivedKey.getEncoded().length, equalTo(32));
       });
     });

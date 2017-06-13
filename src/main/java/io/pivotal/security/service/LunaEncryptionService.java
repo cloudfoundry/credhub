@@ -2,14 +2,16 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.constants.CipherTypes;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.spec.IvParameterSpec;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.AlgorithmParameterSpec;
+import javax.crypto.Cipher;
+import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 
 @SuppressWarnings("unused")
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
@@ -37,7 +39,7 @@ public class LunaEncryptionService extends EncryptionServiceWithConnection {
   }
 
   @Override
-  IvParameterSpec generateParameterSpec(byte[] nonce) {
+  AlgorithmParameterSpec generateParameterSpec(byte[] nonce) {
     return new IvParameterSpec(nonce);
   }
 
