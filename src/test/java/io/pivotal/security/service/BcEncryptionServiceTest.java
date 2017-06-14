@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.EncryptionKeyMetadata;
+import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -14,7 +15,7 @@ public class BcEncryptionServiceTest {
 
   {
     it("should created a password-based key proxy", () -> {
-      BcEncryptionService subject = new BcEncryptionService(getBouncyCastleProvider());
+      BcEncryptionService subject = new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl());
 
       EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
       keyMetadata.setEncryptionPassword("foobar");

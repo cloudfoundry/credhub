@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.runner.RunWith;
@@ -40,14 +41,13 @@ public class PasswordBasedKeyProxyTest {
   {
     beforeEach(() -> {
       password = "abcdefghijklmnopqrst";
-      encryptionService = new BcEncryptionService(getBouncyCastleProvider());
-      subject = new PasswordBasedKeyProxy(password, encryptionService);
+      encryptionService = new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl());
+      subject = new PasswordBasedKeyProxy(password, 1, encryptionService);
     });
 
     describe("#deriveKey", () -> {
       final String knownRandomNumber = "7034522dc85138530e44b38d0569ca67";
-      final String knownGeneratedKey = "fae3e313f599e8c2327d78c1e9599102"
-          + "15f19498fe2c1d199302f5c32c9790c9";
+      final String knownGeneratedKey = "09cafa70264eaa47dcf0678dfd03aa73d24044df47b0381c17ebe0ed4e2f3d91";
 
       beforeEach(() -> {
         byte[] salt = Hex.decode(knownRandomNumber); // gen'dp originally from SecureRandom..
@@ -70,7 +70,7 @@ public class PasswordBasedKeyProxyTest {
     describe("#matchesCanary", () -> {
       describe("when canary matches", () -> {
         beforeEach(() -> {
-          PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, encryptionService);
+          PasswordBasedKeyProxy oldProxy = new PasswordBasedKeyProxy(password, 1, encryptionService);
           final List<Byte> salt = generateSalt();
           derivedKey = oldProxy.deriveKey(salt);
           final Encryption encryptedCanary = encryptionService
@@ -119,7 +119,7 @@ public class PasswordBasedKeyProxyTest {
     describe("#getKey", () -> {
       describe("when no key has been set", () -> {
         it("derives a new key and salt", () -> {
-          subject = new PasswordBasedKeyProxy("some password", encryptionService);
+          subject = new PasswordBasedKeyProxy("some password", 1, encryptionService);
           assertThat(subject.getSalt(), equalTo(null));
 
           assertThat(subject.getKey(), not(equalTo(null)));

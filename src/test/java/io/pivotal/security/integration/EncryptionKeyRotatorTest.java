@@ -280,8 +280,7 @@ public class EncryptionKeyRotatorTest {
 
     credentialDataService.save(credentialWithCurrentKey);
 
-    final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password",
-        encryptionService);
+    final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password", 1, encryptionService);
     Key oldKey = keyProxy.deriveKey(generateSalt());
 
     oldCanary = new EncryptionKeyCanary();

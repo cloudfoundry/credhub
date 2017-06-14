@@ -6,6 +6,7 @@ import io.pivotal.security.service.BcNullConnection;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.service.RetryingEncryptionService;
+import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
 import org.junit.runner.RunWith;
 
 import java.security.Key;
@@ -45,7 +46,7 @@ public class EncryptorTest {
 
         keyMapper = mock(EncryptionKeyCanaryMapper.class);
         BcEncryptionService bcEncryptionService;
-        bcEncryptionService = new BcEncryptionService(getBouncyCastleProvider());
+        bcEncryptionService = new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl());
 
         Key newKey = new SecretKeySpec(parseHexBinary("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"), 0, 16,
             "AES");

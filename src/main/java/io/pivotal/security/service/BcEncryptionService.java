@@ -21,9 +21,11 @@ public class BcEncryptionService extends EncryptionService {
 
   private final SecureRandom secureRandom;
   private final Provider bouncyCastleProvider;
+  private final PasswordKeyProxyFactory passwordKeyProxyFactory;
 
   @Autowired
-  public BcEncryptionService(BouncyCastleProvider bouncyCastleProvider) throws Exception {
+  public BcEncryptionService(BouncyCastleProvider bouncyCastleProvider, PasswordKeyProxyFactory passwordKeyProxyFactory) throws Exception {
+    this.passwordKeyProxyFactory = passwordKeyProxyFactory;
     this.secureRandom = SecureRandom.getInstance("SHA1PRNG");
     this.bouncyCastleProvider = bouncyCastleProvider;
   }
@@ -45,7 +47,7 @@ public class BcEncryptionService extends EncryptionService {
 
   @Override
   KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata) {
-    return new PasswordBasedKeyProxy(encryptionKeyMetadata.getEncryptionPassword(), this);
+    return passwordKeyProxyFactory.createPasswordKeyProxy(encryptionKeyMetadata, this);
   }
 }
 

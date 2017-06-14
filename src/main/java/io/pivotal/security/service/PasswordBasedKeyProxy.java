@@ -14,7 +14,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import static io.pivotal.security.constants.EncryptionConstants.ITERATIONS;
 import static io.pivotal.security.constants.EncryptionConstants.KEY_BIT_LENGTH;
 import static io.pivotal.security.constants.EncryptionConstants.SALT_SIZE;
 import static java.util.Arrays.asList;
@@ -24,11 +23,13 @@ import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
 
   private String password = null;
+  private int numIterations;
   private List<Byte> salt;
 
-  public PasswordBasedKeyProxy(String password, EncryptionService encryptionService) {
+  public PasswordBasedKeyProxy(String password, int numIterations, EncryptionService encryptionService) {
     super(null, encryptionService);
     this.password = password;
+    this.numIterations = numIterations;
   }
 
   public static List<Byte> generateSalt() {
@@ -48,7 +49,7 @@ public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
 
   public Key deriveKey(List<Byte> salt) {
     final Byte[] saltArray = salt.toArray(new Byte[salt.size()]);
-    PBEKeySpec pbeSpec = new PBEKeySpec(password.toCharArray(), toPrimitive(saltArray), ITERATIONS,
+    PBEKeySpec pbeSpec = new PBEKeySpec(password.toCharArray(), toPrimitive(saltArray), numIterations,
         KEY_BIT_LENGTH);
 
     try {

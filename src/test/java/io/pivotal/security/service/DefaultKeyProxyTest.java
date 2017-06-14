@@ -4,6 +4,7 @@ import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.exceptions.IncorrectKeyException;
+import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.runner.RunWith;
 
@@ -34,7 +35,9 @@ public class DefaultKeyProxyTest {
   {
     beforeEach(() -> {
       final BcEncryptionService encryptionService = new BcEncryptionService(
-          getBouncyCastleProvider());
+          getBouncyCastleProvider(),
+          new PasswordKeyProxyFactoryTestImpl()
+      );
       EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
       keyMetadata.setEncryptionPassword("p@ssword");
 
@@ -54,7 +57,7 @@ public class DefaultKeyProxyTest {
     describe("#isMatchingCanary", () -> {
       beforeEach(() -> {
         subject = new DefaultKeyProxy(encryptionKey,
-            new BcEncryptionService(new BouncyCastleProvider()));
+            new BcEncryptionService(new BouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()));
       });
 
       describe("happy path", () -> {
@@ -73,7 +76,7 @@ public class DefaultKeyProxyTest {
           () -> {
             beforeEach(() -> {
               subject = new DefaultKeyProxy(encryptionKey,
-                  new BcEncryptionService(getBouncyCastleProvider()) {
+                  new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
                     @Override
                     public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
                         throws Exception {
@@ -90,7 +93,7 @@ public class DefaultKeyProxyTest {
       describe("when decrypt throws AEADBadTagException", () -> {
         beforeEach(() -> {
           subject = new DefaultKeyProxy(encryptionKey,
-              new BcEncryptionService(getBouncyCastleProvider()) {
+              new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
                 @Override
                 public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
                     throws Exception {
@@ -108,7 +111,7 @@ public class DefaultKeyProxyTest {
         itThrows("IncorrectKeyException for BadPaddingException", IncorrectKeyException.class,
             () -> {
               subject = new DefaultKeyProxy(encryptionKey,
-                  new BcEncryptionService(getBouncyCastleProvider()) {
+                  new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
                     @Override
                     public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
                         throws Exception {
@@ -121,7 +124,7 @@ public class DefaultKeyProxyTest {
         itThrows("IncorrectKeyException for IllegalBlockSizeException", IncorrectKeyException.class,
             () -> {
               subject = new DefaultKeyProxy(encryptionKey,
-                  new BcEncryptionService(getBouncyCastleProvider()) {
+                  new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
                     @Override
                     public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
                         throws Exception {
@@ -132,7 +135,7 @@ public class DefaultKeyProxyTest {
             });
         itThrows("IncorrectKeyException for Exception", IncorrectKeyException.class, () -> {
           subject = new DefaultKeyProxy(encryptionKey,
-              new BcEncryptionService(getBouncyCastleProvider()) {
+              new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
                 @Override
                 public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
                     throws Exception {
