@@ -22,8 +22,8 @@ apply plugin: "jacoco"
 
 jar {
     baseName = "credhub"
+    def versionFile = new File("$projectDir/src/main/resources/version")
     if (System.getenv("VERSION")) {
-        def versionFile = new File("$projectDir/src/main/resources/version")
         versionFile.write(System.getenv("VERSION"))
     }
 }

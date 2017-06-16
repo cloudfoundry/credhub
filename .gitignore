@@ -173,3 +173,5 @@ gradle-app.setting
 
 # Ignore any key stores
 *.jks
+
+src/main/resources/version

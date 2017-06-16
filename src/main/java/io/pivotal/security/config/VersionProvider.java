@@ -8,10 +8,14 @@ import java.io.IOException;
 
 @Component
 public class VersionProvider {
-  private final String version;
+  private String version;
 
-  public VersionProvider(ResourceReader resources) throws IOException {
-    version = resources.readFileToString("version").trim();
+  VersionProvider(ResourceReader resources) {
+    try {
+      version = resources.readFileToString("version").trim();
+    } catch (IOException | IllegalArgumentException e) {
+      version = "unknown";
+    }
   }
 
   public String currentVersion() {
