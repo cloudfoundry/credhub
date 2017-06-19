@@ -10,6 +10,7 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
@@ -154,6 +155,32 @@ public class CredentialServiceTest {
   }
 
   @Test
+  public void save_whenThereIsANewCredentialAndSelfUpdatingAcls_throwsException() {
+    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(null);
+    when(credentialDataService.save(any(Credential.class)))
+        .thenReturn(new PasswordCredential().setEncryptor(encryptor));
+    when(permissionService.validAclUpdateOperation(userContext, "test-user"))
+        .thenReturn(false);
+
+    accessControlEntries.add(new PermissionEntry("test-user", Arrays.asList(WRITE, WRITE_ACL)));
+    try {
+
+      subject.save(
+          userContext,
+          parametersList,
+          CREDENTIAL_NAME,
+          true,
+          "password",
+          generationParameters,
+          credentialValue,
+          accessControlEntries,
+          currentUserPermissions);
+    } catch (InvalidAclOperationException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.invalid_update_operation"));
+    }
+  }
+
+  @Test
   public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
@@ -194,8 +221,10 @@ public class CredentialServiceTest {
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
+    when(permissionService.validAclUpdateOperation(userContext, "some_actor")).thenReturn(true);
 
-    accessControlEntries.add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
+    accessControlEntries
+        .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
     subject.save(
         userContext,
         parametersList,
@@ -216,7 +245,8 @@ public class CredentialServiceTest {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(false);
 
-    accessControlEntries.add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
+    accessControlEntries
+        .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
 
     try {
       subject.save(
@@ -328,6 +358,8 @@ public class CredentialServiceTest {
   public void save_whenOverwriteIsTrue_logsACL_UPDATE() {
     PasswordCredential credential = new PasswordCredential(CREDENTIAL_NAME).setEncryptor(encryptor);
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
+    when(permissionService.validAclUpdateOperation(userContext, "Spock")).thenReturn(true);
+    when(permissionService.validAclUpdateOperation(userContext, "McCoy")).thenReturn(true);
 
     accessControlEntries.addAll(Arrays.asList(
         new PermissionEntry("Spock", Arrays.asList(WRITE)),

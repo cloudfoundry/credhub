@@ -39,7 +39,8 @@ public class GenerateRequestHandler {
       generationParameters = ((PasswordGenerateRequest) requestBody).getGenerationParameters();
     }
 
-    return credentialService.save(userContext,
+    return credentialService.save(
+        userContext,
         parametersList,
         requestBody.getName(),
         requestBody.isOverwrite(),

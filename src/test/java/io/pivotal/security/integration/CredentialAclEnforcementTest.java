@@ -157,7 +157,7 @@ public class CredentialAclEnforcementTest {
             + "  \"type\" : \"password\",\n"
             + "  \"additional_permissions\": [\n"
             + "     { \n"
-            + "       \"actor\": \"uaa-client:credhub_test\",\n"
+            + "       \"actor\": \"bob\",\n"
             + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
             + "     }]"
             + "}")
@@ -168,6 +168,58 @@ public class CredentialAclEnforcementTest {
     this.mockMvc.perform(edit)
         .andDo(print())
         .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
+  }
+
+  @Test
+  public void PUT_whenTheUserUpdatesOwnPermission_returnsBadRequest() throws Exception {
+    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
+    final MockHttpServletRequestBuilder edit = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        // language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
+            + "  \"value\" : \"Resistance is futile\",\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"additional_permissions\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d\",\n"
+            + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
+            + "     }]"
+            + "}")
+        .accept(APPLICATION_JSON);
+
+    String expectedError = "Modification of access control for the authenticated user is not allowed. Please contact an administrator.";
+
+    this.mockMvc.perform(edit)
+        .andDo(print())
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
+  }
+
+  @Test
+  public void POST_whenTheUserUpdatesOwnPermission_returnsBadRequest() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"name\": \"" + "test-credential" + "\",\n"
+            + "  \"type\": \"password\","
+            + "  \"additional_permissions\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d\",\n"
+            + "       \"operations\": [\"read\"]\n"
+            + "     }]"
+            + "}");
+
+    String expectedError = "Modification of access control for the authenticated user is not allowed. Please contact an administrator.";
+
+    this.mockMvc.perform(post)
+        .andDo(print())
+        .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.error", equalTo(expectedError)));
   }
 

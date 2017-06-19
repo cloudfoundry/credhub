@@ -9,6 +9,7 @@ import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
+import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
@@ -75,6 +76,12 @@ public class CredentialService {
 
     if (existingCredential != null && !existingCredential.getCredentialType().equals(type)) {
       throw new ParameterizedValidationException("error.type_mismatch");
+    }
+
+    for (PermissionEntry accessControlEntry : accessControlEntries) {
+      if (!permissionService.validAclUpdateOperation(userContext, accessControlEntry.getActor())) {
+        throw new InvalidAclOperationException("error.acl.invalid_update_operation");
+      }
     }
 
     Credential storedCredentialVersion = existingCredential;
