@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.jayway.jsonpath.InvalidJsonException;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.exceptions.KeyNotFoundException;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
@@ -113,6 +114,12 @@ public class ExceptionHandlers {
       }
     }
     return badRequestResponse();
+  }
+
+  @ExceptionHandler(InvalidAclOperationException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseError handleIncorrectAclOperation(InvalidAclOperationException e) {
+    return constructError(e.getMessage());
   }
 
   @ExceptionHandler(AuditSaveFailureException.class)

@@ -246,6 +246,27 @@ public class PermissionServiceTest {
     assertTrue(subject.hasCredentialDeletePermission(userContext, CREDENTIAL_NAME));
   }
 
+  @Test
+  public void validDeleteOperation_withoutEnforcement_returnsTrue() {
+    initializeEnforcement(false);
+
+    assertTrue(subject.validDeleteOperation(userContext, "test-actor"));
+  }
+
+  @Test
+  public void validDeleteOperation_withEnforcement_whenTheUserDeletesOthersACL_returnsTrue() {
+    initializeEnforcement(true);
+
+    assertTrue(subject.validDeleteOperation(userContext, "random-actor"));
+  }
+
+  @Test
+  public void validDeleteOperation_withEnforcement_whenTheUserDeletesOwnACL_returnsFalse() {
+    initializeEnforcement(true);
+
+    assertFalse(subject.validDeleteOperation(userContext, "test-actor"));
+  }
+
   private void initializeEnforcement(boolean enabled) {
     ReflectionTestUtils
         .setField(subject, PermissionService.class, "enforcePermissions", enabled, boolean.class);

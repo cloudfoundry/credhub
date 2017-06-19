@@ -1,10 +1,11 @@
 package io.pivotal.security.handler;
 
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialNameDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionService;
@@ -64,6 +65,10 @@ public class PermissionsHandler {
   public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {
     if (!permissionService.hasAclWritePermission(userContext, credentialName)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
+    }
+
+    if(!permissionService.validDeleteOperation(userContext, actor)) {
+      throw new InvalidAclOperationException("error.acl.invalid_update_operation");
     }
 
     boolean successfullyDeleted = permissionsDataService

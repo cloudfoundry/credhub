@@ -71,4 +71,12 @@ public class PermissionService {
   private String getActorFromUserContext(UserContext user) {
     return user.getAclUser();
   }
+
+  public boolean validDeleteOperation(UserContext userContext, String actor) {
+    if (enforcePermissions) {
+      return !userContext.getAclUser().equals(actor);
+    } else {
+      return true;
+    }
+  }
 }

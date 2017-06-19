@@ -258,6 +258,44 @@ public class PermissionsEndpointTest {
   }
 
   @Test
+  public void DELETE_whenTheActorIsDeletingOwnPermissions_returnsBadRequest() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"credential_name\": \"" + credentialName + "\",\n"
+            + "  \"permissions\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"dan\",\n"
+            + "       \"operations\": [\"read\"]\n"
+            + "     }]"
+            + "}");
+
+    mockMvc.perform(post)
+        .andExpect(status().isOk());
+
+    mockMvc.perform(
+        delete("/api/v1/permissions?credential_name=" + credentialName + "&actor=uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+    )
+        .andExpect(status().is4xxClientError());
+
+    auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        "/api/v1/permissions",
+        400,
+        newArrayList(
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+            new EventAuditRecordParameters(ACL_DELETE, credentialName, DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
+        )
+    );
+  }
+
+  @Test
   public void DELETE_whenTheActorDoesNotHavePermissionToDeletePermissions_returnsNotFound() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

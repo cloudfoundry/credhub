@@ -5,6 +5,7 @@ import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialNameDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
+import io.pivotal.security.exceptions.InvalidAclOperationException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.service.PermissionService;
@@ -191,6 +192,8 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
     when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
+    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
+        .thenReturn(true);
 
     subject.deletePermissionEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
 
@@ -199,8 +202,24 @@ public class PermissionsHandlerTest {
   }
 
   @Test
+  public void deletePermissions_whenTheUserDeletesOwnPermission_throwsAnException() {
+    when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
+    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
+        .thenReturn(false);
+
+    try {
+      subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
+    } catch( InvalidAclOperationException iaoe ){
+      assertThat(iaoe.getMessage(), equalTo("error.acl.invalid_update_operation"));
+    }
+  }
+
+  @Test
   public void deletePermissions_whenNothingIsDeleted_throwsAnException() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
+    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
         .thenReturn(true);
     when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(false);
@@ -217,6 +236,8 @@ public class PermissionsHandlerTest {
   public void deletePermissions_whenTheUserLacksPermission_throwsInsteadOfDeletingThePermissions() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(false);
+    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
+        .thenReturn(true);
 
     try {
       subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
