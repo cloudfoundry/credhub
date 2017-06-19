@@ -23,7 +23,7 @@ security:
           gYZcTzJc6z/xIEH5/aViK/+xVMaVlAWsw9hkaxJRu/C84R715/g0boZIJoqNT7jD
           8QIDAQAB
           -----END PUBLIC KEY-----
-  authorized:
+  authorization:
     acls:
       # Change to true to enable ACL enforcement
       enabled: false

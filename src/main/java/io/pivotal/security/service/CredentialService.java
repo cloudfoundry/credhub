@@ -66,8 +66,7 @@ public class CredentialService {
         .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
 
     if (existingCredential != null) {
-      permissionService
-          .verifyCredentialWritePermission(userContext, credentialName);
+      verifyCredentialWritePermission(userContext, credentialName);
     }
 
     if (existingCredential != null && accessControlEntries.size() > 0) {
@@ -109,6 +108,12 @@ public class CredentialService {
     }
 
     return CredentialView.fromEntity(storedCredentialVersion);
+  }
+
+  private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
+    if (!permissionService.hasCredentialWritePermission(userContext, credentialName)) {
+      throw new PermissionException("error.acl.lacks_credential_write");
+    }
   }
 
   private void verifyAclWrite(UserContext userContext, String credentialName) {

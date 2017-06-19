@@ -6,7 +6,6 @@ import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
-import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.view.PermissionsView;
@@ -17,6 +16,7 @@ import java.util.List;
 
 @Component
 public class PermissionsHandler {
+
   private final PermissionService permissionService;
   private final PermissionsDataService permissionsDataService;
   private final CredentialNameDataService credentialNameDataService;
@@ -33,22 +33,20 @@ public class PermissionsHandler {
   }
 
   public PermissionsView getPermissions(UserContext userContext, String name) {
-    try {
-      final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
+    final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
-      permissionService.verifyAclReadPermission(userContext, name);
-
-      return new PermissionsView(
-          credentialName.getName(),
-          permissionsDataService.getAccessControlList(credentialName)
-      );
-    } catch (PermissionException pe){
-      // lack of permissions should be indistinguishable from not found.
+    if (!permissionService.hasAclReadPermission(userContext, name)) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
+
+    return new PermissionsView(
+        credentialName.getName(),
+        permissionsDataService.getAccessControlList(credentialName)
+    );
   }
 
-  public PermissionsView setPermissions(UserContext userContext, String name, List<PermissionEntry> permissionEntryList) {
+  public PermissionsView setPermissions(UserContext userContext, String name,
+      List<PermissionEntry> permissionEntryList) {
     final CredentialName credentialName = credentialNameDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
@@ -57,7 +55,7 @@ public class PermissionsHandler {
     }
 
     for (PermissionEntry permissionEntry : permissionEntryList) {
-      if(!permissionService.validAclUpdateOperation(userContext, permissionEntry.getActor())) {
+      if (!permissionService.validAclUpdateOperation(userContext, permissionEntry.getActor())) {
         throw new InvalidAclOperationException("error.acl.invalid_update_operation");
       }
     }
@@ -65,7 +63,8 @@ public class PermissionsHandler {
     permissionsDataService
         .saveAccessControlEntries(credentialName, permissionEntryList);
 
-    return new PermissionsView(credentialName.getName(), permissionsDataService.getAccessControlList(credentialName));
+    return new PermissionsView(credentialName.getName(),
+        permissionsDataService.getAccessControlList(credentialName));
   }
 
   public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {
@@ -73,7 +72,7 @@ public class PermissionsHandler {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    if(!permissionService.validAclUpdateOperation(userContext, actor)) {
+    if (!permissionService.validAclUpdateOperation(userContext, actor)) {
       throw new InvalidAclOperationException("error.acl.invalid_update_operation");
     }
 

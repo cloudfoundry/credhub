@@ -66,6 +66,8 @@ public class PermissionsHandlerTest {
     List<PermissionEntry> accessControlList = newArrayList();
     when(permissionsDataService.getAccessControlList(any(CredentialName.class)))
         .thenReturn(accessControlList);
+    when(permissionService.hasAclReadPermission(null, CREDENTIAL_NAME))
+        .thenReturn(true);
     when(credentialNameDataService.findOrThrow(any(String.class)))
         .thenReturn(new CredentialName(CREDENTIAL_NAME));
 
@@ -82,6 +84,8 @@ public class PermissionsHandlerTest {
         PermissionOperation.READ,
         PermissionOperation.WRITE
     );
+    when(permissionService.hasAclReadPermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
     PermissionEntry permissionEntry = new PermissionEntry(
         ACTOR_NAME,
         operations
@@ -96,7 +100,7 @@ public class PermissionsHandlerTest {
     );
 
     verify(permissionService, times(1))
-        .verifyAclReadPermission(userContext, CREDENTIAL_NAME);
+        .hasAclReadPermission(userContext, CREDENTIAL_NAME);
 
     List<PermissionEntry> accessControlEntries = response.getPermissions();
 

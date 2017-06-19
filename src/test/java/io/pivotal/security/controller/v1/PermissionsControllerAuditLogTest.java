@@ -32,6 +32,8 @@ import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -76,6 +78,8 @@ public class PermissionsControllerAuditLogTest {
         Arrays.asList(PermissionOperation.READ_ACL));
     when(permissionsDataService.getAccessControlList(eq(CRED1)))
         .thenReturn(Arrays.asList(ace));
+    when(permissionService.hasAclReadPermission(any(), anyString()))
+        .thenReturn(true);
     when(credentialNameRepository.findOneByNameIgnoreCase(CRED1.getName())).thenReturn(CRED1);
     reset(eventAuditRecordDataService);
   }

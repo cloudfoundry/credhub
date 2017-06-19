@@ -103,6 +103,8 @@ public class CredentialServiceTest {
   @Test(expected = ParameterizedValidationException.class)
   public void save_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
     subject.save(
         userContext,
         parametersList,
@@ -118,6 +120,8 @@ public class CredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteIsFalse_logsCREDENTIAL_ACCESS() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
     subject.save(
         userContext,
         parametersList,
@@ -138,6 +142,8 @@ public class CredentialServiceTest {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
+    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
 
     subject.save(
         userContext,
@@ -183,6 +189,7 @@ public class CredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
     subject.save(
         userContext,
         parametersList,
@@ -195,7 +202,7 @@ public class CredentialServiceTest {
         currentUserPermissions);
 
     verify(permissionService)
-        .verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
+        .hasCredentialWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
@@ -214,12 +221,13 @@ public class CredentialServiceTest {
         currentUserPermissions);
 
     verify(permissionService, times(0))
-        .verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
+        .hasCredentialWritePermission(userContext, CREDENTIAL_NAME);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
     when(permissionService.validAclUpdateOperation(userContext, "some_actor")).thenReturn(true);
 
@@ -292,6 +300,8 @@ public class CredentialServiceTest {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
 
     subject.save(
         userContext,
