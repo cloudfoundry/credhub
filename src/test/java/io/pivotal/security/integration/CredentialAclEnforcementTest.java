@@ -42,6 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class CredentialAclEnforcementTest {
   private static final String CREDENTIAL_NAME = "/TEST/CREDENTIAL";
+  private static final String SECOND_CREDENTIAL_NAME = "/TEST/CREDENTIAL2";
 
   @Autowired
   WebApplicationContext webApplicationContext;
@@ -123,6 +124,54 @@ public class CredentialAclEnforcementTest {
   }
 
   @Test
+  public void PUT_whenTheUserHasPermissionToWriteAnAcl_succeeds() throws Exception {
+    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
+    final MockHttpServletRequestBuilder edit = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        // language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
+            + "  \"value\" : \"Resistance is futile\",\n"
+            + "  \"type\" : \"password\"\n"
+            + "}")
+        .accept(APPLICATION_JSON);
+
+    this.mockMvc.perform(edit)
+        .andDo(print())
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  public void PUT_whenTheUserLacksPermissionToWriteAnAcl_returnsAccessDenied() throws Exception {
+    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
+    final MockHttpServletRequestBuilder edit = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        // language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + SECOND_CREDENTIAL_NAME + "\",\n"
+            + "  \"value\" : \"Resistance is futile\",\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"additional_permissions\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"uaa-client:credhub_test\",\n"
+            + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
+            + "     }]"
+            + "}")
+        .accept(APPLICATION_JSON);
+
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+
+    this.mockMvc.perform(edit)
+        .andDo(print())
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
+  }
+
+  @Test
   public void DELETE_whenTheUserHasPermissionToDeleteTheCredential_succeeds() throws Exception {
     final MockHttpServletRequestBuilder deleteRequest = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
@@ -166,6 +215,25 @@ public class CredentialAclEnforcementTest {
     final MvcResult result = mockMvc.perform(post)
         .andExpect(status().isOk())
         .andReturn();
+
+    final MockHttpServletRequestBuilder otherPost = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"name\": \"" + SECOND_CREDENTIAL_NAME + "\",\n"
+            + "  \"type\": \"password\","
+            + "  \"additional_permissions\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"uaa-client:credhub_test\",\n"
+            + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
+            + "     }]"
+            + "}");
+
+    final MvcResult otherResult = mockMvc.perform(otherPost)
+        .andExpect(status().isOk())
+        .andReturn();
+
     result.getResponse().getContentAsString();
     final DocumentContext context = JsonPath.parse(result.getResponse().getContentAsString());
     uuid = context.read("$.id");

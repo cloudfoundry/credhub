@@ -10,6 +10,7 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.view.CredentialView;
@@ -68,6 +69,10 @@ public class CredentialService {
           .verifyCredentialWritePermission(userContext, credentialName);
     }
 
+    if (existingCredential != null && accessControlEntries.size() > 0) {
+      verifyAclWrite(userContext, credentialName);
+    }
+
     if (existingCredential != null && !existingCredential.getCredentialType().equals(type)) {
       throw new ParameterizedValidationException("error.type_mismatch");
     }
@@ -97,5 +102,11 @@ public class CredentialService {
     }
 
     return CredentialView.fromEntity(storedCredentialVersion);
+  }
+
+  private void verifyAclWrite(UserContext userContext, String credentialName) {
+    if (!permissionService.hasAclWritePermission(userContext, credentialName)) {
+      throw new PermissionException("error.acl.lacks_credential_write");
+    }
   }
 }

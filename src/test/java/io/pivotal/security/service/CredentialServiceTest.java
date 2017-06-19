@@ -4,14 +4,16 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.request.PermissionEntry;
+import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.request.StringGenerationParameters;
 import org.junit.Before;
 import org.junit.Test;
@@ -186,6 +188,50 @@ public class CredentialServiceTest {
 
     verify(permissionService, times(0))
         .verifyCredentialWritePermission(userContext, CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
+    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
+
+    accessControlEntries.add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
+    subject.save(
+        userContext,
+        parametersList,
+        CREDENTIAL_NAME,
+        false,
+        "password",
+        generationParameters,
+        credentialValue,
+        accessControlEntries,
+        currentUserPermissions);
+
+    verify(permissionService)
+        .hasAclWritePermission(userContext, CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
+    when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
+    when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(false);
+
+    accessControlEntries.add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
+
+    try {
+      subject.save(
+          userContext,
+          parametersList,
+          CREDENTIAL_NAME,
+          false,
+          "password",
+          generationParameters,
+          credentialValue,
+          accessControlEntries,
+          currentUserPermissions);
+    } catch (PermissionException pe) {
+      assertThat(pe.getMessage(), equalTo("error.acl.lacks_credential_write"));
+    }
   }
 
   @Test
