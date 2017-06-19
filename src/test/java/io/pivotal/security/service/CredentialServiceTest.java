@@ -98,7 +98,7 @@ public class CredentialServiceTest {
   }
 
   @Test(expected = ParameterizedValidationException.class)
-  public void performSet_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
+  public void save_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         userContext,
@@ -113,7 +113,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenThereIsAnExistingCredentialAndOverwriteIsFalse_itLogsCREDENTIAL_ACCESS() {
+  public void save_whenThereIsAnExistingCredentialAndOverwriteIsFalse_logsCREDENTIAL_ACCESS() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         userContext,
@@ -131,7 +131,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenThereIsAnExistingCredentialAndOverwriteIsTrue_itLogsCREDENTIAL_UPDATE() {
+  public void save_whenThereIsAnExistingCredentialAndOverwriteIsTrue_logsCREDENTIAL_UPDATE() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
@@ -152,7 +152,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenThereIsAnExistingCredential_itShouldCallVerifyCredentialWritePermission() {
+  public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     subject.save(
         userContext,
@@ -170,7 +170,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenThereIsNoExistingCredential_itShouldNotCallVerifyCredentialWritePermission() {
+  public void save_whenThereIsNoExistingCredential_shouldNotCallVerifyCredentialWritePermission() {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
@@ -189,7 +189,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenThereIsNoExistingCredential_itShouldAddAceForTheCurrentUser() {
+  public void save_whenThereIsNoExistingCredential_shouldAddAceForTheCurrentUser() {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
@@ -212,7 +212,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenThereIsAnExistingCredentialAndOverWriteIsTrue_itShouldNotAddAceForTheCurrentUser() {
+  public void save_whenThereIsAnExistingCredentialAndOverWriteIsTrue_shouldNotAddAceForTheCurrentUser() {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
@@ -232,7 +232,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenWritingCredential_itSavesANewVersion() {
+  public void save_whenWritingCredential_savesANewVersion() {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     final PasswordCredential newVersion = new PasswordCredential();
@@ -259,7 +259,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenOverwriteIsTrue_itShouldSaveAccessControlEntries() {
+  public void save_whenOverwriteIsTrue_shouldSaveAccessControlEntries() {
     PasswordCredential credential = new PasswordCredential().setEncryptor(encryptor);
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
 
@@ -279,7 +279,7 @@ public class CredentialServiceTest {
   }
 
   @Test
-  public void performSet_whenOverwriteIsTrue_itLogsACL_UPDATE() {
+  public void save_whenOverwriteIsTrue_logsACL_UPDATE() {
     PasswordCredential credential = new PasswordCredential(CREDENTIAL_NAME).setEncryptor(encryptor);
     when(credentialDataService.save(any(Credential.class))).thenReturn(credential);
 
