@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -116,6 +117,8 @@ public class PermissionsHandlerTest {
   public void setPermissions_setsAndReturnsTheAces() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
+        .thenReturn(true);
 
     ArrayList<PermissionOperation> operations = newArrayList(
         PermissionOperation.READ,
@@ -160,6 +163,8 @@ public class PermissionsHandlerTest {
   public void setPermissions_whenUserDoesNotHavePermission_throwsException() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(false);
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
+        .thenReturn(true);
 
     try {
       subject.setPermissions(userContext, CREDENTIAL_NAME, emptyList());
@@ -171,8 +176,27 @@ public class PermissionsHandlerTest {
   }
 
   @Test
+  public void setPermissions_whenUserUpdatesOwnPermission_throwsException() {
+    when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
+        .thenReturn(true);
+    when(credentialNameDataService.find(CREDENTIAL_NAME))
+        .thenReturn(credentialName);
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
+        .thenReturn(false);
+
+    try {
+      subject.setPermissions(userContext, CREDENTIAL_NAME, Arrays.asList(new PermissionEntry(ACTOR_NAME, Arrays.asList(PermissionOperation.READ))));
+    } catch (InvalidAclOperationException e) {
+      assertThat(e.getMessage(), equalTo("error.acl.invalid_update_operation"));
+      verify(permissionsDataService, times(0)).saveAccessControlEntries(any(), any());
+    }
+  }
+
+  @Test
   public void setPermissions_whenTheCredentialDoesNotExist_throwsException() {
     when(permissionService.hasAclWritePermission(any(), any()))
+        .thenReturn(true);
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
         .thenReturn(true);
     when(credentialNameDataService.find(CREDENTIAL_NAME))
         .thenReturn(null);
@@ -192,7 +216,7 @@ public class PermissionsHandlerTest {
         .thenReturn(true);
     when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(true);
-    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
         .thenReturn(true);
 
     subject.deletePermissionEntry( userContext, CREDENTIAL_NAME, ACTOR_NAME);
@@ -205,7 +229,7 @@ public class PermissionsHandlerTest {
   public void deletePermissions_whenTheUserDeletesOwnPermission_throwsAnException() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
-    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
         .thenReturn(false);
 
     try {
@@ -219,7 +243,7 @@ public class PermissionsHandlerTest {
   public void deletePermissions_whenNothingIsDeleted_throwsAnException() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(true);
-    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
         .thenReturn(true);
     when(permissionsDataService.deleteAccessControlEntry(CREDENTIAL_NAME, ACTOR_NAME))
         .thenReturn(false);
@@ -236,7 +260,7 @@ public class PermissionsHandlerTest {
   public void deletePermissions_whenTheUserLacksPermission_throwsInsteadOfDeletingThePermissions() {
     when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME))
         .thenReturn(false);
-    when(permissionService.validDeleteOperation(userContext, ACTOR_NAME))
+    when(permissionService.validAclUpdateOperation(userContext, ACTOR_NAME))
         .thenReturn(true);
 
     try {

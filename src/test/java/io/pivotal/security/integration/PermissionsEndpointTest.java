@@ -502,6 +502,44 @@ public class PermissionsEndpointTest {
   }
 
   @Test
+  public void POST_whenTheUserUpdatesHisOwnPermissions_returnsBadRequest() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "  \"credential_name\": \"" + credentialName + "\","
+            + "  \"permissions\": ["
+            + "     {"
+            + "       \"actor\": \"uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d\","
+            + "       \"operations\": [\"read\",\"write\"]"
+            + "     },"
+            + "     {"
+            + "       \"actor\": \"isobel\","
+            + "       \"operations\": [\"delete\"]"
+            + "     }" +
+            "]"
+            + "}");
+
+    final String expectedError = "Modification of access control for the authenticated user is not allowed. Please contact an administrator.";
+    this.mockMvc.perform(post)
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error").value(expectedError));
+
+    auditingHelper.verifyAuditing(
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        "/api/v1/permissions",
+        400,
+        newArrayList(
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+            new EventAuditRecordParameters(ACL_UPDATE, credentialName, DELETE, "isobel")
+        )
+    );
+  }
+
+  @Test
   public void POST_whenTheLeadingSlashIsMissing_prependsTheSlashCorrectly() throws Exception {
     final MockHttpServletRequestBuilder post = post("/api/v1/permissions")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)

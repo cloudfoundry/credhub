@@ -56,6 +56,12 @@ public class PermissionsHandler {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
+    for (PermissionEntry permissionEntry : permissionEntryList) {
+      if(!permissionService.validAclUpdateOperation(userContext, permissionEntry.getActor())) {
+        throw new InvalidAclOperationException("error.acl.invalid_update_operation");
+      }
+    }
+
     permissionsDataService
         .saveAccessControlEntries(credentialName, permissionEntryList);
 
@@ -67,7 +73,7 @@ public class PermissionsHandler {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
-    if(!permissionService.validDeleteOperation(userContext, actor)) {
+    if(!permissionService.validAclUpdateOperation(userContext, actor)) {
       throw new InvalidAclOperationException("error.acl.invalid_update_operation");
     }
 

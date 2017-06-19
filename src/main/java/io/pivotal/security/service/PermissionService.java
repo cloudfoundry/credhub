@@ -72,7 +72,7 @@ public class PermissionService {
     return user.getAclUser();
   }
 
-  public boolean validDeleteOperation(UserContext userContext, String actor) {
+  public boolean validAclUpdateOperation(UserContext userContext, String actor) {
     if (enforcePermissions) {
       return !userContext.getAclUser().equals(actor);
     } else {

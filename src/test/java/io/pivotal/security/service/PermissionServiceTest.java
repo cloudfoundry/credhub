@@ -250,21 +250,21 @@ public class PermissionServiceTest {
   public void validDeleteOperation_withoutEnforcement_returnsTrue() {
     initializeEnforcement(false);
 
-    assertTrue(subject.validDeleteOperation(userContext, "test-actor"));
+    assertTrue(subject.validAclUpdateOperation(userContext, "test-actor"));
   }
 
   @Test
   public void validDeleteOperation_withEnforcement_whenTheUserDeletesOthersACL_returnsTrue() {
     initializeEnforcement(true);
 
-    assertTrue(subject.validDeleteOperation(userContext, "random-actor"));
+    assertTrue(subject.validAclUpdateOperation(userContext, "random-actor"));
   }
 
   @Test
   public void validDeleteOperation_withEnforcement_whenTheUserDeletesOwnACL_returnsFalse() {
     initializeEnforcement(true);
 
-    assertFalse(subject.validDeleteOperation(userContext, "test-actor"));
+    assertFalse(subject.validAclUpdateOperation(userContext, "test-actor"));
   }
 
   private void initializeEnforcement(boolean enabled) {
