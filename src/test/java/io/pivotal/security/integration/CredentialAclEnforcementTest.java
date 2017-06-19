@@ -101,7 +101,7 @@ public class CredentialAclEnforcementTest {
   }
 
   @Test
-  public void PUT_POST_whenTheUserLacksPermissionToReadTheAcl_returnsAccessDenied() throws Exception {
+  public void PUT_whenTheUserLacksPermissionToReadTheAcl_returnsAccessDenied() throws Exception {
     // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
     final MockHttpServletRequestBuilder edit = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
@@ -220,6 +220,74 @@ public class CredentialAclEnforcementTest {
     this.mockMvc.perform(post)
         .andDo(print())
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
+  }
+
+  @Test
+  public void POST_whenTheUserLacksPermissionToReadTheAcl_returnsAccessDenied() throws Exception {
+    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
+    final MockHttpServletRequestBuilder edit = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        // language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
+            + "  \"type\" : \"password\"\n"
+            + "}")
+        .accept(APPLICATION_JSON);
+
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+
+    this.mockMvc.perform(edit)
+        .andDo(print())
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
+  }
+
+  @Test
+  public void POST_whenTheUserHasPermissionToWriteAnAcl_succeeds() throws Exception {
+    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
+    final MockHttpServletRequestBuilder edit = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        // language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
+            + "  \"type\" : \"password\"\n"
+            + "}")
+        .accept(APPLICATION_JSON);
+
+    this.mockMvc.perform(edit)
+        .andDo(print())
+        .andExpect(status().is2xxSuccessful());
+  }
+
+  @Test
+  public void POST_whenTheUserLacksPermissionToWriteAnAcl_returnsAccessDenied() throws Exception {
+    // UAA_OAUTH2_PASSWORD_GRANT_TOKEN attempts to edit the credential
+    final MockHttpServletRequestBuilder edit = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        // language=JSON
+        .content("{\n"
+            + "  \"name\" : \"" + SECOND_CREDENTIAL_NAME + "\",\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"additional_permissions\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"bob\",\n"
+            + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
+            + "     }]"
+            + "}")
+        .accept(APPLICATION_JSON);
+
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+
+    this.mockMvc.perform(edit)
+        .andDo(print())
+        .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.error", equalTo(expectedError)));
   }
 
