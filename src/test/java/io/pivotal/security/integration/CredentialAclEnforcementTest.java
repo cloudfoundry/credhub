@@ -41,6 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @TestPropertySource(properties = "security.authorization.acls.enabled=true")
 public class CredentialAclEnforcementTest {
+
   private static final String CREDENTIAL_NAME = "/TEST/CREDENTIAL";
   private static final String SECOND_CREDENTIAL_NAME = "/TEST/CREDENTIAL2";
 
@@ -59,7 +60,8 @@ public class CredentialAclEnforcementTest {
   }
 
   @Test
-  public void GET_byCredentialName_whenTheUserHasPermissionToReadCredential_returnsTheCredential() throws Exception {
+  public void GET_byCredentialName_whenTheUserHasPermissionToReadCredential_returnsTheCredential()
+      throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
     mockMvc.perform(get)
@@ -70,17 +72,20 @@ public class CredentialAclEnforcementTest {
   }
 
   @Test
-  public void GET_byCredentialName_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
+  public void GET_byCredentialName_whenTheUserDoesntHavePermissionToReadCredential_returns404()
+      throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.error", equalTo("Credential not found. Please validate your input and retry your request.")));
+        .andExpect(jsonPath("$.error",
+            equalTo("Credential not found. Please validate your input and retry your request.")));
   }
 
   @Test
-  public void GET_byId_whenTheUserHasPermissionToReadCredential_returnsTheCredential() throws Exception {
+  public void GET_byId_whenTheUserHasPermissionToReadCredential_returnsTheCredential()
+      throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
     mockMvc.perform(get)
@@ -91,13 +96,15 @@ public class CredentialAclEnforcementTest {
   }
 
   @Test
-  public void GET_byId_whenTheUserDoesntHavePermissionToReadCredential_returns404() throws Exception {
+  public void GET_byId_whenTheUserDoesntHavePermissionToReadCredential_returns404()
+      throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
         .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.error", equalTo("Credential not found. Please validate your input and retry your request.")));
+        .andExpect(jsonPath("$.error",
+            equalTo("Credential not found. Please validate your input and retry your request.")));
   }
 
   @Test
@@ -134,7 +141,12 @@ public class CredentialAclEnforcementTest {
         .content("{\n"
             + "  \"name\" : \"" + CREDENTIAL_NAME + "\",\n"
             + "  \"value\" : \"Resistance is futile\",\n"
-            + "  \"type\" : \"password\"\n"
+            + "  \"type\" : \"password\",\n"
+            + "  \"additional_permissions\": [\n"
+            + "     { \n"
+            + "       \"actor\": \"bob\",\n"
+            + "       \"operations\": [\"read\", \"read_acl\", \"write\"]\n"
+            + "     }]"
             + "}")
         .accept(APPLICATION_JSON);
 
@@ -293,7 +305,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void DELETE_whenTheUserHasPermissionToDeleteTheCredential_succeeds() throws Exception {
-    final MockHttpServletRequestBuilder deleteRequest = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
+    final MockHttpServletRequestBuilder deleteRequest = delete(
+        "/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
     mockMvc.perform(deleteRequest)
         .andExpect(status().isNoContent());
@@ -306,7 +319,8 @@ public class CredentialAclEnforcementTest {
 
   @Test
   public void DELETE_whenTheUserLacksPermissionToDeleteTheCredential_returns404() throws Exception {
-    final MockHttpServletRequestBuilder deleteRequest = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
+    final MockHttpServletRequestBuilder deleteRequest = delete(
+        "/api/v1/data?name=" + CREDENTIAL_NAME)
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
     mockMvc.perform(deleteRequest)
         .andExpect(status().isNotFound());
@@ -350,7 +364,7 @@ public class CredentialAclEnforcementTest {
             + "     }]"
             + "}");
 
-    final MvcResult otherResult = mockMvc.perform(otherPost)
+    mockMvc.perform(otherPost)
         .andExpect(status().isOk())
         .andReturn();
 
