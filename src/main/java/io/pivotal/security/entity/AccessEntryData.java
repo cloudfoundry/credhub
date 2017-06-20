@@ -110,6 +110,23 @@ public class AccessEntryData {
     return readAclPermission;
   }
 
+  public boolean hasPermission(PermissionOperation requiredPermission) {
+    switch (requiredPermission) {
+      case READ:
+        return hasReadPermission();
+      case WRITE:
+        return hasWritePermission();
+      case DELETE:
+        return hasDeletePermission();
+      case READ_ACL:
+        return hasReadAclPermission();
+      case WRITE_ACL:
+        return hasWriteAclPermission();
+      default:
+        return false;
+    }
+  }
+
   public void enableOperations(Iterable<PermissionOperation> operations) {
     for (PermissionOperation operation : operations) {
       enableOperation(operation);

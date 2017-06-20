@@ -78,56 +78,11 @@ public class PermissionsDataService {
     return accessEntryRepository.deleteByCredentialNameAndActor(credentialName, actor) > 0;
   }
 
-  public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
-    switch (permission) {
-      case WRITE:
-        return hasCredentialWritePermission(user, credentialName);
-      case READ:
-        return hasReadPermission(user, credentialName);
-      case DELETE:
-        return hasCredentialDeletePermission(user, credentialName);
-      case WRITE_ACL:
-        return hasAclWritePermission(user, credentialName);
-      case READ_ACL:
-        return hasReadAclPermission(user, credentialName);
-      default:
-        return false;
-    }
-  }
-
-  private boolean hasReadAclPermission(String actor, String name) {
+  public boolean hasPermission(String user, String name, PermissionOperation requiredPermission) {
     CredentialName credentialName = credentialNameDataService.find(name);
     final AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
-    return accessEntryData != null && accessEntryData.hasReadAclPermission();
-  }
-
-  private boolean hasAclWritePermission(String actor, String name) {
-    CredentialName credentialName = credentialNameDataService.find(name);
-    final AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
-    return accessEntryData != null && accessEntryData.hasWriteAclPermission();
-  }
-
-  private boolean hasReadPermission(String actor, String name) {
-    CredentialName credentialName = credentialNameDataService.find(name);
-    AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
-    return accessEntryData != null && accessEntryData.hasReadPermission();
-  }
-
-  private boolean hasCredentialWritePermission(String actor, String name) {
-    CredentialName credentialName = credentialNameDataService.find(name);
-    AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
-    return accessEntryData != null && accessEntryData.hasWritePermission();
-  }
-
-  private boolean hasCredentialDeletePermission(String actor, String name) {
-    CredentialName credentialName = credentialNameDataService.find(name);
-    AccessEntryData accessEntryData =
-        accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
-    return accessEntryData != null && accessEntryData.hasDeletePermission();
+        accessEntryRepository.findByCredentialNameAndActor(credentialName, user);
+    return accessEntryData != null && accessEntryData.hasPermission(requiredPermission);
   }
 
   private void upsertAccessEntryOperations(CredentialName credentialName,
