@@ -5,8 +5,8 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CredentialValue;
-import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialFactory;
 import io.pivotal.security.exceptions.InvalidAclOperationException;
@@ -24,6 +24,8 @@ import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.audit.EventAuditRecordParametersFactory.createPermissionsEventAuditParameters;
+import static io.pivotal.security.request.PermissionOperation.WRITE;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
 
 @Service
 public class CredentialService {
@@ -111,13 +113,13 @@ public class CredentialService {
   }
 
   private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
-    if (!permissionService.hasCredentialWritePermission(userContext, credentialName)) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
       throw new PermissionException("error.acl.lacks_credential_write");
     }
   }
 
   private void verifyAclWrite(UserContext userContext, String credentialName) {
-    if (!permissionService.hasAclWritePermission(userContext, credentialName)) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
       throw new PermissionException("error.acl.lacks_credential_write");
     }
   }

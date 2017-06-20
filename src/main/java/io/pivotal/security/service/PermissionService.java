@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.request.PermissionOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,53 +21,11 @@ public class PermissionService {
     this.permissionsDataService = permissionsDataService;
   }
 
-  public boolean hasAclReadPermission(UserContext user, String credentialName) {
+  public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
     if (enforcePermissions) {
-      String actor = getActorFromUserContext(user);
-      return permissionsDataService.hasReadAclPermission(actor, credentialName);
-    } else {
-      return true;
+      return permissionsDataService.hasPermission(user, credentialName, permission);
     }
-  }
-
-  public boolean hasAclWritePermission(UserContext user, String credentialName) {
-    if (enforcePermissions) {
-      String actor = getActorFromUserContext(user);
-      return permissionsDataService.hasAclWritePermission(actor, credentialName);
-    } else {
-      return true;
-    }
-  }
-
-  public boolean hasCredentialWritePermission(UserContext user, String credentialName) {
-    if (enforcePermissions) {
-      String actor = getActorFromUserContext(user);
-      return permissionsDataService.hasCredentialWritePermission(actor, credentialName);
-    } else {
-      return true;
-    }
-  }
-
-  public boolean hasCredentialReadPermission(UserContext user, String credentialName) {
-    if (enforcePermissions) {
-      String actor = getActorFromUserContext(user);
-      return permissionsDataService.hasReadPermission(actor, credentialName);
-    } else {
-      return true;
-    }
-  }
-
-  public boolean hasCredentialDeletePermission(UserContext user, String credentialName) {
-    if (enforcePermissions) {
-      String actor = getActorFromUserContext(user);
-      return permissionsDataService.hasCredentialDeletePermission(actor, credentialName);
-    } else {
-      return true;
-    }
-  }
-
-  private String getActorFromUserContext(UserContext user) {
-    return user.getAclUser();
+    return true;
   }
 
   public boolean validAclUpdateOperation(UserContext userContext, String actor) {

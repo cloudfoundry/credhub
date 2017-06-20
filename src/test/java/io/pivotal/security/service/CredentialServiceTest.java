@@ -103,7 +103,7 @@ public class CredentialServiceTest {
   @Test(expected = ParameterizedValidationException.class)
   public void save_whenGivenTypeAndExistingTypeDontMatch_throwsException() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
     subject.save(
         userContext,
@@ -120,7 +120,7 @@ public class CredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredentialAndOverwriteIsFalse_logsCREDENTIAL_ACCESS() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
     subject.save(
         userContext,
@@ -142,7 +142,7 @@ public class CredentialServiceTest {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
-    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
 
     subject.save(
@@ -189,7 +189,7 @@ public class CredentialServiceTest {
   @Test
   public void save_whenThereIsAnExistingCredential_shouldCallVerifyCredentialWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE)).thenReturn(true);
     subject.save(
         userContext,
         parametersList,
@@ -202,7 +202,7 @@ public class CredentialServiceTest {
         currentUserPermissions);
 
     verify(permissionService)
-        .hasCredentialWritePermission(userContext, CREDENTIAL_NAME);
+        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
   }
 
   @Test
@@ -221,14 +221,14 @@ public class CredentialServiceTest {
         currentUserPermissions);
 
     verify(permissionService, times(0))
-        .hasCredentialWritePermission(userContext, CREDENTIAL_NAME);
+        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldCallVerifyAclWritePermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
-    when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(true);
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE)).thenReturn(true);
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL)).thenReturn(true);
     when(permissionService.validAclUpdateOperation(userContext, "some_actor")).thenReturn(true);
 
     accessControlEntries
@@ -245,13 +245,13 @@ public class CredentialServiceTest {
         currentUserPermissions);
 
     verify(permissionService)
-        .hasAclWritePermission(userContext, CREDENTIAL_NAME);
+        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL);
   }
 
   @Test
   public void save_whenThereIsAnExistingCredentialWithACEs_shouldThrowAnExceptionIfItLacksPermission() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasAclWritePermission(userContext, CREDENTIAL_NAME)).thenReturn(false);
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL)).thenReturn(false);
 
     accessControlEntries
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
@@ -300,7 +300,7 @@ public class CredentialServiceTest {
     when(credentialDataService.save(any(Credential.class)))
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME)).thenReturn(existingCredential);
-    when(permissionService.hasCredentialWritePermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE))
         .thenReturn(true);
 
     subject.save(

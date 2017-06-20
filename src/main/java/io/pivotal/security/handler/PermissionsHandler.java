@@ -14,6 +14,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
+import static io.pivotal.security.request.PermissionOperation.WRITE_ACL;
+
 @Component
 public class PermissionsHandler {
 
@@ -35,7 +38,7 @@ public class PermissionsHandler {
   public PermissionsView getPermissions(UserContext userContext, String name) {
     final CredentialName credentialName = credentialNameDataService.findOrThrow(name);
 
-    if (!permissionService.hasAclReadPermission(userContext, name)) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), name, READ_ACL)) {
       throw new EntryNotFoundException("error.resource_not_found");
     }
 
@@ -50,7 +53,7 @@ public class PermissionsHandler {
     final CredentialName credentialName = credentialNameDataService.find(name);
 
     // We need to verify that the credential exists in case ACL enforcement is off
-    if (credentialName == null || !permissionService.hasAclWritePermission(userContext, name)) {
+    if (credentialName == null || !permissionService.hasPermission(userContext.getAclUser(), name, WRITE_ACL)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
@@ -68,7 +71,7 @@ public class PermissionsHandler {
   }
 
   public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {
-    if (!permissionService.hasAclWritePermission(userContext, credentialName)) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 

@@ -20,12 +20,13 @@ import java.util.List;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Java6Assertions.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -37,6 +38,7 @@ public class CredentialHandlerTest {
   private static final Instant VERSION1_CREATED_AT = Instant.ofEpochMilli(555555555);
   private static final Instant VERSION2_CREATED_AT = Instant.ofEpochMilli(777777777);
   private static final String UUID_STRING = "fake-uuid";
+  private static final String USER = "darth-sirius";
 
   private CredentialHandler subject;
   private CredentialDataService credentialDataService;
@@ -55,6 +57,7 @@ public class CredentialHandlerTest {
     subject = new CredentialHandler(credentialDataService, permissionService);
 
     userContext = mock(UserContext.class);
+    when(userContext.getAclUser()).thenReturn(USER);
 
     version1 = new SshCredential(CREDENTIAL_NAME);
     version1.setVersionCreatedAt(VERSION1_CREATED_AT);
@@ -68,7 +71,7 @@ public class CredentialHandlerTest {
   @Test
   public void deleteCredential_whenTheDeletionSucceeds_deletesTheCredential() {
     when(credentialDataService.delete(CREDENTIAL_NAME)).thenReturn(true);
-    when(permissionService.hasCredentialDeletePermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
 
     subject.deleteCredential(userContext, CREDENTIAL_NAME);
@@ -78,7 +81,7 @@ public class CredentialHandlerTest {
 
   @Test
   public void deleteCredential_whenTheUserLacksPermission_throwsAnException() {
-    when(permissionService.hasCredentialDeletePermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(false);
 
     try {
@@ -91,7 +94,7 @@ public class CredentialHandlerTest {
 
   @Test
   public void deleteCredential_whenTheCredentialIsNotDeleted_throwsAnException() {
-    when(permissionService.hasCredentialDeletePermission(any(), any()))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, DELETE))
         .thenReturn(true);
     when(credentialDataService.delete(CREDENTIAL_NAME)).thenReturn(false);
 
@@ -108,7 +111,7 @@ public class CredentialHandlerTest {
     List<Credential> credentials = newArrayList(version1, version2);
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     DataResponse response = subject.getAllCredentialVersions(userContext,
@@ -128,7 +131,7 @@ public class CredentialHandlerTest {
     List<Credential> credentials = newArrayList(version1);
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     subject.getAllCredentialVersions(userContext, auditRecordParameters, CREDENTIAL_NAME);
@@ -141,7 +144,7 @@ public class CredentialHandlerTest {
     List<Credential> credentials = newArrayList(version1, version2);
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -159,7 +162,7 @@ public class CredentialHandlerTest {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -174,7 +177,7 @@ public class CredentialHandlerTest {
   public void getCredentialVersions_whenTheCredentialDoesNotExist_throwsException() {
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(emptyList());
-    when(permissionService.hasCredentialReadPermission(any(), any()))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     try {
@@ -206,7 +209,7 @@ public class CredentialHandlerTest {
   public void getMostRecentCredentialVersion_whenTheCredentialExists_returnsDataResponse() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     DataResponse response = subject.getMostRecentCredentialVersion(
@@ -225,7 +228,7 @@ public class CredentialHandlerTest {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     subject.getMostRecentCredentialVersion(userContext, auditRecordParameters, CREDENTIAL_NAME);
@@ -252,7 +255,7 @@ public class CredentialHandlerTest {
   public void getMostRecentCredentialVersion_whenTheUserLacksPermission_throwsException() {
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -270,7 +273,7 @@ public class CredentialHandlerTest {
 
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -286,7 +289,7 @@ public class CredentialHandlerTest {
   public void getCredentialVersion_whenTheVersionExists_returnsDataResponse() {
     when(credentialDataService.findByUuid(UUID_STRING))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     CredentialView response = subject.getCredentialVersion(
@@ -302,7 +305,7 @@ public class CredentialHandlerTest {
     EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
     when(credentialDataService.findByUuid(UUID_STRING))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
     subject.getCredentialVersion(userContext, auditRecordParameters, UUID_STRING);
@@ -328,7 +331,7 @@ public class CredentialHandlerTest {
   public void getCredentialVersion_whenTheUserLacksPermission_throwsException() {
     when(credentialDataService.findByUuid(UUID_STRING))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
@@ -345,7 +348,7 @@ public class CredentialHandlerTest {
 
     when(credentialDataService.findByUuid(UUID_STRING))
         .thenReturn(version1);
-    when(permissionService.hasCredentialReadPermission(userContext, CREDENTIAL_NAME))
+    when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {

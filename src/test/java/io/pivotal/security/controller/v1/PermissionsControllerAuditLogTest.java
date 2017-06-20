@@ -1,13 +1,12 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.data.EventAuditRecordDataService;
+import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
@@ -29,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_ACCESS;
+import static io.pivotal.security.request.PermissionOperation.READ_ACL;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -50,7 +50,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PermissionsControllerAuditLogTest {
 
   public static final CredentialName CRED1 = new CredentialName("/cred1");
-  public static final String TESTPASSWORD = "testpassword";
+
   @Autowired
   private WebApplicationContext applicationContext;
 
@@ -75,10 +75,10 @@ public class PermissionsControllerAuditLogTest {
       .build();
     PermissionEntry ace = new PermissionEntry(
         "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-        Arrays.asList(PermissionOperation.READ_ACL));
+        Arrays.asList(READ_ACL));
     when(permissionsDataService.getAccessControlList(eq(CRED1)))
         .thenReturn(Arrays.asList(ace));
-    when(permissionService.hasAclReadPermission(any(), anyString()))
+    when(permissionService.hasPermission(any(), anyString(), eq(READ_ACL)))
         .thenReturn(true);
     when(credentialNameRepository.findOneByNameIgnoreCase(CRED1.getName())).thenReturn(CRED1);
     reset(eventAuditRecordDataService);

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.function.Function;
 
+import static io.pivotal.security.request.PermissionOperation.DELETE;
+import static io.pivotal.security.request.PermissionOperation.READ;
 import static java.util.Collections.singletonList;
 
 @Component
@@ -29,7 +31,7 @@ public class CredentialHandler {
   }
 
   public void deleteCredential(UserContext userContext, String credentialName) {
-    if (!permissionService.hasCredentialDeletePermission(userContext, credentialName)) {
+    if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
       throw new EntryNotFoundException("error.acl.lacks_credential_write");
     }
 
@@ -51,7 +53,7 @@ public class CredentialHandler {
     List<Credential> credentials = credentialDataService.findAllByName(credentialName);
 
     // We need this extra check in case permissions aren't being enforced.
-    if (credentials.isEmpty() || !permissionService.hasCredentialReadPermission(userContext, credentialName)) {
+    if (credentials.isEmpty() || !permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
       throw new EntryNotFoundException("error.credential_not_found");
     }
 
@@ -99,7 +101,7 @@ public class CredentialHandler {
       auditRecordParameters.setCredentialName(credential.getName());
     }
 
-    if (credential == null || !permissionService.hasCredentialReadPermission(userContext, credential.getName())) {
+    if (credential == null || !permissionService.hasPermission(userContext.getAclUser(), credential.getName(), READ)) {
       throw new EntryNotFoundException("error.credential_not_found");
     }
 

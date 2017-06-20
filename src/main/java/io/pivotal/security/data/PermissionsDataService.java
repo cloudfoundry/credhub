@@ -49,7 +49,8 @@ public class PermissionsDataService {
   public List<PermissionOperation> getAllowedOperations(String name, String actor) {
     List<PermissionOperation> operations = newArrayList();
     CredentialName credentialName = credentialNameDataService.find(name);
-    AccessEntryData accessEntryData = accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
+    AccessEntryData accessEntryData = accessEntryRepository
+        .findByCredentialNameAndActor(credentialName, actor);
 
     if (accessEntryData != null) {
       if (accessEntryData.hasReadPermission()) {
@@ -77,35 +78,52 @@ public class PermissionsDataService {
     return accessEntryRepository.deleteByCredentialNameAndActor(credentialName, actor) > 0;
   }
 
-  public boolean hasReadAclPermission(String actor, String name) {
+  public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
+    switch (permission) {
+      case WRITE:
+        return hasCredentialWritePermission(user, credentialName);
+      case READ:
+        return hasReadPermission(user, credentialName);
+      case DELETE:
+        return hasCredentialDeletePermission(user, credentialName);
+      case WRITE_ACL:
+        return hasAclWritePermission(user, credentialName);
+      case READ_ACL:
+        return hasReadAclPermission(user, credentialName);
+      default:
+        return false;
+    }
+  }
+
+  private boolean hasReadAclPermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     final AccessEntryData accessEntryData =
         accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
     return accessEntryData != null && accessEntryData.hasReadAclPermission();
   }
 
-  public boolean hasAclWritePermission(String actor, String name) {
+  private boolean hasAclWritePermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     final AccessEntryData accessEntryData =
         accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
     return accessEntryData != null && accessEntryData.hasWriteAclPermission();
   }
 
-  public boolean hasReadPermission(String actor, String name) {
+  private boolean hasReadPermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     AccessEntryData accessEntryData =
         accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
     return accessEntryData != null && accessEntryData.hasReadPermission();
   }
 
-  public boolean hasCredentialWritePermission(String actor, String name) {
+  private boolean hasCredentialWritePermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     AccessEntryData accessEntryData =
         accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
     return accessEntryData != null && accessEntryData.hasWritePermission();
   }
 
-  public boolean hasCredentialDeletePermission(String actor, String name) {
+  private boolean hasCredentialDeletePermission(String actor, String name) {
     CredentialName credentialName = credentialNameDataService.find(name);
     AccessEntryData accessEntryData =
         accessEntryRepository.findByCredentialNameAndActor(credentialName, actor);
@@ -125,7 +143,7 @@ public class PermissionsDataService {
   }
 
   private PermissionEntry createViewFor(AccessEntryData data) {
-    if (data == null ) {
+    if (data == null) {
       return null;
     }
     PermissionEntry entry = new PermissionEntry();
