@@ -5,10 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.UnrecoverableKeyException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
@@ -62,9 +66,9 @@ class LunaConnection implements RemoteEncryptionConnectable {
     return aesKeyGenerator.generateKey();
   }
 
-  public KeyStore getKeyStore() {
-    return keyStore;
-  }
+//  public KeyStore getKeyStore() {
+//    return keyStore;
+//  }
 
   private void makeKeyStore() throws Exception {
     keyStore = KeyStore.getInstance("Luna", provider);
@@ -96,5 +100,18 @@ class LunaConnection implements RemoteEncryptionConnectable {
     } catch (Exception e) {
       return false;
     }
+  }
+
+  public boolean containsAlias(String encryptionKeyAlias) throws KeyStoreException {
+    return keyStore.containsAlias(encryptionKeyAlias);
+  }
+
+  public void setKeyEntry(String encryptionKeyAlias, SecretKey aesKey) throws KeyStoreException {
+    keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null , null);
+  }
+
+  public Key getKey(String encryptionKeyAlias)
+      throws UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException {
+    return keyStore.getKey(encryptionKeyAlias, null);
   }
 }

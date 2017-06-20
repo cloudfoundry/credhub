@@ -2,7 +2,6 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import java.security.Key;
-import java.security.KeyStore;
 import javax.crypto.SecretKey;
 
 public abstract class EncryptionServiceWithConnection extends EncryptionService {
@@ -10,15 +9,14 @@ public abstract class EncryptionServiceWithConnection extends EncryptionService 
   protected Key createKey(EncryptionKeyMetadata encryptionKeyMetadata,
       LunaConnection connection) {
     try {
-      KeyStore keyStore = connection.getKeyStore();
       String encryptionKeyAlias = encryptionKeyMetadata.getEncryptionKeyName();
 
-      if (!keyStore.containsAlias(encryptionKeyAlias)) {
+      if (!connection.containsAlias(encryptionKeyAlias)) {
         SecretKey aesKey = connection.generateKey();
-        keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
+        connection.setKeyEntry(encryptionKeyAlias, aesKey);
       }
 
-      return keyStore.getKey(encryptionKeyAlias, null);
+      return connection.getKey(encryptionKeyAlias);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
