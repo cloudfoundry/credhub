@@ -12,3 +12,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+
+encryption:
+  key_creation_enabled: true
+

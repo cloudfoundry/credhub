@@ -1,12 +1,17 @@
 package io.pivotal.security.util;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.function.Supplier;
 
+@Component
 public class TimedRetry {
 
   public static final int ONE_SECOND = 1000;
   private CurrentTimeProvider currentTimeProvider;
 
+  @Autowired
   public TimedRetry(CurrentTimeProvider currentTimeProvider) {
     this.currentTimeProvider = currentTimeProvider;
   }

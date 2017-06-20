@@ -3,7 +3,11 @@ package io.pivotal.security.service;
 import io.pivotal.security.config.EncryptionKeysConfiguration;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.util.TimedRetry;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
@@ -29,21 +33,31 @@ public class EncryptionKeyCanaryMapper {
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
   private final Map<UUID, Key> encryptionKeyMap;
+  private final TimedRetry timedRetry;
+  private final boolean keyCreationEnabled;
 
   private UUID activeUuid;
   private List<KeyProxy> keys;
   private KeyProxy activeKey;
   private EncryptionService encryptionService;
+  private final Logger logger;
 
   @Autowired
   EncryptionKeyCanaryMapper(
       EncryptionKeyCanaryDataService encryptionKeyCanaryDataService,
       EncryptionKeysConfiguration encryptionKeysConfiguration,
-      EncryptionService encryptionService) {
+      EncryptionService encryptionService,
+      TimedRetry timedRetry,
+      @Value("${encryption.key_creation_enabled}")
+          boolean keyCreationEnabled
+  ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
     this.encryptionService = encryptionService;
+    this.timedRetry = timedRetry;
+    this.keyCreationEnabled = keyCreationEnabled;
 
+    logger = LogManager.getLogger();
     encryptionKeyMap = new HashMap<>();
 
     mapUuidsToKeys();
@@ -119,27 +133,36 @@ public class EncryptionKeyCanaryMapper {
   }
 
   private void createActiveCanary() {
-    EncryptionKeyCanary activeCanary =
-        findCanaryMatchingKey(activeKey, encryptionKeyCanaryDataService.findAll())
-        .orElseGet(() -> {
-          EncryptionKeyCanary canary = new EncryptionKeyCanary();
+    EncryptionKeyCanary[] activeCanary = new EncryptionKeyCanary[1];
 
-          try {
-            Encryption encryptionData = encryptionService
-                .encrypt(null, activeKey.getKey(), CANARY_VALUE);
-            canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
-            canary.setNonce(encryptionData.nonce);
-            final List<Byte> salt = activeKey.getSalt();
-            final Byte[] saltArray = new Byte[salt.size()];
-            canary.setSalt(toPrimitive(salt.toArray(saltArray)));
+    timedRetry.retryEverySecondUntil(600, () -> {
+      activeCanary[0] =
+          findCanaryMatchingKey(activeKey, encryptionKeyCanaryDataService.findAll())
+              .orElseGet(() -> {
+                if (!keyCreationEnabled) {
+                  logger.info("Waiting for another process to create the canary");
+                  return null;
+                }
+                EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
-          } catch (Exception e) {
-            throw new RuntimeException(e);
-          }
+                try {
+                  Encryption encryptionData = encryptionService
+                      .encrypt(null, activeKey.getKey(), CANARY_VALUE);
+                  canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
+                  canary.setNonce(encryptionData.nonce);
+                  final List<Byte> salt = activeKey.getSalt();
+                  final Byte[] saltArray = new Byte[salt.size()];
+                  canary.setSalt(toPrimitive(salt.toArray(saltArray)));
 
-          return encryptionKeyCanaryDataService.save(canary);
-        });
+                } catch (Exception e) {
+                  throw new RuntimeException(e);
+                }
 
-    activeUuid = activeCanary.getUuid();
+                return encryptionKeyCanaryDataService.save(canary);
+              });
+      return activeCanary[0] != null;
+    });
+
+    activeUuid = activeCanary[0].getUuid();
   }
 }
