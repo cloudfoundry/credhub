@@ -8,13 +8,13 @@ import javax.crypto.SecretKey;
 public abstract class EncryptionServiceWithConnection extends EncryptionService {
 
   protected Key createKey(EncryptionKeyMetadata encryptionKeyMetadata,
-      KeyGeneratingConnection connection) {
+      LunaConnection connection) {
     try {
       KeyStore keyStore = connection.getKeyStore();
       String encryptionKeyAlias = encryptionKeyMetadata.getEncryptionKeyName();
 
       if (!keyStore.containsAlias(encryptionKeyAlias)) {
-        SecretKey aesKey = connection.getKeyGenerator().generateKey();
+        SecretKey aesKey = connection.generateKey();
         keyStore.setKeyEntry(encryptionKeyAlias, aesKey, null, null);
       }
 

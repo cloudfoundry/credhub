@@ -10,10 +10,11 @@ import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
 import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 @Component
 @ConditionalOnProperty(value = "encryption.provider", havingValue = "hsm", matchIfMissing = true)
-class LunaConnection implements RemoteEncryptionConnectable, KeyGeneratingConnection {
+class LunaConnection implements RemoteEncryptionConnectable {
 
   private final LunaProviderProperties lunaProviderProperties;
   private Provider provider;
@@ -57,8 +58,8 @@ class LunaConnection implements RemoteEncryptionConnectable, KeyGeneratingConnec
     return secureRandom;
   }
 
-  public KeyGenerator getKeyGenerator() {
-    return aesKeyGenerator;
+  public SecretKey generateKey() {
+    return aesKeyGenerator.generateKey();
   }
 
   public KeyStore getKeyStore() {
