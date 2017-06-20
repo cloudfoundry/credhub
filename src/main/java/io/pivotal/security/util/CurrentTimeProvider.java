@@ -1,10 +1,11 @@
 package io.pivotal.security.util;
 
+import org.springframework.data.auditing.DateTimeProvider;
+import org.springframework.stereotype.Component;
+
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.TimeZone;
-import org.springframework.data.auditing.DateTimeProvider;
-import org.springframework.stereotype.Component;
 
 @Component
 public class CurrentTimeProvider implements DateTimeProvider {
@@ -23,5 +24,13 @@ public class CurrentTimeProvider implements DateTimeProvider {
 
   public Instant getInstant() {
     return Instant.now();
+  }
+
+  public long currentTimeMillis() {
+    return System.currentTimeMillis();
+  }
+
+  public void sleep(long sleepTimeInMillis) throws InterruptedException {
+      Thread.sleep(sleepTimeInMillis);
   }
 }
