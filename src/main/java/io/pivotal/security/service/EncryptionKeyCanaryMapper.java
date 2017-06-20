@@ -29,6 +29,7 @@ public class EncryptionKeyCanaryMapper {
   public static final Charset CHARSET = Charset.defaultCharset();
   public static final String CANARY_VALUE = new String(new byte[128], CHARSET);
   public static final String DEPRECATED_CANARY_VALUE = new String(new byte[64], CHARSET);
+  public static final int CANARY_POPULATION_WAIT_SEC = 60 * 10; // ten minutes
 
   private final EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
   private final EncryptionKeysConfiguration encryptionKeysConfiguration;
@@ -135,7 +136,7 @@ public class EncryptionKeyCanaryMapper {
   private void createActiveCanary() {
     EncryptionKeyCanary[] activeCanary = new EncryptionKeyCanary[1];
 
-    timedRetry.retryEverySecondUntil(600, () -> {
+    timedRetry.retryEverySecondUntil(CANARY_POPULATION_WAIT_SEC, () -> {
       activeCanary[0] =
           findCanaryMatchingKey(activeKey, encryptionKeyCanaryDataService.findAll())
               .orElseGet(() -> {
@@ -143,6 +144,7 @@ public class EncryptionKeyCanaryMapper {
                   logger.info("Waiting for another process to create the canary");
                   return null;
                 }
+                logger.info("Not waiting, creating canary.");
                 EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
                 try {
