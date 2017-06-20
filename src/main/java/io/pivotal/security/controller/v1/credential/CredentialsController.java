@@ -17,7 +17,7 @@ import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.service.GenerateRequestHandler;
+import io.pivotal.security.handler.GenerateRequestHandler;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CredentialView;

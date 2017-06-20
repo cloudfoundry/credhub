@@ -37,7 +37,7 @@ import io.pivotal.security.request.DefaultCredentialGenerateRequest;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.service.GenerateRequestHandler;
+import io.pivotal.security.handler.GenerateRequestHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
