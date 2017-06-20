@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -70,7 +71,9 @@ public class PermissionService {
 
   public boolean validAclUpdateOperation(UserContext userContext, String actor) {
     if (enforcePermissions) {
-      return !userContext.getAclUser().equals(actor);
+      return actor != null &&
+          userContext.getAclUser() != null &&
+          !StringUtils.equals(userContext.getAclUser(), actor);
     } else {
       return true;
     }

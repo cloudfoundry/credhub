@@ -256,6 +256,22 @@ public class PermissionServiceTest {
     assertFalse(subject.validAclUpdateOperation(userContext, "test-actor"));
   }
 
+  @Test
+  public void validDeleteOperation_withEnforcement_whenAclUserIsNull_returnsFalse() {
+    initializeEnforcement(true);
+    when(userContext.getAclUser()).thenReturn(null);
+
+    assertFalse(subject.validAclUpdateOperation(userContext, "test-actor"));
+  }
+
+  @Test
+  public void validDeleteOperation_withEnforcement_whenAclUserAndActorAreNull_returnsFalse() {
+    initializeEnforcement(true);
+    when(userContext.getAclUser()).thenReturn(null);
+
+    assertFalse(subject.validAclUpdateOperation(userContext, null));
+  }
+
   private void initializeEnforcement(boolean enabled) {
     ReflectionTestUtils
         .setField(subject, PermissionService.class, "enforcePermissions", enabled, boolean.class);
