@@ -1,10 +1,10 @@
 package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.JsonObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,7 +55,7 @@ public class PasswordCredentialTest {
 
     String generationParametersJson = null;
     try {
-      generationParametersJson = new ObjectMapper().writeValueAsString(generationParameters);
+      generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
     } catch (JsonProcessingException e) {
       e.printStackTrace();
     }
@@ -142,5 +142,12 @@ public class PasswordCredentialTest {
     subject.setPasswordAndGenerationParameters(PASSWORD, null);
     assertThat(passwordCredentialData.getEncryptedGenerationParameters(), nullValue());
     assertThat(passwordCredentialData.getParametersNonce(), nullValue());
+  }
+
+  @Test
+  public void setPasswordAndGenerationParameters_shouldSaveGenerationParams_AsSnakeCaseJson() {
+    subject.setPasswordAndGenerationParameters(PASSWORD, generationParameters);
+    String expectedJsonString = "{\"exclude_lower\":true}";
+    verify(encryptor, times(1)).encrypt(expectedJsonString);
   }
 }

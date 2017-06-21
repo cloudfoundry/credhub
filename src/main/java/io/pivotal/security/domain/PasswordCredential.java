@@ -1,10 +1,10 @@
 package io.pivotal.security.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.JsonObjectMapper;
 import org.springframework.util.Assert;
 
 import java.io.IOException;
@@ -12,13 +12,13 @@ import java.io.IOException;
 public class PasswordCredential extends Credential<PasswordCredential> {
 
   private PasswordCredentialData delegate;
-  private ObjectMapper objectMapper;
   private String password;
+  private JsonObjectMapper jsonObjectMapper;
 
   public PasswordCredential(PasswordCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
-    this.objectMapper = new ObjectMapper();
+    jsonObjectMapper = new JsonObjectMapper();
   }
 
   public PasswordCredential(String name) {
@@ -57,7 +57,7 @@ public class PasswordCredential extends Credential<PasswordCredential> {
 
     try {
       String generationParameterJson =
-          generationParameters != null ? objectMapper.writeValueAsString(generationParameters)
+          generationParameters != null ? jsonObjectMapper.writeValueAsString(generationParameters)
               : null;
 
       Encryption encryptedParameters = encryptor.encrypt(generationParameterJson);
@@ -91,8 +91,8 @@ public class PasswordCredential extends Credential<PasswordCredential> {
     }
 
     try {
-      StringGenerationParameters passwordGenerationParameters = objectMapper
-          .readValue(parameterJson, StringGenerationParameters.class);
+      StringGenerationParameters passwordGenerationParameters = jsonObjectMapper
+          .deserializeBackwardsCompatibleValue(parameterJson, StringGenerationParameters.class);
       passwordGenerationParameters.setLength(password.length());
       return passwordGenerationParameters;
     } catch (IOException e) {

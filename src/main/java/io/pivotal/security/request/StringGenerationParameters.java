@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.generator.PassayStringCredentialGenerator;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_DEFAULT;
 
@@ -79,5 +81,33 @@ public class StringGenerationParameters {
     if (!isValid()) {
       throw new ParameterizedValidationException("error.excludes_all_charsets");
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass() != o.getClass()) return false;
+
+    StringGenerationParameters that = (StringGenerationParameters) o;
+
+    return new EqualsBuilder()
+        .append(excludeLower, that.excludeLower)
+        .append(excludeNumber, that.excludeNumber)
+        .append(excludeUpper, that.excludeUpper)
+        .append(includeSpecial, that.includeSpecial)
+        .append(length, that.length)
+        .isEquals();
+  }
+
+  @Override
+  public int hashCode() {
+    return new HashCodeBuilder(17, 37)
+        .append(length)
+        .append(excludeLower)
+        .append(excludeNumber)
+        .append(excludeUpper)
+        .append(includeSpecial)
+        .toHashCode();
   }
 }
