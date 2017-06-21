@@ -34,4 +34,8 @@ public class JsonObjectMapper {
       return camelCaseMapper.readValue(stringValue, type);
     }
   }
+
+  public <T> T readValue(String stringValue, Class<T> type) throws IOException {
+    return snakeCaseMapper.readValue(stringValue, type);
+  }
 }

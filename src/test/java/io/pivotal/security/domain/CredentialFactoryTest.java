@@ -1,7 +1,6 @@
 package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import io.pivotal.security.constants.CredentialType;
 import io.pivotal.security.credential.CertificateCredentialValue;
@@ -12,6 +11,7 @@ import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.JsonObjectMapper;
 import net.minidev.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,14 +38,14 @@ public class CredentialFactoryTest {
       .build();
   private final String jsonValueJsonString = JSONObject.toJSONString(jsonValueMap);
   private CredentialFactory subject;
-  private ObjectMapper objectMapper;
+  private JsonObjectMapper objectMapper;
   private StringGenerationParameters generationParameters;
 
   @Before
   public void setup() throws JsonProcessingException {
     Encryptor encryptor = mock(Encryptor.class);
     subject = new CredentialFactory(encryptor);
-    objectMapper = new ObjectMapper();
+    objectMapper = new JsonObjectMapper();
     generationParameters = new StringGenerationParameters().setExcludeNumber(true).setLength(PLAINTEXT_VALUE.length());
 
     UUID encryptionKeyUuid = UUID.randomUUID();

@@ -1,17 +1,18 @@
 package io.pivotal.security.domain;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.credential.JsonCredentialValue;
 import io.pivotal.security.entity.JsonCredentialData;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.service.Encryption;
+import io.pivotal.security.util.JsonObjectMapper;
+
 import java.io.IOException;
 import java.util.Map;
 
 public class JsonCredential extends Credential<JsonCredential> {
 
-  private final ObjectMapper objectMapper;
+  private final JsonObjectMapper objectMapper;
   private final JsonCredentialData delegate;
 
   public JsonCredential() {
@@ -21,7 +22,12 @@ public class JsonCredential extends Credential<JsonCredential> {
   public JsonCredential(JsonCredentialData delegate) {
     super(delegate);
     this.delegate = delegate;
-    this.objectMapper = new ObjectMapper();
+    /*
+    It is alright to use a "new" ObjectMapper here because the JSON data does
+    not have properties that is maps to, thereby not facing a problem with the
+    casing being defined. Using JsonObjectMapper for consistency across project.
+     */
+    this.objectMapper = new JsonObjectMapper();
   }
 
   public JsonCredential(String name) {

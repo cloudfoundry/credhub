@@ -46,4 +46,14 @@ public class JsonObjectMapperTest {
     assertThat(generationParameters, equalTo(actualGenerationParameters));
   }
 
+  @Test
+  public void readValue_shouldConvertJsonStringsInSnakeCaseToObjects() throws IOException {
+    final String testSnakeCaseString = "{\"exclude_lower\":true,\"include_special\":true}";
+    StringGenerationParameters generationParameters = new StringGenerationParameters().setExcludeLower(true).setIncludeSpecial(true);
+
+    final StringGenerationParameters actualGenerationParameters = new JsonObjectMapper()
+        .readValue(testSnakeCaseString, StringGenerationParameters.class);
+
+    assertThat(generationParameters, equalTo(actualGenerationParameters));
+  }
 }
