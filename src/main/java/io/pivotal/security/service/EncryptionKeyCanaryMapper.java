@@ -49,8 +49,7 @@ public class EncryptionKeyCanaryMapper {
       EncryptionKeysConfiguration encryptionKeysConfiguration,
       EncryptionService encryptionService,
       TimedRetry timedRetry,
-      @Value("${encryption.key_creation_enabled}")
-          boolean keyCreationEnabled
+      @Value("${encryption.key_creation_enabled}") boolean keyCreationEnabled
   ) {
     this.encryptionKeyCanaryDataService = encryptionKeyCanaryDataService;
     this.encryptionKeysConfiguration = encryptionKeysConfiguration;
@@ -68,7 +67,7 @@ public class EncryptionKeyCanaryMapper {
     encryptionKeyMap.clear();
     createKeys();
     validateActiveKeyInList();
-    createActiveCanary();
+    createOrFindActiveCanary();
     mapCanariesToKeys();
   }
 
@@ -133,18 +132,14 @@ public class EncryptionKeyCanaryMapper {
     return canaries.stream().filter(encryptionKey::matchesCanary).findFirst();
   }
 
-  private void createActiveCanary() {
+  private void createOrFindActiveCanary() {
     EncryptionKeyCanary[] activeCanary = new EncryptionKeyCanary[1];
 
-    timedRetry.retryEverySecondUntil(CANARY_POPULATION_WAIT_SEC, () -> {
+    if (keyCreationEnabled) {
       activeCanary[0] =
           findCanaryMatchingKey(activeKey, encryptionKeyCanaryDataService.findAll())
               .orElseGet(() -> {
-                if (!keyCreationEnabled) {
-                  logger.info("Waiting for another process to create the canary");
-                  return null;
-                }
-                logger.info("Not waiting, creating canary.");
+                logger.info("Creating a new active key canary");
                 EncryptionKeyCanary canary = new EncryptionKeyCanary();
 
                 try {
@@ -162,8 +157,16 @@ public class EncryptionKeyCanaryMapper {
 
                 return encryptionKeyCanaryDataService.save(canary);
               });
-      return activeCanary[0] != null;
-    });
+    } else {
+      timedRetry.retryEverySecondUntil(CANARY_POPULATION_WAIT_SEC, () -> {
+        activeCanary[0] = findCanaryMatchingKey(activeKey, encryptionKeyCanaryDataService.findAll())
+            .orElseGet(() -> {
+              logger.info("Waiting for the active key's canary");
+              return null;
+            });
+        return activeCanary[0] != null;
+      });
+    }
 
     activeUuid = activeCanary[0].getUuid();
   }

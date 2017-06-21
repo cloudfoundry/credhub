@@ -4,8 +4,9 @@ import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.util.TimedRetry;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-import java.security.KeyStore;
 import java.util.function.Supplier;
 import javax.crypto.SecretKey;
 
@@ -18,10 +19,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@RunWith(JUnit4.class)
 public class LunaEncryptionServiceTest {
 
   private LunaEncryptionService subject;
-  private KeyStore keyStore;
   private LunaConnection connection;
   private SecretKey aesKey;
   private TimedRetry timedRetry;
