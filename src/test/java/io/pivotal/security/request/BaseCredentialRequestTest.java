@@ -2,7 +2,7 @@ package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import javax.validation.ConstraintViolation;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.*;
+import static io.pivotal.security.helper.JsonTestHelper.*;
 import static io.pivotal.security.helper.SpectrumHelper.itThrowsWithMessage;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -90,7 +90,7 @@ public class BaseCredentialRequestTest {
               + "\"value\":\"some-value\","
               + "\"overwrite\":true"
               + "}";
-          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonHelper
+          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
@@ -106,7 +106,7 @@ public class BaseCredentialRequestTest {
               + "\"value\":\"some-value\","
               + "\"overwrite\":true"
               + "}";
-          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonHelper
+          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
@@ -126,7 +126,7 @@ public class BaseCredentialRequestTest {
               + "\"value\":\"some-value\","
               + "\"overwrite\":true"
               + "}";
-          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonHelper
+          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
@@ -141,7 +141,7 @@ public class BaseCredentialRequestTest {
               + "\"value\":\"some-value\","
               + "\"overwrite\":true"
               + "}";
-          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonHelper
+          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
@@ -157,7 +157,7 @@ public class BaseCredentialRequestTest {
               + "\"value\":\"some-value\","
               + "\"overwrite\":true"
               + "}";
-          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonHelper
+          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
@@ -173,7 +173,7 @@ public class BaseCredentialRequestTest {
               + "\"value\":\"some-value\","
               + "\"overwrite\":true"
               + "}";
-          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonHelper
+          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
           assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
@@ -190,7 +190,7 @@ public class BaseCredentialRequestTest {
             + "  \"overwrite\": true\n"
             + "}";
 
-        final BaseCredentialSetRequest request = JsonHelper
+        final BaseCredentialSetRequest request = JsonTestHelper
             .deserialize(json, BaseCredentialSetRequest.class);
         assertThat(request.getAdditionalPermissions(), empty());
       });
@@ -212,7 +212,7 @@ public class BaseCredentialRequestTest {
             + "    }\n"
             + "  ]\n"
             + "}";
-        final BaseCredentialSetRequest request = JsonHelper
+        final BaseCredentialSetRequest request = JsonTestHelper
             .deserialize(json, BaseCredentialSetRequest.class);
 
         final List<PermissionOperation> operations = new ArrayList<>(
@@ -233,7 +233,7 @@ public class BaseCredentialRequestTest {
                 + "  \"type\": \"value\",\n"
                 + "  \"value\": \"some-value\"\n"
                 + "}";
-            final BaseCredentialSetRequest request = JsonHelper
+            final BaseCredentialSetRequest request = JsonTestHelper
                 .deserialize(json, BaseCredentialSetRequest.class);
             request.validate();
           });

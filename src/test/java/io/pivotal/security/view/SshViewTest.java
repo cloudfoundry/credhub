@@ -3,7 +3,7 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredential;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.TestConstants;
 import org.json.JSONObject;
@@ -61,7 +61,7 @@ public class SshViewTest {
           + "\"name\":\"/foo\","
           + "\"value\":"
           + obj.toString() + "}";
-      String json = JsonHelper.serializeToString(subject);
+      String json = JsonTestHelper.serializeToString(subject);
       assertThat(json, equalTo(expected));
     });
 

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-import static io.pivotal.security.helper.JsonHelper.deserialize;
+import static io.pivotal.security.helper.JsonTestHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

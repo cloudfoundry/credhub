@@ -8,7 +8,7 @@ import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.handler.PermissionsHandler;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.view.PermissionsView;
@@ -72,7 +72,7 @@ public class PermissionsControllerTest {
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
           new MappingJackson2HttpMessageConverter();
-      ObjectMapper objectMapper = JsonHelper.createObjectMapper();
+      ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();
       mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
       mockMvc = MockMvcBuilders.standaloneSetup(subject)
           .setMessageConverters(mappingJackson2HttpMessageConverter)
@@ -134,7 +134,7 @@ public class PermissionsControllerTest {
 
         when(permissionsHandler
             .setPermissions(any(UserContext.class), any(String.class), any(List.class)))
-            .thenReturn(JsonHelper.deserialize(expectedResponse, PermissionsView.class));
+            .thenReturn(JsonTestHelper.deserialize(expectedResponse, PermissionsView.class));
 
         MockHttpServletRequestBuilder request = post("/api/v1/permissions")
             .contentType(MediaType.APPLICATION_JSON)

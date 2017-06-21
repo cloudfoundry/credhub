@@ -2,7 +2,7 @@ package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
@@ -22,7 +22,7 @@ public class BaseCredentialGenerateRequestTest {
               + "\"overwrite\":true"
               + "}";
 
-          BaseCredentialGenerateRequest request = JsonHelper
+          BaseCredentialGenerateRequest request = JsonTestHelper
               .deserialize(json, BaseCredentialGenerateRequest.class);
           request.validate();
 
@@ -41,7 +41,7 @@ public class BaseCredentialGenerateRequestTest {
                     + "\"overwrite\":true"
                     + "}";
 
-                BaseCredentialGenerateRequest request = JsonHelper
+                BaseCredentialGenerateRequest request = JsonTestHelper
                     .deserialize(json, BaseCredentialGenerateRequest.class);
                 request.validate();
               });
@@ -58,7 +58,7 @@ public class BaseCredentialGenerateRequestTest {
                     + "\"overwrite\":true"
                     + "}";
 
-                BaseCredentialGenerateRequest request = JsonHelper
+                BaseCredentialGenerateRequest request = JsonTestHelper
                     .deserialize(json, BaseCredentialGenerateRequest.class);
                 request.validate();
               });
@@ -76,7 +76,7 @@ public class BaseCredentialGenerateRequestTest {
                   + "\"overwrite\":true"
                   + "}";
 
-              BaseCredentialGenerateRequest request = JsonHelper
+              BaseCredentialGenerateRequest request = JsonTestHelper
                   .deserialize(json, BaseCredentialGenerateRequest.class);
               request.validate();
             });
@@ -93,7 +93,7 @@ public class BaseCredentialGenerateRequestTest {
                   + "\"overwrite\":true"
                   + "}";
 
-              BaseCredentialGenerateRequest request = JsonHelper
+              BaseCredentialGenerateRequest request = JsonTestHelper
                   .deserialize(json, BaseCredentialGenerateRequest.class);
               request.validate();
             });
@@ -110,7 +110,7 @@ public class BaseCredentialGenerateRequestTest {
                   + "\"overwrite\":true"
                   + "}";
 
-              BaseCredentialGenerateRequest request = JsonHelper
+              BaseCredentialGenerateRequest request = JsonTestHelper
                   .deserialize(json, BaseCredentialGenerateRequest.class);
               request.validate();
             });

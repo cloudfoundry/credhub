@@ -4,7 +4,7 @@ import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PermissionEntry;
@@ -120,7 +120,7 @@ public class PermissionsEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView permission = JsonHelper
+    PermissionsView permission = JsonTestHelper
         .deserialize(content, PermissionsView.class);
     assertThat(permission.getCredentialName(), equalTo(credentialName));
     assertThat(permission.getPermissions(), containsInAnyOrder(
@@ -148,7 +148,7 @@ public class PermissionsEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView permission = JsonHelper.deserialize(content, PermissionsView.class);
+    PermissionsView permission = JsonTestHelper.deserialize(content, PermissionsView.class);
     assertThat(permission.getCredentialName(), equalTo(credentialName));
     assertThat(permission.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(
@@ -378,7 +378,7 @@ public class PermissionsEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
+    PermissionsView acl = JsonTestHelper.deserialize(content, PermissionsView.class);
     assertThat(acl.getPermissions(), hasSize(3));
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
@@ -439,7 +439,7 @@ public class PermissionsEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
+    PermissionsView acl = JsonTestHelper.deserialize(content, PermissionsView.class);
     assertThat(acl.getPermissions(), hasSize(2));
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), containsInAnyOrder(
@@ -560,7 +560,7 @@ public class PermissionsEndpointTest {
         .andDo(print())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonHelper.deserialize(content, PermissionsView.class);
+    PermissionsView acl = JsonTestHelper.deserialize(content, PermissionsView.class);
     assertThat(acl.getCredentialName(), equalTo(credentialName));
     assertThat(acl.getPermissions(), hasSize(2));
     assertThat(acl.getPermissions(), containsInAnyOrder(

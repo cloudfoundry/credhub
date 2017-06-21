@@ -22,7 +22,7 @@ import io.pivotal.security.domain.ValueCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.handler.SetRequestHandler;
 import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PermissionEntry;
@@ -382,7 +382,7 @@ public class CredentialsControllerTypeSpecificSetTest {
                 .andExpect(status().isOk())
                 .andReturn();
             String content = result.getResponse().getContentAsString();
-            PermissionsView acl = JsonHelper
+            PermissionsView acl = JsonTestHelper
                 .deserialize(content, PermissionsView.class);
 
             assertThat(acl.getCredentialName(), equalTo(credentialName));

@@ -3,7 +3,7 @@ package io.pivotal.security.view;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Encryptor;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.service.Encryption;
 import org.junit.runner.RunWith;
 
@@ -48,7 +48,7 @@ public class CertificateCredentialTest {
 
     it("creates a view from entity", () -> {
       final CredentialView subject = CertificateView.fromEntity(entity);
-      String json = JsonHelper.serializeToString(subject);
+      String json = JsonTestHelper.serializeToString(subject);
 
       assertThat(json, equalTo("{"
           + "\"type\":\"certificate\","
@@ -78,7 +78,7 @@ public class CertificateCredentialTest {
     it("includes keys with null values", () -> {
       final CredentialView subject = CertificateView
           .fromEntity(new CertificateCredential(credentialName).setEncryptor(encryptor).setUuid(uuid));
-      final String json = JsonHelper.serializeToString(subject);
+      final String json = JsonTestHelper.serializeToString(subject);
 
       assertThat(json, equalTo("{"
           + "\"type\":\"certificate\","

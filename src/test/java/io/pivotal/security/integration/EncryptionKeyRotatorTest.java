@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static io.pivotal.security.helper.JsonHelper.parse;
+import static io.pivotal.security.helper.JsonTestHelper.parse;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;

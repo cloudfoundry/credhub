@@ -28,7 +28,7 @@ import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.generator.UserGenerator;
 import io.pivotal.security.helper.AuditingHelper;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.request.PermissionEntry;
@@ -356,7 +356,7 @@ public class CredentialsControllerTypeSpecificGenerateTest {
                 .andExpect(status().isOk())
                 .andReturn();
             String content = result.getResponse().getContentAsString();
-            PermissionsView acl = JsonHelper
+            PermissionsView acl = JsonTestHelper
                 .deserialize(content, PermissionsView.class);
 
             assertThat(acl.getCredentialName(), equalTo(credentialName));

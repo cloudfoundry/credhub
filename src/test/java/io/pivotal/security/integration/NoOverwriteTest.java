@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
@@ -110,7 +110,7 @@ public class NoOverwriteTest {
         .andExpect(status().isOk())
         .andReturn();
     String content = result.getResponse().getContentAsString();
-    PermissionsView acl = JsonHelper
+    PermissionsView acl = JsonTestHelper
         .deserialize(content, PermissionsView.class);
 
     assertThat(acl.getPermissions(), containsInAnyOrder(
@@ -169,7 +169,7 @@ public class NoOverwriteTest {
       winningResponse = response2.getContentAsString();
     }
 
-    PermissionsView acl = JsonHelper
+    PermissionsView acl = JsonTestHelper
         .deserialize(winningResponse, PermissionsView.class);
     assertThat(acl.getPermissions(), containsInAnyOrder(
         samePropertyValuesAs(

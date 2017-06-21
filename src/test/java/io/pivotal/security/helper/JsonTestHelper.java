@@ -1,21 +1,22 @@
 package io.pivotal.security.helper;
 
-import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
-import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+
 import java.io.IOException;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 
-public class JsonHelper {
+import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
+import static io.pivotal.security.util.TimeModuleFactory.createTimeModule;
+
+public class JsonTestHelper {
 
   private static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
 

@@ -10,8 +10,8 @@ import javax.validation.ConstraintViolation;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
-import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
+import static io.pivotal.security.helper.JsonTestHelper.deserializeAndValidate;
+import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;

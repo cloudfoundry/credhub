@@ -2,7 +2,7 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import org.junit.runner.RunWith;
 
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -13,7 +13,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 @RunWith(Spectrum.class)
 public class StringGenerationParametersTest {
 
-  private ObjectMapper objectMapper = JsonHelper.createObjectMapper();
+  private ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();
 
   {
 

@@ -2,7 +2,7 @@ package io.pivotal.security.request;
 
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import org.junit.Assert;
 import org.junit.runner.RunWith;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 
 import static com.greghaskins.spectrum.Spectrum.*;
-import static io.pivotal.security.helper.JsonHelper.*;
+import static io.pivotal.security.helper.JsonTestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
@@ -36,7 +36,7 @@ public class UserSetRequestTest {
     });
 
     it("deserializes to UserSetRequest", () -> {
-      BaseCredentialSetRequest userSetRequest = JsonHelper.deserializeChecked(validSetRequestJson, BaseCredentialSetRequest.class);
+      BaseCredentialSetRequest userSetRequest = JsonTestHelper.deserializeChecked(validSetRequestJson, BaseCredentialSetRequest.class);
 
       Assert.assertThat(userSetRequest, instanceOf(UserSetRequest.class));
     });
@@ -66,7 +66,7 @@ public class UserSetRequestTest {
       });
 
       it("should have valid 'value' field", () -> {
-        UserSetRequest userSetRequest = JsonHelper.deserialize(validSetRequestJson, UserSetRequest.class);
+        UserSetRequest userSetRequest = JsonTestHelper.deserialize(validSetRequestJson, UserSetRequest.class);
 
         UserCredentialValue userValue = userSetRequest.getUserValue();
         assertThat(userValue.getUsername(), equalTo("dan"));
@@ -86,7 +86,7 @@ public class UserSetRequestTest {
             "  }\n" +
             "}";
 
-        Set<ConstraintViolation<UserSetRequest>> violations = JsonHelper.deserializeAndValidate(invalidSetRequestJson, UserSetRequest.class);
+        Set<ConstraintViolation<UserSetRequest>> violations = JsonTestHelper.deserializeAndValidate(invalidSetRequestJson, UserSetRequest.class);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_password")));
       });

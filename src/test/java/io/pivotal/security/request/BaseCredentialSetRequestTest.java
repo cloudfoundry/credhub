@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.helper.JsonHelper;
+import io.pivotal.security.helper.JsonTestHelper;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.deserializeChecked;
+import static io.pivotal.security.helper.JsonTestHelper.deserializeChecked;
 import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.WRITE;
@@ -30,7 +30,7 @@ public class BaseCredentialSetRequestTest {
             "\"overwrite\":true" +
             "}";
 
-        JsonHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
+        JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
       });
     });
 
@@ -43,7 +43,7 @@ public class BaseCredentialSetRequestTest {
             "\"overwrite\":true" +
             "}";
 
-        JsonHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
+        JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
       });
     });
 
@@ -56,7 +56,7 @@ public class BaseCredentialSetRequestTest {
             "\"overwrite\":true" +
             "}";
 
-        JsonHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
+        JsonTestHelper.deserializeChecked(json, BaseCredentialSetRequest.class);
       });
     });
 
@@ -84,7 +84,7 @@ public class BaseCredentialSetRequestTest {
               "\"value\":\"some-value\"," +
               "\"overwrite\":true" +
               "}";
-          BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
+          BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
           PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
           setRequest.addCurrentUser(expectedEntry);
           assertThat(setRequest.getAdditionalPermissions(), equalTo(Arrays.asList(expectedEntry)));
@@ -104,7 +104,7 @@ public class BaseCredentialSetRequestTest {
               "  \"operations\": [\"read\"]\n" +
               "}]\n" +
               "}";
-          BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
+          BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
           PermissionEntry currentUserPermissionEntry =
               new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
           PermissionEntry passedPermissionEntry =
@@ -128,7 +128,7 @@ public class BaseCredentialSetRequestTest {
               "  \"operations\": [\"read\"]\n" +
               "}]\n" +
               "}";
-          BaseCredentialSetRequest setRequest = JsonHelper.deserialize(json, BaseCredentialSetRequest.class);
+          BaseCredentialSetRequest setRequest = JsonTestHelper.deserialize(json, BaseCredentialSetRequest.class);
           PermissionEntry expectedEntry = new PermissionEntry("my-actor", Arrays.asList(READ, WRITE));
           setRequest.addCurrentUser(expectedEntry);
           assertThat(setRequest.getAdditionalPermissions(), equalTo(Arrays.asList(expectedEntry)));

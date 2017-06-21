@@ -2,10 +2,10 @@ package io.pivotal.security.request;
 
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.deserialize;
-import static io.pivotal.security.helper.JsonHelper.deserializeAndValidate;
-import static io.pivotal.security.helper.JsonHelper.hasViolationWithMessage;
-import static io.pivotal.security.helper.JsonHelper.validate;
+import static io.pivotal.security.helper.JsonTestHelper.deserialize;
+import static io.pivotal.security.helper.JsonTestHelper.deserializeAndValidate;
+import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
+import static io.pivotal.security.helper.JsonTestHelper.validate;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

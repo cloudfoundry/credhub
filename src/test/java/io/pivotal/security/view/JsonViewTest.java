@@ -12,7 +12,7 @@ import java.util.UUID;
 
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.JsonHelper.serializeToString;
+import static io.pivotal.security.helper.JsonTestHelper.serializeToString;
 import static io.pivotal.security.helper.SpectrumHelper.json;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
