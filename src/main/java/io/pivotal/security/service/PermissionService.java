@@ -23,6 +23,9 @@ public class PermissionService {
 
   public boolean hasPermission(String user, String credentialName, PermissionOperation permission) {
     if (enforcePermissions) {
+      if(permissionsDataService.hasNoDefinedAccessControl(credentialName)){
+        return true;
+      }
       return permissionsDataService.hasPermission(user, credentialName, permission);
     }
     return true;

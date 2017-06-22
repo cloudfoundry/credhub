@@ -43,35 +43,53 @@ public class PermissionServiceTest {
   @Test
   public void hasPermission_returnsWhetherTheUserHasThePermissionForTheCredential(){
     initializeEnforcement(true);
+    when(permissionsDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
 
-    assertHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, READ, true);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, READ, false);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE, true);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE, false);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, DELETE, true);
-    assertHasPermission("test-actor", CREDENTIAL_NAME, DELETE, false);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ, true);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, READ, false);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, WRITE, true);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, WRITE, false);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, DELETE, true);
+    assertConditionallyHasPermission("test-actor", CREDENTIAL_NAME, DELETE, false);
   }
 
   @Test
   public void hasPermission_ifPermissionsNotEnforced_returnsTrue(){
     initializeEnforcement(false);
+    when(permissionsDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(false);
 
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ_ACL, true);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ_ACL, false);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ, true);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ, false);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE, true);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE, false);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, DELETE, true);
-    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, DELETE, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, DELETE, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, DELETE, false);
   }
 
+  @Test
+  public void hasPermission_whenNoDefinedAccessControl_returnsTrue() {
+    initializeEnforcement(true);
+    when(permissionsDataService.hasNoDefinedAccessControl(CREDENTIAL_NAME)).thenReturn(true);
+
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, READ, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, WRITE, false);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, DELETE, true);
+    assertAlwaysHasPermission("test-actor", CREDENTIAL_NAME, DELETE, false);
+  }
   @Test
   public void validDeleteOperation_withoutEnforcement_returnsTrue() {
     initializeEnforcement(false);
@@ -114,7 +132,7 @@ public class PermissionServiceTest {
         .setField(subject, PermissionService.class, "enforcePermissions", enabled, boolean.class);
   }
 
-  private void assertHasPermission(String user, String credentialName,
+  private void assertConditionallyHasPermission(String user, String credentialName,
       PermissionOperation permission, boolean isGranted) {
     when(permissionsDataService
         .hasPermission(user, credentialName, permission))
@@ -123,7 +141,7 @@ public class PermissionServiceTest {
     assertThat(subject.hasPermission(user, credentialName, permission), equalTo(isGranted));
   }
 
-  private void assertHasPermissionWithoutEnforcement(String user, String credentialName,
+  private void assertAlwaysHasPermission(String user, String credentialName,
       PermissionOperation permission, boolean isGranted) {
     when(permissionsDataService
         .hasPermission(user, credentialName, permission))
