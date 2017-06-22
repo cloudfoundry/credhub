@@ -2,6 +2,7 @@ package io.pivotal.security.service;
 
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.request.PermissionOperation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,208 +41,35 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void verifyAclReadPermission_withEnforcement_whenTheUserHasPermission_doesNothing() {
+  public void hasPermission_returnsWhetherTheUserHasThePermissionForTheCredential(){
     initializeEnforcement(true);
 
-    when(permissionsDataService
-        .hasPermission("test-actor", CREDENTIAL_NAME, READ_ACL))
-        .thenReturn(true);
-
-    subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ_ACL);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, true);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, READ_ACL, false);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, READ, true);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, READ, false);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE, true);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, WRITE, false);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, DELETE, true);
+    assertHasPermission("test-actor", CREDENTIAL_NAME, DELETE, false);
   }
 
   @Test
-  public void verifyAclReadPermission_withEnforcement_whenTheUserDoesNotHavePermission_throwsException() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService
-        .hasPermission("test-actor", CREDENTIAL_NAME, READ_ACL))
-        .thenReturn(false);
-
-    assertFalse(subject
-        .hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ_ACL));
-  }
-
-  @Test
-  public void verifyAclReadPermission_withoutEnforcement_whenTheUserHasPermission_doesNothing() {
+  public void hasPermission_ifPermissionsNotEnforced_returnsTrue(){
     initializeEnforcement(false);
 
-    when(permissionsDataService
-        .hasPermission("test-actor", CREDENTIAL_NAME, READ_ACL))
-        .thenReturn(true);
-
-    subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ_ACL);
-  }
-
-  @Test
-  public void verifyAclReadPermission_withoutEnforcement_whenTheUserDoesNotHavePermission_doesNothing() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService
-        .hasPermission("test-actor", CREDENTIAL_NAME, READ_ACL))
-        .thenReturn(false);
-
-    subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ_ACL);
-  }
-
-  @Test
-  public void hasAclWritePermission_withEnforcement_whenTheUserHasPermission_returnsTrue() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL))
-        .thenReturn(true);
-
-    assertThat(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL), equalTo(true));
-  }
-
-  @Test
-  public void hasAclWritePermission_withEnforcement_whenTheUserDoesNotHavePermission_returnsFalse() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL))
-        .thenReturn(false);
-
-    assertThat(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL), equalTo(false));
-  }
-
-  @Test
-  public void hasAclWritePermission_withoutEnforcement_whenTheUserHasPermission_returnsTrue() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL))
-        .thenReturn(true);
-
-    assertThat(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL), equalTo(true));
-  }
-
-  @Test
-  public void hasAclWritePermission_withoutEnforcement_whenTheUserDoesNotHavePermission_returnsTrue() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE_ACL))
-        .thenReturn(false);
-
-    assertThat(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE_ACL), equalTo(true));
-  }
-
-  @Test
-  public void verifyCredentialWritePermission_withEnforcement_whenTheUserHasPermission_doesNothing() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE))
-        .thenReturn(true);
-
-    subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
-  }
-
-  @Test
-  public void verifyCredentialWritePermission_withEnforcement_whenTheUserDoesNotHavePermission_throwsException() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE))
-        .thenReturn(false);
-
-    assertFalse(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE));
-  }
-
-  @Test
-  public void verifyCredentialWritePermission_withoutEnforcement_whenTheUserHasPermission_doesNothing() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE))
-        .thenReturn(true);
-
-    subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
-  }
-
-  @Test
-  public void verifyCredentialWritePermission_withoutEnforcement_whenTheUserDoesNotHavePermission_doesNothing() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, WRITE))
-        .thenReturn(false);
-
-    subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE);
-  }
-
-  @Test
-  public void hasCredentialReadPermission_withEnforcement_whenTheUserPermission_returnsTrue() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, READ))
-        .thenReturn(true);
-
-    assertTrue(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ));
-  }
-
-  @Test
-  public void hasCredentialReadPermission_withEnforcement_whenTheUserDoesNotHavePermission_returnsFalse() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, READ))
-        .thenReturn(false);
-
-    assertFalse(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ));
-  }
-
-  @Test
-  public void hasCredentialReadPermission_withoutEnforcement_whenTheUserHasPermission_returnsTrue() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, READ))
-        .thenReturn(true);
-
-    assertTrue(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ));
-  }
-
-  @Test
-  public void hasCredentialReadPermission_withoutEnforcement_whenTheUserDoesNotHavePermission_returnsTrue() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, READ))
-        .thenReturn(false);
-
-    assertTrue(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, READ));
-  }
-
-  @Test
-  public void hasCredentialDeletePermission_withEnforcement_whenTheUserPermission_returnsTrue() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, DELETE))
-        .thenReturn(true);
-
-    assertTrue(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, DELETE));
-  }
-
-  @Test
-  public void hasCredentialDeletePermission_withEnforcement_whenTheUserDoesNotHavePermission_returnsFalse() {
-    initializeEnforcement(true);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, DELETE))
-        .thenReturn(false);
-
-    assertFalse(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, DELETE));
-  }
-
-  @Test
-  public void hasCredentialDeletePermission_withoutEnforcement_whenTheUserHasPermission_returnsTrue() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, DELETE))
-        .thenReturn(true);
-
-    assertTrue(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, DELETE));
-  }
-
-  @Test
-  public void hasCredentialDeletePermission_withoutEnforcement_whenTheUserDoesNotHavePermission_returnsTrue() {
-    initializeEnforcement(false);
-
-    when(permissionsDataService.hasPermission("test-actor", CREDENTIAL_NAME, DELETE))
-        .thenReturn(false);
-
-    assertTrue(subject.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, DELETE));
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ_ACL, true);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ_ACL, false);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE_ACL, true);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE_ACL, false);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ, true);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, READ, false);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE, true);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, WRITE, false);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, DELETE, true);
+    assertHasPermissionWithoutEnforcement("test-actor", CREDENTIAL_NAME, DELETE, false);
   }
 
   @Test
@@ -284,5 +112,23 @@ public class PermissionServiceTest {
   private void initializeEnforcement(boolean enabled) {
     ReflectionTestUtils
         .setField(subject, PermissionService.class, "enforcePermissions", enabled, boolean.class);
+  }
+
+  private void assertHasPermission(String user, String credentialName,
+      PermissionOperation permission, boolean isGranted) {
+    when(permissionsDataService
+        .hasPermission(user, credentialName, permission))
+        .thenReturn(isGranted);
+
+    assertThat(subject.hasPermission(user, credentialName, permission), equalTo(isGranted));
+  }
+
+  private void assertHasPermissionWithoutEnforcement(String user, String credentialName,
+      PermissionOperation permission, boolean isGranted) {
+    when(permissionsDataService
+        .hasPermission(user, credentialName, permission))
+        .thenReturn(isGranted);
+
+    assertThat(subject.hasPermission(user, credentialName, permission), equalTo(true));
   }
 }
