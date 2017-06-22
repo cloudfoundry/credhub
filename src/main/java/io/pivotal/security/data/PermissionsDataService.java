@@ -78,6 +78,14 @@ public class PermissionsDataService {
     return accessEntryRepository.deleteByCredentialNameAndActor(credentialName, actor) > 0;
   }
 
+  public boolean hasNoDefinedAccessControl(String name) {
+    CredentialName credentialName = credentialNameDataService.find(name);
+    if (credentialName == null) {
+      return false;
+    }
+    return (accessEntryRepository.findAllByCredentialNameUuid(credentialName.getUuid()).size() == 0);
+  }
+
   public boolean hasPermission(String user, String name, PermissionOperation requiredPermission) {
     CredentialName credentialName = credentialNameDataService.find(name);
     final AccessEntryData accessEntryData =

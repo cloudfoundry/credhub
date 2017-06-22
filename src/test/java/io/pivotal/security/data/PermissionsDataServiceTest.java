@@ -54,6 +54,7 @@ public class PermissionsDataServiceTest {
   private static final String HAN_SOLO = "HansSolo";
   private static final String DARTH = "Darth";
   private static final String CHEWIE = "Chewie";
+  public static final String NO_ACCESS_CREDENTIAL_NAME = "Alderaan";
 
   @Autowired
   private PermissionsDataService subject;
@@ -312,26 +313,45 @@ public class PermissionsDataServiceTest {
         is(false));
   }
 
-  private void seedDatabase() {
-    final ValueCredentialData valueCredentialData = new ValueCredentialData(CREDENTIAL_NAME);
-    credentialName = valueCredentialData.getCredentialName();
+  @Test
+  public void hasNoPermissions_whenCredentialHasPermissions_returnsFalse() {
+    assertThat(subject.hasNoDefinedAccessControl(CREDENTIAL_NAME), is(false));
+  }
 
-    credentialName = credentialNameDataService.save(credentialName);
+  @Test
+  public void hasNoPermissions_whenCredentialDoesNotExist_returnsFalse() {
+    assertThat(subject.hasNoDefinedAccessControl(CREDENTIAL_NAME_DOES_NOT_EXIST), is(false));
+  }
+
+  @Test
+  public void hasNoPermissions_whenCredentialHasNoPermissions_returnsTrue() {
+    assertThat(subject.hasNoDefinedAccessControl(NO_ACCESS_CREDENTIAL_NAME), is(true));
+  }
+
+  private void seedDatabase() {
+    ValueCredentialData valueCredentialData = new ValueCredentialData(CREDENTIAL_NAME);
+    credentialName = valueCredentialData.getCredentialName();
+    ValueCredentialData noAccessValueCredentialData = new ValueCredentialData(
+        NO_ACCESS_CREDENTIAL_NAME);
+    CredentialName noAccessValueCredentialName = noAccessValueCredentialData.getCredentialName();
+
+    CredentialName noAccessCredentialName = credentialNameDataService.save(noAccessValueCredentialName);
+    this.credentialName = credentialNameDataService.save(this.credentialName);
 
     subject.saveAccessControlEntries(
-        credentialName,
+        this.credentialName,
         singletonList(new PermissionEntry(LUKE,
             newArrayList(WRITE, DELETE)))
     );
 
     subject.saveAccessControlEntries(
-        credentialName,
+        this.credentialName,
         singletonList(new PermissionEntry(LEIA,
             singletonList(READ)))
     );
 
     subject.saveAccessControlEntries(
-        credentialName,
+        this.credentialName,
         singletonList(new PermissionEntry(HAN_SOLO,
             newArrayList(READ_ACL, WRITE_ACL)))
     );
