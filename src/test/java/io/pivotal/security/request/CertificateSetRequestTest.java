@@ -1,13 +1,12 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
 import static io.pivotal.security.helper.JsonTestHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
@@ -17,212 +16,176 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertNull;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class CertificateSetRequestTest {
+  @Test
+  public void whenTheValueIsValid_hasNoViolations() {
+    String json = "{"
+        + "\"name\": \"/example/certificate\","
+        + "\"type\": \"certificate\","
+        + "\"value\": {"
+        + "\"certificate\":\"fake-certificate\","
+        + "\"private_key\":\"fake-private-key\","
+        + "\"ca\":\"fake-ca\""
+        + "}"
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
 
-  {
-    describe("when the value is valid", () -> {
-      it("should not have violations", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"fake-certificate\","
-            + "\"private_key\":\"fake-private-key\","
-            + "\"ca\":\"fake-ca\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
+  @Test
+  public void whenTheValueIsValid_deserializesToACertificateSetRequest() {
+    String json = "{"
+        + "\"name\": \"/example/certificate\","
+        + "\"type\": \"certificate\","
+        + "\"value\": {"
+        + "\"certificate\":\"fake-certificate\","
+        + "\"private_key\":\"fake-private_key\","
+        + "\"ca\":\"fake-ca\""
+        + "}"
+        + "}";
+    BaseCredentialSetRequest deserialize = deserialize(json, BaseCredentialSetRequest.class);
 
-      it("should should deserialize to a CertificateSetRequest", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"fake-certificate\","
-            + "\"private_key\":\"fake-private_key\","
-            + "\"ca\":\"fake-ca\""
-            + "}"
-            + "}";
-        BaseCredentialSetRequest deserialize = deserialize(json, BaseCredentialSetRequest.class);
+    assertThat(deserialize, instanceOf(CertificateSetRequest.class));
+  }
 
-        assertThat(deserialize, instanceOf(CertificateSetRequest.class));
+  @Test
+  public void whenTheValueIsValid_doesNotRequireTheCertificate() {
+    String json = "{"
+        + "\"name\": \"/example/certificate\","
+        + "\"type\": \"certificate\","
+        + "\"value\": {"
+        + "\"private_key\":\"fake-private-key\","
+        + "\"ca\":\"fake-ca\""
+        + "}"
+        + "}";
 
-      });
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
 
-      it("should not require the certificate", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"private_key\":\"fake-private-key\","
-            + "\"ca\":\"fake-ca\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+    CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+    assertNull(certificateSetRequest.getCertificateValue().getCertificate());
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
+  @Test
+  public void whenTheValueIsValid_doesNotRequireThePrivateKey() {
+    String json = "{"
+        + "\"name\": \"/example/certificate\","
+        + "\"type\": \"certificate\","
+        + "\"value\": {"
+        + "\"certificate\":\"fake-certificate\","
+        + "\"private_key\":\"\","
+        + "\"ca\":\"fake-ca\""
+        + "}"
+        + "}";
 
-      it("should set an empty certificate to null", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"\","
-            + "\"private_key\":\"fake-private-key\","
-            + "\"ca\":\"fake-ca\""
-            + "}"
-            + "}";
-        CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
 
-        assertNull(certificateSetRequest.getCertificateValue().getCertificate());
-      });
+    CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+    assertNull(certificateSetRequest.getCertificateValue().getPrivateKey());
+  }
 
-      it("should not require the private key", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"fake-certificate\","
-            + "\"ca\":\"fake-ca\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+  @Test
+  public void whenTheValueIsValid_doesNotRequireTheCA() {
+    String json = "{"
+        + "\"name\": \"/example/certificate\","
+        + "\"type\": \"certificate\","
+        + "\"value\": {"
+        + "\"certificate\":\"fake-certificate\","
+        + "\"private_key\":\"fake-private-key\""
+        + "}"
+        + "}";
 
-        assertThat(violations.size(), equalTo(0));
-      });
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
 
-      it("should set an empty certificate to null", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"fake-certificate\","
-            + "\"private_key\":\"\","
-            + "\"ca\":\"fake-ca\""
-            + "}"
-            + "}";
-        CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+    CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+    assertNull(certificateSetRequest.getCertificateValue().getCa());
+  }
 
-        assertNull(certificateSetRequest.getCertificateValue().getPrivateKey());
-      });
+  @Test
+  public void whenTheCaNameIsNotEmpty_setsTheCaName() {
+    String json = "{"
+        + "\"name\": \"/example/certificate\","
+        + "\"type\": \"certificate\","
+        + "\"value\": {"
+        + "\"certificate\":\"test-certificate\","
+        + "\"private_key\":\"fake-private-key\","
+        + "\"ca_name\":\"test-ca-name\""
+        + "}"
+        + "}";
 
-      it("should not require the CA", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"fake-certificate\","
-            + "\"private_key\":\"fake-private-key\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+    CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+    assertThat(certificateSetRequest.getCertificateValue().getCaName(), equalTo("test-ca-name"));
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
+  @Test
+  public void whenNoValueIsSet_isInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\"\n"
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
 
-      it("should set an empty CA to null", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"fake-certificate\","
-            + "\"private_key\":\"fake-private-key\","
-            + "\"ca\":\"\""
-            + "}"
-            + "}";
-        CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+  }
 
-        assertNull(certificateSetRequest.getCertificateValue().getCa());
-      });
+  @Test
+  public void whenValueIsAnEmptyObject_isInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": {}\n"
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
 
-      it("should set a non-empty CA name", () -> {
-        String json = "{"
-            + "\"name\": \"/example/certificate\","
-            + "\"type\": \"certificate\","
-            + "\"value\": {"
-            + "\"certificate\":\"test-certificate\","
-            + "\"private_key\":\"fake-private-key\","
-            + "\"ca_name\":\"test-ca-name\""
-            + "}"
-            + "}";
-        CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
-        assertThat(certificateSetRequest.getCertificateValue().getCaName(), equalTo("test-ca-name"));
-      });
-    });
+    assertThat(violations,
+        contains(hasViolationWithMessage("error.missing_certificate_credentials")));
+  }
 
-    describe("when no value is set", () -> {
-      it("should be in invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/certificate\",\n"
-            + "  \"type\": \"certificate\"\n"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+  @Test
+  public void whenValueHasAllEmptyStringSubFields_isInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": {"
+        + "    \"ca\": \"\","
+        + "    \"ca_name\": \"\","
+        + "    \"certificate\": \"\","
+        + "    \"private_key\": \"\""
+        + "  }"
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
 
-        assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
-      });
-    });
+    assertThat(violations,
+        contains(hasViolationWithMessage("error.missing_certificate_credentials")));
+  }
 
-    describe("when value is an empty object", () -> {
-      it("should be invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/certificate\",\n"
-            + "  \"type\": \"certificate\",\n"
-            + "  \"value\": {}\n"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+  @Test
+  public void whenValueHasAllNullStringSubFields_isInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": {"
+        + "    \"ca\": null,"
+        + "    \"ca_name\": null,"
+        + "    \"certificate\": null,"
+        + "    \"private_key\": null"
+        + "  }"
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
 
-        assertThat(violations,
-            contains(hasViolationWithMessage("error.missing_certificate_credentials")));
-      });
-    });
-
-    describe("when certificate has all empty string sub-fields", () -> {
-      it("should be invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/certificate\",\n"
-            + "  \"type\": \"certificate\",\n"
-            + "  \"value\": {"
-            + "    \"ca\": \"\","
-            + "    \"certificate\": \"\","
-            + "    \"private_key\": \"\""
-            + "  }"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
-
-        assertThat(violations,
-            contains(hasViolationWithMessage("error.missing_certificate_credentials")));
-      });
-    });
-
-    describe("when certificate has all null string sub-fields", () -> {
-      it("should be invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/certificate\",\n"
-            + "  \"type\": \"certificate\",\n"
-            + "  \"value\": {"
-            + "    \"ca\": null,"
-            + "    \"certificate\": null,"
-            + "    \"private_key\": null"
-            + "  }"
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
-
-        assertThat(violations,
-            contains(hasViolationWithMessage("error.missing_certificate_credentials")));
-      });
-    });
+    assertThat(violations,
+        contains(hasViolationWithMessage("error.missing_certificate_credentials")));
   }
 }
