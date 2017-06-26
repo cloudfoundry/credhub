@@ -386,4 +386,27 @@ public class CredentialsControllerErrorHandlingSetTest {
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.error").value(expectedError));
   }
+
+  @Test
+  public void givenACertificateRequest_whenBothCaNameAndCaAreBothProvided_returns400() throws Exception {
+    final MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "  \"name\":\"some-name\"," +
+            "  \"type\":\"certificate\"," +
+            "  \"value\": {" +
+            "    \"certificate\": \"test-certificate\"," +
+            "    \"ca\": \"test-ca\"," +
+            "    \"ca_name\": \"test-ca-name\"" +
+            "  }" +
+            "}");
+    final String expectedError = "Only one of the values 'ca_name' and 'ca' may be provided. Please update and retry your request.";
+
+    mockMvc.perform(request)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
 }

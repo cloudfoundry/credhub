@@ -3,9 +3,11 @@ package io.pivotal.security.credential;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.pivotal.security.util.EmptyStringToNull;
+import io.pivotal.security.validator.MutuallyExclusive;
 import io.pivotal.security.validator.RequireAnyOf;
 
 @RequireAnyOf(message = "error.missing_certificate_credentials", fields = {"ca", "certificate", "privateKey"})
+@MutuallyExclusive(message = "error.mixed_ca_name_and_ca", fields = {"ca", "caName"})
 public class CertificateCredentialValue implements CredentialValue {
 
   @JsonDeserialize(using = EmptyStringToNull.class)

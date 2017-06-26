@@ -188,4 +188,23 @@ public class CertificateSetRequestTest {
     assertThat(violations,
         contains(hasViolationWithMessage("error.missing_certificate_credentials")));
   }
+
+  @Test
+  public void whenValueHasBothCaAndCaName_isInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/certificate\",\n"
+        + "  \"type\": \"certificate\",\n"
+        + "  \"value\": {"
+        + "    \"ca\": \"test-ca\","
+        + "    \"ca_name\": \"test-ca-name\","
+        + "    \"certificate\": \"test-certificate\""
+        + "  }"
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(
+        json,
+        BaseCredentialSetRequest.class
+    );
+
+    assertThat(violations, contains(hasViolationWithMessage("error.mixed_ca_name_and_ca")));
+  }
 }
