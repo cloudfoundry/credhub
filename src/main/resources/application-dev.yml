@@ -9,6 +9,8 @@ encryption:
   - encryption_password: opensesame
     active: true
   - encryption_password: correcthorsebatterystaple
+  key_creation_enabled: true
+  
 security:
   oauth2:
     resource:
