@@ -143,6 +143,20 @@ public class CertificateSetRequestTest {
 
         assertNull(certificateSetRequest.getCertificateValue().getCa());
       });
+
+      it("should set a non-empty CA name", () -> {
+        String json = "{"
+            + "\"name\": \"/example/certificate\","
+            + "\"type\": \"certificate\","
+            + "\"value\": {"
+            + "\"certificate\":\"test-certificate\","
+            + "\"private_key\":\"fake-private-key\","
+            + "\"ca_name\":\"test-ca-name\""
+            + "}"
+            + "}";
+        CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
+        assertThat(certificateSetRequest.getCertificateValue().getCaName(), equalTo("test-ca-name"));
+      });
     });
 
     describe("when no value is set", () -> {

@@ -18,7 +18,7 @@ public class CertificateAuthorityService {
     this.credentialDataService = credentialDataService;
   }
 
-  public CertificateCredentialValue findMostRecent(String caName) throws ParameterizedValidationException {
+  public CertificateCredentialValue findMostRecent(String caName) {
     Credential mostRecent = credentialDataService.findMostRecent(caName);
     if (CertificateCredential.class.isInstance(mostRecent)) {
       CertificateCredential certificateCredential = (CertificateCredential) mostRecent;
