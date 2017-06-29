@@ -4,15 +4,18 @@ import io.pivotal.security.audit.AuditInterceptor;
 import io.pivotal.security.controller.v1.CurrentUserAccessControlEntryResolver;
 import io.pivotal.security.controller.v1.RequestUuidArgumentResolver;
 import io.pivotal.security.controller.v1.UserContextArgumentResolver;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+
+import java.util.List;
 
 @Configuration
 public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
@@ -55,5 +58,10 @@ public class WebMvcConfiguration extends WebMvcConfigurerAdapter {
   public void addInterceptors(InterceptorRegistry registry) {
     super.addInterceptors(registry);
     registry.addInterceptor(auditInterceptor).excludePathPatterns("/info", "/health");
+  }
+
+  @Bean
+  public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
+    return restTemplateBuilder.build();
   }
 }

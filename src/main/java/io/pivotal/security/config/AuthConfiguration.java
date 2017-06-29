@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
 @EnableResourceServer
@@ -32,18 +33,21 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
   private final AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler;
   private final AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler;
   private final PreAuthenticationFailureFilter preAuthenticationFailureFilter;
-
+  private final OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter;
 
   @Autowired
   AuthConfiguration(
     ResourceServerProperties resourceServerProperties,
     AuditOAuth2AuthenticationExceptionHandler auditOAuth2AuthenticationExceptionHandler,
     AuditOAuth2AccessDeniedHandler auditOAuth2AccessDeniedHandler,
-    PreAuthenticationFailureFilter preAuthenticationFailureFilter) {
+    PreAuthenticationFailureFilter preAuthenticationFailureFilter,
+    OAuth2ExtraValidationFilter oAuth2ExtraValidationFilter
+  ) {
     this.resourceServerProperties = resourceServerProperties;
     this.auditOAuth2AuthenticationExceptionHandler = auditOAuth2AuthenticationExceptionHandler;
     this.auditOAuth2AccessDeniedHandler = auditOAuth2AccessDeniedHandler;
     this.preAuthenticationFailureFilter = preAuthenticationFailureFilter;
+    this.oAuth2ExtraValidationFilter = oAuth2ExtraValidationFilter;
   }
 
   @Override
@@ -77,6 +81,7 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
         });
 
     http.addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
+        .addFilterBefore(oAuth2ExtraValidationFilter, BasicAuthenticationFilter.class)
         .authenticationProvider(getPreAuthenticatedAuthenticationProvider());
 
     http
