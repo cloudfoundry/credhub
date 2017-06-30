@@ -64,6 +64,7 @@ dependencies {
     compile("org.mariadb.jdbc:mariadb-java-client:1.5.8")
     compile("org.flywaydb:flyway-core:4.0.3")
     compile("net.java.dev.jna:jna:4.2.2")
+    compile("org.apache.httpcomponents:httpclient:4.5.3")
 
     testCompile("org.springframework.boot:spring-boot-starter-test")
     testCompile("org.skyscreamer:jsonassert")

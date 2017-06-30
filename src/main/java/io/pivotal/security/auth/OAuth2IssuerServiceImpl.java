@@ -1,17 +1,25 @@
 package io.pivotal.security.auth;
 
+import io.pivotal.security.util.RestTemplateFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 
 @Component
+@Profile({"dev", "prod"})
 public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
   private final static String ISSUER_PATH = "/.well-known/openid-configuration";
 
@@ -22,11 +30,13 @@ public class OAuth2IssuerServiceImpl implements OAuth2IssuerService {
 
   @Autowired
   OAuth2IssuerServiceImpl(
+      RestTemplateFactory restTemplateFactory,
       @Value("${auth_server.url}") String authServer,
-      RestTemplate restTemplate
-  ) throws URISyntaxException {
+      @Value("${auth_server.trust_store:}") String trustStore,
+      @Value("${auth_server.trust_store_password:}") String trustStorePassword
+  ) throws URISyntaxException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException, IOException {
     this.authServerUri = getResolvedAuthServerUri(authServer);
-    this.restTemplate = restTemplate;
+    this.restTemplate = restTemplateFactory.createRestTemplate(trustStore, trustStorePassword);
   }
 
   public void fetchIssuer() {

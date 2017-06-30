@@ -2,6 +2,8 @@ auth_server:
   # Public dummy UAA for local development usage only!
   # Username/password: credhub/password
   url: https://34.206.233.195:8443
+  trust_store: src/test/resources/auth_server_trust_store.jks
+  trust_store_password: changeit
 
 encryption:
   provider: internal
