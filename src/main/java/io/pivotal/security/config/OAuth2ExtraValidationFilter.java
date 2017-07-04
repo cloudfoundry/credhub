@@ -5,12 +5,17 @@ import io.pivotal.security.auth.OAuth2IssuerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.AuthenticationEventPublisher;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.provider.authentication.BearerTokenExtractor;
 import org.springframework.security.oauth2.provider.authentication.TokenExtractor;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -27,6 +32,7 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
   private final MessageSourceAccessor messageSourceAccessor;
   private TokenStore tokenStore;
   private AuditOAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler;
+  private AuthenticationEventPublisher eventPublisher;
   private TokenExtractor tokenExtractor;
   private OAuth2IssuerService oAuth2IssuerService;
 
@@ -35,11 +41,13 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
       OAuth2IssuerService oAuth2IssuerService,
       TokenStore tokenStore,
       AuditOAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
-      MessageSource messageSource
+      MessageSource messageSource,
+      AuthenticationEventPublisher eventPublisher
   ) {
     this.oAuth2IssuerService = oAuth2IssuerService;
     this.tokenStore = tokenStore;
     this.oAuth2AuthenticationExceptionHandler = oAuth2AuthenticationExceptionHandler;
+    this.eventPublisher = eventPublisher;
     this.tokenExtractor = new BearerTokenExtractor();
     this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
   }
@@ -48,20 +56,31 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
     Authentication authentication = tokenExtractor.extract(request);
 
-    if (authentication != null) {
-      String token = (String) authentication.getPrincipal();
-      OAuth2AccessToken accessToken = tokenStore.readAccessToken(token);
-      Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
-      String issuer = (String) additionalInformation.getOrDefault("iss", "");
+    try {
+      if (authentication != null) {
+        String token = (String) authentication.getPrincipal();
+        OAuth2AccessToken accessToken = tokenStore.readAccessToken(token);
+        Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+        String issuer = (String) additionalInformation.getOrDefault("iss", "");
 
-      if (!issuer.equals(oAuth2IssuerService.getIssuer())) {
-        tokenStore.removeAccessToken(accessToken);
+        if (!issuer.equals(oAuth2IssuerService.getIssuer())) {
+          tokenStore.removeAccessToken(accessToken);
 
-        String errorMessage = messageSourceAccessor.getMessage("error.oauth.invalid_issuer");
-        oAuth2AuthenticationExceptionHandler.commence(request, response, new AuthenticationServiceException(errorMessage));
+          String errorMessage = messageSourceAccessor.getMessage("error.oauth.invalid_issuer");
+          throw new OAuth2Exception(errorMessage);
+          //        AuthenticationServiceException authException = new AuthenticationServiceException(errorMessage);
+          //        oAuth2AuthenticationExceptionHandler.commence(request, response, authException);
+        }
+
       }
-    }
 
-    filterChain.doFilter(request, response);
+      filterChain.doFilter(request, response);
+    } catch (OAuth2Exception exception) {
+      SecurityContextHolder.clearContext();
+      InsufficientAuthenticationException authException = new InsufficientAuthenticationException(exception.getMessage(), exception);
+      eventPublisher.publishAuthenticationFailure(new BadCredentialsException(exception.getMessage(), exception),
+          new PreAuthenticatedAuthenticationToken("access-token", "N/A"));
+      oAuth2AuthenticationExceptionHandler.commence(request, response, authException);
+    }
   }
 }

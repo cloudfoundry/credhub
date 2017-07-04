@@ -17,9 +17,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 @Configuration
 @EnableResourceServer
@@ -81,7 +81,7 @@ public class AuthConfiguration extends ResourceServerConfigurerAdapter {
         });
 
     http.addFilterBefore(preAuthenticationFailureFilter, X509AuthenticationFilter.class)
-        .addFilterBefore(oAuth2ExtraValidationFilter, BasicAuthenticationFilter.class)
+        .addFilterAfter(oAuth2ExtraValidationFilter, preAuthenticationFailureFilter.getClass())
         .authenticationProvider(getPreAuthenticatedAuthenticationProvider());
 
     http
