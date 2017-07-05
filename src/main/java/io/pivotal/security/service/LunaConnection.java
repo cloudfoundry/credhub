@@ -35,14 +35,7 @@ class LunaConnection implements RemoteEncryptionConnectable {
     lunaSlotManager = Class.forName("com.safenetinc.luna.LunaSlotManager")
         .getDeclaredMethod("getInstance").invoke(null);
 
-    //https://www.pivotaltracker.com/story/show/148107855
-    //SecureRandom seed is 440 bytes in accordance with NIST Special Publication 800-90A Revision 1, section 10.1
-    //http://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf
-
-    SecureRandom lunaRandom = SecureRandom.getInstance("LunaRNG");
-    secureRandom = SecureRandom.getInstance("SHA1PRNG");
-    secureRandom.setSeed(lunaRandom.generateSeed(440));
-
+    secureRandom = SecureRandom.getInstance("LunaRNG");
     aesKeyGenerator = KeyGenerator.getInstance("AES", provider);
     aesKeyGenerator.init(128);
   }
