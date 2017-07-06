@@ -43,8 +43,6 @@ public class LunaEncryptionService extends EncryptionService {
     this.timedRetry = timedRetry;
 
     logger = LogManager.getLogger();
-
-    lunaConnection.reconnect(null);
   }
 
   @Override
