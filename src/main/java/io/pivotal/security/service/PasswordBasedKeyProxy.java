@@ -22,6 +22,7 @@ import static org.apache.commons.lang3.ArrayUtils.toPrimitive;
 
 public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
 
+  private final SecureRandom secureRandom;
   private String password = null;
   private int numIterations;
   private List<Byte> salt;
@@ -30,21 +31,23 @@ public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
     super(null, encryptionService);
     this.password = password;
     this.numIterations = numIterations;
+    this.secureRandom = encryptionService.getSecureRandom();
   }
 
-  public static List<Byte> generateSalt() {
-    SecureRandom sr;
+  List<Byte> generateSalt() {
     byte[] salt = new byte[SALT_SIZE];
-    try {
-      sr = SecureRandom.getInstance("NativePRNGNonBlocking");
-      sr.nextBytes(salt);
-    } catch (NoSuchAlgorithmException e) {
-      throw new RuntimeException(e);
-    }
 
-    sr.nextBytes(salt);
+    secureRandom.nextBytes(salt);
+    secureRandom.nextBytes(salt);
 
     return Collections.unmodifiableList(asList(ArrayUtils.toObject(salt)));
+  }
+
+  public Key deriveKey() {
+    if (salt == null) {
+      salt = generateSalt();
+    }
+    return deriveKey(salt);
   }
 
   public Key deriveKey(List<Byte> salt) {
@@ -93,8 +96,7 @@ public class PasswordBasedKeyProxy extends DefaultKeyProxy implements KeyProxy {
   @Override
   public Key getKey() {
     if (super.getKey() == null) {
-      salt = generateSalt();
-      setKey(deriveKey(salt));
+      setKey(deriveKey());
     }
 
     return super.getKey();

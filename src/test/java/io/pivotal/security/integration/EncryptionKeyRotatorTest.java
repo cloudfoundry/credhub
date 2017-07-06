@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 
 import static io.pivotal.security.helper.JsonTestHelper.parse;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
-import static io.pivotal.security.service.PasswordBasedKeyProxy.generateSalt;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -281,7 +280,7 @@ public class EncryptionKeyRotatorTest {
     credentialDataService.save(credentialWithCurrentKey);
 
     final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password", 1, encryptionService);
-    Key oldKey = keyProxy.deriveKey(generateSalt());
+    Key oldKey = keyProxy.deriveKey();
 
     oldCanary = new EncryptionKeyCanary();
     final Encryption canaryEncryption = encryptionService.encrypt(null, oldKey, CANARY_VALUE);
