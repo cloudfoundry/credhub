@@ -46,7 +46,7 @@ public class LunaEncryptionService extends EncryptionService {
   }
 
   @Override
-  SecureRandom getSecureRandom() {
+  public SecureRandom getSecureRandom() {
     return lunaConnection.getSecureRandom();
   }
 

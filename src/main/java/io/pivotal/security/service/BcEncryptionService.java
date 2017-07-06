@@ -31,7 +31,7 @@ public class BcEncryptionService extends EncryptionService {
   }
 
   @Override
-  SecureRandom getSecureRandom() {
+  public SecureRandom getSecureRandom() {
     return secureRandom;
   }
 

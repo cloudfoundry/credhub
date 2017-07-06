@@ -21,13 +21,13 @@ import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CHARSET;
 
 public abstract class EncryptionService {
 
-  abstract SecureRandom getSecureRandom();
-
   abstract CipherWrapper getCipher() throws NoSuchPaddingException, NoSuchAlgorithmException;
 
   abstract AlgorithmParameterSpec generateParameterSpec(byte[] nonce);
 
   abstract KeyProxy createKeyProxy(EncryptionKeyMetadata encryptionKeyMetadata);
+
+  public abstract SecureRandom getSecureRandom();
 
   public Encryption encrypt(UUID canaryUuid, Key key, String value) throws Exception {
     byte[] nonce = generateNonce();
