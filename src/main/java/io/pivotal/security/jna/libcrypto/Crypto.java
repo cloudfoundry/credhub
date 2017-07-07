@@ -40,4 +40,6 @@ class Crypto {
   public static native long ERR_get_error();
 
   public static native void ERR_error_string_n(long e, byte[] buf, int len);
+
+  public static native void RAND_seed(Pointer buf, int num);
 }

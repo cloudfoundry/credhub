@@ -1,5 +1,17 @@
 package io.pivotal.security.jna.libcrypto;
 
+import com.greghaskins.spectrum.Spectrum;
+import com.sun.jna.Pointer;
+import io.pivotal.security.service.BcEncryptionService;
+import io.pivotal.security.service.PasswordKeyProxyFactory;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.runner.RunWith;
+
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import javax.crypto.Cipher;
+
 import static com.greghaskins.spectrum.Spectrum.beforeEach;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
@@ -9,14 +21,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
-
-import com.greghaskins.spectrum.Spectrum;
-import com.sun.jna.Pointer;
-import java.math.BigInteger;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import javax.crypto.Cipher;
-import org.junit.runner.RunWith;
+import static org.mockito.Mockito.mock;
 
 @RunWith(Spectrum.class)
 public class CryptoWrapperTest {
@@ -25,7 +30,9 @@ public class CryptoWrapperTest {
 
   {
     beforeEach(() -> {
-      subject = new CryptoWrapper(getBouncyCastleProvider());
+      BouncyCastleProvider bouncyCastleProvider = getBouncyCastleProvider();
+      BcEncryptionService encryptionService = new BcEncryptionService(bouncyCastleProvider, mock(PasswordKeyProxyFactory.class));
+      subject = new CryptoWrapper(bouncyCastleProvider, encryptionService);
     });
 
     it("can generate keypairs", () -> {

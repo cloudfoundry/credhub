@@ -1,21 +1,25 @@
 package io.pivotal.security.jna.libcrypto;
 
+import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import io.pivotal.security.service.EncryptionService;
 import io.pivotal.security.util.CheckedConsumer;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 @Component
 public class CryptoWrapper {
@@ -23,10 +27,17 @@ public class CryptoWrapper {
   static final String ALGORITHM = "RSA";
 
   private final KeyFactory keyFactory;
+  private final SecureRandom secureRandom;
 
   @Autowired
-  public CryptoWrapper(BouncyCastleProvider bouncyCastleProvider) throws NoSuchAlgorithmException {
+  public CryptoWrapper(
+      BouncyCastleProvider bouncyCastleProvider,
+      EncryptionService encryptionService
+  ) throws NoSuchAlgorithmException {
     keyFactory = KeyFactory.getInstance(ALGORITHM, bouncyCastleProvider);
+    secureRandom = encryptionService.getSecureRandom();
+
+    initializeOpenssl();
   }
 
   public synchronized <E extends Throwable> void
@@ -84,6 +95,13 @@ public class CryptoWrapper {
     byte[] buffer = new byte[128];
     Crypto.ERR_error_string_n(Crypto.ERR_get_error(), buffer, buffer.length);
     return Native.toString(buffer);
+  }
+
+  private synchronized void initializeOpenssl() {
+    byte[] seed = secureRandom.generateSeed(55);
+    Pointer memory = new Memory(seed.length);
+    memory.write(0, seed, 0, seed.length);
+    Crypto.RAND_seed(memory, seed.length);
   }
 
   private RSAPrivateCrtKeySpec getRsaPrivateCrtKeySpec(RSA.ByReference rsa) {
