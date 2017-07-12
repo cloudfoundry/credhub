@@ -1,5 +1,7 @@
 # Mutual TLS Client Authentication
 
+**Status: Supported in v1.1.0**
+
 ### Description
 Transport Layer Security (TLS) is a protocol for secure communications and authentication. A traditional one-way TLS connection authenticates the server, but not the client. For example, when you visit https://example.com your web browser authenticates the server by validating the certificate it presents. In a Mutual TLS connection, the client also provides a certificate, which asserts its identity to the server. 
 
@@ -49,3 +51,9 @@ Trusted mutual TLS CAs for CredHub are configured in the deployment manifest. Al
 ```
 
 To establish a successful mutual TLS handshake, TLS termination must be performed at the CredHub application. This requires an architecture that provides passthrough load balancing to the deployed CredHub instances. For example, routing through the Cloud Foundry router or an external TLS-terminating load balancer is not possible if you wish to use mutual TLS authentication for clients. 
+
+### Limitations 
+
+Mutual TLS is currently implemented in CredHub specifically for authentication via instance identity credentials of app containers in Cloud Foundry. You may utilize this for other use cases, however, client certificates must currently include an identifier GUID in the certificate organization unit in the format 'app:[v4-guid]'. Access and change logging in CredHub will then be associated to the provided identifier GUID. 
+
+CredHub does not currently support client certificate host verification. 
