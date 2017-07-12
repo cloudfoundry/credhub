@@ -56,9 +56,106 @@ To address the above concerns, we have created an alternative workflow that allo
 11. Success response
 12. Success response
 
-#### Application Workflow 
+#### Service Brokers
 
-After the bind workflow has completed, the app is able to access the credential values on-demand via a request to CredHub. This process may be automated using client libraries, such as [Spring CredHub.](https://projects.spring.io/spring-credhub/)
+Service brokers that support binding of service instances to applications typically return a set of binding credentials in response to a binding request from Cloud Controller (CC). These binding credentials must be returned to CC in the form of a JSON hash so they can be provided to bound applications. The keys and values in the credentials hash are typically plain-text. 
+
+If a service instance provisioned by a service broker were accessed by applications using an HTTP URI secured by basic authentication, the credentials returned from a binding request might look like this: 
+
+```
+{
+  "credentials": {
+    "uri": "https://my-service.cf.example.com",
+    "username": "user",
+    "password": "secret"
+  }
+}
+```
+
+When integrated with CredHub, a service broker should store the binding credentials in CredHub using the “set credential” API with a credential type “json”. The name given to the credential should adhere to the following convention to ensure uniqueness within CredHub: 
+
+```
+/c/client-identifier/service-identifier/binding-guid/credential-name
+```
+
+where:
+* `client-identifier` is a value provided by the service broker to uniquely identify the broker
+* `service-identifier` is the name of the service offering as shown in the services catalog
+* `binding-guid` is the GUID created by CC and passed to the service broker in the service binding request
+* `credential-name` is a value provided by the service broker to name the credential
+
+Following the previous service binding example of service binding credentials containing a basic-auth secured URI, a `curl` request to CredHub to store credentials might look like this: 
+
+```
+curl "https://credhub.cf.example.com/api/v1/data" \
+  -X PUT \
+  -d '{
+      "name": "/c/my-service-broker/my-service/faa677f5-25cd-4f1e-8921-14a9d5ab48b8/credentials",
+      "type": "json",
+      "value": {
+        "uri": "https://my-service.cf.example.com",
+        "username": "user",
+        "password": "secret"
+      }
+     }' \
+  -H 'Content-type: application/json'
+```
+
+A service broker should return a reference to these stored credentials in response to a binding request from CC. To facilitate retrieval of the credentials by bound applications, the credentials returned to CC should contain the single key “credhub-ref”, and the name of the stored credential as the value for that key. That binding response might look like this: 
+
+```
+{
+  "credentials": {
+    "credhub-ref": "((/c/my-service-broker/my-service/faa677f5-25cd-4f1e-8921-14a9d5ab48b8/credentials))"
+  }
+}
+```
+
+#### Client Applications
+
+Applications that are bound to services are provided with a VCAP_SERVICES environment variable that contains the binding credentials supplied by the service broker. If an application were bound to the service used in the examples above, without CredHub integration the application’s VCAP_SERVICES environment variable might look like this: 
+
+```
+{
+  "my-service": [
+   {
+    "credentials": {
+      "uri": "https://my-service.cf.example.com",
+      "username": "user",
+      "password": "secret"
+    },
+    "label": "my-service",
+    "name": "my-service-instance",
+    "plan": "standard",
+    "tags": [],
+    "volume_mounts": []
+   }
+  ]
+}
+```
+
+If a service broker has stored credentials in CredHub and returned a CredHub reference in the binding credentials, the application’s VCAP_SERVICES might instead look like this: 
+
+```
+{
+  "my-service": [
+   {
+    "credentials": {
+      "credhub-ref": "((/c/my-service-broker/my-service/faa677f5-25cd-4f1e-8921-14a9d5ab48b8/credentials))"
+    },
+    "label": "my-service",
+    "name": "my-service-instance",
+    "plan": "standard",
+    "tags": [],
+    "volume_mounts": []
+   }
+  ]
+}
+```
+
+To be able to connect to the service, the application needs to exchange the CredHub reference for the raw credentials. This can either be done by making a request for each referenced credential or by using the CredHub [interpolation API.](https://credhub-api.cfapps.io/#interpolate-endpoint-beta) The entire VCAP_SERVICES environment variable is passed to the API. CredHub responds with the entire VCAP_SERVICES structure, with any credhub-ref fields in the credentials replaced with the raw credentials stored by the service broker. 
+
+After the bind workflow has completed, the app is able to access the credential values on-demand via a request to CredHub. This process may be automated using client libraries, such as [Spring CredHub.](../spring-java-credhub-integration.md)
 
 #### Authentication 
 
@@ -70,6 +167,7 @@ Applications must authenticate with CredHub using the application instance ident
 
 Instance identity credentials are provisioned and rotated automatically in the application container. CredHub will validate the [authenticated identity](authentication-identities.md), signing authority, validity dates and presence of x509 extension Extended Key Usage 'Client Authentication' during the authentication workflow. 
 
+
 [2]:https://github.com/cloudfoundry/uaa
 [3]:https://github.com/cloudfoundry/diego-release/blob/master/docs/instance-identity.md
 
@@ -80,26 +178,6 @@ Credential access in CredHub is controlled via access control lists. Each creden
 When a new credential is created, the creator is granted full access to the credential. In this workflow, the service broker will originate all service binding credentials and, therefore, receive full access. In the request to store the credential, the service broker will include an entry to authorize the app in the bind request to read the credential value. 
 
 This authorization workflow will enforce appropriate controls so that only the originating service broker and bound app are able to access the stored service credentials.
-
-#### Credential Naming Scheme 
-
-To avoid name collisions and aid in authorization, a scheme has been established for service brokers storing credentials in CredHub. The scheme is shown below: 
-
-`/c/client-identifier/service-identifier/binding-guid/credential-name`
-
-* `/c/` - This is a static identifier to organize client credentials
-* `/client-identifier/` - This provides a unique namespace for each client
-* `/service-identifier/` - This separates credentials by service where a service broker is brokering multiple services
-* `/binding-guid/` - The binding guid is a unique identifier for a bind request
-* `/credential-name` - The name of the credential in a bind request
-
-Example: `/c/p-spring-cloud-services/p-config-server/385fab51-ede9-43fb-878a-2fc9346a8c3e/config-credential`
-
-#### Interpolation Endpoint
-
-CredHub provides a convenience endpoint that returns an interpolated `VCAP_SERVICES` object from a request that contains CredHub variable placeholders. This allows applications and frameworks to continue using the familiar `VCAP_SERVICES` object without implementing variable interpolation logic. 
-
-This endpoint accepts `VCAP_SERVICES` content in a request and returns the content with credential values interpolated into the request JSON. The variable provided must be located at `VCAP_SERVICES.*[*].credentials.credhub-ref` and the variable type must be 'json'. More information on this endpoint [can be found here.](https://credhub-api.cfapps.io/#interpolate-endpoint-beta)
 
 ### Deployment Configuration
 
