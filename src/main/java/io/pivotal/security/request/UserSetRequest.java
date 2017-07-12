@@ -2,12 +2,11 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.credential.UserCredentialValue;
-import io.pivotal.security.domain.UserCredential;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class UserSetRequest extends BaseCredentialSetRequest<UserCredential, UserCredentialValue> {
+public class UserSetRequest extends BaseCredentialSetRequest<UserCredentialValue> {
   @NotNull(message = "error.missing_value")
   @Valid
   @JsonProperty("value")

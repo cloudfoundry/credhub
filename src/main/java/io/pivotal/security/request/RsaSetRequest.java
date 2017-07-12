@@ -2,12 +2,11 @@ package io.pivotal.security.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.pivotal.security.credential.RsaCredentialValue;
-import io.pivotal.security.domain.RsaCredential;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredential, RsaCredentialValue> {
+public class RsaSetRequest extends BaseCredentialSetRequest<RsaCredentialValue> {
 
   @NotNull(message = "error.missing_value")
   @Valid

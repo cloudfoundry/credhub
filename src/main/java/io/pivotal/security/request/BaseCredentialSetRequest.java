@@ -23,7 +23,7 @@ import static com.google.common.collect.Lists.newArrayList;
     @JsonSubTypes.Type(name = "rsa", value = RsaSetRequest.class),
     @JsonSubTypes.Type(name = "user", value = UserSetRequest.class)
 })
-public abstract class BaseCredentialSetRequest<Z, T extends CredentialValue> extends BaseCredentialRequest {
+public abstract class BaseCredentialSetRequest<T extends CredentialValue> extends BaseCredentialRequest {
 
   @JsonIgnore
   public abstract T getCredentialValue();
