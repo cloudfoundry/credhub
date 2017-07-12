@@ -95,8 +95,8 @@ public class RegenerateServiceTest {
         beforeEach(() -> {
           when(credentialDataService.findMostRecent(eq("password")))
               .thenReturn(passwordCredential);
-          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
-              .setName("password");
+          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+          passwordGenerateRequest.setName("password");
           expectedParameters = new StringGenerationParameters()
               .setExcludeLower(true)
               .setExcludeUpper(true)
@@ -144,8 +144,8 @@ public class RegenerateServiceTest {
               ParameterizedValidationException.class,
               "error.cannot_regenerate_non_generated_password",
               () -> {
-                CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
-                    .setName("password");
+                CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+                passwordGenerateRequest.setName("password");
 
                 subject
                     .performRegenerate(userContext, parametersList, passwordGenerateRequest, currentUser);
@@ -158,8 +158,8 @@ public class RegenerateServiceTest {
           beforeEach(() -> {
             when(credentialDataService.findMostRecent(eq("ssh")))
                 .thenReturn(sshCredential);
-            CredentialRegenerateRequest sshRegenerateRequest = new CredentialRegenerateRequest()
-                .setName("ssh");
+            CredentialRegenerateRequest sshRegenerateRequest = new CredentialRegenerateRequest();
+            sshRegenerateRequest.setName("ssh");
             when(sshCredential.getName()).thenReturn("ssh");
             when(sshCredential.getCredentialType()).thenReturn("ssh");
             when(generatorService.generateSshKeys(any(SshGenerationParameters.class)))
@@ -188,8 +188,8 @@ public class RegenerateServiceTest {
           beforeEach(() -> {
             when(credentialDataService.findMostRecent(eq("rsa")))
                 .thenReturn(rsaCredential);
-            CredentialRegenerateRequest rsaRegenerateRequest = new CredentialRegenerateRequest()
-                .setName("rsa");
+            CredentialRegenerateRequest rsaRegenerateRequest = new CredentialRegenerateRequest();
+            rsaRegenerateRequest.setName("rsa");
             when(rsaCredential.getName()).thenReturn("rsa");
             when(rsaCredential.getCredentialType()).thenReturn("rsa");
             when(generatorService.generateRsaKeys(any(RsaGenerationParameters.class)))
@@ -217,8 +217,8 @@ public class RegenerateServiceTest {
 
       describe("when regenerating a credential that does not exist", () -> {
         itThrows("an exception", EntryNotFoundException.class, () -> {
-          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
-              .setName("missing_entry");
+          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+          passwordGenerateRequest.setName("missing_entry");
 
           subject.performRegenerate(userContext, parametersList, passwordGenerateRequest, currentUser);
         });
@@ -226,8 +226,8 @@ public class RegenerateServiceTest {
 
       describe("when attempting regenerate of non-regeneratable type", () -> {
         itThrows("an exception", ParameterizedValidationException.class, () -> {
-          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest()
-              .setName("unsupported");
+          CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
+          passwordGenerateRequest.setName("unsupported");
 
           subject.performRegenerate(userContext, parametersList, passwordGenerateRequest, currentUser);
         });

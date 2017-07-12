@@ -31,7 +31,7 @@ public class BaseCredentialRequestTest {
         // language=JSON
         String json = "{"
             + "\"type\":\"value\","
-            + "\"name\":\"some-name\","
+            + "\"name\":\"/some/NAME/with_all-valid_CHARACTERS/0123456789\","
             + /* it thinks this name has a slash in it*/ "\"value\":\"some-value\""
             + "}";
         Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
@@ -93,7 +93,7 @@ public class BaseCredentialRequestTest {
           Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-          assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
+          assertThat(violations, contains(hasViolationWithMessage("error.credential.invalid_slash_in_name")));
         });
       });
 
@@ -109,7 +109,7 @@ public class BaseCredentialRequestTest {
           Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-          assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
+          assertThat(violations, contains(hasViolationWithMessage("error.credential.invalid_slash_in_name")));
         });
       });
 
@@ -129,7 +129,7 @@ public class BaseCredentialRequestTest {
           Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
               .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-          assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
+          assertThat(violations, contains(hasViolationWithMessage("error.credential.invalid_slash_in_name")));
         });
       });
 
@@ -164,19 +164,21 @@ public class BaseCredentialRequestTest {
         });
       });
 
-      describe("when name contains a '.' character", () -> {
-        it("should be valid", () -> {
-          // language=JSON
-          String json = "{"
-              + "\"type\":\"value\","
-              + "\"name\":\"test.name/\","
-              + "\"value\":\"some-value\","
-              + "\"overwrite\":true"
-              + "}";
-          Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
-              .deserializeAndValidate(json, BaseCredentialSetRequest.class);
+      describe("when name contains an invalid character", () -> {
+        it("should be invalid", () -> {
+          for (char invalidCharacter: new char[]{'.', ' ', '\\', '?', '!', '$'}) {
+            // language=JSON
+            String json = "{"
+                + "\"type\":\"value\","
+                + "\"name\":\"test" + invalidCharacter + "name\","
+                + "\"value\":\"some-value\","
+                + "\"overwrite\":true"
+                + "}";
+            Set<ConstraintViolation<BaseCredentialSetRequest>> violations = JsonTestHelper
+                .deserializeAndValidate(json, BaseCredentialSetRequest.class);
 
-          assertThat(violations, contains(hasViolationWithMessage("error.invalid_name_has_slash")));
+            assertThat(violations, contains(hasViolationWithMessage("error.credential.invalid_character_in_name")));
+          }
         });
       });
     });
@@ -225,8 +227,8 @@ public class BaseCredentialRequestTest {
     });
 
     describe("#validate", () -> {
-      itThrowsWithMessage("throws with error.invalid_name_has_slash",
-          ParameterizedValidationException.class, "error.invalid_name_has_slash", () -> {
+      itThrowsWithMessage("throws with error.credential.invalid_slash_in_name",
+          ParameterizedValidationException.class, "error.credential.invalid_slash_in_name", () -> {
             // language=JSON
             String json = "{\n"
                 + "  \"name\": \"//some-name\",\n"

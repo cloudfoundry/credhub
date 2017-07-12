@@ -107,7 +107,7 @@ public class EncryptionKeyRotatorTest {
   private EncryptionKeyCanary unknownCanary;
   private EncryptionKeyCanary oldCanary;
   private String passwordName;
-  private final String name = "/" + this.getClass().getName();
+  private final String name = "/" + this.getClass().getSimpleName();
 
   @Before
   public void beforeEach() {

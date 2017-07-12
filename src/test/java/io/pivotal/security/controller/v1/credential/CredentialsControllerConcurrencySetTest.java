@@ -76,7 +76,7 @@ public class CredentialsControllerConcurrencySetTest {
       beforeEach(() -> {
         responses = new ResultActions[2];
 
-        Thread thread1 = new Thread("thread 1") {
+        Thread thread1 = new Thread("thread-1") {
           @Override
           public void run() {
             final MockHttpServletRequestBuilder putReq = put("/api/v1/data")
@@ -96,7 +96,7 @@ public class CredentialsControllerConcurrencySetTest {
             }
           }
         };
-        Thread thread2 = new Thread("thread 2") {
+        Thread thread2 = new Thread("thread-2") {
           @Override
           public void run() {
             final MockHttpServletRequestBuilder put = put("/api/v1/data")
@@ -124,10 +124,10 @@ public class CredentialsControllerConcurrencySetTest {
       });
 
       it("test", () -> {
-        responses[0].andExpect(jsonPath("$.value").value(credentialValue
-            + "thread 1"));
-        responses[1].andExpect(jsonPath("$.value").value(credentialValue
-            + "thread 2"));
+        final String thread1Value = credentialValue + "thread-1";
+        final String thread2Value = credentialValue + "thread-2";
+        responses[0].andExpect(jsonPath("$.value").value(thread1Value));
+        responses[1].andExpect(jsonPath("$.value").value(thread2Value));
       });
     });
 

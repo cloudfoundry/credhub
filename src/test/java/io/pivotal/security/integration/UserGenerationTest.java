@@ -49,8 +49,8 @@ public class UserGenerationTest {
 
   private MockMvc mockMvc;
 
-  private final String credentialName1 = "/" + this.getClass().getName() + "1";
-  private final String credentialName2 = "/" + this.getClass().getName() + "2";
+  private final String credentialName1 = "/" + this.getClass().getSimpleName() + "1";
+  private final String credentialName2 = "/" + this.getClass().getSimpleName() + "2";
 
   @Before
   public void beforeEach() throws Exception {

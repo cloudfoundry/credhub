@@ -70,7 +70,7 @@ public class PermissionsEndpointWithoutEnforcementTest {
 
   private AuditingHelper auditingHelper;
   private MockMvc mockMvc;
-  private String credentialNameWithoutLeadingSlash = this.getClass().getName();
+  private String credentialNameWithoutLeadingSlash = this.getClass().getSimpleName();
   private String credentialName = "/" + credentialNameWithoutLeadingSlash;
 
   @Before
