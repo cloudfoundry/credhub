@@ -251,31 +251,26 @@ public class CertificateGenerationParameters {
       throw new ParameterizedValidationException("error.invalid_duration");
     }
 
-    if (!isEmpty(commonName) && commonName.length() > 64) {
-      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"common name", 64});
-    }
+    validateParameterLength(commonName, "common name", 64);
+    validateParameterLength(organization, "organization", 64);
+    validateParameterLength(organizationUnit, "organization unit", 64);
+    validateParameterLength(locality, "locality", 128);
+    validateParameterLength(state, "state", 128);
+    validateParameterLength(country, "country", 2);
+    validateParameterLength(alternativeNames, "alternative name", 64);
+  }
 
-    if (!isEmpty(organization) && organization.length() > 64) {
-      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"organization", 64});
-    }
-    if (!isEmpty(organizationUnit) && organizationUnit.length() > 64) {
-      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"organization unit", 64});
-    }
-    if (!isEmpty(locality) && locality.length() > 128) {
-      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"locality", 128});
-    }
-    if (!isEmpty(state) && state.length() > 128) {
-      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"state", 128});
-    }
-    if (!isEmpty(country) && country.length() > 2) {
-      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"country", 2});
-    }
-    if (alternativeNames != null) {
-      for (String alternativeName : alternativeNames) {
-        if (alternativeName.length() > 64) {
-          throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"alternative name", 64});
-        }
+  private static void validateParameterLength(String[] parameterArray, String parameterName, int parameterLength) {
+    if (parameterArray != null) {
+      for (String parameter : parameterArray) {
+        validateParameterLength(parameter, parameterName, parameterLength);
       }
+    }
+  }
+
+  private static void validateParameterLength(String parameter, String parameterName, int parameterLength) {
+    if (!isEmpty(parameter) && parameter.length() > parameterLength) {
+      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{parameterName, parameterLength});
     }
   }
 }
