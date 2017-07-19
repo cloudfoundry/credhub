@@ -243,4 +243,112 @@ public class CertificateGenerationParametersTest {
       assertThat(e.getParameters(), equalTo(new Object[]{"common name", 64}));
     }
   }
+
+  @Test
+  public void validate_rejectsOrganizationsThatAreTooLong() {
+    String maxLengthOrganization= "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setOrganization(maxLengthOrganization);
+    subject.validate();
+
+    String overlyLongOrganization= "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setOrganization(overlyLongOrganization);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"organization", 64}));
+    }
+  }
+
+  @Test
+  public void validate_rejectsOrganizationUnitsThatAreTooLong() {
+    String maxLengthOrganizationUnit = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setOrganizationUnit(maxLengthOrganizationUnit);
+    subject.validate();
+
+    String overlyLongOrganizationUnit = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setOrganizationUnit(overlyLongOrganizationUnit);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"organization unit", 64}));
+    }
+  }
+
+  @Test
+  public void validate_rejectsLocalitiesThatAreTooLong() {
+    String maxLengthLocality = "128_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setLocality(maxLengthLocality);
+    subject.validate();
+
+    String overlyLongLocality = "129__abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setLocality(overlyLongLocality);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"locality", 128}));
+    }
+  }
+
+  @Test
+  public void validate_rejectsStatesThatAreTooLong() {
+    String maxLengthState = "128_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setState(maxLengthState);
+    subject.validate();
+
+    String overlyLongState = "129__abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setState(overlyLongState);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"state", 128}));
+    }
+  }
+
+  @Test
+  public void validate_rejectsCountriesThatAreTooLong() {
+    String maxLengthCountry = "ca";
+    subject.setCountry(maxLengthCountry);
+    subject.validate();
+
+    String overlyLongCountry = "usa";
+    subject.setCountry(overlyLongCountry);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"country", 2}));
+    }
+  }
+
+  @Test
+  public void validate_rejectsAlternativeNamesThatAreTooLong() {
+    String maxLengthAlternativeName = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz012345.com";
+    subject.setAlternativeNames(new String[]{"abc.com", maxLengthAlternativeName});
+    subject.validate();
+
+    String overlyLongAlternativeName = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz012345.com";
+    subject.setAlternativeNames(new String[]{"abc.com", overlyLongAlternativeName});
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"alternative name", 64}));
+    }
+  }
 }

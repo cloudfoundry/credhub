@@ -254,5 +254,28 @@ public class CertificateGenerationParameters {
     if (!isEmpty(commonName) && commonName.length() > 64) {
       throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"common name", 64});
     }
+
+    if (!isEmpty(organization) && organization.length() > 64) {
+      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"organization", 64});
+    }
+    if (!isEmpty(organizationUnit) && organizationUnit.length() > 64) {
+      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"organization unit", 64});
+    }
+    if (!isEmpty(locality) && locality.length() > 128) {
+      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"locality", 128});
+    }
+    if (!isEmpty(state) && state.length() > 128) {
+      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"state", 128});
+    }
+    if (!isEmpty(country) && country.length() > 2) {
+      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"country", 2});
+    }
+    if (alternativeNames != null) {
+      for (String alternativeName : alternativeNames) {
+        if (alternativeName.length() > 64) {
+          throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"alternative name", 64});
+        }
+      }
+    }
   }
 }
