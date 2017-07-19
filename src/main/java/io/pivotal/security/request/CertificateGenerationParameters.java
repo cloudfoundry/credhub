@@ -250,5 +250,9 @@ public class CertificateGenerationParameters {
     if (duration < ONE_DAY || duration > TEN_YEARS) {
       throw new ParameterizedValidationException("error.invalid_duration");
     }
+
+    if (!isEmpty(commonName) && commonName.length() > 64) {
+      throw new ParameterizedValidationException("error.credential.invalid_certificate_parameter", new Object[]{"common name", 64});
+    }
   }
 }

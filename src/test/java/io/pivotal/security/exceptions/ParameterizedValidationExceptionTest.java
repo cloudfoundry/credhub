@@ -1,14 +1,14 @@
 package io.pivotal.security.exceptions;
 
+import com.greghaskins.spectrum.Spectrum;
+import org.junit.runner.RunWith;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.Matchers.array;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertThat;
-
-import com.greghaskins.spectrum.Spectrum;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class ParameterizedValidationExceptionTest {
@@ -24,30 +24,40 @@ public class ParameterizedValidationExceptionTest {
       ParameterizedValidationException subject = new ParameterizedValidationException(
           "message.code");
       assertThat(subject.getMessage(), equalTo("message.code"));
-      assertThat(subject.getParameter(), equalTo(null));
+      assertThat(subject.getParameters(), equalTo(new Object[]{}));
     });
 
     it("takes a message code and parameter in the constructor", () -> {
       ParameterizedValidationException subject = new ParameterizedValidationException(
           "message.code", "foo");
       assertThat(subject.getMessage(), equalTo("message.code"));
-      assertThat(subject.getParameter(), equalTo("foo"));
+      assertThat(subject.getParameters(), equalTo(new Object[]{"foo"}));
     });
 
     it("formats the output of JsonPath keys to remove '$' and '[', \', etc", () -> {
       ParameterizedValidationException subject = new ParameterizedValidationException(
           "message.code", "$['iasjdoiasd']");
-      assertThat(subject.getParameter(), equalTo("iasjdoiasd"));
+      assertThat(subject.getParameters(), equalTo(new Object[]{"iasjdoiasd"}));
     });
 
     it("formats the output of JsonPath keys to put dots between nested keys", () -> {
       ParameterizedValidationException subject = new ParameterizedValidationException(
           "message.code", "$['parameters']['alternative_names']");
-      assertThat(subject.getParameter(), equalTo("parameters.alternative_names"));
+      assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names"}));
 
       subject = new ParameterizedValidationException("message.code",
           "$['parameters']['alternative_names'][*]");
-      assertThat(subject.getParameter(), equalTo("parameters.alternative_names.*"));
+      assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names.*"}));
+    });
+
+    it("formats the keys correctly when there are multiple parameters", () -> {
+      ParameterizedValidationException subject = new ParameterizedValidationException(
+          "message.code", new String[]{"$['parameters']['alternative_names']", "$['iasjdoiasd']"});
+      assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names", "iasjdoiasd"}));
+
+      subject = new ParameterizedValidationException("message.code",
+          new String[]{"$['parameters']['alternative_names'][*]", "$['iasjdoiasd']"});
+      assertThat(subject.getParameters(), equalTo(new Object[]{"parameters.alternative_names.*", "iasjdoiasd"}));
     });
 
     describe("getParameters", () -> {
@@ -58,7 +68,7 @@ public class ParameterizedValidationExceptionTest {
             assertThat(subject.getParameters(), array(equalTo("foo")));
 
             subject = new ParameterizedValidationException("message.code");
-            assertThat(subject.getParameters(), equalTo(null));
+            assertThat(subject.getParameters(), equalTo(new Object[]{}));
           });
     });
   }

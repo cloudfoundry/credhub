@@ -40,7 +40,7 @@ public class CertificateGenerationParametersTest {
       fail("should throw");
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_extended_key_usage"));
-      assertThat(e.getParameter(), equalTo("this_is_invalid"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"this_is_invalid"}));
     }
   }
 
@@ -223,6 +223,24 @@ public class CertificateGenerationParametersTest {
       fail("should throw");
     } catch (ParameterizedValidationException e) {
       assertThat(e.getMessage(), equalTo("error.invalid_alternate_name"));
+    }
+  }
+
+  @Test
+  public void validate_rejectsCommonNamesThatAreTooLong() {
+    String maxLengthCommonName = "64abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setCommonName(maxLengthCommonName);
+    subject.validate();
+
+    String overlyLongCommonName = "65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789";
+    subject.setCommonName(overlyLongCommonName);
+
+    try {
+      subject.validate();
+      fail("should throw");
+    } catch (ParameterizedValidationException e) {
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_certificate_parameter"));
+      assertThat(e.getParameters(), equalTo(new Object[]{"common name", 64}));
     }
   }
 }

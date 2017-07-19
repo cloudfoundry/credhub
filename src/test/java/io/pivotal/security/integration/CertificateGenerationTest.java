@@ -32,6 +32,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -120,5 +121,28 @@ public class CertificateGenerationTest {
     byte[] authKeyId = authorityKeyIdentifier.getKeyIdentifier();
 
     assertThat(subjectKeyId, equalTo(authKeyId));
+  }
+
+  @Test
+  public void invalidCertificateGenerationParameters_shouldResultInCorrectErrorMessage() throws Exception {
+    MockHttpServletRequestBuilder request = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        //language=JSON
+        .content("{\n"
+            + "  \"name\" : \"picard\",\n"
+            + "  \"type\" : \"certificate\",\n"
+            + "  \"parameters\" : {\n"
+            + "    \"common_name\" : \"65_abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz0123456789\",\n"
+            + "    \"self_sign\" : true\n"
+            + "  }\n"
+            + "}");
+    String error = "The request could not be completed because the common name is too long. The max length for common name is 64 characters.";
+
+    this.mockMvc
+        .perform(request)
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.error", equalTo(error)));
   }
 }
