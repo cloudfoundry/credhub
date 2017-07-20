@@ -181,5 +181,5 @@ This authorization workflow will enforce appropriate controls so that only the o
 
 ### Deployment Configuration
 
-(Coming Soon) 
+Deployment configuration is [described here.](https://github.com/pivotal-cf/credhub-release/blob/master/docs/secure-service-credentials.md)
 
