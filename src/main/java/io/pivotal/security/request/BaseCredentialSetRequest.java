@@ -3,17 +3,18 @@ package io.pivotal.security.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
 
 import static com.google.common.collect.Lists.newArrayList;
 
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
+    use = JsonTypeInfo.Id.CUSTOM,
     property = "type",
     visible = true
 )
+@JsonTypeIdResolver(SetRequestTypeIdResolver.class)
 @JsonSubTypes({
     @JsonSubTypes.Type(name = "password", value = PasswordSetRequest.class),
     @JsonSubTypes.Type(name = "value", value = ValueSetRequest.class),

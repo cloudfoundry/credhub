@@ -329,6 +329,34 @@ public class CredentialsControllerTypeSpecificSetTest {
                   "}");
         });
 
+        it("should accept any casing for the type", () -> {
+          MockHttpServletRequestBuilder request = put("/api/v1/data")
+              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+              .accept(APPLICATION_JSON)
+              .contentType(APPLICATION_JSON)
+              .content("{" +
+                  "\"name\":\"" + credentialName + "\"," +
+                  "\"type\":\"" + credentialType.toUpperCase() + "\"," +
+                  "\"value\":" + value + "," +
+                  "\"overwrite\":" + false + "," +
+                  "\"additional_permissions\": [" +
+                  "{\"actor\": \"app1-guid\"," +
+                  "\"operations\": [\"read\"]}]" +
+                  "}");
+
+          response = mockMvc.perform(request);
+
+          ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+          verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+          response.andExpect(multiJsonPath(typeSpecificResponseFields))
+              .andExpect(multiJsonPath(
+                  "$.type", credentialType,
+                  "$.id", argumentCaptor.getValue().getUuid().toString(),
+                  "$.version_created_at", frozenTime.toString()))
+              .andExpect(status().isOk())
+              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+        });
+
         describe("with perform in beforeEach", () -> {
           beforeEach(() -> {
             response = mockMvc.perform(put).andDo(print());

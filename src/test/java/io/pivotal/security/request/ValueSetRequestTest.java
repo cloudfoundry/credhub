@@ -1,5 +1,11 @@
 package io.pivotal.security.request;
 
+import com.greghaskins.spectrum.Spectrum;
+import org.junit.runner.RunWith;
+
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
@@ -10,11 +16,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
-
-import com.greghaskins.spectrum.Spectrum;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class ValueSetRequestTest {
@@ -44,6 +45,22 @@ public class ValueSetRequestTest {
         Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+      });
+    });
+
+    describe("when the type has unusual casing", () -> {
+      it("should be valid", () -> {
+        String json = "{"
+            + "\"name\":\"some-name\","
+            + "\"type\":\"VaLuE\","
+            + "\"overwrite\":true,"
+            + "\"value\":\"some-value\""
+            + "}";
+        ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
+            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+
+        assertThat(violations.size(), equalTo(0));
       });
     });
 

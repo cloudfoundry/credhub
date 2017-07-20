@@ -36,7 +36,7 @@ public class UserSetRequestTest {
     });
 
     it("deserializes to UserSetRequest", () -> {
-      BaseCredentialSetRequest userSetRequest = JsonTestHelper.deserializeChecked(validSetRequestJson, BaseCredentialSetRequest.class);
+      UserSetRequest userSetRequest = JsonTestHelper.deserializeChecked(validSetRequestJson, UserSetRequest.class);
 
       Assert.assertThat(userSetRequest, instanceOf(UserSetRequest.class));
     });
@@ -49,18 +49,37 @@ public class UserSetRequestTest {
             "  \"type\": \"user\",\n" +
             "  \"overwrite\": true\n" +
             "}";
-        UserSetRequest userSetRequest = (UserSetRequest) deserialize(json,
-            BaseCredentialSetRequest.class);
+        UserSetRequest userSetRequest = deserialize(json,
+            UserSetRequest.class);
         Set<ConstraintViolation<UserSetRequest>> violations = validate(userSetRequest);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
       });
     });
 
+    describe("when type has unusual casing", () -> {
+      it("should be valid", () -> {
+        // language=JSON
+        String json = "{\n" +
+            "  \"name\": \"some-name\",\n" +
+            "  \"type\": \"UseR\",\n" +
+            "  \"overwrite\": true,\n" +
+            "  \"value\": {\n" +
+            "    \"username\": \"dan\",\n" +
+            "    \"password\": \"example-password\"\n" +
+            "  }\n" +
+            "}";
+        Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(json, UserSetRequest.class);
+
+        assertThat(violations.size(), equalTo(0));
+      });
+    });
+
+
     describe("when all fields are set", () -> {
       it("should be valid", () -> {
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(validSetRequestJson,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<UserSetRequest>> violations = deserializeAndValidate(validSetRequestJson,
+            UserSetRequest.class);
 
         assertThat(violations.size(), equalTo(0));
       });

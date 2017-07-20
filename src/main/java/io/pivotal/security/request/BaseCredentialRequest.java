@@ -31,7 +31,7 @@ public abstract class BaseCredentialRequest {
   }
 
   public void setType(String type) {
-    this.type = type;
+    this.type = type.toLowerCase();
   }
 
   public String getName() {

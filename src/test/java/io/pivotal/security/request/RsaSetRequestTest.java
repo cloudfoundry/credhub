@@ -31,10 +31,27 @@ public class RsaSetRequestTest {
             + "\"private_key\":\"fake-private-key\""
             + "}"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+            RsaSetRequest.class);
 
         assertThat(violations.size(), equalTo(0));
+      });
+
+      describe("when type has unusual casing", () -> {
+            it("should be valid", () -> {
+              String json = "{"
+                  + "\"name\": \"/example/rsa\","
+                  + "\"type\": \"RsA\","
+                  + "\"value\": {"
+                  + "\"public_key\":\"fake-public-key\","
+                  + "\"private_key\":\"fake-private-key\""
+                  + "}"
+                  + "}";
+              Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+                  RsaSetRequest.class);
+
+              assertThat(violations.size(), equalTo(0));
+            });
       });
 
       it("should should deserialize to a RsaSetRequest", () -> {
@@ -46,7 +63,7 @@ public class RsaSetRequestTest {
             + "\"private_key\":\"fake-private-key\""
             + "}"
             + "}";
-        BaseCredentialSetRequest deserialize = deserialize(json, BaseCredentialSetRequest.class);
+        RsaSetRequest deserialize = deserialize(json, RsaSetRequest.class);
 
         assertThat(deserialize, instanceOf(RsaSetRequest.class));
       });
@@ -59,8 +76,8 @@ public class RsaSetRequestTest {
             + "\"private_key\":\"fake-private-key\""
             + "}"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+            RsaSetRequest.class);
 
         assertThat(violations.size(), equalTo(0));
       });
@@ -73,8 +90,8 @@ public class RsaSetRequestTest {
             + "\"public_key\":\"fake-public-key\""
             + "}"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+            RsaSetRequest.class);
 
         assertThat(violations.size(), equalTo(0));
       });
@@ -114,8 +131,8 @@ public class RsaSetRequestTest {
             + "  \"name\": \"/example/rsa\",\n"
             + "  \"type\": \"rsa\"\n"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+            RsaSetRequest.class);
 
         assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
       });
@@ -128,8 +145,8 @@ public class RsaSetRequestTest {
             + "  \"type\": \"rsa\",\n"
             + "  \"value\": {}\n"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+            RsaSetRequest.class);
 
         assertThat(violations,
             contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
@@ -146,8 +163,8 @@ public class RsaSetRequestTest {
             + "    \"private_key\":\"\""
             + "  }"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+            RsaSetRequest.class);
 
         assertThat(violations,
             contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
@@ -164,8 +181,8 @@ public class RsaSetRequestTest {
             + "    \"private_key\":null"
             + "  }"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<RsaSetRequest>> violations = deserializeAndValidate(json,
+            RsaSetRequest.class);
 
         assertThat(violations,
             contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));

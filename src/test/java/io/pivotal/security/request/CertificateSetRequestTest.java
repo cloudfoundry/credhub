@@ -29,8 +29,25 @@ public class CertificateSetRequestTest {
         + "\"ca\":\"fake-ca\""
         + "}"
         + "}";
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
+
+    assertThat(violations.size(), equalTo(0));
+  }
+
+  @Test
+  public void whenTheTypeHasUnusualCasing_hasNoViolations() {
+    String json = "{"
+        + "\"name\": \"/example/certificate\","
+        + "\"type\": \"CeRtIfIcAtE\","
+        + "\"value\": {"
+        + "\"certificate\":\"fake-certificate\","
+        + "\"private_key\":\"fake-private-key\","
+        + "\"ca\":\"fake-ca\""
+        + "}"
+        + "}";
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
 
     assertThat(violations.size(), equalTo(0));
   }
@@ -46,7 +63,7 @@ public class CertificateSetRequestTest {
         + "\"ca\":\"fake-ca\""
         + "}"
         + "}";
-    BaseCredentialSetRequest deserialize = deserialize(json, BaseCredentialSetRequest.class);
+    CertificateSetRequest deserialize = deserialize(json, CertificateSetRequest.class);
 
     assertThat(deserialize, instanceOf(CertificateSetRequest.class));
   }
@@ -62,8 +79,8 @@ public class CertificateSetRequestTest {
         + "}"
         + "}";
 
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
     assertThat(violations.size(), equalTo(0));
 
     CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
@@ -82,8 +99,8 @@ public class CertificateSetRequestTest {
         + "}"
         + "}";
 
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
     assertThat(violations.size(), equalTo(0));
 
     CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
@@ -101,8 +118,8 @@ public class CertificateSetRequestTest {
         + "}"
         + "}";
 
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
     assertThat(violations.size(), equalTo(0));
 
     CertificateSetRequest certificateSetRequest = deserialize(json, CertificateSetRequest.class);
@@ -131,8 +148,8 @@ public class CertificateSetRequestTest {
         + "  \"name\": \"/example/certificate\",\n"
         + "  \"type\": \"certificate\"\n"
         + "}";
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
 
     assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
   }
@@ -144,8 +161,8 @@ public class CertificateSetRequestTest {
         + "  \"type\": \"certificate\",\n"
         + "  \"value\": {}\n"
         + "}";
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
 
     assertThat(violations,
         contains(hasViolationWithMessage("error.missing_certificate_credentials")));
@@ -163,8 +180,8 @@ public class CertificateSetRequestTest {
         + "    \"private_key\": \"\""
         + "  }"
         + "}";
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
 
     assertThat(violations,
         contains(hasViolationWithMessage("error.missing_certificate_credentials")));
@@ -182,8 +199,8 @@ public class CertificateSetRequestTest {
         + "    \"private_key\": null"
         + "  }"
         + "}";
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(json,
+        CertificateSetRequest.class);
 
     assertThat(violations,
         contains(hasViolationWithMessage("error.missing_certificate_credentials")));
@@ -200,9 +217,9 @@ public class CertificateSetRequestTest {
         + "    \"certificate\": \"test-certificate\""
         + "  }"
         + "}";
-    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(
+    Set<ConstraintViolation<CertificateSetRequest>> violations = deserializeAndValidate(
         json,
-        BaseCredentialSetRequest.class
+        CertificateSetRequest.class
     );
 
     assertThat(violations, contains(hasViolationWithMessage("error.mixed_ca_name_and_ca")));

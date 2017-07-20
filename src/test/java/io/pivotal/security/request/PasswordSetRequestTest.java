@@ -1,5 +1,11 @@
 package io.pivotal.security.request;
 
+import com.greghaskins.spectrum.Spectrum;
+import org.junit.runner.RunWith;
+
+import java.util.Set;
+import javax.validation.ConstraintViolation;
+
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
@@ -9,11 +15,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-
-import com.greghaskins.spectrum.Spectrum;
-import java.util.Set;
-import javax.validation.ConstraintViolation;
-import org.junit.runner.RunWith;
 
 @RunWith(Spectrum.class)
 public class PasswordSetRequestTest {
@@ -26,7 +27,7 @@ public class PasswordSetRequestTest {
           + "\"value\":\"fake-password\","
           + "\"overwrite\":true"
           + "}";
-      BaseCredentialSetRequest deserialize = deserialize(json, BaseCredentialSetRequest.class);
+      PasswordSetRequest deserialize = deserialize(json, PasswordSetRequest.class);
 
       assertThat(deserialize, instanceOf(PasswordSetRequest.class));
     });
@@ -38,12 +39,25 @@ public class PasswordSetRequestTest {
           + "\"value\":\"fake-password\","
           + "\"overwrite\":true"
           + "}";
-      Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations =
-          deserializeAndValidate(json, BaseCredentialSetRequest.class);
+      Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+          deserializeAndValidate(json, PasswordSetRequest.class);
 
       assertThat(constraintViolations.size(), equalTo(0));
     });
+    describe("when type has unusual casing", () -> {
+          it("should be valid", () -> {
+            String json = "{"
+                + "\"name\":\"some-name\","
+                + "\"type\":\"PasSWorD\","
+                + "\"value\":\"fake-password\","
+                + "\"overwrite\":true"
+                + "}";
+            Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+                deserializeAndValidate(json, PasswordSetRequest.class);
 
+            assertThat(constraintViolations.size(), equalTo(0));
+          });
+        });
     describe("when password is not set", () -> {
       it("should be invalid", () -> {
         String json = "{"
@@ -51,8 +65,8 @@ public class PasswordSetRequestTest {
             + "\"type\":\"password\","
             + "\"overwrite\":true"
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations =
-            deserializeAndValidate(json, BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+            deserializeAndValidate(json, PasswordSetRequest.class);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });
@@ -66,8 +80,8 @@ public class PasswordSetRequestTest {
             + "\"overwrite\":true,"
             + "\"value\":\"\""
             + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations =
-            deserializeAndValidate(json, BaseCredentialSetRequest.class);
+        Set<ConstraintViolation<PasswordSetRequest>> constraintViolations =
+            deserializeAndValidate(json, PasswordSetRequest.class);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });

@@ -12,6 +12,7 @@ import javax.validation.ConstraintViolation;
 import static com.greghaskins.spectrum.Spectrum.describe;
 import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
+import static io.pivotal.security.helper.JsonTestHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
 import static io.pivotal.security.helper.JsonTestHelper.validate;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -30,8 +31,8 @@ public class JsonSetRequestTest {
           + "\"overwrite\":false,"
           + "\"additional_permissions\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
 
-      BaseCredentialSetRequest deserialize = deserialize(requestJson,
-          BaseCredentialSetRequest.class);
+      JsonSetRequest deserialize = deserialize(requestJson,
+          JsonSetRequest.class);
 
       assertThat(deserialize, instanceOf(JsonSetRequest.class));
     });
@@ -50,9 +51,23 @@ public class JsonSetRequestTest {
       request.setValue(new JsonCredentialValue(value));
       request.setOverwrite(true);
 
-      Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations = validate(request);
+      Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
 
       assertThat(constraintViolations.size(), equalTo(0));
+    });
+
+    describe("when type has unusual casing", () ->{
+      it("should be valid", () -> {
+        String requestJson = "{\"name\":\"/my-namespace/subTree/credential-name\","
+            + "\"type\":\"JsOn\","
+            + "\"value\":{\"key\":\"value\",\"fancy\":{\"num\":10},\"array\":[\"foo\",\"bar\"]},"
+            + "\"overwrite\":false,"
+            + "\"additional_permissions\": [{\"actor\": \"app1-guid\",\"operations\": [\"read\"]}]}";
+
+        Set<ConstraintViolation<JsonSetRequest>> constraintViolations = deserializeAndValidate(requestJson, JsonSetRequest.class);
+
+        assertThat(constraintViolations.size(), equalTo(0));
+      });
     });
 
     describe("when value is not set", () -> {
@@ -62,7 +77,7 @@ public class JsonSetRequestTest {
         request.setType("json");
         request.setOverwrite(true);
 
-        Set<ConstraintViolation<BaseCredentialSetRequest>> constraintViolations = validate(request);
+        Set<ConstraintViolation<JsonSetRequest>> constraintViolations = validate(request);
 
         assertThat(constraintViolations, contains(hasViolationWithMessage("error.missing_value")));
       });
