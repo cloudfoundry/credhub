@@ -27,17 +27,17 @@ import io.pivotal.security.generator.PassayStringCredentialGenerator;
 import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.generator.UserGenerator;
+import io.pivotal.security.handler.GenerateRequestHandler;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.DefaultCredentialGenerateRequest;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
-import io.pivotal.security.handler.GenerateRequestHandler;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
@@ -291,6 +291,26 @@ public class CredentialsControllerTypeSpecificGenerateTest {
       Consumer<T> credentialAssertions,
       Supplier<T> existingCredentialProvider) {
     return () -> {
+      it("should accept any casing for the type", () -> {
+        MockHttpServletRequestBuilder request = post("/api/v1/data")
+            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+            .accept(APPLICATION_JSON)
+            .contentType(APPLICATION_JSON)
+            .content("{" +
+                "\"name\":\"" + credentialName + "\"," +
+                "\"type\":\"" + credentialType.toUpperCase() + "\"," +
+                "\"parameters\":" + generationParameters + "," +
+                "\"overwrite\":" + false +
+                "}");
+        mockMvc.perform(request)
+            .andExpect(multiJsonPath(typeSpecificResponseFields))
+            .andExpect(status().isOk())
+            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+            .andExpect(multiJsonPath(
+                "$.type", credentialType,
+                "$.version_created_at", frozenTime.toString()));
+      });
+
       describe("for a new credential", () -> {
         beforeEach(() -> {
           post = post("/api/v1/data")
