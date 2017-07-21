@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.provider.token.ResourceServerTokenSer
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,20 +29,19 @@ import org.springframework.web.context.WebApplicationContext;
 import java.time.Instant;
 import java.util.Map;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.controller.v1.credential.CredentialsController.API_V1_DATA;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.verify;
 import static org.springframework.data.domain.Sort.Direction.DESC;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
@@ -64,6 +64,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   private CurrentTimeProvider currentTimeProvider;
   @MockBean
   private SecurityEventsLogService securityEventsLogService;
+  private ResultActions response;
 
   @Before
   public void setUp() throws Exception {
@@ -85,7 +86,7 @@ public class AuditOAuth2AccessDeniedHandlerTest {
           return request;
         });
 
-    mockMvc.perform(getRequest);
+    response = mockMvc.perform(getRequest);
   }
 
   @Test
@@ -119,5 +120,14 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   @Test
   public void logsTheFailureInTheCEFSystemLog() {
     verify(securityEventsLogService).log(isA(SecurityEventAuditRecord.class));
+  }
+
+  @Test
+  public void providesAHumanReadableException() throws Exception {
+    String expectedError = "The authenticated user does not have the required scopes to perform that action. Please update the client to include credhub.read and credhub.write then retry your request.";
+
+    response
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error_description").value(expectedError));
   }
 }

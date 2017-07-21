@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.oauth2.provider.error.DefaultWebResponseExceptionTranslator;
+import org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
@@ -75,5 +77,10 @@ public class OAuth2Configuration {
         return authentication;
       }
     };
+  }
+
+  @Bean
+  public WebResponseExceptionTranslator webResponseExceptionTranslator() {
+    return new DefaultWebResponseExceptionTranslator();
   }
 }

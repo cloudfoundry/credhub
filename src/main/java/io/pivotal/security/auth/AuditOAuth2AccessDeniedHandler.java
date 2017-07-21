@@ -6,9 +6,14 @@ import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.service.SecurityEventsLogService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.MessageSourceAccessor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.oauth2.common.exceptions.InsufficientScopeException;
+import org.springframework.security.oauth2.common.exceptions.OAuth2Exception;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
+import org.springframework.security.oauth2.provider.error.WebResponseExceptionTranslator;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +30,8 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
   private final SecurityEventsLogService securityEventsLogService;
   private final UserContextFactory userContextFactory;
   private final AuditLogFactory auditLogFactory;
+  private MessageSourceAccessor messageSourceAccessor;
+  private final WebResponseExceptionTranslator exceptionTranslator;
 
   @Autowired
   public AuditOAuth2AccessDeniedHandler(
@@ -32,13 +39,17 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
       RequestAuditRecordDataService requestAuditRecordDataService,
       SecurityEventsLogService securityEventsLogService,
       UserContextFactory userContextFactory,
-      AuditLogFactory auditLogFactory
+      WebResponseExceptionTranslator exceptionTranslator,
+      AuditLogFactory auditLogFactory,
+      MessageSourceAccessor messageSourceAccessor
   ) {
     this.userContextFactory = userContextFactory;
     this.tokenStore = tokenStore;
     this.requestAuditRecordDataService = requestAuditRecordDataService;
     this.securityEventsLogService = securityEventsLogService;
+    this.exceptionTranslator = exceptionTranslator;
     this.auditLogFactory = auditLogFactory;
+    this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override
@@ -60,4 +71,17 @@ public class AuditOAuth2AccessDeniedHandler extends OAuth2AccessDeniedHandler {
     }
   }
 
+  @Override
+  protected ResponseEntity<OAuth2Exception> enhanceResponse(ResponseEntity<OAuth2Exception> result, Exception authException) {
+    if (authException.getCause() instanceof InsufficientScopeException) {
+      try {
+        String errorMessage = messageSourceAccessor.getMessage("error.oauth.insufficient_scope");
+        return this.exceptionTranslator.translate(new AccessDeniedException(errorMessage));
+      } catch (Exception e) {
+        return result;
+      }
+    } else {
+      return result;
+    }
+  }
 }
