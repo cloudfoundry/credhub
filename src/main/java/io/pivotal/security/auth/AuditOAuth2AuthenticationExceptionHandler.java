@@ -6,7 +6,6 @@ import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.exceptions.AccessTokenExpiredException;
 import io.pivotal.security.util.CurrentTimeProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.jwt.Jwt;
@@ -41,14 +40,14 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
   AuditOAuth2AuthenticationExceptionHandler(
       CurrentTimeProvider currentTimeProvider,
       AuthFailureAuditRecordDataService authFailureAuditRecordDataService,
-      MessageSource messageSource,
+      MessageSourceAccessor messageSourceAccessor,
       AuditLogFactory auditLogFactory
   ) {
     this.currentTimeProvider = currentTimeProvider;
     this.authFailureAuditRecordDataService = authFailureAuditRecordDataService;
     this.auditLogFactory = auditLogFactory;
     this.objectMapper = JsonParserFactory.create();
-    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
+    this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override

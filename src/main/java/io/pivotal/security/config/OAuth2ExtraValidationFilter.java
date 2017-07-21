@@ -3,7 +3,6 @@ package io.pivotal.security.config;
 import io.pivotal.security.auth.AuditOAuth2AuthenticationExceptionHandler;
 import io.pivotal.security.auth.OAuth2IssuerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -41,7 +40,7 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
       OAuth2IssuerService oAuth2IssuerService,
       TokenStore tokenStore,
       AuditOAuth2AuthenticationExceptionHandler oAuth2AuthenticationExceptionHandler,
-      MessageSource messageSource,
+      MessageSourceAccessor messageSourceAccessor,
       AuthenticationEventPublisher eventPublisher
   ) {
     this.oAuth2IssuerService = oAuth2IssuerService;
@@ -49,7 +48,7 @@ public class OAuth2ExtraValidationFilter extends OncePerRequestFilter {
     this.oAuth2AuthenticationExceptionHandler = oAuth2AuthenticationExceptionHandler;
     this.eventPublisher = eventPublisher;
     this.tokenExtractor = new BearerTokenExtractor();
-    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
+    this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override

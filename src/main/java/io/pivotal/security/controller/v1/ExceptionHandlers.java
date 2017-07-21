@@ -15,7 +15,6 @@ import io.pivotal.security.exceptions.ParameterizedValidationException;
 import io.pivotal.security.exceptions.PermissionException;
 import io.pivotal.security.view.ResponseError;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -35,8 +34,8 @@ public class ExceptionHandlers {
   private final MessageSourceAccessor messageSourceAccessor;
 
   @Autowired
-  ExceptionHandlers(MessageSource messageSource) {
-    messageSourceAccessor = new MessageSourceAccessor(messageSource);
+  ExceptionHandlers(MessageSourceAccessor messageSourceAccessor) {
+    this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @ExceptionHandler(EntryNotFoundException.class)

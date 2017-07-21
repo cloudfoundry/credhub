@@ -1,21 +1,21 @@
 package io.pivotal.security.auth;
 
-import static io.pivotal.security.auth.X509AuthenticationProvider.CLIENT_AUTH_EXTENDED_KEY_USAGE;
-import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.pivotal.security.view.ResponseError;
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import static io.pivotal.security.auth.X509AuthenticationProvider.CLIENT_AUTH_EXTENDED_KEY_USAGE;
+import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON;
 
 @Component
 public class X509AuthenticationFailureHandler implements AuthenticationFailureHandler {
@@ -28,11 +28,11 @@ public class X509AuthenticationFailureHandler implements AuthenticationFailureHa
 
   @Autowired
   X509AuthenticationFailureHandler(
-      MessageSource messageSource,
+      MessageSourceAccessor messageSourceAccessor,
       ObjectMapper objectMapper
   ) {
     this.objectMapper = objectMapper;
-    this.messageSourceAccessor = new MessageSourceAccessor(messageSource);
+    this.messageSourceAccessor = messageSourceAccessor;
   }
 
   @Override
