@@ -1,6 +1,5 @@
 package io.pivotal.security.auth;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
@@ -8,6 +7,8 @@ import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.service.SecurityEventsLogService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,9 +18,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
@@ -40,86 +43,81 @@ import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@Transactional
 public class AuditOAuth2AccessDeniedHandlerTest {
 
-  private final String credentialUrlPath = "/api/v1/data?name=foo";
-  private final String credentialUrlQueryParams = "&query=value";
-  private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
+  private static final String CREDENTIAL_URL_PATH = "/api/v1/data?name=foo";
+  private static final String CREDENTIAL_URL_QUERY_PARAMS = "&query=value";
+  private static final String CREDENTIAL_URL = String.join("", CREDENTIAL_URL_PATH, CREDENTIAL_URL_QUERY_PARAMS);
+  private static final Instant NOW = Instant.ofEpochSecond(1490903353);
+
   @Autowired
-  WebApplicationContext applicationContext;
+  private WebApplicationContext applicationContext;
   @Autowired
-  RequestAuditRecordRepository requestAuditRecordRepository;
+  private RequestAuditRecordRepository requestAuditRecordRepository;
   @Autowired
-  ResourceServerTokenServices tokenServices;
+  private ResourceServerTokenServices tokenServices;
   @MockBean
-  CurrentTimeProvider currentTimeProvider;
+  private CurrentTimeProvider currentTimeProvider;
   @MockBean
-  SecurityEventsLogService securityEventsLogService;
-  private MockHttpServletRequestBuilder get;
-  private MockMvc mockMvc;
+  private SecurityEventsLogService securityEventsLogService;
 
-  private final Instant now = Instant.ofEpochSecond(1490903353);
+  @Before
+  public void setUp() throws Exception {
+    mockOutCurrentTimeProvider(currentTimeProvider).accept(NOW.toEpochMilli());
 
-  {
-    wireAndUnwire(this);
+    MockMvc mockMvc = MockMvcBuilders
+        .webAppContextSetup(applicationContext)
+        .apply(springSecurity())
+        .build();
 
-    beforeEach(() -> {
-      mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
+    String bearer = "Bearer " + INVALID_SCOPE_KEY_JWT;
+    MockHttpServletRequestBuilder getRequest = get(CREDENTIAL_URL)
+        .header("Authorization", bearer)
+        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .with(request -> {
+          request.setRemoteAddr("12346");
+          return request;
+        });
 
-      mockMvc = MockMvcBuilders
-          .webAppContextSetup(applicationContext)
-          .apply(springSecurity())
-          .build();
-    });
+    mockMvc.perform(getRequest);
+  }
 
-    describe("when the scope is invalid", () -> {
-      beforeEach(() -> {
-        String bearer = "Bearer " + INVALID_SCOPE_KEY_JWT;
-        get = get(credentialUrl)
-            .header("Authorization", bearer)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .with(request -> {
-              request.setRemoteAddr("12346");
-              return request;
-            });
-        mockMvc.perform(get);
-      });
+  @Test
+  public void logsTheFailureInTheRequestAuditRecordTable() {
+    RequestAuditRecord auditRecord = requestAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
 
-      it("should log the failure in the request_audit_record table", () -> {
-        RequestAuditRecord auditRecord = requestAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
+    assertThat(auditRecord.getNow(), equalTo(NOW));
+    assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
+    assertThat(auditRecord.getQueryParameters(), equalTo("name=foo&query=value"));
+    assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
+    assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
 
-        assertThat(auditRecord.getNow(), equalTo(now));
-        assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
-        assertThat(auditRecord.getQueryParameters(), equalTo("name=foo&query=value"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
-        assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
+    OAuth2AccessToken accessToken = tokenServices
+        .readAccessToken(INVALID_SCOPE_KEY_JWT);
+    Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
-        OAuth2AccessToken accessToken = tokenServices
-            .readAccessToken(INVALID_SCOPE_KEY_JWT);
-        Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+    assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
+    assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
+    assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
+    assertThat(auditRecord.getAuthValidFrom(), equalTo(
+        ((Number) additionalInformation.get("iat")).longValue())); // 2737304753L (year 2056)
+    assertThat(auditRecord.getAuthValidUntil(), equalTo(
+        accessToken.getExpiration().toInstant().getEpochSecond())); // 2737304773L (year 2056)
+    assertThat(auditRecord.getClientId(), equalTo("credhub_cli"));
+    assertThat(auditRecord.getScope(), equalTo("credhub.bad_scope"));
+    assertThat(auditRecord.getGrantType(), equalTo("password"));
+    assertThat(auditRecord.getMethod(), equalTo("GET"));
+    assertThat(auditRecord.getStatusCode(), equalTo(403));
+  }
 
-        assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
-        assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
-        assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
-        assertThat(auditRecord.getAuthValidFrom(), equalTo(
-            ((Number) additionalInformation.get("iat")).longValue())); // 2737304753L (year 2056)
-        assertThat(auditRecord.getAuthValidUntil(), equalTo(
-            accessToken.getExpiration().toInstant().getEpochSecond())); // 2737304773L (year 2056)
-        assertThat(auditRecord.getClientId(), equalTo("credhub_cli"));
-        assertThat(auditRecord.getScope(), equalTo("credhub.bad_scope"));
-        assertThat(auditRecord.getGrantType(), equalTo("password"));
-        assertThat(auditRecord.getMethod(), equalTo("GET"));
-        assertThat(auditRecord.getStatusCode(), equalTo(403));
-      });
-
-      it("should log the failure in the CEF syslog file", () -> {
-        verify(securityEventsLogService).log(isA(SecurityEventAuditRecord.class));
-      });
-    });
+  @Test
+  public void logsTheFailureInTheCEFSystemLog() {
+    verify(securityEventsLogService).log(isA(SecurityEventAuditRecord.class));
   }
 }

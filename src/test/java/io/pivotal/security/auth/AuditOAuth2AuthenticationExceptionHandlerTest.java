@@ -1,33 +1,30 @@
 package io.pivotal.security.auth;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.entity.AuthFailureAuditRecord;
 import io.pivotal.security.repository.AuthFailureAuditRecordRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
 import java.util.Map;
+import javax.transaction.Transactional;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.EXPIRED_KEY_JWT;
 import static io.pivotal.security.util.AuthConstants.INVALID_JSON_JWT;
 import static io.pivotal.security.util.AuthConstants.INVALID_SIGNATURE_JWT;
@@ -42,218 +39,170 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest
+@Transactional
 public class AuditOAuth2AuthenticationExceptionHandlerTest {
 
-  private final String credentialUrlPath = "/api/v1/data/foo";
-  private final String credentialUrlQueryParams = "?my_name=my_value";
-  private final String credentialUrl = String.join("", credentialUrlPath, credentialUrlQueryParams);
+  private static final String CREDENTIAL_URL_PATH = "/api/v1/data/foo";
+  private static final String CREDENTIAL_URL_QUERY_PARAMS = "?my_name=my_value";
+  private static final String CREDENTIAL_URL = String.join("", CREDENTIAL_URL_PATH, CREDENTIAL_URL_QUERY_PARAMS);
+  private static final Instant NOW = Instant.ofEpochSecond(1490903353);
+
   @Autowired
-  WebApplicationContext applicationContext;
+  private WebApplicationContext applicationContext;
+
   @Autowired
-  AuditOAuth2AuthenticationExceptionHandler subject;
+  private AuditOAuth2AuthenticationExceptionHandler subject;
   @Autowired
-  AuthFailureAuditRecordRepository authFailureAuditRecordRepository;
+  private AuthFailureAuditRecordRepository authFailureAuditRecordRepository;
+
   @Autowired
-  ResourceServerTokenServices tokenServices;
+  private ResourceServerTokenServices tokenServices;
+
   @MockBean
-  CurrentTimeProvider currentTimeProvider;
+  private CurrentTimeProvider currentTimeProvider;
+
   private MockMvc mockMvc;
 
-  private final Instant now = Instant.ofEpochSecond(1490903353);
+  @Before
+  public void setUp() {
+    when(currentTimeProvider.getInstant()).thenReturn(NOW);
+    when(currentTimeProvider.getNow()).thenReturn(makeCalendar(NOW.toEpochMilli()));
 
-  {
-    wireAndUnwire(this);
+    mockMvc = MockMvcBuilders
+        .webAppContextSetup(applicationContext)
+        .apply(springSecurity())
+        .build();
+  }
 
-    beforeEach(() -> {
-      when(currentTimeProvider.getInstant()).thenReturn(now);
-      when(currentTimeProvider.getNow()).thenReturn(makeCalendar(now.toEpochMilli()));
+  @Test
+  public void whenTheTokenIsValid_logsTheCorrectExceptionToTheDatabase() throws Exception {
+    mockMvc.perform(get(CREDENTIAL_URL)
+        .header("Authorization", "Bearer " + INVALID_JSON_JWT)
+        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .with(request -> {
+          request.setRemoteAddr("99.99.99.99");
+          return request;
+        }));
 
-      mockMvc = MockMvcBuilders
-          .webAppContextSetup(applicationContext)
-          .apply(springSecurity())
-          .build();
-    });
+    AuthFailureAuditRecord auditRecord = authFailureAuditRecordRepository
+        .findAll(new Sort(DESC, "now")).get(0);
+    assertThat(auditRecord.getPath(), equalTo(CREDENTIAL_URL_PATH));
+    assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
+    assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
+    assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
+    assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
+    assertThat(auditRecord.getFailureDescription(), equalTo("Cannot convert access token to JSON"));
+    assertThat(auditRecord.getUserId(), equalTo(null));
+    assertThat(auditRecord.getUserName(), equalTo(null));
+    assertThat(auditRecord.getUaaUrl(), equalTo(null));
+    assertThat(auditRecord.getAuthValidFrom(), equalTo(-1L));
+    assertThat(auditRecord.getAuthValidUntil(), equalTo(-1L));
+    assertThat(auditRecord.getClientId(), equalTo(null));
+    assertThat(auditRecord.getScope(), equalTo(null));
+    assertThat(auditRecord.getGrantType(), equalTo(null));
+    assertThat(auditRecord.getMethod(), equalTo("GET"));
+    assertThat(auditRecord.getStatusCode(), equalTo(401));
+  }
 
-    describe("when the token is invalid", () -> {
-      it("logs the 'token_invalid' auth exception to the database", () -> {
-        mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + INVALID_JSON_JWT)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .with(request -> {
-              request.setRemoteAddr("99.99.99.99");
-              return request;
-            }));
+  @Test
+  public void whenTheTokenHasBeenSignedWithAMismatchedRsaKey_providesAHumanFriendlyResponse() throws Exception {
+    String errorMessage = "The request token signature could not be verified. Please validate that your request token was issued by the UAA server authorized by CredHub.";
 
-        AuthFailureAuditRecord auditRecord = authFailureAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
-        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
-        assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(),
-            equalTo("Cannot convert access token to JSON"));
-        assertThat(auditRecord.getUserId(), equalTo(null));
-        assertThat(auditRecord.getUserName(), equalTo(null));
-        assertThat(auditRecord.getUaaUrl(), equalTo(null));
-        assertThat(auditRecord.getAuthValidFrom(), equalTo(-1L));
-        assertThat(auditRecord.getAuthValidUntil(), equalTo(-1L));
-        assertThat(auditRecord.getClientId(), equalTo(null));
-        assertThat(auditRecord.getScope(), equalTo(null));
-        assertThat(auditRecord.getGrantType(), equalTo(null));
-        assertThat(auditRecord.getMethod(), equalTo("GET"));
-        assertThat(auditRecord.getStatusCode(), equalTo(401));
-      });
-    });
+    mockMvc.perform(get(CREDENTIAL_URL)
+        .header("Authorization", "Bearer " + INVALID_SIGNATURE_JWT)
+        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value("invalid_token"))
+        .andExpect(jsonPath("$.error_description").value(errorMessage));
+  }
 
-    describe("when the token has been signed with a mismatched RSA key", () -> {
-      it("should provide a human-friendly response", () -> {
-        String errorMessage = "The request token signature could not be verified. "
-            + "Please validate that your request token was issued by the UAA server "
-            + "authorized by CredHub.";
-        mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + INVALID_SIGNATURE_JWT)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.error").value("invalid_token"))
-            .andExpect(jsonPath("$.error_description").value(errorMessage));
-      });
+  @Test
+  public void whenTheTokenHasExpired_returnsTheCorrectError_andCleansTheTokenFromTheErroDescriptionField() throws Exception {
+    mockMvc.perform(get(CREDENTIAL_URL)
+        .header("Authorization", "Bearer " + EXPIRED_KEY_JWT)
+        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value("access_token_expired"))
+        .andExpect(jsonPath("$.error_description").value("Access token expired"));
+  }
 
-      it("logs the 'token_invalid' auth exception to the database", () -> {
-        mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + INVALID_SIGNATURE_JWT)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .with(request -> {
-              request.setRemoteAddr("99.99.99.99");
-              return request;
-            }));
+  @Test
+  public void whenTheTokenHasExpired_savesTheCorrectExceptionToTheDatabase() throws Exception {
+    mockMvc.perform(get(CREDENTIAL_URL)
+        .header("Authorization", "Bearer " + EXPIRED_KEY_JWT)
+        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .with(request -> {
+          request.setRemoteAddr("99.99.99.99");
+          return request;
+        }));
 
-        AuthFailureAuditRecord auditRecord = authFailureAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
-        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
-        assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(), equalTo(
-            "The request token signature could not be verified."
-                + " Please validate that your request token was issued by the"
-                + " UAA server authorized by CredHub."));
-        assertThat(auditRecord.getStatusCode(), equalTo(401));
-      });
-    });
+    AuthFailureAuditRecord auditRecord = authFailureAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
 
-    describe("when the token is expired", () -> {
-      it("returns an 'access_token_expired' error and "
-              + "cleans the token from the error_description field",
-          () -> {
-            mockMvc.perform(get(credentialUrl)
-                .header("Authorization", "Bearer " + EXPIRED_KEY_JWT)
-                .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("access_token_expired"))
-                .andExpect(jsonPath("$.error_description").value("Access token expired"));
-          });
+    assertThat(auditRecord.getNow(), equalTo(NOW));
+    assertThat(auditRecord.getPath(), equalTo(CREDENTIAL_URL_PATH));
+    assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
+    assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
+    assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
+    assertThat(auditRecord.getFailureDescription(), equalTo("Access token expired"));
 
-      it("saves the 'token_expired' auth exception to the database", () -> {
-        mockMvc.perform(get(credentialUrl)
-            .header("Authorization", "Bearer " + EXPIRED_KEY_JWT)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .with(request -> {
-              request.setRemoteAddr("99.99.99.99");
-              return request;
-            }));
+    OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_KEY_JWT);
+    Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
 
-        AuthFailureAuditRecord auditRecord = authFailureAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
+    assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
+    assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
+    assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
+    assertThat(auditRecord.getAuthValidFrom(),
+        equalTo(((Number) additionalInformation.get("iat")).longValue())); // 1469051704L
+    assertThat(auditRecord.getAuthValidUntil(),
+        equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 1469051824L
+    assertThat(auditRecord.getClientId(), equalTo("credhub_cli"));
+    assertThat(auditRecord.getScope(), equalTo("credhub.write,credhub.read"));
+    assertThat(auditRecord.getGrantType(), equalTo("password"));
+    assertThat(auditRecord.getMethod(), equalTo("GET"));
+    assertThat(auditRecord.getStatusCode(), equalTo(401));
+  }
 
-        assertThat(auditRecord.getNow(), equalTo(now));
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("99.99.99.99"));
-        assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(), equalTo("Access token expired"));
+  @Test
+  public void whenThereIsNoToken_logsTheCorrectExceptionToTheDatabase() throws Exception {
+    mockMvc.perform(get(CREDENTIAL_URL)
+        .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .with(request -> {
+          request.setRemoteAddr("12346");
+          return request;
+        }));
 
-        OAuth2AccessToken accessToken = tokenServices.readAccessToken(EXPIRED_KEY_JWT);
-        Map<String, Object> additionalInformation = accessToken.getAdditionalInformation();
+    AuthFailureAuditRecord auditRecord = authFailureAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
 
-        assertThat(auditRecord.getUserId(), equalTo(additionalInformation.get("user_id")));
-        assertThat(auditRecord.getUserName(), equalTo(additionalInformation.get("user_name")));
-        assertThat(auditRecord.getUaaUrl(), equalTo(additionalInformation.get("iss")));
-        assertThat(auditRecord.getAuthValidFrom(),
-            equalTo(((Number) additionalInformation.get("iat")).longValue())); // 1469051704L
-        assertThat(auditRecord.getAuthValidUntil(),
-            equalTo(accessToken.getExpiration().toInstant().getEpochSecond())); // 1469051824L
-        assertThat(auditRecord.getClientId(), equalTo("credhub_cli"));
-        assertThat(auditRecord.getScope(), equalTo("credhub.write,credhub.read"));
-        assertThat(auditRecord.getGrantType(), equalTo("password"));
-        assertThat(auditRecord.getMethod(), equalTo("GET"));
-        assertThat(auditRecord.getStatusCode(), equalTo(401));
-      });
-    });
-
-    describe("when there is no token provided", () -> {
-      it("logs the 'no_token' auth exception to the database", () -> {
-        mockMvc.perform(get(credentialUrl)
-            .header("X-Forwarded-For", "1.1.1.1,2.2.2.2")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .with(request -> {
-              request.setRemoteAddr("12346");
-              return request;
-            }));
-
-        AuthFailureAuditRecord auditRecord = authFailureAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
-
-        assertThat(auditRecord.getNow(), equalTo(now));
-        assertThat(auditRecord.getPath(), equalTo(credentialUrlPath));
-        assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
-        assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
-        assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
-        assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
-        assertThat(auditRecord.getFailureDescription(),
-            equalTo("Full authentication is required to access this resource"));
-        assertThat(auditRecord.getUserId(), nullValue());
-        assertThat(auditRecord.getUserName(), nullValue());
-        assertThat(auditRecord.getUaaUrl(), nullValue());
-        assertThat(auditRecord.getAuthValidFrom(), equalTo(-1L));
-        assertThat(auditRecord.getAuthValidUntil(), equalTo(-1L));
-        assertThat(auditRecord.getClientId(), equalTo(null));
-        assertThat(auditRecord.getScope(), equalTo(null));
-        assertThat(auditRecord.getGrantType(), equalTo(null));
-        assertThat(auditRecord.getMethod(), equalTo("GET"));
-        assertThat(auditRecord.getStatusCode(), equalTo(401));
-      });
-    });
-
-    describe("#extractCause", () -> {
-      it("extracts a cause from an AuthenticationException", () -> {
-        Throwable cause = new Throwable("foo");
-        AuthenticationException e = new BadCredentialsException("test", cause);
-        assertThat(subject.extractCause(e), equalTo(cause));
-      });
-
-      it("extracts the ultimate cause from an AuthenticationException", () -> {
-        Throwable cause = new Throwable("foo");
-        AuthenticationException e = new BadCredentialsException("test",
-            new Exception(new Exception(cause)));
-        assertThat(subject.extractCause(e), equalTo(cause));
-      });
-
-      it("extracts the ultimate cause from an AuthenticationException", () -> {
-        AuthenticationException e = new BadCredentialsException("test");
-        assertThat(subject.extractCause(e), equalTo(null));
-      });
-    });
+    assertThat(auditRecord.getNow(), equalTo(NOW));
+    assertThat(auditRecord.getPath(), equalTo(CREDENTIAL_URL_PATH));
+    assertThat(auditRecord.getAuthMethod(), equalTo(AUTH_METHOD_UAA));
+    assertThat(auditRecord.getQueryParameters(), equalTo("my_name=my_value"));
+    assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
+    assertThat(auditRecord.getXForwardedFor(), equalTo("1.1.1.1,2.2.2.2"));
+    assertThat(auditRecord.getFailureDescription(),
+        equalTo("Full authentication is required to access this resource"));
+    assertThat(auditRecord.getUserId(), nullValue());
+    assertThat(auditRecord.getUserName(), nullValue());
+    assertThat(auditRecord.getUaaUrl(), nullValue());
+    assertThat(auditRecord.getAuthValidFrom(), equalTo(-1L));
+    assertThat(auditRecord.getAuthValidUntil(), equalTo(-1L));
+    assertThat(auditRecord.getClientId(), equalTo(null));
+    assertThat(auditRecord.getScope(), equalTo(null));
+    assertThat(auditRecord.getGrantType(), equalTo(null));
+    assertThat(auditRecord.getMethod(), equalTo("GET"));
+    assertThat(auditRecord.getStatusCode(), equalTo(401));
   }
 }

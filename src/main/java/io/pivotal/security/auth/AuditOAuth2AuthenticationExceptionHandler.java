@@ -82,7 +82,7 @@ public class AuditOAuth2AuthenticationExceptionHandler extends OAuth2Authenticat
     }
   }
 
-  Throwable extractCause(AuthenticationException e) {
+  private Throwable extractCause(AuthenticationException e) {
     Throwable cause = e.getCause();
     Throwable nextCause = cause == null ? null : cause.getCause();
     while (nextCause != null && nextCause != cause) {
