@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.ByteStreams;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import io.pivotal.security.audit.AuditingOperationCode;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
@@ -12,12 +11,12 @@ import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialHandler;
+import io.pivotal.security.handler.GenerateRequestHandler;
 import io.pivotal.security.handler.SetRequestHandler;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.BaseCredentialSetRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
-import io.pivotal.security.handler.GenerateRequestHandler;
 import io.pivotal.security.service.RegenerateService;
 import io.pivotal.security.util.StringUtil;
 import io.pivotal.security.view.CredentialView;
@@ -48,6 +47,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.function.Function;
 
+import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
 
 @RestController
@@ -136,9 +136,8 @@ public class CredentialsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    eventAuditLogService.auditEvent(requestUuid, userContext, (eventAuditRecordParameters) -> {
-      eventAuditRecordParameters.setCredentialName(credentialName);
-      eventAuditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_DELETE);
+    eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList) -> {
+      eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_DELETE, credentialName));
 
       credentialHandler.deleteCredential(userContext, credentialName);
 
@@ -152,8 +151,8 @@ public class CredentialsController {
       @PathVariable String id,
       RequestUuid requestUuid,
       UserContext userContext) {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> (
-        credentialHandler.getCredentialVersion(userContext, eventAuditRecordParameters, id)
+    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> (
+        credentialHandler.getCredentialVersion(userContext, eventAuditRecordParametersList, id)
     ));
   }
 
@@ -168,11 +167,11 @@ public class CredentialsController {
       throw new InvalidQueryParameterException("error.missing_query_parameter", "name");
     }
 
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
+    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
       if (current) {
-        return credentialHandler.getMostRecentCredentialVersion(userContext, eventAuditRecordParameters, credentialName);
+        return credentialHandler.getMostRecentCredentialVersion(userContext, eventAuditRecordParametersList, credentialName);
       } else {
-        return credentialHandler.getAllCredentialVersions(userContext, eventAuditRecordParameters, credentialName);
+        return credentialHandler.getAllCredentialVersions(userContext, eventAuditRecordParametersList, credentialName);
       }
     });
   }
@@ -190,8 +189,8 @@ public class CredentialsController {
   @RequestMapping(path = "", params = "paths=true", method = RequestMethod.GET)
   @ResponseStatus(HttpStatus.OK)
   public FindPathResults findPaths(RequestUuid requestUuid, UserContext userContext) {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
-      eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_FIND);
+    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+      eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
       List<String> paths = credentialDataService.findAllPaths();
       return FindPathResults.fromEntity(paths);
     });
@@ -313,8 +312,8 @@ public class CredentialsController {
       RequestUuid requestUuid,
       UserContext userContext) {
     return eventAuditLogService
-        .auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
-          eventAuditRecordParameters.setAuditingOperationCode(CREDENTIAL_FIND);
+        .auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+          eventAuditRecordParametersList.add(new EventAuditRecordParameters(CREDENTIAL_FIND));
           return new FindCredentialResults(finder.apply(nameSubstring));
         });
   }

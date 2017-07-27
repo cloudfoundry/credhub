@@ -44,11 +44,11 @@ public class CredentialHandler {
 
   public DataResponse getAllCredentialVersions(
       UserContext userContext,
-      EventAuditRecordParameters auditRecordParameters,
+      List<EventAuditRecordParameters> auditRecordParametersList,
       String credentialName
   ) {
-    auditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
-    auditRecordParameters.setCredentialName(credentialName);
+    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters(AuditingOperationCode.CREDENTIAL_ACCESS, credentialName);
+    auditRecordParametersList.add(auditRecordParameters);
 
     List<Credential> credentials = credentialDataService.findAllByName(credentialName);
 
@@ -62,12 +62,12 @@ public class CredentialHandler {
 
   public DataResponse getMostRecentCredentialVersion(
       UserContext userContext,
-      EventAuditRecordParameters auditRecordParameters,
+      List<EventAuditRecordParameters> auditRecordParametersList,
       String credentialName
   ) {
     Credential credential = getVersionByIdentifier(
         userContext,
-        auditRecordParameters,
+        auditRecordParametersList,
         credentialName,
         credentialDataService::findMostRecent
     );
@@ -76,12 +76,12 @@ public class CredentialHandler {
 
   public CredentialView getCredentialVersion(
       UserContext userContext,
-      EventAuditRecordParameters auditRecordParameters,
+      List<EventAuditRecordParameters> auditRecordParametersList,
       String credentialUuid
   ) {
     return CredentialView.fromEntity(getVersionByIdentifier(
         userContext,
-        auditRecordParameters,
+        auditRecordParametersList,
         credentialUuid,
         credentialDataService::findByUuid
     ));
@@ -89,17 +89,21 @@ public class CredentialHandler {
 
   private Credential getVersionByIdentifier(
       UserContext userContext,
-      EventAuditRecordParameters auditRecordParameters,
+      List<EventAuditRecordParameters> auditRecordParametersList,
       String identifier,
       Function<String, Credential> getFn
   ) {
-    auditRecordParameters.setAuditingOperationCode(AuditingOperationCode.CREDENTIAL_ACCESS);
+    EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+        AuditingOperationCode.CREDENTIAL_ACCESS
+    );
 
     Credential credential = getFn.apply(identifier);
 
     if (credential != null) {
-      auditRecordParameters.setCredentialName(credential.getName());
+      eventAuditRecordParameters.setCredentialName(credential.getName());
     }
+
+    auditRecordParametersList.add(eventAuditRecordParameters);
 
     if (credential == null || !permissionService.hasPermission(userContext.getAclUser(), credential.getName(), READ)) {
       throw new EntryNotFoundException("error.credential_not_found");

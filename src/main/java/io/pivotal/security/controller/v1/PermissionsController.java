@@ -1,6 +1,7 @@
 package io.pivotal.security.controller.v1;
 
 import io.pivotal.security.audit.EventAuditLogService;
+import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
@@ -54,11 +55,14 @@ public class PermissionsController {
     RequestUuid requestUuid,
     UserContext userContext
   ) throws Exception {
-    return eventAuditLogService.auditEvent(requestUuid, userContext, eventAuditRecordParameters -> {
-      eventAuditRecordParameters.setCredentialName(credentialName);
-      eventAuditRecordParameters.setAuditingOperationCode(ACL_ACCESS);
+    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+      EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters(
+          ACL_ACCESS, credentialName
+      );
+      eventAuditRecordParametersList.add(eventAuditRecordParameters);
 
       final PermissionsView response = permissionsHandler.getPermissions(userContext, credentialName);
+
       eventAuditRecordParameters.setCredentialName(response.getCredentialName());
 
       return response;

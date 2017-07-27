@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.PermissionsDataService;
 import io.pivotal.security.handler.PermissionsHandler;
@@ -21,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -63,12 +63,14 @@ public class PermissionsControllerTest {
       eventAuditLogService = mock(EventAuditLogService.class);
       permissionsDataService = mock(PermissionsDataService.class);
 
-      when(eventAuditLogService.auditEvents(any(RequestUuid.class), any(UserContext.class), any(Function.class)))
-          .thenAnswer(invocation -> invocation.getArgumentAt(2, Function.class).apply(newArrayList()));
-
-
       subject = new PermissionsController(permissionsHandler, eventAuditLogService,
           permissionsDataService);
+
+      when(eventAuditLogService.auditEvents(any(), any(), any())).thenAnswer(answer -> {
+        Function<List<EventAuditRecordParameters>, RequestEntity> block = answer
+            .getArgumentAt(2, Function.class);
+        return block.apply(mock(ArrayList.class));
+      });
 
       MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
           new MappingJackson2HttpMessageConverter();
@@ -88,12 +90,6 @@ public class PermissionsControllerTest {
           when(
               permissionsHandler.getPermissions(any(UserContext.class), eq("test_credential_name")))
               .thenReturn(permissionsView);
-
-          when(eventAuditLogService.auditEvent(any(), any(), any())).thenAnswer(answer -> {
-            Function<EventAuditRecordParameters, RequestEntity> block = answer
-                .getArgumentAt(2, Function.class);
-            return block.apply(mock(EventAuditRecordParameters.class));
-          });
 
           mockMvc.perform(get("/api/v1/permissions?credential_name=test_credential_name"))
               .andExpect(status().isOk())

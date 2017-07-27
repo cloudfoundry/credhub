@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -31,23 +30,6 @@ public class EventAuditLogService {
   ) {
     this.eventAuditRecordDataService = eventAuditRecordDataService;
     this.transactionManager = transactionManager;
-  }
-
-  public <T> T auditEvent(
-      RequestUuid requestUuid,
-      UserContext userContext,
-      Function<EventAuditRecordParameters, T> respondToRequestFunction
-  ) {
-    TransactionStatus transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-    final EventAuditRecordParameters eventAuditRecordParameters = new EventAuditRecordParameters();
-    boolean success = false;
-    try {
-      T response = respondToRequestFunction.apply(eventAuditRecordParameters);
-      success = true;
-      return response;
-    } finally {
-      writeAuditRecords(requestUuid, userContext, Collections.singletonList(eventAuditRecordParameters), success, transaction);
-    }
   }
 
   public <T> T auditEvents(

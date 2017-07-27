@@ -14,6 +14,10 @@ public class EventAuditRecordParameters {
     this(UNKNOWN_OPERATION, null);
   }
 
+  public EventAuditRecordParameters(AuditingOperationCode auditingOperationCode) {
+    this(auditingOperationCode, null, null, null);
+  }
+
   public EventAuditRecordParameters(AuditingOperationCode auditingOperationCode, String credentialName) {
     this(auditingOperationCode, credentialName, null, null);
   }

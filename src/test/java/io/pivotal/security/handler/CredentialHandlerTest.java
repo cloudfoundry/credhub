@@ -115,7 +115,7 @@ public class CredentialHandlerTest {
         .thenReturn(true);
 
     DataResponse response = subject.getAllCredentialVersions(userContext,
-        new EventAuditRecordParameters(), CREDENTIAL_NAME);
+        newArrayList(), CREDENTIAL_NAME);
 
     List<CredentialView> responseCredentials = response.getData();
     assertThat(responseCredentials, hasSize(2));
@@ -127,16 +127,18 @@ public class CredentialHandlerTest {
 
   @Test
   public void getAllCredentialVersions_whenTheCredentialExists_setsCorrectAuditingParameters() {
-    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
     List<Credential> credentials = newArrayList(version1);
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    subject.getAllCredentialVersions(userContext, auditRecordParameters, CREDENTIAL_NAME);
-    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+    subject.getAllCredentialVersions(userContext, auditRecordParametersList, CREDENTIAL_NAME);
+
+    assertThat(auditRecordParametersList, hasSize(1));
+    assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
   }
 
   @Test
@@ -148,7 +150,7 @@ public class CredentialHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getAllCredentialVersions(userContext, new EventAuditRecordParameters(),
+      subject.getAllCredentialVersions(userContext, newArrayList(),
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
@@ -159,17 +161,18 @@ public class CredentialHandlerTest {
   @Test
   public void getAllCredentialVersions_whenTheUserLacksPermission_setsCorrectAuditingParameters() {
     List<Credential> credentials = newArrayList(version1);
-    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(credentials);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(false);
 
     try {
-      subject.getAllCredentialVersions(userContext, auditRecordParameters, CREDENTIAL_NAME);
+      subject.getAllCredentialVersions(userContext, auditRecordParametersList, CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParametersList, hasSize(1));
+      assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
     }
   }
 
@@ -181,7 +184,7 @@ public class CredentialHandlerTest {
         .thenReturn(true);
 
     try {
-      subject.getAllCredentialVersions(userContext, new EventAuditRecordParameters(),
+      subject.getAllCredentialVersions(userContext, newArrayList(),
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
@@ -191,17 +194,18 @@ public class CredentialHandlerTest {
 
   @Test
   public void getCredentialVersions_whenTheCredentialDoesNotExist_setsCorrectAuditingParameter() {
-    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
 
     when(credentialDataService.findAllByName(CREDENTIAL_NAME))
         .thenReturn(emptyList());
 
     try {
-      subject.getAllCredentialVersions(userContext, auditRecordParameters, CREDENTIAL_NAME
+      subject.getAllCredentialVersions(userContext, auditRecordParametersList, CREDENTIAL_NAME
       );
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+      assertThat(auditRecordParametersList, hasSize(1));
+      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     }
   }
 
@@ -214,7 +218,7 @@ public class CredentialHandlerTest {
 
     DataResponse response = subject.getMostRecentCredentialVersion(
         userContext,
-        new EventAuditRecordParameters(), CREDENTIAL_NAME
+        newArrayList(), CREDENTIAL_NAME
     );
     List<CredentialView> responseCredentials = response.getData();
 
@@ -225,16 +229,17 @@ public class CredentialHandlerTest {
 
   @Test
   public void getMostRecentCredentialVersion_whenTheCredentialExists_setsCorrectAuditingParameters() {
-    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
         .thenReturn(version1);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    subject.getMostRecentCredentialVersion(userContext, auditRecordParameters, CREDENTIAL_NAME);
+    subject.getMostRecentCredentialVersion(userContext, auditRecordParametersList, CREDENTIAL_NAME);
 
-    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+    assertThat(auditRecordParametersList, hasSize(1));
+    assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
   }
 
   @Test
@@ -243,7 +248,7 @@ public class CredentialHandlerTest {
         .thenReturn(null);
 
     try {
-      subject.getMostRecentCredentialVersion(userContext, new EventAuditRecordParameters(),
+      subject.getMostRecentCredentialVersion(userContext, newArrayList(),
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
@@ -259,7 +264,7 @@ public class CredentialHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getMostRecentCredentialVersion(userContext, new EventAuditRecordParameters(),
+      subject.getMostRecentCredentialVersion(userContext, newArrayList(),
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
@@ -269,7 +274,7 @@ public class CredentialHandlerTest {
 
   @Test
   public void getMostRecentCredentialVersion_whenTheUserLacksPermission_setsCorrectAuditingParameters() {
-    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
 
     when(credentialDataService.findMostRecent(CREDENTIAL_NAME))
         .thenReturn(version1);
@@ -277,11 +282,11 @@ public class CredentialHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getMostRecentCredentialVersion(userContext, auditRecordParameters, CREDENTIAL_NAME);
+      subject.getMostRecentCredentialVersion(userContext, auditRecordParametersList, CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+      assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     }
   }
 
@@ -294,7 +299,8 @@ public class CredentialHandlerTest {
 
     CredentialView response = subject.getCredentialVersion(
         userContext,
-        new EventAuditRecordParameters(), UUID_STRING
+        newArrayList(),
+        UUID_STRING
     );
     assertThat(response.getName(), equalTo(CREDENTIAL_NAME));
     assertThat(response.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
@@ -302,16 +308,19 @@ public class CredentialHandlerTest {
 
   @Test
   public void getCredentialVersion_whenTheVersionExists_setsCorrectAuditingParameters() {
-    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
+
     when(credentialDataService.findByUuid(UUID_STRING))
         .thenReturn(version1);
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    subject.getCredentialVersion(userContext, auditRecordParameters, UUID_STRING);
+    subject.getCredentialVersion(userContext, auditRecordParametersList, UUID_STRING);
 
-    assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
-    assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+    assertThat(auditRecordParametersList, hasSize(1));
+
+    assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
   }
 
   @Test
@@ -320,7 +329,7 @@ public class CredentialHandlerTest {
         .thenReturn(null);
 
     try {
-      subject.getCredentialVersion(userContext, new EventAuditRecordParameters(), UUID_STRING);
+      subject.getCredentialVersion(userContext, newArrayList(), UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential_not_found"));
@@ -335,7 +344,7 @@ public class CredentialHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getCredentialVersion(userContext, new EventAuditRecordParameters(), UUID_STRING);
+      subject.getCredentialVersion(userContext, newArrayList(), UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
       assertThat(e.getMessage(), equalTo("error.credential_not_found"));
@@ -344,7 +353,7 @@ public class CredentialHandlerTest {
 
   @Test
   public void getCredentialVersion_whenTheUserLacksPermission_setsCorrectAuditingParameters() {
-    EventAuditRecordParameters auditRecordParameters = new EventAuditRecordParameters();
+    List<EventAuditRecordParameters> auditRecordParametersList = newArrayList();
 
     when(credentialDataService.findByUuid(UUID_STRING))
         .thenReturn(version1);
@@ -352,11 +361,12 @@ public class CredentialHandlerTest {
         .thenReturn(false);
 
     try {
-      subject.getCredentialVersion(userContext, auditRecordParameters, UUID_STRING);
+      subject.getCredentialVersion(userContext, auditRecordParametersList, UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(auditRecordParameters.getCredentialName(), equalTo(CREDENTIAL_NAME));
-      assertThat(auditRecordParameters.getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+      assertThat(auditRecordParametersList, hasSize(1));
+      assertThat(auditRecordParametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+      assertThat(auditRecordParametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
     }
   }
 }
