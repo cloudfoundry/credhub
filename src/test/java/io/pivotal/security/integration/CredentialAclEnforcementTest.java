@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -371,5 +372,95 @@ public class CredentialAclEnforcementTest {
     result.getResponse().getContentAsString();
     final DocumentContext context = JsonPath.parse(result.getResponse().getContentAsString());
     uuid = context.read("$.id");
+  }
+
+  @Test
+  public void interpolate_whenTheUserHasAccessToAllReferencedCredentials_returnsInterpolatedBody() throws Exception {
+    makeJsonCredential(UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "secret1");
+    makeJsonCredential(UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "secret2");
+
+    MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(
+            "{" +
+                "    \"pp-config-server\": [" +
+                "      {" +
+                "        \"credentials\": {" +
+                "          \"credhub-ref\": \"((/secret1))\"" +
+                "        }," +
+                "        \"label\": \"pp-config-server\"" +
+                "      }" +
+                "    ]," +
+                "    \"pp-something-else\": [" +
+                "      {" +
+                "        \"credentials\": {" +
+                "          \"credhub-ref\": \"((/secret2))\"" +
+                "        }," +
+                "        \"something\": [\"pp-config-server\"]" +
+                "      }" +
+                "    ]" +
+                "  }"
+        );
+
+    this.mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.pp-config-server[0].credentials.secret1")
+            .value(equalTo("secret1-value")))
+        .andExpect(jsonPath("$.pp-something-else[0].credentials.secret2")
+            .value(equalTo("secret2-value")));
+  }
+
+  @Test
+  public void interpolate_whenTheUserDoesNotHaveAccessToAllReferencedCredentials_returnsAnError() throws Exception {
+    makeJsonCredential(UAA_OAUTH2_PASSWORD_GRANT_TOKEN, "secret1");
+    makeJsonCredential(UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN, "secret2");
+
+    MockHttpServletRequestBuilder request = post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(
+            "{" +
+                "    \"pp-config-server\": [" +
+                "      {" +
+                "        \"credentials\": {" +
+                "          \"credhub-ref\": \"((/secret1))\"" +
+                "        }," +
+                "        \"label\": \"pp-config-server\"" +
+                "      }" +
+                "    ]," +
+                "    \"pp-something-else\": [" +
+                "      {" +
+                "        \"credentials\": {" +
+                "          \"credhub-ref\": \"((/secret2))\"" +
+                "        }," +
+                "        \"something\": [\"pp-config-server\"]" +
+                "      }" +
+                "    ]" +
+                "  }"
+        );
+
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+
+    this.mockMvc.perform(request)
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
+  }
+
+  private void makeJsonCredential(String userToken, String credentialName) throws Exception {
+    MockHttpServletRequestBuilder createRequest1 = put("/api/v1/data")
+        .header("Authorization", "Bearer " + userToken)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(
+            "{" +
+                "\"name\":\"" + credentialName + "\"," +
+                "\"type\":\"json\"," +
+                "\"value\":{" +
+                "\"" + credentialName + "\":\"" + credentialName + "-value\"" +
+                "}" +
+                "}"
+        );
+    this.mockMvc.perform(createRequest1)
+        .andExpect(status().isOk());
   }
 }

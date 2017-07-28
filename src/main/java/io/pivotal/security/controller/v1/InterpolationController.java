@@ -35,12 +35,14 @@ public class InterpolationController {
 
   @RequestMapping(method = RequestMethod.POST, path = "/interpolate")
   @ResponseStatus(HttpStatus.OK)
-  public Map<String, Object> interpolate(@RequestBody Map<String, Object> requestBody,
+  public Map<String, Object> interpolate(
+      @RequestBody Map<String, Object> requestBody,
       RequestUuid requestUuid,
-      UserContext userContext) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParameters ->
+      UserContext userContext
+  ) {
+    return eventAuditLogService.auditEvents(requestUuid, userContext, (eventAuditRecordParametersList ->
           jsonInterpolationService
-            .interpolateCredHubReferences(requestBody, eventAuditRecordParameters))
+            .interpolateCredHubReferences(userContext, requestBody, eventAuditRecordParametersList))
     );
   }
 }

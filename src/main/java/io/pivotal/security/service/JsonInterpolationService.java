@@ -1,10 +1,11 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.handler.CredentialHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,19 +13,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
-
 @Service
 public class JsonInterpolationService {
-  private CredentialDataService credentialDataService;
+  private final CredentialHandler credentialHandler;
 
   @Autowired
-  public JsonInterpolationService(CredentialDataService credentialDataService) {
-    this.credentialDataService = credentialDataService;
+  public JsonInterpolationService(CredentialHandler credentialHandler) {
+    this.credentialHandler = credentialHandler;
   }
 
-  public Map<String, Object> interpolateCredHubReferences(Map<String, Object> servicesMap,
-      List<EventAuditRecordParameters> eventAuditRecordParameters) {
+  public Map<String, Object> interpolateCredHubReferences(
+      UserContext userContext,
+      Map<String, Object> servicesMap,
+      List<EventAuditRecordParameters> eventAuditRecordParametersList
+  ) {
 
     for (Object serviceProperties : servicesMap.values()) {
       if (serviceProperties == null || !(serviceProperties instanceof ArrayList)) {
@@ -50,16 +52,11 @@ public class JsonInterpolationService {
         }
         String credentialName = getCredentialNameFromRef((String) credhubRef);
 
-        Credential credential = credentialDataService.findMostRecent(credentialName);
-        if (credential == null) {
-          eventAuditRecordParameters
-              .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
-
-          throw new ParameterizedValidationException("error.credential.invalid_access");
-        }
-
-        eventAuditRecordParameters
-            .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credential.getName()));
+        Credential credential = credentialHandler.getMostRecentCredentialVersion(
+            userContext,
+            eventAuditRecordParametersList,
+            credentialName
+        );
 
         if (credential instanceof JsonCredential) {
           propertiesMap.put("credentials", ((JsonCredential) credential).getValue());

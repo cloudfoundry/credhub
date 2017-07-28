@@ -1,10 +1,11 @@
 package io.pivotal.security.service;
 
 import io.pivotal.security.audit.EventAuditRecordParameters;
-import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.domain.JsonCredential;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.ParameterizedValidationException;
+import io.pivotal.security.handler.CredentialHandler;
 import org.assertj.core.util.Maps;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,15 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.samePropertyValuesAs;
+import static org.hibernate.validator.internal.util.CollectionHelper.newArrayList;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,13 +32,15 @@ public class JsonInterpolationServiceTest {
   private JsonInterpolationService subject;
   private Map<String, Object> response;
   private List<EventAuditRecordParameters> eventAuditRecordParameters;
-  private CredentialDataService credentialDataService;
+  private CredentialHandler credentialHandler;
+  private UserContext userContext;
 
   @Before
   public void beforeEach() {
-    credentialDataService = mock(CredentialDataService.class);
+    credentialHandler = mock(CredentialHandler.class);
+    userContext = mock(UserContext.class);
 
-    subject = new JsonInterpolationService(credentialDataService);
+    subject = new JsonInterpolationService(credentialHandler);
     eventAuditRecordParameters = new ArrayList<>();
   }
 
@@ -72,17 +72,6 @@ public class JsonInterpolationServiceTest {
   }
 
   @Test
-  public void interpolateCredHubReferences_updatesTheEventAuditRecordParameters() throws Exception {
-    setupValidRequest();
-
-    assertThat(eventAuditRecordParameters, hasSize(3));
-    assertThat(eventAuditRecordParameters, containsInAnyOrder(
-        samePropertyValuesAs(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred1")),
-        samePropertyValuesAs(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred2")),
-        samePropertyValuesAs(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/cred3"))));
-  }
-
-  @Test
   public void interpolateCredHubReferences_whenAReferencedCredentialIsNotJsonType_itThrowsAnException() throws Exception {
       String inputJson = "{"
           + "  \"pp-config-server\": ["
@@ -100,48 +89,13 @@ public class JsonInterpolationServiceTest {
 
       doReturn(
           passwordCredential
-      ).when(credentialDataService).findMostRecent("/password_cred");
+      ).when(credentialHandler).getMostRecentCredentialVersion(userContext, eventAuditRecordParameters,"/password_cred");
 
       try {
-        subject.interpolateCredHubReferences(deserialize(inputJson, Map.class),
-            eventAuditRecordParameters);
+        subject.interpolateCredHubReferences(userContext, deserialize(inputJson, Map.class), eventAuditRecordParameters);
       } catch (ParameterizedValidationException exception) {
         assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_type"));
-        assertThat(eventAuditRecordParameters, hasSize(1));
-        assertThat(eventAuditRecordParameters, contains(
-            samePropertyValuesAs(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/password_cred"))
-        ));
       }
-  }
-
-  @Test
-  public void interpolateCredHubReferences_whenAReferencedCredentialDoesNotExist_itThrowsAnException() {
-    String inputJsonString = "{"
-        + "  \"pp-config-server\": ["
-        + "    {"
-        + "      \"credentials\": {"
-        + "        \"credhub-ref\": \"((/missing_cred))\""
-        + "      },"
-        + "      \"label\": \"pp-config-server\""
-        + "    }"
-        + "  ]"
-        + "}";
-    Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-
-    doReturn(
-        null
-    ).when(credentialDataService).findMostRecent("/missing_cred");
-
-    try {
-      subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
-    } catch (ParameterizedValidationException exception) {
-      assertThat(exception.getMessage(), equalTo("error.credential.invalid_access"));
-
-      assertThat(eventAuditRecordParameters, hasSize(1));
-      assertThat(eventAuditRecordParameters, contains(
-          samePropertyValuesAs(new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/missing_cred"))
-      ));
-    }
   }
 
   @Test
@@ -155,7 +109,7 @@ public class JsonInterpolationServiceTest {
         + "  }]"
         + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -172,7 +126,7 @@ public class JsonInterpolationServiceTest {
         + "  }]"
         + "}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -192,7 +146,7 @@ public class JsonInterpolationServiceTest {
             + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -205,7 +159,7 @@ public class JsonInterpolationServiceTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -221,7 +175,7 @@ public class JsonInterpolationServiceTest {
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -231,7 +185,7 @@ public class JsonInterpolationServiceTest {
   public void interpolateCredHubReferences_whenPropertiesAreEmpty_doesNotInterpolateIt() {
     Map<String, Object> inputJson = deserialize("{}", Map.class);
     Map<String, Object> response = subject
-        .interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+        .interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -248,7 +202,7 @@ public class JsonInterpolationServiceTest {
         + "  }"
         + "}";
     Map<String, Object> inputJson = deserialize(inputJsonString, Map.class);
-    Map response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+    Map response = subject.interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
 
     assertThat(response, equalTo(inputJson));
     assertThat(eventAuditRecordParameters, hasSize(0));
@@ -296,17 +250,17 @@ public class JsonInterpolationServiceTest {
 
     doReturn(
         jsonCredential
-    ).when(credentialDataService).findMostRecent("/cred1");
+    ).when(credentialHandler).getMostRecentCredentialVersion(userContext, newArrayList(), "/cred1");
 
     doReturn(
         jsonCredential1
-    ).when(credentialDataService).findMostRecent("/cred2");
+    ).when(credentialHandler).getMostRecentCredentialVersion(userContext, newArrayList(), "/cred2");
 
     doReturn(
         jsonCredential2
-    ).when(credentialDataService).findMostRecent("/cred3");
+    ).when(credentialHandler).getMostRecentCredentialVersion(userContext, newArrayList(), "/cred3");
 
-    response = subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
+    response = subject.interpolateCredHubReferences(userContext, inputJson, eventAuditRecordParameters);
   }
 }
 

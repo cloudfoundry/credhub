@@ -8,8 +8,6 @@ import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.view.CredentialView;
-import io.pivotal.security.view.DataResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -114,15 +112,14 @@ public class CredentialHandlerTest {
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    DataResponse response = subject.getAllCredentialVersions(userContext,
+    List<Credential> credentialVersions = subject.getAllCredentialVersions(userContext,
         newArrayList(), CREDENTIAL_NAME);
 
-    List<CredentialView> responseCredentials = response.getData();
-    assertThat(responseCredentials, hasSize(2));
-    assertThat(responseCredentials.get(0).getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(responseCredentials.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
-    assertThat(responseCredentials.get(1).getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(responseCredentials.get(1).getVersionCreatedAt(), equalTo(VERSION2_CREATED_AT));
+    assertThat(credentialVersions, hasSize(2));
+    assertThat(credentialVersions.get(0).getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialVersions.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    assertThat(credentialVersions.get(1).getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credentialVersions.get(1).getVersionCreatedAt(), equalTo(VERSION2_CREATED_AT));
   }
 
   @Test
@@ -216,15 +213,13 @@ public class CredentialHandlerTest {
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    DataResponse response = subject.getMostRecentCredentialVersion(
+    Credential credential = subject.getMostRecentCredentialVersion(
         userContext,
         newArrayList(), CREDENTIAL_NAME
     );
-    List<CredentialView> responseCredentials = response.getData();
 
-    assertThat(responseCredentials, hasSize(1));
-    assertThat(responseCredentials.get(0).getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(responseCredentials.get(0).getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    assertThat(credential.getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credential.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
 
   @Test
@@ -297,13 +292,13 @@ public class CredentialHandlerTest {
     when(permissionService.hasPermission(USER, CREDENTIAL_NAME, READ))
         .thenReturn(true);
 
-    CredentialView response = subject.getCredentialVersion(
+    Credential credential = subject.getCredentialVersion(
         userContext,
         newArrayList(),
         UUID_STRING
     );
-    assertThat(response.getName(), equalTo(CREDENTIAL_NAME));
-    assertThat(response.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
+    assertThat(credential.getName(), equalTo(CREDENTIAL_NAME));
+    assertThat(credential.getVersionCreatedAt(), equalTo(VERSION1_CREATED_AT));
   }
 
   @Test

@@ -7,8 +7,6 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
 import io.pivotal.security.service.PermissionService;
-import io.pivotal.security.view.CredentialView;
-import io.pivotal.security.view.DataResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +15,6 @@ import java.util.function.Function;
 
 import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
-import static java.util.Collections.singletonList;
 
 @Component
 public class CredentialHandler {
@@ -42,7 +39,7 @@ public class CredentialHandler {
     }
   }
 
-  public DataResponse getAllCredentialVersions(
+  public List<Credential> getAllCredentialVersions(
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList,
       String credentialName
@@ -57,10 +54,10 @@ public class CredentialHandler {
       throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
-    return DataResponse.fromEntity(credentials);
+    return credentials;
   }
 
-  public DataResponse getMostRecentCredentialVersion(
+  public Credential getMostRecentCredentialVersion(
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList,
       String credentialName
@@ -71,20 +68,20 @@ public class CredentialHandler {
         credentialName,
         credentialDataService::findMostRecent
     );
-    return DataResponse.fromEntity(singletonList(credential));
+    return credential;
   }
 
-  public CredentialView getCredentialVersion(
+  public Credential getCredentialVersion(
       UserContext userContext,
       List<EventAuditRecordParameters> auditRecordParametersList,
       String credentialUuid
   ) {
-    return CredentialView.fromEntity(getVersionByIdentifier(
+    return getVersionByIdentifier(
         userContext,
         auditRecordParametersList,
         credentialUuid,
         credentialDataService::findByUuid
-    ));
+    );
   }
 
   private Credential getVersionByIdentifier(

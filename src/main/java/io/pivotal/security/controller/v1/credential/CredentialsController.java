@@ -9,6 +9,7 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.domain.Credential;
 import io.pivotal.security.exceptions.InvalidQueryParameterException;
 import io.pivotal.security.handler.CredentialHandler;
 import io.pivotal.security.handler.GenerateRequestHandler;
@@ -49,6 +50,7 @@ import java.util.function.Function;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_FIND;
+import static java.util.Collections.singletonList;
 
 @RestController
 @RequestMapping(
@@ -151,9 +153,10 @@ public class CredentialsController {
       @PathVariable String id,
       RequestUuid requestUuid,
       UserContext userContext) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> (
-        credentialHandler.getCredentialVersion(userContext, eventAuditRecordParametersList, id)
-    ));
+    return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+      Credential credentialVersion = credentialHandler.getCredentialVersion(userContext, eventAuditRecordParametersList, id);
+      return CredentialView.fromEntity(credentialVersion);
+    });
   }
 
   @GetMapping(path = "")
@@ -168,11 +171,14 @@ public class CredentialsController {
     }
 
     return eventAuditLogService.auditEvents(requestUuid, userContext, eventAuditRecordParametersList -> {
+      List<Credential> credentials;
       if (current) {
-        return credentialHandler.getMostRecentCredentialVersion(userContext, eventAuditRecordParametersList, credentialName);
+        Credential credential = credentialHandler.getMostRecentCredentialVersion(userContext, eventAuditRecordParametersList, credentialName);
+        credentials = singletonList(credential);
       } else {
-        return credentialHandler.getAllCredentialVersions(userContext, eventAuditRecordParametersList, credentialName);
+        credentials = credentialHandler.getAllCredentialVersions(userContext, eventAuditRecordParametersList, credentialName);
       }
+      return DataResponse.fromEntity(credentials);
     });
   }
 
