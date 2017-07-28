@@ -177,7 +177,7 @@ public class PermissionsHandlerTest {
       subject.setPermissions(userContext, CREDENTIAL_NAME, emptyList());
       fail("should throw");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
       verify(permissionsDataService, times(0)).saveAccessControlEntries(any(), any());
     }
   }
@@ -214,7 +214,7 @@ public class PermissionsHandlerTest {
       subject.setPermissions(userContext, CREDENTIAL_NAME, emptyList());
       fail("should throw");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
       verify(permissionsDataService, times(0)).saveAccessControlEntries(any(), any());
     }
   }
@@ -261,7 +261,7 @@ public class PermissionsHandlerTest {
       subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
       fail("should throw");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -276,7 +276,7 @@ public class PermissionsHandlerTest {
       subject.deletePermissionEntry(userContext, CREDENTIAL_NAME, ACTOR_NAME);
       fail("should throw");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
       verify(permissionsDataService, times(0)).deleteAccessControlEntry(any(), any());
     }
   }

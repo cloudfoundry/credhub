@@ -55,7 +55,7 @@ public class JsonInterpolationService {
           eventAuditRecordParameters
               .add(new EventAuditRecordParameters(CREDENTIAL_ACCESS, credentialName));
 
-          throw new ParameterizedValidationException("error.interpolation.invalid_access");
+          throw new ParameterizedValidationException("error.credential.invalid_access");
         }
 
         eventAuditRecordParameters

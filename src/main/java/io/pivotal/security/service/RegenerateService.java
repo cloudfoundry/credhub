@@ -60,7 +60,7 @@ public class RegenerateService {
     Credential credential = credentialDataService.findMostRecent(requestBody.getName());
     if (credential == null) {
       parametersList.add(new EventAuditRecordParameters(CREDENTIAL_UPDATE, requestBody.getName()));
-      throw new EntryNotFoundException("error.credential_not_found");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     Regeneratable regeneratable = regeneratableTypes

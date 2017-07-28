@@ -32,13 +32,13 @@ public class CredentialHandler {
 
   public void deleteCredential(UserContext userContext, String credentialName) {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, DELETE)) {
-      throw new EntryNotFoundException("error.acl.lacks_credential_write");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     boolean deleteSucceeded = credentialDataService.delete(credentialName);
 
     if (!deleteSucceeded) {
-      throw new EntryNotFoundException("error.acl.lacks_credential_write");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
   }
 
@@ -54,7 +54,7 @@ public class CredentialHandler {
 
     // We need this extra check in case permissions aren't being enforced.
     if (credentials.isEmpty() || !permissionService.hasPermission(userContext.getAclUser(), credentialName, READ)) {
-      throw new EntryNotFoundException("error.credential_not_found");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     return DataResponse.fromEntity(credentials);
@@ -106,7 +106,7 @@ public class CredentialHandler {
     auditRecordParametersList.add(eventAuditRecordParameters);
 
     if (credential == null || !permissionService.hasPermission(userContext.getAclUser(), credential.getName(), READ)) {
-      throw new EntryNotFoundException("error.credential_not_found");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     return credential;

@@ -76,11 +76,11 @@ public class CredentialAclEnforcementTest {
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data?name=" + CREDENTIAL_NAME)
         .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.error",
-            equalTo("Credential not found. Please validate your input and retry your request.")));
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
   }
 
   @Test
@@ -100,11 +100,11 @@ public class CredentialAclEnforcementTest {
       throws Exception {
     final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
         .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)));
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(get)
         .andDo(print())
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.error",
-            equalTo("Credential not found. Please validate your input and retry your request.")));
+        .andExpect(jsonPath("$.error", equalTo(expectedError)));
   }
 
   @Test

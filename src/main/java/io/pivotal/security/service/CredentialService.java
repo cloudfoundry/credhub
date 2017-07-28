@@ -114,13 +114,13 @@ public class CredentialService {
 
   private void verifyCredentialWritePermission(UserContext userContext, String credentialName) {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE)) {
-      throw new PermissionException("error.acl.lacks_credential_write");
+      throw new PermissionException("error.credential.invalid_access");
     }
   }
 
   private void verifyAclWrite(UserContext userContext, String credentialName) {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
-      throw new PermissionException("error.acl.lacks_credential_write");
+      throw new PermissionException("error.credential.invalid_access");
     }
   }
 }

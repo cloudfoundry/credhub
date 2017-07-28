@@ -88,7 +88,7 @@ public class CredentialHandlerTest {
       subject.deleteCredential(userContext, CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -102,7 +102,7 @@ public class CredentialHandlerTest {
       subject.deleteCredential(userContext, CREDENTIAL_NAME);
       fail("Should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -154,7 +154,7 @@ public class CredentialHandlerTest {
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -188,7 +188,7 @@ public class CredentialHandlerTest {
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -252,7 +252,7 @@ public class CredentialHandlerTest {
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -268,7 +268,7 @@ public class CredentialHandlerTest {
           CREDENTIAL_NAME);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -332,7 +332,7 @@ public class CredentialHandlerTest {
       subject.getCredentialVersion(userContext, newArrayList(), UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 
@@ -347,7 +347,7 @@ public class CredentialHandlerTest {
       subject.getCredentialVersion(userContext, newArrayList(), UUID_STRING);
       fail("should throw exception");
     } catch (EntryNotFoundException e) {
-      assertThat(e.getMessage(), equalTo("error.credential_not_found"));
+      assertThat(e.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 

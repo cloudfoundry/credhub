@@ -54,7 +54,7 @@ public class PermissionsHandler {
 
     // We need to verify that the credential exists in case ACL enforcement is off
     if (credentialName == null || !permissionService.hasPermission(userContext.getAclUser(), name, WRITE_ACL)) {
-      throw new EntryNotFoundException("error.acl.lacks_credential_write");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     for (PermissionEntry permissionEntry : permissionEntryList) {
@@ -72,7 +72,7 @@ public class PermissionsHandler {
 
   public void deletePermissionEntry(UserContext userContext, String credentialName, String actor) {
     if (!permissionService.hasPermission(userContext.getAclUser(), credentialName, WRITE_ACL)) {
-      throw new EntryNotFoundException("error.acl.lacks_credential_write");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
 
     if (!permissionService.validAclUpdateOperation(userContext, actor)) {
@@ -83,7 +83,7 @@ public class PermissionsHandler {
         .deleteAccessControlEntry(credentialName, actor);
 
     if (!successfullyDeleted) {
-      throw new EntryNotFoundException("error.acl.lacks_credential_write");
+      throw new EntryNotFoundException("error.credential.invalid_access");
     }
   }
 }

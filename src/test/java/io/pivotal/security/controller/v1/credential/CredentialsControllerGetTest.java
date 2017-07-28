@@ -165,13 +165,12 @@ public class CredentialsControllerGetTest {
               .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
               .accept(APPLICATION_JSON);
 
+          String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
           mockMvc.perform(get)
               .andExpect(status().isNotFound())
               .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
               .andExpect(
-                  jsonPath("$.error")
-                      .value("Credential not found. Please validate your input " +
-                          "and retry your request.")
+                  jsonPath("$.error").value(expectedError)
               );
         });
       });
@@ -316,13 +315,12 @@ public class CredentialsControllerGetTest {
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON);
 
+        String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
         mockMvc.perform(get)
             .andExpect(status().isNotFound())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(
-                jsonPath("$.error")
-                    .value("Credential not found. Please validate your input and " +
-                        "retry your request.")
+                jsonPath("$.error").value(expectedError)
             );
       });
     };
@@ -348,13 +346,12 @@ public class CredentialsControllerGetTest {
       });
 
       it("should return credential not found even if request is valid", () -> {
+        String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
         this.response
             .andExpect(status().isNotFound())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(
-                jsonPath("$.error")
-                    .value("Credential not found. Please validate your input and " +
-                        "retry your request.")
+                jsonPath("$.error").value(expectedError)
             );
       });
 
@@ -369,13 +366,12 @@ public class CredentialsControllerGetTest {
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON);
 
+        String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
         mockMvc.perform(get)
             .andExpect(status().isNotFound())
             .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
             .andExpect(
-                jsonPath("$.error")
-                    .value("Credential not found. Please validate your input and " +
-                        "retry your request.")
+                jsonPath("$.error").value(expectedError)
             );
       });
     };

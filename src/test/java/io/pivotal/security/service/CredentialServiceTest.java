@@ -268,7 +268,7 @@ public class CredentialServiceTest {
           accessControlEntries,
           currentUserPermissions);
     } catch (PermissionException pe) {
-      assertThat(pe.getMessage(), equalTo("error.acl.lacks_credential_write"));
+      assertThat(pe.getMessage(), equalTo("error.credential.invalid_access"));
     }
   }
 

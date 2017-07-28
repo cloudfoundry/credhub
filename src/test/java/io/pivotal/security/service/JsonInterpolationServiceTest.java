@@ -135,7 +135,7 @@ public class JsonInterpolationServiceTest {
     try {
       subject.interpolateCredHubReferences(inputJson, eventAuditRecordParameters);
     } catch (ParameterizedValidationException exception) {
-      assertThat(exception.getMessage(), equalTo("error.interpolation.invalid_access"));
+      assertThat(exception.getMessage(), equalTo("error.credential.invalid_access"));
 
       assertThat(eventAuditRecordParameters, hasSize(1));
       assertThat(eventAuditRecordParameters, contains(

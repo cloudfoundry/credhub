@@ -161,7 +161,7 @@ public class InterpolationControllerTest {
         null
     ).when(mockCredentialDataService).findMostRecent("/cred1");
 
-    String expectedMessage = "The request could not be completed because a reference credential could not be accessed. Please update and retry your request.";
+    String expectedMessage = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
     mockMvc.perform(post("/api/v1/interpolate")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .contentType(MediaType.APPLICATION_JSON)
