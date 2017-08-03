@@ -269,53 +269,34 @@ public class EncryptionKeyRotatorTest {
         .andExpect(jsonPath("$.data[0].value.private_key").value(originalCert));
   }
 
+  @Test
+  public void rotation_removesOldCanaries() throws Exception {
+    setupInitialContext();
+    setActiveKey(1);
+    encryptionKeyRotator.rotate();
+    List<UUID> oldCanaryUuids = encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys();
+    List<EncryptionKeyCanary> allCanaries = encryptionKeyCanaryDataService.findAll();
+    List<UUID> remainingCanaryUuids = allCanaries.stream()
+        .map(EncryptionKeyCanary::getUuid)
+        .collect(Collectors.toList());
+
+    assertThat(remainingCanaryUuids, hasItem(encryptionKeyCanaryMapper.getActiveUuid()));
+
+    for (UUID uuid : oldCanaryUuids) {
+      assertThat(remainingCanaryUuids, not(hasItem(uuid)));
+    }
+  }
+
   private void setupInitialContext() throws Exception {
-    credentialWithCurrentKey = new CertificateCredential("/current-key");
-    credentialWithCurrentKey
-        .setEncryptor(encryptor)
-        .setCa("my-ca")
-        .setCertificate("my-cert")
-        .setPrivateKey("cert-private-key");
+    createCredentialWithOriginalKey();
+    Key oldKey = createOldKey();
+    createUnknownKey();
+    createCertificateWithOldKey(oldKey);
+    createCredentialWithUnknownKey();
+    createPasswordWithOldKey(oldKey);
+  }
 
-    credentialDataService.save(credentialWithCurrentKey);
-
-    final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password", 1, encryptionService);
-    Key oldKey = keyProxy.deriveKey();
-
-    oldCanary = new EncryptionKeyCanary();
-    final Encryption canaryEncryption = encryptionService.encrypt(null, oldKey, CANARY_VALUE);
-    oldCanary.setEncryptedCanaryValue(canaryEncryption.encryptedValue);
-    oldCanary.setNonce(canaryEncryption.nonce);
-    oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
-
-    when(encryptionKeyCanaryMapper.getKeyForUuid(oldCanary.getUuid())).thenReturn(oldKey);
-    when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys())
-        .thenReturn(singletonList(oldCanary.getUuid()));
-
-    final Encryption encryption = encryptionService
-        .encrypt(oldCanary.getUuid(), oldKey, "old-certificate-private-key");
-    CertificateCredentialData certificateCredentialData1 =
-        new CertificateCredentialData("/old-key");
-    certificateCredentialData1.setEncryptedValue(encryption.encryptedValue);
-    certificateCredentialData1.setNonce(encryption.nonce);
-    certificateCredentialData1.setEncryptionKeyUuid(oldCanary.getUuid());
-    credentialWithOldKey = new CertificateCredential(certificateCredentialData1);
-    credentialDataService.save(credentialWithOldKey);
-
-    unknownCanary = new EncryptionKeyCanary();
-    unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes());
-    unknownCanary.setNonce("bad-nonce".getBytes());
-    unknownCanary = encryptionKeyCanaryDataService.save(unknownCanary);
-
-    CertificateCredentialData certificateCredentialData2 = new CertificateCredentialData(
-        "/unknown-key");
-    credentialWithUnknownKey = new CertificateCredential(certificateCredentialData2);
-    credentialWithUnknownKey
-        .setEncryptor(encryptor)
-        .setPrivateKey("cert-private-key");
-    certificateCredentialData2.setEncryptionKeyUuid(unknownCanary.getUuid());
-    credentialDataService.save(credentialWithUnknownKey);
-
+  private void createPasswordWithOldKey(Key oldKey) throws Exception {
     passwordName = "/test-password";
     final Encryption credentialEncryption = encryptionService
         .encrypt(oldCanary.getUuid(), oldKey, "test-password-plaintext");
@@ -336,6 +317,63 @@ public class EncryptionKeyRotatorTest {
     password = new PasswordCredential(passwordCredentialData);
 
     credentialDataService.save(password);
+  }
+
+  private void createCredentialWithUnknownKey() {
+    CertificateCredentialData certificateCredentialData2 = new CertificateCredentialData(
+        "/unknown-key");
+    credentialWithUnknownKey = new CertificateCredential(certificateCredentialData2);
+    credentialWithUnknownKey
+        .setEncryptor(encryptor)
+        .setPrivateKey("cert-private-key");
+    certificateCredentialData2.setEncryptionKeyUuid(unknownCanary.getUuid());
+    credentialDataService.save(credentialWithUnknownKey);
+  }
+
+  private void createUnknownKey() {
+    unknownCanary = new EncryptionKeyCanary();
+    unknownCanary.setEncryptedCanaryValue("bad-encrypted-value".getBytes());
+    unknownCanary.setNonce("bad-nonce".getBytes());
+    unknownCanary = encryptionKeyCanaryDataService.save(unknownCanary);
+  }
+
+  private void createCertificateWithOldKey(Key oldKey) throws Exception {
+    final Encryption encryption = encryptionService
+        .encrypt(oldCanary.getUuid(), oldKey, "old-certificate-private-key");
+    CertificateCredentialData certificateCredentialData1 =
+        new CertificateCredentialData("/old-key");
+    certificateCredentialData1.setEncryptedValue(encryption.encryptedValue);
+    certificateCredentialData1.setNonce(encryption.nonce);
+    certificateCredentialData1.setEncryptionKeyUuid(oldCanary.getUuid());
+    credentialWithOldKey = new CertificateCredential(certificateCredentialData1);
+    credentialDataService.save(credentialWithOldKey);
+  }
+
+  private Key createOldKey() throws Exception {
+    final PasswordBasedKeyProxy keyProxy = new PasswordBasedKeyProxy("old-password", 1, encryptionService);
+    Key oldKey = keyProxy.deriveKey();
+
+    oldCanary = new EncryptionKeyCanary();
+    final Encryption canaryEncryption = encryptionService.encrypt(null, oldKey, CANARY_VALUE);
+    oldCanary.setEncryptedCanaryValue(canaryEncryption.encryptedValue);
+    oldCanary.setNonce(canaryEncryption.nonce);
+    oldCanary = encryptionKeyCanaryDataService.save(oldCanary);
+
+    when(encryptionKeyCanaryMapper.getKeyForUuid(oldCanary.getUuid())).thenReturn(oldKey);
+    when(encryptionKeyCanaryMapper.getCanaryUuidsWithKnownAndInactiveKeys())
+        .thenReturn(singletonList(oldCanary.getUuid()));
+    return oldKey;
+  }
+
+  private void createCredentialWithOriginalKey() {
+    credentialWithCurrentKey = new CertificateCredential("/current-key");
+    credentialWithCurrentKey
+        .setEncryptor(encryptor)
+        .setCa("my-ca")
+        .setCertificate("my-cert")
+        .setPrivateKey("cert-private-key");
+
+    credentialDataService.save(credentialWithCurrentKey);
   }
 
   private void setActiveKey(int index) {
