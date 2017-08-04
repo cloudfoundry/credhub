@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -66,6 +67,7 @@ public class AuditTest {
   private MockMvc mockMvc;
   private AuditingHelper auditingHelper;
 
+  private Sort sortByDate = new Sort(Sort.Direction.DESC, "now");
   @Before
   public void setup() {
     mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
@@ -77,30 +79,39 @@ public class AuditTest {
 
   @Test
   public void does_not_audit_info_endpoint() throws Exception {
+    long initialRequestAuditCount = requestAuditRecordRepository.count();
+    long initialEventAuditCount = eventAuditRecordRepository.count();
+
     mockMvc.perform(get("/info")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isOk());
 
-    assertThat(requestAuditRecordRepository.count(), equalTo(0L));
-    assertThat(eventAuditRecordRepository.count(), equalTo(0L));
+
+    assertThat(requestAuditRecordRepository.count(), equalTo(initialRequestAuditCount));
+    assertThat(eventAuditRecordRepository.count(), equalTo(initialEventAuditCount));
   }
 
   @Test
   public void does_not_audit_health_endpoint() throws Exception {
-    mockMvc.perform(get("/info")
+    long initialRequestAuditCount = requestAuditRecordRepository.count();
+    long initialEventAuditCount = eventAuditRecordRepository.count();
+
+    mockMvc.perform(get("/health")
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isOk());
 
-    assertThat(requestAuditRecordRepository.count(), equalTo(0L));
-    assertThat(eventAuditRecordRepository.count(), equalTo(0L));
+    assertThat(requestAuditRecordRepository.count(), equalTo(initialRequestAuditCount));
+    assertThat(eventAuditRecordRepository.count(), equalTo(initialEventAuditCount));
   }
 
   @Test
   public void normally_logs_event_and_request() throws Exception {
     String credentialName = "/TEST/SECRET";
     String credentialType = "password";
+    long initialRequestAuditCount = requestAuditRecordRepository.count();
+    long initialEventAuditCount = eventAuditRecordRepository.count();
 
     mockMvc.perform(post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -113,10 +124,10 @@ public class AuditTest {
         )
     ).andExpect(status().isOk());
 
-    assertThat(requestAuditRecordRepository.count(), equalTo(1L));
-    assertThat(eventAuditRecordRepository.count(), equalTo(6L));
+    assertThat(requestAuditRecordRepository.count(), equalTo(1L + initialRequestAuditCount));
+    assertThat(eventAuditRecordRepository.count(), equalTo(6L + initialEventAuditCount));
 
-    RequestAuditRecord requestAuditRecord = requestAuditRecordRepository.findAll().get(0);
+    RequestAuditRecord requestAuditRecord = requestAuditRecordRepository.findAll(sortByDate).get(0);
     assertThat(requestAuditRecord.getAuthMethod(), equalTo("uaa"));
     assertThat(requestAuditRecord.getPath(), equalTo("/api/v1/data"));
 
@@ -124,13 +135,15 @@ public class AuditTest {
     verify(logger, times(1)).info(captor.capture());
     assertThat(captor.getValue(), containsString("cs4=200"));
 
-    EventAuditRecord eventAuditRecord = eventAuditRecordRepository.findAll().get(0);
+    EventAuditRecord eventAuditRecord = eventAuditRecordRepository.findAll(sortByDate).get(0);
     assertThat(eventAuditRecord.getCredentialName(), equalTo("/TEST/SECRET"));
     assertThat(eventAuditRecord.getActor(), equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"));
   }
 
   @Test
   public void when_event_fails_it_logs_correct_success_flag_and_status_code() throws Exception {
+    long initialRequestAuditCount = requestAuditRecordRepository.count();
+    long initialEventAuditCount = eventAuditRecordRepository.count();
     String credentialName = "/TEST/SECRET";
 
     mockMvc.perform(get("/api/v1/data?name=" + credentialName)
@@ -139,27 +152,30 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isNotFound());
 
-    assertThat(requestAuditRecordRepository.count(), equalTo(1L));
-    assertThat(eventAuditRecordRepository.count(), equalTo(1L));
+    assertThat(requestAuditRecordRepository.count(), equalTo(initialRequestAuditCount +1L));
+    assertThat(eventAuditRecordRepository.count(), equalTo(initialEventAuditCount+ 1));
 
-    RequestAuditRecord requestAuditRecord = requestAuditRecordRepository.findAll().get(0);
+    RequestAuditRecord requestAuditRecord = requestAuditRecordRepository.findAll(sortByDate).get(0);
     assertThat(requestAuditRecord.getStatusCode(), equalTo(404));
 
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(logger, times(1)).info(captor.capture());
     assertThat(captor.getValue(), containsString("cs4=404"));
 
-    EventAuditRecord eventAuditRecord = eventAuditRecordRepository.findAll().get(0);
+    EventAuditRecord eventAuditRecord = eventAuditRecordRepository.findAll(sortByDate).get(0);
     assertThat(eventAuditRecord.isSuccess(), equalTo(false));
     assertThat(eventAuditRecord.getActor(), equalTo("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"));
   }
 
   @Test
   public void when_event_audit_record_save_fails_it_rolls_back_event() throws Exception {
+    long initialRequestAuditCount = requestAuditRecordRepository.count();
+    long initialEventAuditCount = eventAuditRecordRepository.count();
+    long initialCredentialCount = credentialRepository.count();
     doThrow(new RuntimeException("test"))
         .when(eventAuditRecordDataService).save(any(List.class));
 
-    assertThat(eventAuditRecordRepository.count(), equalTo(0L));
+    assertThat(eventAuditRecordRepository.count(), equalTo(initialEventAuditCount));
 
     mockMvc.perform(get("/api/v1/data?name=foo")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
@@ -167,14 +183,16 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isInternalServerError());
 
-    assertThat(credentialRepository.count(), equalTo(0L));
-    assertThat(eventAuditRecordRepository.count(), equalTo(0L));
+    assertThat(credentialRepository.count(), equalTo(initialCredentialCount));
+    assertThat(eventAuditRecordRepository.count(), equalTo(initialEventAuditCount+0L));
 
-    assertThat(requestAuditRecordRepository.count(), equalTo(1L));
+    assertThat(requestAuditRecordRepository.count(), equalTo(initialRequestAuditCount+1L));
   }
 
   @Test
   public void when_event_audit_record_save_fails_it_saves_request_audit_record() throws Exception {
+    long initialRequestAuditCount = requestAuditRecordRepository.count();
+    long initialEventAuditCount = eventAuditRecordRepository.count();
     String credentialName = "/TEST/SECRET";
     String credentialType = "password";
 
@@ -192,9 +210,9 @@ public class AuditTest {
         )
     ).andExpect(status().isInternalServerError());
 
-    assertThat(requestAuditRecordRepository.count(), equalTo(1L));
+    assertThat(requestAuditRecordRepository.count(), equalTo(initialRequestAuditCount + 1));
 
-    RequestAuditRecord requestAuditRecord = requestAuditRecordRepository.findAll().get(0);
+    RequestAuditRecord requestAuditRecord = requestAuditRecordRepository.findAll(sortByDate).get(0);
     assertThat(requestAuditRecord.getStatusCode(), equalTo(500));
 
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
@@ -204,6 +222,8 @@ public class AuditTest {
 
   @Test
   public void when_request_audit_record_save_fails_it_still_logs_to_CEF_logs() throws Exception {
+    long initialRequestAuditCount = requestAuditRecordRepository.count();
+    long initialEventAuditCount = eventAuditRecordRepository.count();
     doThrow(new RuntimeException("test"))
         .when(requestAuditRecordDataService).save(any(RequestAuditRecord.class));
 
@@ -215,8 +235,8 @@ public class AuditTest {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isNotFound());
 
-    assertThat("it does not log a request", requestAuditRecordRepository.count(), equalTo(0L));
-    assertThat("it does log the event", eventAuditRecordRepository.count(), equalTo(1L));
+    assertThat("it does not log a request", requestAuditRecordRepository.count(), equalTo(initialRequestAuditCount));
+    assertThat("it does log the event", eventAuditRecordRepository.count(), equalTo(initialEventAuditCount + 1L));
 
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(logger, times(1)).info(captor.capture());

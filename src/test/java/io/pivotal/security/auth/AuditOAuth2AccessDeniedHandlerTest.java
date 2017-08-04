@@ -5,7 +5,6 @@ import io.pivotal.security.domain.SecurityEventAuditRecord;
 import io.pivotal.security.entity.RequestAuditRecord;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.service.SecurityEventsLogService;
-import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,11 +25,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.time.Instant;
 import java.util.Map;
 
 import static io.pivotal.security.controller.v1.credential.CredentialsController.API_V1_DATA;
-import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -52,24 +49,19 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   private static final String CREDENTIAL_URL_PATH = "/api/v1/data?name=foo";
   private static final String CREDENTIAL_URL_QUERY_PARAMS = "&query=value";
   private static final String CREDENTIAL_URL = String.join("", CREDENTIAL_URL_PATH, CREDENTIAL_URL_QUERY_PARAMS);
-  private static final Instant NOW = Instant.ofEpochSecond(1490903353);
 
   @Autowired
   private WebApplicationContext applicationContext;
   @Autowired
   private RequestAuditRecordRepository requestAuditRecordRepository;
   @Autowired
-  private ResourceServerTokenServices tokenServices;
-  @MockBean
-  private CurrentTimeProvider currentTimeProvider;
+  private DefaultTokenServices tokenServices;
   @MockBean
   private SecurityEventsLogService securityEventsLogService;
   private ResultActions response;
 
   @Before
   public void setUp() throws Exception {
-    mockOutCurrentTimeProvider(currentTimeProvider).accept(NOW.toEpochMilli());
-
     MockMvc mockMvc = MockMvcBuilders
         .webAppContextSetup(applicationContext)
         .apply(springSecurity())
@@ -93,7 +85,6 @@ public class AuditOAuth2AccessDeniedHandlerTest {
   public void logsTheFailureInTheRequestAuditRecordTable() {
     RequestAuditRecord auditRecord = requestAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
 
-    assertThat(auditRecord.getNow(), equalTo(NOW));
     assertThat(auditRecord.getPath(), equalTo(API_V1_DATA));
     assertThat(auditRecord.getQueryParameters(), equalTo("name=foo&query=value"));
     assertThat(auditRecord.getRequesterIp(), equalTo("12346"));
