@@ -3,28 +3,28 @@ The aim of this document is to document the performance of Credhub and measure h
 ## Benchmarking Setup 
 #### Tools: 
 
-* **Hey**: A golang tool which load tests a given endpoint with a given number of requests at a given concurrency and prints the results in a csv file.
+* **Hey**: A golang tool which load tests a given endpoint with a given number of requests at a given concurrency and prints the results in a csv file. We use a forked version of hey that enables mtls and start time measurement.
 * **Matplotlib**: A python graph plotting library which is utilized to generate a headroom plot with data obtained from a provided CSV file.
 
 #### Credhub Instance(s):
-
 AWS m4.large instance
-
 CPU: 2 core
-
 RAM: 8 GiB
-
+Encryption Provider: Internal
+Max Heap Size: 6GiB
+Authentication: Mutual TLS
+DataStorage Require TLS: False
+ACL Enabled: False
 #### Database Instance: 
-
-AWS m4.2xlarge instance
-
+AWS: m4.2xlarge instance
 CPU: 8 core
-
 RAM: 32 GiB
 
 #### Network Setup:
+All the VMs are deployed in the same AZ on AWS. The credhub instance are deployed behind a load balancer and are each assigned an ephemeral public IP. The UAA is assigned an elastic IP which is used by the Credhub for communication. Ensure the security group UAA is in allows external traffic. An alternative approach would be to assign each Credhub instance an elastic IP and allow traffic from those IPs on UAA's firewall/security group rules.
+The internal postgres instance is only provided an internal IP which both Credhub and UAA utilize to communicate with it.
 
-A test setup is deployed using Bosh on AWS. The deployment is composed of multiple credhub instances(1,2,4 or 10) behind a loadbalancer along with a UAA instance which share a Postgres DB that is deployed in a separate VM. The testing utils are run from a separate isolated instance.
+The performance testing toolkit is a bosh release which is deployed on an m4.large VM which lives in the same AZ as the Credhub cluster. It interacts with the Credhub cluster using mtls. Ensure the required certificates are passed to the deployment for communication with Credhub.
 
 #### Test Setup:
 
@@ -32,14 +32,11 @@ Initial Concurrency: 5
 
 Concurrency Step: 5
 
+Max Concurrency: [Recommended values will be updated as we get some numbers from our tests.]
+
 Requests/Step: 10,000
 
 No. of test runs/request: 5
-
-
-> **Deploying Test Setup:**
-Instructions on how to deploy the setup for running performance benchmarks against can be found [here](https://github.com/pivotal-cf/credhub-deployments/blob/master/documents/deploying_perf_setup.md).
-
 
 ## Performance Results
 
