@@ -3,7 +3,7 @@ package io.pivotal.security.entity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.junit.runners.JUnit4;
 
 import java.util.Random;
 import java.util.UUID;
@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(JUnit4.class)
 public class EncryptionKeyCanaryTest {
 
   private EncryptionKeyCanary subject;

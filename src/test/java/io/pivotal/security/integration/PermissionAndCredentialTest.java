@@ -283,7 +283,8 @@ public class PermissionAndCredentialTest {
         .header("Authorization", "Bearer " + UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN)
         .accept(APPLICATION_JSON)
         .contentType(APPLICATION_JSON)
-        .content(requestBodyWithNewAces));
+        .content(requestBodyWithNewAces))
+        .andDo(print());
 
     assertAclUpdatedAndAudited(response, UAA_OAUTH2_CLIENT_CREDENTIALS_TOKEN);
   }
