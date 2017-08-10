@@ -30,6 +30,7 @@ import static org.mockito.Mockito.reset;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = CredentialManagerApp.class)
 @Transactional
 public class CredentialsControllerErrorHandlingSetTest {
-  private final String CREDENTIAL_NAME = "/my-namespace/secretForSetTest/credential-name";
+  private final String CREDENTIAL_NAME = "/my-namespace/secretForErrorHandlingSetTest/credential-name";
   private final String CREDENTIAL_VALUE = "credential-value";
 
   @Autowired
@@ -96,6 +97,7 @@ public class CredentialsControllerErrorHandlingSetTest {
 
   @Test
   public void whenTheTypeChanges_auditsTheFailure() throws Exception {
+    System.out.println("Most recent cred:" + credentialDataService.findMostRecent(CREDENTIAL_NAME));
     final MockHttpServletRequestBuilder setRequest = put("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -106,7 +108,7 @@ public class CredentialsControllerErrorHandlingSetTest {
             "  \"value\":\"" + CREDENTIAL_VALUE + "\"" +
             "}");
 
-    mockMvc.perform(setRequest);
+    mockMvc.perform(setRequest).andDo(print());
 
     credentialDataService.findMostRecent(CREDENTIAL_NAME).getUuid();
     reset(credentialDataService);
