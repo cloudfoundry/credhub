@@ -1,30 +1,31 @@
 package io.pivotal.security.repository;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.entity.CredentialName;
 import io.pivotal.security.entity.CertificateCredentialData;
+import io.pivotal.security.entity.CredentialName;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.ValueCredentialData;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureTestDatabase.Replace;
 
-@RunWith(Spectrum.class)
-@ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
-@SpringBootTest(classes = CredentialManagerApp.class)
+@RunWith(SpringRunner.class)
+@ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = Replace.NONE)
 public class CredentialRepositoryTest {
 
   @Autowired
@@ -34,58 +35,59 @@ public class CredentialRepositoryTest {
   CredentialNameRepository credentialNameRepository;
 
   @Autowired
-  EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  EncryptionKeyCanaryRepository canaryRepository;
 
   private String name;
-
   private UUID canaryUuid;
 
-  {
-    wireAndUnwire(this);
+  @Before
+  public void beforeEach() {
+    name = "my-credential";
+    EncryptionKeyCanary canary = canaryRepository.save(new EncryptionKeyCanary());
+    canaryUuid = canary.getUuid();
+  }
 
-    beforeEach(() -> {
-      name = "my-credential";
-      canaryUuid = encryptionKeyCanaryMapper.getActiveUuid();
-    });
+  @Test
+  public void canSaveCertificatesOfLength7000WhichMeans7016ForGCM() {
+    byte[] encryptedValue = new byte[7016];
+    Arrays.fill(encryptedValue, (byte) 'A');
+    final StringBuilder stringBuilder = new StringBuilder(7000);
+    Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
 
-    it("can store certificates of length 7000 which means 7016 for GCM", () -> {
-      byte[] encryptedValue = new byte[7016];
-      Arrays.fill(encryptedValue, (byte) 'A');
-      final StringBuilder stringBuilder = new StringBuilder(7000);
-      Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      CertificateCredentialData entity = new CertificateCredentialData();
-      CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
-      final String longString = stringBuilder.toString();
-      entity.setCredentialName(credentialName);
-      entity.setCa(longString);
-      entity.setCertificate(longString);
-      entity.setEncryptedValue(encryptedValue);
-      entity.setEncryptionKeyUuid(canaryUuid);
+    CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
+    final String longString = stringBuilder.toString();
 
-      subject.save(entity);
-      CertificateCredentialData credentialData = (CertificateCredentialData) subject
-          .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid());
-      assertThat(credentialData.getCa().length(), equalTo(7000));
-      assertThat(credentialData.getCertificate().length(), equalTo(7000));
-      assertThat(credentialData.getEncryptedValue(), equalTo(encryptedValue));
-      assertThat(credentialData.getEncryptedValue().length, equalTo(7016));
-    });
+    CertificateCredentialData entity = new CertificateCredentialData();
+    entity.setCredentialName(credentialName);
+    entity.setCa(longString);
+    entity.setCertificate(longString);
+    entity.setEncryptedValue(encryptedValue);
+    entity.setEncryptionKeyUuid(canaryUuid);
 
-    it("can store strings of length 7000, which means 7016 for GCM", () -> {
-      byte[] encryptedValue = new byte[7016];
-      Arrays.fill(encryptedValue, (byte) 'A');
+    subject.save(entity);
+    CertificateCredentialData credentialData = (CertificateCredentialData) subject
+        .findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid());
+    assertThat(credentialData.getCa().length(), equalTo(7000));
+    assertThat(credentialData.getCertificate().length(), equalTo(7000));
+    assertThat(credentialData.getEncryptedValue(), equalTo(encryptedValue));
+    assertThat(credentialData.getEncryptedValue().length, equalTo(7016));
+  }
 
-      final StringBuilder stringBuilder = new StringBuilder(7000);
-      Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
-      ValueCredentialData entity = new ValueCredentialData();
-      CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
-      entity.setCredentialName(credentialName);
-      entity.setEncryptedValue(encryptedValue);
-      entity.setEncryptionKeyUuid(canaryUuid);
+  @Test
+  public void canSaveStringsOfLength7000WhichMeans7016ForGCM() {
+    byte[] encryptedValue = new byte[7016];
+    Arrays.fill(encryptedValue, (byte) 'A');
 
-      subject.save(entity);
-      assertThat(subject.findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
-          .getEncryptedValue().length, equalTo(7016));
-    });
+    final StringBuilder stringBuilder = new StringBuilder(7000);
+    Stream.generate(() -> "a").limit(stringBuilder.capacity()).forEach(stringBuilder::append);
+    ValueCredentialData entity = new ValueCredentialData();
+    CredentialName credentialName = credentialNameRepository.save(new CredentialName(name));
+    entity.setCredentialName(credentialName);
+    entity.setEncryptedValue(encryptedValue);
+    entity.setEncryptionKeyUuid(canaryUuid);
+
+    subject.save(entity);
+    assertThat(subject.findFirstByCredentialNameUuidOrderByVersionCreatedAtDesc(credentialName.getUuid())
+        .getEncryptedValue().length, equalTo(7016));
   }
 }
