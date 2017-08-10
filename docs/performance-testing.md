@@ -16,9 +16,16 @@ Authentication: Mutual TLS
 DataStorage Require TLS: False
 ACL Enabled: False
 #### Database Instance: 
-AWS: m4.2xlarge instance
+AWS: db.m4.2xlarge instance
 CPU: 8 core
 RAM: 32 GiB
+Deployment: RDS
+Allocated Storage: 50 GiB
+Availability Zone: Same as other infrastructure
+Engine: postgres
+EngineVersion: 9.4.11
+MultiAZ: false
+StorageType: gp2
 
 #### Network Setup:
 All the VMs are deployed in the same AZ on AWS. The credhub instance are deployed behind a load balancer and are each assigned an ephemeral public IP. The UAA is assigned an elastic IP which is used by the Credhub for communication. Ensure the security group UAA is in allows external traffic. An alternative approach would be to assign each Credhub instance an elastic IP and allow traffic from those IPs on UAA's firewall/security group rules.
@@ -26,7 +33,13 @@ The internal postgres instance is only provided an internal IP which both Credhu
 
 The performance testing toolkit is a bosh release which is deployed on an m4.large VM which lives in the same AZ as the Credhub cluster. It interacts with the Credhub cluster using mtls. Ensure the required certificates are passed to the deployment for communication with Credhub.
 
+Client and Server TLS connections are terminated in the application and not in Load Balancers or a TLS termination proxy.
+
 #### Test Setup:
+
+The test setup is available as a BOSH release that is deployed in the same AZ as the Credhub deployment.
+
+The test bench communicates with Credhub using MTLS over the network. 
 
 Initial Concurrency: 5
 
