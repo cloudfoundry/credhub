@@ -1,9 +1,34 @@
 package io.pivotal.security.config;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
+import com.greghaskins.spectrum.Spectrum;
+import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.PermissionsDataService;
+import io.pivotal.security.data.RequestAuditRecordDataService;
+import io.pivotal.security.domain.Credential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.entity.RequestAuditRecord;
+import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
+import java.time.Instant;
+import java.util.UUID;
+
 import static io.pivotal.security.util.AuthConstants.INVALID_SCOPE_KEY_JWT;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT;
@@ -25,31 +50,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.greghaskins.spectrum.Spectrum;
-import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.PermissionsDataService;
-import io.pivotal.security.data.CredentialDataService;
-import io.pivotal.security.data.RequestAuditRecordDataService;
-import io.pivotal.security.domain.Credential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.entity.RequestAuditRecord;
-import io.pivotal.security.util.DatabaseProfileResolver;
-import java.time.Instant;
-import java.util.UUID;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
-
-@RunWith(Spectrum.class)
+@Transactional
+@RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class AuthConfigurationTest {
@@ -71,211 +73,239 @@ public class AuthConfigurationTest {
   private final String dataApiPath = "/api/v1/data";
   private final String credentialName = "test";
 
-  {
-    wireAndUnwire(this);
+  @Before
+  public void beforeEach() {
+    mockMvc = MockMvcBuilders
+        .webAppContextSetup(applicationContext)
+        .apply(springSecurity())
+        .build();
+  }
 
-    beforeEach(() -> {
-      mockMvc = MockMvcBuilders
-          .webAppContextSetup(applicationContext)
-          .apply(springSecurity())
-          .build();
-    });
+  @Test
+  public void infoCanBeAccessedWithoutAuthentication() {
+    withoutAuthCheck("/info", "$.auth-server.url");
+  }
 
-    it("/info can be accessed without authentication",
-        withoutAuthCheck("/info", "$.auth-server.url"));
+  @Test
+  public void healthCanBeAccessWithoutAuthentication() {
+    withoutAuthCheck("/health", "$.auth-server.url");
+  }
 
-    it("/health can be accessed without authentication", withoutAuthCheck("/health", "$.status"));
+  @Test
+  public void dataEndpointDeniesAccessWithoutAuthentication() throws Exception {
+    setupDataEndpointMocks();
 
-    describe("/api/v1/data", () -> {
-      beforeEach(() -> {
-        when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
-          PasswordCredential passwordCredential = invocation
-              .getArgumentAt(0, PasswordCredential.class);
-          passwordCredential.setUuid(UUID.randomUUID());
-          passwordCredential.setVersionCreatedAt(Instant.now());
-          return passwordCredential;
-        });
-      });
+    mockMvc.perform(post(dataApiPath)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}")
+    ).andExpect(status().isUnauthorized());
+  }
 
-      it("denies access without authentication", () -> {
-        mockMvc.perform(post(dataApiPath)
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}")
-        ).andExpect(status().isUnauthorized());
-      });
+  @Test
+  public void dataEndpoint_withAnAcceptedToken_allowsAccess() throws Exception {
+    setupDataEndpointMocks();
 
-      describe("with a token accepted by our security config", () -> {
-        it("allows access", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
-          mockMvc.perform(post)
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.type").value("password"))
-              .andExpect(jsonPath("$.version_created_at").exists())
-              .andExpect(jsonPath("$.value").exists());
-        });
-      });
+    mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("password"))
+        .andExpect(jsonPath("$.version_created_at").exists())
+        .andExpect(jsonPath("$.value").exists());
+  }
 
-      describe("with a token without sufficient scopes", () -> {
-        it("disallows access", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .header("Authorization", "Bearer " + INVALID_SCOPE_KEY_JWT)
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+  @Test
+  public void dataEndpoint_withTokenWithInsufficientScopes_disallowsAccess() throws Exception {
+    setupDataEndpointMocks();
 
-          mockMvc.perform(post)
-              .andExpect(status().isForbidden());
-        });
-      });
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .header("Authorization", "Bearer " + INVALID_SCOPE_KEY_JWT)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
-      describe("without a token", () -> {
-        it("disallows access", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+    mockMvc.perform(post)
+        .andExpect(status().isForbidden());
 
-          mockMvc.perform(post).andExpect(status().isUnauthorized());
-        });
-      });
+  }
 
-      describe("with mutual tls", () -> {
-        it("allows all client certificates with a valid organizational_unit and client_auth extension",
-            () -> {
-              final MockHttpServletRequestBuilder post = post(dataApiPath)
-                  .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
-                  .accept(MediaType.APPLICATION_JSON)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+  @Test
+  public void dataEndpoint_withoutAToken_disallowsAccess() throws Exception {
+    setupDataEndpointMocks();
 
-              mockMvc.perform(post)
-                  .andExpect(status().isOk())
-                  .andExpect(jsonPath("$.type").value("password"))
-                  .andExpect(jsonPath("$.version_created_at").exists())
-                  .andExpect(jsonPath("$.value").exists());
-            });
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
-        it("logs the organization_unit from the DN", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+    mockMvc.perform(post).andExpect(status().isUnauthorized());
 
-          mockMvc.perform(post)
-              .andExpect(status().isOk());
+  }
 
-          ArgumentCaptor<RequestAuditRecord> argumentCaptor = ArgumentCaptor.forClass(
-              RequestAuditRecord.class
-          );
-          verify(requestAuditRecordDataService, times(1)).save(argumentCaptor.capture());
+  @Test
+  public void dataEndpoint_withMutualTLS_allowsAllClientCertsWithValidOrgUnitAndClientAuthExtensions()
+      throws Exception {
+    setupDataEndpointMocks();
 
-          RequestAuditRecord requestAuditRecord = argumentCaptor.getValue();
-          assertThat(requestAuditRecord.getClientId(), equalTo(
-              "C=US,ST=NY,O=Test Org,OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,CN=example.com,E=test@example.com")
-          );
-        });
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
-        it("denies client certificates with an organizational_unit that doesn't contain a V4 UUID",
-            () -> {
-              final MockHttpServletRequestBuilder post = post(dataApiPath)
-                  .with(x509(cert(TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT)))
-                  .accept(MediaType.APPLICATION_JSON)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+    mockMvc.perform(post)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("password"))
+        .andExpect(jsonPath("$.version_created_at").exists())
+        .andExpect(jsonPath("$.value").exists());
 
-              final String expectedError = "The provided authentication mechanism does not "
-                  + "provide a valid identity. Please contact your system administrator.";
+  }
 
-              mockMvc.perform(post)
-                  .andExpect(status().isUnauthorized())
-                  .andExpect(jsonPath("$.error").value(expectedError));
-            });
+  @Test
+  public void dataEndpoint_withMutualTLS_logsOrgUnitFromTheDN()
+      throws Exception {
+    setupDataEndpointMocks();
 
-        it("denies client certificates with an organizational_unit not prefixed by 'app:'", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .with(x509(cert(TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX)))
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .with(x509(cert(SELF_SIGNED_CERT_WITH_CLIENT_AUTH_EXT)))
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
-          final String expectedError = "The provided authentication mechanism does not provide a "
-              + "valid identity. Please contact your system administrator.";
+    mockMvc.perform(post)
+        .andExpect(status().isOk());
 
-          mockMvc.perform(post)
-              .andExpect(status().isUnauthorized())
-              .andExpect(jsonPath("$.error").value(expectedError));
-        });
+    ArgumentCaptor<RequestAuditRecord> argumentCaptor = ArgumentCaptor.forClass(
+        RequestAuditRecord.class
+    );
+    verify(requestAuditRecordDataService, times(1)).save(argumentCaptor.capture());
 
-        it("denies client certificates without an organizational_unit", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .with(x509(cert(TEST_CERT_WITHOUT_ORGANIZATION_UNIT)))
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+    RequestAuditRecord requestAuditRecord = argumentCaptor.getValue();
+    assertThat(requestAuditRecord.getClientId(), equalTo(
+        "C=US,ST=NY,O=Test Org,OU=app:a12345e5-b2b0-4648-a0d0-772d3d399dcb,CN=example.com,E=test@example.com"));
+  }
 
-          final String expectedError = "The provided authentication mechanism does not provide a "
-              + "valid identity. Please contact your system administrator.";
+  @Test
+  public void dataEndpoint_withMutualTLS_deniesClientCertsWithOrgUnitsThatDontContainV4UUID()
+      throws Exception {
+    setupDataEndpointMocks();
 
-          mockMvc.perform(post)
-              .andExpect(status().isUnauthorized())
-              .andExpect(jsonPath("$.error").value(expectedError));
-        });
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .with(x509(cert(TEST_CERT_WITH_INVALID_UUID_IN_ORGANIZATION_UNIT)))
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
-        it("denies client certificates without the client_auth extension", () -> {
-          final MockHttpServletRequestBuilder post = post(dataApiPath)
-              .with(x509(cert(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+    final String expectedError = "The provided authentication mechanism does not "
+        + "provide a valid identity. Please contact your system administrator.";
 
-          final String expectedError = "The provided authentication mechanism does not provide a "
-              + "valid identity. Please contact your system administrator.";
+    mockMvc.perform(post)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
 
-          mockMvc.perform(post)
-              .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
-              .andExpect(status().isUnauthorized())
-              .andExpect(jsonPath("$.error")
-                  .value( "The provided certificate is not authorized to be used for client authentication."));
-        });
-      });
-    });
+  @Test
+  public void dataEndpoint_withMutualTLS_deniesClientCertsWithOrgUnitNotPrefixedAccurately()
+      throws Exception {
+    setupDataEndpointMocks();
 
-    describe("/api/v1/interpolate", () -> {
-      it("denies access without authentication", () -> {
-        mockMvc.perform(post("/api/v1/interpolate")
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("{}")
-        ).andExpect(status().isUnauthorized());
-      });
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .with(x509(cert(TEST_CERT_WITH_INVALID_ORGANIZATION_UNIT_PREFIX)))
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
 
-      describe("with a token accepted by our security config", () -> {
-        it("allows access", () -> {
-          final MockHttpServletRequestBuilder post = post("/api/v1/interpolate")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(MediaType.APPLICATION_JSON)
-              .contentType(MediaType.APPLICATION_JSON)
-              .content("{}");
+    final String expectedError = "The provided authentication mechanism does not provide a "
+        + "valid identity. Please contact your system administrator.";
 
-          mockMvc.perform(post)
-              .andExpect(status().isOk());
-        });
-      });
-    });
+    mockMvc.perform(post)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
+
+  @Test
+  public void dataEndpoint_withMutualTLS_deniesClientCertsWithoutOrgUnit() throws Exception {
+    setupDataEndpointMocks();
+
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .with(x509(cert(TEST_CERT_WITHOUT_ORGANIZATION_UNIT)))
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+
+    final String expectedError = "The provided authentication mechanism does not provide a "
+        + "valid identity. Please contact your system administrator.";
+
+    mockMvc.perform(post)
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error").value(expectedError));
+
+  }
+
+  @Test
+  public void dataEndpoint_withMutualTLS_deniesClientCertsWithoutClientAuthExtension()
+      throws Exception {
+    setupDataEndpointMocks();
+
+    final MockHttpServletRequestBuilder post = post(dataApiPath)
+        .with(x509(cert(SELF_SIGNED_CERT_WITH_NO_CLIENT_AUTH_EXT)))
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{\"type\":\"password\",\"name\":\"" + credentialName + "\"}");
+
+    final String expectedError = "The provided authentication mechanism does not provide a "
+        + "valid identity. Please contact your system administrator.";
+
+    mockMvc.perform(post)
+        .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print())
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.error")
+            .value(
+                "The provided certificate is not authorized to be used for client authentication."));
+
+  }
+
+  @Test
+  public void interpolateEndpoint_deniesAccessWithoutAuthentication() throws Exception {
+    mockMvc.perform(post("/api/v1/interpolate")
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{}")
+    ).andExpect(status().isUnauthorized());
+
+  }
+
+  @Test
+  public void interpolateEndpoint_withAcceptedToken_allowsAccess() throws Exception {
+    final MockHttpServletRequestBuilder post = post("/api/v1/interpolate")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(MediaType.APPLICATION_JSON)
+        .contentType(MediaType.APPLICATION_JSON)
+        .content("{}");
+
+    mockMvc.perform(post)
+        .andExpect(status().isOk());
+
   }
 
   private Spectrum.Block withoutAuthCheck(String path, String expectedJsonSpec) {
-    return () -> {
-      mockMvc.perform(get(path).accept(MediaType.APPLICATION_JSON))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath(expectedJsonSpec).isNotEmpty());
-    };
+    return () -> mockMvc.perform(get(path).accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath(expectedJsonSpec).isNotEmpty());
+  }
+
+  private void setupDataEndpointMocks() {
+    when(credentialDataService.save(any(Credential.class))).thenAnswer(invocation -> {
+      PasswordCredential passwordCredential = invocation
+          .getArgumentAt(0, PasswordCredential.class);
+      passwordCredential.setUuid(UUID.randomUUID());
+      passwordCredential.setVersionCreatedAt(Instant.now());
+      return passwordCredential;
+    });
   }
 }
