@@ -84,6 +84,8 @@ public class EventAuditLogServiceTest {
     mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
     userContext = mockUserContext(true);
     requestUuid = new RequestUuid(UUID.randomUUID());
+    credentialNameRepository.deleteAllInBatch();
+    eventAuditRecordRepository.deleteAllInBatch();
   }
 
   // `@Transactional` for the tests messes with our rollback testing.
