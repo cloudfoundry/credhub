@@ -1,6 +1,5 @@
 package io.pivotal.security.controller.v1.credential;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Encryptor;
@@ -12,17 +11,21 @@ import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.service.PermissionService;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
@@ -31,16 +34,12 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -53,327 +52,250 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@TestPropertySource(properties = "security.authorization.acls.enabled=false")
+@Transactional
 public class CredentialsControllerGetTest {
+  private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
+  private static final String CREDENTIAL_NAME = "/my-namespace/controllerGetTest/credential-name";
+  private static final String CREDENTIAL_VALUE = "test value";
 
   @Autowired
-  WebApplicationContext webApplicationContext;
+  private WebApplicationContext webApplicationContext;
 
   @SpyBean
-  Encryptor encryptor;
+  private Encryptor encryptor;
 
   @SpyBean
-  PermissionService permissionService;
+  private PermissionService permissionService;
 
   @Autowired
-  RequestAuditRecordRepository requestAuditRecordRepository;
+  private RequestAuditRecordRepository requestAuditRecordRepository;
 
   @Autowired
-  EventAuditRecordRepository eventAuditRecordRepository;
+  private EventAuditRecordRepository eventAuditRecordRepository;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  private CredentialDataService credentialDataService;
 
   @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
+  private CurrentTimeProvider mockCurrentTimeProvider;
 
   private AuditingHelper auditingHelper;
-
   private MockMvc mockMvc;
 
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
+  @Before
+  public void beforeEach() {
+    Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
-  private Consumer<Long> fakeTimeSetter;
+    fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
 
-  private final String credentialName = "/my-namespace/controllerGetTest/credential-name";
-  private ResultActions response;
+    mockMvc = MockMvcBuilders
+        .webAppContextSetup(webApplicationContext)
+        .apply(springSecurity())
+        .build();
 
-  private UUID uuid;
-
-  {
-    wireAndUnwire(this);
-
-    beforeEach(() -> {
-      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
-
-      fakeTimeSetter.accept(frozenTime.toEpochMilli());
-
-      ReflectionTestUtils
-          .setField(permissionService, PermissionService.class, "enforcePermissions", false,
-              boolean.class);
-
-      mockMvc = MockMvcBuilders
-          .webAppContextSetup(webApplicationContext)
-          .apply(springSecurity())
-          .build();
-
-      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
-    });
-
-    describe("getting a credential", () -> {
-      final String credentialValue = "my value";
-
-      beforeEach(() -> {
-        uuid = UUID.randomUUID();
-        ValueCredential valueCredential1 = new ValueCredential(credentialName)
-            .setEncryptor(encryptor)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime);
-        ValueCredential valueCredential2 = new ValueCredential(credentialName)
-            .setEncryptor(encryptor)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime);
-
-        doReturn(credentialValue).when(encryptor)
-            .decrypt(any());
-
-        doReturn(
-            valueCredential1
-        ).when(credentialDataService).findMostRecent(credentialName);
-        doReturn(
-            newArrayList(valueCredential1, valueCredential2)
-        ).when(credentialDataService).findAllByName(credentialName);
-        doReturn(
-            valueCredential1
-        ).when(credentialDataService).findMostRecent(credentialName);
-        doReturn(
-            valueCredential1
-        ).when(credentialDataService).findByUuid(uuid.toString());
-      });
-
-      describe(
-          "get credential by name (with name query param, and no leading slash)",
-          makeGetByNameBlock(
-              credentialValue,
-              "/api/v1/data?name=" + credentialName,
-              "/api/v1/data?name=invalid_name", "$.data[0]"
-          ));
-
-      describe(
-          "when user does not have permissions to retrieve the credential",
-          makeGetByNameBlockWithNoPermissions(
-              "/api/v1/data?name=" + credentialName,
-              "/api/v1/data?name=invalid_name"
-          ));
-
-      describe("getting a credential by name when name has multiple leading slashes", () -> {
-        it("returns NOT_FOUND", () -> {
-          final MockHttpServletRequestBuilder get = get(
-              "/api/v1/data?name=//" + credentialName)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON);
-
-          String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
-          mockMvc.perform(get)
-              .andExpect(status().isNotFound())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(
-                  jsonPath("$.error").value(expectedError)
-              );
-        });
-      });
-
-      describe("when passing a 'current' query parameter", () -> {
-        it("when true should return only the most recent version", () -> {
-          mockMvc.perform(get("/api/v1/data?current=true&name=" + credentialName)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON))
-              .andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.data", hasSize(1)));
-
-          verify(credentialDataService).findMostRecent(credentialName);
-        });
-
-        it("when false should return all versions", () -> {
-          mockMvc.perform(get("/api/v1/data?current=false&name=" + credentialName)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON))
-              .andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.data", hasSize(greaterThan(1))));
-        });
-
-        it("when omitted should return all versions", () -> {
-          mockMvc.perform(get("/api/v1/data?name=" + credentialName)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON))
-              .andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.data", hasSize(greaterThan(1))));
-        });
-
-        it("returns an error when name is not given", () -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data?name=")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON);
-
-          mockMvc.perform(get)
-              .andExpect(status().is4xxClientError())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(
-                  jsonPath("$.error")
-                      .value("The query parameter name is required for this request.")
-              );
-        });
-      });
-
-      describe("getting a credential by id", () -> {
-        beforeEach(() -> {
-          final MockHttpServletRequestBuilder get = get("/api/v1/data/" + uuid)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON);
-
-          this.response = mockMvc.perform(get);
-        });
-
-        it("should return the credential", () -> {
-          this.response.andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.type").value("value"))
-              .andExpect(jsonPath("$.value").value(credentialValue))
-              .andExpect(jsonPath("$.id").value(uuid.toString()))
-              .andExpect(jsonPath("$.version_created_at").value(frozenTime.toString()));
-        });
-
-        it("persists an audit entry", () -> {
-          auditingHelper.verifyAuditing(
-              CREDENTIAL_ACCESS,
-              credentialName,
-              "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-              "/api/v1/data/" + uuid.toString(),
-              200);
-        });
-      });
-    });
-
-    describe("when key not present", () -> {
-      beforeEach(() -> {
-        uuid = UUID.randomUUID();
-        ValueCredential valueCredential =
-            new ValueCredential(credentialName)
-                .setEncryptor(encryptor)
-                .setUuid(uuid)
-                .setVersionCreatedAt(frozenTime);
-
-        doThrow(new KeyNotFoundException("error.missing_encryption_key"))
-            .when(encryptor).decrypt(any());
-        doReturn(Arrays.asList(valueCredential)).when(credentialDataService)
-            .findAllByName(credentialName);
-      });
-
-      it("returns KEY_NOT_PRESENT", () -> {
-        final MockHttpServletRequestBuilder get =
-            get("/api/v1/data?name=" + credentialName)
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .accept(APPLICATION_JSON);
-
-        mockMvc.perform(get)
-            .andExpect(status().isInternalServerError())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath("$.error")
-                .value("The credential could not be accessed with the provided" +
-                    " encryption keys. You must update your deployment configuration " +
-                    "to continue."));
-      });
-    });
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
   }
 
-  private Spectrum.Block makeGetByNameBlock(
-      String credentialValue,
-      String validUrl,
-      String invalidUrl,
-      String jsonPathPrefix
-  ) {
-    return () -> {
-      beforeEach(() -> {
-        final MockHttpServletRequestBuilder get = get(validUrl)
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            .accept(APPLICATION_JSON);
+  @Test
+  public void gettingACredential_byName_thatExists_returnsTheCredential() throws Exception {
+    doReturn(true)
+        .when(permissionService)
+        .hasPermission(any(String.class), any(String.class), eq(READ));
 
-        this.response = mockMvc.perform(get);
-      });
+    UUID uuid = UUID.randomUUID();
 
-      it("should return the credential", () -> {
-        this.response.andExpect(status().isOk())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(jsonPath(jsonPathPrefix + ".type").value("value"))
-            .andExpect(jsonPath(jsonPathPrefix + ".value").value(credentialValue))
-            .andExpect(jsonPath(jsonPathPrefix + ".id").value(uuid.toString()))
-            .andExpect(
-                jsonPath(jsonPathPrefix + ".version_created_at").value(frozenTime.toString()));
-      });
+    ValueCredential credential = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(FROZEN_TIME);
 
-      it("persists an audit entry", () -> {
-        auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
-      });
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
 
-      it("returns NOT_FOUND when the credential does not exist", () -> {
-        final MockHttpServletRequestBuilder get = get(invalidUrl)
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            .accept(APPLICATION_JSON);
+    doReturn(newArrayList(credential)).when(credentialDataService).findAllByName(CREDENTIAL_NAME);
 
-        String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
-        mockMvc.perform(get)
-            .andExpect(status().isNotFound())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(
-                jsonPath("$.error").value(expectedError)
-            );
-      });
-    };
+    final MockHttpServletRequestBuilder request = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.data[0]" + ".type").value("value"))
+        .andExpect(jsonPath("$.data[0]" + ".value").value(CREDENTIAL_VALUE))
+        .andExpect(jsonPath("$.data[0]" + ".id").value(uuid.toString()))
+        .andExpect(jsonPath("$.data[0]" + ".version_created_at").value(FROZEN_TIME.toString()));
+
+    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
   }
 
-  private Spectrum.Block makeGetByNameBlockWithNoPermissions(
-      String validUrl,
-      String invalidUrl
-  ) {
-    return () -> {
-      beforeEach(() -> {
-        ReflectionTestUtils
-            .setField(permissionService, PermissionService.class, "enforcePermissions", true,
-                boolean.class);
+  @Test
+  public void gettingACredential_byName_whenTheCredentialDoesNotExist_returnsNotFound() throws Exception {
+    doReturn(true)
+        .when(permissionService)
+        .hasPermission(any(String.class), any(String.class), eq(READ));
 
-        doReturn(false).when(permissionService)
-            .hasPermission(any(String.class), any(String.class), eq(READ));
-        final MockHttpServletRequestBuilder get = get(validUrl)
+    final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=invalid_name")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    String expectedError1 = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    mockMvc.perform(get1)
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(
+            jsonPath("$.error").value(expectedError1)
+        );
+  }
+
+  @Test
+  public void gettingACredential_byName_whenTheUserDoesNotHavePermissionToAccessTheCredential_returnsNotFound() throws Exception {
+    doReturn(false)
+        .when(permissionService)
+        .hasPermission(any(String.class), any(String.class), eq(READ));
+    final MockHttpServletRequestBuilder get1 = get("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    ResultActions response = mockMvc.perform(get1);
+
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+
+    response
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+
+    auditingHelper.verifyAuditing(
+        CREDENTIAL_ACCESS,
+        CREDENTIAL_NAME,
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        "/api/v1/data",
+        404
+    );
+  }
+
+  @Test
+  public void gettingACredential_byName_withCurrentSetToTrue_returnsTheLatestCredential() throws Exception {
+    UUID uuid = UUID.randomUUID();
+    ValueCredential credential = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(FROZEN_TIME);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    doReturn(credential).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+
+    mockMvc.perform(get("/api/v1/data?current=true&name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.data", hasSize(1)));
+
+    verify(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+  }
+
+  @Test
+  public void gettingACredential_byName_withCurrentSetToFalse_returnsAllTheCredentialVersions() throws Exception {
+    UUID uuid = UUID.randomUUID();
+    ValueCredential valueCredential1 = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(FROZEN_TIME);
+    ValueCredential valueCredential2 = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(FROZEN_TIME);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+
+    doReturn(
+        newArrayList(valueCredential1, valueCredential2)
+    ).when(credentialDataService).findAllByName(CREDENTIAL_NAME);
+
+    mockMvc.perform(get("/api/v1/data?current=false&name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.data", hasSize(equalTo(2))));
+  }
+
+  @Test
+  public void gettingACredential_byName_returnsAnErrorWhenTheNameIsNotGiven() throws Exception {
+    final MockHttpServletRequestBuilder get = get("/api/v1/data?name=")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(get)
+        .andExpect(status().is4xxClientError())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(
+            jsonPath("$.error")
+                .value("The query parameter name is required for this request.")
+        );
+  }
+
+  @Test
+  public void gettingACredential_byId_returnsTheCredentialAndPersistAnAuditEntry() throws Exception {
+    UUID uuid = UUID.randomUUID();
+    ValueCredential credential = new ValueCredential(CREDENTIAL_NAME)
+        .setEncryptor(encryptor)
+        .setUuid(uuid)
+        .setVersionCreatedAt(FROZEN_TIME);
+
+    doReturn(CREDENTIAL_VALUE).when(encryptor).decrypt(any());
+    doReturn(credential).when(credentialDataService).findByUuid(uuid.toString());
+
+    final MockHttpServletRequestBuilder request = get("/api/v1/data/" + uuid)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
+
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.type").value("value"))
+        .andExpect(jsonPath("$.value").value(CREDENTIAL_VALUE))
+        .andExpect(jsonPath("$.id").value(uuid.toString()))
+        .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.toString()));
+
+    auditingHelper.verifyAuditing(
+        CREDENTIAL_ACCESS,
+        CREDENTIAL_NAME,
+        "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+        "/api/v1/data/" + uuid.toString(),
+        200);
+  }
+
+  @Test
+  public void gettingACredential_thatIsEncryptedWithAnUnknownKey_throwsAnException() throws Exception {
+    UUID uuid = UUID.randomUUID();
+    ValueCredential valueCredential =
+        new ValueCredential(CREDENTIAL_NAME)
+            .setEncryptor(encryptor)
+            .setUuid(uuid)
+            .setVersionCreatedAt(FROZEN_TIME);
+
+    doThrow(new KeyNotFoundException("error.missing_encryption_key"))
+        .when(encryptor).decrypt(any());
+    doReturn(Arrays.asList(valueCredential)).when(credentialDataService)
+        .findAllByName(CREDENTIAL_NAME);
+
+    final MockHttpServletRequestBuilder get =
+        get("/api/v1/data?name=" + CREDENTIAL_NAME)
             .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
             .accept(APPLICATION_JSON);
 
-        this.response = mockMvc.perform(get);
-      });
+    String expectedError = "The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.";
 
-      it("should return credential not found even if request is valid", () -> {
-        String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
-        this.response
-            .andExpect(status().isNotFound())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(
-                jsonPath("$.error").value(expectedError)
-            );
-      });
-
-      it("persists an audit entry", () -> {
-        auditingHelper.verifyAuditing
-            (CREDENTIAL_ACCESS,
-                credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 404);
-      });
-
-      it("returns NOT_FOUND when the credential does not exist", () -> {
-        final MockHttpServletRequestBuilder get = get(invalidUrl)
-            .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-            .accept(APPLICATION_JSON);
-
-        String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
-        mockMvc.perform(get)
-            .andExpect(status().isNotFound())
-            .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-            .andExpect(
-                jsonPath("$.error").value(expectedError)
-            );
-      });
-    };
+    mockMvc.perform(get)
+        .andExpect(status().isInternalServerError())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
   }
 }
