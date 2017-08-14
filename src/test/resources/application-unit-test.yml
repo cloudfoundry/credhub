@@ -33,6 +33,10 @@ spring:
   jpa:
     hibernate:
       ddl_auto: validate
+  datasource:
+    tomcat:
+      max-active: 4
+      max-idle: 0
 
 logging:
   level:
