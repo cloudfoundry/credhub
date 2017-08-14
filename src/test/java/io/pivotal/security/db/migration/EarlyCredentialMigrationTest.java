@@ -1,11 +1,12 @@
 package io.pivotal.security.db.migration;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,56 +15,51 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.UUID;
 
-import static com.greghaskins.spectrum.Spectrum.afterEach;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.it;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
-
-@RunWith(Spectrum.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
 public class EarlyCredentialMigrationTest {
 
   @Autowired
-  Flyway flyway;
+  private Flyway flyway;
   @Autowired
-  Environment environment;
+  private Environment environment;
   @Autowired
-  NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+  private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
   @Autowired
-  EncryptionKeyCanaryDataService encryptionKeyCanaryDataService;
-  @Autowired
-  JdbcTemplate jdbcTemplate;
+  private JdbcTemplate jdbcTemplate;
+
   private long id = 0;
 
-  {
-    wireAndUnwire(this);
+  @Before
+  public void beforeEach() {
+    flyway.clean();
+    flyway.setTarget(MigrationVersion.fromVersion("4"));
+    flyway.migrate();
+  }
 
-    beforeEach(() -> {
-      flyway.clean();
-      flyway.setTarget(MigrationVersion.fromVersion("4"));
-      flyway.migrate();
-    });
+  @After
+  public void afterEach() {
+    flyway.setTarget(MigrationVersion.LATEST);
+    flyway.migrate();
+    flyway.clean();
+  }
 
-    afterEach(() -> {
-      flyway.setTarget(MigrationVersion.LATEST);
-      flyway.migrate();
-    });
+  @Test
+  public void successfullyAppliesLatestMigration() {
+    jdbcTemplate.update(
+        "insert into named_canary (id, name, encrypted_value, nonce) values (?, ?, ?, ?)",
+        10, "canary", "encrypted-value".getBytes(), "nonce".getBytes()
+    );
 
-    it("should apply the latest migration successfully", () -> {
-      jdbcTemplate.update(
-          "insert into named_canary (id, name, encrypted_value, nonce) values (?, ?, ?, ?)",
-          10, "canary", "encrypted-value".getBytes(), "nonce".getBytes()
-      );
-
-      // we use raw sql because the entities assume the latest version
-      storeValueSecret("test");
-      storeValueSecret("/test");
-      storeValueSecret("/deploy123/test");
-    });
+    // we use raw sql because the entities assume the latest version
+    storeValueSecret("test");
+    storeValueSecret("/test");
+    storeValueSecret("/deploy123/test");
   }
 
   private void storeValueSecret(String credentialName) {
