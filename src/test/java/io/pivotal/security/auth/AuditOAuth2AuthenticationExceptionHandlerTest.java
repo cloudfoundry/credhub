@@ -18,11 +18,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
 import java.util.Map;
-import javax.transaction.Transactional;
 
 import static io.pivotal.security.auth.UserContext.AUTH_METHOD_UAA;
 import static io.pivotal.security.util.AuthConstants.EXPIRED_KEY_JWT;
@@ -53,8 +53,6 @@ public class AuditOAuth2AuthenticationExceptionHandlerTest {
   @Autowired
   private WebApplicationContext applicationContext;
 
-  @Autowired
-  private AuditOAuth2AuthenticationExceptionHandler subject;
   @Autowired
   private AuthFailureAuditRecordRepository authFailureAuditRecordRepository;
 
