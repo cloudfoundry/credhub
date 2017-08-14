@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1.credential;
 
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.ValueCredential;
@@ -9,22 +8,21 @@ import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_DELETE;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -36,161 +34,112 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Spectrum.class)
+@RunWith(SpringJUnit4ClassRunner.class)
 @ActiveProfiles(value = {"unit-test"}, resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@Transactional
 public class CredentialsControllerDeleteTest {
+  private static final String CREDENTIAL_NAME = "/my-namespace/subTree/credential-name";
 
   @Autowired
-  WebApplicationContext webApplicationContext;
+  private WebApplicationContext webApplicationContext;
 
   @SpyBean
-  CredentialDataService credentialDataService;
+  private CredentialDataService credentialDataService;
 
   @Autowired
-  RequestAuditRecordRepository requestAuditRecordRepository;
+  private RequestAuditRecordRepository requestAuditRecordRepository;
 
   @Autowired
-  EventAuditRecordRepository eventAuditRecordRepository;
-
-  private AuditingHelper auditingHelper;
+  private EventAuditRecordRepository eventAuditRecordRepository;
 
   private MockMvc mockMvc;
+  private AuditingHelper auditingHelper;
 
-  private final String credentialName = "/my-namespace/subTree/credential-name";
+  @Before
+  public void beforeEach() {
+    mockMvc = MockMvcBuilders
+        .webAppContextSetup(webApplicationContext)
+        .apply(springSecurity())
+        .build();
 
-  private ResultActions response;
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
+  }
 
-  {
-    wireAndUnwire(this);
+  @Test
+  public void delete_whenNoCredentialExistsWithTheName_returnsAnError() throws Exception {
+    final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
 
-    beforeEach(() -> {
-      mockMvc = MockMvcBuilders
-          .webAppContextSetup(webApplicationContext)
-          .apply(springSecurity())
-          .build();
+    String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
+    mockMvc.perform(delete)
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.error").value(expectedError));
+  }
 
-      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
-    });
+  @Test
+  public void delete_whenNameIsEmpty_returnAnError() throws Exception {
+    final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
 
-    describe("#delete", () -> {
-      describe("error handling", () -> {
-        it("should return NOT_FOUND when there is no credential with that name", () -> {
-          final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=invalid_name")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON);
+    mockMvc.perform(delete)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(
+            jsonPath("$.error")
+                .value("The query parameter name is required for this request.")
+        );
+  }
 
-          String expectedError = "The request could not be completed because the credential does not exist or you do not have sufficient authorization.";
-          mockMvc.perform(delete)
-              .andExpect(status().isNotFound())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(jsonPath("$.error").value(expectedError));
-        });
+  @Test
+  public void delete_whenNameIsMissing_returnAnError() throws Exception {
+    final MockHttpServletRequestBuilder delete = delete("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON);
 
-        it("should return an error when name is empty", () -> {
-          final MockHttpServletRequestBuilder delete = delete("/api/v1/data?name=")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON);
+    mockMvc.perform(delete)
+        .andExpect(status().is4xxClientError())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(
+            jsonPath("$.error")
+                .value("The query parameter name is required for this request.")
+        );
+  }
 
-          mockMvc.perform(delete)
-              .andExpect(status().isBadRequest())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(
-                  jsonPath("$.error")
-                      .value("The query parameter name is required for this request.")
-              );
-        });
+  @Test
+  public void delete_whenThereIsOneCredentialVersionWithTheCaseInsensitiveName_deletesTheCredential() throws Exception {
+    doReturn(true).when(credentialDataService).delete(CREDENTIAL_NAME.toUpperCase());
+    doReturn(new ValueCredential())
+        .when(credentialDataService)
+        .findMostRecent(CREDENTIAL_NAME.toUpperCase());
 
-        it("should return an error when name is missing", () -> {
-          final MockHttpServletRequestBuilder delete = delete("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON);
+    MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME.toUpperCase())
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
-          mockMvc.perform(delete)
-              .andExpect(status().is4xxClientError())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-              .andExpect(
-                  jsonPath("$.error")
-                      .value("The query parameter name is required for this request.")
-              );
-        });
-      });
+    mockMvc.perform(request)
+        .andExpect(status().isNoContent());
 
-      describe("when there is one credential with the name (case-insensitive)", () -> {
-        beforeEach(() -> {
-          doReturn(true).when(credentialDataService).delete(credentialName.toUpperCase());
-          doReturn(new ValueCredential())
-              .when(credentialDataService)
-              .findMostRecent(credentialName.toUpperCase());
-          response = mockMvc.perform(delete("/api/v1/data?name=" + credentialName.toUpperCase())
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-          );
-        });
+    verify(credentialDataService, times(1)).delete(CREDENTIAL_NAME.toUpperCase());
 
-        it("should return a 204 status", () -> {
-          response.andExpect(status().isNoContent());
-        });
+    auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME.toUpperCase(), "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
+  }
 
-        it("asks data service to remove it from storage", () -> {
-          verify(credentialDataService, times(1)).delete(credentialName.toUpperCase());
-        });
+  @Test
+  public void delete_whenThereAreMultipleCredentialVersionsWithTheName_deletesAllVersions() throws Exception {
+    doReturn(true).when(credentialDataService).delete(CREDENTIAL_NAME);
+    doReturn(new ValueCredential()).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
 
-        it("persists an audit entry", () -> {
-          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName.toUpperCase(), "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
-        });
-      });
+    MockHttpServletRequestBuilder request = delete("/api/v1/data?name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
-      describe("when there are multiple credentials with that name", () -> {
-        beforeEach(() -> {
-          doReturn(true).when(credentialDataService).delete(credentialName);
-          doReturn(new ValueCredential()).when(credentialDataService).findMostRecent(credentialName);
+    mockMvc.perform(request)
+        .andExpect(status().isNoContent());
 
-          response = mockMvc.perform(delete("/api/v1/data?name=" + credentialName)
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-          );
-        });
+    verify(credentialDataService, times(1)).delete(CREDENTIAL_NAME);
 
-        it("should succeed", () -> {
-          response.andExpect(status().isNoContent());
-        });
-
-        it("should remove them all from the database", () -> {
-          verify(credentialDataService, times(1)).delete(credentialName);
-        });
-
-        it("persists a single audit entry", () -> {
-          auditingHelper.verifyAuditing(CREDENTIAL_DELETE, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
-        });
-      });
-
-      describe("name can come as a request parameter", () -> {
-        beforeEach(() -> {
-          doReturn(true).when(credentialDataService).delete(credentialName.toUpperCase());
-          doReturn(new ValueCredential())
-              .when(credentialDataService)
-              .findMostRecent(credentialName.toUpperCase());
-        });
-
-        it("can delete when the name is a query param", () -> {
-          mockMvc.perform(delete("/api/v1/data?name=" + credentialName.toUpperCase())
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-              .andExpect(status().isNoContent());
-
-          verify(credentialDataService, times(1)).delete(credentialName.toUpperCase());
-        });
-
-        it("handles missing name parameter", () -> {
-          mockMvc.perform(delete("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-              .andExpect(status().isBadRequest());
-        });
-
-        it("handles empty name", () -> {
-          mockMvc.perform(delete("/api/v1/data?name=")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-              .andExpect(status().isBadRequest());
-        });
-      });
-    });
+    auditingHelper.verifyAuditing(CREDENTIAL_DELETE, CREDENTIAL_NAME, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 204);
   }
 }
