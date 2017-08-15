@@ -1,150 +1,137 @@
 package io.pivotal.security.service;
 
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.config.EncryptionKeyMetadata;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.exceptions.IncorrectKeyException;
 import io.pivotal.security.util.PasswordKeyProxyFactoryTestImpl;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.security.Key;
 import javax.crypto.AEADBadTagException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.SpectrumHelper.getBouncyCastleProvider;
-import static io.pivotal.security.helper.SpectrumHelper.itThrows;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.CANARY_VALUE;
 import static io.pivotal.security.service.EncryptionKeyCanaryMapper.DEPRECATED_CANARY_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.mockito.Mockito.mock;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class DefaultKeyProxyTest {
-
   private DefaultKeyProxy subject;
   private Key encryptionKey;
   private EncryptionKeyCanary canary;
   private EncryptionKeyCanary deprecatedCanary;
 
-  {
-    beforeEach(() -> {
-      final BcEncryptionService encryptionService = new BcEncryptionService(
-          getBouncyCastleProvider(),
-          new PasswordKeyProxyFactoryTestImpl()
-      );
-      EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
-      keyMetadata.setEncryptionPassword("p@ssword");
+  @Before
+  public void beforeEach() throws Exception {
+    final BcEncryptionService encryptionService = new BcEncryptionService(
+        getBouncyCastleProvider(),
+        new PasswordKeyProxyFactoryTestImpl()
+    );
+    EncryptionKeyMetadata keyMetadata = new EncryptionKeyMetadata();
+    keyMetadata.setEncryptionPassword("p@ssword");
 
-      encryptionKey = encryptionService.createKeyProxy(keyMetadata).getKey();
-      canary = new EncryptionKeyCanary();
-      Encryption encryptionData = encryptionService.encrypt(null, encryptionKey, CANARY_VALUE);
-      canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
-      canary.setNonce(encryptionData.nonce);
+    encryptionKey = encryptionService.createKeyProxy(keyMetadata).getKey();
+    canary = new EncryptionKeyCanary();
+    Encryption encryptionData = encryptionService.encrypt(null, encryptionKey, CANARY_VALUE);
+    canary.setEncryptedCanaryValue(encryptionData.encryptedValue);
+    canary.setNonce(encryptionData.nonce);
 
-      deprecatedCanary = new EncryptionKeyCanary();
-      Encryption deprecatedEncryptionData = encryptionService
-          .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
-      deprecatedCanary.setEncryptedCanaryValue(deprecatedEncryptionData.encryptedValue);
-      deprecatedCanary.setNonce(deprecatedEncryptionData.nonce);
-    });
+    deprecatedCanary = new EncryptionKeyCanary();
+    Encryption deprecatedEncryptionData = encryptionService
+        .encrypt(null, encryptionKey, DEPRECATED_CANARY_VALUE);
+    deprecatedCanary.setEncryptedCanaryValue(deprecatedEncryptionData.encryptedValue);
+    deprecatedCanary.setNonce(deprecatedEncryptionData.nonce);
+  }
 
-    describe("#isMatchingCanary", () -> {
-      beforeEach(() -> {
-        subject = new DefaultKeyProxy(encryptionKey,
-            new BcEncryptionService(new BouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()));
-      });
+  @Test
+  public void isMatchingCanary_whenCanaryMatches_returnsTrue() throws Exception {
+    subject = new DefaultKeyProxy(encryptionKey, new BcEncryptionService(new BouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()));
 
-      describe("happy path", () -> {
-        it("finds the canary", () -> {
-          assertThat(subject.matchesCanary(canary), equalTo(true));
-        });
-      });
+    assertThat(subject.matchesCanary(canary), equalTo(true));
+  }
 
-      describe("when using the deprecated canary value", () -> {
-        it("finds the canary", () -> {
-          assertThat(subject.matchesCanary(deprecatedCanary), equalTo(true));
-        });
-      });
+  @Test
+  public void isMatchingCanary_usingOldCanaryValue_returnsTrue() throws Exception {
+    subject = new DefaultKeyProxy(encryptionKey, new BcEncryptionService(new BouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()));
 
-      describe("when decrypt throws IllegalBlockSizeException containing \"returns 0x40\" message",
-          () -> {
-            beforeEach(() -> {
-              subject = new DefaultKeyProxy(encryptionKey,
-                  new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
-                    @Override
-                    public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-                        throws Exception {
-                      throw new IllegalBlockSizeException("returns 0x40");
-                    }
-                  });
-            });
+    assertThat(subject.matchesCanary(deprecatedCanary), equalTo(true));
+  }
 
-            it("returns false", () -> {
-              assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
-            });
-          });
-
-      describe("when decrypt throws AEADBadTagException", () -> {
-        beforeEach(() -> {
-          subject = new DefaultKeyProxy(encryptionKey,
-              new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
-                @Override
-                public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-                    throws Exception {
-                  throw new AEADBadTagException();
-                }
-              });
+  @Test
+  public void isMatchingCanary_whenDecryptThrowsRelevantIllegalBlockSizeException_returnsFalse() throws Exception {
+    subject = new DefaultKeyProxy(encryptionKey,
+        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+          @Override
+          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+              throws Exception {
+            throw new IllegalBlockSizeException("returns 0x40");
+          }
         });
 
-        it("returns false", () -> {
-          assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
-        });
-      });
+    assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
+  }
 
-      describe("when decrypt throws other exceptions", () -> {
-        itThrows("IncorrectKeyException for BadPaddingException", IncorrectKeyException.class,
-            () -> {
-              subject = new DefaultKeyProxy(encryptionKey,
-                  new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
-                    @Override
-                    public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-                        throws Exception {
-                      throw new BadPaddingException("");
-                    }
-                  });
-              subject.matchesCanary(mock(EncryptionKeyCanary.class));
-            });
-
-        itThrows("IncorrectKeyException for IllegalBlockSizeException", IncorrectKeyException.class,
-            () -> {
-              subject = new DefaultKeyProxy(encryptionKey,
-                  new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
-                    @Override
-                    public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-                        throws Exception {
-                      throw new IllegalBlockSizeException("");
-                    }
-                  });
-              subject.matchesCanary(mock(EncryptionKeyCanary.class));
-            });
-        itThrows("IncorrectKeyException for Exception", IncorrectKeyException.class, () -> {
-          subject = new DefaultKeyProxy(encryptionKey,
-              new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
-                @Override
-                public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
-                    throws Exception {
-                  throw new Exception("");
-                }
-              });
-          subject.matchesCanary(mock(EncryptionKeyCanary.class));
+  @Test
+  public void isMatchingCanary_whenDecryptThrowsAEADBadTagException_returnsFalse() throws Exception {
+    subject = new DefaultKeyProxy(encryptionKey,
+        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+          @Override
+          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+              throws Exception {
+            throw new AEADBadTagException();
+          }
         });
-      });
-    });
+
+    assertThat(subject.matchesCanary(mock(EncryptionKeyCanary.class)), equalTo(false));
+  }
+
+  @Test(expected = IncorrectKeyException.class)
+  public void isMatchingCanary_whenDecryptThrowsBadPaddingException_throwsIncorrectKeyException() throws Exception {
+    subject = new DefaultKeyProxy(encryptionKey,
+        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+          @Override
+          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+              throws Exception {
+            throw new BadPaddingException("");
+          }
+        });
+
+    subject.matchesCanary(mock(EncryptionKeyCanary.class));
+  }
+
+  @Test(expected = IncorrectKeyException.class)
+  public void isMatchingCanary_whenDecryptThrowsIllegalBlockSizeException_throwsIncorrectKeyException() throws Exception {
+    subject = new DefaultKeyProxy(encryptionKey,
+        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+          @Override
+          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+              throws Exception {
+            throw new IllegalBlockSizeException("");
+          }
+        });
+
+    subject.matchesCanary(mock(EncryptionKeyCanary.class));
+  }
+
+  @Test(expected = IncorrectKeyException.class)
+  public void isMatchingCanary_whenDecryptThrowsOtherException_throwsIncorrectKeyException() throws Exception {
+    subject = new DefaultKeyProxy(encryptionKey,
+        new BcEncryptionService(getBouncyCastleProvider(), new PasswordKeyProxyFactoryTestImpl()) {
+          @Override
+          public String decrypt(Key key, byte[] encryptedValue, byte[] nonce)
+              throws Exception {
+            throw new Exception("");
+          }
+        });
+
+    subject.matchesCanary(mock(EncryptionKeyCanary.class));
   }
 }
