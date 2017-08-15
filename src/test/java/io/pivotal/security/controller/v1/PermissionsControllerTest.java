@@ -1,7 +1,6 @@
 package io.pivotal.security.controller.v1;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.greghaskins.spectrum.Spectrum;
 import io.pivotal.security.audit.EventAuditLogService;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
@@ -11,7 +10,10 @@ import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.PermissionOperation;
 import io.pivotal.security.view.PermissionsView;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -25,9 +27,6 @@ import java.util.List;
 import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
@@ -48,145 +47,138 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class PermissionsControllerTest {
-
   private PermissionsController subject;
   private PermissionsHandler permissionsHandler;
   private MockMvc mockMvc;
   private EventAuditLogService eventAuditLogService;
   private PermissionsDataService permissionsDataService;
 
-  {
-    beforeEach(() -> {
-      permissionsHandler = mock(PermissionsHandler.class);
-      eventAuditLogService = mock(EventAuditLogService.class);
-      permissionsDataService = mock(PermissionsDataService.class);
+  @Before
+  public void beforeEach() {
+    permissionsHandler = mock(PermissionsHandler.class);
+    eventAuditLogService = mock(EventAuditLogService.class);
+    permissionsDataService = mock(PermissionsDataService.class);
 
-      subject = new PermissionsController(permissionsHandler, eventAuditLogService,
-          permissionsDataService);
+    subject = new PermissionsController(permissionsHandler, eventAuditLogService,
+        permissionsDataService);
 
-      when(eventAuditLogService.auditEvents(any(), any(), any())).thenAnswer(answer -> {
-        Function<List<EventAuditRecordParameters>, RequestEntity> block = answer
-            .getArgumentAt(2, Function.class);
-        return block.apply(mock(ArrayList.class));
-      });
-
-      MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
-          new MappingJackson2HttpMessageConverter();
-      ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();
-      mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
-      mockMvc = MockMvcBuilders.standaloneSetup(subject)
-          .setMessageConverters(mappingJackson2HttpMessageConverter)
-          .build();
+    when(eventAuditLogService.auditEvents(any(), any(), any())).thenAnswer(answer -> {
+      Function<List<EventAuditRecordParameters>, RequestEntity> block = answer
+          .getArgumentAt(2, Function.class);
+      return block.apply(mock(ArrayList.class));
     });
 
-    describe("/permissions", () -> {
-      describe("#GET", () -> {
-        it("should return the ACL for the credential", () -> {
-          PermissionsView permissionsView = new PermissionsView(
-              "test_credential_name", newArrayList());
+    MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter =
+        new MappingJackson2HttpMessageConverter();
+    ObjectMapper objectMapper = JsonTestHelper.createObjectMapper();
+    mappingJackson2HttpMessageConverter.setObjectMapper(objectMapper);
+    mockMvc = MockMvcBuilders.standaloneSetup(subject)
+        .setMessageConverters(mappingJackson2HttpMessageConverter)
+        .build();
+  }
 
-          when(
-              permissionsHandler.getPermissions(any(UserContext.class), eq("test_credential_name")))
-              .thenReturn(permissionsView);
+  @Test
+  public void GET_returnsThePermissionsForTheCredential() throws Exception {
+    PermissionsView permissionsView = new PermissionsView(
+        "test_credential_name", newArrayList());
 
-          mockMvc.perform(get("/api/v1/permissions?credential_name=test_credential_name"))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.credential_name").value("test_credential_name"))
-              .andExpect(jsonPath("$.permissions").exists()).andDo(print());
-        });
-      });
-    });
+    when(permissionsHandler.getPermissions(any(UserContext.class), eq("test_credential_name")))
+        .thenReturn(permissionsView);
 
-    describe("#POST", () -> {
-      it("returns a response containing the new ACE", () -> {
-        // language=JSON
-        String accessControlEntriesJson = "{\n" +
-            "  \"credential_name\": \"test-credential-name\",\n" +
-            "  \"permissions\": [\n" +
-            "    {\n" +
-            "      \"actor\": \"test-actor\",\n" +
-            "      \"operations\": [\n" +
-            "        \"read\",\n" +
-            "        \"write\"\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  ]\n" +
-            "}";
-        // language=JSON
-        String expectedResponse = "{\n" +
-            "  \"credential_name\": \"test-actor\",\n" +
-            "  \"permissions\": [\n" +
-            "    {\n" +
-            "      \"actor\": \"test-actor\",\n" +
-            "      \"operations\": [\n" +
-            "        \"read\",\n" +
-            "        \"write\"\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  ]\n" +
-            "}";
+    mockMvc.perform(get("/api/v1/permissions?credential_name=test_credential_name"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.credential_name").value("test_credential_name"))
+        .andExpect(jsonPath("$.permissions").exists()).andDo(print());
+  }
 
-        when(permissionsHandler
-            .setPermissions(any(UserContext.class), any(String.class), any(List.class)))
-            .thenReturn(JsonTestHelper.deserialize(expectedResponse, PermissionsView.class));
+  @Test
+  public void POST_returnsAResponseContainingTheNewPermissions() throws Exception {
+    // language=JSON
+    String accessControlEntriesJson = "{\n" +
+        "  \"credential_name\": \"test-credential-name\",\n" +
+        "  \"permissions\": [\n" +
+        "    {\n" +
+        "      \"actor\": \"test-actor\",\n" +
+        "      \"operations\": [\n" +
+        "        \"read\",\n" +
+        "        \"write\"\n" +
+        "      ]\n" +
+        "    }\n" +
+        "  ]\n" +
+        "}";
+    // language=JSON
+    String expectedResponse = "{\n" +
+        "  \"credential_name\": \"test-actor\",\n" +
+        "  \"permissions\": [\n" +
+        "    {\n" +
+        "      \"actor\": \"test-actor\",\n" +
+        "      \"operations\": [\n" +
+        "        \"read\",\n" +
+        "        \"write\"\n" +
+        "      ]\n" +
+        "    }\n" +
+        "  ]\n" +
+        "}";
 
-        MockHttpServletRequestBuilder request = post("/api/v1/permissions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(accessControlEntriesJson);
+    when(permissionsHandler
+        .setPermissions(any(UserContext.class), any(String.class), any(List.class)))
+        .thenReturn(JsonTestHelper.deserialize(expectedResponse, PermissionsView.class));
 
-        mockMvc.perform(request)
-            .andExpect(status().isOk())
-            .andExpect(content().json(expectedResponse));
+    MockHttpServletRequestBuilder request = post("/api/v1/permissions")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(accessControlEntriesJson);
 
-        ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
-        verify(permissionsHandler, times(1)).setPermissions(
-            any(UserContext.class),
-            eq("test-credential-name"),
-            captor.capture()
-        );
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(content().json(expectedResponse));
 
-        List<PermissionEntry> accessControlEntries = captor.getValue();
-        assertThat(accessControlEntries,
-            hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
-                hasProperty("allowedOperations",
-                    hasItems(PermissionOperation.READ, PermissionOperation.WRITE)))));
-      });
+    ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+    verify(permissionsHandler, times(1)).setPermissions(
+        any(UserContext.class),
+        eq("test-credential-name"),
+        captor.capture()
+    );
 
-      it("validates request JSON on POST", () -> {
-        // language=JSON
-        String accessControlEntriesJson = "{\n" +
-            // no credential_name
-            "  \"permissions\": [\n" +
-            "    {\n" +
-            "      \"actor\": \"test-actor\",\n" +
-            "      \"operations\": [\n" +
-            "        \"read\",\n" +
-            "        \"write\"\n" +
-            "      ]\n" +
-            "    }\n" +
-            "  ]\n" +
-            "}";
+    List<PermissionEntry> accessControlEntries = captor.getValue();
+    assertThat(accessControlEntries,
+        hasItem(allOf(hasProperty("actor", equalTo("test-actor")),
+            hasProperty("allowedOperations",
+                hasItems(PermissionOperation.READ, PermissionOperation.WRITE)))));
+  }
 
-        MockHttpServletRequestBuilder request = post("/api/v1/permissions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(accessControlEntriesJson);
+  @Test
+  public void POST_validatesRequestJson() throws Exception {
+    // language=JSON
+    String accessControlEntriesJson = "{\n" +
+        // no credential_name
+        "  \"permissions\": [\n" +
+        "    {\n" +
+        "      \"actor\": \"test-actor\",\n" +
+        "      \"operations\": [\n" +
+        "        \"read\",\n" +
+        "        \"write\"\n" +
+        "      ]\n" +
+        "    }\n" +
+        "  ]\n" +
+        "}";
 
-        mockMvc.perform(request)
-            .andExpect(status().isBadRequest());
-      });
-    });
+    MockHttpServletRequestBuilder request = post("/api/v1/permissions")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(accessControlEntriesJson);
 
-    describe("#DELETE", () -> {
-      it("removes ACE, returns 204", () -> {
-        mockMvc.perform(delete("/api/v1/permissions?credential_name=test-name&actor=test-actor"))
-            .andExpect(status().isNoContent())
-            .andExpect(content().string(""));
+    mockMvc.perform(request)
+        .andExpect(status().isBadRequest());
+  }
 
-        verify(permissionsHandler, times(1))
-            .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
-      });
-    });
+  @Test
+  public void DELETE_removesThePermissions() throws Exception {
+    mockMvc.perform(delete("/api/v1/permissions?credential_name=test-name&actor=test-actor"))
+        .andExpect(status().isNoContent())
+        .andExpect(content().string(""));
+
+    verify(permissionsHandler, times(1))
+        .deletePermissionEntry(any(UserContext.class), eq("test-name"), eq("test-actor"));
   }
 }
