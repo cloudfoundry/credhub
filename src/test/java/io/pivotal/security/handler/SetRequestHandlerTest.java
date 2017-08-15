@@ -17,9 +17,8 @@ import io.pivotal.security.view.CredentialView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
 
@@ -32,11 +31,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(JUnit4.class)
 public class SetRequestHandlerTest {
-  @Mock
   private CredentialService credentialService;
-  @Mock
   private CertificateAuthorityService certificateAuthorityService;
 
   private SetRequestHandler subject;
@@ -48,6 +45,9 @@ public class SetRequestHandlerTest {
 
   @Before
   public void setUp() throws Exception {
+    credentialService = mock(CredentialService.class);
+    certificateAuthorityService = mock(CertificateAuthorityService.class);
+
     subject = new SetRequestHandler(credentialService, certificateAuthorityService);
 
     generationParameters = new StringGenerationParameters();

@@ -1,10 +1,5 @@
 package io.pivotal.security.generator;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.credential.UserCredentialValue;
@@ -12,9 +7,14 @@ import io.pivotal.security.request.StringGenerationParameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.junit.runners.JUnit4;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+@RunWith(JUnit4.class)
 public class UserGeneratorTest {
 
   private UserGenerator subject;
