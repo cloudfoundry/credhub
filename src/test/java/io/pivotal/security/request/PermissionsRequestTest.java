@@ -1,15 +1,14 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.List;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
 import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
 import static io.pivotal.security.helper.JsonTestHelper.serialize;
@@ -21,66 +20,62 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class PermissionsRequestTest {
+  @Test
+  public void validation_allowsGoodJson() {
+    List<PermissionEntry> entryList = newArrayList(
+        new PermissionEntry("someone", newArrayList(PermissionOperation.READ)));
+    PermissionsRequest original = new PermissionsRequest("test-name", entryList);
+    byte[] json = serialize(original);
+    PermissionsRequest actual = deserialize(json, PermissionsRequest.class);
 
-  {
-    describe("validation", () -> {
-      it("should allow good JSON", () -> {
-        List<PermissionEntry> entryList = newArrayList(
-            new PermissionEntry("someone", newArrayList(PermissionOperation.READ)));
-        PermissionsRequest original = new PermissionsRequest("test-name", entryList);
-        byte[] json = serialize(original);
-        PermissionsRequest actual = deserialize(json, PermissionsRequest.class);
+    assertThat(actual.getCredentialName(), equalTo("test-name"));
+    assertThat(actual.getPermissions(), contains(
+        allOf(
+            hasProperty("actor", equalTo("someone")),
+            hasProperty("allowedOperations", hasItems(PermissionOperation.READ))
+        )
+    ));
+  }
 
-        assertThat(actual.getCredentialName(), equalTo("test-name"));
-        assertThat(actual.getPermissions(), contains(
-            allOf(
-                hasProperty("actor", equalTo("someone")),
-                hasProperty("allowedOperations", hasItems(PermissionOperation.READ))
-            )
-        ));
-      });
+  @Test
+  public void validation_ensuresCredentialNameIsNotNull() {
+    List<PermissionEntry> entryList = newArrayList(
+        new PermissionEntry("someone", newArrayList(PermissionOperation.READ)));
+    PermissionsRequest original = new PermissionsRequest(null, entryList);
+    Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
-      describe("#credential_name", () -> {
-        it("should validate that credential_name is not null", () -> {
-          List<PermissionEntry> entryList = newArrayList(
-              new PermissionEntry("someone", newArrayList(PermissionOperation.READ)));
-          PermissionsRequest original = new PermissionsRequest(null, entryList);
-          Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
+    assertThat(violations.size(), equalTo(1));
+    assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
+  }
 
-          assertThat(violations.size(), equalTo(1));
-          assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
-        });
+  @Test
+  public void validation_ensuresCredentialNameIsNotEmpty() {
+    List<PermissionEntry> entryList = newArrayList(
+        new PermissionEntry("someone", newArrayList(PermissionOperation.READ)));
+    PermissionsRequest original = new PermissionsRequest("", entryList);
+    Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
-        it("should validate that credential_name is not empty", () -> {
-          List<PermissionEntry> entryList = newArrayList(
-              new PermissionEntry("someone", newArrayList(PermissionOperation.READ)));
-          PermissionsRequest original = new PermissionsRequest("", entryList);
-          Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
+    assertThat(violations.size(), equalTo(1));
+    assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
+  }
 
-          assertThat(violations.size(), equalTo(1));
-          assertThat(violations, contains(hasViolationWithMessage("error.missing_name")));
-        });
-      });
+  @Test
+  public void validation_ensuresOperationsIsNotNull() {
+    PermissionsRequest original = new PermissionsRequest("foo", null);
+    Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
-      describe("#operations", () -> {
-        it("should validate that operations is not null", () -> {
-          PermissionsRequest original = new PermissionsRequest("foo", null);
-          Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
+    assertThat(violations.size(), equalTo(1));
+    assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));
+  }
 
-          assertThat(violations.size(), equalTo(1));
-          assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));
-        });
+  @Test
+  public void validation_ensuresOperationsIsNotEmpty() {
+    PermissionsRequest original = new PermissionsRequest("foo", newArrayList());
+    Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
 
-        it("should validate that credential_name is not empty", () -> {
-          PermissionsRequest original = new PermissionsRequest("foo", newArrayList());
-          Set<ConstraintViolation<PermissionsRequest>> violations = validate(original);
-
-          assertThat(violations.size(), equalTo(1));
-          assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));
-        });
-      });
-    });
+    assertThat(violations.size(), equalTo(1));
+    assertThat(violations, contains(hasViolationWithMessage("error.acl.missing_aces")));
   }
 }
