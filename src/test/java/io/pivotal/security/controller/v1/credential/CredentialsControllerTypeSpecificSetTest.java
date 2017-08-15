@@ -3,12 +3,9 @@ package io.pivotal.security.controller.v1.credential;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import com.greghaskins.spectrum.Spectrum;
-import com.greghaskins.spectrum.Spectrum.Block;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.credential.CryptSaltFactory;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.CertificateCredential;
 import io.pivotal.security.domain.Credential;
@@ -25,42 +22,48 @@ import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialSetRequest;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
 import net.minidev.json.JSONObject;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.rules.SpringClassRule;
+import org.springframework.test.context.junit4.rules.SpringMethodRule;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.InputStream;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.greghaskins.spectrum.Spectrum.beforeEach;
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.audit.AuditingOperationCode.ACL_UPDATE;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_ACCESS;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
-import static io.pivotal.security.helper.SpectrumHelper.wireAndUnwire;
 import static io.pivotal.security.request.PermissionOperation.DELETE;
 import static io.pivotal.security.request.PermissionOperation.READ;
 import static io.pivotal.security.request.PermissionOperation.READ_ACL;
@@ -90,429 +93,568 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(Spectrum.class)
+@RunWith(Parameterized.class)
 @ActiveProfiles(value = "unit-test", resolver = DatabaseProfileResolver.class)
 @SpringBootTest(classes = CredentialManagerApp.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@Transactional
 public class CredentialsControllerTypeSpecificSetTest {
+  @ClassRule
+  public static final SpringClassRule SPRING_CLASS_RULE = new SpringClassRule();
 
-  @Autowired
-  WebApplicationContext webApplicationContext;
+  @Rule
+  public final SpringMethodRule springMethodRule = new SpringMethodRule();
 
-  @SpyBean
-  CredentialDataService credentialDataService;
+  private static final Instant FROZEN_TIME = Instant.ofEpochSecond(1400011001L);
 
-  @SpyBean
-  SetRequestHandler setRequestHandler;
+  private static final String CREDENTIAL_NAME = "/my-namespace/subTree/credential-name";
 
-  @MockBean
-  CurrentTimeProvider mockCurrentTimeProvider;
+  private static final ImmutableMap<String, Integer> nestedValue = ImmutableMap.<String, Integer>builder()
+      .put("num", 10)
+      .build();
+  private static final ImmutableMap<String, Object> jsonValueMap = ImmutableMap.<String, Object>builder()
+      .put("key", "value")
+      .put("fancy", nestedValue)
+      .put("array", Arrays.asList("foo", "bar"))
+      .build();
 
-  @Autowired
-  RequestAuditRecordRepository requestAuditRecordRepository;
-
-  @Autowired
-  EventAuditRecordRepository eventAuditRecordRepository;
-
-  @SpyBean
-  ObjectMapper objectMapper;
-
-  @Autowired
-  private Encryptor encryptor;
-
-  @Autowired
-  private CryptSaltFactory cryptSaltFactory;
-
-  private AuditingHelper auditingHelper;
-  private MockMvc mockMvc;
-  private Instant frozenTime = Instant.ofEpochSecond(1400011001L);
-  private Consumer<Long> fakeTimeSetter;
-  private UUID uuid;
-
-  private final String credentialName = "/my-namespace/subTree/credential-name";
-  private final String password = "test-password";
-  private final String username = "test-username";
-  private final String certificateValueJsonString = JSONObject.toJSONString(
+  private static final String VALUE_VALUE = "test-value";
+  private static final String PASSWORD_VALUE = "test-password";
+  private static final String CERTIFICATE_VALUE_JSON_STRING = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
           .put("ca", TEST_CA)
           .put("certificate", TEST_CERTIFICATE)
           .put("private_key", TEST_PRIVATE_KEY)
           .build());
-  private final String sshValueJsonString = JSONObject.toJSONString(
+  private static final String SSH_VALUE_JSON_STRING = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
           .put("public_key", SSH_PUBLIC_KEY_4096_WITH_COMMENT)
           .put("private_key", PRIVATE_KEY_4096)
           .build());
-  private final String rsaValueJsonString = JSONObject.toJSONString(
+  private static final String RSA_VALUE_JSON_STRING = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
           .put("public_key", RSA_PUBLIC_KEY_4096)
           .put("private_key", PRIVATE_KEY_4096)
           .build());
-  private final ImmutableMap<String, Integer> nestedValue = ImmutableMap.<String, Integer>builder()
-      .put("num", 10)
-      .build();
-  private final ImmutableMap<String, Object> jsonValueMap = ImmutableMap.<String, Object>builder()
-      .put("key", "value")
-      .put("fancy", nestedValue)
-      .put("array", Arrays.asList("foo", "bar"))
-      .build();
-  private final String jsonValueJsonString = JSONObject.toJSONString(jsonValueMap);
-  private final String userValueJsonString = JSONObject.toJSONString(
+  private static final String JSON_VALUE_JSON_STRING = JSONObject.toJSONString(jsonValueMap);
+  private static final String USERNAME_VALUE = "test-username";
+  private static final String USER_VALUE_JSON_STRING = JSONObject.toJSONString(
       ImmutableMap.<String, String>builder()
-          .put("username", username)
-          .put("password", password)
+          .put("username", USERNAME_VALUE)
+          .put("password", PASSWORD_VALUE)
           .build());
-  private ResultActions response;
-  private MockHttpServletRequestBuilder put;
 
-  {
-    wireAndUnwire(this);
+  @Autowired
+  private WebApplicationContext webApplicationContext;
 
-    beforeEach(() -> {
-      fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
+  @SpyBean
+  private CredentialDataService credentialDataService;
 
-      fakeTimeSetter.accept(frozenTime.toEpochMilli());
-      mockMvc = MockMvcBuilders
-          .webAppContextSetup(webApplicationContext)
-          .apply(springSecurity())
-          .build();
+  @SpyBean
+  private SetRequestHandler setRequestHandler;
 
-      auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
-    });
+  @MockBean
+  private CurrentTimeProvider mockCurrentTimeProvider;
 
-    describe("value", testCredentialBehaviour(
-        new Object[]{"$.value", password},
+  @Autowired
+  private RequestAuditRecordRepository requestAuditRecordRepository;
+
+  @Autowired
+  private EventAuditRecordRepository eventAuditRecordRepository;
+
+  @SpyBean
+  private ObjectMapper objectMapper;
+
+  @Autowired
+  private Encryptor encryptor;
+
+  private AuditingHelper auditingHelper;
+  private MockMvc mockMvc;
+
+  @Parameterized.Parameter
+  public String parameterizedCredentialType;
+
+  @Parameterized.Parameter(value = 1)
+  public String parameterizedCredentialValue;
+
+  @Parameterized.Parameter(value = 2)
+  public Object[] parameterizedResponseFields;
+
+  @Parameterized.Parameter(value = 3)
+  public Consumer<Credential> parameterizedCredentialAssertions;
+
+  @Parameterized.Parameter(value = 4)
+  public Function<Encryptor, Credential> parameterizedCredentialSupplier;
+
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<Object[]> parameters() {
+    UUID credentialUuid = UUID.randomUUID();
+
+    Collection<Object[]> params = new ArrayList<>();
+
+    Object[] valueParameters = new Object[]{
         "value",
-        "\"" + password + "\"",
-        (valueCredential) -> {
-          assertThat(valueCredential.getValue(), equalTo(password));
+        "\"" + VALUE_VALUE + "\"",
+        new Object[]{"$.value", VALUE_VALUE},
+        (Consumer<Credential>) (credential) -> {
+          assertThat(((ValueCredential) credential).getValue(), equalTo(VALUE_VALUE));
         },
-        () -> new ValueCredential(credentialName)
-            .setEncryptor(encryptor)
-            .setValue(password)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime.minusSeconds(1))
-    ));
-
-    describe("password", testCredentialBehaviour(
-        new Object[]{"$.value", password},
+        (Function<Encryptor, Credential>) (encryptor) -> (
+            new ValueCredential(CREDENTIAL_NAME)
+                .setEncryptor(encryptor)
+                .setValue(VALUE_VALUE)
+                .setUuid(credentialUuid)
+                .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1))
+        )
+    };
+    Object[] passwordParameters = new Object[]{
         "password",
-        "\"" + password + "\"",
-        (passwordCredential) -> {
-          assertThat(passwordCredential.getPassword(), equalTo(password));
+        "\"" + PASSWORD_VALUE + "\"",
+        new Object[]{"$.value", PASSWORD_VALUE},
+        (Consumer<Credential>) (credential) -> {
+          assertThat(((PasswordCredential) credential).getPassword(), equalTo(PASSWORD_VALUE));
         },
-        () -> new PasswordCredential(credentialName)
-            .setEncryptor(encryptor)
-            .setPasswordAndGenerationParameters(password, null)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime.minusSeconds(1))
-    ));
-
-    describe("certificate", testCredentialBehaviour(
+        (Function<Encryptor, Credential>) (encryptor) -> (
+            new PasswordCredential(CREDENTIAL_NAME)
+                .setEncryptor(encryptor)
+                .setPasswordAndGenerationParameters(PASSWORD_VALUE, null)
+                .setUuid(credentialUuid)
+                .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1))
+        )
+    };
+    Object[] certificateParameters = new Object[]{
+        "certificate",
+        CERTIFICATE_VALUE_JSON_STRING,
         new Object[]{
             "$.value.certificate", TEST_CERTIFICATE,
             "$.value.private_key", TEST_PRIVATE_KEY,
-            "$.value.ca", TEST_CA},
-        "certificate",
-        certificateValueJsonString,
-        (certificateCredential) -> {
+            "$.value.ca", TEST_CA
+        },
+        (Consumer<Credential>) (credential) -> {
+          CertificateCredential certificateCredential = (CertificateCredential) credential;
           assertThat(certificateCredential.getCa(), equalTo(TEST_CA));
           assertThat(certificateCredential.getCertificate(), equalTo(TEST_CERTIFICATE));
           assertThat(certificateCredential.getPrivateKey(), equalTo(TEST_PRIVATE_KEY));
         },
-        () -> new CertificateCredential(credentialName)
+        (Function<Encryptor, Credential>) (encryptor) -> new CertificateCredential(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setCa(TEST_CA)
-
             .setCertificate(TEST_CERTIFICATE)
             .setPrivateKey(TEST_PRIVATE_KEY)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
-    );
-
-    describe("ssh", testCredentialBehaviour(
+            .setUuid(credentialUuid)
+            .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1))
+    };
+    Object[] sshParameters = new Object[]{
+        "ssh",
+        SSH_VALUE_JSON_STRING,
         new Object[]{
             "$.value.public_key", SSH_PUBLIC_KEY_4096_WITH_COMMENT,
             "$.value.private_key", PRIVATE_KEY_4096,
             "$.value.public_key_fingerprint", "UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc"},
-        "ssh",
-        sshValueJsonString,
-        (sshCredential) -> {
+        (Consumer<Credential>) (credential) -> {
+          SshCredential sshCredential = (SshCredential) credential;
           assertThat(sshCredential.getPublicKey(), equalTo(SSH_PUBLIC_KEY_4096_WITH_COMMENT));
           assertThat(sshCredential.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
         },
-        () -> new SshCredential(credentialName)
+        (Function<Encryptor, Credential>) (encryptor) -> new SshCredential(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPrivateKey(PRIVATE_KEY_4096)
             .setPublicKey(SSH_PUBLIC_KEY_4096_WITH_COMMENT)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
-    );
-
-    describe("rsa", testCredentialBehaviour(
+            .setUuid(credentialUuid)
+            .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1))
+    };
+    Object[] rsaParameters = new Object[]{
+        "rsa",
+        RSA_VALUE_JSON_STRING,
         new Object[]{
             "$.value.public_key", RSA_PUBLIC_KEY_4096,
             "$.value.private_key", PRIVATE_KEY_4096},
-        "rsa",
-        rsaValueJsonString,
-        (rsaCredential) -> {
+        (Consumer<Credential>) (credential) -> {
+          RsaCredential rsaCredential = (RsaCredential) credential;
           assertThat(rsaCredential.getPublicKey(), equalTo(RSA_PUBLIC_KEY_4096));
           assertThat(rsaCredential.getPrivateKey(), equalTo(PRIVATE_KEY_4096));
         },
-        () -> new RsaCredential(credentialName)
+        (Function<Encryptor, Credential>) (encryptor) -> new RsaCredential(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setPrivateKey(PRIVATE_KEY_4096)
             .setPublicKey(RSA_PUBLIC_KEY_4096)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
-    );
-
-    describe("json", testCredentialBehaviour(
-        new Object[]{"$.value", jsonValueMap},
+            .setUuid(credentialUuid)
+            .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1))
+    };
+    Object[] jsonParameters = new Object[]{
         "json",
-        jsonValueJsonString,
-        (jsonCredential) -> {
+        JSON_VALUE_JSON_STRING,
+        new Object[]{"$.value", jsonValueMap},
+        (Consumer<Credential>) (credential) -> {
+          JsonCredential jsonCredential = (JsonCredential) credential;
           assertThat(jsonCredential.getValue(), equalTo(jsonValueMap));
         },
-        () -> new JsonCredential(credentialName)
+        (Function<Encryptor, Credential>) (encryptor) -> new JsonCredential(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
             .setValue(jsonValueMap)
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
-    );
-
-    describe("user", testCredentialBehaviour(
-        new Object[]{
-            "$.value.username", username,
-            "$.value.password", password
-        },
+            .setUuid(credentialUuid)
+            .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1))
+    };
+    Object[] userParameters = new Object[] {
         "user",
-        userValueJsonString,
-        (userCredential) -> {
-          assertThat(userCredential.getUsername(), equalTo(username));
-          assertThat(userCredential.getPassword(), equalTo(password));
+        USER_VALUE_JSON_STRING,
+        new Object[]{
+            "$.value.username", USERNAME_VALUE,
+            "$.value.password", PASSWORD_VALUE
         },
-        () -> new UserCredential(credentialName)
+        (Consumer<Credential>) (credential) -> {
+          UserCredential userCredential = (UserCredential) credential;
+          assertThat(userCredential.getUsername(), equalTo(USERNAME_VALUE));
+          assertThat(userCredential.getPassword(), equalTo(PASSWORD_VALUE));
+        },
+        (Function<Encryptor, Credential>) (encryptor) -> new UserCredential(CREDENTIAL_NAME)
             .setEncryptor(encryptor)
-            .setUsername(username)
-            .setPassword(password)
-            .setSalt(cryptSaltFactory.generateSalt(password))
-            .setUuid(uuid)
-            .setVersionCreatedAt(frozenTime.minusSeconds(1)))
-    );
+            .setUsername(USERNAME_VALUE)
+            .setPassword(PASSWORD_VALUE)
+            .setUuid(credentialUuid)
+            .setVersionCreatedAt(FROZEN_TIME.minusSeconds(1))
+    };
+
+    params.add(valueParameters);
+    params.add(passwordParameters);
+    params.add(certificateParameters);
+    params.add(sshParameters);
+    params.add(rsaParameters);
+    params.add(jsonParameters);
+    params.add(userParameters);
+
+    return params;
   }
 
-  private <T extends Credential> Block testCredentialBehaviour(
-      Object[] typeSpecificResponseFields,
-      String credentialType,
-      String value,
-      Consumer<T> credentialAssertions,
-      Supplier<T> existingCredentialProvider) {
-    return () -> {
-      describe("for a new credential", () -> {
-        beforeEach(() -> {
-          put = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "\"name\":\"" + credentialName + "\"," +
-                  "\"type\":\"" + credentialType + "\"," +
-                  "\"value\":" + value + "," +
-                  "\"overwrite\":" + false + "," +
-                  "\"additional_permissions\": [" +
-                  "{\"actor\": \"app1-guid\"," +
-                  "\"operations\": [\"read\"]}]" +
-                  "}");
-        });
+  @Before
+  public void setUp() throws Exception {
+    Consumer<Long> fakeTimeSetter = mockOutCurrentTimeProvider(mockCurrentTimeProvider);
 
-        it("should accept any casing for the type", () -> {
-          MockHttpServletRequestBuilder request = put("/api/v1/data")
-              .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-              .accept(APPLICATION_JSON)
-              .contentType(APPLICATION_JSON)
-              .content("{" +
-                  "\"name\":\"" + credentialName + "\"," +
-                  "\"type\":\"" + credentialType.toUpperCase() + "\"," +
-                  "\"value\":" + value + "," +
-                  "\"overwrite\":" + false + "," +
-                  "\"additional_permissions\": [" +
-                  "{\"actor\": \"app1-guid\"," +
-                  "\"operations\": [\"read\"]}]" +
-                  "}");
+    fakeTimeSetter.accept(FROZEN_TIME.toEpochMilli());
+    mockMvc = MockMvcBuilders
+        .webAppContextSetup(webApplicationContext)
+        .apply(springSecurity())
+        .build();
 
-          response = mockMvc.perform(request);
+    auditingHelper = new AuditingHelper(requestAuditRecordRepository, eventAuditRecordRepository);
+  }
 
-          ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-          verify(credentialDataService, times(1)).save(argumentCaptor.capture());
-          response.andExpect(multiJsonPath(typeSpecificResponseFields))
-              .andExpect(multiJsonPath(
-                  "$.type", credentialType,
-                  "$.id", argumentCaptor.getValue().getUuid().toString(),
-                  "$.version_created_at", frozenTime.toString()))
-              .andExpect(status().isOk())
-              .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-        });
+  @Test
+  public void settingACredential_shouldAcceptAnyCasingForType() throws Exception {
+    MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"type\":\"" + parameterizedCredentialType.toUpperCase() + "\"," +
+            "\"value\":" + parameterizedCredentialValue + "," +
+            "\"overwrite\":" + false + "," +
+            "\"additional_permissions\": [" +
+            "{\"actor\": \"app1-guid\"," +
+            "\"operations\": [\"read\"]}]" +
+            "}");
 
-        describe("with perform in beforeEach", () -> {
-          beforeEach(() -> {
-            response = mockMvc.perform(put).andDo(print());
-          });
+    ResultActions response = mockMvc.perform(request);
 
-          it("should return the expected response", () -> {
-            ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-            verify(credentialDataService, times(1)).save(argumentCaptor.capture());
-            response.andExpect(multiJsonPath(typeSpecificResponseFields))
-                .andExpect(multiJsonPath(
-                    "$.type", credentialType,
-                    "$.id", argumentCaptor.getValue().getUuid().toString(),
-                    "$.version_created_at", frozenTime.toString()))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
-          });
+    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
 
-          it("asks the data service to persist the credential", () -> {
-            verify(setRequestHandler, times(1))
-                .handle(
-                    isA(UserContext.class),
-                    any(),
-                    isA(BaseCredentialSetRequest.class),
-                    isA(PermissionEntry.class));
-            ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-            verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    response
+        .andExpect(status().isOk())
+        .andExpect(multiJsonPath(parameterizedResponseFields))
+        .andExpect(multiJsonPath(
+            "$.type", parameterizedCredentialType,
+            "$.id", argumentCaptor.getValue().getUuid().toString(),
+            "$.version_created_at", FROZEN_TIME.toString()))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+  }
 
-            T newCredential = (T) argumentCaptor.getValue();
+  @Test
+  public void settingACredential_returnsTheExpectedResponse() throws Exception {
+    MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"type\":\"" + parameterizedCredentialType + "\"," +
+            "\"value\":" + parameterizedCredentialValue + "," +
+            "\"overwrite\":" + false + "," +
+            "\"additional_permissions\": [" +
+            "{\"actor\": \"app1-guid\"," +
+            "\"operations\": [\"read\"]}]" +
+            "}");
 
-            credentialAssertions.accept(newCredential);
-          });
+    ResultActions response = mockMvc.perform(request);
 
-          it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200, newArrayList(
-                new EventAuditRecordParameters(CREDENTIAL_UPDATE, credentialName),
-                new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "app1-guid"),
-                new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-                new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-                new EventAuditRecordParameters(ACL_UPDATE, credentialName, DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-                new EventAuditRecordParameters(ACL_UPDATE, credentialName, READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
-                new EventAuditRecordParameters(ACL_UPDATE, credentialName, WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
-            ));
-          });
+    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
 
-          it("should create ACEs for the current user having full permissions " +
-              "and the provided user", () -> {
-            response.andExpect(status().isOk());
-            MvcResult result = mockMvc.perform(get("/api/v1/permissions?credential_name=" + credentialName)
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andReturn();
-            String content = result.getResponse().getContentAsString();
-            PermissionsView acl = JsonTestHelper
-                .deserialize(content, PermissionsView.class);
+    response.andExpect(multiJsonPath(parameterizedResponseFields))
+        .andExpect(multiJsonPath(
+            "$.type", parameterizedCredentialType,
+            "$.id", argumentCaptor.getValue().getUuid().toString(),
+            "$.version_created_at", FROZEN_TIME.toString()))
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON));
+  }
 
-            assertThat(acl.getCredentialName(), equalTo(credentialName));
-            assertThat(acl.getPermissions(), containsInAnyOrder(
-                samePropertyValuesAs(
-                    new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
-                        asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
-                samePropertyValuesAs(
-                    new PermissionEntry("app1-guid",
-                        asList(READ)))));
-          });
-        });
+  @Test
+  public void settingACredential_expectsDataServiceToPersistTheCredential() throws Exception {
+    MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"type\":\"" + parameterizedCredentialType + "\"," +
+            "\"value\":" + parameterizedCredentialValue + "," +
+            "\"overwrite\":" + false + "," +
+            "\"additional_permissions\": [" +
+            "{\"actor\": \"app1-guid\"," +
+            "\"operations\": [\"read\"]}]" +
+            "}");
+    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
 
-        it("validates the request body", () -> {
-          BaseCredentialSetRequest request = mock(BaseCredentialSetRequest.class);
-          doThrow(new ParameterizedValidationException("error.request_validation_test")).when(request).validate();
-          doReturn(request).when(objectMapper).readValue(any(InputStream.class), any(JavaType.class));
-          response = mockMvc.perform(put)
-              .andDo(print())
-              .andExpect(status().isBadRequest())
-              .andExpect(content().json("{\"error\":\"Request body was validated and ControllerAdvice worked.\"}"));
-        });
-      });
+    mockMvc.perform(request);
 
-      describe("with an existing credential", () -> {
-        beforeEach(() -> {
-          uuid = UUID.randomUUID();
-          doReturn(existingCredentialProvider.get()).when(credentialDataService).findMostRecent(credentialName);
-        });
+    verify(setRequestHandler, times(1))
+        .handle(isA(UserContext.class), any(), isA(BaseCredentialSetRequest.class), isA(PermissionEntry.class));
+    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
 
-        describe("with the overwrite flag set to true", () -> {
-          beforeEach(() -> {
-            final MockHttpServletRequestBuilder put = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .content("{" +
-                    "  \"type\":\"" + credentialType + "\"," +
-                    "  \"name\":\"" + credentialName + "\"," +
-                    "  \"value\":" + value + "," +
-                    "  \"overwrite\":true" +
-                    "}");
+    Credential newCredential = argumentCaptor.getValue();
 
-            response = mockMvc.perform(put);
-          });
+    parameterizedCredentialAssertions.accept(newCredential);
+  }
 
-          it("should return the correct response", () -> {
-            ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
-            verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+  @Test
+  public void settingACredential_persistsAnAuditEntry() throws Exception {
+    MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"type\":\"" + parameterizedCredentialType + "\"," +
+            "\"value\":" + parameterizedCredentialValue + "," +
+            "\"overwrite\":" + false + "," +
+            "\"additional_permissions\": [" +
+            "{\"actor\": \"app1-guid\"," +
+            "\"operations\": [\"read\"]}]" +
+            "}");
 
-            response.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(multiJsonPath(typeSpecificResponseFields))
-                .andExpect(multiJsonPath(
-                    "$.type", credentialType,
-                    "$.id", argumentCaptor.getValue().getUuid().toString(),
-                    "$.version_created_at", frozenTime.toString()));
-          });
+    mockMvc.perform(request);
 
-          it("asks the data service to persist the credential", () -> {
-            T credential = (T) credentialDataService.findMostRecent(credentialName);
-            credentialAssertions.accept(credential);
-          });
+    auditingHelper.verifyAuditing("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200, newArrayList(
+        new EventAuditRecordParameters(CREDENTIAL_UPDATE, CREDENTIAL_NAME),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, "app1-guid"),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d"),
+        new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d")
+    ));
+  }
 
-          it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
-          });
-        });
+  @Test
+  public void creatingACredential_createsRequestedPermissions_andFullPermissionsForCurrentUser() throws Exception {
+    MockHttpServletRequestBuilder putRequest = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"type\":\"" + parameterizedCredentialType + "\"," +
+            "\"value\":" + parameterizedCredentialValue + "," +
+            "\"overwrite\":" + false + "," +
+            "\"additional_permissions\": [" +
+            "{\"actor\": \"app1-guid\"," +
+            "\"operations\": [\"read\"]}]" +
+            "}");
+    MockHttpServletRequestBuilder getRequest = get("/api/v1/permissions?credential_name=" + CREDENTIAL_NAME)
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN);
 
-        describe("with the overwrite flag set to false", () -> {
-          beforeEach(() -> {
-            final MockHttpServletRequestBuilder post = put("/api/v1/data")
-                .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
-                .accept(APPLICATION_JSON)
-                .contentType(APPLICATION_JSON)
-                .content("{"
-                    + "\"type\":\"" + credentialType + "\","
-                    + "\"name\":\"" + credentialName + "\","
-                    + "\"value\":" + value
-                    + "}");
+    mockMvc.perform(putRequest).andExpect(status().isOk());
 
-            response = mockMvc.perform(post);
-          });
+    String responseContent = mockMvc.perform(getRequest)
+        .andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+    PermissionsView acl = JsonTestHelper.deserialize(responseContent, PermissionsView.class);
 
-          it("should return the existing values", () -> {
-            response.andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
-                .andExpect(multiJsonPath(typeSpecificResponseFields))
-                .andExpect(multiJsonPath(
-                    "$.id", uuid.toString(),
-                    "$.version_created_at", frozenTime.minusSeconds(1).toString()));
-          });
+    assertThat(acl.getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(acl.getPermissions(), containsInAnyOrder(
+        samePropertyValuesAs(
+            new PermissionEntry("uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d",
+                asList(READ, WRITE, DELETE, READ_ACL, WRITE_ACL))),
+        samePropertyValuesAs(
+            new PermissionEntry("app1-guid",
+                asList(READ)))));
+  }
 
-          it("should not persist the credential", () -> {
-            verify(credentialDataService, times(0)).save(any(Credential.class));
-          });
+  @Test
+  public void settingACredential_validatesTheRequestBody() throws Exception {
+    MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "\"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "\"type\":\"" + parameterizedCredentialType + "\"," +
+            "\"value\":" + parameterizedCredentialValue + "," +
+            "\"overwrite\":" + false + "," +
+            "\"additional_permissions\": [" +
+            "{\"actor\": \"app1-guid\"," +
+            "\"operations\": [\"read\"]}]" +
+            "}");
 
-          it("persists an audit entry", () -> {
-            auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, credentialName, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
-          });
-        });
-      });
-    };
+    BaseCredentialSetRequest requestObject = mock(BaseCredentialSetRequest.class);
+    doThrow(new ParameterizedValidationException("error.request_validation_test")).when(requestObject).validate();
+    doReturn(requestObject).when(objectMapper).readValue(any(InputStream.class), any(JavaType.class));
+
+    mockMvc.perform(request)
+        .andExpect(status().isBadRequest())
+        .andExpect(content().json("{\"error\":\"Request body was validated and ControllerAdvice worked.\"}"));
+  }
+
+  @Test
+  public void updatingACredential_withTheOverwriteFlagSetToTrue_returnsTheExistingCredentialVersion() throws Exception {
+    doReturn(parameterizedCredentialSupplier.apply(encryptor)).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+
+    final MockHttpServletRequestBuilder put = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "  \"type\":\"" + parameterizedCredentialType + "\"," +
+            "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "  \"value\":" + parameterizedCredentialValue + "," +
+            "  \"overwrite\":true" +
+            "}");
+
+    ResultActions response = mockMvc.perform(put);
+
+    ArgumentCaptor<Credential> argumentCaptor = ArgumentCaptor.forClass(Credential.class);
+    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+
+    response.andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(multiJsonPath(parameterizedResponseFields))
+        .andExpect(multiJsonPath(
+            "$.type", parameterizedCredentialType,
+            "$.id", argumentCaptor.getValue().getUuid().toString(),
+            "$.version_created_at", FROZEN_TIME.toString()));
+  }
+
+  @Test
+  public void updatingACredential_withTheOverwriteFlagSetToTrue_persistsTheCredential() throws Exception {
+    doReturn(parameterizedCredentialSupplier.apply(encryptor)).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+
+    final MockHttpServletRequestBuilder put = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "  \"type\":\"" + parameterizedCredentialType + "\"," +
+            "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "  \"value\":" + parameterizedCredentialValue + "," +
+            "  \"overwrite\":true" +
+            "}");
+
+    mockMvc.perform(put);
+
+    Credential credential = credentialDataService.findMostRecent(CREDENTIAL_NAME);
+    parameterizedCredentialAssertions.accept(credential);
+  }
+
+  @Test
+  public void updatingACredential_withTheOverwriteFlagSetToTrue_persistsAnAuditEntry() throws Exception {
+    doReturn(parameterizedCredentialSupplier.apply(encryptor)).when(credentialDataService).findMostRecent(CREDENTIAL_NAME);
+
+    final MockHttpServletRequestBuilder put = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{" +
+            "  \"type\":\"" + parameterizedCredentialType + "\"," +
+            "  \"name\":\"" + CREDENTIAL_NAME + "\"," +
+            "  \"value\":" + parameterizedCredentialValue + "," +
+            "  \"overwrite\":true" +
+            "}");
+
+    mockMvc.perform(put);
+
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, CREDENTIAL_NAME, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+  }
+
+  @Test
+  public void updatingACredential_withOverwriteSetToFalse_returnsThePreviousVersion() throws Exception {
+    Credential expectedCredential = parameterizedCredentialSupplier.apply(encryptor);
+    doReturn(expectedCredential)
+        .when(credentialDataService)
+        .findMostRecent(CREDENTIAL_NAME);
+    final MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "\"type\":\"" + parameterizedCredentialType + "\","
+            + "\"name\":\"" + CREDENTIAL_NAME + "\","
+            + "\"value\":" + parameterizedCredentialValue
+            + "}");
+
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(multiJsonPath(parameterizedResponseFields))
+        .andExpect(multiJsonPath(
+            "$.id", expectedCredential.getUuid().toString(),
+            "$.version_created_at", FROZEN_TIME.minusSeconds(1).toString()));
+  }
+
+  @Test
+  public void updatingACredential_withOverwriteSetToFalse_doesNotPersistTheCredential() throws Exception {
+    Credential expectedCredential = parameterizedCredentialSupplier.apply(encryptor);
+    doReturn(expectedCredential)
+        .when(credentialDataService)
+        .findMostRecent(CREDENTIAL_NAME);
+    final MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "\"type\":\"" + parameterizedCredentialType + "\","
+            + "\"name\":\"" + CREDENTIAL_NAME + "\","
+            + "\"value\":" + parameterizedCredentialValue
+            + "}");
+
+    mockMvc.perform(request);
+
+    verify(credentialDataService, times(0)).save(any(Credential.class));
+  }
+
+  @Test
+  public void updatingACredential_withOverwriteSetToFalse_persistsAnAuditEntry() throws Exception {
+    Credential expectedCredential = parameterizedCredentialSupplier.apply(encryptor);
+    doReturn(expectedCredential)
+        .when(credentialDataService)
+        .findMostRecent(CREDENTIAL_NAME);
+    final MockHttpServletRequestBuilder request = put("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{"
+            + "\"type\":\"" + parameterizedCredentialType + "\","
+            + "\"name\":\"" + CREDENTIAL_NAME + "\","
+            + "\"value\":" + parameterizedCredentialValue
+            + "}");
+
+    mockMvc.perform(request);
+
+    auditingHelper.verifyAuditing(CREDENTIAL_ACCESS, CREDENTIAL_NAME, "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
   }
 }
