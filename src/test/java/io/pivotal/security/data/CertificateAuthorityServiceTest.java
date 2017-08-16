@@ -1,5 +1,15 @@
 package io.pivotal.security.data;
 
+import io.pivotal.security.config.BouncyCastleProviderConfiguration;
+import io.pivotal.security.credential.CertificateCredentialValue;
+import io.pivotal.security.domain.CertificateCredential;
+import io.pivotal.security.domain.PasswordCredential;
+import io.pivotal.security.exceptions.ParameterizedValidationException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+
 import static io.pivotal.security.util.CertificateStringConstants.SELF_SIGNED_CA_CERT;
 import static io.pivotal.security.util.CertificateStringConstants.SIMPLE_SELF_SIGNED_TEST_CERT;
 import static org.hamcrest.Matchers.equalTo;
@@ -9,17 +19,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.pivotal.security.config.BouncyCastleProviderConfiguration;
-import io.pivotal.security.credential.CertificateCredentialValue;
-import io.pivotal.security.domain.CertificateCredential;
-import io.pivotal.security.domain.PasswordCredential;
-import io.pivotal.security.exceptions.ParameterizedValidationException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
-
-@RunWith(SpringRunner.class)
+@RunWith(JUnit4.class)
 public class CertificateAuthorityServiceTest {
 
   CertificateAuthorityService certificateAuthorityService;

@@ -5,7 +5,7 @@ import io.pivotal.security.service.Encryption;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.runners.JUnit4;
 
 import java.util.UUID;
 
@@ -15,7 +15,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
+@RunWith(JUnit4.class)
 public class CertificateCredentialTest {
 
   private CertificateCredential subject;
