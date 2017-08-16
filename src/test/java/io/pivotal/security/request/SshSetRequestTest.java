@@ -1,13 +1,12 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
 import static io.pivotal.security.helper.JsonTestHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
@@ -17,176 +16,172 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertNull;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class SshSetRequestTest {
+  @Test
+  public void deserializesToSshSetRequest() {
+    String json = "{"
+        + "\"name\": \"/example/ssh\","
+        + "\"type\": \"ssh\","
+        + "\"value\": {"
+        + "\"public_key\":\"fake-public-key\","
+        + "\"private_key\":\"fake-private-key\""
+        + "}"
+        + "}";
+    SshSetRequest deserialize = deserialize(json, SshSetRequest.class);
 
-  {
-    describe("when the value is valid", () -> {
-      it("should not have violations", () -> {
-        String json = "{"
-            + "\"name\": \"/example/ssh\","
-            + "\"type\": \"ssh\","
-            + "\"value\": {"
-            + "\"public_key\":\"fake-public-key\","
-            + "\"private_key\":\"fake-private-key\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
+    assertThat(deserialize, instanceOf(SshSetRequest.class));
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
+  @Test
+  public void whenAllFieldsAreSet_shouldBeValid() {
+    String json = "{"
+        + "\"name\": \"/example/ssh\","
+        + "\"type\": \"ssh\","
+        + "\"value\": {"
+        + "\"public_key\":\"fake-public-key\","
+        + "\"private_key\":\"fake-private-key\""
+        + "}"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-      it("should should deserialize to a SshSetRequest", () -> {
-        String json = "{"
-            + "\"name\": \"/example/ssh\","
-            + "\"type\": \"ssh\","
-            + "\"value\": {"
-            + "\"public_key\":\"fake-public-key\","
-            + "\"private_key\":\"fake-private-key\""
-            + "}"
-            + "}";
-        SshSetRequest deserialize = deserialize(json, SshSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
+  }
 
-        assertThat(deserialize, instanceOf(SshSetRequest.class));
-      });
+  @Test
+  public void doesNotRequireThePublicKey() {
+    String json = "{"
+        + "\"name\": \"/example/ssh\","
+        + "\"type\": \"ssh\","
+        + "\"value\": {"
+        + "\"private_key\":\"fake-private-key\""
+        + "}"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-      it("should not require the public key SshSetRequest", () -> {
-        String json = "{"
-            + "\"name\": \"/example/ssh\","
-            + "\"type\": \"ssh\","
-            + "\"value\": {"
-            + "\"private_key\":\"fake-private-key\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
+  @Test
+  public void doesNotRequireThePrivateKey() {
+    String json = "{"
+        + "\"name\": \"/example/ssh\","
+        + "\"type\": \"ssh\","
+        + "\"value\": {"
+        + "\"public_key\":\"fake-public-key\""
+        + "}"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-      it("should not require the private key SshSetRequest", () -> {
-        String json = "{"
-            + "\"name\": \"/example/ssh\","
-            + "\"type\": \"ssh\","
-            + "\"value\": {"
-            + "\"public_key\":\"fake-public-key\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
-    });
+  @Test
+  public void whenTypeHasUnusualCasing_shouldBeValid() {
+    String json = "{"
+        + "\"name\": \"/example/ssh\","
+        + "\"type\": \"sSh\","
+        + "\"value\": {"
+        + "\"public_key\":\"fake-public-key\","
+        + "\"private_key\":\"fake-private-key\""
+        + "}"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-    describe("when type has unusual casing", () -> {
-      it("should be valid", () -> {
-        String json = "{"
-            + "\"name\": \"/example/ssh\","
-            + "\"type\": \"sSh\","
-            + "\"value\": {"
-            + "\"public_key\":\"fake-public-key\","
-            + "\"private_key\":\"fake-private-key\""
-            + "}"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
+    assertThat(violations.size(), equalTo(0));
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
-    });
+  @Test
+  public void whenNoValueIsSet_shouldBeInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/ssh\",\n"
+        + "  \"type\": \"ssh\"\n"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-    describe("when no value is set", () -> {
-      it("should be in invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/ssh\",\n"
-            + "  \"type\": \"ssh\"\n"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
+    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+  }
 
-        assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
-      });
-    });
+  @Test
+  public void whenValueIsEmpty_shouldBeInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/ssh\",\n"
+        + "  \"type\": \"ssh\",\n"
+        + "  \"value\": {}\n"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-    describe("when value is an empty object", () -> {
-      it("should be invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/ssh\",\n"
-            + "  \"type\": \"ssh\",\n"
-            + "  \"value\": {}\n"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
+    assertThat(violations,
+        contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+  }
 
-        assertThat(violations,
-            contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
-      });
-    });
+  @Test
+  public void whenAllValueSubFieldsAreEmpty_shouldBeInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/ssh\",\n"
+        + "  \"type\": \"ssh\",\n"
+        + "  \"value\": {"
+        + "    \"public_key\":\"\","
+        + "    \"private_key\":\"\""
+        + "  }"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-    describe("when ssh has all empty string sub-fields", () -> {
-      it("should be invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/ssh\",\n"
-            + "  \"type\": \"ssh\",\n"
-            + "  \"value\": {"
-            + "    \"public_key\":\"\","
-            + "    \"private_key\":\"\""
-            + "  }"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
+    assertThat(violations,
+        contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+  }
 
-        assertThat(violations,
-            contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
-      });
+  @Test
+  public void whenAllValuesAreNull_shouldBeInvalid() {
+    String json = "{\n"
+        + "  \"name\": \"/example/ssh\",\n"
+        + "  \"type\": \"ssh\",\n"
+        + "  \"value\": {"
+        + "    \"public_key\":null,"
+        + "    \"private_key\":null"
+        + "  }"
+        + "}";
+    Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
+        SshSetRequest.class);
 
-      it("should coerce an empty public key into null", () -> {
-        String json = "{"
-            + "\"name\": \"/example/ssh\","
-            + "\"type\": \"ssh\","
-            + "\"value\": {"
-            + "\"public_key\":\"\","
-            + "\"private_key\":\"fake-private-key\""
-            + "}"
-            + "}";
-        SshSetRequest deserialize = deserialize(json, SshSetRequest.class);
+    assertThat(violations,
+        contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
+  }
 
-        assertNull(deserialize.getSshKeyValue().getPublicKey());
-      });
+  @Test
+  public void coercesEmptyPublicKeyIntoNull() {
+    String json = "{"
+        + "\"name\": \"/example/ssh\","
+        + "\"type\": \"ssh\","
+        + "\"value\": {"
+        + "\"public_key\":\"\","
+        + "\"private_key\":\"fake-private-key\""
+        + "}"
+        + "}";
+    SshSetRequest deserialize = deserialize(json, SshSetRequest.class);
 
-      it("should coerce an empty private key into null", () -> {
-        String json = "{"
-            + "\"name\": \"/example/ssh\","
-            + "\"type\": \"ssh\","
-            + "\"value\": {"
-            + "\"public_key\":\"fake-public-key\","
-            + "\"private_key\":\"\""
-            + "}"
-            + "}";
-        SshSetRequest deserialize = deserialize(json, SshSetRequest.class);
+    assertNull(deserialize.getSshKeyValue().getPublicKey());
+  }
 
-        assertNull(deserialize.getSshKeyValue().getPrivateKey());
-      });
-    });
+  @Test
+  public void coercesEmptyPrivateKeyIntoNull() {
+    String json = "{"
+        + "\"name\": \"/example/ssh\","
+        + "\"type\": \"ssh\","
+        + "\"value\": {"
+        + "\"public_key\":\"fake-public-key\","
+        + "\"private_key\":\"\""
+        + "}"
+        + "}";
+    SshSetRequest deserialize = deserialize(json, SshSetRequest.class);
 
-    describe("when ssh has all null string sub-fields", () -> {
-      it("should be invalid", () -> {
-        String json = "{\n"
-            + "  \"name\": \"/example/ssh\",\n"
-            + "  \"type\": \"ssh\",\n"
-            + "  \"value\": {"
-            + "    \"public_key\":null,"
-            + "    \"private_key\":null"
-            + "  }"
-            + "}";
-        Set<ConstraintViolation<SshSetRequest>> violations = deserializeAndValidate(json,
-            SshSetRequest.class);
-
-        assertThat(violations,
-            contains(hasViolationWithMessage("error.missing_rsa_ssh_parameters")));
-      });
-    });
+    assertNull(deserialize.getSshKeyValue().getPrivateKey());
   }
 }

@@ -1,13 +1,12 @@
 package io.pivotal.security.request;
 
-import com.greghaskins.spectrum.Spectrum;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 
-import static com.greghaskins.spectrum.Spectrum.describe;
-import static com.greghaskins.spectrum.Spectrum.it;
 import static io.pivotal.security.helper.JsonTestHelper.deserialize;
 import static io.pivotal.security.helper.JsonTestHelper.deserializeAndValidate;
 import static io.pivotal.security.helper.JsonTestHelper.hasViolationWithMessage;
@@ -17,82 +16,76 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-@RunWith(Spectrum.class)
+@RunWith(JUnit4.class)
 public class ValueSetRequestTest {
+  @Test
+  public void deserializesToValueSetRequest() {
+    String json = "{"
+        + "\"name\":\"some-name\","
+        + "\"type\":\"value\","
+        + "\"overwrite\":true,"
+        + "\"value\":\"some-value\""
+        + "}";
+    BaseCredentialSetRequest request = deserialize(json, BaseCredentialSetRequest.class);
 
-  {
-    it("should deserialize to ValueSetRequest", () -> {
-      String json = "{"
-          + "\"name\":\"some-name\","
-          + "\"type\":\"value\","
-          + "\"overwrite\":true,"
-          + "\"value\":\"some-value\""
-          + "}";
-      BaseCredentialSetRequest request = deserialize(json, BaseCredentialSetRequest.class);
+    assertThat(request, instanceOf(ValueSetRequest.class));
+  }
 
-      assertThat(request, instanceOf(ValueSetRequest.class));
-    });
+  @Test
+  public void whenAllFieldsAreSet_shouldBeValid() {
+    String json = "{"
+        + "\"name\":\"some-name\","
+        + "\"type\":\"value\","
+        + "\"overwrite\":true,"
+        + "\"value\":\"some-value\""
+        + "}";
+    Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
+        BaseCredentialSetRequest.class);
 
-    describe("when value is not set", () -> {
-      it("should be invalid", () -> {
-        String json = "{"
-            + "\"name\":\"some-name\","
-            + "\"type\":\"value\","
-            + "\"overwrite\":true"
-            + "}";
-        ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-            BaseCredentialSetRequest.class);
-        Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+    assertThat(violations.size(), equalTo(0));
+  }
 
-        assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
-      });
-    });
+  @Test
+  public void whenTypeHasUnusualCasing_shouldBeValid() {
+    String json = "{"
+        + "\"name\":\"some-name\","
+        + "\"type\":\"VaLuE\","
+        + "\"overwrite\":true,"
+        + "\"value\":\"some-value\""
+        + "}";
+    ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
+        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
-    describe("when the type has unusual casing", () -> {
-      it("should be valid", () -> {
-        String json = "{"
-            + "\"name\":\"some-name\","
-            + "\"type\":\"VaLuE\","
-            + "\"overwrite\":true,"
-            + "\"value\":\"some-value\""
-            + "}";
-        ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-            BaseCredentialSetRequest.class);
-        Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+    assertThat(violations.size(), equalTo(0));
+  }
 
-        assertThat(violations.size(), equalTo(0));
-      });
-    });
+  @Test
+  public void whenValueIsNotSet_shouldBeInvalid() {
+    String json = "{"
+        + "\"name\":\"some-name\","
+        + "\"type\":\"value\","
+        + "\"overwrite\":true"
+        + "}";
+    ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
+        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
-    describe("when value is empty", () -> {
-      it("should be invalid", () -> {
-        String json = "{"
-            + "\"name\":\"some-name\","
-            + "\"type\":\"value\","
-            + "\"overwrite\":true,"
-            + "\"value\":\"\""
-            + "}";
-        ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
-            BaseCredentialSetRequest.class);
-        Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
+    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
+  }
 
-        assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
-      });
-    });
+  @Test
+  public void whenValueIsEmpty_shouldBeInvalid() {
+    String json = "{"
+        + "\"name\":\"some-name\","
+        + "\"type\":\"value\","
+        + "\"overwrite\":true,"
+        + "\"value\":\"\""
+        + "}";
+    ValueSetRequest valueSetRequest = (ValueSetRequest) deserialize(json,
+        BaseCredentialSetRequest.class);
+    Set<ConstraintViolation<ValueSetRequest>> violations = validate(valueSetRequest);
 
-    describe("when all fields are set", () -> {
-      it("should be valid", () -> {
-        String json = "{"
-            + "\"name\":\"some-name\","
-            + "\"type\":\"value\","
-            + "\"overwrite\":true,"
-            + "\"value\":\"some-value\""
-            + "}";
-        Set<ConstraintViolation<BaseCredentialSetRequest>> violations = deserializeAndValidate(json,
-            BaseCredentialSetRequest.class);
-
-        assertThat(violations.size(), equalTo(0));
-      });
-    });
+    assertThat(violations, contains(hasViolationWithMessage("error.missing_value")));
   }
 }
