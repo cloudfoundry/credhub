@@ -5,7 +5,8 @@ import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.ValueCredential;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
 import java.util.UUID;
 
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
@@ -58,14 +60,17 @@ public class CredentialsControllerConcurrencySetTest {
   private Encryptor encryptor;
 
   @Autowired
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   private final String credentialName = "/my-namespace/secretForSetTest/credential-name";
   private final String credentialValue = "credential-value";
   private MockMvc mockMvc;
+  private List<EncryptionKeyCanary> canaries;
 
   @Before
   public void beforeEach() {
+    canaries = encryptionKeyCanaryRepository.findAll();
+
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
@@ -77,7 +82,9 @@ public class CredentialsControllerConcurrencySetTest {
     flyway.clean();
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
-    encryptionKeyCanaryMapper.mapUuidsToKeys();
+
+    encryptionKeyCanaryRepository.save(canaries);
+    encryptionKeyCanaryRepository.flush();
   }
 
   @Test

@@ -3,7 +3,8 @@ package io.pivotal.security.db.migration;
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.domain.UserCredential;
-import io.pivotal.security.service.EncryptionKeyCanaryMapper;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.util.UuidUtil;
 import org.flywaydb.core.Flyway;
@@ -20,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
@@ -36,11 +38,14 @@ public class UserSaltMigrationTest {
   @Autowired
   private JdbcTemplate jdbcTemplate;
   @Autowired
-  private EncryptionKeyCanaryMapper encryptionKeyCanaryMapper;
+  private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
   private String databaseName;
+  private List<EncryptionKeyCanary> canaries;
 
   @Before
   public void beforeEach() throws Exception {
+    canaries = encryptionKeyCanaryRepository.findAll();
+
     databaseName = jdbcTemplate.getDataSource()
         .getConnection()
         .getMetaData()
@@ -57,7 +62,9 @@ public class UserSaltMigrationTest {
     flyway.clean();
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
-    encryptionKeyCanaryMapper.mapUuidsToKeys();
+
+    encryptionKeyCanaryRepository.save(canaries);
+    encryptionKeyCanaryRepository.flush();
   }
 
   @Test

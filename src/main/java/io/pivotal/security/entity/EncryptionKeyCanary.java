@@ -25,7 +25,7 @@ public class EncryptionKeyCanary {
   @Id
   @Column(length = UUID_BYTES, columnDefinition = "VARBINARY")
   @GeneratedValue(generator = "uuid2")
-  @GenericGenerator(name = "uuid2", strategy = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "io.pivotal.security.entity.UuidGenerator")
   private UUID uuid;
 
   @Column(length = ENCRYPTED_BYTES + NONCE_SIZE, name = "encrypted_value")
@@ -62,7 +62,6 @@ public class EncryptionKeyCanary {
     this.nonce = nonce == null ? null : nonce.clone();
     return this;
   }
-
 
   public EncryptionKeyCanary setEncryptionKeyUuid(UUID encryptionKeyUuid) {
     setUuid(encryptionKeyUuid);

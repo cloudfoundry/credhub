@@ -2,15 +2,18 @@ package io.pivotal.security.audit;
 
 import io.pivotal.security.CredentialManagerApp;
 import io.pivotal.security.auth.UserContext;
-import io.pivotal.security.data.EventAuditRecordDataService;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.EventAuditRecordDataService;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.EventAuditRecord;
 import io.pivotal.security.entity.ValueCredentialData;
 import io.pivotal.security.exceptions.AuditSaveFailureException;
+import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.repository.EventAuditRecordRepository;
-import io.pivotal.security.repository.CredentialNameRepository;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationVersion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -71,28 +74,35 @@ public class EventAuditLogServiceTest {
   private CurrentTimeProvider currentTimeProvider;
 
   @Autowired
-  private CredentialNameRepository credentialNameRepository;
+  private Flyway flyway;
+
+  @Autowired
+  private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   private final Instant now = Instant.ofEpochSecond(1490903353L);
   private final Instant then = Instant.ofEpochSecond(1550903353L);
 
   private UserContext userContext;
   private RequestUuid requestUuid;
+  private List<EncryptionKeyCanary> canaries;
 
   @Before
   public void beforeEach() {
+    canaries = encryptionKeyCanaryRepository.findAll();
+
     mockOutCurrentTimeProvider(currentTimeProvider).accept(now.toEpochMilli());
     userContext = mockUserContext(true);
     requestUuid = new RequestUuid(UUID.randomUUID());
-    credentialNameRepository.deleteAllInBatch();
-    eventAuditRecordRepository.deleteAllInBatch();
   }
 
-  // `@Transactional` for the tests messes with our rollback testing.
   @After
   public void afterEach() {
-    credentialNameRepository.deleteAllInBatch();
-    eventAuditRecordRepository.deleteAllInBatch();
+    flyway.clean();
+    flyway.setTarget(MigrationVersion.LATEST);
+    flyway.migrate();
+
+    encryptionKeyCanaryRepository.save(canaries);
+    encryptionKeyCanaryRepository.flush();
   }
 
   @Test

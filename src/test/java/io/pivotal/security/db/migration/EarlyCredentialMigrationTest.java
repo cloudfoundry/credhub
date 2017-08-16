@@ -1,6 +1,8 @@
 package io.pivotal.security.db.migration;
 
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.EncryptionKeyCanary;
+import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
@@ -17,6 +19,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
 import java.util.UUID;
 
 @RunWith(SpringRunner.class)
@@ -32,11 +35,16 @@ public class EarlyCredentialMigrationTest {
   private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
   @Autowired
   private JdbcTemplate jdbcTemplate;
+  @Autowired
+  private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   private long id = 0;
+  private List<EncryptionKeyCanary> canaries;
 
   @Before
   public void beforeEach() {
+    canaries = encryptionKeyCanaryRepository.findAll();
+
     flyway.clean();
     flyway.setTarget(MigrationVersion.fromVersion("4"));
     flyway.migrate();
@@ -44,9 +52,12 @@ public class EarlyCredentialMigrationTest {
 
   @After
   public void afterEach() {
+    flyway.clean();
     flyway.setTarget(MigrationVersion.LATEST);
     flyway.migrate();
-    flyway.clean();
+
+    encryptionKeyCanaryRepository.save(canaries);
+    encryptionKeyCanaryRepository.flush();
   }
 
   @Test

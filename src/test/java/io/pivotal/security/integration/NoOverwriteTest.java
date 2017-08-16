@@ -4,10 +4,14 @@ import com.google.common.collect.ImmutableMap;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import io.pivotal.security.CredentialManagerApp;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.helper.JsonTestHelper;
+import io.pivotal.security.repository.EncryptionKeyCanaryRepository;
 import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import io.pivotal.security.view.PermissionsView;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationVersion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +28,7 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import static io.pivotal.security.request.PermissionOperation.DELETE;
@@ -41,7 +46,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.beans.SamePropertyValuesAs.samePropertyValuesAs;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -56,23 +60,37 @@ public class NoOverwriteTest {
 
   private static final String CREDENTIAL_NAME = "TEST-SECRET";
   @Autowired
-  WebApplicationContext webApplicationContext;
+  private WebApplicationContext webApplicationContext;
+
+  @Autowired
+  private Flyway flyway;
+
+  @Autowired
+  private EncryptionKeyCanaryRepository encryptionKeyCanaryRepository;
 
   private MockMvc mockMvc;
   private ResultActions[] responses;
+  private List<EncryptionKeyCanary> canaries;
 
   @Before
   public void beforeEach() throws Exception {
+    canaries = encryptionKeyCanaryRepository.findAll();
+
     mockMvc = MockMvcBuilders
         .webAppContextSetup(webApplicationContext)
         .apply(springSecurity())
         .build();
   }
+
   @After
   public void afterEach() throws Exception {
-    mockMvc.perform(delete("/api/v1/data?name=" + CREDENTIAL_NAME).header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)).andDo(print());
-  }
+    flyway.clean();
+    flyway.setTarget(MigrationVersion.LATEST);
+    flyway.migrate();
 
+    encryptionKeyCanaryRepository.save(canaries);
+    encryptionKeyCanaryRepository.flush();
+  }
 
   @Test
   public void whenMultipleThreadsPutWithSameNameAndNoOverwrite_itShouldNotOverwrite()
