@@ -18,6 +18,9 @@ public class StringGenerationParameters {
   @JsonProperty(access = Access.WRITE_ONLY)
   private Integer length;
 
+  @JsonProperty(access = Access.WRITE_ONLY)
+  private String username;
+
   private boolean excludeLower;
   private boolean excludeNumber;
   private boolean excludeUpper;
@@ -29,6 +32,15 @@ public class StringGenerationParameters {
 
   public StringGenerationParameters setLength(int length) {
     this.length = length;
+    return this;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public StringGenerationParameters setUsername(String username) {
+    this.username = username;
     return this;
   }
 
@@ -74,7 +86,7 @@ public class StringGenerationParameters {
         && excludeNumber
         && excludeUpper
         && excludeLower
-      );
+    );
   }
 
   public void validate() {

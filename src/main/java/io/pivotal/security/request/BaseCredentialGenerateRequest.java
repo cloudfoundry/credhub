@@ -11,7 +11,6 @@ import static com.google.common.collect.Lists.newArrayList;
     use = JsonTypeInfo.Id.CUSTOM,
     property = "type",
     visible = true,
-    // TEMPORARY: Only needed while we're removing DocumentContext
     defaultImpl = DefaultCredentialGenerateRequest.class
 )
 @JsonTypeIdResolver(GenerateRequestTypeIdResolver.class)

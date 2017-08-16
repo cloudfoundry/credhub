@@ -115,7 +115,7 @@ public class CredentialValueFactoryTest {
   }
 
   @Test
-  public void generateValue_whenUser_generatesPasswordValue() {
+  public void generateValue_whenUserAndUsernameInValue_generatesUserValue() {
     final UsernameValue usernameValue = new UsernameValue();
     usernameValue.setUsername("luke");
 

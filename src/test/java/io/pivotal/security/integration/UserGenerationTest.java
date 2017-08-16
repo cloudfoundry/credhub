@@ -93,7 +93,7 @@ public class UserGenerationTest {
   }
 
   @Test
-  public void generatesOnlyPasswordWhenGivenStaticUsername() throws Exception{
+  public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInValues() throws Exception{
     MockHttpServletRequestBuilder post = post("/api/v1/data")
       .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
       .accept(APPLICATION_JSON)
@@ -102,6 +102,35 @@ public class UserGenerationTest {
       .content("{  \"name\": \"" + credentialName1 + "\", \n" +
         "  \"type\": \"user\", \n" +
         "  \"value\": {\n" +
+        "    \"username\": \"luke\" \n" +
+        "  }\n" +
+        "}");
+
+    this.mockMvc.perform(post)
+      .andDo(print())
+      .andExpect(status().isOk());
+
+    this.mockMvc.perform(get("/api/v1/data?name=" + credentialName1)
+      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON))
+      .andDo(print())
+      .andExpect(status().isOk())
+      .andExpect(jsonPath("$.data[0].value.username", equalTo("luke")))
+      .andExpect(jsonPath("$.data[0].value.password", isPassword()))
+      .andReturn();
+  }
+
+  @Test
+  public void generatesOnlyPasswordWhenGivenStaticUsernameProvidedInParams() throws Exception{
+    MockHttpServletRequestBuilder post = post("/api/v1/data")
+      .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+      .accept(APPLICATION_JSON)
+      .contentType(APPLICATION_JSON)
+      //language=JSON
+      .content("{  \"name\": \"" + credentialName1 + "\", \n" +
+        "  \"type\": \"user\", \n" +
+        "  \"parameters\": {\n" +
         "    \"username\": \"luke\" \n" +
         "  }\n" +
         "}");
