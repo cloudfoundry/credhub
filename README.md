@@ -102,7 +102,7 @@ In `application-dev.yml` there are two relevant settings:
 1. `auth-server.url`. This needs to point to a running UAA server (remote or BOSH-lite, it's up to you).
 2. `security.oauth2.resource.jwt.key-value`. This is the public verification key, corresponding to a private JWT signing key held by your UAA server.
 
-For convenience, the CredHub team runs a public UAA whose IP is in the default `application-dev.yml` manifest. The login and password are `credhub`/`password`. This public UAA is for local development usage only! You will need to skip SSL validation in order to use it.
+For convenience, the CredHub team runs a public UAA whose IP is in the default `application-dev.yml` manifest. The password grant values are `credhub`/`password` and the client credentials grant value are `credhub_client`/`secret`. This public UAA is for local development usage only! You will need to skip SSL validation in order to use it.
 
 #### Starting the server with different databases
 
