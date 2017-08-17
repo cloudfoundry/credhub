@@ -5,7 +5,6 @@ import io.pivotal.security.domain.SshCredential;
 import io.pivotal.security.helper.JsonTestHelper;
 import io.pivotal.security.service.Encryption;
 import io.pivotal.security.util.TestConstants;
-import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,21 +41,25 @@ public class SshViewTest {
   }
 
   @Test
-  public void createsAViewFromEntity() {
+  public void createsAViewFromEntity() throws Exception {
     final CredentialView subject = SshView.fromEntity(entity);
 
-    JSONObject obj = new JSONObject();
-    obj.put("public_key", TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT);
-    obj.put("private_key", TestConstants.PRIVATE_KEY_4096);
-    obj.put("public_key_fingerprint", "UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc");
+    String escapedPrivateKey = TestConstants.PRIVATE_KEY_4096.replaceAll("\\\\n", "\\n");
+    System.out.println(escapedPrivateKey);
     String expected = "{"
         + "\"type\":\"ssh\","
         + "\"version_created_at\":null,"
         + "\"id\":\"" + CREDENTIAL_UUID.toString() + "\","
         + "\"name\":\"/foo\","
-        + "\"value\":" + obj.toString() + "}";
+        + "\"value\":{"
+        + "\"public_key\":\"" + TestConstants.SSH_PUBLIC_KEY_4096_WITH_COMMENT + "\","
+        + "\"private_key\":\"" + escapedPrivateKey + "\","
+        + "\"public_key_fingerprint\":\"UmqxK9UJJR4Jrcw0DcwqJlCgkeQoKp8a+HY+0p0nOgc\""
+        + "}"
+        + "}";
+
     String json = JsonTestHelper.serializeToString(subject);
-    assertThat(json, equalTo(expected));
+    assertThat(json.replaceAll("\\\\n", "\n"), equalTo(expected));
   }
 
   @Test

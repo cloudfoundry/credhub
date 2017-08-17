@@ -23,8 +23,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.UnsupportedEncodingException;
-
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
 import static org.apache.commons.lang.math.NumberUtils.isNumber;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -259,7 +257,7 @@ public class UserGenerationTest {
     assertThat(postHash.matches("^\\$6\\$[a-zA-Z0-9/.]+\\$[a-zA-Z0-9/.]+$"), equalTo(true));
   }
 
-  private JSONObject getJsonObject(MvcResult cred1) throws UnsupportedEncodingException {
+  private JSONObject getJsonObject(MvcResult cred1) throws Exception {
     JSONObject jsonCred1 = new JSONObject(cred1.getResponse().getContentAsString());
     return jsonCred1
         .getJSONArray("data")
