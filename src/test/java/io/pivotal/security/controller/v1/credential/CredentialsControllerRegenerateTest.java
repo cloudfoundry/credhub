@@ -1,22 +1,20 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.credential.RsaCredentialValue;
 import io.pivotal.security.credential.SshCredentialValue;
-import io.pivotal.security.credential.StringCredentialValue;
 import io.pivotal.security.data.CredentialDataService;
+import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.RsaCredential;
 import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.generator.PassayStringCredentialGenerator;
-import io.pivotal.security.generator.RsaGenerator;
 import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.RsaGenerationParameters;
 import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
@@ -28,7 +26,6 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,8 +41,11 @@ import java.util.function.Consumer;
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
 import static io.pivotal.security.helper.SpectrumHelper.mockOutCurrentTimeProvider;
 import static io.pivotal.security.util.AuthConstants.UAA_OAUTH2_PASSWORD_GRANT_TOKEN;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -71,17 +71,11 @@ public class CredentialsControllerRegenerateTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  @SpyBean
+  @Autowired
   private CredentialDataService credentialDataService;
 
-  @MockBean
-  private PassayStringCredentialGenerator passwordGenerator;
-
-  @MockBean
-  private SshGenerator sshGenerator;
-
-  @MockBean
-  private RsaGenerator rsaGenerator;
+  @Autowired
+  private EncryptionKeyCanaryDataService canaryDataService;
 
   @Autowired
   private Encryptor encryptor;
@@ -114,10 +108,6 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingAPassword_regeneratesThePassword_andPersistsAnAuditEntry() throws Exception {
-    UUID uuid = UUID.randomUUID();
-
-    when(passwordGenerator.generateCredential(any(StringGenerationParameters.class)))
-        .thenReturn(new StringCredentialValue("generated-credential"));
     PasswordCredential originalCredential = new PasswordCredential("my-password");
     originalCredential.setEncryptor(encryptor);
     StringGenerationParameters generationParameters = new StringGenerationParameters();
@@ -126,14 +116,7 @@ public class CredentialsControllerRegenerateTest {
         .setPasswordAndGenerationParameters("original-password", generationParameters);
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
-    doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
-
-    doAnswer(invocation -> {
-      PasswordCredential newCredential = invocation.getArgumentAt(0, PasswordCredential.class);
-      newCredential.setUuid(uuid);
-      newCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(10));
-      return newCredential;
-    }).when(credentialDataService).save(any(PasswordCredential.class));
+    credentialDataService.save(originalCredential);
 
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
@@ -147,16 +130,11 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.type").value("password"))
-        .andExpect(jsonPath("$.id").value(uuid.toString()))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    ArgumentCaptor<PasswordCredential> argumentCaptor = ArgumentCaptor
-        .forClass(PasswordCredential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    final PasswordCredential newPassword = (PasswordCredential) credentialDataService.findMostRecent("my-password");
 
-    PasswordCredential newPassword = argumentCaptor.getValue();
-
-    assertThat(newPassword.getPassword(), equalTo("generated-credential"));
+    assertThat(newPassword.getPassword(), not(equalTo("original-credential")));
     assertThat(newPassword.getGenerationParameters().isExcludeNumber(), equalTo(true));
 
     auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-password", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
@@ -164,22 +142,11 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingAnRsaKey_regeneratesTheRsaKey_andPersistsAnAuditEntry() throws Exception {
-    UUID uuid = UUID.randomUUID();
-
-    when(rsaGenerator.generateCredential(any(RsaGenerationParameters.class)))
-        .thenReturn(new RsaCredentialValue("public_key", "private_key"));
     RsaCredential originalCredential = new RsaCredential("my-rsa");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
-    doReturn(originalCredential).when(credentialDataService).findMostRecent("my-rsa");
-
-    doAnswer(invocation -> {
-      RsaCredential newCredential = invocation.getArgumentAt(0, RsaCredential.class);
-      newCredential.setUuid(uuid);
-      newCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(10));
-      return newCredential;
-    }).when(credentialDataService).save(any(RsaCredential.class));
+    credentialDataService.save(originalCredential);
 
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
@@ -193,40 +160,26 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.type").value("rsa"))
-        .andExpect(jsonPath("$.id").value(uuid.toString()))
         .andExpect(
             jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    ArgumentCaptor<RsaCredential> argumentCaptor = ArgumentCaptor
-        .forClass(RsaCredential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    RsaCredential newRsa = (RsaCredential) credentialDataService.findMostRecent("my-rsa");
 
-    RsaCredential newRsa = argumentCaptor.getValue();
-
-    assertThat(newRsa.getPrivateKey(), equalTo("private_key"));
-    assertThat(newRsa.getPublicKey(), equalTo("public_key"));
+    assertTrue(newRsa.getPublicKey().contains("-----BEGIN PUBLIC KEY-----"));
+    assertTrue(newRsa.getPrivateKey().contains("-----BEGIN RSA PRIVATE KEY-----"));
+    assertThat(originalCredential.getPublicKey(), not(equalTo(newRsa.getPublicKey())));
+    assertThat(originalCredential.getPrivateKey(), not(equalTo(newRsa.getPrivateKey())));
 
     auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-rsa", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
   }
 
   @Test
   public void regeneratingAnSshKey_regeneratesTheSshKey_andPersistsAnAuditEntry() throws Exception {
-    UUID uuid = UUID.randomUUID();
-
-    when(sshGenerator.generateCredential(any(SshGenerationParameters.class)))
-        .thenReturn(new SshCredentialValue("public_key", "private_key", null));
     SshCredential originalCredential = new SshCredential("my-ssh");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
 
-    doReturn(originalCredential).when(credentialDataService).findMostRecent("my-ssh");
-
-    doAnswer(invocation -> {
-      SshCredential newCredential = invocation.getArgumentAt(0, SshCredential.class);
-      newCredential.setUuid(uuid);
-      newCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(10));
-      return newCredential;
-    }).when(credentialDataService).save(any(SshCredential.class));
+    credentialDataService.save(originalCredential);
 
     fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
 
@@ -240,25 +193,20 @@ public class CredentialsControllerRegenerateTest {
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
         .andExpect(jsonPath("$.type").value("ssh"))
-        .andExpect(jsonPath("$.id").value(uuid.toString()))
         .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
 
-    ArgumentCaptor<SshCredential> argumentCaptor = ArgumentCaptor
-        .forClass(SshCredential.class);
-    verify(credentialDataService, times(1)).save(argumentCaptor.capture());
+    final SshCredential newSsh = (SshCredential) credentialDataService.findMostRecent("my-ssh");
 
-    SshCredential newSsh = argumentCaptor.getValue();
-
-    assertThat(newSsh.getPrivateKey(), equalTo("private_key"));
-    assertThat(newSsh.getPublicKey(), equalTo("public_key"));
+    assertThat(newSsh.getPrivateKey(), containsString("-----BEGIN RSA PRIVATE KEY-----"));
+    assertThat(newSsh.getPublicKey(), containsString("ssh-rsa "));
+    assertThat(newSsh.getPrivateKey(), not(equalTo(originalCredential.getPrivateKey())));
+    assertThat(newSsh.getPublicKey(), not(equalTo(originalCredential.getPublicKey())));
 
     auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-ssh", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
   }
 
   @Test
   public void regeneratingACredentialThatDoesNotExist_returnsAnError_andPersistsAnAuditEntry() throws Exception {
-    doReturn(null).when(credentialDataService).findMostRecent("my-password");
-
     MockHttpServletRequestBuilder request = post("/api/v1/data")
         .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
         .accept(APPLICATION_JSON)
@@ -281,7 +229,8 @@ public class CredentialsControllerRegenerateTest {
     PasswordCredential originalCredential = new PasswordCredential("my-password");
     originalCredential.setEncryptor(encryptor);
     originalCredential.setPasswordAndGenerationParameters("abcde", null);
-    doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
+
+    credentialDataService.save(originalCredential);
 
     String cannotRegenerateJson = "{" +
         "  \"error\": \"The password could not be regenerated because the value was " +
@@ -302,6 +251,9 @@ public class CredentialsControllerRegenerateTest {
 
   @Test
   public void regeneratingAPasswordWithParametersThatCannotBeDecrypted_returnsAnError() throws Exception {
+    EncryptionKeyCanary encryptionKeyCanary = new EncryptionKeyCanary();
+    canaryDataService.save(encryptionKeyCanary);
+
     PasswordCredentialData passwordCredentialData = new PasswordCredentialData(
         "my-password");
     PasswordCredential originalCredential = new PasswordCredential(passwordCredentialData);
@@ -309,12 +261,14 @@ public class CredentialsControllerRegenerateTest {
     originalCredential
         .setPasswordAndGenerationParameters("abcde", new StringGenerationParameters());
 
-    passwordCredentialData.setEncryptionKeyUuid(UUID.randomUUID());
-    doReturn(originalCredential).when(credentialDataService).findMostRecent("my-password");
+    passwordCredentialData.setEncryptionKeyUuid(encryptionKeyCanary.getUuid());
+
+    credentialDataService.save(originalCredential);
 
     // language=JSON
     String cannotRegenerate = "{\n" +
-        "  \"error\": \"The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue.\"\n" +
+        "  \"error\": \"The credential could not be accessed with the provided encryption keys. You must update your deployment configuration to continue" +
+        ".\"\n" +
         "}";
 
     MockHttpServletRequestBuilder request = post("/api/v1/data")
