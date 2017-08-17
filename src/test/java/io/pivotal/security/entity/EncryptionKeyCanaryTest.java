@@ -25,8 +25,7 @@ public class EncryptionKeyCanaryTest {
 
   @Test
   public void encryptedCanaryValue_doesNotStoreOrPassByReference() throws Exception {
-    byte[] toModify = new byte[20];
-    new Random().nextBytes(toModify);
+    byte[] toModify = new byte[] {1,2,3,4,5,6,7,8,9,0,11,22,33,44,55,66,77,88,99,100};
 
     subject.setEncryptedCanaryValue(toModify);
     byte[] unModified = toModify.clone();
