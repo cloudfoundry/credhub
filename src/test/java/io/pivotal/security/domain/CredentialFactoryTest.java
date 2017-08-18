@@ -193,7 +193,7 @@ public class CredentialFactoryTest {
             CREDENTIAL_NAME,
             userValue,
             null,
-            null);
+            generationParameters);
     assertThat(credential.getCredentialName().getName(), equalTo(CREDENTIAL_NAME));
     assertThat(credential.getUsername(), equalTo("username"));
     assertThat(credential.getPassword(), equalTo(PLAINTEXT_VALUE));

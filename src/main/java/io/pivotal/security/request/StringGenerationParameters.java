@@ -18,7 +18,6 @@ public class StringGenerationParameters {
   @JsonProperty(access = Access.WRITE_ONLY)
   private Integer length;
 
-  @JsonProperty(access = Access.WRITE_ONLY)
   private String username;
 
   private boolean excludeLower;

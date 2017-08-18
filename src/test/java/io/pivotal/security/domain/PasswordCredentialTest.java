@@ -1,6 +1,5 @@
 package io.pivotal.security.domain;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.pivotal.security.entity.PasswordCredentialData;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.service.Encryption;
@@ -40,7 +39,7 @@ public class PasswordCredentialTest {
   private byte[] parametersNonce;
 
   @Before
-  public void beforeEach() {
+  public void beforeEach() throws Exception {
     canaryUuid = UUID.randomUUID();
     encryptor = mock(Encryptor.class);
 
@@ -53,12 +52,7 @@ public class PasswordCredentialTest {
         .setExcludeLower(true)
         .setLength(10);
 
-    String generationParametersJson = null;
-    try {
-      generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
+    String generationParametersJson = new JsonObjectMapper().writeValueAsString(generationParameters);
 
     when(encryptor.encrypt(null))
         .thenReturn(new Encryption(canaryUuid, null, null));

@@ -1,28 +1,24 @@
 package io.pivotal.security.controller.v1.credential;
 
 import io.pivotal.security.CredentialManagerApp;
-import io.pivotal.security.credential.SshCredentialValue;
 import io.pivotal.security.data.CredentialDataService;
 import io.pivotal.security.data.EncryptionKeyCanaryDataService;
 import io.pivotal.security.domain.Encryptor;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.domain.RsaCredential;
 import io.pivotal.security.domain.SshCredential;
+import io.pivotal.security.domain.UserCredential;
 import io.pivotal.security.entity.EncryptionKeyCanary;
 import io.pivotal.security.entity.PasswordCredentialData;
-import io.pivotal.security.generator.PassayStringCredentialGenerator;
-import io.pivotal.security.generator.SshGenerator;
 import io.pivotal.security.helper.AuditingHelper;
 import io.pivotal.security.repository.EventAuditRecordRepository;
 import io.pivotal.security.repository.RequestAuditRecordRepository;
-import io.pivotal.security.request.SshGenerationParameters;
 import io.pivotal.security.request.StringGenerationParameters;
 import io.pivotal.security.util.CurrentTimeProvider;
 import io.pivotal.security.util.DatabaseProfileResolver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -35,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.Instant;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 import static io.pivotal.security.audit.AuditingOperationCode.CREDENTIAL_UPDATE;
@@ -46,12 +41,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -203,6 +192,45 @@ public class CredentialsControllerRegenerateTest {
     assertThat(newSsh.getPublicKey(), not(equalTo(originalCredential.getPublicKey())));
 
     auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/my-ssh", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
+  }
+
+  @Test
+  public void regeneratingAUser_regeneratesTheUser_andPersistsAnAuditEntry() throws Exception {
+    UserCredential originalCredential = new UserCredential("the-user");
+    originalCredential.setEncryptor(encryptor);
+    StringGenerationParameters generationParameters = new StringGenerationParameters();
+    generationParameters.setExcludeNumber(true);
+    generationParameters.setUsername("Darth Vader");
+    originalCredential
+        .setPassword("original-password");
+    originalCredential.setUsername("Darth Vader");
+    originalCredential.setSalt("pepper");
+    originalCredential.setGenerationParameters(generationParameters);
+    originalCredential.setVersionCreatedAt(FROZEN_TIME.plusSeconds(1));
+
+    credentialDataService.save(originalCredential);
+
+    fakeTimeSetter.accept(FROZEN_TIME.plusSeconds(10).toEpochMilli());
+
+    MockHttpServletRequestBuilder request = post("/api/v1/data")
+        .header("Authorization", "Bearer " + UAA_OAUTH2_PASSWORD_GRANT_TOKEN)
+        .accept(APPLICATION_JSON)
+        .contentType(APPLICATION_JSON)
+        .content("{\"regenerate\":true,\"name\":\"the-user\"}");
+
+    mockMvc.perform(request)
+        .andExpect(status().isOk())
+        .andExpect(content().contentTypeCompatibleWith(APPLICATION_JSON))
+        .andExpect(jsonPath("$.type").value("user"))
+        .andExpect(jsonPath("$.version_created_at").value(FROZEN_TIME.plusSeconds(10).toString()));
+
+    UserCredential newUser = (UserCredential) credentialDataService.findMostRecent("the-user");
+
+    assertThat(newUser.getPassword(), not(equalTo(originalCredential.getPassword())));
+    assertThat(newUser.getGenerationParameters().isExcludeNumber(), equalTo(true));
+    assertThat(newUser.getUsername(), equalTo(originalCredential.getUsername()));
+
+    auditingHelper.verifyAuditing(CREDENTIAL_UPDATE, "/the-user", "uaa-user:df0c1a26-2875-4bf5-baf9-716c6bb5ea6d", "/api/v1/data", 200);
   }
 
   @Test

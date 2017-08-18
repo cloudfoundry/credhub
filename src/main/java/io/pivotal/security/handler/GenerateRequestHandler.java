@@ -4,10 +4,11 @@ import io.pivotal.security.audit.EventAuditRecordParameters;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.credential.CredentialValue;
 import io.pivotal.security.domain.CredentialValueFactory;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
+import io.pivotal.security.request.UserGenerateRequest;
 import io.pivotal.security.service.CredentialService;
 import io.pivotal.security.service.GeneratorService;
 import io.pivotal.security.view.CredentialView;
@@ -39,6 +40,10 @@ public class GenerateRequestHandler {
     StringGenerationParameters generationParameters = null;
     if (requestBody instanceof PasswordGenerateRequest) {
       generationParameters = ((PasswordGenerateRequest) requestBody).getGenerationParameters();
+    }
+
+    if (requestBody instanceof UserGenerateRequest) {
+      generationParameters = ((UserGenerateRequest) requestBody).getPasswordGenerationParameters();
     }
 
     return credentialService.save(

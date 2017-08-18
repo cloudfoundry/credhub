@@ -8,17 +8,19 @@ import io.pivotal.security.domain.Credential;
 import io.pivotal.security.domain.CredentialValueFactory;
 import io.pivotal.security.domain.PasswordCredential;
 import io.pivotal.security.exceptions.EntryNotFoundException;
-import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.BaseCredentialGenerateRequest;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PasswordGenerateRequest;
+import io.pivotal.security.request.PermissionEntry;
 import io.pivotal.security.request.StringGenerationParameters;
+import io.pivotal.security.request.UserGenerateRequest;
 import io.pivotal.security.service.regeneratables.CertificateCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.NotRegeneratable;
 import io.pivotal.security.service.regeneratables.PasswordCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.Regeneratable;
 import io.pivotal.security.service.regeneratables.RsaCredentialRegeneratable;
 import io.pivotal.security.service.regeneratables.SshCredentialRegeneratable;
+import io.pivotal.security.service.regeneratables.UserCredentialRegeneratable;
 import io.pivotal.security.view.CredentialView;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +49,7 @@ public class RegenerateService {
 
     this.regeneratableTypes = new HashMap<>();
     this.regeneratableTypes.put("password", PasswordCredentialRegeneratable::new);
+    this.regeneratableTypes.put("user", UserCredentialRegeneratable::new);
     this.regeneratableTypes.put("ssh", SshCredentialRegeneratable::new);
     this.regeneratableTypes.put("rsa", RsaCredentialRegeneratable::new);
     this.regeneratableTypes.put("certificate", CertificateCredentialRegeneratable::new);
@@ -80,6 +83,9 @@ public class RegenerateService {
     StringGenerationParameters generationParameters = null;
     if (generateRequest instanceof PasswordGenerateRequest) {
       generationParameters = ((PasswordGenerateRequest) generateRequest).getGenerationParameters();
+    }
+    if (generateRequest instanceof UserGenerateRequest) {
+      generationParameters = ((UserGenerateRequest) generateRequest).getPasswordGenerationParameters();
     }
 
     return credentialService.save(

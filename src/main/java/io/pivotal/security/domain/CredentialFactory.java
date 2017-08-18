@@ -100,6 +100,7 @@ public class CredentialFactory {
         break;
       case user:
         credential = new UserCredential((UserCredentialValue) credentialValue,
+            passwordGenerationParameters,
             encryptor);
         break;
       default:

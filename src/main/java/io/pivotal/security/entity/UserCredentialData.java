@@ -6,6 +6,8 @@ import javax.persistence.Entity;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.SecondaryTable;
 
+import static io.pivotal.security.constants.EncryptionConstants.NONCE_SIZE;
+
 @Entity
 @DiscriminatorValue("user")
 @SecondaryTable(
@@ -21,6 +23,12 @@ public class UserCredentialData extends CredentialData<UserCredentialData> {
 
   @Column(table = UserCredentialData.TABLE_NAME, length = 20)
   private String salt;
+
+  @Column(table = UserCredentialData.TABLE_NAME, length = 255 + NONCE_SIZE)
+  private byte[] encryptedGenerationParameters;
+
+  @Column(table = UserCredentialData.TABLE_NAME, length = NONCE_SIZE)
+  private byte[] parametersNonce;
 
   public UserCredentialData() {
     this(null);
@@ -51,5 +59,23 @@ public class UserCredentialData extends CredentialData<UserCredentialData> {
 
   public String getSalt() {
     return salt;
+  }
+
+  public byte[] getEncryptedGenerationParameters() {
+    return encryptedGenerationParameters;
+  }
+
+  public UserCredentialData setEncryptedGenerationParameters(byte[] encryptedGenerationParameters) {
+    this.encryptedGenerationParameters = encryptedGenerationParameters == null ? null : encryptedGenerationParameters.clone();
+    return this;
+  }
+
+  public byte[] getParametersNonce() {
+    return parametersNonce;
+  }
+
+  public UserCredentialData setParametersNonce(byte[] parametersNonce) {
+    this.parametersNonce = parametersNonce == null ? null : parametersNonce.clone();
+    return this;
   }
 }

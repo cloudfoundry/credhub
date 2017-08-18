@@ -28,4 +28,8 @@ public class UserGenerateRequest extends BaseCredentialGenerateRequest {
   public void setValue(UsernameValue value) {
     this.value = value;
   }
+
+  public void setGenerationParameters(StringGenerationParameters generationParameters) {
+    passwordGenerationParameters = generationParameters;
+  }
 }
