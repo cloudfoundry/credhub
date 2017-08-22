@@ -26,6 +26,12 @@ The API endpoints and associated CLI commands for interactions with CredHub are 
 
     **Status**: In Development
 
+* **CredHub should support BBR for backing up and restoring its database**
+
+    The goal of this initiative is to allow users of [BBR](https://github.com/cloudfoundry-incubator/bosh-backup-and-restore) to backup and restore the CredHub database using the BBR utility. 
+
+    **Status**: In Development
+
 * **Integration with Concourse CI**
 
     The goal of this initiative is to integrate with Concourse CI to enable credential generation and storage in CredHub.
