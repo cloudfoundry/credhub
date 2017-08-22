@@ -126,7 +126,7 @@ Deployment manifests often use common variable names, e.g. `((password))`. To av
 
 If you wish to share credentials across deployments or simply want to use an exact name, prefixing the variable with a `/`, e.g. `((/example-password))`, will cause the Director to use the exact name. 
 
-More information on the BOSH Director integration can be [found here.](https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/initiatives/bosh-config-server.md)
+More information on the BOSH Director integration can be [found here.](bosh-config-server.md)
 
 ## CLI Usage
 
