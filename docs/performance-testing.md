@@ -6,7 +6,7 @@ This document provides the configuration and results of a performance test of Cr
 
 ## Benchmarking Setup 
 
-Our intention for the performance test is to validate the performance of the CredHub application itself. For this reason, the test was setup to minimize external factors. For example, we have chosen to overprovision the backing database and to configure the network to minimize latency. Your results may be affected by these factors if your environment does not allow this setup. 
+Our intention for the performance test is to validate the performance of the CredHub application itself. For this reason, the test was setup to minimize external factors. For example, we have chosen to over provision the backing database and to configure the network to minimize latency. Your results may be affected by these factors if your environment does not allow this setup. 
 
 The performance test consists of sending requests at gradually increasing levels of concurrency. The test tools are packaged as a BOSH release and deployed to a dedicated VM. Each request authenticates with CredHub via mutual TLS and performs a command, e.g. getting or setting a credential. The response latency is captured and stored in a CSV file. This CSV is then loaded into a plotting library to generate a headroom plot to visualize the data.
 

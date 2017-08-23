@@ -50,7 +50,7 @@ Trusted mutual TLS CAs for CredHub are configured in the deployment manifest. Al
               -----END CERTIFICATE-----
 ```
 
-To establish a successful mutual TLS handshake, TLS termination must be performed at the CredHub application. This requires an architecture that provides passthrough load balancing to the deployed CredHub instances. For example, routing through the Cloud Foundry router or an external TLS-terminating load balancer is not possible if you wish to use mutual TLS authentication for clients. 
+To establish a successful mutual TLS handshake, TLS termination must be performed at the CredHub application. This requires an architecture that provides pass through load balancing to the deployed CredHub instances. For example, routing through the Cloud Foundry router or an external TLS-terminating load balancer is not possible if you wish to use mutual TLS authentication for clients. 
 
 ### Limitations 
 

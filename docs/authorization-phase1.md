@@ -18,7 +18,7 @@ The components of functionality are detailed below.
 
 #### Access control based on credentials ACLs
 
-Ability to perform an operation will be determined based on the identity of the requestor, the operation and the ACL of the resource. ACLs are expressed as allowances, so if a requestor does not have an explicit allowance, they will be denied access. For example, if user 'dan' requests to read credential 'password', they would be allowed to read if the 'password' ACL contains an entry for 'actor: dan; operation: read'. 
+Ability to perform an operation will be determined based on the identity of the requester, the operation and the ACL of the resource. ACLs are expressed as allowances, so if a requester does not have an explicit allowance, they will be denied access. For example, if user 'dan' requests to read credential 'password', they would be allowed to read if the 'password' ACL contains an entry for 'actor: dan; operation: read'. 
 
 ##### Supported Resources 
 
