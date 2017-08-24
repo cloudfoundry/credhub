@@ -74,7 +74,7 @@ The client and server TLS connections are terminated in the application and not 
 
 | Request Type |  Number of Instances | Headroom Plot |
 |------|-----|------|
-| Get |  1 | ![GET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/GET1instance.png) |
+| Get |  1 | ![GET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/GET_1_instance.png) |
 
 
 ## How to build your own Headroom Plot
