@@ -11,14 +11,6 @@ Our intention for the performance test is to validate the performance of the Cre
 The performance test consists of sending requests at gradually increasing levels of concurrency. The test tools are packaged as a BOSH release and deployed to a dedicated VM. Each request authenticates with CredHub via mutual TLS and performs a command, e.g. getting or setting a credential. The response latency is captured and stored in a CSV file. This CSV is then loaded into a plotting library to generate a headroom plot to visualize the data.
 
 
-#### Request details 
-
-| Request Type |  Number of Requests/Step | Min Concurrency | Max Concurrency | Concurrency Step |
-|------|-----|------|-------|-------|
-| Get |  500 | 1 | 60 | 1 |
-| Set | 500 | 1 | 35 | 1 | 
-| Interpolate | 500 | 1 | 50 | 1 |
-
 #### Tools
 
 * **[Hey][2]**: A golang tool which load tests a given endpoint with a given number of requests at a given concurrency and prints the results in a csv file. We use a forked version of hey that enables mtls and start time measurement.
@@ -77,11 +69,33 @@ After every run of the performance test, the database is truncated to ensure eac
 
 ## Performance Results
 
-| Request Type |  Number of Instances | Headroom Plot |
-|------|-----|------|
-| Get |  1 | ![GET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/GET_1_instance.png) |
-| Set |  1 | ![SET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/SET_1_instance.png) |
-| Interpolate |  1 | ![INTERPOLATE1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/INTERPOLATE_1_instance.png) |
+#### Request Details 
+
+A single credential is set or retrieved in the get and set request tests. The interpolate tests retrieve and interpolate 3 credential values into a request json object per request. 
+
+| Request Type |  Instances | Number of Requests/Step | Concurrency Step | Min Concurrency | Max Concurrency | Total Requests | 
+|------|-----|------|-------|-------|------|------|
+| Get         | 1  | 500 | 1 | 1 | 60  | 30000
+|             | 2  | 500 | 1 | 1 | TBD | TBD 
+|             | 4  | 500 | 1 | 1 | TBD | TBD 
+|             | 10 | 500 | 1 | 1 | TBD | TBD 
+| Set         | 1  | 500 | 1 | 1 | 35 | 17500
+|             | 2  | 500 | 1 | 1 | TBD | TBD 
+|             | 4  | 500 | 1 | 1 | TBD | TBD 
+|             | 10 | 500 | 1 | 1 | TBD | TBD 
+| Interpolate | 1  | 500 | 1 | 1 | 50 | 25000
+|             | 2  | 500 | 1 | 1 | TBD | TBD 
+|             | 4  | 500 | 1 | 1 | TBD | TBD 
+|             | 10 | 500 | 1 | 1 | TBD | TBD 
+
+#### Results
+
+| Instances |  Get | Set | Interpolate |
+|------|-----|------|-----|
+| 1  | ![GET1](images/GET_1_instance.png) | ![SET1](images/SET_1_instance.png) | ![INTERPOLATE1](images/INTERPOLATE_1_instance.png) |
+| 2  | | | |
+| 4  | | | |
+| 10 | | | |
 
 
 ## How to build your own Headroom Plot
