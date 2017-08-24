@@ -70,6 +70,11 @@ All the VMs are deployed in the same AZ on AWS. The CredHub instances are deploy
 
 The client and server TLS connections are terminated in the application and not in load balancers or a TLS termination proxy.
 
+#### Data Configuration
+
+Before every run of the performance test, the database is seeded with the JSON credentials which shall be tested against.
+After every run of the performance test, the database is truncated to ensure each run is clean and unaffected by previous runs.
+
 ## Performance Results
 
 | Request Type |  Number of Instances | Headroom Plot |
