@@ -15,9 +15,9 @@ The performance test consists of sending requests at gradually increasing levels
 
 | Request Type |  Number of Requests/Step | Min Concurrency | Max Concurrency | Concurrency Step |
 |------|-----|------|-------|-------|
-| Get |  500 | 1 | 50 | 1 |
-| Set | TBD | TBD | TBD | TBD | 
-| Interpolate | TBD | TBD | TBD | TBD |
+| Get |  500 | 1 | 60 | 1 |
+| Set | 500 | 1 | 35 | 1 | 
+| Interpolate | 500 | 1 | 50 | 1 |
 
 #### Tools
 
@@ -75,6 +75,7 @@ The client and server TLS connections are terminated in the application and not 
 | Request Type |  Number of Instances | Headroom Plot |
 |------|-----|------|
 | Get |  1 | ![GET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/GET_1_instance.png) |
+| Set |  1 | ![SET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/SET_1_instance.png) |
 
 
 ## How to build your own Headroom Plot
