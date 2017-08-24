@@ -76,6 +76,7 @@ The client and server TLS connections are terminated in the application and not 
 |------|-----|------|
 | Get |  1 | ![GET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/GET_1_instance.png) |
 | Set |  1 | ![SET1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/SET_1_instance.png) |
+| Interpolate |  1 | ![INTERPOLATE1](https://github.com/cloudfoundry-incubator/credhub/blob/master/images/INTERPOLATE_1_instance.png) |
 
 
 ## How to build your own Headroom Plot
