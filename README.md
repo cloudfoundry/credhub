@@ -1,10 +1,10 @@
-# CredHub [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
+# <img src="docs/images/logo.svg" height="70" width="60"> CredHub [![slack.cloudfoundry.org](https://slack.cloudfoundry.org/badge.svg)](https://slack.cloudfoundry.org)
 
 CredHub manages credentials like passwords, certificates, certificate authorities, ssh keys, rsa keys and arbitrary values (strings and JSON blobs). CredHub provides a CLI and API to get, set, generate and securely store such credentials.
 
 * [Documentation](docs/)
 * [CredHub Tracker](https://www.pivotaltracker.com/n/projects/1977341)
- 
+
 CredHub is intended to be deployed by [BOSH](https://bosh.io) using the [credhub-release](https://github.com/pivotal-cf/credhub-release) BOSH release. This repository is for development and is **not intended to be directly deployable**.
 
 Additional repos:
@@ -58,7 +58,7 @@ Launching in production directly using the `bootRun` target is **unsafe**, as yo
 
 Configuration for the server is spread across the `application*.yml` files.
 
-* Configuration shared by all environments (dev, test, or BOSH-deployed) is in `application.yml`. 
+* Configuration shared by all environments (dev, test, or BOSH-deployed) is in `application.yml`.
 * Development-specific configuration is in `application-dev.yml`. This includes:
   * A UAA URL intended for development use only,
   * A JWT public verification key for use with that UAA, and
@@ -189,6 +189,6 @@ Assuming it works, that will generate some test client certificates for testing 
 1. Search for and install FindBugs
 1. Goto Preferences -> Other Settings -> FindBugs-IDEA
 1. Click on import button and import config/findbugs/findbugs-idea.xml
-1. Click `+` under `Plugins` and select `Find Security Bugs` 
+1. Click `+` under `Plugins` and select `Find Security Bugs`
 1. Click on filters
 1. Click `+` under `Exclude filter files` and select config/findbugs/findbugs-filter.xml
