@@ -85,7 +85,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 |             | 10 | 500 | 1 | 1 | TBD | TBD 
 | Interpolate | 1  | 500 | 1 | 1 | 50 | 25000
 |             | 2  | 500 | 1 | 1 | 50 | 25000 
-|             | 4  | 500 | 1 | 1 | TBD | TBD 
+|             | 4  | 500 | 1 | 1 | 50 | 25000 
 |             | 10 | 500 | 1 | 1 | TBD | TBD 
 
 #### Results
@@ -94,7 +94,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 |------|-----|------|-----|
 | 1  | ![GET1](images/GET_1_instance.png) | ![SET1](images/SET_1_instance.png) | ![INTERPOLATE1](images/INTERPOLATE_1_instance.png) |
 | 2  | ![GET2](images/GET_2_instance.png) | | ![INTERPOLATE2](images/INTERPOLATE_2_instance.png) |
-| 4  | | | |
+| 4  | | | ![INTERPOLATE4](images/INTERPOLATE_4_instance.png) |
 | 10 | | | |
 
 
