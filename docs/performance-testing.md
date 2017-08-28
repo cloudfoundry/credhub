@@ -94,7 +94,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 | Instances |  Get | Set | Interpolate |
 |------|-----|------|-----|
 | 1  | ![GET1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_1_instance.png) | ![SET1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/SET_1_instance.png) | ![INTERPOLATE1](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_1_instance.png) |
-| 2  | ![GET2](images/https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/GET_2_instance.png) | | ![INTERPOLATE2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_2_instance.png) |
+| 2  | ![GET2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_2_instance.png) | | ![INTERPOLATE2](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_2_instance.png) |
 | 4  | ![GET4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/GET_4_instance.png) | | ![INTERPOLATE4](https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/INTERPOLATE_4_instance.png) |
 | 10 | | | |
 
