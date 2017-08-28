@@ -76,7 +76,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 | Request Type |  Instances | Number of Requests/Step | Concurrency Step | Min Concurrency | Max Concurrency | Total Requests | 
 |------|-----|------|-------|-------|------|------|
 | Get         | 1  | 500 | 1 | 1 | 60  | 30000
-|             | 2  | 500 | 1 | 1 | TBD | TBD 
+|             | 2  | 500 | 1 | 1 | 60 | 30000 
 |             | 4  | 500 | 1 | 1 | TBD | TBD 
 |             | 10 | 500 | 1 | 1 | TBD | TBD 
 | Set         | 1  | 500 | 1 | 1 | 35 | 17500
@@ -93,7 +93,7 @@ A single credential is set or retrieved in the get and set request tests. The in
 | Instances |  Get | Set | Interpolate |
 |------|-----|------|-----|
 | 1  | ![GET1](images/GET_1_instance.png) | ![SET1](images/SET_1_instance.png) | ![INTERPOLATE1](images/INTERPOLATE_1_instance.png) |
-| 2  | | | |
+| 2  | ![GET2](images/GET_2_instance.png) | | |
 | 4  | | | |
 | 10 | | | |
 
