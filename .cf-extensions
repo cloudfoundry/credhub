@@ -1,0 +1,9 @@
+---
+description: CredHub centralizes and secures credential generation, storage, lifecycle management, and access.
+lead_company: Pivotal
+contact_email: djahner@pivotal.io
+tracker_url: https://www.pivotaltracker.com/n/projects/1977341
+proposal_url: https://github.com/cloudfoundry-incubator/credhub/blob/master/docs/product-summary.md
+proposed_date: '2017-02-20T12:00:00.000Z'
+logo_url: https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/logo.png
+icon_url: https://raw.githubusercontent.com/cloudfoundry-incubator/credhub/master/docs/images/icon.png
