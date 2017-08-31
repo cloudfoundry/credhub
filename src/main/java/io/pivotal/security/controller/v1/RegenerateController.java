@@ -1,7 +1,7 @@
 package io.pivotal.security.controller.v1;
 
-import com.google.common.collect.Lists;
-import io.pivotal.security.audit.EventAuditRecordParameters;
+import io.pivotal.security.audit.EventAuditLogService;
+import io.pivotal.security.audit.RequestUuid;
 import io.pivotal.security.auth.UserContext;
 import io.pivotal.security.request.CredentialRegenerateRequest;
 import io.pivotal.security.request.PermissionEntry;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.List;
 
 @RestController
 @RequestMapping(
@@ -29,23 +28,28 @@ public class RegenerateController {
   public static final String API_V1_REGENERATE = "api/v1/regenerate";
 
   private static final Logger LOGGER = LogManager.getLogger(RegenerateController.class);
+  private final EventAuditLogService eventAuditLogService;
   private RegenerateService regenerateService;
 
   @Autowired
-  public RegenerateController(RegenerateService regenerateService) {
+  public RegenerateController(RegenerateService regenerateService,
+                              EventAuditLogService eventAuditLogService) {
     this.regenerateService = regenerateService;
+    this.eventAuditLogService = eventAuditLogService;
   }
 
   @RequestMapping(path = "", method = RequestMethod.POST)
   @ResponseStatus(HttpStatus.OK)
-  // TODO: retry logic
-  // TODO: audit log
+  // Since regeneration, by definition, never tries to create a new credential, there is no need for
+  // us to detect a failed creation and retry the operation
   public CredentialView regenerate(UserContext userContext,
+                                   RequestUuid requestUuid,
                                    PermissionEntry currentUserPermissionEntry,
                                    @RequestBody CredentialRegenerateRequest requestBody) throws IOException {
-    List<EventAuditRecordParameters> parametersList = Lists.newArrayList();
-    requestBody.setRegenerate(true);
-    return regenerateService
-        .performRegenerate(userContext, parametersList, requestBody, currentUserPermissionEntry);
+    return eventAuditLogService
+        .auditEvents(requestUuid, userContext, (parametersList -> {
+          return regenerateService
+              .performRegenerate(userContext, parametersList, requestBody, currentUserPermissionEntry);
+        }));
   }
 }

@@ -47,7 +47,8 @@ public class AuditingHelper {
     assertThat(requestAuditRecord.getPath(), equalTo(path));
     assertThat(requestAuditRecord.getStatusCode(), equalTo(statusCode));
 
-    EventAuditRecord eventAuditRecord = eventAuditRecordRepository.findAll(new Sort(DESC, "now")).get(0);
+    List<EventAuditRecord> auditRecords = eventAuditRecordRepository.findAll(new Sort(DESC, "now"));
+    EventAuditRecord eventAuditRecord = auditRecords.get(0);
     assertThat(eventAuditRecord.getOperation(), equalTo(auditingOperationCode.toString()));
     assertThat(eventAuditRecord.getCredentialName(), equalTo(credentialName));
     assertThat(eventAuditRecord.isSuccess(), equalTo(HttpStatus.valueOf(statusCode).is2xxSuccessful()));
