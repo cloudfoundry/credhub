@@ -462,14 +462,14 @@ public class PermissionAndCredentialTest {
   }
 
   private void auditsTheRequestWithNoNewPermissions() throws Exception {
-    List<EventAuditRecordParameters> parametersList = newArrayList(
+    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
         new EventAuditRecordParameters(CREDENTIAL_ACCESS, "/test-password")
     );
     auditingHelper.verifyAuditing(
         "uaa-client:credhub_test",
         "/api/v1/data",
         200,
-        parametersList
+        auditRecordParameters
     );
   }
 
@@ -497,7 +497,7 @@ public class PermissionAndCredentialTest {
   }
 
   private void auditsTheRequestWithNewPermissions() {
-    List<EventAuditRecordParameters> parametersList = newArrayList(
+    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
         new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
         new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, MTLS_APP_GUID),
         new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, "uaa-client:credhub_test"),
@@ -508,7 +508,7 @@ public class PermissionAndCredentialTest {
         "uaa-client:credhub_test",
         "/api/v1/data",
         200,
-        parametersList
+        auditRecordParameters
     );
   }
 
@@ -541,7 +541,7 @@ public class PermissionAndCredentialTest {
   }
 
   private void auditsTheRequest(String actor) {
-    List<EventAuditRecordParameters> parametersList = newArrayList(
+    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
         new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
         new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, actor),
         new EventAuditRecordParameters(ACL_UPDATE, "/test-password", WRITE, actor),
@@ -554,12 +554,12 @@ public class PermissionAndCredentialTest {
         actor,
         "/api/v1/data",
         200,
-        parametersList
+        auditRecordParameters
     );
   }
 
   private void auditsTheRequestWithExtraActor(String actor) {
-    List<EventAuditRecordParameters> parametersList = newArrayList(
+    List<EventAuditRecordParameters> auditRecordParameters = newArrayList(
         new EventAuditRecordParameters(CREDENTIAL_UPDATE, "/test-password"),
         new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, MTLS_APP_GUID),
         new EventAuditRecordParameters(ACL_UPDATE, "/test-password", READ, actor),
@@ -573,7 +573,7 @@ public class PermissionAndCredentialTest {
         actor,
         "/api/v1/data",
         200,
-        parametersList
+        auditRecordParameters
     );
   }
 

@@ -68,7 +68,7 @@ public class CredentialServiceTest {
 
   private Credential existingCredential;
   private UserContext userContext;
-  private List<EventAuditRecordParameters> parametersList;
+  private List<EventAuditRecordParameters> auditRecordParameters;
   private StringGenerationParameters generationParameters;
   private CredentialValue credentialValue;
   private List<PermissionEntry> accessControlEntries;
@@ -87,7 +87,7 @@ public class CredentialServiceTest {
         credentialFactory);
 
     userContext = mock(UserContext.class);
-    parametersList = new ArrayList<>();
+    auditRecordParameters = new ArrayList<>();
     generationParameters = mock(StringGenerationParameters.class);
     credentialValue = mock(CredentialValue.class);
     accessControlEntries = new ArrayList<>();
@@ -107,7 +107,7 @@ public class CredentialServiceTest {
         .thenReturn(true);
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         false,
         "user",
@@ -124,7 +124,7 @@ public class CredentialServiceTest {
         .thenReturn(true);
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         false,
         "password",
@@ -133,8 +133,8 @@ public class CredentialServiceTest {
         accessControlEntries,
         currentUserPermissions);
 
-    assertThat(parametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
-    assertThat(parametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_ACCESS));
+    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
   }
 
   @Test
@@ -147,7 +147,7 @@ public class CredentialServiceTest {
 
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         true,
         "password",
@@ -156,8 +156,8 @@ public class CredentialServiceTest {
         accessControlEntries,
         currentUserPermissions);
 
-    assertThat(parametersList.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_UPDATE));
-    assertThat(parametersList.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
+    assertThat(auditRecordParameters.get(0).getAuditingOperationCode(), equalTo(CREDENTIAL_UPDATE));
+    assertThat(auditRecordParameters.get(0).getCredentialName(), equalTo(CREDENTIAL_NAME));
   }
 
   @Test
@@ -173,7 +173,7 @@ public class CredentialServiceTest {
 
       subject.save(
           userContext,
-          parametersList,
+          auditRecordParameters,
           CREDENTIAL_NAME,
           true,
           "password",
@@ -192,7 +192,7 @@ public class CredentialServiceTest {
     when(permissionService.hasPermission(userContext.getAclUser(), CREDENTIAL_NAME, WRITE)).thenReturn(true);
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         false,
         "password",
@@ -211,7 +211,7 @@ public class CredentialServiceTest {
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         false,
         "password",
@@ -235,7 +235,7 @@ public class CredentialServiceTest {
         .add(new PermissionEntry("some_actor", Arrays.asList(PermissionOperation.READ_ACL)));
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         false,
         "password",
@@ -259,7 +259,7 @@ public class CredentialServiceTest {
     try {
       subject.save(
           userContext,
-          parametersList,
+          auditRecordParameters,
           CREDENTIAL_NAME,
           false,
           "password",
@@ -278,7 +278,7 @@ public class CredentialServiceTest {
         .thenReturn(new PasswordCredential().setEncryptor(encryptor));
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         false,
         "password",
@@ -305,7 +305,7 @@ public class CredentialServiceTest {
 
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         true,
         "password",
@@ -332,7 +332,7 @@ public class CredentialServiceTest {
 
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         true,
         "password",
@@ -351,7 +351,7 @@ public class CredentialServiceTest {
 
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         true,
         "password",
@@ -378,7 +378,7 @@ public class CredentialServiceTest {
 
     subject.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         CREDENTIAL_NAME,
         true,
         "password",
@@ -387,37 +387,37 @@ public class CredentialServiceTest {
         accessControlEntries,
         currentUserPermissions);
 
-    assertThat(parametersList, hasItem(
+    assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, "Spock")
         )));
 
-    assertThat(parametersList, hasItem(
+    assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, "McCoy")
         )));
 
-    assertThat(parametersList, hasItem(
+    assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, DELETE, "Kirk")
         )));
 
-    assertThat(parametersList, hasItem(
+    assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ, "Kirk")
         )));
 
-    assertThat(parametersList, hasItem(
+    assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE, "Kirk")
         )));
 
-    assertThat(parametersList, hasItem(
+    assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, WRITE_ACL, "Kirk")
         )));
 
-    assertThat(parametersList, hasItem(
+    assertThat(auditRecordParameters, hasItem(
         samePropertyValuesAs(
             new EventAuditRecordParameters(ACL_UPDATE, CREDENTIAL_NAME, READ_ACL, "Kirk")
         )));

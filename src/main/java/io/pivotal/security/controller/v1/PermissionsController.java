@@ -76,8 +76,8 @@ public class PermissionsController {
       UserContext userContext,
       @Validated @RequestBody PermissionsRequest accessEntriesRequest
   ) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, parametersList -> {
-      parametersList.addAll(createPermissionsEventAuditParameters(
+    return eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters -> {
+      auditRecordParameters.addAll(createPermissionsEventAuditParameters(
           ACL_UPDATE,
           accessEntriesRequest.getCredentialName(),
           accessEntriesRequest.getPermissions())
@@ -99,11 +99,11 @@ public class PermissionsController {
       UserContext userContext
 
   ) {
-    eventAuditLogService.auditEvents(requestUuid, userContext, parameterList -> {
+    eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters -> {
       List<PermissionOperation> operationList = permissionsDataService
           .getAllowedOperations(credentialName, actor);
 
-      parameterList.addAll(createPermissionEventAuditRecordParameters(
+      auditRecordParameters.addAll(createPermissionEventAuditRecordParameters(
           ACL_DELETE,
           credentialName,
           actor,

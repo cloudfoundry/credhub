@@ -220,11 +220,11 @@ public class CredentialsController {
       PermissionEntry currentUserPermissionEntry
   ) {
     return eventAuditLogService
-        .auditEvents(requestUuid, userContext, (parametersList -> {
+        .auditEvents(requestUuid, userContext, (auditRecordParameters -> {
           return deserializeAndHandlePostRequest(
               inputStream,
               userContext,
-              parametersList,
+              auditRecordParameters,
               currentUserPermissionEntry);
         }));
   }
@@ -232,7 +232,7 @@ public class CredentialsController {
   private CredentialView deserializeAndHandlePostRequest(
       InputStream inputStream,
       UserContext userContext,
-      List<EventAuditRecordParameters> parametersList,
+      List<EventAuditRecordParameters> auditRecordParameters,
       PermissionEntry currentUserPermissionEntry
   ) {
     try {
@@ -244,10 +244,9 @@ public class CredentialsController {
         // would be nice if Jackson could pick a subclass based on an arbitrary function, since
         // we want to consider both type and .regenerate. We could do custom deserialization but
         // then we'd have to do the entire job by hand.
-        return handleRegenerateRequest(userContext, parametersList, requestString,
-            currentUserPermissionEntry);
+        return handleRegenerateRequest(userContext, requestString, currentUserPermissionEntry, auditRecordParameters);
       } else {
-        return handleGenerateRequest(userContext, parametersList, requestString,
+        return handleGenerateRequest(userContext, auditRecordParameters, requestString,
             currentUserPermissionEntry);
       }
     } catch (IOException e) {
@@ -257,7 +256,7 @@ public class CredentialsController {
 
   private CredentialView handleGenerateRequest(
       UserContext userContext,
-      List<EventAuditRecordParameters> parametersList,
+      List<EventAuditRecordParameters> auditRecordParameters,
       String requestString,
       PermissionEntry currentUserPermissionEntry
   ) throws IOException {
@@ -266,20 +265,18 @@ public class CredentialsController {
     requestBody.validate();
 
     return generateRequestHandler
-        .handle(userContext, parametersList, requestBody, currentUserPermissionEntry);
+        .handle(requestBody, userContext, currentUserPermissionEntry, auditRecordParameters);
   }
 
   private CredentialView handleRegenerateRequest(
       UserContext userContext,
-      List<EventAuditRecordParameters> parametersList,
-      String requestString,
-      PermissionEntry currentUserPermissionEntry
+      String requestString, PermissionEntry currentUserPermissionEntry, List<EventAuditRecordParameters> auditRecordParameters
   ) throws IOException {
     CredentialRegenerateRequest requestBody = objectMapper
         .readValue(requestString, CredentialRegenerateRequest.class);
 
     return regenerateService
-        .performRegenerate(requestBody.getName(), userContext, currentUserPermissionEntry, parametersList);
+        .performRegenerate(requestBody.getName(), userContext, currentUserPermissionEntry, auditRecordParameters);
   }
 
   private CredentialView auditedHandlePutRequest(
@@ -288,17 +285,17 @@ public class CredentialsController {
       UserContext userContext,
       PermissionEntry currentUserPermissionEntry
   ) {
-    return eventAuditLogService.auditEvents(requestUuid, userContext, parametersList ->
-        handlePutRequest(requestBody, userContext, parametersList, currentUserPermissionEntry));
+    return eventAuditLogService.auditEvents(requestUuid, userContext, auditRecordParameters ->
+        handlePutRequest(requestBody, userContext, auditRecordParameters, currentUserPermissionEntry));
   }
 
   private CredentialView handlePutRequest(
       @RequestBody BaseCredentialSetRequest requestBody,
       UserContext userContext,
-      List<EventAuditRecordParameters> parametersList,
+      List<EventAuditRecordParameters> auditRecordParameters,
       PermissionEntry currentUserPermissionEntry
   ) {
-    return setRequestHandler.handle(userContext, parametersList, requestBody,
+    return setRequestHandler.handle(userContext, auditRecordParameters, requestBody,
         currentUserPermissionEntry);
   }
 

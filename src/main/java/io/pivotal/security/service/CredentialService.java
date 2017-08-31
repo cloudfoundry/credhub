@@ -50,21 +50,22 @@ public class CredentialService {
 
   public CredentialView save(
       UserContext userContext,
-      List<EventAuditRecordParameters> parametersList,
+      List<EventAuditRecordParameters> auditRecordParameters,
       String credentialName,
       boolean isOverwrite,
       String type,
       StringGenerationParameters generationParameters,
       CredentialValue credentialValue,
       List<PermissionEntry> accessControlEntries,
-      PermissionEntry currentUserPermissionEntry) {
+      PermissionEntry currentUserPermissionEntry
+  ) {
     Credential existingCredential = credentialDataService.findMostRecent(credentialName);
 
     boolean shouldWriteNewEntity = existingCredential == null || isOverwrite;
 
     AuditingOperationCode credentialOperationCode =
         shouldWriteNewEntity ? CREDENTIAL_UPDATE : CREDENTIAL_ACCESS;
-    parametersList
+    auditRecordParameters
         .add(new EventAuditRecordParameters(credentialOperationCode, credentialName));
 
     if (existingCredential != null) {
@@ -102,7 +103,7 @@ public class CredentialService {
       permissionsDataService.saveAccessControlEntries(
           storedCredentialVersion.getCredentialName(),
           accessControlEntries);
-      parametersList.addAll(createPermissionsEventAuditParameters(
+      auditRecordParameters.addAll(createPermissionsEventAuditParameters(
           ACL_UPDATE,
           storedCredentialVersion.getName(),
           accessControlEntries

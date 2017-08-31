@@ -30,11 +30,11 @@ public class GenerateRequestHandler {
   }
 
   public CredentialView handle(
-      UserContext userContext,
-      List<EventAuditRecordParameters> parametersList,
       BaseCredentialGenerateRequest requestBody,
-      PermissionEntry currentUserPermissionEntry) {
-
+      UserContext userContext,
+      PermissionEntry currentUserPermissionEntry,
+      List<EventAuditRecordParameters> auditRecordParameters
+  ) {
     CredentialValue value = CredentialValueFactory.generateValue(requestBody, generatorService);
 
     StringGenerationParameters generationParameters = null;
@@ -48,7 +48,7 @@ public class GenerateRequestHandler {
 
     return credentialService.save(
         userContext,
-        parametersList,
+        auditRecordParameters,
         requestBody.getName(),
         requestBody.isOverwrite(),
         requestBody.getType(),

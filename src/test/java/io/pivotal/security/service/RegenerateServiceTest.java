@@ -54,7 +54,7 @@ public class RegenerateServiceTest {
   private RsaCredential rsaCredential;
   private JsonCredential credentialOfUnsupportedType;
   private StringGenerationParameters expectedParameters;
-  private List<EventAuditRecordParameters> parametersList;
+  private List<EventAuditRecordParameters> auditRecordParameters;
   private CredentialService credentialService;
   private PermissionEntry currentUser;
 
@@ -69,7 +69,7 @@ public class RegenerateServiceTest {
       userCredential = mock(UserCredential.class);
       sshCredential = mock(SshCredential.class);
       rsaCredential = mock(RsaCredential.class);
-      parametersList = newArrayList();
+      auditRecordParameters = newArrayList();
       credentialService = mock(CredentialService.class);
       generatorService = mock(GeneratorService.class);
       userContext = mock(UserContext.class);
@@ -80,7 +80,7 @@ public class RegenerateServiceTest {
       when(credentialService
           .save(
               eq(userContext),
-              eq(parametersList),
+              eq(auditRecordParameters),
               eq("password"),
               eq(true),
               anyString(),
@@ -114,7 +114,7 @@ public class RegenerateServiceTest {
 
           subject
               .performRegenerate(passwordGenerateRequest.getName(), userContext,
-                  currentUser, parametersList
+                  currentUser, auditRecordParameters
               );
         });
 
@@ -124,7 +124,7 @@ public class RegenerateServiceTest {
             verify(credentialService)
                 .save(
                     eq(userContext),
-                    eq(parametersList),
+                    eq(auditRecordParameters),
                     eq("password"),
                     eq(true),
                     eq("password"),
@@ -151,7 +151,7 @@ public class RegenerateServiceTest {
                 passwordGenerateRequest.setName("password");
 
                 subject
-                    .performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, parametersList);
+                    .performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
               });
         });
       });
@@ -177,7 +177,7 @@ public class RegenerateServiceTest {
 
           subject
               .performRegenerate(userGenerateRequest.getName(), userContext,
-                  currentUser, parametersList
+                  currentUser, auditRecordParameters
               );
         });
 
@@ -187,7 +187,7 @@ public class RegenerateServiceTest {
             verify(credentialService)
                 .save(
                     eq(userContext),
-                    eq(parametersList),
+                    eq(auditRecordParameters),
                     eq("user"),
                     eq(true),
                     eq("user"),
@@ -213,7 +213,7 @@ public class RegenerateServiceTest {
                 userGenerateRequest.setName("user");
 
                 subject
-                    .performRegenerate(userGenerateRequest.getName(), userContext, currentUser, parametersList);
+                    .performRegenerate(userGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
               });
         });
       });
@@ -231,14 +231,14 @@ public class RegenerateServiceTest {
                 .thenReturn(mock(SshCredentialValue.class));
 
             subject
-                .performRegenerate(sshRegenerateRequest.getName(), userContext, currentUser, parametersList);
+                .performRegenerate(sshRegenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
           });
 
           it("should generate a new ssh key pair", () -> {
             verify(credentialService)
                 .save(
                     eq(userContext),
-                    eq(parametersList),
+                    eq(auditRecordParameters),
                     eq("ssh"),
                     eq(true),
                     eq("ssh"),
@@ -261,14 +261,14 @@ public class RegenerateServiceTest {
                 .thenReturn(mock(RsaCredentialValue.class));
 
             subject
-                .performRegenerate(rsaRegenerateRequest.getName(), userContext, currentUser, parametersList);
+                .performRegenerate(rsaRegenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
           });
 
           it("should generate a new rsa key pair", () -> {
             verify(credentialService)
                 .save(
                     eq(userContext),
-                    eq(parametersList),
+                    eq(auditRecordParameters),
                     eq("rsa"),
                     eq(true),
                     eq("rsa"),
@@ -285,7 +285,7 @@ public class RegenerateServiceTest {
           CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
           passwordGenerateRequest.setName("missing_entry");
 
-          subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, parametersList);
+          subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
         });
       });
 
@@ -294,7 +294,7 @@ public class RegenerateServiceTest {
           CredentialRegenerateRequest passwordGenerateRequest = new CredentialRegenerateRequest();
           passwordGenerateRequest.setName("unsupported");
 
-          subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, parametersList);
+          subject.performRegenerate(passwordGenerateRequest.getName(), userContext, currentUser, auditRecordParameters);
         });
       });
     });
